@@ -5,13 +5,19 @@ A plugin for uploading Cypress test results to Jira Xray.
 > **Note**
 > This plugin only works when running Cypress through the CLI (i.e. `npx cypress run`).
 
+## Table of contents
+
+- [Requirements](#requirements)
+- [Setup](#setup)
+- [Usage](#usage)
+
 ## Requirements
 
 - [Node.JS version 18.12.1](https://nodejs.org/en/download/) or better
 
 Type `node --version` in a terminal to check your version.
 
-# Setup
+## Setup
 
 To enable this Cypress plugin, add the following lines to your Cypress configuration file (`cypress.config.js` or `cypress.config.js` by default):
 
@@ -35,7 +41,7 @@ import "cypress-xray-plugin/register";
 
 ## Usage
 
-To use this plugin, you need to add Xray authentication to your environment variables, i.e.:
+To use this plugin, you need to add Xray authentication to your environment variables, i.e. the client ID and the client secret.
 
 To avoid adding your secrets to system environment variables, simply pass them to Cypress in the command line:
 
