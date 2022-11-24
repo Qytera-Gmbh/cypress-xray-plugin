@@ -1,17 +1,32 @@
-// TODO: write functions for uploading stuff to Xray
-
 import axios from "axios";
-import { URL_XRAY_V2 } from "./constants";
+import { TestExecutionResult } from "./results";
+import { XraySettings } from "./types";
 
-abstract class Uploader {
-    protected static token?: string;
+export abstract class Uploader {
+    private token: string = null;
+    private readonly clientId: string;
+    private readonly clientSecret: string;
+    private readonly projectKey: string;
+    private readonly url: string;
 
-    public async authenticateXray(clientId: string, clientSecret: string) {
+    constructor(
+        clientId: string,
+        clientSecret: string,
+        projectKey: string,
+        url: string
+    ) {
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.projectKey = projectKey;
+        this.url = url;
+    }
+
+    private async authenticateXray(): Promise<void> {
         const response = await axios.post(
-            URL_XRAY_V2,
+            `${this.baseURL()}/authenticate`,
             {
-                client_id: clientId,
-                client_secret: clientSecret,
+                client_id: this.clientId,
+                client_secret: this.clientSecret,
             },
             {
                 headers: {
@@ -19,6 +34,32 @@ abstract class Uploader {
                 },
             }
         );
-        Uploader.token = response.data;
+        this.token = response.data;
     }
+
+    protected async getToken(): Promise<string> {
+        if (!this.token) {
+            try {
+                await this.authenticateXray();
+            } catch (error: any) {
+                console.log("Failed to authenticato to Jira Xray:", error);
+            }
+        }
+        return this.token;
+    }
+
+    protected getProjectKey(): string {
+        return this.projectKey;
+    }
+
+    protected async getXraySettings(): Promise<XraySettings> {
+        return {
+            url: this.baseURL(),
+            token: await this.getToken(),
+        };
+    }
+
+    protected abstract baseURL(): string;
+
+    public abstract uploadTestExecution(result: TestExecutionResult): void;
 }
