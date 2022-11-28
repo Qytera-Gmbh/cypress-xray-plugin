@@ -1,6 +1,5 @@
 import axios from "axios";
-import { TestExecutionResult } from "./results";
-import { XraySettings } from "./types";
+import { XraySettings } from "./types/types";
 
 export abstract class Uploader {
     private token: string = null;
@@ -59,7 +58,23 @@ export abstract class Uploader {
         };
     }
 
+    public async uploadResults(
+        results:
+            | CypressCommandLine.CypressRunResult
+            | CypressCommandLine.CypressFailedRunResult
+    ): Promise<void> {
+        if (results.status === "failed") {
+            console.error(
+                `Failed to run ${results.failures} tests:`,
+                results.message
+            );
+        }
+        this.upload(results as CypressCommandLine.CypressRunResult);
+    }
+
     protected abstract baseURL(): string;
 
-    public abstract uploadTestExecution(result: TestExecutionResult): void;
+    protected abstract upload(
+        results: CypressCommandLine.CypressRunResult
+    ): Promise<void>;
 }

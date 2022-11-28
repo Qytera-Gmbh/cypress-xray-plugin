@@ -1,4 +1,4 @@
-const { beforeRunHook, afterRunHook } = require("./lib/hooks");
+const { beforeRunHook, afterRunHook } = require("./src/hooks");
 
 module.exports = function (on) {
     on("before:run", async (details) => {
