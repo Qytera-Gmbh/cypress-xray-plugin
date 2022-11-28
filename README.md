@@ -7,13 +7,14 @@ A plugin for uploading Cypress test results to Jira Xray.
 
 ## Table of contents
 
-- [Requirements](#requirements)
-- [Setup](#setup)
-- [Usage](#usage)
+-   [Requirements](#requirements)
+-   [Setup](#setup)
+-   [Usage](#usage)
+    -   [Supported Configurations](#supported-configurations)
 
 ## Requirements
 
-- [Node.JS version 18.12.1](https://nodejs.org/en/download/) or better
+-   [Node.JS version 18.12.1](https://nodejs.org/en/download/) or better
 
 Type `node --version` in a terminal to check your version.
 
@@ -48,3 +49,11 @@ To avoid adding your secrets to system environment variables, simply pass them t
 ```sh
 npx cypress run --env XRAY_CLIENT_ID="my-id-goes-here",XRAY_SECRET_ID="my-secret-goes-here"
 ```
+
+### Supported Configurations
+
+Below you will find all Xray configurations that are currently supported and the environment variables you need to set to target them.
+
+| Xray Type | API Version | Environment Variables                                           |
+| --------- | ----------- | --------------------------------------------------------------- |
+| Cloud     | v2          | <ul><li>`XRAY_CLIENT_ID`</li><li>`XRAY_CLIENT_SECRET`</li></ul> |
