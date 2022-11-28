@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { encodeBase64 } from "../../src/util/encoder";
+import { encodeBase64 } from "../../../src/util/encoder";
 
 describe("the encoding utility", () => {
     it("should be able to encode png files to base64", () => {

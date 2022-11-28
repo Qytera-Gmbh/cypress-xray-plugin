@@ -1,1 +1,3 @@
-export const URL_XRAY_V2 = "https://xray.cloud.getxray.app/api/v2";
+export const ENV_PROJECT_KEY = "XRAY_PROJECT_KEY";
+export const ENV_XRAY_CLIENT_ID = "XRAY_CLIENT_ID";
+export const ENV_XRAY_CLIENT_SECRET = "XRAY_CLIENT_SECRET";

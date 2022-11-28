@@ -1,3 +1,6 @@
+// Taken from:
+// https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results
+
 // small utility types to better express meaning of other types
 type dateTimeISO = string;
 
@@ -7,8 +10,8 @@ export type XrayCustomField = (
 )[];
 
 export interface XrayExecutionResults {
-    testExecutionKey: string;
-    info: XrayTestExecutionInfo;
+    testExecutionKey?: string;
+    info?: XrayTestExecutionInfo;
     tests?: [XrayTest, ...XrayTest[]];
 }
 
@@ -40,6 +43,9 @@ export interface XrayTest {
     iterations?: XrayIterationResult[];
     defects?: string[];
     evidence?: XrayEvidenceItem[];
+    /**
+     * Deprecated.
+     */
     evidences?: XrayEvidenceItem[];
     customFields?: XrayCustomField;
 }

@@ -1,4 +1,6 @@
-export interface XraySettings {
-    url: string;
-    token: string;
+export interface APICredentials {}
+
+export interface APIv2Credentials extends APICredentials {
+    clientId: string;
+    clientSecret: string;
 }

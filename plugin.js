@@ -8,8 +8,4 @@ module.exports = function (on) {
     on("after:run", async (results) => {
         await afterRunHook(results);
     });
-
-    on("after:screenshot", async (details) => {
-        console.log("after:screenshot", details);
-    });
 };
