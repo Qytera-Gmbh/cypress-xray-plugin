@@ -1,3 +1,4 @@
+import { UploadContext } from "./context";
 import { toXrayJSON } from "./conversion/conversion";
 import { APICredentials, APICredentialsOptions } from "./credentials";
 import { ImportExecutionResultsResponse } from "./types/xray/responses";
@@ -12,6 +13,7 @@ export abstract class Uploader<
     constructor(credentials: T, projectKey: string) {
         this.credentials = credentials;
         this.projectKey = projectKey;
+        UploadContext.PROJECT_KEY = projectKey;
     }
 
     protected getProjectKey(): string {

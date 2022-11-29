@@ -1,9 +1,10 @@
 import {
-    ENV_PROJECT_KEY,
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
+    ENV_XRAY_PROJECT_KEY,
 } from "./constants";
 import { UploadContext } from "./context";
+import { JWTCredentials } from "./credentials";
 import { CloudAPIUploader } from "./uploader/cloudAPI";
 import { validateConfiguration } from "./util/config";
 
@@ -15,11 +16,11 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
         UploadContext.ENV[ENV_XRAY_CLIENT_SECRET]
     ) {
         UploadContext.UPLOADER = new CloudAPIUploader(
-            {
-                clientId: UploadContext.ENV[ENV_XRAY_CLIENT_ID],
-                clientSecret: UploadContext.ENV[ENV_XRAY_CLIENT_SECRET],
-            },
-            UploadContext.ENV[ENV_PROJECT_KEY]
+            new JWTCredentials(
+                UploadContext.ENV[ENV_XRAY_CLIENT_ID],
+                UploadContext.ENV[ENV_XRAY_CLIENT_SECRET]
+            ),
+            UploadContext.ENV[ENV_XRAY_PROJECT_KEY]
         );
     } else {
         throw new Error(

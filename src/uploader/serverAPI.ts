@@ -11,15 +11,15 @@ import { Uploader } from "../uploader";
 export class ServerAPIUploader extends Uploader<
     BasicAuthCredentials | PATCredentials
 > {
-    private readonly serverURL: string;
+    private readonly apiBaseURL: string;
 
     constructor(
-        serverURL: string,
+        apiBaseURL: string,
         credentials: BasicAuthCredentials | PATCredentials,
         projectKey: string
     ) {
         super(credentials, projectKey);
-        this.serverURL = serverURL;
+        this.apiBaseURL = apiBaseURL;
         if (this.credentials instanceof BasicAuthCredentials) {
         }
     }
@@ -36,7 +36,7 @@ export class ServerAPIUploader extends Uploader<
                 }, 5000);
                 try {
                     const response = await axios.post(
-                        `${this.serverURL}/rest/raven/1.0/import/execution`,
+                        `${this.apiBaseURL}/import/execution`,
                         executionResults,
                         {
                             headers: {

@@ -1,4 +1,4 @@
-import { ENV_PROJECT_KEY } from "../constants";
+import { ENV_XRAY_EXECUTION_ISSUE_KEY } from "../constants";
 import { UploadContext } from "../context";
 import {
     XrayEvidenceItem,
@@ -57,7 +57,7 @@ function toTestInfoXrayJSON(
     testResult: CypressCommandLine.TestResult
 ): XrayTestInfo {
     return {
-        projectKey: UploadContext.ENV[ENV_PROJECT_KEY],
+        projectKey: UploadContext.PROJECT_KEY,
         summary: testResult.title.join(" "),
         type: UploadContext.TEST_TYPE,
     };
@@ -109,13 +109,16 @@ export function toXrayJSON(
 ): XrayExecutionResults {
     const json: XrayExecutionResults = {
         info: {
-            project: UploadContext.ENV[ENV_PROJECT_KEY],
+            project: UploadContext.PROJECT_KEY,
             startDate: results.startedTestsAt,
             finishDate: results.endedTestsAt,
             description: getDescription(results),
             summary: getSummary(results),
         },
     };
+    if (ENV_XRAY_EXECUTION_ISSUE_KEY in UploadContext.ENV) {
+        json.testExecutionKey = UploadContext.ENV[ENV_XRAY_EXECUTION_ISSUE_KEY];
+    }
     results.runs.forEach((specResult: CypressCommandLine.RunResult) => {
         specResult.tests.forEach(
             (testResult: CypressCommandLine.TestResult) => {

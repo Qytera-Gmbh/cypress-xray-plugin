@@ -1,10 +1,9 @@
+import { ENV_XRAY_PROJECT_KEY } from "../constants";
 import { UploadContext } from "../context";
 
-const ENV_PROJECT_KEY = "XRAY_PROJECT_KEY";
-
 export function validateConfiguration() {
-    if (!UploadContext.ENV[ENV_PROJECT_KEY]) {
-        throw new MissingEnvironmentVariableError(ENV_PROJECT_KEY);
+    if (!UploadContext.ENV[ENV_XRAY_PROJECT_KEY]) {
+        throw new MissingEnvironmentVariableError(ENV_XRAY_PROJECT_KEY);
     }
 }
 
