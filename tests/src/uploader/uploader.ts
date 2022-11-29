@@ -44,7 +44,8 @@ describe("the uploaders", () => {
     }).timeout(60000);
 
     it("should be able to upload to existing test execution issues using the cloud API", async () => {
-        process.env[ENV_XRAY_EXECUTION_ISSUE_KEY] = "CYP-10";
+        const issueKey = "CYP-10";
+        process.env[ENV_XRAY_EXECUTION_ISSUE_KEY] = issueKey;
         const response = await new CloudAPIUploader(
             new JWTCredentials(
                 env(ENV_XRAY_CLIENT_ID),
@@ -53,7 +54,7 @@ describe("the uploaders", () => {
             env(ENV_XRAY_PROJECT_KEY)
         ).uploadResults(result);
         expect(response.id).to.be.a("string");
-        expect(response.key).to.eq("CYP-10");
+        expect(response.key).to.eq(issueKey);
         expect(response.self).to.be.a("string");
     }).timeout(60000);
 });
