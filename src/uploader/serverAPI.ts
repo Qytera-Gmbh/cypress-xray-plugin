@@ -1,23 +1,34 @@
 import axios from "axios";
-import { HTTPHeader, JWTCredentials } from "../credentials";
+import {
+    BasicAuthCredentials,
+    HTTPHeader,
+    PATCredentials,
+} from "../credentials";
 import { ImportExecutionResultsResponse } from "../types/xray/responses";
 import { XrayExecutionResults } from "../types/xray/xray";
 import { Uploader } from "../uploader";
 
-export class CloudAPIUploader extends Uploader<JWTCredentials> {
-    /**
-     * The URL of Xray's Cloud API.
-     * Note: API v1 would also work, but let's stick to the more recent one.
-     */
-    private static readonly URL = "https://xray.cloud.getxray.app/api/v2";
+export class ServerAPIUploader extends Uploader<
+    BasicAuthCredentials | PATCredentials
+> {
+    private readonly serverURL: string;
+
+    constructor(
+        serverURL: string,
+        credentials: BasicAuthCredentials | PATCredentials,
+        projectKey: string
+    ) {
+        super(credentials, projectKey);
+        this.serverURL = serverURL;
+        if (this.credentials instanceof BasicAuthCredentials) {
+        }
+    }
 
     protected async upload(
         executionResults: XrayExecutionResults
     ): Promise<ImportExecutionResultsResponse> {
         return this.credentials
-            .getAuthenticationHeader({
-                authenticationURL: `${CloudAPIUploader.URL}/authenticate`,
-            })
+            .getAuthenticationHeader()
             .then(async (header: HTTPHeader) => {
                 console.log("Uploading test results...");
                 const progressInterval = setInterval(() => {
@@ -25,7 +36,7 @@ export class CloudAPIUploader extends Uploader<JWTCredentials> {
                 }, 5000);
                 try {
                     const response = await axios.post(
-                        `${CloudAPIUploader.URL}/import/execution`,
+                        `${this.serverURL}/rest/raven/1.0/import/execution`,
                         executionResults,
                         {
                             headers: {

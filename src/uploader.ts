@@ -1,9 +1,11 @@
 import { toXrayJSON } from "./conversion/conversion";
-import { APICredentials } from "./types/types";
+import { APICredentials, APICredentialsOptions } from "./credentials";
 import { ImportExecutionResultsResponse } from "./types/xray/responses";
 import { XrayExecutionResults } from "./types/xray/xray";
 
-export abstract class Uploader<T extends APICredentials> {
+export abstract class Uploader<
+    T extends APICredentials<APICredentialsOptions>
+> {
     protected readonly credentials: T;
     private readonly projectKey: string;
 

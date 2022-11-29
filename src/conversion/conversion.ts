@@ -6,7 +6,7 @@ import {
     XrayTest,
     XrayTestInfo,
 } from "../types/xray/xray";
-import { encodeBase64 } from "../util/encoder";
+import { encodeFile } from "../util/base64";
 
 function testResultToXrayJSON(
     testResult: CypressCommandLine.TestResult
@@ -27,7 +27,7 @@ function testResultToXrayJSON(
                     );
                     evidence.push({
                         filename: suffix,
-                        data: encodeBase64(screenshot.path),
+                        data: encodeFile(screenshot.path),
                     });
                 }
             );

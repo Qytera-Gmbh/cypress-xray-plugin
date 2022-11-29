@@ -7,6 +7,7 @@ import {
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
 } from "../../../src/constants";
+import { JWTCredentials } from "../../../src/credentials";
 import { CloudAPIUploader } from "../../../src/uploader/cloudAPI";
 
 describe("the uploaders", () => {
@@ -26,10 +27,7 @@ describe("the uploaders", () => {
         expect(clientSecret).to.not.be.undefined;
         expect(projectKey).to.not.be.undefined;
         const response = await new CloudAPIUploader(
-            {
-                clientId: clientId as string,
-                clientSecret: clientSecret as string,
-            },
+            new JWTCredentials(clientId as string, clientSecret as string),
             projectKey as string
         ).uploadResults(result);
         expect(response.id).to.be.a("string");
