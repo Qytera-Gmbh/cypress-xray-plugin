@@ -7,7 +7,7 @@ import {
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
 } from "../../../src/constants";
-import { CloudAPIv2Uploader } from "../../../src/uploader/cloudAPIv2";
+import { CloudAPIUploader } from "../../../src/uploader/cloudAPI";
 
 describe("the uploaders", () => {
     let result: CypressCommandLine.CypressRunResult;
@@ -18,14 +18,14 @@ describe("the uploaders", () => {
         );
     });
 
-    it("should be able to upload using the cloud API v2", async () => {
+    it("should be able to upload using the cloud API", async () => {
         const clientId = process.env[ENV_XRAY_CLIENT_ID];
         const clientSecret = process.env[ENV_XRAY_CLIENT_SECRET];
         const projectKey = process.env[ENV_PROJECT_KEY];
         expect(clientId).to.not.be.undefined;
         expect(clientSecret).to.not.be.undefined;
         expect(projectKey).to.not.be.undefined;
-        const response = await new CloudAPIv2Uploader(
+        const response = await new CloudAPIUploader(
             {
                 clientId: clientId as string,
                 clientSecret: clientSecret as string,

@@ -4,7 +4,7 @@ import {
     ENV_XRAY_CLIENT_SECRET,
 } from "./constants";
 import { UploadContext } from "./context";
-import { CloudAPIv2Uploader } from "./uploader/cloudAPIv2";
+import { CloudAPIUploader } from "./uploader/cloudAPI";
 import { validateConfiguration } from "./util/config";
 
 export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
@@ -14,7 +14,7 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
         UploadContext.ENV[ENV_XRAY_CLIENT_ID] &&
         UploadContext.ENV[ENV_XRAY_CLIENT_SECRET]
     ) {
-        UploadContext.UPLOADER = new CloudAPIv2Uploader(
+        UploadContext.UPLOADER = new CloudAPIUploader(
             {
                 clientId: UploadContext.ENV[ENV_XRAY_CLIENT_ID],
                 clientSecret: UploadContext.ENV[ENV_XRAY_CLIENT_SECRET],

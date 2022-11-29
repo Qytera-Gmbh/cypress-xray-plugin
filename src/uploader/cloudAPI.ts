@@ -1,15 +1,19 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
-import { APIv2Credentials } from "../types/types";
+import { CloudAPICredentials } from "../types/types";
 import { ImportExecutionResultsResponse } from "../types/xray/responses";
 import { XrayExecutionResults } from "../types/xray/xray";
 import { Uploader } from "../uploader";
 
-export class CloudAPIv2Uploader extends Uploader<APIv2Credentials> {
+export class CloudAPIUploader extends Uploader<CloudAPICredentials> {
+    /**
+     * The URL of Xray's Cloud API.
+     * Note: API v1 would also work, but let's stick to the more recent one.
+     */
     private static readonly URL = "https://xray.cloud.getxray.app/api/v2";
 
     private token?: string;
 
-    constructor(credentials: APIv2Credentials, projectKey: string) {
+    constructor(credentials: CloudAPICredentials, projectKey: string) {
         super(credentials, projectKey);
         this.token = undefined;
     }
@@ -17,10 +21,10 @@ export class CloudAPIv2Uploader extends Uploader<APIv2Credentials> {
     protected async getToken(): Promise<string> {
         if (!this.token) {
             console.log(
-                `Authenticating against: ${CloudAPIv2Uploader.URL}/authenticate ...`
+                `Authenticating against: ${CloudAPIUploader.URL}/authenticate ...`
             );
             return axios
-                .post(`${CloudAPIv2Uploader.URL}/authenticate`, {
+                .post(`${CloudAPIUploader.URL}/authenticate`, {
                     client_id: this.credentials.clientId,
                     client_secret: this.credentials.clientSecret,
                 })
@@ -41,14 +45,14 @@ export class CloudAPIv2Uploader extends Uploader<APIv2Credentials> {
     protected async upload(
         executionResults: XrayExecutionResults
     ): Promise<ImportExecutionResultsResponse> {
-        return this.getToken().then(async (token) => {
+        return this.getToken().then(async (token: string) => {
             console.log("Uploading test results...");
             const progressInterval = setInterval(() => {
                 console.log("\tStill uploading...");
             }, 5000);
             try {
                 const response = await axios.post(
-                    `${CloudAPIv2Uploader.URL}/import/execution`,
+                    `${CloudAPIUploader.URL}/import/execution`,
                     executionResults,
                     {
                         headers: {

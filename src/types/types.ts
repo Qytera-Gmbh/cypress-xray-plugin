@@ -1,6 +1,6 @@
 export interface APICredentials {}
 
-export interface APIv2Credentials extends APICredentials {
+export interface CloudAPICredentials extends APICredentials {
     clientId: string;
     clientSecret: string;
 }
