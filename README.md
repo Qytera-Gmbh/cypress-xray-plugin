@@ -10,7 +10,8 @@ A plugin for uploading Cypress test results to Jira Xray.
 -   [Requirements](#requirements)
 -   [Setup](#setup)
 -   [Usage](#usage)
-    -   [Supported Configurations](#supported-configurations)
+    -   [Authentication](#authentication)
+    -   [OpenSSL Configuration](#openssl-configuration)
 
 ## Requirements
 
@@ -63,7 +64,7 @@ Depending on the provided environment variables, the plugin will automatically k
 If you provide the `XRAY_API_URL` and `XRAY_API_TOKEN` variables for example, the plugin will use the REST API of the [server version](https://docs.getxray.app/display/XRAY/REST+API).
 If you provide the `XRAY_CLIENT_ID` and `XRAY_CLIENT_SECRET` variables, the plugin will use the REST API of the [cloud version](https://docs.getxray.app/display/XRAYCLOUD/REST+API).
 
-The evaluation precedence of the environment variables goes from the table's top row to the table' bottom row, i.e. when providing more than one valid combination of variables, the cloud version will always be chosen in favor of the server version.
+Evaluation precedence of the environment variables goes from the table's top row to the table' bottom row, i.e. when providing more than one valid combination of variables, the cloud version will always be chosen in favor of the server version.
 
 ### OpenSSL Configuration
 
