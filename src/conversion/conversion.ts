@@ -21,6 +21,17 @@ function truncateISOTime(time: dateTimeISO): string {
     return time.split(".")[0] + "Z";
 }
 
+function toXrayStatus(status: string): string {
+    switch (status) {
+        case "passed":
+            return "PASS";
+        case "failed":
+            return "FAIL";
+        default:
+            throw new Error(`Unknown status: ${status}`);
+    }
+}
+
 function testResultToXrayJSON(
     testResult: CypressCommandLine.TestResult
 ): XrayTest {
