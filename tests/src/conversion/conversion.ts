@@ -36,7 +36,7 @@ describe("the conversion function", () => {
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].testKey).to.eq("CYP-40");
         expect(json.tests[1].testKey).to.eq("CYP-41");
-        expect(json.tests[2].testKey).to.eq("CYP-42");
+        expect(json.tests[2].testKey).to.eq("CYP-49");
     });
 
     it("should not be able to deal with multiple existing test issues", () => {

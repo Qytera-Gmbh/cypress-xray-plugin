@@ -51,7 +51,7 @@
                 {
                     "title": [
                         "cypress xray plugin",
-                        "should be able to upload to CYP-40"
+                        "passing test case with test issue key CYP-40"
                     ],
                     "state": "passed",
                     "body": "function () {\r\n        cy.get(\"p\").should(\"exist\");\r\n    }",
@@ -70,7 +70,7 @@
                 {
                     "title": [
                         "cypress xray plugin",
-                        "should be able to upload to CYP-41 in the middle of a string"
+                        "passing test case with test issue key CYP-41 in the middle of the title"
                     ],
                     "state": "passed",
                     "body": "function () {\r\n        cy.get(\"a\").should(\"exist\");\r\n    }",
@@ -89,7 +89,7 @@
                 {
                     "title": [
                         "cypress xray plugin",
-                        "CYP-42 should be able to upload failed tests to existing test issues"
+                        "CYP-49 failling test case with test issue key"
                     ],
                     "state": "failed",
                     "body": "function () {\r\n        cy.get(\"span\").should(\"exist\");\r\n    }",
