@@ -32,9 +32,7 @@ export abstract class Uploader<
             );
         }
         const json = toXrayJSON(results as CypressCommandLine.CypressRunResult);
-        const response = await this.upload(json);
-        console.log("Successfully imported test execution results:", response);
-        return response;
+        return await this.upload(json);
     }
 
     protected abstract upload(
