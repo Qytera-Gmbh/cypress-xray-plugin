@@ -32,15 +32,34 @@ function toXrayStatus(status: string): string {
     }
 }
 
-function testResultToXrayJSON(
+function addTestKeyIfPresent(
+    json: XrayTest,
     testResult: CypressCommandLine.TestResult
-): XrayTest {
+): void {
+    const regex = new RegExp(`(${UploadContext.PROJECT_KEY}-\\d+)`, "g");
+    // The last element usually refers to an individual test.
+    // The ones before might be test suite titles.
+    const testCaseTitle = testResult.title[testResult.title.length - 1];
+    const matches = testCaseTitle.match(regex);
+    if (!matches) {
+        return;
+    } else if (matches.length === 1) {
+        json.testKey = matches[0];
+    } else {
+        throw new Error(
+            `Multiple test keys found in test case title "${testCaseTitle}": ${matches}`
+        );
+    }
+}
+
+function toXrayTest(testResult: CypressCommandLine.TestResult): XrayTest {
     const json: XrayTest = {
-        testInfo: toTestInfoXrayJSON(testResult),
+        testInfo: toXrayTestInfo(testResult),
         start: truncateISOTime(getStartDate(testResult).toISOString()),
         finish: truncateISOTime(getEndDate(testResult).toISOString()),
         status: toXrayStatus(testResult.state),
     };
+    addTestKeyIfPresent(json, testResult);
     testResult.attempts.forEach(
         (attemptResult: CypressCommandLine.AttemptResult) => {
             const evidence: XrayEvidenceItem[] = [];
@@ -77,7 +96,7 @@ function testResultToXrayJSON(
  *   attempts: [ [Object] ]
  * }
  */
-function toTestInfoXrayJSON(
+function toXrayTestInfo(
     testResult: CypressCommandLine.TestResult
 ): XrayTestInfo {
     return {
@@ -148,12 +167,9 @@ export function toXrayJSON(
             (testResult: CypressCommandLine.TestResult) => {
                 if (testResult.state !== "pending") {
                     if (!json.tests) {
-                        json.tests = [testResultToXrayJSON(testResult)];
+                        json.tests = [toXrayTest(testResult)];
                     } else {
-                        json.tests = [
-                            ...json.tests,
-                            testResultToXrayJSON(testResult),
-                        ];
+                        json.tests = [...json.tests, toXrayTest(testResult)];
                     }
                 }
             }
