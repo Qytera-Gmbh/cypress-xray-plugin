@@ -23,3 +23,8 @@ export const ENV_XRAY_CLIENT_SECRET = "XRAY_CLIENT_SECRET";
 // ================================= //
 export const ENV_OPENSSL_ROOT_CA_PATH = "OPENSSL_ROOT_CA_PATH";
 export const ENV_OPENSSL_SECURE_OPTIONS = "OPENSSL_SECURE_OPTIONS";
+// ================================= //
+// | Plugin Configuration          | //
+// ================================= //
+export const ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY =
+    "PLUGIN_OVERWRITE_ISSUE_SUMMARY";

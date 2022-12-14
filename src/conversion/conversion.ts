@@ -1,5 +1,4 @@
-import { ENV_XRAY_EXECUTION_ISSUE_KEY } from "../constants";
-import { UploadContext } from "../context";
+import { PLUGIN_CONTEXT } from "../context";
 import {
     dateTimeISO,
     XrayEvidenceItem,
@@ -35,16 +34,17 @@ function toXrayStatus(status: string): string {
 function addTestKeyIfPresent(
     json: XrayTest,
     testResult: CypressCommandLine.TestResult
-): void {
-    const regex = new RegExp(`(${UploadContext.PROJECT_KEY}-\\d+)`, "g");
+): boolean {
+    const regex = new RegExp(`(${PLUGIN_CONTEXT.jira.projectKey}-\\d+)`, "g");
     // The last element usually refers to an individual test.
     // The ones before might be test suite titles.
     const testCaseTitle = testResult.title[testResult.title.length - 1];
     const matches = testCaseTitle.match(regex);
     if (!matches) {
-        return;
+        return false;
     } else if (matches.length === 1) {
         json.testKey = matches[0];
+        return true;
     } else {
         throw new Error(
             `Multiple test keys found in test case title "${testCaseTitle}": ${matches}`
@@ -54,12 +54,16 @@ function addTestKeyIfPresent(
 
 function toXrayTest(testResult: CypressCommandLine.TestResult): XrayTest {
     const json: XrayTest = {
-        testInfo: toXrayTestInfo(testResult),
         start: truncateISOTime(getStartDate(testResult).toISOString()),
         finish: truncateISOTime(getEndDate(testResult).toISOString()),
         status: toXrayStatus(testResult.state),
     };
-    addTestKeyIfPresent(json, testResult);
+    if (
+        !addTestKeyIfPresent(json, testResult) ||
+        PLUGIN_CONTEXT.config.overwriteIssueSummary
+    ) {
+        json.testInfo = toXrayTestInfo(testResult);
+    }
     testResult.attempts.forEach(
         (attemptResult: CypressCommandLine.AttemptResult) => {
             const evidence: XrayEvidenceItem[] = [];
@@ -100,9 +104,9 @@ function toXrayTestInfo(
     testResult: CypressCommandLine.TestResult
 ): XrayTestInfo {
     return {
-        projectKey: UploadContext.PROJECT_KEY,
+        projectKey: PLUGIN_CONTEXT.jira.projectKey,
         summary: testResult.title.join(" "),
-        type: UploadContext.TEST_TYPE,
+        type: PLUGIN_CONTEXT.xray.testType,
     };
 }
 
@@ -152,16 +156,14 @@ export function toXrayJSON(
 ): XrayExecutionResults {
     const json: XrayExecutionResults = {
         info: {
-            project: UploadContext.PROJECT_KEY,
+            project: PLUGIN_CONTEXT.jira.projectKey,
             startDate: truncateISOTime(results.startedTestsAt),
             finishDate: truncateISOTime(results.endedTestsAt),
             description: getDescription(results),
             summary: getSummary(results),
         },
     };
-    if (ENV_XRAY_EXECUTION_ISSUE_KEY in UploadContext.ENV) {
-        json.testExecutionKey = UploadContext.ENV[ENV_XRAY_EXECUTION_ISSUE_KEY];
-    }
+    json.testExecutionKey = PLUGIN_CONTEXT.jira.testExecutionKey;
     results.runs.forEach((specResult: CypressCommandLine.RunResult) => {
         specResult.tests.forEach(
             (testResult: CypressCommandLine.TestResult) => {

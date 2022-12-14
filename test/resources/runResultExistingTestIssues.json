@@ -118,7 +118,7 @@
                                 {
                                     "name": null,
                                     "takenAt": "2022-11-28T17:41:19.702Z",
-                                    "path": "./tests/resources/turtle.png",
+                                    "path": "./test/resources/turtle.png",
                                     "height": 720,
                                     "width": 1280
                                 }

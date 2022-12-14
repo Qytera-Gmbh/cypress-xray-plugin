@@ -2,14 +2,30 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
+import { ENV_XRAY_PROJECT_KEY } from "../../../src/constants";
+import { setContext } from "../../../src/context";
 import { toXrayJSON } from "../../../src/conversion/conversion";
 import { XrayExecutionResults } from "../../../src/types/xray/xray";
-import { expectToExist } from "../helpers";
+import { DummyUploader, env, expectToExist } from "../helpers";
 
-describe("the conversion function", () => {
+describe.only("the conversion function", () => {
+    beforeEach(() => {
+        const context = {
+            uploader: new DummyUploader(),
+            jira: {
+                projectKey: env(ENV_XRAY_PROJECT_KEY),
+            },
+            xray: {
+                testType: "Manual",
+            },
+            config: {},
+        };
+        setContext(context);
+    });
+
     it("should be able to convert test results into Xray JSON", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./tests/resources/runResult.json", "utf-8")
+            readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const json: XrayExecutionResults = toXrayJSON(result);
         expect(json.tests).to.have.length(3);
@@ -17,7 +33,7 @@ describe("the conversion function", () => {
 
     it("should be able to erase milliseconds from timestamps", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./tests/resources/runResult.json", "utf-8")
+            readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const json: XrayExecutionResults = toXrayJSON(result);
         expect(json.info?.startDate).to.eq("2022-11-28T17:41:12Z");
@@ -27,7 +43,7 @@ describe("the conversion function", () => {
     it("should be able to detect re-use of existing test issues", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync(
-                "./tests/resources/runResultExistingTestIssues.json",
+                "./test/resources/runResultExistingTestIssues.json",
                 "utf-8"
             )
         );
@@ -42,7 +58,7 @@ describe("the conversion function", () => {
     it("should not be able to deal with multiple existing test issues", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync(
-                "./tests/resources/runResultExistingTestIssuesError.json",
+                "./test/resources/runResultExistingTestIssuesMultipleError.json",
                 "utf-8"
             )
         );

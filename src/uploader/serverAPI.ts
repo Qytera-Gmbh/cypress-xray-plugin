@@ -15,10 +15,9 @@ export class ServerAPIUploader extends Uploader<
 
     constructor(
         apiBaseURL: string,
-        credentials: BasicAuthCredentials | PATCredentials,
-        projectKey: string
+        credentials: BasicAuthCredentials | PATCredentials
     ) {
-        super(credentials, projectKey);
+        super(credentials);
         this.apiBaseURL = apiBaseURL;
         if (this.credentials instanceof BasicAuthCredentials) {
         }

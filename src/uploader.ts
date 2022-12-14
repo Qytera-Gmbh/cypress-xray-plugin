@@ -1,4 +1,3 @@
-import { UploadContext } from "./context";
 import { toXrayJSON } from "./conversion/conversion";
 import { APICredentials, APICredentialsOptions } from "./credentials";
 import { ImportExecutionResultsResponse } from "./types/xray/responses";
@@ -8,16 +7,9 @@ export abstract class Uploader<
     T extends APICredentials<APICredentialsOptions>
 > {
     protected readonly credentials: T;
-    private readonly projectKey: string;
 
-    constructor(credentials: T, projectKey: string) {
+    constructor(credentials: T) {
         this.credentials = credentials;
-        this.projectKey = projectKey;
-        UploadContext.PROJECT_KEY = projectKey;
-    }
-
-    protected getProjectKey(): string {
-        return this.projectKey;
     }
 
     public async uploadResults(
@@ -32,6 +24,7 @@ export abstract class Uploader<
             );
         }
         const json = toXrayJSON(results as CypressCommandLine.CypressRunResult);
+        throw new Error("no");
         return await this.upload(json);
     }
 

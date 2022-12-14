@@ -1,8 +1,31 @@
+import { PluginContext } from "./types/xray/plugin";
 import { Uploader } from "./uploader";
 
-export class UploadContext {
-    public static PROJECT_KEY: string = null;
-    public static ENV: Cypress.ObjectLike = null;
-    public static UPLOADER: Uploader<any> = null;
-    public static TEST_TYPE: string = "Manual";
+export let PLUGIN_CONTEXT: PluginContext = null;
+
+export interface InitParameters {
+    uploader: Uploader<any>;
+    projectKey: string;
+    testType?: string;
+}
+
+export function initContext({
+    uploader,
+    projectKey,
+    testType = "Manual",
+}: InitParameters) {
+    PLUGIN_CONTEXT = {
+        uploader: uploader,
+        jira: {
+            projectKey: projectKey,
+        },
+        xray: {
+            testType: testType,
+        },
+        config: {},
+    };
+}
+
+export function setContext(context: PluginContext) {
+    PLUGIN_CONTEXT = context;
 }

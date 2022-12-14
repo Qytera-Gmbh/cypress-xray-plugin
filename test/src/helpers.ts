@@ -1,3 +1,19 @@
+import { ImportExecutionResultsResponse } from "../../src/types/xray/responses";
+import { XrayExecutionResults } from "../../src/types/xray/xray";
+import { Uploader } from "../../src/uploader";
+
+export class DummyUploader extends Uploader<any> {
+    constructor() {
+        super(null);
+    }
+
+    protected upload(
+        executionResults: XrayExecutionResults
+    ): Promise<ImportExecutionResultsResponse> {
+        throw new Error("Method not implemented.");
+    }
+}
+
 /**
  * Use in place of `expect(value).to.exist`
  *
