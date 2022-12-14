@@ -1,6 +1,7 @@
 /// <reference types="cypress" />
 
-import { expect } from "chai";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import {
     ENV_XRAY_CLIENT_ID,
@@ -12,16 +13,13 @@ import { JWTCredentials } from "../../../src/credentials";
 import { CloudAPIUploader } from "../../../src/uploader/cloudAPI";
 import { env } from "../helpers";
 
-describe("the uploaders", () => {
-    let result: CypressCommandLine.CypressRunResult;
+chai.use(chaiAsPromised);
 
-    beforeEach(() => {
-        result = JSON.parse(
+describe("the cloud uploader", () => {
+    it("should be able to upload to fresh test execution issues using the cloud API", async () => {
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./tests/resources/runResult.json", "utf-8")
         );
-    });
-
-    it("should be able to upload to fresh test execution issues using the cloud API", async () => {
         const response = await new CloudAPIUploader(
             new JWTCredentials(
                 env(ENV_XRAY_CLIENT_ID),
@@ -35,6 +33,9 @@ describe("the uploaders", () => {
     }).timeout(60000);
 
     it("should be able to upload to existing test execution issues using the cloud API", async () => {
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./tests/resources/runResult.json", "utf-8")
+        );
         const issueKey = "CYP-10";
         process.env[ENV_XRAY_EXECUTION_ISSUE_KEY] = issueKey;
         const response = await new CloudAPIUploader(
@@ -48,4 +49,27 @@ describe("the uploaders", () => {
         expect(response.key).to.eq(issueKey);
         expect(response.self).to.be.a("string");
     }).timeout(60000);
+
+    it.only(
+        "should not be able to upload to non-existant test issue keys",
+        async () => {
+            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                readFileSync(
+                    "./tests/resources/runResultExistingTestIssuesKeyError.json",
+                    "utf-8"
+                )
+            );
+            await expect(
+                new CloudAPIUploader(
+                    new JWTCredentials(
+                        env(ENV_XRAY_CLIENT_ID),
+                        env(ENV_XRAY_CLIENT_SECRET)
+                    ),
+                    env(ENV_XRAY_PROJECT_KEY)
+                ).uploadResults(result)
+            ).to.eventually.be.rejectedWith(
+                'Failed to upload results to Xray Jira: "Test with key CYP-123456789101112131415 not found."'
+            );
+        }
+    ).timeout(120000); // It sometimes simply takes extremely long for Xray to respond.
 });

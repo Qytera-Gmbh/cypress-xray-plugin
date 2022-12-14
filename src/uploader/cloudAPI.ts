@@ -39,8 +39,14 @@ export class CloudAPIUploader extends Uploader<JWTCredentials> {
                     );
                     return response.data;
                 } catch (error: unknown) {
-                    console.log("Upload failed: ", error);
-                    throw new Error("Failed to upload results to Xray Jira");
+                    if (axios.isAxiosError(error)) {
+                        throw new Error(
+                            `Failed to upload results to Xray Jira: "${error.response.data.error}"`
+                        );
+                    }
+                    throw new Error(
+                        `Failed to upload results to Xray Jira: "${error}"`
+                    );
                 } finally {
                     clearInterval(progressInterval);
                 }
