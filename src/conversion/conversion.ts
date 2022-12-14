@@ -146,13 +146,15 @@ export function toXrayJSON(
     results.runs.forEach((specResult: CypressCommandLine.RunResult) => {
         specResult.tests.forEach(
             (testResult: CypressCommandLine.TestResult) => {
-                if (!json.tests) {
-                    json.tests = [testResultToXrayJSON(testResult)];
-                } else {
-                    json.tests = [
-                        ...json.tests,
-                        testResultToXrayJSON(testResult),
-                    ];
+                if (testResult.state !== "pending") {
+                    if (!json.tests) {
+                        json.tests = [testResultToXrayJSON(testResult)];
+                    } else {
+                        json.tests = [
+                            ...json.tests,
+                            testResultToXrayJSON(testResult),
+                        ];
+                    }
                 }
             }
         );
