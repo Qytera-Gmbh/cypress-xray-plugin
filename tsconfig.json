@@ -1,6 +1,8 @@
 {
     "exclude": ["./tests/", "./node_modules/", "./dist/"],
     "compilerOptions": {
-        "esModuleInterop": true
+        "target": "ES6",
+        "esModuleInterop": true,
+        "moduleResolution": "Node"
     }
 }
