@@ -1,6 +1,7 @@
 import { ENV_XRAY_EXECUTION_ISSUE_KEY } from "../constants";
 import { UploadContext } from "../context";
 import {
+    dateTimeISO,
     XrayEvidenceItem,
     XrayExecutionResults,
     XrayTest,
@@ -8,14 +9,26 @@ import {
 } from "../types/xray/xray";
 import { encodeFile } from "../util/base64";
 
+/**
+ * Remove milliseconds from ISO time string. Some Jira Xray instances cannot handle milliseconds in the string.
+ * @param time a date time string in ISO format
+ * @returns the truncated date time string
+ * @example
+ *   const time = truncateISOTime("2022-12-01T02:30:44.744Z")
+ *   console.log(time); // "2022-12-01T02:30:44Z"
+ */
+function truncateISOTime(time: dateTimeISO): string {
+    return time.split(".")[0] + "Z";
+}
+
 function testResultToXrayJSON(
     testResult: CypressCommandLine.TestResult
 ): XrayTest {
     const json: XrayTest = {
         testInfo: toTestInfoXrayJSON(testResult),
-        start: getStartDate(testResult).toISOString(),
-        finish: getEndDate(testResult).toISOString(),
-        status: testResult.state,
+        start: truncateISOTime(getStartDate(testResult).toISOString()),
+        finish: truncateISOTime(getEndDate(testResult).toISOString()),
+        status: toXrayStatus(testResult.state),
     };
     testResult.attempts.forEach(
         (attemptResult: CypressCommandLine.AttemptResult) => {
@@ -110,8 +123,8 @@ export function toXrayJSON(
     const json: XrayExecutionResults = {
         info: {
             project: UploadContext.PROJECT_KEY,
-            startDate: results.startedTestsAt,
-            finishDate: results.endedTestsAt,
+            startDate: truncateISOTime(results.startedTestsAt),
+            finishDate: truncateISOTime(results.endedTestsAt),
             description: getDescription(results),
             summary: getSummary(results),
         },
