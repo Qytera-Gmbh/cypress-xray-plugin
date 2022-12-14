@@ -35,7 +35,7 @@ export class CloudAPIUploader extends Uploader<JWTCredentials> {
                     );
                     console.log(
                         "Successfully uploaded test execution results:",
-                        response
+                        response.data
                     );
                     return response.data;
                 } catch (error: unknown) {

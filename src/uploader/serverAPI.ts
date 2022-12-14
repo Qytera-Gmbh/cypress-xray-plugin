@@ -46,7 +46,7 @@ export class ServerAPIUploader extends Uploader<
                     );
                     console.log(
                         "Successfully uploaded test execution results:",
-                        response
+                        response.data
                     );
                     return response.data;
                 } catch (error: unknown) {
