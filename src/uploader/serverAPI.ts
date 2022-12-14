@@ -1,9 +1,9 @@
-import axios from "axios";
 import {
     BasicAuthCredentials,
     HTTPHeader,
     PATCredentials,
 } from "../credentials";
+import { Requests } from "../https/requests";
 import { ImportExecutionResultsResponse } from "../types/xray/responses";
 import { XrayExecutionResults } from "../types/xray/xray";
 import { Uploader } from "../uploader";
@@ -30,12 +30,12 @@ export class ServerAPIUploader extends Uploader<
         return this.credentials
             .getAuthenticationHeader()
             .then(async (header: HTTPHeader) => {
-                console.log("Uploading test results...");
+                console.log(`Uploading test results to ${this.apiBaseURL} ...`);
                 const progressInterval = setInterval(() => {
                     console.log("\tStill uploading...");
                 }, 5000);
                 try {
-                    const response = await axios.post(
+                    const response = await Requests.post(
                         `${this.apiBaseURL}/import/execution`,
                         executionResults,
                         {
@@ -44,7 +44,14 @@ export class ServerAPIUploader extends Uploader<
                             },
                         }
                     );
+                    console.log(
+                        "Successfully uploaded test execution results:",
+                        response
+                    );
                     return response.data;
+                } catch (error: unknown) {
+                    console.log("Upload failed: ", error);
+                    throw new Error("Failed to upload results to Xray Jira");
                 } finally {
                     clearInterval(progressInterval);
                 }

@@ -2,7 +2,7 @@
 // https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results
 
 // small utility types to better express meaning of other types
-type dateTimeISO = string;
+export type dateTimeISO = string;
 
 export type XrayCustomField = (
     | { [k: string]: unknown }
