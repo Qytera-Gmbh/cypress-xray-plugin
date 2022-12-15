@@ -1,10 +1,5 @@
 // ================================= //
-// | Jira Configuration            | //
-// ================================= //
-export const ENV_XRAY_PROJECT_KEY = "XRAY_PROJECT_KEY";
-export const ENV_XRAY_EXECUTION_ISSUE_KEY = "XRAY_EXECUTION_ISSUE_KEY";
-// ================================= //
-// | Xray Server Configuration     | //
+// | Authentication                | //
 // ================================= //
 export const ENV_XRAY_API_URL = "XRAY_API_URL";
 // Basic authentication.
@@ -12,9 +7,6 @@ export const ENV_XRAY_USERNAME = "XRAY_USERNAME";
 export const ENV_XRAY_PASSWORD = "XRAY_PASSWORD";
 // API token authentication.
 export const ENV_XRAY_API_TOKEN = "XRAY_API_TOKEN";
-// ================================= //
-// | Xray Cloud Configuration      | //
-// ================================= //
 // JWT-based authentication.
 export const ENV_XRAY_CLIENT_ID = "XRAY_CLIENT_ID";
 export const ENV_XRAY_CLIENT_SECRET = "XRAY_CLIENT_SECRET";
@@ -23,6 +15,16 @@ export const ENV_XRAY_CLIENT_SECRET = "XRAY_CLIENT_SECRET";
 // ================================= //
 export const ENV_OPENSSL_ROOT_CA_PATH = "OPENSSL_ROOT_CA_PATH";
 export const ENV_OPENSSL_SECURE_OPTIONS = "OPENSSL_SECURE_OPTIONS";
+// ================================= //
+// | Jira Configuration            | //
+// ================================= //
+export const ENV_JIRA_PROJECT_KEY = "JIRA_PROJECT_KEY";
+export const ENV_JIRA_EXECUTION_ISSUE_KEY = "JIRA_EXECUTION_ISSUE_KEY";
+// ================================= //
+// | Xray Configuration            | //
+// ================================= //
+export const ENV_XRAY_STATUS_PASSED = "XRAY_STATUS_PASSED";
+export const ENV_XRAY_STATUS_FAILED = "XRAY_STATUS_FAILED";
 // ================================= //
 // | Plugin Configuration          | //
 // ================================= //

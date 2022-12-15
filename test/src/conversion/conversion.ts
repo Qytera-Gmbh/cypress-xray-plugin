@@ -2,7 +2,7 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { ENV_XRAY_PROJECT_KEY } from "../../../src/constants";
+import { ENV_JIRA_PROJECT_KEY } from "../../../src/constants";
 import { PLUGIN_CONTEXT, setContext } from "../../../src/context";
 import { toXrayJSON } from "../../../src/conversion/conversion";
 import { XrayExecutionResults } from "../../../src/types/xray/xray";
@@ -13,7 +13,7 @@ describe("the conversion function", () => {
         const context = {
             uploader: new DummyUploader(),
             jira: {
-                projectKey: env(ENV_XRAY_PROJECT_KEY),
+                projectKey: env(ENV_JIRA_PROJECT_KEY),
             },
             xray: {
                 testType: "Manual",

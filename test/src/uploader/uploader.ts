@@ -4,9 +4,9 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import {
+    ENV_JIRA_PROJECT_KEY,
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
-    ENV_XRAY_PROJECT_KEY,
 } from "../../../src/constants";
 import { PLUGIN_CONTEXT, setContext } from "../../../src/context";
 import { JWTCredentials } from "../../../src/credentials";
@@ -27,7 +27,7 @@ describe("the cloud uploader", () => {
                 )
             ),
             jira: {
-                projectKey: env(ENV_XRAY_PROJECT_KEY),
+                projectKey: env(ENV_JIRA_PROJECT_KEY),
             },
             xray: {
                 testType: "Manual",

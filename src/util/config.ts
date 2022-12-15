@@ -1,12 +1,12 @@
 import {
+    ENV_JIRA_EXECUTION_ISSUE_KEY,
+    ENV_JIRA_PROJECT_KEY,
     ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY,
     ENV_XRAY_API_TOKEN,
     ENV_XRAY_API_URL,
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
-    ENV_XRAY_EXECUTION_ISSUE_KEY,
     ENV_XRAY_PASSWORD,
-    ENV_XRAY_PROJECT_KEY,
     ENV_XRAY_USERNAME,
 } from "../constants";
 import { initContext, PLUGIN_CONTEXT } from "../context";
@@ -21,21 +21,22 @@ import { ServerAPIUploader } from "../uploader/serverAPI";
 import { parseBoolean } from "./parsing";
 
 export function validateConfiguration(env: Cypress.ObjectLike): void {
-    if (!env[ENV_XRAY_PROJECT_KEY]) {
-        throw new MissingEnvironmentVariableError(ENV_XRAY_PROJECT_KEY);
+    if (!env[ENV_JIRA_PROJECT_KEY]) {
+        throw new MissingEnvironmentVariableError(ENV_JIRA_PROJECT_KEY);
     }
     initContext({
         uploader: chooseUploader(env),
-        projectKey: env[ENV_XRAY_PROJECT_KEY],
+        projectKey: env[ENV_JIRA_PROJECT_KEY],
     });
+    // Jira.
+    if (env[ENV_JIRA_EXECUTION_ISSUE_KEY]) {
+        PLUGIN_CONTEXT.jira.testExecutionKey =
+            env[ENV_JIRA_EXECUTION_ISSUE_KEY];
+    }
     if (env[ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY]) {
         PLUGIN_CONTEXT.config.overwriteIssueSummary = parseBoolean(
             env[ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY]
         );
-    }
-    if (env[ENV_XRAY_EXECUTION_ISSUE_KEY]) {
-        PLUGIN_CONTEXT.jira.testExecutionKey =
-            env[ENV_XRAY_EXECUTION_ISSUE_KEY];
     }
 }
 
