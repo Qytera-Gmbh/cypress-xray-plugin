@@ -179,7 +179,10 @@ export function toXrayJSON(
     results.runs.forEach((specResult: CypressCommandLine.RunResult) => {
         specResult.tests.forEach(
             (testResult: CypressCommandLine.TestResult) => {
-                if (testResult.state !== "pending") {
+                if (
+                    testResult.state !== "pending" &&
+                    testResult.state !== "skipped"
+                ) {
                     if (!json.tests) {
                         json.tests = [toXrayTest(testResult)];
                     } else {
