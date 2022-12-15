@@ -24,7 +24,6 @@ export abstract class Uploader<
             );
         }
         const json = toXrayJSON(results as CypressCommandLine.CypressRunResult);
-        throw new Error("no");
         return await this.upload(json);
     }
 
