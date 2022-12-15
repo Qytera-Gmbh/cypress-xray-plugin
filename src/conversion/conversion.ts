@@ -1,4 +1,4 @@
-import path from "path";
+import { basename } from "path";
 import { PLUGIN_CONTEXT } from "../context";
 import {
     dateTimeISO,
@@ -33,7 +33,7 @@ function toXrayStatus(status: string): string {
 }
 
 function normalizedFilename(filename: string): string {
-    let normalizedFilename = path.basename(filename);
+    let normalizedFilename = basename(filename);
     if (PLUGIN_CONTEXT.config.normalizeScreenshotNames) {
         normalizedFilename = normalizedFilename.replaceAll(
             /[^\.a-zA-Z0-9]+/g,
