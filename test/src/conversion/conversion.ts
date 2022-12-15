@@ -3,7 +3,7 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
 import { ENV_XRAY_PROJECT_KEY } from "../../../src/constants";
-import { setContext } from "../../../src/context";
+import { PLUGIN_CONTEXT, setContext } from "../../../src/context";
 import { toXrayJSON } from "../../../src/conversion/conversion";
 import { XrayExecutionResults } from "../../../src/types/xray/xray";
 import { DummyUploader, env, expectToExist } from "../helpers";
@@ -53,6 +53,28 @@ describe.only("the conversion function", () => {
         expect(json.tests[0].testKey).to.eq("CYP-40");
         expect(json.tests[1].testKey).to.eq("CYP-41");
         expect(json.tests[2].testKey).to.eq("CYP-49");
+        expect(json.tests[0].testInfo).to.be.undefined;
+        expect(json.tests[1].testInfo).to.be.undefined;
+        expect(json.tests[2].testInfo).to.be.undefined;
+    });
+
+    it("should be able to overwrite existing test issues if specified", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync(
+                "./test/resources/runResultExistingTestIssues.json",
+                "utf-8"
+            )
+        );
+        PLUGIN_CONTEXT.config.overwriteIssueSummary = true;
+        const json: XrayExecutionResults = toXrayJSON(result);
+        expectToExist(json.tests);
+        expect(json.tests).to.have.length(3);
+        expect(json.tests[0].testKey).to.eq("CYP-40");
+        expect(json.tests[1].testKey).to.eq("CYP-41");
+        expect(json.tests[2].testKey).to.eq("CYP-49");
+        expect(json.tests[0].testInfo).to.not.be.undefined;
+        expect(json.tests[1].testInfo).to.not.be.undefined;
+        expect(json.tests[2].testInfo).to.not.be.undefined;
     });
 
     it("should not be able to deal with multiple existing test issues", () => {
