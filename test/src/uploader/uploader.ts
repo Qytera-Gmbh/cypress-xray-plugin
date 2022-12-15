@@ -6,21 +6,20 @@ import { readFileSync } from "fs";
 import {
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
-    ENV_XRAY_EXECUTION_ISSUE_KEY,
     ENV_XRAY_PROJECT_KEY,
 } from "../../../src/constants";
+import { PLUGIN_CONTEXT, setContext } from "../../../src/context";
 import { JWTCredentials } from "../../../src/credentials";
 import { PluginContext } from "../../../src/types/xray/plugin";
 import { CloudAPIUploader } from "../../../src/uploader/cloudAPI";
 import { env } from "../helpers";
 
+// Enable promise assertions.
 chai.use(chaiAsPromised);
 
 describe("the cloud uploader", () => {
-    let context: PluginContext = null;
-
     beforeEach(() => {
-        context = {
+        const context: PluginContext = {
             uploader: new CloudAPIUploader(
                 new JWTCredentials(
                     env(ENV_XRAY_CLIENT_ID),
@@ -35,13 +34,14 @@ describe("the cloud uploader", () => {
             },
             config: {},
         };
+        setContext(context);
     });
 
     it("should be able to upload to fresh test execution issues using the cloud API", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const response = await context.uploader.uploadResults(result);
+        const response = await PLUGIN_CONTEXT.uploader.uploadResults(result);
         expect(response.id).to.be.a("string");
         expect(response.key).to.be.a("string");
         expect(response.self).to.be.a("string");
@@ -49,14 +49,11 @@ describe("the cloud uploader", () => {
 
     it("should be able to upload to existing test execution issues using the cloud API", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./tests/resources/runResult.json", "utf-8")
+            readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const issueKey = "CYP-10";
-        process.env[ENV_XRAY_EXECUTION_ISSUE_KEY] = issueKey;
-        const response = await context.uploader.uploadResults(result);
-        expect(response.id).to.be.a("string");
-        expect(response.key).to.eq(issueKey);
-        expect(response.self).to.be.a("string");
+        PLUGIN_CONTEXT.jira.testExecutionKey = "CYP-10";
+        const response = await PLUGIN_CONTEXT.uploader.uploadResults(result);
+        expect(response.key).to.eq("CYP-10");
     }).timeout(60000);
 
     it("should be able to upload to existing test execution issues and existing test issues using the cloud API", async () => {
@@ -66,11 +63,9 @@ describe("the cloud uploader", () => {
                 "utf-8"
             )
         );
-        const issueKey = "CYP-10";
-
-        process.env[ENV_XRAY_EXECUTION_ISSUE_KEY] = issueKey;
-        const response = await context.uploader.uploadResults(result);
-        expect(response.key).to.eq(issueKey);
+        PLUGIN_CONTEXT.jira.testExecutionKey = "CYP-10";
+        const response = await PLUGIN_CONTEXT.uploader.uploadResults(result);
+        expect(response.key).to.eq("CYP-10");
         // TODO: assert that existing test issues were used
         // This could look like this:
         // 1) retrieve the test execution issue using the GraphQL API and the issueId of the results upload response
@@ -90,7 +85,7 @@ describe("the cloud uploader", () => {
             )
         );
         await expect(
-            await context.uploader.uploadResults(result)
+            PLUGIN_CONTEXT.uploader.uploadResults(result)
         ).to.eventually.be.rejectedWith(
             'Failed to upload results to Xray Jira: "Test with key CYP-123456789101112131415 not found."'
         );

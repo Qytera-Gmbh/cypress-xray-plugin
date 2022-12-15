@@ -8,7 +8,7 @@ import { toXrayJSON } from "../../../src/conversion/conversion";
 import { XrayExecutionResults } from "../../../src/types/xray/xray";
 import { DummyUploader, env, expectToExist } from "../helpers";
 
-describe.only("the conversion function", () => {
+describe("the conversion function", () => {
     beforeEach(() => {
         const context = {
             uploader: new DummyUploader(),
