@@ -110,4 +110,16 @@ describe("the conversion function", () => {
         );
     });
 
+    it("should be able to use custom passed/failed statuses", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        PLUGIN_CONTEXT.xray.statusPassed = "it worked";
+        PLUGIN_CONTEXT.xray.statusFailed = "it did not work";
+        const json: XrayExecutionResults = toXrayJSON(result);
+        expectToExist(json.tests);
+        expect(json.tests[0].status).to.eq("it worked");
+        expect(json.tests[1].status).to.eq("it worked");
+        expect(json.tests[2].status).to.eq("it did not work");
+    });
 });

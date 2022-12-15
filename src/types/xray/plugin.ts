@@ -14,6 +14,8 @@ export interface JiraContext {
 
 export interface XrayContext {
     testType: string;
+    statusPassed?: string;
+    statusFailed?: string;
 }
 
 export interface PluginOptions {

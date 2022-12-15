@@ -1,3 +1,4 @@
+import path from "path";
 import { PLUGIN_CONTEXT } from "../context";
 import {
     dateTimeISO,
@@ -23,9 +24,9 @@ function truncateISOTime(time: dateTimeISO): string {
 function toXrayStatus(status: string): string {
     switch (status) {
         case "passed":
-            return "PASS";
+            return PLUGIN_CONTEXT.xray.statusPassed || "PASSED";
         case "failed":
-            return "FAIL";
+            return PLUGIN_CONTEXT.xray.statusFailed || "FAILED";
         default:
             throw new Error(`Unknown status: ${status}`);
     }

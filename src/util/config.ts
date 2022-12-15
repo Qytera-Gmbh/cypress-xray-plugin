@@ -8,6 +8,8 @@ import {
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
     ENV_XRAY_PASSWORD,
+    ENV_XRAY_STATUS_FAILED,
+    ENV_XRAY_STATUS_PASSED,
     ENV_XRAY_USERNAME,
 } from "../constants";
 import { initContext, PLUGIN_CONTEXT } from "../context";
@@ -34,6 +36,14 @@ export function validateConfiguration(env: Cypress.ObjectLike): void {
         PLUGIN_CONTEXT.jira.testExecutionKey =
             env[ENV_JIRA_EXECUTION_ISSUE_KEY];
     }
+    // Xray.
+    if (env[ENV_XRAY_STATUS_PASSED]) {
+        PLUGIN_CONTEXT.xray.statusPassed = env[ENV_XRAY_STATUS_PASSED];
+    }
+    if (env[ENV_XRAY_STATUS_FAILED]) {
+        PLUGIN_CONTEXT.xray.statusFailed = env[ENV_XRAY_STATUS_FAILED];
+    }
+    // Plugin.
     if (env[ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY]) {
         PLUGIN_CONTEXT.config.overwriteIssueSummary = parseBoolean(
             env[ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY]
