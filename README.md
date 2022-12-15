@@ -11,6 +11,9 @@ A plugin for uploading Cypress test results to Jira Xray.
 -   [Setup](#setup)
 -   [Usage](#usage)
     -   [Authentication](#authentication)
+    -   [Jira Configuration](#jira-configuration)
+    -   [Xray Configuration](#xray-configuration)
+    -   [Plugin Configuration](#plugin-configuration)
     -   [OpenSSL Configuration](#openssl-configuration)
 
 ## Requirements
@@ -65,6 +68,45 @@ If you provide the `XRAY_API_URL` and `XRAY_API_TOKEN` variables for example, th
 If you provide the `XRAY_CLIENT_ID` and `XRAY_CLIENT_SECRET` variables, the plugin will use the REST API of the [cloud version](https://docs.getxray.app/display/XRAYCLOUD/REST+API).
 
 Evaluation precedence of the environment variables goes from the table's top row to the table' bottom row, i.e. when providing more than one valid combination of variables, the cloud version will always be chosen in favor of the server version.
+
+### Jira Configuration
+
+In order to upload the results, some Jira configuration is mandatory.
+You can set the options using environment variables.
+
+#### Mandatory Settings
+
+| Option             | Valid Values | Description                                                                                                                                                                                                                                                                                          |
+| ------------------ | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `JIRA_PROJECT_KEY` | `string`     | The key of the Jira project. This option is mandatory since otherwise Xray would not know which project to save the results to. It is used in many places throughout the plugin, for example for mapping Cypress tests to existing test issues in Xray (see [targeting existing test issues](TODO)). |
+
+#### Optional Settings
+
+| Option                     | Valid Values | Default     | Description                                                                                                                                          |
+| -------------------------- | ------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `JIRA_EXECUTION_ISSUE_KEY` | `string`     | `undefined` | The key of the test execution issue to attach the run results to. If undefined, Jira will always create a new test execution issue with each upload. |
+
+### Xray Configuration
+
+You can also provide a bunch of Xray settings which might sometimes be necessary, depending on your project configuration.
+
+#### Optional Settings
+
+| Option               | Valid Values | Default    | Description                                         |
+| -------------------- | ------------ | ---------- | --------------------------------------------------- |
+| `XRAY_STATUS_PASSED` | `string`     | `"PASSED"` | The status name of a test marked as passed in Xray. |
+| `XRAY_STATUS_FAILED` | `string`     | `"FAILED"` | The status name of a test marked as failed in Xray. |
+
+### Plugin Configuration
+
+The plugin offers many options for customizing the upload further.
+
+#### Optional Settings
+
+| Option                              | Valid Values                                                      | Default | Description                                                                                                                                                                                                                                               |
+| ----------------------------------- | ----------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PLUGIN_OVERWRITE_ISSUE_SUMMARY`    | `true`, `1`, `yes`, `y`, `on` <br> `false`, `0`, `no`, `n`, `off` | `false` | When including the Jira keys of test issues in your Cypress test case titles (see [targeting existing test issues](TODO)), this option allows you to decide whether to keep the issues' existing summaries or whether to overwrite them with each upload. |
+| `PLUGIN_NORMALIZE_SCREENSHOT_NAMES` | `true`, `1`, `yes`, `y`, `on` <br> `false`, `0`, `no`, `n`, `off` | `false` | Some Xray setups might struggle with uploaded evidence if the filenames contain non-ASCII characters. With this option enabled, the plugin only allows characters `a-zA-Z0-9.` and replaces all other sequences with `_`.                                 |
 
 ### OpenSSL Configuration
 
