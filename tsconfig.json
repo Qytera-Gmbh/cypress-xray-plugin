@@ -3,6 +3,7 @@
     "compilerOptions": {
         "target": "ES6",
         "esModuleInterop": true,
-        "moduleResolution": "Node"
+        "moduleResolution": "Node",
+        "lib": ["es2021"]
     }
 }

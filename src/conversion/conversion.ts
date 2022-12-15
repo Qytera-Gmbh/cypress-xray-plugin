@@ -31,6 +31,17 @@ function toXrayStatus(status: string): string {
     }
 }
 
+function normalizedFilename(filename: string): string {
+    let normalizedFilename = path.basename(filename);
+    if (PLUGIN_CONTEXT.config.normalizeScreenshotNames) {
+        normalizedFilename = normalizedFilename.replaceAll(
+            /[^\.a-zA-Z0-9]+/g,
+            "_"
+        );
+    }
+    return normalizedFilename;
+}
+
 function addTestKeyIfPresent(
     json: XrayTest,
     testResult: CypressCommandLine.TestResult
@@ -73,7 +84,7 @@ function toXrayTest(testResult: CypressCommandLine.TestResult): XrayTest {
                         screenshot.path.indexOf("cypress")
                     );
                     evidence.push({
-                        filename: suffix,
+                        filename: normalizedFilename(suffix),
                         data: encodeFile(screenshot.path),
                     });
                 }

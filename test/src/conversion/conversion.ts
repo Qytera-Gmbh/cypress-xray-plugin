@@ -92,4 +92,22 @@ describe("the conversion function", () => {
             `Multiple test keys found in test case title "${title}": ${matches}`
         );
     });
+
+    it("should be able to normalize screenshot filenames", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync(
+                "./test/resources/runResultProblematicScreenshot.json",
+                "utf-8"
+            )
+        );
+        PLUGIN_CONTEXT.config.normalizeScreenshotNames = true;
+        const json: XrayExecutionResults = toXrayJSON(result);
+        expectToExist(json.tests);
+        expect(json.tests).to.have.length(1);
+        expect(json.tests[0].evidence).to.have.length(1);
+        expect(json.tests[0].evidence[0].filename).to.eq(
+            "t_rtle_with_problem_tic_name.png"
+        );
+    });
+
 });

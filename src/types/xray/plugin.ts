@@ -18,4 +18,5 @@ export interface XrayContext {
 
 export interface PluginOptions {
     overwriteIssueSummary?: boolean;
+    normalizeScreenshotNames?: boolean;
 }

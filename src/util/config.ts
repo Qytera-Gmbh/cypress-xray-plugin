@@ -1,6 +1,7 @@
 import {
     ENV_JIRA_EXECUTION_ISSUE_KEY,
     ENV_JIRA_PROJECT_KEY,
+    ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES,
     ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY,
     ENV_XRAY_API_TOKEN,
     ENV_XRAY_API_URL,
@@ -36,6 +37,11 @@ export function validateConfiguration(env: Cypress.ObjectLike): void {
     if (env[ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY]) {
         PLUGIN_CONTEXT.config.overwriteIssueSummary = parseBoolean(
             env[ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY]
+        );
+    }
+    if (env[ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES]) {
+        PLUGIN_CONTEXT.config.normalizeScreenshotNames = parseBoolean(
+            env[ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES]
         );
     }
 }
