@@ -1,6 +1,8 @@
 import {
     ENV_JIRA_EXECUTION_ISSUE_KEY,
     ENV_JIRA_PROJECT_KEY,
+    ENV_OPENSSL_ROOT_CA_PATH,
+    ENV_OPENSSL_SECURE_OPTIONS,
     ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES,
     ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY,
     ENV_XRAY_API_TOKEN,
@@ -53,6 +55,13 @@ export function validateConfiguration(env: Cypress.ObjectLike): void {
         PLUGIN_CONTEXT.config.normalizeScreenshotNames = parseBoolean(
             env[ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES]
         );
+    }
+    // OpenSSL.
+    if (env[ENV_OPENSSL_ROOT_CA_PATH]) {
+        PLUGIN_CONTEXT.openSSL.rootCA = env[ENV_OPENSSL_ROOT_CA_PATH];
+    }
+    if (env[ENV_OPENSSL_SECURE_OPTIONS]) {
+        PLUGIN_CONTEXT.openSSL.secureOptions = env[ENV_OPENSSL_SECURE_OPTIONS];
     }
 }
 

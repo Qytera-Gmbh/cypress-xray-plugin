@@ -5,6 +5,7 @@ export interface PluginContext {
     jira: JiraContext;
     xray: XrayContext;
     config: PluginOptions;
+    openSSL: OpenSSLContext;
 }
 
 export interface JiraContext {
@@ -21,4 +22,9 @@ export interface XrayContext {
 export interface PluginOptions {
     overwriteIssueSummary?: boolean;
     normalizeScreenshotNames?: boolean;
+}
+
+export interface OpenSSLContext {
+    rootCA?: string;
+    secureOptions?: number;
 }
