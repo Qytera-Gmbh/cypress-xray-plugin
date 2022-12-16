@@ -1,6 +1,6 @@
 import axios from "axios";
+import FormData from "form-data";
 import { createReadStream } from "fs";
-import FormData = require("form-data");
 
 export abstract class TestExecutionResult {
     public abstract upload(
