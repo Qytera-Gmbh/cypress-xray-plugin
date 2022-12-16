@@ -13,16 +13,8 @@ export abstract class Uploader<
     }
 
     public async uploadResults(
-        results:
-            | CypressCommandLine.CypressRunResult
-            | CypressCommandLine.CypressFailedRunResult
+        results: CypressCommandLine.CypressRunResult
     ): Promise<ImportExecutionResultsResponse> {
-        if (results.status === "failed") {
-            console.error(
-                `Failed to run ${results.failures} tests:`,
-                results.message
-            );
-        }
         const json = toXrayJSON(results as CypressCommandLine.CypressRunResult);
         return await this.upload(json);
     }
