@@ -33,6 +33,7 @@ describe("the cloud uploader", () => {
                 testType: "Manual",
             },
             config: {},
+            openSSL: {},
         };
         setContext(context);
     });
