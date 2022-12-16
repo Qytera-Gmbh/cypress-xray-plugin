@@ -9,7 +9,7 @@ A plugin for uploading Cypress test results to Jira Xray.
 
 -   [Requirements](#requirements)
 -   [Setup](#setup)
--   [Usage](#usage)
+-   [Configuration](#configuration)
     -   [Authentication](#authentication)
     -   [Jira Configuration](#jira-configuration)
     -   [Xray Configuration](#xray-configuration)
@@ -24,7 +24,21 @@ Type `node --version` in a terminal to check your version.
 
 ## Setup
 
-To enable this Cypress plugin, add the following lines to your Cypress configuration file (`cypress.config.js` or `cypress.config.js` by default):
+As long as the plugin has not been published to the npm registry, you need to install it locally.
+To do so, first clone this Git repository.
+Afterwards, navigate to your cloned directory and run `npm i`.
+
+Once all its dependencies have been installed, add the plugin's path to the `devDependencies` of your Cypress project's `package.json`:
+
+```json
+    "devDependencies": {
+        [...],
+        "cypress-xray-plugin": "file:/path/to/cloned/cypress-xray-plugin",
+        [...]
+    }
+```
+
+To actually _enable_ the plugin, add the following lines to your Cypress configuration file (`cypress.config.js` or `cypress.config.js` by default):
 
 ```js
 [...]
@@ -44,9 +58,9 @@ import "cypress-xray-plugin/register";
 
 ```
 
-## Usage
+## Configuration
 
-To use this plugin, you need to add Xray authentication to your environment variables, e.g. the client ID and the client secret when using a cloud based Jira instance.
+To use this plugin, you need to add Xray authentication to your environment variables, e.g. a client ID and a client secret when using a cloud based Jira instance.
 
 To avoid adding your secrets to system environment variables, simply pass them to Cypress as a comma-separated list in the command line:
 
