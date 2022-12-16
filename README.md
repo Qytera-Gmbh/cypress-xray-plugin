@@ -31,11 +31,9 @@ Afterwards, navigate to your cloned directory and run `npm i`.
 Once all its dependencies have been installed, add the plugin's path to the `devDependencies` of your Cypress project's `package.json`:
 
 ```json
-    "devDependencies": {
-        [...],
-        "cypress-xray-plugin": "file:/path/to/cloned/cypress-xray-plugin",
-        [...]
-    }
+"devDependencies": {
+    "cypress-xray-plugin": "file:/path/to/cloned/cypress-xray-plugin"
+}
 ```
 
 To actually _enable_ the plugin, add the following lines to your Cypress configuration file (`cypress.config.js` or `cypress.config.js` by default):
