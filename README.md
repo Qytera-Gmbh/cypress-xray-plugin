@@ -24,16 +24,10 @@ Type `node --version` in a terminal to check your version.
 
 ## Setup
 
-As long as the plugin has not been published to the npm registry, you need to install it locally.
-To do so, first clone this Git repository.
-Afterwards, navigate to your cloned directory and run `npm i`.
+Run the following command to add the plugin to your project:
 
-Once all its dependencies have been installed, add the plugin's path to the `devDependencies` of your Cypress project's `package.json`:
-
-```json
-"devDependencies": {
-    "cypress-xray-plugin": "file:/path/to/cloned/cypress-xray-plugin"
-}
+```sh
+npm i -D cypress-xray-plugin
 ```
 
 To actually _enable_ the plugin, add the following lines to your Cypress configuration file (`cypress.config.js` or `cypress.config.js` by default):
