@@ -30,7 +30,7 @@ Run the following command to add the plugin to your project:
 npm i -D cypress-xray-plugin
 ```
 
-To actually _enable_ the plugin, add the following lines to your Cypress configuration file (`cypress.config.js` or `cypress.config.js` by default):
+To actually _enable_ the plugin, add the following lines to your Cypress configuration file (`cypress.config.js` or `cypress.config.ts` by default):
 
 ```js
 [...]
