@@ -1,9 +1,15 @@
 {
-    "exclude": ["node_modules"],
+    "include": ["register.ts", "plugin.js", "src"],
+    "exclude": ["node_modules", "test", "dist"],
     "compilerOptions": {
-        "target": "ES6",
+        "target": "ESNext",
+        "module": "CommonJS",
+        "declaration": true,
+        "outDir": "dist",
         "esModuleInterop": true,
         "moduleResolution": "Node",
-        "lib": ["es2021"]
+        "lib": ["ESNext", "DOM"],
+        "types": ["cypress", "node"],
+        "allowJs": true
     }
 }
