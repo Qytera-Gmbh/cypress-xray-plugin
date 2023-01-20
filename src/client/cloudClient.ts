@@ -1,9 +1,12 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
+import FormData from "form-data";
 import fs from "fs";
 import { HTTPHeader, JWTCredentials } from "../credentials";
 import {
-    ExportFeatureFileResponse,
-    ImportExecutionResultsResponse,
+    CloudImportCucumberTestsResponse,
+    ExportCucumberTestsResponse,
+    ImportCucumberTestsResponse,
+    ImportIssueResponse,
 } from "../types/xray/responses";
 import { XrayExecutionResults } from "../types/xray/xray";
 import { Client } from "./client";
@@ -17,7 +20,7 @@ export class CloudClient extends Client<JWTCredentials> {
 
     protected async doImportExecutionResults(
         executionResults: XrayExecutionResults
-    ): Promise<ImportExecutionResultsResponse> {
+    ): Promise<ImportIssueResponse> {
         return this.credentials
             .getAuthenticationHeader({
                 authenticationURL: `${CloudClient.URL}/authenticate`,
@@ -28,15 +31,14 @@ export class CloudClient extends Client<JWTCredentials> {
                     console.log("\tStill uploading...");
                 }, 5000);
                 try {
-                    const response = await axios.post(
-                        `${CloudClient.URL}/import/execution`,
-                        executionResults,
-                        {
-                            headers: {
-                                ...header,
-                            },
-                        }
-                    );
+                    const response = await axios.post<
+                        XrayExecutionResults,
+                        AxiosResponse<ImportIssueResponse>
+                    >(`${CloudClient.URL}/import/execution`, executionResults, {
+                        headers: {
+                            ...header,
+                        },
+                    });
                     console.log(
                         "Successfully uploaded test execution results:",
                         response.data
@@ -45,11 +47,11 @@ export class CloudClient extends Client<JWTCredentials> {
                 } catch (error: unknown) {
                     if (axios.isAxiosError(error)) {
                         throw new Error(
-                            `Failed to upload results to Xray Jira: "${error.response.data.error}"`
+                            `Failed to upload results to Xray: "${error.response.data.error}"`
                         );
                     }
                     throw new Error(
-                        `Failed to upload results to Xray Jira: "${error}"`
+                        `Failed to upload results to Xray: "${error}"`
                     );
                 } finally {
                     clearInterval(progressInterval);
@@ -60,7 +62,7 @@ export class CloudClient extends Client<JWTCredentials> {
     protected async doExportCucumberTests(
         keys?: string,
         filter?: number
-    ): Promise<ExportFeatureFileResponse> {
+    ): Promise<ExportCucumberTestsResponse> {
         const header = await this.credentials.getAuthenticationHeader({
             authenticationURL: `${CloudClient.URL}/authenticate`,
         });
@@ -98,16 +100,73 @@ export class CloudClient extends Client<JWTCredentials> {
                     );
                 }
             );
-            console.log(`Successfully exporter cucumber tests to ${filename}`);
+            throw new Error("Method not implemented.");
+        } catch (error: unknown) {
+            throw new Error("Method not implemented.");
+        } finally {
+            clearInterval(progressInterval);
+        }
+    }
+
+    protected async doImportCucumberTests(
+        file: string,
+        projectKey?: string,
+        projectId?: string,
+        source?: string
+    ): Promise<ImportCucumberTestsResponse> {
+        const header = await this.credentials.getAuthenticationHeader({
+            authenticationURL: `${CloudClient.URL}/authenticate`,
+        });
+        console.log("Importing cucumber feature files...");
+        const progressInterval = setInterval(() => {
+            console.log("\tStill importing...");
+        }, 5000);
+        try {
+            const fileContent = fs.createReadStream(file);
+            const form = new FormData();
+            form.append("file", fileContent);
+
+            const response = await axios.post<
+                FormData,
+                AxiosResponse<CloudImportCucumberTestsResponse>
+            >(`${CloudClient.URL}/import/feature`, form, {
+                headers: {
+                    ...header,
+                    ...form.getHeaders(),
+                },
+                params: {
+                    projectKey: projectKey,
+                    projectId: projectId,
+                    source: source,
+                },
+            });
+            if (response.data.updatedOrCreatedTests.length > 0) {
+                console.log(
+                    "Successfully updated or created test issues:",
+                    response.data.updatedOrCreatedTests
+                );
+            }
+            if (response.data.updatedOrCreatedPreconditions.length > 0) {
+                console.log(
+                    "Successfully updated or created precondition issues:",
+                    response.data.updatedOrCreatedPreconditions
+                );
+            }
+            if (response.data.errors.length > 0) {
+                console.error(
+                    "Encountered some errors during import:",
+                    response.data.errors
+                );
+            }
             return response.data;
         } catch (error: unknown) {
             if (axios.isAxiosError(error)) {
                 throw new Error(
-                    `Failed to upload results to Xray Jira: "${error.response.data.error}"`
+                    `Failed to import cucumber feature files into Xray: "${error.response.data.error}"`
                 );
             }
             throw new Error(
-                `Failed to upload results to Xray Jira: "${error}"`
+                `Failed to import cucumber feature files into Xray: "${error}"`
             );
         } finally {
             clearInterval(progressInterval);

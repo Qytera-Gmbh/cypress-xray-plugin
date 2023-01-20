@@ -1,7 +1,8 @@
 import { Client } from "../../src/client/client";
 import {
-    ExportFeatureFileResponse,
-    ImportExecutionResultsResponse,
+    ExportCucumberTestsResponse,
+    ImportCucumberTestsResponse,
+    ImportIssueResponse,
 } from "../../src/types/xray/responses";
 import { XrayExecutionResults } from "../../src/types/xray/xray";
 
@@ -12,14 +13,22 @@ export class DummyClient extends Client<any> {
 
     protected doImportExecutionResults(
         executionResults: XrayExecutionResults
-    ): Promise<ImportExecutionResultsResponse> {
+    ): Promise<ImportIssueResponse> {
         throw new Error("Method not implemented.");
     }
 
     protected doExportCucumberTests(
-        keys?: string | undefined,
-        filter?: number | undefined
-    ): Promise<ExportFeatureFileResponse> {
+        keys?: string,
+        filter?: number
+    ): Promise<ExportCucumberTestsResponse> {
+        throw new Error("Method not implemented.");
+    }
+    protected doImportCucumberTests(
+        file: string,
+        projectKey?: string,
+        projectId?: string,
+        source?: string
+    ): Promise<ImportCucumberTestsResponse> {
         throw new Error("Method not implemented.");
     }
 }
