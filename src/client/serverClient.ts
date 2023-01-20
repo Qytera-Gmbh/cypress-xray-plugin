@@ -4,11 +4,14 @@ import {
     PATCredentials,
 } from "../credentials";
 import { Requests } from "../https/requests";
-import { ImportExecutionResultsResponse } from "../types/xray/responses";
+import {
+    ExportFeatureFileResponse,
+    ImportExecutionResultsResponse,
+} from "../types/xray/responses";
 import { XrayExecutionResults } from "../types/xray/xray";
-import { Uploader } from "../uploader";
+import { Client } from "./client";
 
-export class ServerAPIUploader extends Uploader<
+export class ServerClient extends Client<
     BasicAuthCredentials | PATCredentials
 > {
     private readonly apiBaseURL: string;
@@ -19,11 +22,9 @@ export class ServerAPIUploader extends Uploader<
     ) {
         super(credentials);
         this.apiBaseURL = apiBaseURL;
-        if (this.credentials instanceof BasicAuthCredentials) {
-        }
     }
 
-    protected async upload(
+    protected async doImportExecutionResults(
         executionResults: XrayExecutionResults
     ): Promise<ImportExecutionResultsResponse> {
         return this.credentials
@@ -55,5 +56,12 @@ export class ServerAPIUploader extends Uploader<
                     clearInterval(progressInterval);
                 }
             });
+    }
+
+    protected doExportCucumberTests(
+        keys?: string,
+        filter?: number
+    ): Promise<ExportFeatureFileResponse> {
+        throw new Error("Method not implemented.");
     }
 }

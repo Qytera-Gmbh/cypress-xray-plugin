@@ -10,19 +10,23 @@ export async function afterRunHook(
         | CypressCommandLine.CypressRunResult
         | CypressCommandLine.CypressFailedRunResult
 ) {
-    if (results.status === "failed") {
-        console.error(
-            `Failed to run ${results.failures} tests:`,
-            results.message
-        );
-        return;
-    }
     console.log("┌───────────────────────────┐");
     console.log("│                           │");
     console.log("│    Cypress Xray Plugin    │");
     console.log("│                           │");
     console.log("└───────────────────────────┘");
-    await PLUGIN_CONTEXT.uploader.uploadResults(
+    if (results.status === "failed") {
+        console.error(
+            `Aborting: failed to run ${results.failures} tests:`,
+            results.message
+        );
+        return;
+    }
+    await PLUGIN_CONTEXT.client.importExecutionResults(
         results as CypressCommandLine.CypressRunResult
     );
+}
+
+export async function filePreprocessorHook(file: Cypress.FileObject) {
+    return "C:\\Repositories\\cypress-xray-plugin\\README.md";
 }

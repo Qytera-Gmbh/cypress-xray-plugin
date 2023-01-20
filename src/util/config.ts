@@ -1,3 +1,6 @@
+import { Client } from "../client/client";
+import { CloudClient } from "../client/cloudClient";
+import { ServerClient } from "../client/serverClient";
 import {
     ENV_JIRA_EXECUTION_ISSUE_KEY,
     ENV_JIRA_PROJECT_KEY,
@@ -20,9 +23,6 @@ import {
     JWTCredentials,
     PATCredentials,
 } from "../credentials";
-import { Uploader } from "../uploader";
-import { CloudAPIUploader } from "../uploader/cloudAPI";
-import { ServerAPIUploader } from "../uploader/serverAPI";
 import { parseBoolean } from "./parsing";
 
 export function validateConfiguration(env: Cypress.ObjectLike): void {
@@ -30,7 +30,7 @@ export function validateConfiguration(env: Cypress.ObjectLike): void {
         throw new MissingEnvironmentVariableError(ENV_JIRA_PROJECT_KEY);
     }
     initContext({
-        uploader: chooseUploader(env),
+        client: chooseUploader(env),
         projectKey: env[ENV_JIRA_PROJECT_KEY],
     });
     // Jira.
@@ -65,16 +65,16 @@ export function validateConfiguration(env: Cypress.ObjectLike): void {
     }
 }
 
-function chooseUploader(env: Cypress.ObjectLike): Uploader<any> {
+function chooseUploader(env: Cypress.ObjectLike): Client<any> {
     if (env[ENV_XRAY_CLIENT_ID] && env[ENV_XRAY_CLIENT_SECRET]) {
-        return new CloudAPIUploader(
+        return new CloudClient(
             new JWTCredentials(
                 env[ENV_XRAY_CLIENT_ID],
                 env[ENV_XRAY_CLIENT_SECRET]
             )
         );
     } else if (env[ENV_XRAY_API_TOKEN] && env[ENV_XRAY_API_URL]) {
-        return new ServerAPIUploader(
+        return new ServerClient(
             env[ENV_XRAY_API_URL],
             new PATCredentials(env[ENV_XRAY_API_TOKEN])
         );
@@ -83,7 +83,7 @@ function chooseUploader(env: Cypress.ObjectLike): Uploader<any> {
         env[ENV_XRAY_PASSWORD] &&
         env[ENV_XRAY_API_URL]
     ) {
-        return new ServerAPIUploader(
+        return new ServerClient(
             env[ENV_XRAY_API_URL],
             new BasicAuthCredentials(
                 env[ENV_XRAY_USERNAME],

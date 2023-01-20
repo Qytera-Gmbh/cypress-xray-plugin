@@ -1,7 +1,7 @@
-import { Uploader } from "../../uploader";
+import { Client } from "../../client/client";
 
 export interface PluginContext {
-    uploader: Uploader<any>;
+    client: Client<any>;
     jira: JiraContext;
     xray: XrayContext;
     config: PluginOptions;
