@@ -27,7 +27,7 @@ import {
 import { parseBoolean } from "./parsing";
 
 export function validateConfiguration(env: Cypress.ObjectLike): void {
-    if (!env[ENV_JIRA_PROJECT_KEY]) {
+    if (!(ENV_JIRA_PROJECT_KEY in env)) {
         throw new MissingEnvironmentVariableError(ENV_JIRA_PROJECT_KEY);
     }
     initContext({
@@ -35,54 +35,59 @@ export function validateConfiguration(env: Cypress.ObjectLike): void {
         projectKey: env[ENV_JIRA_PROJECT_KEY],
     });
     // Jira.
-    if (env[ENV_JIRA_EXECUTION_ISSUE_KEY]) {
+    if (ENV_JIRA_EXECUTION_ISSUE_KEY in env) {
         PLUGIN_CONTEXT.jira.testExecutionKey =
             env[ENV_JIRA_EXECUTION_ISSUE_KEY];
     }
     // Xray.
-    if (env[ENV_XRAY_STATUS_PASSED]) {
+    if (ENV_XRAY_UPLOAD_RESULTS in env) {
+        PLUGIN_CONTEXT.xray.uploadResults = parseBoolean(
+            env[ENV_XRAY_UPLOAD_RESULTS]
+        );
+    }
+    if (ENV_XRAY_STATUS_PASSED in env) {
         PLUGIN_CONTEXT.xray.statusPassed = env[ENV_XRAY_STATUS_PASSED];
     }
-    if (env[ENV_XRAY_STATUS_FAILED]) {
+    if (ENV_XRAY_STATUS_FAILED in env) {
         PLUGIN_CONTEXT.xray.statusFailed = env[ENV_XRAY_STATUS_FAILED];
     }
     // Plugin.
-    if (env[ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY]) {
+    if (ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY in env) {
         PLUGIN_CONTEXT.config.overwriteIssueSummary = parseBoolean(
             env[ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY]
         );
     }
-    if (env[ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES]) {
+    if (ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES in env) {
         PLUGIN_CONTEXT.config.normalizeScreenshotNames = parseBoolean(
             env[ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES]
         );
     }
     // OpenSSL.
-    if (env[ENV_OPENSSL_ROOT_CA_PATH]) {
+    if (ENV_OPENSSL_ROOT_CA_PATH in env) {
         PLUGIN_CONTEXT.openSSL.rootCA = env[ENV_OPENSSL_ROOT_CA_PATH];
     }
-    if (env[ENV_OPENSSL_SECURE_OPTIONS]) {
+    if (ENV_OPENSSL_SECURE_OPTIONS in env) {
         PLUGIN_CONTEXT.openSSL.secureOptions = env[ENV_OPENSSL_SECURE_OPTIONS];
     }
 }
 
 function chooseUploader(env: Cypress.ObjectLike): Client<any> {
-    if (env[ENV_XRAY_CLIENT_ID] && env[ENV_XRAY_CLIENT_SECRET]) {
+    if (ENV_XRAY_CLIENT_ID in env && ENV_XRAY_CLIENT_SECRET in env) {
         return new CloudClient(
             new JWTCredentials(
                 env[ENV_XRAY_CLIENT_ID],
                 env[ENV_XRAY_CLIENT_SECRET]
             )
         );
-    } else if (env[ENV_XRAY_API_TOKEN] && env[ENV_XRAY_API_URL]) {
+    } else if (ENV_XRAY_API_TOKEN in env && ENV_XRAY_API_URL in env) {
         return new ServerClient(
             env[ENV_XRAY_API_URL],
             new PATCredentials(env[ENV_XRAY_API_TOKEN])
         );
     } else if (
-        env[ENV_XRAY_USERNAME] &&
-        env[ENV_XRAY_PASSWORD] &&
-        env[ENV_XRAY_API_URL]
+        ENV_XRAY_USERNAME in env &&
+        ENV_XRAY_PASSWORD in env &&
+        ENV_XRAY_API_URL in env
     ) {
         return new ServerClient(
             env[ENV_XRAY_API_URL],
