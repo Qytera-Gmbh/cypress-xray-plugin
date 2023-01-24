@@ -33,6 +33,7 @@ describe("the cloud uploader", () => {
                 testType: "Manual",
                 uploadResults: true,
             },
+            cucumber: {},
             config: {},
             openSSL: {},
         };

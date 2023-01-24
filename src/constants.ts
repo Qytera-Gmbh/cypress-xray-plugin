@@ -27,6 +27,11 @@ export const ENV_XRAY_UPLOAD_RESULTS = "XRAY_UPLOAD_RESULTS";
 export const ENV_XRAY_STATUS_PASSED = "XRAY_STATUS_PASSED";
 export const ENV_XRAY_STATUS_FAILED = "XRAY_STATUS_FAILED";
 // ================================= //
+// | Cucumber Configuration        | //
+// ================================= //
+export const ENV_CUCUMBER_UPLOAD_FEATURES = "CUCUMBER_UPLOAD_FEATURES";
+export const ENV_CUCUMBER_DOWNLOAD_FEATURES = "CUCUMBER_DOWNLOAD_FEATURES";
+// ================================= //
 // | Plugin Configuration          | //
 // ================================= //
 export const ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY =

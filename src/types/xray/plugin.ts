@@ -4,6 +4,7 @@ export interface PluginContext {
     client: Client<any>;
     jira: JiraContext;
     xray: XrayContext;
+    cucumber: CucumberContext;
     config: PluginOptions;
     openSSL: OpenSSLContext;
 }
@@ -18,6 +19,11 @@ export interface XrayContext {
     uploadResults: boolean;
     statusPassed?: string;
     statusFailed?: string;
+}
+
+export interface CucumberContext {
+    uploadFeatures?: boolean;
+    downloadFeatures?: boolean;
 }
 
 export interface PluginOptions {

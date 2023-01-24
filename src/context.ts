@@ -23,6 +23,7 @@ export function initContext({
             testType: testType,
             uploadResults: true,
         },
+        cucumber: {},
         openSSL: {},
         config: {},
     };
