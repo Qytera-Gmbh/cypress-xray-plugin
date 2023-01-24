@@ -21,6 +21,7 @@ export function initContext({
         },
         xray: {
             testType: testType,
+            uploadResults: true,
         },
         openSSL: {},
         config: {},

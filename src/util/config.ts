@@ -15,6 +15,7 @@ import {
     ENV_XRAY_PASSWORD,
     ENV_XRAY_STATUS_FAILED,
     ENV_XRAY_STATUS_PASSED,
+    ENV_XRAY_UPLOAD_RESULTS,
     ENV_XRAY_USERNAME,
 } from "../constants";
 import { initContext, PLUGIN_CONTEXT } from "../context";

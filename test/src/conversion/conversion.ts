@@ -18,6 +18,7 @@ describe("the conversion function", () => {
             },
             xray: {
                 testType: "Manual",
+                uploadResults: true,
             },
             config: {},
             openSSL: {},

@@ -22,6 +22,12 @@ export async function afterRunHook(
         );
         return;
     }
+    if (!PLUGIN_CONTEXT.xray.uploadResults) {
+        console.log(
+            "Skipping results upload: Plugin is configured to not upload test results."
+        );
+        return;
+    }
     await PLUGIN_CONTEXT.client.importExecutionResults(
         results as CypressCommandLine.CypressRunResult
     );

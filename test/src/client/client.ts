@@ -31,6 +31,7 @@ describe("the cloud uploader", () => {
             },
             xray: {
                 testType: "Manual",
+                uploadResults: true,
             },
             config: {},
             openSSL: {},

@@ -23,6 +23,7 @@ export const ENV_JIRA_EXECUTION_ISSUE_KEY = "JIRA_EXECUTION_ISSUE_KEY";
 // ================================= //
 // | Xray Configuration            | //
 // ================================= //
+export const ENV_XRAY_UPLOAD_RESULTS = "XRAY_UPLOAD_RESULTS";
 export const ENV_XRAY_STATUS_PASSED = "XRAY_STATUS_PASSED";
 export const ENV_XRAY_STATUS_FAILED = "XRAY_STATUS_FAILED";
 // ================================= //
