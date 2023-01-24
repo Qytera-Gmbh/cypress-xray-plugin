@@ -7,12 +7,12 @@ import {
     ENV_CUCUMBER_UPLOAD_FEATURES,
     ENV_JIRA_EXECUTION_ISSUE_KEY,
     ENV_JIRA_PROJECT_KEY,
+    ENV_JIRA_SERVER_URL,
     ENV_OPENSSL_ROOT_CA_PATH,
     ENV_OPENSSL_SECURE_OPTIONS,
     ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES,
     ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY,
     ENV_XRAY_API_TOKEN,
-    ENV_XRAY_API_URL,
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
     ENV_XRAY_PASSWORD,
@@ -97,18 +97,18 @@ function chooseUploader(env: Cypress.ObjectLike): Client<any> {
                 env[ENV_XRAY_CLIENT_SECRET]
             )
         );
-    } else if (ENV_XRAY_API_TOKEN in env && ENV_XRAY_API_URL in env) {
+    } else if (ENV_XRAY_API_TOKEN in env && ENV_JIRA_SERVER_URL in env) {
         return new ServerClient(
-            env[ENV_XRAY_API_URL],
+            env[ENV_JIRA_SERVER_URL],
             new PATCredentials(env[ENV_XRAY_API_TOKEN])
         );
     } else if (
         ENV_XRAY_USERNAME in env &&
         ENV_XRAY_PASSWORD in env &&
-        ENV_XRAY_API_URL in env
+        ENV_JIRA_SERVER_URL in env
     ) {
         return new ServerClient(
-            env[ENV_XRAY_API_URL],
+            env[ENV_JIRA_SERVER_URL],
             new BasicAuthCredentials(
                 env[ENV_XRAY_USERNAME],
                 env[ENV_XRAY_PASSWORD]

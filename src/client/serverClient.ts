@@ -41,7 +41,7 @@ export class ServerClient extends Client<
                 }, 5000);
                 try {
                     const response = await Requests.post(
-                        `${this.apiBaseURL}/import/execution`,
+                        `${this.apiBaseURL}/rest/raven/latest/api/import/execution`,
                         executionResults,
                         {
                             headers: {
@@ -83,13 +83,10 @@ export class ServerClient extends Client<
                     const form = new FormData();
                     form.append("file", fileContent);
 
-                    const response = await axios.post<
-                        FormData,
-                        AxiosResponse<
-                            | ServerImportCucumberTestsResponse
-                            | ImportIssueResponse[]
-                        >
-                    >(`${this.apiBaseURL}/import/feature`, form, {
+            const response = await Requests.post<FormData>(
+                `${this.apiBaseURL}/rest/raven/latest/import/feature?projectKey=${projectKey}`,
+                form,
+                {
                         headers: {
                             ...header,
                             ...form.getHeaders(),

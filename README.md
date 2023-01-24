@@ -64,13 +64,13 @@ npx cypress run --env XRAY_CLIENT_ID="my-id-goes-here",XRAY_SECRET_ID="my-secret
 
 Below you will find all Xray configurations that are currently supported and the environment variables you need to set to authenticate against their respective APIs.
 
-| Xray API Type | API Version | Environment Variables                                                                                                                         |
-| ------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cloud         | `v1`, `v2`  | <ul><li>`XRAY_CLIENT_ID`</li><li>`XRAY_CLIENT_SECRET`</li></ul>                                                                               |
-| Server        | `v1`, `v2`  | <ul><li>`XRAY_API_URL`</li><li>`XRAY_API_TOKEN`</li></ul><hr><ul><li>`XRAY_API_URL`</li><li>`XRAY_USERNAME`</li><li>`XRAY_PASSWORD`</li></ul> |
+| Xray API Type | API Version | Environment Variables                                                                                                                               |
+| ------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloud         | `v1`, `v2`  | <ul><li>`XRAY_CLIENT_ID`</li><li>`XRAY_CLIENT_SECRET`</li></ul>                                                                                     |
+| Server        | `v1`, `v2`  | <ul><li>`JIRA_SERVER_URL`</li><li>`XRAY_API_TOKEN`</li></ul><hr><ul><li>`JIRA_SERVER_URL`</li><li>`XRAY_USERNAME`</li><li>`XRAY_PASSWORD`</li></ul> |
 
 Depending on the provided environment variables, the plugin will automatically know which Xray API type to use.
-If you provide the `XRAY_API_URL` and `XRAY_API_TOKEN` variables for example, the plugin will use the REST API of the [server version](https://docs.getxray.app/display/XRAY/REST+API).
+If you provide the `JIRA_SERVER_URL` and `XRAY_API_TOKEN` variables for example, the plugin will use the REST API of the [server version](https://docs.getxray.app/display/XRAY/REST+API).
 If you provide the `XRAY_CLIENT_ID` and `XRAY_CLIENT_SECRET` variables, the plugin will use the REST API of the [cloud version](https://docs.getxray.app/display/XRAYCLOUD/REST+API).
 
 Evaluation precedence of the environment variables goes from the table's top row to the table' bottom row, i.e. when providing more than one valid combination of variables, the cloud version will always be chosen in favor of the server version.
