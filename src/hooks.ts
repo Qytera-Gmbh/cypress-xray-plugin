@@ -27,6 +27,9 @@ export async function afterRunHook(
     );
 }
 
-export async function filePreprocessorHook(file: Cypress.FileObject) {
-    return "C:\\Repositories\\cypress-xray-plugin\\README.md";
+export async function filePreprocessorHook(
+    file: Cypress.FileObject
+): Promise<string> {
+    // TODO: sync .feature files with Xray
+    return file.filePath;
 }
