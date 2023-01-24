@@ -6,24 +6,21 @@ export let PLUGIN_CONTEXT: PluginContext = null;
 export interface InitParameters {
     client: Client<any>;
     projectKey: string;
-    testType?: string;
 }
 
-export function initContext({
-    client,
-    projectKey,
-    testType = "Manual",
-}: InitParameters) {
+export function initContext({ client, projectKey }: InitParameters) {
     PLUGIN_CONTEXT = {
         client: client,
         jira: {
             projectKey: projectKey,
         },
         xray: {
-            testType: testType,
+            testType: "Manual",
             uploadResults: true,
         },
-        cucumber: {},
+        cucumber: {
+            fileExtension: ".feature",
+        },
         openSSL: {},
         config: {},
     };

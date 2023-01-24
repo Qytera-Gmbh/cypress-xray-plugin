@@ -36,6 +36,19 @@ export async function afterRunHook(
 export async function filePreprocessorHook(
     file: Cypress.FileObject
 ): Promise<string> {
-    // TODO: sync .feature files with Xray
+    if (file.filePath.endsWith(PLUGIN_CONTEXT.cucumber.fileExtension)) {
+        if (PLUGIN_CONTEXT.cucumber.downloadFeatures) {
+            // TODO: download feature file from Xray.
+        }
+        if (PLUGIN_CONTEXT.cucumber.uploadFeatures) {
+            const relativePath = file.filePath.substring(
+                file.filePath.indexOf("cypress")
+            );
+            await PLUGIN_CONTEXT.client.importCucumberTests(
+                file.filePath,
+                PLUGIN_CONTEXT.jira.projectKey
+            );
+        }
+    }
     return file.filePath;
 }

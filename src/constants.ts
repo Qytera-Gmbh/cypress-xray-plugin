@@ -29,6 +29,8 @@ export const ENV_XRAY_STATUS_FAILED = "XRAY_STATUS_FAILED";
 // ================================= //
 // | Cucumber Configuration        | //
 // ================================= //
+export const ENV_CUCUMBER_FEATURE_FILE_EXTENSION =
+    "CUCUMBER_FEATURE_FILE_EXTENSION";
 export const ENV_CUCUMBER_UPLOAD_FEATURES = "CUCUMBER_UPLOAD_FEATURES";
 export const ENV_CUCUMBER_DOWNLOAD_FEATURES = "CUCUMBER_DOWNLOAD_FEATURES";
 // ================================= //

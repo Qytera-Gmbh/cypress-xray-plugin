@@ -70,14 +70,11 @@ export class ServerClient extends Client<
         throw new Error("Method not implemented.");
     }
 
-    protected doImportCucumberTests(
+    protected async doImportCucumberTests(
         file: string,
         projectKey?: string
     ): Promise<ImportCucumberTestsResponse> {
-        return this.credentials
-            .getAuthenticationHeader()
-            .then(async (header: HTTPHeader) => {
-                console.log("Importing cucumber feature files...");
+        const header = await this.credentials.getAuthenticationHeader();
                 const progressInterval = setInterval(() => {
                     console.log("\tStill importing...");
                 }, 5000);
@@ -136,6 +133,5 @@ export class ServerClient extends Client<
                 } finally {
                     clearInterval(progressInterval);
                 }
-            });
     }
 }

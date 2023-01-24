@@ -22,6 +22,7 @@ export interface XrayContext {
 }
 
 export interface CucumberContext {
+    fileExtension: string;
     uploadFeatures?: boolean;
     downloadFeatures?: boolean;
 }

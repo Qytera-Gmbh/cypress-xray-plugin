@@ -33,7 +33,9 @@ describe("the cloud uploader", () => {
                 testType: "Manual",
                 uploadResults: true,
             },
-            cucumber: {},
+            cucumber: {
+                fileExtension: ".feature",
+            },
             config: {},
             openSSL: {},
         };

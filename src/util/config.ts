@@ -3,6 +3,7 @@ import { CloudClient } from "../client/cloudClient";
 import { ServerClient } from "../client/serverClient";
 import {
     ENV_CUCUMBER_DOWNLOAD_FEATURES,
+    ENV_CUCUMBER_FEATURE_FILE_EXTENSION,
     ENV_CUCUMBER_UPLOAD_FEATURES,
     ENV_JIRA_EXECUTION_ISSUE_KEY,
     ENV_JIRA_PROJECT_KEY,
@@ -54,6 +55,10 @@ export function validateConfiguration(env: Cypress.ObjectLike): void {
         PLUGIN_CONTEXT.xray.statusFailed = env[ENV_XRAY_STATUS_FAILED];
     }
     // Cucumber.
+    if (ENV_CUCUMBER_FEATURE_FILE_EXTENSION in env) {
+        PLUGIN_CONTEXT.cucumber.fileExtension =
+            env[ENV_CUCUMBER_FEATURE_FILE_EXTENSION];
+    }
     if (ENV_CUCUMBER_UPLOAD_FEATURES in env) {
         PLUGIN_CONTEXT.cucumber.uploadFeatures = parseBoolean(
             env[ENV_CUCUMBER_UPLOAD_FEATURES]

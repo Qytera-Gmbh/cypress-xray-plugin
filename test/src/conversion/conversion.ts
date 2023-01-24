@@ -20,7 +20,9 @@ describe("the conversion function", () => {
                 testType: "Manual",
                 uploadResults: true,
             },
-            cucumber: {},
+            cucumber: {
+                fileExtension: ".feature",
+            },
             config: {},
             openSSL: {},
         };
