@@ -1,4 +1,5 @@
 import { PLUGIN_CONTEXT } from "./context";
+import { error, log } from "./logging/logging";
 import { validateConfiguration } from "./util/config";
 
 export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
@@ -10,20 +11,15 @@ export async function afterRunHook(
         | CypressCommandLine.CypressRunResult
         | CypressCommandLine.CypressFailedRunResult
 ) {
-    console.log("┌───────────────────────────┐");
-    console.log("│                           │");
-    console.log("│    Cypress Xray Plugin    │");
-    console.log("│                           │");
-    console.log("└───────────────────────────┘");
     if (results.status === "failed") {
-        console.error(
+        error(
             `Aborting: failed to run ${results.failures} tests:`,
             results.message
         );
         return;
     }
     if (!PLUGIN_CONTEXT.xray.uploadResults) {
-        console.log(
+        log(
             "Skipping results upload: Plugin is configured to not upload test results."
         );
         return;
@@ -44,6 +40,7 @@ export async function filePreprocessorHook(
             const relativePath = file.filePath.substring(
                 file.filePath.indexOf("cypress")
             );
+            log(`Synchronizing upstream Cucumber tests (${relativePath})`);
             await PLUGIN_CONTEXT.client.importCucumberTests(
                 file.filePath,
                 PLUGIN_CONTEXT.jira.projectKey

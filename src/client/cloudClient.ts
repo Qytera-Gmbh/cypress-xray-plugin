@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import FormData from "form-data";
 import fs from "fs";
 import { HTTPHeader, JWTCredentials } from "../credentials";
+import { error, info, log, success } from "../logging/logging";
 import {
     CloudImportCucumberTestsResponse,
     ExportCucumberTestsResponse,
@@ -26,9 +27,9 @@ export class CloudClient extends Client<JWTCredentials> {
                 authenticationURL: `${CloudClient.URL}/authenticate`,
             })
             .then(async (header: HTTPHeader) => {
-                console.log("Uploading test results...");
+                log("Uploading test results...");
                 const progressInterval = setInterval(() => {
-                    console.log("\tStill uploading...");
+                    info("\tStill uploading...");
                 }, 5000);
                 try {
                     const response = await axios.post<
@@ -39,9 +40,9 @@ export class CloudClient extends Client<JWTCredentials> {
                             ...header,
                         },
                     });
-                    console.log(
+                    success(
                         "Successfully uploaded test execution results:",
-                        response.data
+                        JSON.stringify(response.data)
                     );
                     return response.data;
                 } catch (error: unknown) {
@@ -66,9 +67,9 @@ export class CloudClient extends Client<JWTCredentials> {
         const header = await this.credentials.getAuthenticationHeader({
             authenticationURL: `${CloudClient.URL}/authenticate`,
         });
-        console.log("Exporting cucumber tests...");
+        log("Exporting cucumber tests...");
         const progressInterval = setInterval(() => {
-            console.log("\tStill exporting...");
+            info("\tStill exporting...");
         }, 5000);
         try {
             const response = await axios.get(
@@ -95,7 +96,7 @@ export class CloudClient extends Client<JWTCredentials> {
                 filename,
                 response.data,
                 (error: NodeJS.ErrnoException | null) => {
-                    console.error(
+                    throw new Error(
                         `Failed to export cucumber feature files: "${error}"`
                     );
                 }
@@ -117,9 +118,9 @@ export class CloudClient extends Client<JWTCredentials> {
         const header = await this.credentials.getAuthenticationHeader({
             authenticationURL: `${CloudClient.URL}/authenticate`,
         });
-        console.log("Importing cucumber feature files...");
+        log("Importing cucumber feature files...");
         const progressInterval = setInterval(() => {
-            console.log("\tStill importing...");
+            info("\tStill importing...");
         }, 5000);
         try {
             const fileContent = fs.createReadStream(file);
@@ -141,21 +142,21 @@ export class CloudClient extends Client<JWTCredentials> {
                 },
             });
             if (response.data.updatedOrCreatedTests.length > 0) {
-                console.log(
+                log(
                     "Successfully updated or created test issues:",
-                    response.data.updatedOrCreatedTests
+                    JSON.stringify(response.data.updatedOrCreatedTests)
                 );
             }
             if (response.data.updatedOrCreatedPreconditions.length > 0) {
-                console.log(
+                log(
                     "Successfully updated or created precondition issues:",
-                    response.data.updatedOrCreatedPreconditions
+                    JSON.stringify(response.data.updatedOrCreatedPreconditions)
                 );
             }
             if (response.data.errors.length > 0) {
-                console.error(
+                error(
                     "Encountered some errors during import:",
-                    response.data.errors
+                    JSON.stringify(response.data.errors)
                 );
             }
             return response.data;

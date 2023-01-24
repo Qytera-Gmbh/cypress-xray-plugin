@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
+import { log, success } from "./logging/logging";
 import { encode } from "./util/base64";
 
 /**
@@ -73,14 +74,14 @@ export class JWTCredentials extends APICredentials<JWTCredentialsOptions> {
 
     private async getToken(authenticationURL: string): Promise<string> {
         if (!this.token) {
-            console.log(`Authenticating against: ${authenticationURL}...`);
+            log(`Authenticating against: ${authenticationURL}...`);
             return axios
                 .post(authenticationURL, {
                     client_id: this.clientId,
                     client_secret: this.clientSecret,
                 })
                 .then((response: AxiosResponse) => {
-                    console.log("\tAuthentication successful.");
+                    success("\tAuthentication successful.");
                     this.token = response.data;
                     return this.token;
                 })

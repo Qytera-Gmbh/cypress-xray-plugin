@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import FormData from "form-data";
 import fs from "fs";
 import {
@@ -7,11 +7,11 @@ import {
     PATCredentials,
 } from "../credentials";
 import { Requests } from "../https/requests";
+import { info, log, success } from "../logging/logging";
 import {
     ExportCucumberTestsResponse,
     ImportCucumberTestsResponse,
     ImportIssueResponse,
-    ServerImportCucumberTestsResponse,
 } from "../types/xray/responses";
 import { XrayExecutionResults } from "../types/xray/xray";
 import { Client } from "./client";
@@ -35,9 +35,9 @@ export class ServerClient extends Client<
         return this.credentials
             .getAuthenticationHeader()
             .then(async (header: HTTPHeader) => {
-                console.log(`Uploading test results to ${this.apiBaseURL} ...`);
+                log(`Uploading test results to ${this.apiBaseURL} ...`);
                 const progressInterval = setInterval(() => {
-                    console.log("\tStill uploading...");
+                    info("\tStill uploading...");
                 }, 5000);
                 try {
                     const response = await Requests.post(
@@ -49,14 +49,15 @@ export class ServerClient extends Client<
                             },
                         }
                     );
-                    console.log(
+                    success(
                         "Successfully uploaded test execution results:",
-                        response.data
+                        JSON.stringify(response.data)
                     );
                     return response.data;
                 } catch (error: unknown) {
-                    console.log("Upload failed: ", error);
-                    throw new Error("Failed to upload results to Xray Jira");
+                    throw new Error(
+                        `Failed to upload results to Xray: "${error}"`
+                    );
                 } finally {
                     clearInterval(progressInterval);
                 }
@@ -75,60 +76,58 @@ export class ServerClient extends Client<
         projectKey?: string
     ): Promise<ImportCucumberTestsResponse> {
         const header = await this.credentials.getAuthenticationHeader();
-                const progressInterval = setInterval(() => {
-                    console.log("\tStill importing...");
-                }, 5000);
-                try {
-                    const fileContent = fs.createReadStream(file);
-                    const form = new FormData();
-                    form.append("file", fileContent);
+        log("Importing cucumber feature files...");
+        const progressInterval = setInterval(() => {
+            info("\tStill importing...");
+        }, 5000);
+        try {
+            const fileContent = fs.createReadStream(file);
+            const form = new FormData();
+            form.append("file", fileContent);
 
             const response = await Requests.post<FormData>(
                 `${this.apiBaseURL}/rest/raven/latest/import/feature?projectKey=${projectKey}`,
                 form,
                 {
-                        headers: {
-                            ...header,
-                            ...form.getHeaders(),
-                        },
-                        params: {
-                            projectKey: projectKey,
-                        },
-                    });
-                    // Happens when scenarios cause errors in Xray.
-                    // E.g. typos in Gherkin keywords ('Scenariot').
-                    if ("message" in response.data) {
-                        console.error(response.data.message);
-                        if (response.data.testIssues.length > 0) {
-                            console.log(
-                                "Successfully updated or created test issues:",
-                                response.data.testIssues
-                            );
-                        }
-                        if (response.data.preConditionIssues.length > 0) {
-                            console.log(
-                                "Successfully updated or created precondition issues:",
-                                response.data.preConditionIssues
-                            );
-                        }
-                    } else {
-                        console.log(
-                            "Successfully updated or created issues:",
-                            response.data
-                        );
-                    }
-                    return response.data;
-                } catch (error: unknown) {
-                    if (axios.isAxiosError(error)) {
-                        throw new Error(
-                            `Failed to import cucumber feature files into Xray: "${error.response.data.error}"`
-                        );
-                    }
-                    throw new Error(
-                        `Failed to import cucumber feature files into Xray: "${error}"`
-                    );
-                } finally {
-                    clearInterval(progressInterval);
+                    headers: {
+                        ...header,
+                        ...form.getHeaders(),
+                    },
                 }
+            );
+            // Happens when scenarios cause errors in Xray.
+            // E.g. typos in Gherkin keywords ('Scenariot').
+            if ("message" in response.data) {
+                if (response.data.testIssues.length > 0) {
+                    success(
+                        "Successfully updated or created test issues:",
+                        JSON.stringify(response.data.testIssues)
+                    );
+                }
+                if (response.data.preConditionIssues.length > 0) {
+                    success(
+                        "Successfully updated or created precondition issues:",
+                        JSON.stringify(response.data.preConditionIssues)
+                    );
+                }
+            } else {
+                success(
+                    "Successfully updated or created issues:",
+                    JSON.stringify(response.data)
+                );
+            }
+            return response.data;
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(
+                    `Failed to import cucumber feature files into Xray: "${error.response.data.error}"`
+                );
+            }
+            throw new Error(
+                `Failed to import cucumber feature files into Xray: "${error}"`
+            );
+        } finally {
+            clearInterval(progressInterval);
+        }
     }
 }
