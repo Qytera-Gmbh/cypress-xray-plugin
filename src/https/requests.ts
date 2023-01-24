@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosResponse, RawAxiosRequestConfig } from "axios";
 import { readFileSync } from "fs";
 import { Agent } from "https";
 import { PLUGIN_CONTEXT } from "../context";
@@ -24,7 +24,7 @@ export class Requests {
 
     public static get(
         url: string,
-        config?: AxiosRequestConfig
+        config?: RawAxiosRequestConfig<undefined>
     ): Promise<AxiosResponse> {
         return axios.get(url, {
             ...config,
@@ -32,10 +32,10 @@ export class Requests {
         });
     }
 
-    public static post(
+    public static post<D = any>(
         url: string,
-        data?: any,
-        config?: AxiosRequestConfig
+        data?: D,
+        config?: RawAxiosRequestConfig<D>
     ): Promise<AxiosResponse> {
         return axios.post(url, data, {
             ...config,
