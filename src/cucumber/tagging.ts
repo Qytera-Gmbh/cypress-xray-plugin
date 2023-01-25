@@ -9,7 +9,6 @@ function issueTagOf(
     const issueKeys: string[] = [];
     for (const tag of scenario.tags) {
         const matches = tag.name.match(regex);
-        console.log(matches);
         if (!matches) {
             continue;
         } else if (matches.length === 2) {
