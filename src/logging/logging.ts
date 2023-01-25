@@ -17,3 +17,7 @@ export function error(...text: string[]) {
 export function success(...text: string[]) {
     console.log(`${chalk.white(PREFIX)} ${chalk.green(text.join(" "))}`);
 }
+
+export function warning(...text: string[]) {
+    console.log(`${chalk.white(PREFIX)} ${chalk.yellow(text.join(" "))}`);
+}

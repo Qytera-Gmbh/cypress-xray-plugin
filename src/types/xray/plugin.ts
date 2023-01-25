@@ -23,6 +23,20 @@ export interface XrayContext {
 
 export interface CucumberContext {
     fileExtension: string;
+    /**
+     * A mapping of scenario titles to Xray issue keys.
+     * @example
+     *   '@PRJ-1234'
+     *   'Scenario: Valid Login'
+     *   '[...]'
+     *
+     *   issues: {
+     *     "Valid Login": "PRJ-1234"
+     *   }
+     */
+    issues?: {
+        [key: string]: string;
+    };
     uploadFeatures?: boolean;
     downloadFeatures?: boolean;
 }

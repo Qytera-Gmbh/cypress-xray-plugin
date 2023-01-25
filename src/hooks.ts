@@ -33,6 +33,16 @@ export async function filePreprocessorHook(
     file: Cypress.FileObject
 ): Promise<string> {
     if (file.filePath.endsWith(PLUGIN_CONTEXT.cucumber.fileExtension)) {
+        const relativePath = file.filePath.substring(
+            file.filePath.indexOf("cypress")
+        );
+        // Extract tag information for later use, e.g. when uploading test
+        // results to specific issues.
+        const feature = parseFeatureFile(file.filePath).feature;
+        PLUGIN_CONTEXT.cucumber.issues = issuesByScenario(
+            feature,
+            PLUGIN_CONTEXT.jira.projectKey
+        );
         if (PLUGIN_CONTEXT.cucumber.downloadFeatures) {
             // TODO: download feature file from Xray.
         }

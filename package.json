@@ -33,6 +33,8 @@
         "build": "tsc"
     },
     "dependencies": {
+        "@cucumber/gherkin": "^26.0.3",
+        "@cucumber/messages": "^21.0.1",
         "chalk": "^4.1.0",
         "decompress": "^4.2.1"
     },
