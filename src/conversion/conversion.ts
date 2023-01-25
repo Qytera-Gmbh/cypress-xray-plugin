@@ -1,6 +1,5 @@
 import { basename } from "path";
 import { PLUGIN_CONTEXT } from "../context";
-import { warning } from "../logging/logging";
 import {
     dateTimeISO,
     XrayEvidenceItem,
@@ -58,7 +57,6 @@ function addTestKeyIfPresent(
         // Maybe it was provided via Cucumber as a scenario tag?
         if (testCaseTitle in PLUGIN_CONTEXT.cucumber.issues) {
             json.testKey = PLUGIN_CONTEXT.cucumber.issues[testCaseTitle];
-            warning(testCaseTitle, json.testKey);
             return true;
         }
         return false;
