@@ -3,6 +3,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
+import { CloudClient } from "../../../src/client/cloudClient";
 import {
     ENV_JIRA_PROJECT_KEY,
     ENV_XRAY_CLIENT_ID,
@@ -11,7 +12,6 @@ import {
 import { PLUGIN_CONTEXT, setContext } from "../../../src/context";
 import { JWTCredentials } from "../../../src/credentials";
 import { PluginContext } from "../../../src/types/xray/plugin";
-import { CloudAPIUploader } from "../../../src/uploader/cloudAPI";
 import { env } from "../helpers";
 
 // Enable promise assertions.
@@ -20,7 +20,7 @@ chai.use(chaiAsPromised);
 describe("the cloud uploader", () => {
     beforeEach(() => {
         const context: PluginContext = {
-            uploader: new CloudAPIUploader(
+            client: new CloudClient(
                 new JWTCredentials(
                     env(ENV_XRAY_CLIENT_ID),
                     env(ENV_XRAY_CLIENT_SECRET)
@@ -31,6 +31,10 @@ describe("the cloud uploader", () => {
             },
             xray: {
                 testType: "Manual",
+                uploadResults: true,
+            },
+            cucumber: {
+                fileExtension: ".feature",
             },
             config: {},
             openSSL: {},
@@ -42,7 +46,9 @@ describe("the cloud uploader", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const response = await PLUGIN_CONTEXT.uploader.uploadResults(result);
+        const response = await PLUGIN_CONTEXT.client.importExecutionResults(
+            result
+        );
         expect(response.id).to.be.a("string");
         expect(response.key).to.be.a("string");
         expect(response.self).to.be.a("string");
@@ -53,7 +59,9 @@ describe("the cloud uploader", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         PLUGIN_CONTEXT.jira.testExecutionKey = "CYP-10";
-        const response = await PLUGIN_CONTEXT.uploader.uploadResults(result);
+        const response = await PLUGIN_CONTEXT.client.importExecutionResults(
+            result
+        );
         expect(response.key).to.eq("CYP-10");
     }).timeout(60000);
 
@@ -65,7 +73,9 @@ describe("the cloud uploader", () => {
             )
         );
         PLUGIN_CONTEXT.jira.testExecutionKey = "CYP-10";
-        const response = await PLUGIN_CONTEXT.uploader.uploadResults(result);
+        const response = await PLUGIN_CONTEXT.client.importExecutionResults(
+            result
+        );
         expect(response.key).to.eq("CYP-10");
         // TODO: assert that existing test issues were used
         // This could look like this:
@@ -86,7 +96,7 @@ describe("the cloud uploader", () => {
             )
         );
         await expect(
-            PLUGIN_CONTEXT.uploader.uploadResults(result)
+            PLUGIN_CONTEXT.client.importExecutionResults(result)
         ).to.eventually.be.rejectedWith(
             'Failed to upload results to Xray Jira: "Test with key CYP-123456789101112131415 not found."'
         );

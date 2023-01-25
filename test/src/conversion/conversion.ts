@@ -7,17 +7,21 @@ import { PLUGIN_CONTEXT, setContext } from "../../../src/context";
 import { toXrayJSON } from "../../../src/conversion/conversion";
 import { PluginContext } from "../../../src/types/xray/plugin";
 import { XrayExecutionResults } from "../../../src/types/xray/xray";
-import { DummyUploader, env, expectToExist } from "../helpers";
+import { DummyClient, env, expectToExist } from "../helpers";
 
 describe("the conversion function", () => {
     beforeEach(() => {
         const context: PluginContext = {
-            uploader: new DummyUploader(),
+            client: new DummyClient(),
             jira: {
                 projectKey: env(ENV_JIRA_PROJECT_KEY),
             },
             xray: {
                 testType: "Manual",
+                uploadResults: true,
+            },
+            cucumber: {
+                fileExtension: ".feature",
             },
             config: {},
             openSSL: {},

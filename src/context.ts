@@ -1,26 +1,25 @@
+import { Client } from "./client/client";
 import { PluginContext } from "./types/xray/plugin";
-import { Uploader } from "./uploader";
 
 export let PLUGIN_CONTEXT: PluginContext = null;
 
 export interface InitParameters {
-    uploader: Uploader<any>;
+    client: Client<any>;
     projectKey: string;
-    testType?: string;
 }
 
-export function initContext({
-    uploader,
-    projectKey,
-    testType = "Manual",
-}: InitParameters) {
+export function initContext({ client, projectKey }: InitParameters) {
     PLUGIN_CONTEXT = {
-        uploader: uploader,
+        client: client,
         jira: {
             projectKey: projectKey,
         },
         xray: {
-            testType: testType,
+            testType: "Manual",
+            uploadResults: true,
+        },
+        cucumber: {
+            fileExtension: ".feature",
         },
         openSSL: {},
         config: {},

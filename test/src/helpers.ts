@@ -1,15 +1,34 @@
-import { ImportExecutionResultsResponse } from "../../src/types/xray/responses";
+import { Client } from "../../src/client/client";
+import {
+    ExportCucumberTestsResponse,
+    ImportCucumberTestsResponse,
+    ImportIssueResponse,
+} from "../../src/types/xray/responses";
 import { XrayExecutionResults } from "../../src/types/xray/xray";
-import { Uploader } from "../../src/uploader";
 
-export class DummyUploader extends Uploader<any> {
+export class DummyClient extends Client<any> {
     constructor() {
         super(null);
     }
 
-    protected upload(
+    protected doImportExecutionResults(
         executionResults: XrayExecutionResults
-    ): Promise<ImportExecutionResultsResponse> {
+    ): Promise<ImportIssueResponse> {
+        throw new Error("Method not implemented.");
+    }
+
+    protected doExportCucumberTests(
+        keys?: string,
+        filter?: number
+    ): Promise<ExportCucumberTestsResponse> {
+        throw new Error("Method not implemented.");
+    }
+    protected doImportCucumberTests(
+        file: string,
+        projectKey?: string,
+        projectId?: string,
+        source?: string
+    ): Promise<ImportCucumberTestsResponse> {
         throw new Error("Method not implemented.");
     }
 }

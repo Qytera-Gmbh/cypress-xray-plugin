@@ -1,6 +1,13 @@
 # Cypress Xray Plugin
 
-A plugin for uploading Cypress test results to Jira Xray.
+A plugin for coupling together Cypress and Xray.
+Features include:
+
+-   test results upload to Xray
+    -   including screenshots
+-   Cucumber integration
+    -   synchronization of step definitions with Xray
+    -   upcoming: automatic download of step definitions from Xray + test execution
 
 > **Note**
 > This plugin only works when running Cypress through the CLI (i.e. `npx cypress run`).
@@ -13,8 +20,10 @@ A plugin for uploading Cypress test results to Jira Xray.
     -   [Authentication](#authentication)
     -   [Jira Configuration](#jira-configuration)
     -   [Xray Configuration](#xray-configuration)
+    -   [Cucumber Configuration](#cucumber-configuration)
     -   [Plugin Configuration](#plugin-configuration)
     -   [OpenSSL Configuration](#openssl-configuration)
+    -   [Custom Option Types](#custom-option-types)
 
 ## Requirements
 
@@ -24,20 +33,82 @@ Type `node --version` in a terminal to check your version.
 
 ## Setup
 
+This plugin can either be run without Cucumber support (when you keep all your Cypress test cases in plain JavaScript/TypeScript files) or with Cucumber support (when using Cucumber feature files for running tests).
+
+### Without Cucumber Support
+
 Run the following command to add the plugin to your project:
 
 ```sh
 npm i -D cypress-xray-plugin
 ```
 
-To actually _enable_ the plugin, add the following lines to your Cypress configuration file (`cypress.config.js` or `cypress.config.ts` by default):
+To actually _enable_ the plugin, modify the `setupNodeEvents()` function in your Cypress configuration file (`cypress.config.js` or `cypress.config.ts` by default) as follows:
 
 ```js
+import { addXrayResultUpload } from "cypress-xray-plugin/plugin";
 [...]
-setupNodeEvents(on, config) {
-    require("cypress-xray-plugin/plugin")(on);
+async setupNodeEvents(on, config) {
+    await addXrayResultUpload(on);
     [...]
 }
+```
+
+and register the plugin's event listeners in the `e2e.js` file:
+
+```js
+// Import commands.js using ES2015 syntax:
+[...]
+import "cypress-xray-plugin/register";
+[...]
+
+```
+
+### With Cucumber Support
+
+Run the following command to add the plugin and cucumber executability (more information [here](https://github.com/badeball/cypress-cucumber-preprocessor)) to your project:
+
+```sh
+npm i -D cypress-xray-plugin
+npm i -D @badeball/cypress-cucumber-preprocessor
+npm i -D @bahmutov/cypress-esbuild-preprocessor
+```
+
+To enable the plugin, modify the `setupNodeEvents()` function in your Cypress configuration file (`cypress.config.js` or `cypress.config.ts` by default) as follows:
+
+```js
+import { addCucumberPreprocessorPlugin } from "@badeball/cypress-cucumber-preprocessor";
+import createEsbuildPlugin from "@badeball/cypress-cucumber-preprocessor/esbuild";
+import * as createBundler from "@bahmutov/cypress-esbuild-preprocessor";
+import { addXrayResultUpload, syncFeatureFile } from "cypress-xray-plugin/plugin";
+
+[...]
+async setupNodeEvents(on, config) {
+    /*
+    * Note: Cypress does not currently support registering multiple plugins.
+    * https://github.com/cypress-io/cypress/issues/22428
+    * Once this functionality is added, the way we combine the Xray and Cucumber plugins
+    * can probably be simplified.
+    */
+    await addCucumberPreprocessorPlugin(on, config, {
+        omitBeforeRunHandler: true,
+        omitAfterRunHandler: true,
+        omitBeforeSpecHandler: true,
+        omitAfterSpecHandler: true,
+        omitAfterScreenshotHandler: true,
+    });
+    await addXrayResultUpload(on);
+
+    on("file:preprocessor", async (file) => {
+        await syncFeatureFile(file);
+        const cucumberPlugin = createBundler({
+            plugins: [createEsbuildPlugin(config)],
+        });
+        return cucumberPlugin(file);
+    });
+    return config;
+}
+[...]
 ```
 
 and register the plugin's event listeners in the `e2e.js` file:
@@ -64,13 +135,13 @@ npx cypress run --env XRAY_CLIENT_ID="my-id-goes-here",XRAY_SECRET_ID="my-secret
 
 Below you will find all Xray configurations that are currently supported and the environment variables you need to set to authenticate against their respective APIs.
 
-| Xray API Type | API Version | Environment Variables                                                                                                                         |
-| ------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cloud         | `v1`, `v2`  | <ul><li>`XRAY_CLIENT_ID`</li><li>`XRAY_CLIENT_SECRET`</li></ul>                                                                               |
-| Server        | `v1`, `v2`  | <ul><li>`XRAY_API_URL`</li><li>`XRAY_API_TOKEN`</li></ul><hr><ul><li>`XRAY_API_URL`</li><li>`XRAY_USERNAME`</li><li>`XRAY_PASSWORD`</li></ul> |
+| Xray API Type | API Version | Environment Variables                                                                                                                               |
+| ------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloud         | `v1`, `v2`  | <ul><li>`XRAY_CLIENT_ID`</li><li>`XRAY_CLIENT_SECRET`</li></ul>                                                                                     |
+| Server        | `v1`, `v2`  | <ul><li>`JIRA_SERVER_URL`</li><li>`XRAY_API_TOKEN`</li></ul><hr><ul><li>`JIRA_SERVER_URL`</li><li>`XRAY_USERNAME`</li><li>`XRAY_PASSWORD`</li></ul> |
 
 Depending on the provided environment variables, the plugin will automatically know which Xray API type to use.
-If you provide the `XRAY_API_URL` and `XRAY_API_TOKEN` variables for example, the plugin will use the REST API of the [server version](https://docs.getxray.app/display/XRAY/REST+API).
+If you provide the `JIRA_SERVER_URL` and `XRAY_API_TOKEN` variables for example, the plugin will use the REST API of the [server version](https://docs.getxray.app/display/XRAY/REST+API).
 If you provide the `XRAY_CLIENT_ID` and `XRAY_CLIENT_SECRET` variables, the plugin will use the REST API of the [cloud version](https://docs.getxray.app/display/XRAYCLOUD/REST+API).
 
 Evaluation precedence of the environment variables goes from the table's top row to the table' bottom row, i.e. when providing more than one valid combination of variables, the cloud version will always be chosen in favor of the server version.
@@ -103,16 +174,30 @@ You can also provide a bunch of Xray settings which might sometimes be necessary
 | `XRAY_STATUS_PASSED` | `string`     | `"PASSED"` | The status name of a test marked as passed in Xray. |
 | `XRAY_STATUS_FAILED` | `string`     | `"FAILED"` | The status name of a test marked as failed in Xray. |
 
+### Cucumber Configuration
+
+This plugin also comes with Cucumber support and builds upon the [cypress-cucumber-preprocessor](https://github.com/badeball/cypress-cucumber-preprocessor) plugin for 'executing' Cucumber feature files.
+
+With added Xray synchronization, this plugin allows you to automatically download or upload feature files to Xray when running your Cypress tests.
+
+#### Optional Settings
+
+| Option                            | Valid Values                    | Default      | Description                                                                                                                                                                                                                                                                                            |
+| --------------------------------- | ------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CUCUMBER_FEATURE_FILE_EXTENSION` | `string`                        | `".feature"` | The file extension of feature files you want to run in Cypress.                                                                                                                                                                                                                                        |
+| `CUCUMBER_UPLOAD_FEATURES`        | [boolean](#custom-option-types) | `false`      | Set it to true to automatically create or update existing Xray issues (summary, steps), based on the feature file executed by Cypress. Enable this option if the _source of truth for test cases_ are your local feature files in Cypress and Xray is only used for tracking execution status/history. |
+| `CUCUMBER_DOWNLOAD_FEATURES`      | [boolean](#custom-option-types) | `false`      | `(upcoming feature)` Set it to true to automatically download feature files from Xray for Cypress to execute. Enable this option if the _source of truth for test cases_ are the step definitions in Xray and Cypress is only used for running tests.                                                  |
+
 ### Plugin Configuration
 
 The plugin offers many options for customizing the upload further.
 
 #### Optional Settings
 
-| Option                              | Valid Values                                                      | Default | Description                                                                                                                                                                                                                                               |
-| ----------------------------------- | ----------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PLUGIN_OVERWRITE_ISSUE_SUMMARY`    | `true`, `1`, `yes`, `y`, `on` <br> `false`, `0`, `no`, `n`, `off` | `false` | When including the Jira keys of test issues in your Cypress test case titles (see [targeting existing test issues](TODO)), this option allows you to decide whether to keep the issues' existing summaries or whether to overwrite them with each upload. |
-| `PLUGIN_NORMALIZE_SCREENSHOT_NAMES` | `true`, `1`, `yes`, `y`, `on` <br> `false`, `0`, `no`, `n`, `off` | `false` | Some Xray setups might struggle with uploaded evidence if the filenames contain non-ASCII characters. With this option enabled, the plugin only allows characters `a-zA-Z0-9.` and replaces all other sequences with `_`.                                 |
+| Option                              | Valid Values                    | Default | Description                                                                                                                                                                                                                                               |
+| ----------------------------------- | ------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PLUGIN_OVERWRITE_ISSUE_SUMMARY`    | [boolean](#custom-option-types) | `false` | When including the Jira keys of test issues in your Cypress test case titles (see [targeting existing test issues](TODO)), this option allows you to decide whether to keep the issues' existing summaries or whether to overwrite them with each upload. |
+| `PLUGIN_NORMALIZE_SCREENSHOT_NAMES` | [boolean](#custom-option-types) | `false` | Some Xray setups might struggle with uploaded evidence if the filenames contain non-ASCII characters. With this option enabled, the plugin only allows characters `a-zA-Z0-9.` and replaces all other sequences with `_`.                                 |
 
 ### OpenSSL Configuration
 
@@ -212,3 +297,11 @@ console.log(constants);
 | `POINT_CONVERSION_HYBRID`                       | 6          |
 
 </details>
+
+### Custom Option Types
+
+Here you will find the valid values of option types used throughout the configuration explanations.
+
+| Option Type | Valid Values                                                      |
+| ----------- | ----------------------------------------------------------------- |
+| `boolean`   | `true`, `1`, `yes`, `y`, `on` <br> `false`, `0`, `no`, `n`, `off` |

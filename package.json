@@ -1,9 +1,9 @@
 {
     "name": "cypress-xray-plugin",
-    "version": "1.0.4",
+    "version": "1.1.0",
     "description": "A Cypress plugin for uploading test results to Jira Xray",
-    "main": "src/uploader.js",
-    "types": "src/uploader.d.ts",
+    "main": "src/client.js",
+    "types": "src/client.d.ts",
     "author": "csvtuda",
     "repository": {
         "type": "git",
@@ -33,12 +33,17 @@
         "build": "tsc"
     },
     "dependencies": {
+        "@cucumber/gherkin": "^26.0.3",
+        "@cucumber/messages": "^21.0.1",
         "axios": "^1.2.3",
+        "chalk": "^4.1.0",
+        "decompress": "^4.2.1",
         "form-data": "^4.0.0"
     },
     "devDependencies": {
         "@types/chai": "^4.3.4",
         "@types/chai-as-promised": "^7.1.5",
+        "@types/decompress": "^4.2.4",
         "@types/mocha": "^10.0.0",
         "chai": "^4.3.7",
         "chai-as-promised": "^7.1.1",
