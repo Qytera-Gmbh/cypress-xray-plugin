@@ -81,12 +81,12 @@ export class JWTCredentials extends APICredentials<JWTCredentialsOptions> {
                     client_secret: this.clientSecret,
                 })
                 .then((response: AxiosResponse) => {
-                    success("\tAuthentication successful.");
+                    success("Authentication successful.");
                     this.token = response.data;
                     return this.token;
                 })
                 .catch((error: AxiosError) => {
-                    throw new Error(`\tAuthentication failure: ${error}`);
+                    throw new Error(`Authentication failure: ${error}`);
                 });
         }
         return this.token;

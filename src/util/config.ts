@@ -116,7 +116,7 @@ function chooseUploader(env: Cypress.ObjectLike): Client<any> {
         );
     } else {
         throw new Error(
-            "Failed to configure Jira Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported.\n" +
+            "Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported.\n" +
                 "You can find all configurations that are currently supported at https://github.com/Qytera-Gmbh/cypress-xray-plugin#authentication"
         );
     }
@@ -124,9 +124,7 @@ function chooseUploader(env: Cypress.ObjectLike): Client<any> {
 
 class XrayUploadConfigurationError extends Error {
     constructor(message: string) {
-        super(
-            `Jira Xray upload plugin was not configured correctly: ${message}`
-        );
+        super(`Xray upload plugin was not configured correctly: ${message}`);
     }
 }
 

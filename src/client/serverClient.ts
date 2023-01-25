@@ -37,7 +37,7 @@ export class ServerClient extends Client<
             .then(async (header: HTTPHeader) => {
                 log(`Uploading test results to ${this.apiBaseURL} ...`);
                 const progressInterval = setInterval(() => {
-                    info("\tStill uploading...");
+                    info("Still uploading...");
                 }, 5000);
                 try {
                     const response = await Requests.post(
@@ -78,7 +78,7 @@ export class ServerClient extends Client<
         const header = await this.credentials.getAuthenticationHeader();
         log("Importing cucumber feature files...");
         const progressInterval = setInterval(() => {
-            info("\tStill importing...");
+            info("Still importing...");
         }, 5000);
         try {
             const fileContent = fs.createReadStream(file);

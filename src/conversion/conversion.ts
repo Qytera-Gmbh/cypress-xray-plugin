@@ -1,5 +1,6 @@
 import { basename } from "path";
 import { PLUGIN_CONTEXT } from "../context";
+import { warning } from "../logging/logging";
 import {
     dateTimeISO,
     XrayEvidenceItem,

@@ -29,7 +29,7 @@ export class CloudClient extends Client<JWTCredentials> {
             .then(async (header: HTTPHeader) => {
                 log("Uploading test results...");
                 const progressInterval = setInterval(() => {
-                    info("\tStill uploading...");
+                    info("Still uploading...");
                 }, 5000);
                 try {
                     const response = await axios.post<
@@ -69,7 +69,7 @@ export class CloudClient extends Client<JWTCredentials> {
         });
         log("Exporting cucumber tests...");
         const progressInterval = setInterval(() => {
-            info("\tStill exporting...");
+            info("Still exporting...");
         }, 5000);
         try {
             const response = await axios.get(
@@ -120,7 +120,7 @@ export class CloudClient extends Client<JWTCredentials> {
         });
         log("Importing cucumber feature files...");
         const progressInterval = setInterval(() => {
-            info("\tStill importing...");
+            info("Still importing...");
         }, 5000);
         try {
             const fileContent = fs.createReadStream(file);
