@@ -1,6 +1,6 @@
 {
     "name": "cypress-xray-plugin",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "A Cypress plugin for uploading test results to Jira Xray",
     "main": "src/client.js",
     "types": "src/client.d.ts",
