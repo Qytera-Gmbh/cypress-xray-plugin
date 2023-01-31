@@ -55,7 +55,10 @@ function addTestKeyIfPresent(
     if (!matches) {
         // Test case title does not contain the issue's key.
         // Maybe it was provided via Cucumber as a scenario tag?
-        if (testCaseTitle in PLUGIN_CONTEXT.cucumber.issues) {
+        if (
+            PLUGIN_CONTEXT.cucumber.issues &&
+            testCaseTitle in PLUGIN_CONTEXT.cucumber.issues
+        ) {
             json.testKey = PLUGIN_CONTEXT.cucumber.issues[testCaseTitle];
             return true;
         }

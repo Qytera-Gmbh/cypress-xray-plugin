@@ -2,19 +2,18 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { ENV_JIRA_PROJECT_KEY } from "../../../src/constants";
 import { PLUGIN_CONTEXT, setContext } from "../../../src/context";
 import { toXrayJSON } from "../../../src/conversion/conversion";
 import { PluginContext } from "../../../src/types/xray/plugin";
 import { XrayExecutionResults } from "../../../src/types/xray/xray";
-import { DummyClient, env, expectToExist } from "../helpers";
+import { DummyClient, expectToExist } from "../helpers";
 
 describe("the conversion function", () => {
     beforeEach(() => {
         const context: PluginContext = {
             client: new DummyClient(),
             jira: {
-                projectKey: env(ENV_JIRA_PROJECT_KEY),
+                projectKey: "CYP",
             },
             xray: {
                 testType: "Manual",
