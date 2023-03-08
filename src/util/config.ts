@@ -5,9 +5,10 @@ import {
     ENV_CUCUMBER_DOWNLOAD_FEATURES,
     ENV_CUCUMBER_FEATURE_FILE_EXTENSION,
     ENV_CUCUMBER_UPLOAD_FEATURES,
-    ENV_JIRA_EXECUTION_ISSUE_KEY,
     ENV_JIRA_PROJECT_KEY,
     ENV_JIRA_SERVER_URL,
+    ENV_JIRA_TEST_EXECUTION_ISSUE_KEY,
+    ENV_JIRA_TEST_PLAN_ISSUE_KEY,
     ENV_OPENSSL_ROOT_CA_PATH,
     ENV_OPENSSL_SECURE_OPTIONS,
     ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES,
@@ -21,7 +22,7 @@ import {
     ENV_XRAY_UPLOAD_RESULTS,
     ENV_XRAY_USERNAME,
 } from "../constants";
-import { initContext, PLUGIN_CONTEXT } from "../context";
+import { CONTEXT } from "../context";
 import {
     BasicAuthCredentials,
     JWTCredentials,
@@ -29,64 +30,68 @@ import {
 } from "../credentials";
 import { parseBoolean } from "./parsing";
 
-export function validateConfiguration(env: Cypress.ObjectLike): void {
-    if (!(ENV_JIRA_PROJECT_KEY in env)) {
-        throw new MissingEnvironmentVariableError(ENV_JIRA_PROJECT_KEY);
-    }
-    initContext({
-        client: chooseUploader(env),
-        projectKey: env[ENV_JIRA_PROJECT_KEY],
-    });
+export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
     // Jira.
-    if (ENV_JIRA_EXECUTION_ISSUE_KEY in env) {
-        PLUGIN_CONTEXT.jira.testExecutionKey =
-            env[ENV_JIRA_EXECUTION_ISSUE_KEY];
+    if (ENV_JIRA_PROJECT_KEY in env) {
+        CONTEXT.config.jira.projectKey = env[ENV_JIRA_PROJECT_KEY];
+    }
+    if (ENV_JIRA_SERVER_URL in env) {
+        CONTEXT.config.jira.serverUrl = env[ENV_JIRA_SERVER_URL];
+    }
+    if (ENV_JIRA_TEST_EXECUTION_ISSUE_KEY in env) {
+        CONTEXT.config.jira.testExecutionIssueKey =
+            env[ENV_JIRA_TEST_EXECUTION_ISSUE_KEY];
+    }
+    if (ENV_JIRA_TEST_PLAN_ISSUE_KEY in env) {
+        CONTEXT.config.jira.testPlanIssueKey =
+            env[ENV_JIRA_TEST_PLAN_ISSUE_KEY];
     }
     // Xray.
     if (ENV_XRAY_UPLOAD_RESULTS in env) {
-        PLUGIN_CONTEXT.xray.uploadResults = parseBoolean(
+        CONTEXT.config.xray.uploadResults = parseBoolean(
             env[ENV_XRAY_UPLOAD_RESULTS]
         );
     }
     if (ENV_XRAY_STATUS_PASSED in env) {
-        PLUGIN_CONTEXT.xray.statusPassed = env[ENV_XRAY_STATUS_PASSED];
+        CONTEXT.config.xray.statusPassed = env[ENV_XRAY_STATUS_PASSED];
     }
     if (ENV_XRAY_STATUS_FAILED in env) {
-        PLUGIN_CONTEXT.xray.statusFailed = env[ENV_XRAY_STATUS_FAILED];
+        CONTEXT.config.xray.statusFailed = env[ENV_XRAY_STATUS_FAILED];
     }
     // Cucumber.
     if (ENV_CUCUMBER_FEATURE_FILE_EXTENSION in env) {
-        PLUGIN_CONTEXT.cucumber.fileExtension =
+        CONTEXT.config.cucumber.featureFileExtension =
             env[ENV_CUCUMBER_FEATURE_FILE_EXTENSION];
     }
     if (ENV_CUCUMBER_UPLOAD_FEATURES in env) {
-        PLUGIN_CONTEXT.cucumber.uploadFeatures = parseBoolean(
+        CONTEXT.config.cucumber.uploadFeatures = parseBoolean(
             env[ENV_CUCUMBER_UPLOAD_FEATURES]
         );
     }
     if (ENV_CUCUMBER_DOWNLOAD_FEATURES in env) {
-        PLUGIN_CONTEXT.cucumber.downloadFeatures = parseBoolean(
+        CONTEXT.config.cucumber.downloadFeatures = parseBoolean(
             env[ENV_CUCUMBER_DOWNLOAD_FEATURES]
         );
     }
     // Plugin.
     if (ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY in env) {
-        PLUGIN_CONTEXT.config.overwriteIssueSummary = parseBoolean(
+        CONTEXT.config.plugin.overwriteIssueSummary = parseBoolean(
             env[ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY]
         );
     }
     if (ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES in env) {
-        PLUGIN_CONTEXT.config.normalizeScreenshotNames = parseBoolean(
+        CONTEXT.config.plugin.normalizeScreenshotNames = parseBoolean(
             env[ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES]
         );
     }
     // OpenSSL.
     if (ENV_OPENSSL_ROOT_CA_PATH in env) {
-        PLUGIN_CONTEXT.openSSL.rootCA = env[ENV_OPENSSL_ROOT_CA_PATH];
+        CONTEXT.config.openSSL.rootCAPath = env[ENV_OPENSSL_ROOT_CA_PATH];
     }
     if (ENV_OPENSSL_SECURE_OPTIONS in env) {
-        PLUGIN_CONTEXT.openSSL.secureOptions = env[ENV_OPENSSL_SECURE_OPTIONS];
+        CONTEXT.config.openSSL.secureOptions = env[ENV_OPENSSL_SECURE_OPTIONS];
     }
+    CONTEXT.client = chooseUploader(env);
 }
 
 function chooseUploader(env: Cypress.ObjectLike): Client<any> {
@@ -97,18 +102,18 @@ function chooseUploader(env: Cypress.ObjectLike): Client<any> {
                 env[ENV_XRAY_CLIENT_SECRET]
             )
         );
-    } else if (ENV_XRAY_API_TOKEN in env && ENV_JIRA_SERVER_URL in env) {
+    } else if (ENV_XRAY_API_TOKEN in env && CONTEXT.config.jira.serverUrl) {
         return new ServerClient(
-            env[ENV_JIRA_SERVER_URL],
+            CONTEXT.config.jira.serverUrl,
             new PATCredentials(env[ENV_XRAY_API_TOKEN])
         );
     } else if (
         ENV_XRAY_USERNAME in env &&
         ENV_XRAY_PASSWORD in env &&
-        ENV_JIRA_SERVER_URL in env
+        CONTEXT.config.jira.serverUrl
     ) {
         return new ServerClient(
-            env[ENV_JIRA_SERVER_URL],
+            CONTEXT.config.jira.serverUrl,
             new BasicAuthCredentials(
                 env[ENV_XRAY_USERNAME],
                 env[ENV_XRAY_PASSWORD]
@@ -119,17 +124,5 @@ function chooseUploader(env: Cypress.ObjectLike): Client<any> {
             "Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported.\n" +
                 "You can find all configurations that are currently supported at https://github.com/Qytera-Gmbh/cypress-xray-plugin#authentication"
         );
-    }
-}
-
-class XrayUploadConfigurationError extends Error {
-    constructor(message: string) {
-        super(`Xray upload plugin was not configured correctly: ${message}`);
-    }
-}
-
-class MissingEnvironmentVariableError extends XrayUploadConfigurationError {
-    constructor(variable: string) {
-        super(`environment variable '${variable}' was not set`);
     }
 }

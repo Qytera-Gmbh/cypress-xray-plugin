@@ -1,11 +1,22 @@
-import { PLUGIN_CONTEXT } from "./context";
+import { CONTEXT } from "./context";
 import { issuesByScenario } from "./cucumber/tagging";
 import { error, log } from "./logging/logging";
-import { validateConfiguration } from "./util/config";
+import { parseEnvironmentVariables } from "./util/config";
 import { parseFeatureFile } from "./util/parsing";
 
 export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
-    validateConfiguration(runDetails.config.env);
+    if (!CONTEXT) {
+        throw new Error(
+            "Xray plugin misconfiguration: no configuration found." +
+                " Make sure your project has been set up correctly: https://github.com/Qytera-Gmbh/cypress-xray-plugin#setup"
+        );
+    }
+    parseEnvironmentVariables(runDetails.config.env);
+    if (!CONTEXT.config.jira.projectKey) {
+        throw new Error(
+            "Xray plugin misconfiguration: Jira project key was not set"
+        );
+    }
 }
 
 export async function afterRunHook(
@@ -20,13 +31,13 @@ export async function afterRunHook(
         );
         return;
     }
-    if (!PLUGIN_CONTEXT.xray.uploadResults) {
+    if (!CONTEXT.config.xray.uploadResults) {
         log(
             "Skipping results upload: Plugin is configured to not upload test results."
         );
         return;
     }
-    await PLUGIN_CONTEXT.client.importExecutionResults(
+    await CONTEXT.client.importExecutionResults(
         results as CypressCommandLine.CypressRunResult
     );
 }
@@ -34,7 +45,7 @@ export async function afterRunHook(
 export async function filePreprocessorHook(
     file: Cypress.FileObject
 ): Promise<string> {
-    if (file.filePath.endsWith(PLUGIN_CONTEXT.cucumber.fileExtension)) {
+    if (file.filePath.endsWith(CONTEXT.config.cucumber.featureFileExtension)) {
         const relativePath = file.filePath.substring(
             file.filePath.indexOf("cypress")
         );
@@ -42,19 +53,19 @@ export async function filePreprocessorHook(
             // Extract tag information for later use, e.g. when uploading test
             // results to specific issues.
             const feature = parseFeatureFile(file.filePath).feature;
-            PLUGIN_CONTEXT.cucumber.issues = issuesByScenario(
+            CONTEXT.config.cucumber.issues = issuesByScenario(
                 feature,
-                PLUGIN_CONTEXT.jira.projectKey
+                CONTEXT.config.jira.projectKey
             );
-            if (PLUGIN_CONTEXT.cucumber.downloadFeatures) {
+            if (CONTEXT.config.cucumber.downloadFeatures) {
                 // TODO: download feature file from Xray.
                 throw new Error("feature not yet implemented");
             }
-            if (PLUGIN_CONTEXT.cucumber.uploadFeatures) {
+            if (CONTEXT.config.cucumber.uploadFeatures) {
                 log(`Synchronizing upstream Cucumber tests (${relativePath})`);
-                await PLUGIN_CONTEXT.client.importCucumberTests(
+                await CONTEXT.client.importCucumberTests(
                     file.filePath,
-                    PLUGIN_CONTEXT.jira.projectKey
+                    CONTEXT.config.jira.projectKey
                 );
             }
         } catch (e: unknown) {

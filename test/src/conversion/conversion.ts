@@ -2,16 +2,14 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { PLUGIN_CONTEXT, setContext } from "../../../src/context";
+import { CONTEXT, initContext } from "../../../src/context";
 import { toXrayJSON } from "../../../src/conversion/conversion";
-import { PluginContext } from "../../../src/types/xray/plugin";
 import { XrayExecutionResults } from "../../../src/types/xray/xray";
 import { DummyClient, expectToExist } from "../helpers";
 
 describe("the conversion function", () => {
     beforeEach(() => {
-        const context: PluginContext = {
-            client: new DummyClient(),
+        initContext({
             jira: {
                 projectKey: "CYP",
             },
@@ -20,12 +18,10 @@ describe("the conversion function", () => {
                 uploadResults: true,
             },
             cucumber: {
-                fileExtension: ".feature",
+                featureFileExtension: ".feature",
             },
-            config: {},
-            openSSL: {},
-        };
-        setContext(context);
+        });
+        CONTEXT.client = new DummyClient();
     });
 
     it("should be able to convert test results into Xray JSON", () => {
@@ -70,7 +66,8 @@ describe("the conversion function", () => {
                 "utf-8"
             )
         );
-        PLUGIN_CONTEXT.config.overwriteIssueSummary = true;
+        expectToExist(CONTEXT.config.plugin);
+        CONTEXT.config.plugin.overwriteIssueSummary = true;
         const json: XrayExecutionResults = toXrayJSON(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
@@ -105,11 +102,13 @@ describe("the conversion function", () => {
                 "utf-8"
             )
         );
-        PLUGIN_CONTEXT.config.normalizeScreenshotNames = true;
+        expectToExist(CONTEXT.config.plugin);
+        CONTEXT.config.plugin.normalizeScreenshotNames = true;
         const json: XrayExecutionResults = toXrayJSON(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(1);
         expect(json.tests[0].evidence).to.have.length(1);
+        expectToExist(json.tests[0].evidence);
         expect(json.tests[0].evidence[0].filename).to.eq(
             "t_rtle_with_problem_tic_name.png"
         );
@@ -119,8 +118,9 @@ describe("the conversion function", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        PLUGIN_CONTEXT.xray.statusPassed = "it worked";
-        PLUGIN_CONTEXT.xray.statusFailed = "it did not work";
+        expectToExist(CONTEXT.config.xray);
+        CONTEXT.config.xray.statusPassed = "it worked";
+        CONTEXT.config.xray.statusFailed = "it did not work";
         const json: XrayExecutionResults = toXrayJSON(result);
         expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("it worked");

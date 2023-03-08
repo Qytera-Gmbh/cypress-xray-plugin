@@ -1,5 +1,5 @@
 import { basename } from "path";
-import { PLUGIN_CONTEXT } from "../context";
+import { CONTEXT } from "../context";
 import {
     dateTimeISO,
     XrayEvidenceItem,
@@ -24,9 +24,9 @@ function truncateISOTime(time: dateTimeISO): string {
 function toXrayStatus(status: string): string {
     switch (status) {
         case "passed":
-            return PLUGIN_CONTEXT.xray.statusPassed || "PASSED";
+            return CONTEXT.config.xray.statusPassed || "PASSED";
         case "failed":
-            return PLUGIN_CONTEXT.xray.statusFailed || "FAILED";
+            return CONTEXT.config.xray.statusFailed || "FAILED";
         default:
             throw new Error(`Unknown status: ${status}`);
     }
@@ -34,7 +34,7 @@ function toXrayStatus(status: string): string {
 
 function normalizedFilename(filename: string): string {
     let normalizedFilename = basename(filename);
-    if (PLUGIN_CONTEXT.config.normalizeScreenshotNames) {
+    if (CONTEXT.config.plugin.normalizeScreenshotNames) {
         normalizedFilename = normalizedFilename.replaceAll(
             /[^\.a-zA-Z0-9]+/g,
             "_"
@@ -47,7 +47,7 @@ function addTestKeyIfPresent(
     json: XrayTest,
     testResult: CypressCommandLine.TestResult
 ): boolean {
-    const regex = new RegExp(`(${PLUGIN_CONTEXT.jira.projectKey}-\\d+)`, "g");
+    const regex = new RegExp(`(${CONTEXT.config.jira.projectKey}-\\d+)`, "g");
     // The last element usually refers to an individual test.
     // The ones before might be test suite titles.
     const testCaseTitle = testResult.title[testResult.title.length - 1];
@@ -56,10 +56,10 @@ function addTestKeyIfPresent(
         // Test case title does not contain the issue's key.
         // Maybe it was provided via Cucumber as a scenario tag?
         if (
-            PLUGIN_CONTEXT.cucumber.issues &&
-            testCaseTitle in PLUGIN_CONTEXT.cucumber.issues
+            CONTEXT.config.cucumber.issues &&
+            testCaseTitle in CONTEXT.config.cucumber.issues
         ) {
-            json.testKey = PLUGIN_CONTEXT.cucumber.issues[testCaseTitle];
+            json.testKey = CONTEXT.config.cucumber.issues[testCaseTitle];
             return true;
         }
         return false;
@@ -81,7 +81,7 @@ function toXrayTest(testResult: CypressCommandLine.TestResult): XrayTest {
     };
     if (
         !addTestKeyIfPresent(json, testResult) ||
-        PLUGIN_CONTEXT.config.overwriteIssueSummary
+        CONTEXT.config.plugin.overwriteIssueSummary
     ) {
         json.testInfo = toXrayTestInfo(testResult);
     }
@@ -125,9 +125,9 @@ function toXrayTestInfo(
     testResult: CypressCommandLine.TestResult
 ): XrayTestInfo {
     return {
-        projectKey: PLUGIN_CONTEXT.jira.projectKey,
+        projectKey: CONTEXT.config.jira.projectKey,
         summary: testResult.title.join(" "),
-        type: PLUGIN_CONTEXT.xray.testType,
+        type: CONTEXT.config.xray.testType,
     };
 }
 
@@ -177,14 +177,14 @@ export function toXrayJSON(
 ): XrayExecutionResults {
     const json: XrayExecutionResults = {
         info: {
-            project: PLUGIN_CONTEXT.jira.projectKey,
+            project: CONTEXT.config.jira.projectKey,
             startDate: truncateISOTime(results.startedTestsAt),
             finishDate: truncateISOTime(results.endedTestsAt),
             description: getDescription(results),
             summary: getSummary(results),
         },
     };
-    json.testExecutionKey = PLUGIN_CONTEXT.jira.testExecutionKey;
+    json.testExecutionKey = CONTEXT.config.jira.testExecutionIssueKey;
     results.runs.forEach((specResult: CypressCommandLine.RunResult) => {
         specResult.tests.forEach(
             (testResult: CypressCommandLine.TestResult) => {
