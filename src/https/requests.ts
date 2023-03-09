@@ -1,7 +1,7 @@
 import axios, { AxiosResponse, RawAxiosRequestConfig } from "axios";
 import { readFileSync } from "fs";
 import { Agent } from "https";
-import { PLUGIN_CONTEXT } from "../context";
+import { CONTEXT } from "../context";
 
 export class Requests {
     private static AGENT: Agent = undefined;
@@ -9,16 +9,17 @@ export class Requests {
     private static agent(): Agent {
         if (!Requests.AGENT) {
             Requests.AGENT = new Agent({
-                ca: PLUGIN_CONTEXT.openSSL.rootCA
-                    ? Requests.readCertificate(PLUGIN_CONTEXT.openSSL.rootCA)
-                    : undefined,
-                secureOptions: PLUGIN_CONTEXT.openSSL.secureOptions,
+                ca: Requests.readCertificate(CONTEXT.config.openSSL.rootCAPath),
+                secureOptions: CONTEXT.config.openSSL.secureOptions,
             });
         }
         return Requests.AGENT;
     }
 
-    private static readCertificate(path: string): Buffer {
+    private static readCertificate(path?: string): Buffer {
+        if (!path) {
+            return undefined;
+        }
         return readFileSync(path);
     }
 

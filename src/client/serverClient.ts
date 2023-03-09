@@ -1,4 +1,4 @@
-import axios from "axios";
+import { isAxiosError } from "axios";
 import FormData from "form-data";
 import fs from "fs";
 import {
@@ -7,7 +7,7 @@ import {
     PATCredentials,
 } from "../credentials";
 import { Requests } from "../https/requests";
-import { info, log, success } from "../logging/logging";
+import { error, info, log, success } from "../logging/logging";
 import {
     ExportCucumberTestsResponse,
     ImportCucumberTestsResponse,
@@ -54,9 +54,25 @@ export class ServerClient extends Client<
                         JSON.stringify(response.data)
                     );
                     return response.data;
-                } catch (error: unknown) {
+                } catch (e: unknown) {
+                    let errorFileName = "importExecutionResultsError.log";
+                    if (isAxiosError(e)) {
+                        errorFileName = "importExecutionResultsError.json";
+                        fs.writeFileSync(
+                            errorFileName,
+                            JSON.stringify({
+                                error: e.toJSON(),
+                                response: e.response.data,
+                            })
+                        );
+                    } else {
+                        fs.writeFileSync(errorFileName, JSON.stringify(e));
+                    }
+                    error(
+                        `Upload failed. Complete error logs have been written to "${errorFileName}".`
+                    );
                     throw new Error(
-                        `Failed to upload results to Xray: "${error}"`
+                        `Failed to upload results to Xray: "${e}".`
                     );
                 } finally {
                     clearInterval(progressInterval);
@@ -117,14 +133,25 @@ export class ServerClient extends Client<
                 );
             }
             return response.data;
-        } catch (error: unknown) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(
-                    `Failed to import cucumber feature files into Xray: "${error.response.data.error}"`
+        } catch (e: unknown) {
+            let errorFileName = "importCucumberTestsError.log";
+            if (isAxiosError(e)) {
+                errorFileName = "importCucumberTestsError.json";
+                fs.writeFileSync(
+                    errorFileName,
+                    JSON.stringify({
+                        error: e.toJSON(),
+                        response: e.response.data,
+                    })
                 );
+            } else {
+                fs.writeFileSync(errorFileName, JSON.stringify(e));
             }
+            error(
+                `Failed to import cucumber feature files into Xray. Complete error logs have been written to "${errorFileName}".`
+            );
             throw new Error(
-                `Failed to import cucumber feature files into Xray: "${error}"`
+                `Failed to import cucumber feature files into Xray: "${e}"`
             );
         } finally {
             clearInterval(progressInterval);
