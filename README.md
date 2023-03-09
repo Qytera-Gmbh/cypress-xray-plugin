@@ -201,80 +201,116 @@ In order to upload the results, some Jira configuration is mandatory.
 
 #### Mandatory Settings
 
-<table>
-  <thead>
-    <tr>
-      <td><b>Option</b></th>
-      <td><b>Environment Variable</b></th>
-      <td><b>Valid Values</b></th>
-      <td><b>Example</b></th>
-      <td><b>Description</b></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>projectKey<a name="projectKey"></a></code></td>
-      <td><code>JIRA_PROJECT_KEY</code></td>
-      <td><code>string</code></td>
-      <td><code>"CYP"</code></td>
-      <td>
-        The key of the Jira project.
-        This option is mandatory since otherwise Xray would not know which project to save the results to.
-        It is used in many places throughout the plugin, for example for mapping Cypress tests to existing test issues in Xray (see <a href="https://github.com/cypress-xray-plugin/TODO">targeting existing test issues</a>).
-      </td>
-    </tr>
-  </tbody>
-</table>
+<dl>
+  <dt><code>projectKey<a name="projectKey"></a></code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          The key of the Jira project.
+          This option is mandatory since otherwise Xray would not know which project to save the results to.
+          It is used in many places throughout the plugin, for example for mapping Cypress tests to existing test issues in Xray (see <a href="https://github.com/cypress-xray-plugin/TODO">targeting existing test issues</a>).
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>JIRA_PROJECT_KEY</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code>string</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>"CYP"</code>
+        </dd>
+    </dl>
+  </dd>
+</dl>
 
 #### Optional Settings
 
-<table>
-  <thead>
-    <tr>
-      <td><b>Option</b></th>
-      <td><b>Environment Variable</b></th>
-      <td><b>Valid Values</b></th>
-      <td><b>Default</b></th>
-      <td><b>Example</b></th>
-      <td><b>Description</b></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>serverUrl</code></td>
-      <td><code>JIRA_SERVER_URL</code></td>
-      <td><code>string</code></td>
-      <td><code>undefined</code></td>
-      <td><code>"https://example.org/development/jira"</code></td>
-      <td>
-        When using a server-based Jira/Xray instance, use this parameter to specify the URL of your instance.
-      </td>
-    </tr>
-    <tr>
-      <td><code>testExecutionIssueKey</code></td>
-      <td><code>JIRA_TEST_EXECUTION_ISSUE_KEY</code></td>
-      <td><code>string</code></td>
-      <td><code>undefined</code></td>
-      <td><code>"CYP-123"</code></td>
-      <td>
-        The key of the test execution issue to attach the run results to.
-        If undefined, Jira will always create a new test execution issue with each upload.
-        <br/><b>Note</b>: must be prefixed with the <a href="#projectKey">project key</a>.
-      </td>
-    </tr>
-    <tr>
-      <td><code>testPlanIssueKey</code></td>
-      <td><code>JIRA_TEST_PLAN_ISSUE_KEY</code></td>
-      <td><code>string</code></td>
-      <td><code>undefined</code></td>
-      <td><code>"CYP-456"</code></td>
-      <td>
-        A test plan issue key to attach the execution to.
-        <br/><b>Note</b>: must be prefixed with the <a href="#projectKey">project key</a>.
-      </td>
-    </tr>
-  </tbody>
-</table>
+<dl>
+  <dt><code>serverUrl</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          When using a server-based Jira/Xray instance, use this parameter to specify the URL of your instance.
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>JIRA_SERVER_URL</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code>string</code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>undefined</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>"https://example.org/development/jira"</code>
+        </dd>
+    </dl>
+  </dd>
+  <dt><code>testExecutionIssueKey</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          The key of the test execution issue to attach the run results to.
+          If undefined, Jira will always create a new test execution issue with each upload.
+          <br/>
+          <b>Note</b>: must be prefixed with the <a href="#projectKey">project key</a>.
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>JIRA_TEST_EXECUTION_ISSUE_KEY</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code>string</code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>undefined</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>"CYP-123"</code>
+        </dd>
+    </dl>
+  </dd>
+  <dt><code>testPlanIssueKey</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          A test plan issue key to attach the execution to.
+          <br/>
+          <b>Note</b>: must be prefixed with the <a href="#projectKey">project key</a>.
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>JIRA_TEST_PLAN_ISSUE_KEY</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code>string</code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>undefined</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>"CYP-456"</code>
+        </dd>
+    </dl>
+  </dd>
+</dl>
 
 ### Xray Configuration
 
@@ -282,61 +318,111 @@ You can also provide a bunch of Xray settings which might become necessary depen
 
 #### Optional Settings
 
-<table>
-  <thead>
-    <tr>
-      <td><b>Option</b></th>
-      <td><b>Environment Variable</b></th>
-      <td><b>Valid Values</b></th>
-      <td><b>Default</b></th>
-      <td><b>Example</b></th>
-      <td><b>Description</b></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>uploadResults</code></td>
-      <td><code>XRAY_UPLOAD_RESULTS</code></td>
-      <td><code><a href="#custom-option-types">boolean</a></code></td>
-      <td><code>true</code></td>
-      <td><code>false</code></td>
-      <td>Turns execution results upload on or off.</td>
-    </tr>
-    <tr>
-      <td><code>statusPassed</code></td>
-      <td><code>XRAY_STATUS_PASSED</code></td>
-      <td><code>string</code></td>
-      <td><code>"PASSED"</code></td>
-      <td><code>"SUCCESS"</code></td>
-      <td>
-        The status name of a test marked as passed in Xray.
-        Should be used when custom status names have been setup in Xray.
-      </td>
-    </tr>
-    <tr>
-      <td><code>statusFailed</code></td>
-      <td><code>XRAY_STATUS_FAILED</code></td>
-      <td><code>string</code></td>
-      <td><code>"FAILED"</code></td>
-      <td><code>"FAILURE"</code></td>
-      <td>
-        The status name of a test marked as failed in Xray.
-        Should be used when custom status names have been setup in Xray.
-      </td>
-    </tr>
-    <tr>
-      <td><code>testType</code></td>
-      <td><code>XRAY_TEST_TYPE</code></td>
-      <td><code>string</code></td>
-      <td><code>"Manual"</code></td>
-      <td><code>"Cucumber"</code></td>
-      <td>
-        The test type of the test issues.
-        This option will be used to set the corresponding field on Xray issues created during upload (happens when a test does not yet have a corresponding Xray issue).
-      </td>
-    </tr>
-  </tbody>
-</table>
+<dl>
+  <dt><code>uploadResults</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          Turns execution results upload on or off.
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>XRAY_UPLOAD_RESULTS</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code><a href="#custom-option-types">boolean</a></code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>true</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>false</code>
+        </dd>
+    </dl>
+  </dd>
+  <dt><code>statusPassed</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          The status name of a test marked as passed in Xray.
+          Should be used when custom status names have been setup in Xray.
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>XRAY_STATUS_PASSED</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code>string</code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>"PASSED"</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>"SUCCESS"</code>
+        </dd>
+    </dl>
+  </dd>
+  <dt><code>statusFailed</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          The status name of a test marked as failed in Xray.
+          Should be used when custom status names have been setup in Xray.
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>XRAY_STATUS_FAILED</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code>string</code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>"FAILED"</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>"FAILURE"</code>
+        </dd>
+    </dl>
+  </dd>
+  <dt><code>testType</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          The test type of the test issues.
+          This option will be used to set the corresponding field on Xray issues created during upload (happens when a test does not yet have a corresponding Xray issue).
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>XRAY_TEST_TYPE</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code>string</code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>"Manual"</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>"Cucumber"</code>
+        </dd>
+    </dl>
+  </dd>
+</dl>
 
 ### Cucumber Configuration
 
@@ -344,56 +430,90 @@ When Cucumber is enabled, you can use the following options to configure the way
 
 #### Optional Settings
 
-<table>
-  <thead>
-    <tr>
-      <td><b>Option</b></th>
-      <td><b>Environment Variable</b></th>
-      <td><b>Valid Values</b></th>
-      <td><b>Default</b></th>
-      <td><b>Example</b></th>
-      <td><b>Description</b></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>featureFileExtension</code></td>
-      <td><code>CUCUMBER_FEATURE_FILE_EXTENSION</code></td>
-      <td><code>string</code></td>
-      <td><code>".feature"</code></td>
-      <td><code>".cucumber"</code></td>
-      <td>
-        The file extension of feature files you want to run in Cypress.
-        The plugin will use this to parse all matching files with to extract any tags contained within them.
-        Such tags are needed to identify to which test issue a feature file belongs (see <a href="https://github.com/cypress-xray-plugin/TODO">targeting existing test issues with Cucumber</a>).
-      </td>
-    </tr>
-    <tr>
-      <td><code>uploadFeatures</code></td>
-      <td><code>CUCUMBER_UPLOAD_FEATURES</code></td>
-      <td><code><a href="#custom-option-types">boolean</a></code></td>
-      <td><code>false</code></td>
-      <td><code>true</code></td>
-      <td>
-        Set it to true to automatically create or update existing Xray issues (summary, steps), based on the feature file executed by Cypress.
-        <br/><b>Note</b>: Enable this option if the source of truth for test cases are local feature files in Cypress and Xray is only used for tracking execution status/history.
-      </td>
-    </tr>
-<!-- upcoming feature
-    <tr>
-      <td><code>downloadFeatures</code></td>
-      <td><code>CUCUMBER_DOWNLOAD_FEATURES</code></td>
-      <td><code><a href="#custom-option-types">boolean</a></code></td>
-      <td><code>false</code></td>
-      <td><code>true</code></td>
-      <td>
-        Set it to true to automatically download feature files from Xray for Cypress to execute.
-        <br/><b>Note</b>: Enable this option if the source of truth for test cases are step definitions in Xray and Cypress is only used for running tests.
-      </td>
-    </tr>
--->
-  </tbody>
-</table>
+<dl>
+  <dt><code>featureFileExtension</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          The file extension of feature files you want to run in Cypress.
+          </br>
+          The plugin will use this to parse all matching files to extract any tags contained within them.
+          Such tags are needed to identify to which test issue a feature file belongs (see <a href="https://github.com/cypress-xray-plugin/TODO">targeting existing test issues with Cucumber</a>).
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>CUCUMBER_FEATURE_FILE_EXTENSION</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code>string</code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>".feature"</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>".cucumber"</code>
+        </dd>
+    </dl>
+  </dd>
+  <dt><code>uploadFeatures</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          Set it to true to automatically create or update existing Xray issues (summary, steps), based on the feature file executed by Cypress.
+          <br/>
+          <b>Note</b>: Enable this option if the source of truth for test cases are local feature files in Cypress and Xray is only used for tracking execution status/history.
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>CUCUMBER_UPLOAD_FEATURES</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code><a href="#custom-option-types">boolean</a></code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>false</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>true</code>
+        </dd>
+    </dl>
+  </dd>
+  <dt>(upcoming) <code>downloadFeatures</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          Set it to true to automatically download feature files from Xray for Cypress to execute.
+          <br/>
+          <b>Note</b>: Enable this option if the source of truth for test cases are step definitions in Xray and Cypress is only used for running tests.
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>CUCUMBER_DOWNLOAD_FEATURES</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code><a href="#custom-option-types">boolean</a></code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>false</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>true</code>
+        </dd>
+    </dl>
+  </dd>
+</dl>
 
 ### Plugin Configuration
 
@@ -401,41 +521,59 @@ The plugin offers several options for customizing the upload further.
 
 #### Optional Settings
 
-<table>
-  <thead>
-    <tr>
-      <td><b>Option</b></th>
-      <td><b>Environment Variable</b></th>
-      <td><b>Valid Values</b></th>
-      <td><b>Default</b></th>
-      <td><b>Example</b></th>
-      <td><b>Description</b></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>overwriteIssueSummary</code></td>
-      <td><code>PLUGIN_OVERWRITE_ISSUE_SUMMARY</code></td>
-      <td><code><a href="#custom-option-types">boolean</a></code></td>
-      <td><code>false</code></td>
-      <td><code>true</code></td>
-      <td>
-        Decide whether to keep the issues' existing summaries or whether to overwrite them with each upload.
-      </td>
-    </tr>
-    <tr>
-      <td><code>normalizeScreenshotNames</code></td>
-      <td><code>PLUGIN_NORMALIZE_SCREENSHOT_NAMES</code></td>
-      <td><code><a href="#custom-option-types">boolean</a></code></td>
-      <td><code>false</code></td>
-      <td><code>true</code></td>
-      <td>
-        Some Xray setups might struggle with uploaded evidence if the filenames contain non-ASCII characters.
-        With this option enabled, the plugin only allows characters <code>a-zA-Z0-9.</code> in screenshot names and replaces all other sequences with <code>_</code>.
-      </td>
-    </tr>
-  </tbody>
-</table>
+<dl>
+  <dt><code>overwriteIssueSummary</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          Decide whether to keep the issues' existing summaries or whether to overwrite them with each upload.
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>PLUGIN_OVERWRITE_ISSUE_SUMMARY</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code><a href="#custom-option-types">boolean</a></code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>false</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>true</code>
+        </dd>
+    </dl>
+  </dd>
+  <dt><code>normalizeScreenshotNames</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          Some Xray setups might struggle with uploaded evidence if the filenames contain non-ASCII characters.
+          With this option enabled, the plugin only allows characters <code>a-zA-Z0-9.</code> in screenshot names and replaces all other sequences with <code>_</code>.
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>PLUGIN_NORMALIZE_SCREENSHOT_NAMES</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code><a href="#custom-option-types">boolean</a></code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>false</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>true</code>
+        </dd>
+    </dl>
+  </dd>
+</dl>
 
 ### OpenSSL Configuration
 
@@ -445,58 +583,44 @@ The plugin offers several options for customizing the upload further.
 Sometimes it is necessary to configure OpenSSL if your Jira Xray instance sits behind a proxy or uses dedicated root certificates that aren't available by default.
 In this case, you can set the following options prior to running your Cypress tests to configure the plugin's internal OpenSSL setup:
 
-<table>
-  <thead>
-    <tr>
-      <td><b>Option</b></th>
-      <td><b>Environment Variable</b></th>
-      <td><b>Valid Values</b></th>
-      <td><b>Default</b></th>
-      <td><b>Example</b></th>
-      <td><b>Description</b></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>rootCAPath</code></td>
-      <td><code>OPENSSL_ROOT_CA_PATH</code></td>
-      <td><code>string</code></td>
-      <td><code>undefined</code></td>
-      <td><code>"/home/cert.pem"</code></td>
-      <td>
-        Specify the path to a root CA in <code>.pem</code> format.
-        This will then be used during authentication against & communication with the Xray instance.
-      </td>
-    </tr>
-    <tr>
-      <td><code>secureOptions</code></td>
-      <td><code>OPENSSL_SECURE_OPTIONS</code></td>
-      <td><code>number</code></td>
-      <td><code>undefined</code></td>
-<td>
-Simply a number like <code>4</code>, or more readable:
-
-```js
-import { constants } from "crypto";
-// ...
-openSSL: {
-    secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT;
-}
-// ...
-```
-
-</td>
-      <td>
-        A <a href="https://nodejs.org/api/crypto.html#crypto-constants">crypto constant</a> (see below) that will be used to configure the <code>securityOptions</code> of the <a href="https://nodejs.org/api/https.html#class-httpsagent">https.Agent</a> used for sending requests to your Xray instance.
-        <br/><b>Note</b>: Compute their bitwise OR if you need to set more than one option.
-      </td>
-    </tr>
-  </tbody>
-</table>
-
+<dl>
+  <dt><code>rootCAPath</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          Specify the path to a root CA in <code>.pem</code> format.
+          This will then be used during authentication against & communication with the Xray instance.
+        </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>OPENSSL_ROOT_CA_PATH</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code>string</code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>undefined</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>"/home/cert.pem"</code>
+        </dd>
+    </dl>
+  </dd>
+  <dt><code>secureOptions</code></dt>
+  <dd>
+    <dl>
+        <dt><b><i>Description</i></b></dt>
+        <dd>
+          A <a href="https://nodejs.org/api/crypto.html#crypto-constants">crypto constant</a> (see list below) that will be used to configure the <code>securityOptions</code> of the <a href="https://nodejs.org/api/https.html#class-httpsagent">https.Agent</a> used for sending requests to your Xray instance.
+          <br/>
+          <b>Note</b>: Compute their bitwise OR if you need to set more than one option.
+          <br/>
 <details>
 <summary>List of Security Options</summary>
-
 This list of OpenSSL security option constants can be obtained by running the following code in a node environment:
 
 ```js
@@ -579,6 +703,39 @@ console.log(constants);
 | `POINT_CONVERSION_HYBRID`                       | 6          |
 
 </details>
+    </dd>
+        <dt><b><i>Environment variable</i></b></dt>
+        <dd>
+          <code>OPENSSL_SECURE_OPTIONS</code>
+        </dd>
+        <dt><b><i>Type</i></b></dt>
+        <dd>
+          <code>number</code>
+        </dd>
+        <dt><b><i>Default</i></b></dt>
+        <dd>
+          <code>undefined</code>
+        </dd>
+        <dt><b><i>Example</i></b></dt>
+        <dd>
+          <code>262148</code>
+          <br/>
+          Or more readable:
+
+```js
+import { constants } from "crypto";
+// ...
+openSSL: {
+    secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT |
+        constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+}
+// ...
+```
+
+</dd>
+    </dl>
+  </dd>
+</dl>
 
 ### Custom Option Types
 
