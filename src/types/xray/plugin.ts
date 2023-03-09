@@ -42,7 +42,7 @@ export interface JiraOptions {
 
 export interface XrayOptions {
     /**
-     * Turn execution results upload on or off.
+     * Turns execution results upload on or off.
      */
     uploadResults: boolean;
     /**
@@ -60,7 +60,10 @@ export interface XrayOptions {
      */
     statusFailed?: string;
     /**
-     * The test type of the test issues.
+     * The test type of the test issues. This option will be used to set the
+     * corresponding field on issues created during upload (happens when a test
+     * does not yet have a corresponding Xray issue).
+     * issue
      *
      * @example "Manual"
      */
@@ -70,16 +73,17 @@ export interface XrayOptions {
 export interface CucumberOptions {
     /**
      * The file extension of feature files you want to run in Cypress. The
-     * plugin will use this to parse or synchronize all matching files with
-     * Xray. This includes both step definitions and the extraction of any tags
-     * contained withing the feature file that could be used to attach test
-     * execution results to the test (execution) issue.
+     * plugin will use this to parse all matching files with to extract any
+     * tags contained within them. Such tags are needed to identify to which
+     * test issue a feature file belongs.
      *
      * @example ".cy.feature"
      */
     featureFileExtension: string;
     /**
-     * A mapping of scenario titles to Xray issue keys.
+     * A mapping of scenario titles to Xray issue keys. It is recommended to add
+     * tags containing the issue key to your scenarios instead of manually
+     * defining to which issue a scenario belongs.
      *
      * @example
      *   '@PRJ-1234'
@@ -94,35 +98,35 @@ export interface CucumberOptions {
         [key: string]: string;
     };
     /**
-     * Set it to true to automatically create or update existing Xray
-     * issues (summary, steps), based on the feature file executed by
-     * Cypress.
+     * Set it to true to automatically create or update existing Xray issues
+     * (summary, steps), based on the feature file executed by Cypress.
      *
-     * Note: Enable this option if the source of truth for test cases
-     * are your local feature files in Cypress and Xray is only used for
-     * tracking execution status/history.
+     * Note: Enable this option if the source of truth for test cases are local
+     * feature files in Cypress and Xray is only used for tracking execution
+     * status/history.
      */
     uploadFeatures?: boolean;
     /**
      * Set it to true to automatically download feature files from Xray for
      * Cypress to execute.
      *
-     * Note: Enable this option if the source of truth for test cases are the
-     * step definitions in Xray and Cypress is only used for running tests.
+     * Note: Enable this option if the source of truth for test cases are step
+     * definitions in Xray and Cypress is only used for running tests.
      */
     downloadFeatures?: boolean;
 }
 
 export interface PluginOptions {
     /**
-     * Decide whether to keep the issues' existing summaries or whether
-     * to overwrite them with each upload.
+     * Decide whether to keep the issues' existing summaries or whether to
+     * overwrite them with each upload.
      */
     overwriteIssueSummary?: boolean;
     /**
-     * With this option enabled, the plugin only allows characters
-     * `a-zA-Z0-9.` in screenshot names and replaces all other sequences
-     * with `_`.
+     * Some Xray setups might struggle with uploaded evidence if the filenames
+     * contain non-ASCII characters. With this option enabled, the plugin only
+     * allows characters `a-zA-Z0-9.` in screenshot names and replaces all
+     * other sequences with `_`.
      */
     normalizeScreenshotNames?: boolean;
 }
