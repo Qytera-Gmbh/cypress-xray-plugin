@@ -9,5 +9,7 @@ export function getTestDir(dirName: string): string {
 
 // Clean up temporary directory at the end of all tests.
 after(async () => {
-    fs.rmSync(TEST_TMP_DIR, { recursive: true });
+    if (fs.existsSync(TEST_TMP_DIR)) {
+        fs.rmSync(TEST_TMP_DIR, { recursive: true });
+    }
 });
