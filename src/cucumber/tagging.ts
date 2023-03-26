@@ -1,11 +1,13 @@
 import { Feature, FeatureChild, Scenario } from "@cucumber/messages";
-import { warning } from "../logging/logging";
+import { info, warning } from "../logging/logging";
 
 function issueTagOf(
     scenario: Scenario,
     projectKey: string
 ): string | undefined {
-    const regex = new RegExp(`@(${projectKey}-\\d+)`);
+    // Xray cloud: @TestName:CYP-123
+    // Xray server: @CYP-123
+    const regex = new RegExp(`@(?:TestName:)?(${projectKey}-\\d+)`);
     const issueKeys: string[] = [];
     for (const tag of scenario.tags) {
         const matches = tag.name.match(regex);
@@ -17,7 +19,9 @@ function issueTagOf(
             issueKeys.push(matches[1]);
         }
     }
-    if (issueKeys.length === 1) {
+    if (issueKeys.length === 0) {
+        info(`No issue keys found in tags of scenario "${scenario.name}.`);
+    } else if (issueKeys.length === 1) {
         return issueKeys[0];
     } else {
         warning(
@@ -64,7 +68,12 @@ export function issuesByScenario(
 ): { [key: string]: string } {
     const issues: { [key: string]: string } = {};
     feature.children.map((child: FeatureChild) => {
-        issues[child.scenario.name] = issueTagOf(child.scenario, projectKey);
+        if (child.scenario) {
+            issues[child.scenario.name] = issueTagOf(
+                child.scenario,
+                projectKey
+            );
+        }
     });
     return issues;
 }
