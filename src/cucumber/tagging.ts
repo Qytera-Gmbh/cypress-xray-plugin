@@ -5,7 +5,9 @@ function issueTagOf(
     scenario: Scenario,
     projectKey: string
 ): string | undefined {
-    const regex = new RegExp(`@(${projectKey}-\\d+)`);
+    // Xray cloud: @TestName:CYP-123
+    // Xray server: @CYP-123
+    const regex = new RegExp(`@(?:TestName:)?(${projectKey}-\\d+)`);
     const issueKeys: string[] = [];
     for (const tag of scenario.tags) {
         const matches = tag.name.match(regex);
