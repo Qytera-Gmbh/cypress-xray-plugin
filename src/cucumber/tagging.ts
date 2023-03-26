@@ -66,7 +66,12 @@ export function issuesByScenario(
 ): { [key: string]: string } {
     const issues: { [key: string]: string } = {};
     feature.children.map((child: FeatureChild) => {
-        issues[child.scenario.name] = issueTagOf(child.scenario, projectKey);
+        if (child.scenario) {
+            issues[child.scenario.name] = issueTagOf(
+                child.scenario,
+                projectKey
+            );
+        }
     });
     return issues;
 }
