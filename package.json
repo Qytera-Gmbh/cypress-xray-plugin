@@ -1,6 +1,6 @@
 {
     "name": "cypress-xray-plugin",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "A Cypress plugin for uploading test results to Jira Xray",
     "main": "src/client.js",
     "types": "src/client.d.ts",
@@ -13,7 +13,7 @@
     "bugs": {
         "url": "https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues"
     },
-    "homepage": "https://github.com/Qytera-Gmbh/cypress-xray-plugin#readme",
+    "homepage": "https://qytera-gmbh.github.io/projects/cypress-xray-plugin",
     "keywords": [
         "cypress",
         "xray",
