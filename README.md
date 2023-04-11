@@ -4,6 +4,8 @@
 	<img width="512" src="logo.svg" alt="Cypress Xray Plugin">
 	<br>
 	<br>
+	<img src=https://img.shields.io/npm/v/cypress-xray-plugin?style=flat-square alt="npm version">
+	<img src=https://img.shields.io/npm/dm/cypress-xray-plugin?style=flat-square alt="npm downloads">
 </h1>
 
 # Cypress Xray Plugin
