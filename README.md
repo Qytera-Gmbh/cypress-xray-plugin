@@ -4,8 +4,12 @@
 	<img width="512" src="logo.svg" alt="Cypress Xray Plugin">
 	<br>
 	<br>
-	<img src=https://img.shields.io/npm/v/cypress-xray-plugin?style=flat-square alt="npm version">
-	<img src=https://img.shields.io/npm/dm/cypress-xray-plugin?style=flat-square alt="npm downloads">
+	<a href="https://www.npmjs.com/package/cypress-xray-plugin">
+	    <img src=https://img.shields.io/npm/v/cypress-xray-plugin?style=flat-square alt="npm version">
+	</a>
+	<a href="https://www.npmjs.com/package/cypress-xray-plugin">
+	    <img src=https://img.shields.io/npm/dm/cypress-xray-plugin?style=flat-square alt="npm downloads">
+	</a>
 </h1>
 
 # Cypress Xray Plugin
