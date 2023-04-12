@@ -1,0 +1,29 @@
+name: Publish Package to npmjs
+# see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages#publishing-packages-to-the-npm-registry
+
+on:
+  release:
+    types: ["published"]
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: "npm"
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      # Run tests again to ensure quality.
+      - run: npm test
+      # Compile Typescript code to vanilla JavaScript + type declarations.
+      - run: npm run build
+      # Prepare package inside the build directory.
+      - run: npx shx cp package.json README.md LICENSE.md dist/
+      # Publish from inside the build directory.
+      - run: npm publish
+        working-directory: dist
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
