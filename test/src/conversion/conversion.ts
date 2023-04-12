@@ -75,7 +75,7 @@ describe("the conversion function", () => {
         CONTEXT.config.jira.testPlanIssueKey = "CYP-123";
         const json: XrayExecutionResults = toXrayJSON(result);
         expectToExist(json.info);
-        expect(json.info?.testPlanKey).to.eq("CYP-123");
+        expect(json.info.testPlanKey).to.eq("CYP-123");
     });
 
     it("should not add test execution issue keys on its own", () => {
