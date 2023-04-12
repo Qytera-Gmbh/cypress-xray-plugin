@@ -176,15 +176,16 @@ export function toXrayJSON(
     results: CypressCommandLine.CypressRunResult
 ): XrayExecutionResults {
     const json: XrayExecutionResults = {
+        testExecutionKey: CONTEXT.config.jira.testExecutionIssueKey,
         info: {
             project: CONTEXT.config.jira.projectKey,
             startDate: truncateISOTime(results.startedTestsAt),
             finishDate: truncateISOTime(results.endedTestsAt),
             description: getDescription(results),
             summary: getSummary(results),
+            testPlanKey: CONTEXT.config.jira.testPlanIssueKey,
         },
     };
-    json.testExecutionKey = CONTEXT.config.jira.testExecutionIssueKey;
     results.runs.forEach((specResult: CypressCommandLine.RunResult) => {
         specResult.tests.forEach(
             (testResult: CypressCommandLine.TestResult) => {

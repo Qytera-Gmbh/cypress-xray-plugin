@@ -4,19 +4,53 @@ import { error, log } from "./logging/logging";
 import { parseEnvironmentVariables } from "./util/config";
 import { parseFeatureFile } from "./util/parsing";
 
-export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
-    if (!CONTEXT) {
-        throw new Error(
-            "Xray plugin misconfiguration: no configuration found." +
-                " Make sure your project has been set up correctly: https://github.com/Qytera-Gmbh/cypress-xray-plugin#setup"
-        );
-    }
-    parseEnvironmentVariables(runDetails.config.env);
-    if (!CONTEXT.config.jira.projectKey) {
+function verifyProjectKey(projectKey?: string) {
+    if (!projectKey) {
         throw new Error(
             "Xray plugin misconfiguration: Jira project key was not set"
         );
     }
+}
+
+function verifyTestExecutionIssueKey(
+    projectKey: string,
+    testExecutionIssueKey?: string
+) {
+    if (
+        testExecutionIssueKey &&
+        !testExecutionIssueKey.startsWith(projectKey)
+    ) {
+        throw new Error(
+            `Xray plugin misconfiguration: test execution issue key ${testExecutionIssueKey} does not belong to project ${projectKey}`
+        );
+    }
+}
+
+function verifyTestPlanIssueKey(projectKey: string, testPlanIssueKey?: string) {
+    if (testPlanIssueKey && !testPlanIssueKey.startsWith(projectKey)) {
+        throw new Error(
+            `Xray plugin misconfiguration: test plan issue key ${testPlanIssueKey} does not belong to project ${projectKey}`
+        );
+    }
+}
+
+export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
+    if (!CONTEXT) {
+        throw new Error(
+            "Xray plugin misconfiguration: no configuration found." +
+                " Make sure your project has been set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+        );
+    }
+    parseEnvironmentVariables(runDetails.config.env);
+    verifyProjectKey(CONTEXT.config.jira.projectKey);
+    verifyTestExecutionIssueKey(
+        CONTEXT.config.jira.projectKey,
+        CONTEXT.config.jira.testExecutionIssueKey
+    );
+    verifyTestPlanIssueKey(
+        CONTEXT.config.jira.projectKey,
+        CONTEXT.config.jira.testPlanIssueKey
+    );
 }
 
 export async function afterRunHook(

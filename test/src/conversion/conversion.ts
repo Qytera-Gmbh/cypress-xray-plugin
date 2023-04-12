@@ -59,6 +59,42 @@ describe("the conversion function", () => {
         expect(json.tests[2].testInfo).to.be.undefined;
     });
 
+    it("should be able to add test execution issue keys", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        CONTEXT.config.jira.testExecutionIssueKey = "CYP-123";
+        const json: XrayExecutionResults = toXrayJSON(result);
+        expect(json.testExecutionKey).to.eq("CYP-123");
+    });
+
+    it("should be able to add test plan issue keys", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        CONTEXT.config.jira.testPlanIssueKey = "CYP-123";
+        const json: XrayExecutionResults = toXrayJSON(result);
+        expectToExist(json.info);
+        expect(json.info.testPlanKey).to.eq("CYP-123");
+    });
+
+    it("should not add test execution issue keys on its own", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        const json: XrayExecutionResults = toXrayJSON(result);
+        expect(json.testExecutionKey).to.be.undefined;
+    });
+
+    it("should not add test plan issue keys on its own", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        const json: XrayExecutionResults = toXrayJSON(result);
+        expectToExist(json.info);
+        expect(json.info.testPlanKey).to.be.undefined;
+    });
+
     it("should be able to overwrite existing test issues if specified", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync(
