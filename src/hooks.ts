@@ -8,7 +8,7 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
     if (!CONTEXT) {
         throw new Error(
             "Xray plugin misconfiguration: no configuration found." +
-                " Make sure your project has been set up correctly: https://github.com/Qytera-Gmbh/cypress-xray-plugin#setup"
+                " Make sure your project has been set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
         );
     }
     parseEnvironmentVariables(runDetails.config.env);
