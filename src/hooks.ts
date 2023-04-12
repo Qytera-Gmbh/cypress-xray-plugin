@@ -4,6 +4,36 @@ import { error, log } from "./logging/logging";
 import { parseEnvironmentVariables } from "./util/config";
 import { parseFeatureFile } from "./util/parsing";
 
+function verifyProjectKey(projectKey?: string) {
+    if (!projectKey) {
+        throw new Error(
+            "Xray plugin misconfiguration: Jira project key was not set"
+        );
+    }
+}
+
+function verifyTestExecutionIssueKey(
+    projectKey: string,
+    testExecutionIssueKey?: string
+) {
+    if (
+        testExecutionIssueKey &&
+        !testExecutionIssueKey.startsWith(projectKey)
+    ) {
+        throw new Error(
+            `Xray plugin misconfiguration: test execution issue key ${testExecutionIssueKey} does not belong to project ${projectKey}`
+        );
+    }
+}
+
+function verifyTestPlanIssueKey(projectKey: string, testPlanIssueKey?: string) {
+    if (testPlanIssueKey && !testPlanIssueKey.startsWith(projectKey)) {
+        throw new Error(
+            `Xray plugin misconfiguration: test plan issue key ${testPlanIssueKey} does not belong to project ${projectKey}`
+        );
+    }
+}
+
 export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
     if (!CONTEXT) {
         throw new Error(
@@ -12,11 +42,15 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
         );
     }
     parseEnvironmentVariables(runDetails.config.env);
-    if (!CONTEXT.config.jira.projectKey) {
-        throw new Error(
-            "Xray plugin misconfiguration: Jira project key was not set"
-        );
-    }
+    verifyProjectKey(CONTEXT.config.jira.projectKey);
+    verifyTestExecutionIssueKey(
+        CONTEXT.config.jira.projectKey,
+        CONTEXT.config.jira.testExecutionIssueKey
+    );
+    verifyTestPlanIssueKey(
+        CONTEXT.config.jira.projectKey,
+        CONTEXT.config.jira.testPlanIssueKey
+    );
 }
 
 export async function afterRunHook(
