@@ -21,9 +21,9 @@
         "screenshot"
     ],
     "files": [
-        "src/**/*",
-        "plugin.js",
-        "register.js"
+        "src",
+        "*.js",
+        "*.ts"
     ],
     "directories": {
         "lib": "src"
