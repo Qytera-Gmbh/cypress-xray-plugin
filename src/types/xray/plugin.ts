@@ -42,9 +42,10 @@ export interface JiraOptions {
 
 export interface XrayOptions {
     /**
-     * Turns execution results upload on or off.
+     * Turns execution results upload on or off. Useful when switching upload
+     * on or off from the command line (via environment variables).
      */
-    uploadResults: boolean;
+    uploadResults?: boolean;
     /**
      * The status name of a test marked as passed in Xray. Should be used
      * when custom status names have been setup in Xray.
