@@ -5,6 +5,7 @@ import {
     ENV_CUCUMBER_DOWNLOAD_FEATURES,
     ENV_CUCUMBER_FEATURE_FILE_EXTENSION,
     ENV_CUCUMBER_UPLOAD_FEATURES,
+    ENV_JIRA_ATTACH_VIDEO,
     ENV_JIRA_PROJECT_KEY,
     ENV_JIRA_SERVER_URL,
     ENV_JIRA_TEST_EXECUTION_ISSUE_KEY,
@@ -20,6 +21,7 @@ import {
     ENV_XRAY_STATUS_FAILED,
     ENV_XRAY_STATUS_PASSED,
     ENV_XRAY_UPLOAD_RESULTS,
+    ENV_XRAY_UPLOAD_SCREENSHOTS,
     ENV_XRAY_USERNAME,
 } from "../constants";
 import { CONTEXT } from "../context";
@@ -46,10 +48,20 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
         CONTEXT.config.jira.testPlanIssueKey =
             env[ENV_JIRA_TEST_PLAN_ISSUE_KEY];
     }
+    if (ENV_JIRA_ATTACH_VIDEO in env) {
+        CONTEXT.config.jira.attachVideo = parseBoolean(
+            env[ENV_JIRA_ATTACH_VIDEO]
+        );
+    }
     // Xray.
     if (ENV_XRAY_UPLOAD_RESULTS in env) {
         CONTEXT.config.xray.uploadResults = parseBoolean(
             env[ENV_XRAY_UPLOAD_RESULTS]
+        );
+    }
+    if (ENV_XRAY_UPLOAD_SCREENSHOTS in env) {
+        CONTEXT.config.xray.uploadScreenshots = parseBoolean(
+            env[ENV_XRAY_UPLOAD_SCREENSHOTS]
         );
     }
     if (ENV_XRAY_STATUS_PASSED in env) {

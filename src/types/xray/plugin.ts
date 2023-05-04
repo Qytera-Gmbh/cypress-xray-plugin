@@ -38,6 +38,11 @@ export interface JiraOptions {
      * @example "CYP-567"
      */
     testPlanIssueKey?: string;
+    /**
+     * Whether any video Cypress captures during test execution should be
+     * attached to the test execution issue on results upload.
+     */
+    attachVideo?: boolean;
 }
 
 export interface XrayOptions {
@@ -46,6 +51,11 @@ export interface XrayOptions {
      * on or off from the command line (via environment variables).
      */
     uploadResults?: boolean;
+    /**
+     * Turns on or off the upload of screenshots Cypress takes during test
+     * execution.
+     */
+    uploadScreenshots?: boolean;
     /**
      * The status name of a test marked as passed in Xray. Should be used
      * when custom status names have been setup in Xray.

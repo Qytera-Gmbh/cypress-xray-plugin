@@ -17,10 +17,12 @@ export const ENV_JIRA_SERVER_URL = "JIRA_SERVER_URL";
 export const ENV_JIRA_TEST_EXECUTION_ISSUE_KEY =
     "JIRA_TEST_EXECUTION_ISSUE_KEY";
 export const ENV_JIRA_TEST_PLAN_ISSUE_KEY = "JIRA_TEST_PLAN_ISSUE_KEY";
+export const ENV_JIRA_ATTACH_VIDEO = "JIRA_ATTACH_VIDEO";
 // ================================= //
 // | Xray Configuration            | //
 // ================================= //
 export const ENV_XRAY_UPLOAD_RESULTS = "XRAY_UPLOAD_RESULTS";
+export const ENV_XRAY_UPLOAD_SCREENSHOTS = "XRAY_UPLOAD_SCREENSHOTS";
 export const ENV_XRAY_STATUS_PASSED = "XRAY_STATUS_PASSED";
 export const ENV_XRAY_STATUS_FAILED = "XRAY_STATUS_FAILED";
 export const ENV_XRAY_TEST_TYPE = "XRAY_TEST_TYPE";
