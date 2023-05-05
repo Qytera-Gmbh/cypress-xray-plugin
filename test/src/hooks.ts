@@ -82,19 +82,26 @@ describe("the before run hook", () => {
         expect(CONTEXT.xrayClient).to.be.an.instanceof(XrayClientCloud);
     });
 
-    it("should be able to detect unset project keys without crashing", async () => {
+    it("should be able to detect unset project keys", async () => {
         expectToExist(details.config.env);
         details.config.env[ENV_JIRA_PROJECT_KEY] = undefined;
-        await expect(beforeRunHook(details)).to.eventually.be.undefined;
+        await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
+            "Xray plugin misconfiguration: Jira project key was not set"
+        );
     });
 
-    it("should be able to detect mismatched test execution issue keys without crashing", async () => {
+    it("should be able to detect mismatched test execution issue keys", async () => {
         CONTEXT.config.jira.testExecutionIssueKey = "ABC-123";
-        await expect(beforeRunHook(details)).to.eventually.be.undefined;
+        await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
+            "Xray plugin misconfiguration: test execution issue key ABC-123 does not belong to project CYP"
+        );
     });
 
-    it("should be able to detect mismatched test plan issue keys without crashing", async () => {
+    it("should be able to detect mismatched test plan issue keys", async () => {
         CONTEXT.config.jira.testPlanIssueKey = "ABC-456";
-        await expect(beforeRunHook(details)).to.eventually.be.undefined;
+        await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
+            "Xray plugin misconfiguration: test plan issue key ABC-456 does not belong to project CYP"
+        );
+    });
     });
 });
