@@ -35,32 +35,22 @@ function verifyTestPlanIssueKey(projectKey: string, testPlanIssueKey?: string) {
 }
 
 export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
-    try {
-        if (!CONTEXT) {
-            throw new Error(
-                "Xray plugin misconfiguration: no configuration found." +
-                    " Make sure your project has been set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
-            );
-        }
-        parseEnvironmentVariables(runDetails.config.env);
-        verifyProjectKey(CONTEXT.config.jira.projectKey);
-        verifyTestExecutionIssueKey(
-            CONTEXT.config.jira.projectKey,
-            CONTEXT.config.jira.testExecutionIssueKey
+    if (!CONTEXT) {
+        throw new Error(
+            "Xray plugin misconfiguration: no configuration found." +
+                " Make sure your project has been set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
         );
-        verifyTestPlanIssueKey(
-            CONTEXT.config.jira.projectKey,
-            CONTEXT.config.jira.testPlanIssueKey
-        );
-    } catch (error: unknown) {
-        let reason: unknown;
-        if (error instanceof Error) {
-            reason = error.message;
-        } else {
-            reason = error;
-        }
-        logError(`${reason}. Skipping plugin execution.`);
     }
+    parseEnvironmentVariables(runDetails.config.env);
+    verifyProjectKey(CONTEXT.config.jira.projectKey);
+    verifyTestExecutionIssueKey(
+        CONTEXT.config.jira.projectKey,
+        CONTEXT.config.jira.testExecutionIssueKey
+    );
+    verifyTestPlanIssueKey(
+        CONTEXT.config.jira.projectKey,
+        CONTEXT.config.jira.testPlanIssueKey
+    );
 }
 
 export async function afterRunHook(
