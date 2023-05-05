@@ -23,6 +23,15 @@ export abstract class Client<T extends APICredentials<APICredentialsOptions>> {
     }
 
     /**
+     * Return the client's credentials;
+     *
+     * @returns the credentials
+     */
+    public getCredentials(): T {
+        return this.credentials;
+    }
+
+    /**
      * Writes an error to a file (e.g. HTTP response errors).
      *
      * @param error the error

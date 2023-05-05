@@ -3,10 +3,17 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
+import {
+    BasicAuthCredentials,
+    PATCredentials,
+} from "../../src/authentication/credentials";
 import { XrayClientCloud } from "../../src/client/xray/xrayClientCloud";
 import { XrayClientServer } from "../../src/client/xray/xrayClientServer";
 import {
+    ENV_JIRA_API_TOKEN,
+    ENV_JIRA_PASSWORD,
     ENV_JIRA_PROJECT_KEY,
+    ENV_JIRA_USERNAME,
     ENV_XRAY_API_TOKEN,
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
@@ -32,7 +39,6 @@ describe("the before run hook", () => {
             },
             xray: {
                 testType: "Manual",
-                uploadResults: true,
             },
             cucumber: {
                 featureFileExtension: ".feature",
@@ -103,5 +109,66 @@ describe("the before run hook", () => {
             "Xray plugin misconfiguration: test plan issue key ABC-456 does not belong to project CYP"
         );
     });
+
+    describe("the Jira client instantiation", () => {
+        beforeEach(() => {
+            expectToExist(details.config.env);
+            CONTEXT.config.jira.serverUrl = "https://example.org";
+            // Make Jira client instantiation mandatory.
+            CONTEXT.config.jira.attachVideo = true;
+        });
+
+        it("should be able to detect Jira cloud credentials", async () => {
+            expectToExist(details.config.env);
+            details.config.env[ENV_JIRA_USERNAME] = "user";
+            details.config.env[ENV_JIRA_API_TOKEN] = "1337";
+            await beforeRunHook(details);
+            expectToExist(CONTEXT.jiraClient);
+            const credentials = CONTEXT.jiraClient.getCredentials();
+            expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
+        });
+
+        it("should be able to detect Jira server PAT credentials", async () => {
+            expectToExist(details.config.env);
+            details.config.env[ENV_JIRA_API_TOKEN] = "1337";
+            await beforeRunHook(details);
+            expectToExist(CONTEXT.jiraClient);
+            const credentials = CONTEXT.jiraClient.getCredentials();
+            expect(credentials).to.be.an.instanceof(PATCredentials);
+        });
+
+        it("should be able to detect Jira server basic auth credentials", async () => {
+            expectToExist(details.config.env);
+            details.config.env[ENV_JIRA_USERNAME] = "user";
+            details.config.env[ENV_JIRA_PASSWORD] = "1337";
+            await beforeRunHook(details);
+            expectToExist(CONTEXT.jiraClient);
+            const credentials = CONTEXT.jiraClient.getCredentials();
+            expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
+        });
+
+        it("should be able to choose Jira cloud credentials over server credentials", async () => {
+            expectToExist(details.config.env);
+            details.config.env[ENV_JIRA_USERNAME] = "user";
+            details.config.env[ENV_JIRA_API_TOKEN] = "1337";
+            details.config.env[ENV_JIRA_PASSWORD] = "xyz";
+            await beforeRunHook(details);
+            expectToExist(CONTEXT.jiraClient);
+            const credentials = CONTEXT.jiraClient.getCredentials();
+            expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
+        });
+
+        it("should throw an error for missing Jira URLs", async () => {
+            CONTEXT.config.jira.serverUrl = undefined;
+            await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
+                "Failed to configure Jira client: no Jira URL was provided.\nConfigured options which necessarily require a configured Jira client: jira.attachVideo=true"
+            );
+        });
+
+        it("should throw an error for missing Jira credentials", async () => {
+            await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
+                "Failed to configure Jira client: no viable authentication method was configured.\nYou can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
+            );
+        });
     });
 });
