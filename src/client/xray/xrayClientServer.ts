@@ -1,26 +1,32 @@
-import { isAxiosError } from "axios";
 import FormData from "form-data";
 import fs from "fs";
 import {
     BasicAuthCredentials,
     HTTPHeader,
     PATCredentials,
-} from "../credentials";
-import { Requests } from "../https/requests";
-import { error, info, log, success } from "../logging/logging";
+} from "../../authentication/credentials";
+import { ImportExecutionResultsConverterServer } from "../../conversion/importExecutionResults/importExecutionResultsConverterServer";
+import { Requests } from "../../https/requests";
+import { logInfo, logSuccess } from "../../logging/logging";
+import { XrayTestExecutionResultsServer } from "../../types/xray/importTestExecutionResults";
 import {
     ExportCucumberTestsResponse,
     ImportCucumberTestsResponse,
     ImportIssueResponse,
-} from "../types/xray/responses";
-import { XrayExecutionResults } from "../types/xray/xray";
-import { Client } from "./client";
+} from "../../types/xray/responses";
+import { XrayClient } from "./xrayClient";
 
-export class ServerClient extends Client<
+export class XrayClientServer extends XrayClient<
     BasicAuthCredentials | PATCredentials
 > {
     private readonly apiBaseURL: string;
 
+    /**
+     * Construct a new Xray Server client.
+     *
+     * @param apiBaseURL the Xray server base endpoint
+     * @param credentials the credentials to use during authentication
+     */
     constructor(
         apiBaseURL: string,
         credentials: BasicAuthCredentials | PATCredentials
@@ -29,72 +35,56 @@ export class ServerClient extends Client<
         this.apiBaseURL = apiBaseURL;
     }
 
-    protected async doImportExecutionResults(
-        executionResults: XrayExecutionResults
+    public async dispatchImportTestExecutionResultsRequest(
+        results: CypressCommandLine.CypressRunResult
     ): Promise<ImportIssueResponse> {
+        const json: XrayTestExecutionResultsServer =
+            new ImportExecutionResultsConverterServer().convertExecutionResults(
+                results
+            );
         return this.credentials
             .getAuthenticationHeader()
             .then(async (header: HTTPHeader) => {
-                log(`Uploading test results to ${this.apiBaseURL} ...`);
+                logInfo(`Uploading test results to ${this.apiBaseURL} ...`);
                 const progressInterval = setInterval(() => {
-                    info("Still uploading...");
+                    logInfo("Still uploading...");
                 }, 5000);
                 try {
                     const response = await Requests.post(
                         `${this.apiBaseURL}/rest/raven/latest/api/import/execution`,
-                        executionResults,
+                        json,
                         {
                             headers: {
                                 ...header,
                             },
                         }
                     );
-                    success(
+                    logSuccess(
                         "Successfully uploaded test execution results:",
                         JSON.stringify(response.data)
                     );
                     return response.data;
-                } catch (e: unknown) {
-                    let errorFileName = "importExecutionResultsError.log";
-                    if (isAxiosError(e)) {
-                        errorFileName = "importExecutionResultsError.json";
-                        fs.writeFileSync(
-                            errorFileName,
-                            JSON.stringify({
-                                error: e.toJSON(),
-                                response: e.response.data,
-                            })
-                        );
-                    } else {
-                        fs.writeFileSync(errorFileName, JSON.stringify(e));
-                    }
-                    error(
-                        `Upload failed. Complete error logs have been written to "${errorFileName}".`
-                    );
-                    throw new Error(
-                        `Failed to upload results to Xray: "${e}".`
-                    );
                 } finally {
                     clearInterval(progressInterval);
                 }
             });
     }
 
-    protected doExportCucumberTests(
+    public dispatchExportCucumberTestsRequest(
         keys?: string,
         filter?: number
     ): Promise<ExportCucumberTestsResponse> {
         throw new Error("Method not implemented.");
     }
 
-    protected async doImportCucumberTests(
+    public async dispatchImportCucumberTestsRequest(
         file: string,
         projectKey?: string
     ): Promise<ImportCucumberTestsResponse> {
         const header = await this.credentials.getAuthenticationHeader();
-        log("Importing cucumber feature files...");
+        logInfo("Importing cucumber feature files...");
         const progressInterval = setInterval(() => {
-            info("Still importing...");
+            logInfo("Still importing...");
         }, 5000);
         try {
             const fileContent = fs.createReadStream(file);
@@ -115,44 +105,24 @@ export class ServerClient extends Client<
             // E.g. typos in Gherkin keywords ('Scenariot').
             if ("message" in response.data) {
                 if (response.data.testIssues.length > 0) {
-                    success(
+                    logSuccess(
                         "Successfully updated or created test issues:",
                         JSON.stringify(response.data.testIssues)
                     );
                 }
                 if (response.data.preConditionIssues.length > 0) {
-                    success(
+                    logSuccess(
                         "Successfully updated or created precondition issues:",
                         JSON.stringify(response.data.preConditionIssues)
                     );
                 }
             } else {
-                success(
+                logSuccess(
                     "Successfully updated or created issues:",
                     JSON.stringify(response.data)
                 );
             }
             return response.data;
-        } catch (e: unknown) {
-            let errorFileName = "importCucumberTestsError.log";
-            if (isAxiosError(e)) {
-                errorFileName = "importCucumberTestsError.json";
-                fs.writeFileSync(
-                    errorFileName,
-                    JSON.stringify({
-                        error: e.toJSON(),
-                        response: e.response.data,
-                    })
-                );
-            } else {
-                fs.writeFileSync(errorFileName, JSON.stringify(e));
-            }
-            error(
-                `Failed to import cucumber feature files into Xray. Complete error logs have been written to "${errorFileName}".`
-            );
-            throw new Error(
-                `Failed to import cucumber feature files into Xray: "${e}"`
-            );
         } finally {
             clearInterval(progressInterval);
         }

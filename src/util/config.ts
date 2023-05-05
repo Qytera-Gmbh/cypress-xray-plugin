@@ -1,6 +1,10 @@
-import { Client } from "../client/client";
-import { CloudClient } from "../client/cloudClient";
-import { ServerClient } from "../client/serverClient";
+import {
+    BasicAuthCredentials,
+    JWTCredentials,
+    PATCredentials,
+} from "../authentication/credentials";
+import { XrayClientCloud } from "../client/xray/xrayClientCloud";
+import { XrayClientServer } from "../client/xray/xrayClientServer";
 import {
     ENV_CUCUMBER_DOWNLOAD_FEATURES,
     ENV_CUCUMBER_FEATURE_FILE_EXTENSION,
@@ -25,11 +29,6 @@ import {
     ENV_XRAY_USERNAME,
 } from "../constants";
 import { CONTEXT } from "../context";
-import {
-    BasicAuthCredentials,
-    JWTCredentials,
-    PATCredentials,
-} from "../credentials";
 import { parseBoolean } from "./parsing";
 
 export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
@@ -103,19 +102,21 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
     if (ENV_OPENSSL_SECURE_OPTIONS in env) {
         CONTEXT.config.openSSL.secureOptions = env[ENV_OPENSSL_SECURE_OPTIONS];
     }
-    CONTEXT.client = chooseUploader(env);
+    CONTEXT.xrayClient = chooseUploader(env);
 }
 
-function chooseUploader(env: Cypress.ObjectLike): Client<any> {
+function chooseUploader(
+    env: Cypress.ObjectLike
+): XrayClientServer | XrayClientCloud {
     if (ENV_XRAY_CLIENT_ID in env && ENV_XRAY_CLIENT_SECRET in env) {
-        return new CloudClient(
+        return new XrayClientCloud(
             new JWTCredentials(
                 env[ENV_XRAY_CLIENT_ID],
                 env[ENV_XRAY_CLIENT_SECRET]
             )
         );
     } else if (ENV_XRAY_API_TOKEN in env && CONTEXT.config.jira.serverUrl) {
-        return new ServerClient(
+        return new XrayClientServer(
             CONTEXT.config.jira.serverUrl,
             new PATCredentials(env[ENV_XRAY_API_TOKEN])
         );
@@ -124,7 +125,7 @@ function chooseUploader(env: Cypress.ObjectLike): Client<any> {
         ENV_XRAY_PASSWORD in env &&
         CONTEXT.config.jira.serverUrl
     ) {
-        return new ServerClient(
+        return new XrayClientServer(
             CONTEXT.config.jira.serverUrl,
             new BasicAuthCredentials(
                 env[ENV_XRAY_USERNAME],
@@ -134,7 +135,7 @@ function chooseUploader(env: Cypress.ObjectLike): Client<any> {
     } else {
         throw new Error(
             "Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported.\n" +
-                "You can find all configurations that are currently supported at https://github.com/Qytera-Gmbh/cypress-xray-plugin#authentication"
+                "You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
         );
     }
 }

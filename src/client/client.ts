@@ -1,11 +1,10 @@
-import { toXrayJSON } from "../conversion/conversion";
-import { APICredentials, APICredentialsOptions } from "../credentials";
+import { isAxiosError } from "axios";
+import { writeFileSync } from "fs";
 import {
-    ExportCucumberTestsResponse,
-    ImportCucumberTestsResponse,
-    ImportIssueResponse,
-} from "../types/xray/responses";
-import { XrayExecutionResults } from "../types/xray/xray";
+    APICredentials,
+    APICredentialsOptions,
+} from "../authentication/credentials";
+import { logError } from "../logging/logging";
 
 /**
  * A basic client interface which stores credentials data used for
@@ -14,72 +13,35 @@ import { XrayExecutionResults } from "../types/xray/xray";
 export abstract class Client<T extends APICredentials<APICredentialsOptions>> {
     protected readonly credentials: T;
 
+    /**
+     * Construct a new client using the provided credentials.
+     *
+     * @param credentials the credentials to use during authentication
+     */
     constructor(credentials: T) {
         this.credentials = credentials;
     }
 
     /**
-     * Uploads test results to the Xray instance.
-     * @param results the test results as provided by Cypress
-     * @returns the response of the Xray instance
-     * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
+     * Writes an error to a file (e.g. HTTP response errors).
+     *
+     * @param error the error
+     * @param filename the filename to use for the file
      */
-    public async importExecutionResults(
-        results: CypressCommandLine.CypressRunResult
-    ): Promise<ImportIssueResponse> {
-        const json = toXrayJSON(results as CypressCommandLine.CypressRunResult);
-        return await this.doImportExecutionResults(json);
-    }
-
-    protected abstract doImportExecutionResults(
-        executionResults: XrayExecutionResults
-    ): Promise<ImportIssueResponse>;
-
-    /**
-     * Downloads feature (file) specifications from corresponding Xray issues.
-     * @param keys a string containing a list of issue keys separated by ";"
-     * @param filter an integer that represents the filter ID
-     * @returns the response of the Xray instance
-     * @see https://docs.getxray.app/display/XRAYCLOUD/Exporting+Cucumber+Tests+-+REST+v2
-     */
-    public async exportCucumberTests(
-        keys?: string,
-        filter?: number
-    ): Promise<ExportCucumberTestsResponse> {
-        if (!keys && !filter) {
-            throw new Error(
-                "Either keys or filter (or both) must be specified to export cucumber feature files"
-            );
+    protected writeErrorFile(error: unknown, filename: string): void {
+        let errorFileName: string;
+        let errorData: string;
+        if (isAxiosError(error)) {
+            errorFileName = `${filename}.json`;
+            errorData = JSON.stringify({
+                error: error.toJSON(),
+                response: error.response.data,
+            });
+        } else {
+            errorFileName = `${filename}.log`;
+            errorData = JSON.stringify(error);
         }
-        return this.doExportCucumberTests(keys, filter);
+        writeFileSync(errorFileName, errorData);
+        logError(`Complete error logs have been written to "${errorFileName}"`);
     }
-
-    protected abstract doExportCucumberTests(
-        keys?: string,
-        filter?: number
-    ): Promise<ExportCucumberTestsResponse>;
-
-    /**
-     * Uploads (zipped) feature file(s) to corresponding Xray issues.
-     * @param projectKey key of the project where the tests and pre-conditions are going to be created
-     * @param projectId id of the project where the tests and pre-conditions are going to be created
-     * @param source a name designating the source of the features being imported (e.g. the source project name)
-     * @returns the response of the Xray instance
-     * @see https://docs.getxray.app/display/XRAYCLOUD/Exporting+Cucumber+Tests+-+REST+v2
-     */
-    public async importCucumberTests(
-        file: string,
-        projectKey?: string,
-        projectId?: string,
-        source?: string
-    ): Promise<ImportCucumberTestsResponse> {
-        return this.doImportCucumberTests(file, projectKey, projectId, source);
-    }
-
-    protected abstract doImportCucumberTests(
-        file: string,
-        projectKey?: string,
-        projectId?: string,
-        source?: string
-    ): Promise<ImportCucumberTestsResponse>;
 }

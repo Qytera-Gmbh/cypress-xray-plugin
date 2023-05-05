@@ -3,8 +3,8 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
-import { CloudClient } from "../../src/client/cloudClient";
-import { ServerClient } from "../../src/client/serverClient";
+import { XrayClientCloud } from "../../src/client/xray/xrayClientCloud";
+import { XrayClientServer } from "../../src/client/xray/xrayClientServer";
 import {
     ENV_JIRA_PROJECT_KEY,
     ENV_XRAY_API_TOKEN,
@@ -49,7 +49,7 @@ describe("the before run hook", () => {
 
     it("should be able to detect cloud credentials", async () => {
         await beforeRunHook(details);
-        expect(CONTEXT.client).to.be.an.instanceof(CloudClient);
+        expect(CONTEXT.xrayClient).to.be.an.instanceof(XrayClientCloud);
     });
 
     it("should be able to detect basic server credentials", async () => {
@@ -58,7 +58,7 @@ describe("the before run hook", () => {
         details.config.env[ENV_XRAY_PASSWORD] = "xyz";
         CONTEXT.config.jira.serverUrl = "https://example.org";
         await beforeRunHook(details);
-        expect(CONTEXT.client).to.be.an.instanceof(ServerClient);
+        expect(CONTEXT.xrayClient).to.be.an.instanceof(XrayClientServer);
     });
 
     it("should be able to detect PAT server credentials", async () => {
@@ -67,7 +67,7 @@ describe("the before run hook", () => {
         details.config.env[ENV_XRAY_API_TOKEN] = "1337";
         CONTEXT.config.jira.serverUrl = "https://example.org";
         await beforeRunHook(details);
-        expect(CONTEXT.client).to.be.an.instanceof(ServerClient);
+        expect(CONTEXT.xrayClient).to.be.an.instanceof(XrayClientServer);
     });
 
     it("should be able to choose cloud credentials over server credentials", async () => {
@@ -79,28 +79,22 @@ describe("the before run hook", () => {
         details.config.env[ENV_XRAY_CLIENT_SECRET] = "xyz";
         CONTEXT.config.jira.serverUrl = "https://example.org";
         await beforeRunHook(details);
-        expect(CONTEXT.client).to.be.an.instanceof(CloudClient);
+        expect(CONTEXT.xrayClient).to.be.an.instanceof(XrayClientCloud);
     });
 
-    it("should be able to detect unset project keys", async () => {
+    it("should be able to detect unset project keys without crashing", async () => {
         expectToExist(details.config.env);
         details.config.env[ENV_JIRA_PROJECT_KEY] = undefined;
-        await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
-            "Xray plugin misconfiguration: Jira project key was not set"
-        );
+        await expect(beforeRunHook(details)).to.eventually.be.undefined;
     });
 
-    it("should be able to detect mismatched test execution issue keys", async () => {
+    it("should be able to detect mismatched test execution issue keys without crashing", async () => {
         CONTEXT.config.jira.testExecutionIssueKey = "ABC-123";
-        await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
-            "Xray plugin misconfiguration: test execution issue key ABC-123 does not belong to project CYP"
-        );
+        await expect(beforeRunHook(details)).to.eventually.be.undefined;
     });
 
-    it("should be able to detect mismatched test plan issue keys", async () => {
+    it("should be able to detect mismatched test plan issue keys without crashing", async () => {
         CONTEXT.config.jira.testPlanIssueKey = "ABC-456";
-        await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
-            "Xray plugin misconfiguration: test plan issue key ABC-456 does not belong to project CYP"
-        );
+        await expect(beforeRunHook(details)).to.eventually.be.undefined;
     });
 });

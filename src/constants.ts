@@ -1,12 +1,10 @@
 // ================================= //
 // | Authentication                | //
 // ================================= //
-// Basic authentication.
+// Xray.
 export const ENV_XRAY_USERNAME = "XRAY_USERNAME";
 export const ENV_XRAY_PASSWORD = "XRAY_PASSWORD";
-// API token authentication.
 export const ENV_XRAY_API_TOKEN = "XRAY_API_TOKEN";
-// JWT-based authentication.
 export const ENV_XRAY_CLIENT_ID = "XRAY_CLIENT_ID";
 export const ENV_XRAY_CLIENT_SECRET = "XRAY_CLIENT_SECRET";
 // ================================= //

@@ -1,6 +1,6 @@
 import { CONTEXT } from "./context";
 import { issuesByScenario } from "./cucumber/tagging";
-import { error, log } from "./logging/logging";
+import { logError, logInfo, logWarning } from "./logging/logging";
 import { parseEnvironmentVariables } from "./util/config";
 import { parseFeatureFile } from "./util/parsing";
 
@@ -35,22 +35,32 @@ function verifyTestPlanIssueKey(projectKey: string, testPlanIssueKey?: string) {
 }
 
 export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
-    if (!CONTEXT) {
-        throw new Error(
-            "Xray plugin misconfiguration: no configuration found." +
-                " Make sure your project has been set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+    try {
+        if (!CONTEXT) {
+            throw new Error(
+                "Xray plugin misconfiguration: no configuration found." +
+                    " Make sure your project has been set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+            );
+        }
+        parseEnvironmentVariables(runDetails.config.env);
+        verifyProjectKey(CONTEXT.config.jira.projectKey);
+        verifyTestExecutionIssueKey(
+            CONTEXT.config.jira.projectKey,
+            CONTEXT.config.jira.testExecutionIssueKey
         );
+        verifyTestPlanIssueKey(
+            CONTEXT.config.jira.projectKey,
+            CONTEXT.config.jira.testPlanIssueKey
+        );
+    } catch (error: unknown) {
+        let reason: unknown;
+        if (error instanceof Error) {
+            reason = error.message;
+        } else {
+            reason = error;
+        }
+        logError(`${reason}. Skipping plugin execution.`);
     }
-    parseEnvironmentVariables(runDetails.config.env);
-    verifyProjectKey(CONTEXT.config.jira.projectKey);
-    verifyTestExecutionIssueKey(
-        CONTEXT.config.jira.projectKey,
-        CONTEXT.config.jira.testExecutionIssueKey
-    );
-    verifyTestPlanIssueKey(
-        CONTEXT.config.jira.projectKey,
-        CONTEXT.config.jira.testPlanIssueKey
-    );
 }
 
 export async function afterRunHook(
@@ -59,21 +69,31 @@ export async function afterRunHook(
         | CypressCommandLine.CypressFailedRunResult
 ) {
     if (results.status === "failed") {
-        error(
+        logError(
             `Aborting: failed to run ${results.failures} tests:`,
             results.message
         );
         return;
     }
     if (!CONTEXT.config.xray.uploadResults) {
-        log(
+        logWarning(
             "Skipping results upload: Plugin is configured to not upload test results."
         );
         return;
     }
-    await CONTEXT.client.importExecutionResults(
-        results as CypressCommandLine.CypressRunResult
-    );
+    try {
+        await CONTEXT.xrayClient.importTestExecutionResults(
+            results as CypressCommandLine.CypressRunResult
+        );
+    } catch (error: unknown) {
+        let reason: unknown;
+        if (error instanceof Error) {
+            reason = error.message;
+        } else {
+            reason = error;
+        }
+        logError(`${reason}. Skipping plugin execution.`);
+    }
 }
 
 export async function filePreprocessorHook(
@@ -96,14 +116,18 @@ export async function filePreprocessorHook(
                 throw new Error("feature not yet implemented");
             }
             if (CONTEXT.config.cucumber.uploadFeatures) {
-                log(`Synchronizing upstream Cucumber tests (${relativePath})`);
-                await CONTEXT.client.importCucumberTests(
+                logInfo(
+                    `Synchronizing upstream Cucumber tests (${relativePath})`
+                );
+                await CONTEXT.xrayClient.importCucumberTests(
                     file.filePath,
                     CONTEXT.config.jira.projectKey
                 );
             }
-        } catch (e: unknown) {
-            error(`Feature file invalid, skipping synchronization: ${e}`);
+        } catch (error: unknown) {
+            logError(
+                `Feature file invalid, skipping synchronization: ${error}`
+            );
         }
     }
     return file.filePath;
