@@ -17,10 +17,10 @@ export interface JiraOptions {
      */
     projectKey: string;
     /**
-     * When using a server-based Jira/Xray instance, use this parameter to
-     * specify the URL of your instance.
+     * Use this parameter to specify the URL of your Jira instance.
      *
      * @example "https://example.org/development/jira"
+     * @example "https://your-domain.atlassian.net"
      */
     serverUrl?: string;
     /**

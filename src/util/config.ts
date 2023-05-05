@@ -3,17 +3,21 @@ import {
     JWTCredentials,
     PATCredentials,
 } from "../authentication/credentials";
+import { JiraClient } from "../client/jira/jiraClient";
 import { XrayClientCloud } from "../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
 import {
     ENV_CUCUMBER_DOWNLOAD_FEATURES,
     ENV_CUCUMBER_FEATURE_FILE_EXTENSION,
     ENV_CUCUMBER_UPLOAD_FEATURES,
+    ENV_JIRA_API_TOKEN,
     ENV_JIRA_ATTACH_VIDEO,
+    ENV_JIRA_PASSWORD,
     ENV_JIRA_PROJECT_KEY,
     ENV_JIRA_SERVER_URL,
     ENV_JIRA_TEST_EXECUTION_ISSUE_KEY,
     ENV_JIRA_TEST_PLAN_ISSUE_KEY,
+    ENV_JIRA_USERNAME,
     ENV_OPENSSL_ROOT_CA_PATH,
     ENV_OPENSSL_SECURE_OPTIONS,
     ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES,
@@ -29,6 +33,7 @@ import {
     ENV_XRAY_USERNAME,
 } from "../constants";
 import { CONTEXT } from "../context";
+import { logInfo } from "../logging/logging";
 import { parseBoolean } from "./parsing";
 
 export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
@@ -103,6 +108,7 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
         CONTEXT.config.openSSL.secureOptions = env[ENV_OPENSSL_SECURE_OPTIONS];
     }
     CONTEXT.xrayClient = chooseUploader(env);
+    CONTEXT.jiraClient = initJiraClient(env);
 }
 
 function chooseUploader(
@@ -138,4 +144,84 @@ function chooseUploader(
                 "You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
         );
     }
+}
+function initJiraClient(env: Cypress.ObjectLike): JiraClient | undefined {
+    let dependentOptions = [];
+    if (CONTEXT.config.jira.attachVideo) {
+        const optionName = `${getPropertyName(
+            CONTEXT.config,
+            (x) => x.jira
+        )}.${getPropertyName(CONTEXT.config.jira, (x) => x.attachVideo)}`;
+        dependentOptions.push(
+            `${optionName}=${CONTEXT.config.jira.attachVideo}`
+        );
+    }
+    if (dependentOptions.length === 0) {
+        return;
+    }
+    if (!CONTEXT.config.jira.serverUrl) {
+        throw new Error(
+            `Failed to configure Jira client: no Jira URL was provided.\n` +
+                `Configured options which necessarily require a configured Jira client: ${dependentOptions.join(
+                    ", "
+                )}`
+        );
+    }
+    if (ENV_JIRA_API_TOKEN in env) {
+        if (ENV_JIRA_USERNAME in env) {
+            // Jira Cloud authentication: username (Email) and token.
+            logInfo(
+                "Jira username and API token found. Setting up basic auth credentials for Jira cloud."
+            );
+            return new JiraClient(
+                CONTEXT.config.jira.serverUrl,
+                new BasicAuthCredentials(
+                    env[ENV_JIRA_USERNAME],
+                    env[ENV_JIRA_API_TOKEN]
+                )
+            );
+        }
+        // Jira Server authentication: no username, only token.
+        logInfo("Jira PAT found. Setting up PAT credentials for Jira server.");
+        return new JiraClient(
+            CONTEXT.config.jira.serverUrl,
+            new PATCredentials(env[ENV_JIRA_API_TOKEN])
+        );
+    } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env) {
+        // Jira Server authentication: username and password.
+        logInfo(
+            "Jira username and password found. Setting up basic auth credentials for Jira server."
+        );
+        return new JiraClient(
+            CONTEXT.config.jira.serverUrl,
+            new BasicAuthCredentials(
+                env[ENV_JIRA_USERNAME],
+                env[ENV_JIRA_PASSWORD]
+            )
+        );
+    }
+    throw new Error(
+        "Failed to configure Jira client: no viable authentication method was configured.\n" +
+            "You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
+    );
+}
+
+/**
+ * Returns a property's name from an object as a string.
+ *
+ * @param obj the object
+ * @param selector the property whose name is required
+ * @returns the property as a string
+ * @see https://stackoverflow.com/a/59498264
+ */
+function getPropertyName<T extends object>(
+    obj: T,
+    selector: (x: Record<keyof T, keyof T>) => keyof T
+): keyof T {
+    const keyRecord = Object.keys(obj).reduce((res, key) => {
+        const typedKey = key as keyof T;
+        res[typedKey] = typedKey;
+        return res;
+    }, {} as Record<keyof T, keyof T>);
+    return selector(keyRecord);
 }

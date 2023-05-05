@@ -14,9 +14,7 @@ import { Client } from "../client";
 /**
  * A Jira client class for communicating with Jira instances.
  */
-export abstract class JiraClient extends Client<
-    BasicAuthCredentials | PATCredentials
-> {
+export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
     /**
      * The Jira URL.
      */
