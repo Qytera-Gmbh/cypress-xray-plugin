@@ -115,6 +115,9 @@ function chooseUploader(
     env: Cypress.ObjectLike
 ): XrayClientServer | XrayClientCloud {
     if (ENV_XRAY_CLIENT_ID in env && ENV_XRAY_CLIENT_SECRET in env) {
+        logInfo(
+            "Xray client ID and client secret found. Setting up Xray cloud credentials."
+        );
         return new XrayClientCloud(
             new JWTCredentials(
                 env[ENV_XRAY_CLIENT_ID],
@@ -122,6 +125,7 @@ function chooseUploader(
             )
         );
     } else if (ENV_XRAY_API_TOKEN in env && CONTEXT.config.jira.serverUrl) {
+        logInfo("Xray PAT found. Setting up Xray PAT credentials.");
         return new XrayClientServer(
             CONTEXT.config.jira.serverUrl,
             new PATCredentials(env[ENV_XRAY_API_TOKEN])
@@ -131,6 +135,9 @@ function chooseUploader(
         ENV_XRAY_PASSWORD in env &&
         CONTEXT.config.jira.serverUrl
     ) {
+        logInfo(
+            "Xray username and password found. Setting up Xray basic auth credentials."
+        );
         return new XrayClientServer(
             CONTEXT.config.jira.serverUrl,
             new BasicAuthCredentials(
