@@ -1,4 +1,4 @@
-import { Client } from "../../client/client";
+import { JiraClient } from "../../client/jira/jiraClient";
 import { XrayClientCloud } from "../../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../../client/xray/xrayClientServer";
 
@@ -173,6 +173,6 @@ export interface OpenSSLOptions {
 
 export interface PluginContext {
     xrayClient?: XrayClientServer | XrayClientCloud;
-    client?: Client<any>;
+    jiraClient?: JiraClient;
     config: Options;
 }
