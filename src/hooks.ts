@@ -75,6 +75,12 @@ export async function afterRunHook(
     const issueKey = await CONTEXT.xrayClient.importTestExecutionResults(
         runResult
     );
+    if (!issueKey) {
+        logWarning(
+            "Execution results import failed, skipping remaining tasks."
+        );
+        return;
+    }
     if (CONTEXT.jiraClient && CONTEXT.config.jira.attachVideo) {
         const videos: string[] = runResult.runs.map(
             (result: CypressCommandLine.RunResult) => {
