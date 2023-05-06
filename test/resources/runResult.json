@@ -51,7 +51,7 @@
                 {
                     "title": [
                         "xray upload demo",
-                        "should look for paragraph elements"
+                        "should look for paragraph elements CYP-123"
                     ],
                     "state": "passed",
                     "body": "function () {\r\n        cy.get(\"p\").should(\"exist\");\r\n    }",
@@ -70,7 +70,7 @@
                 {
                     "title": [
                         "xray upload demo",
-                        "should look for the anchor element"
+                        "should look for the anchor element CYP-456"
                     ],
                     "state": "passed",
                     "body": "function () {\r\n        cy.get(\"a\").should(\"exist\");\r\n    }",
@@ -87,7 +87,7 @@
                     ]
                 },
                 {
-                    "title": ["xray upload demo", "should fail"],
+                    "title": ["xray upload demo", "should fail CYP-789"],
                     "state": "failed",
                     "body": "function () {\r\n        cy.get(\"span\").should(\"exist\");\r\n    }",
                     "displayError": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `span`, but never found it.\n    at Context.eval (webpack:///./cypress/e2e/demo/example.cy.ts:15:23)",

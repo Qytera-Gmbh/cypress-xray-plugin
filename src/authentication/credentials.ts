@@ -1,6 +1,7 @@
-import axios, { AxiosError, AxiosResponse } from "axios";
-import { log, success } from "./logging/logging";
-import { encode } from "./util/base64";
+import { AxiosResponse } from "axios";
+import { Requests } from "../https/requests";
+import { logInfo, logSuccess } from "../logging/logging";
+import { encode } from "../util/base64";
 
 /**
  * A basic HTTP header.
@@ -74,20 +75,15 @@ export class JWTCredentials extends APICredentials<JWTCredentialsOptions> {
 
     private async getToken(authenticationURL: string): Promise<string> {
         if (!this.token) {
-            log(`Authenticating against: ${authenticationURL}...`);
-            return axios
-                .post(authenticationURL, {
-                    client_id: this.clientId,
-                    client_secret: this.clientSecret,
-                })
-                .then((response: AxiosResponse) => {
-                    success("Authentication successful.");
-                    this.token = response.data;
-                    return this.token;
-                })
-                .catch((error: AxiosError) => {
-                    throw new Error(`Authentication failure: ${error}`);
-                });
+            logInfo(`Authenticating to: ${authenticationURL}...`);
+            return Requests.post(authenticationURL, {
+                client_id: this.clientId,
+                client_secret: this.clientSecret,
+            }).then((response: AxiosResponse) => {
+                logSuccess("Authentication successful.");
+                this.token = response.data;
+                return this.token;
+            });
         }
         return this.token;
     }

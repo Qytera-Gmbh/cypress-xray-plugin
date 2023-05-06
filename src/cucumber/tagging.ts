@@ -1,5 +1,5 @@
 import { Feature, FeatureChild, Scenario } from "@cucumber/messages";
-import { info, warning } from "../logging/logging";
+import { logInfo, logWarning } from "../logging/logging";
 
 function issueTagOf(
     scenario: Scenario,
@@ -20,15 +20,15 @@ function issueTagOf(
         }
     }
     if (issueKeys.length === 0) {
-        info(`No issue keys found in tags of scenario "${scenario.name}.`);
+        logInfo(`No issue keys found in tags of scenario "${scenario.name}.`);
     } else if (issueKeys.length === 1) {
         return issueKeys[0];
     } else {
-        warning(
+        logWarning(
             `Multiple issue keys found in tags of scenario "${scenario.name}": ` +
                 `${issueKeys.join(", ")}`
         );
-        warning(`The plugin will use the first one: ${issueKeys[0]}.`);
+        logWarning(`The plugin will use the first one: ${issueKeys[0]}.`);
     }
     return undefined;
 }

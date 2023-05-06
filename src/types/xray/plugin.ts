@@ -1,4 +1,6 @@
-import { Client } from "../../client/client";
+import { JiraClient } from "../../client/jira/jiraClient";
+import { XrayClientCloud } from "../../client/xray/xrayClientCloud";
+import { XrayClientServer } from "../../client/xray/xrayClientServer";
 
 export interface Options {
     jira: JiraOptions;
@@ -15,12 +17,12 @@ export interface JiraOptions {
      */
     projectKey: string;
     /**
-     * When using a server-based Jira/Xray instance, use this parameter to
-     * specify the URL of your instance.
+     * Use this parameter to specify the base URL of your Jira instance.
      *
-     * @example "https://example.org/development/jira"
+     * @example "https://example.org/development/jira" // Jira server
+     * @example "https://your-domain.atlassian.net" // Jira cloud
      */
-    serverUrl?: string;
+    url?: string;
     /**
      * An execution issue key to attach run results to. If omitted, Jira
      * will always create a new test execution issue with each upload.
@@ -38,6 +40,11 @@ export interface JiraOptions {
      * @example "CYP-567"
      */
     testPlanIssueKey?: string;
+    /**
+     * Whether any videos Cypress captured during test execution should be
+     * attached to the test execution issue on results upload.
+     */
+    attachVideo?: boolean;
 }
 
 export interface XrayOptions {
@@ -46,6 +53,11 @@ export interface XrayOptions {
      * on or off from the command line (via environment variables).
      */
     uploadResults?: boolean;
+    /**
+     * Turns on or off the upload of screenshots Cypress takes during test
+     * execution.
+     */
+    uploadScreenshots?: boolean;
     /**
      * The status name of a test marked as passed in Xray. Should be used
      * when custom status names have been setup in Xray.
@@ -130,6 +142,10 @@ export interface PluginOptions {
      * other sequences with `_`.
      */
     normalizeScreenshotNames?: boolean;
+    /**
+     * Turns on or off extensive debugging output.
+     */
+    debug?: boolean;
 }
 
 export interface OpenSSLOptions {
@@ -160,6 +176,7 @@ export interface OpenSSLOptions {
 }
 
 export interface PluginContext {
-    client?: Client<any>;
+    xrayClient?: XrayClientServer | XrayClientCloud;
+    jiraClient?: JiraClient;
     config: Options;
 }

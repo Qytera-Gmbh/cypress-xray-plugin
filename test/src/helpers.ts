@@ -1,29 +1,28 @@
-import { Client } from "../../src/client/client";
+import { JWTCredentials } from "../../src/authentication/credentials";
+import { XrayClientCloud } from "../../src/client/xray/xrayClientCloud";
 import {
     ExportCucumberTestsResponse,
     ImportCucumberTestsResponse,
-    ImportIssueResponse,
 } from "../../src/types/xray/responses";
-import { XrayExecutionResults } from "../../src/types/xray/xray";
 
-export class DummyClient extends Client<any> {
+export class DummyXrayClient extends XrayClientCloud {
     constructor() {
-        super(null);
+        super(new JWTCredentials("id", "secret"));
     }
 
-    protected doImportExecutionResults(
-        executionResults: XrayExecutionResults
-    ): Promise<ImportIssueResponse> {
+    public dispatchImportTestExecutionResultsRequest(
+        results: CypressCommandLine.CypressRunResult
+    ): Promise<string> {
         throw new Error("Method not implemented.");
     }
 
-    protected doExportCucumberTests(
+    public dispatchExportCucumberTestsRequest(
         keys?: string,
         filter?: number
     ): Promise<ExportCucumberTestsResponse> {
         throw new Error("Method not implemented.");
     }
-    protected doImportCucumberTests(
+    public dispatchImportCucumberTestsRequest(
         file: string,
         projectKey?: string,
         projectId?: string,

@@ -26,14 +26,17 @@ export function initContext(config: Options) {
 
 const DEFAULT_OPTIONS_JIRA: JiraOptions = {
     projectKey: null,
+    attachVideo: false,
 };
 const DEFAULT_OPTIONS_PLUGIN: PluginOptions = {
     overwriteIssueSummary: false,
     normalizeScreenshotNames: false,
+    debug: false,
 };
 
 const DEFAULT_OPTIONS_Xray: XrayOptions = {
     uploadResults: true,
+    uploadScreenshots: true,
     statusPassed: "PASSED",
     statusFailed: "FAILED",
     testType: "Manual",

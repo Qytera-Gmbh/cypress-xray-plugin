@@ -1,23 +1,25 @@
 import chalk from "chalk";
 
-const PREFIX = "| Cypress Xray Plugin |";
-
-export function log(...text: string[]) {
-    console.log(`${chalk.white(PREFIX)} ${chalk.blue(text.join(" "))}`);
+function prefix(type: string): string {
+    return chalk.white(`| Cypress Xray Plugin | ${type} |`);
 }
 
-export function info(...text: string[]) {
-    console.log(`${chalk.white(PREFIX)} ${chalk.gray(text.join(" "))}`);
+export function logInfo(...text: string[]) {
+    console.info(prefix("INFO"), chalk.gray(text.join(" ")));
 }
 
-export function error(...text: string[]) {
-    console.error(`${chalk.white(PREFIX)} ${chalk.red(text.join(" "))}`);
+export function logError(...text: string[]) {
+    console.error(prefix("ERROR"), chalk.red(text.join(" ")));
 }
 
-export function success(...text: string[]) {
-    console.log(`${chalk.white(PREFIX)} ${chalk.green(text.join(" "))}`);
+export function logSuccess(...text: string[]) {
+    console.log(prefix("SUCCESS"), chalk.green(text.join(" ")));
 }
 
-export function warning(...text: string[]) {
-    console.log(`${chalk.white(PREFIX)} ${chalk.yellow(text.join(" "))}`);
+export function logWarning(...text: string[]) {
+    console.warn(prefix("WARNING"), chalk.yellow(text.join(" ")));
+}
+
+export function logDebug(...text: string[]) {
+    console.warn(prefix("DEBUG"), chalk.cyan(text.join(" ")));
 }

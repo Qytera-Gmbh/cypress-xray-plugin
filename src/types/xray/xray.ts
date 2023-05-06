@@ -1,8 +1,7 @@
 // Taken from:
 // https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results
 
-// small utility types to better express meaning of other types
-export type dateTimeISO = string;
+import { DateTimeISO } from "../util";
 
 export type XrayCustomField = (
     | { [k: string]: unknown }
@@ -22,8 +21,8 @@ export interface XrayTestExecutionInfo {
     version?: string;
     revision?: string;
     user?: string;
-    startDate?: dateTimeISO;
-    finishDate?: dateTimeISO;
+    startDate?: DateTimeISO;
+    finishDate?: DateTimeISO;
     testPlanKey?: string;
     testEnvironments?: string[];
 }
@@ -31,8 +30,8 @@ export interface XrayTestExecutionInfo {
 export interface XrayTest {
     testKey?: string;
     testInfo?: XrayTestInfo;
-    start?: dateTimeISO;
-    finish?: dateTimeISO;
+    start?: DateTimeISO;
+    finish?: DateTimeISO;
     comment?: string;
     executedBy?: string;
     assignee?: string;

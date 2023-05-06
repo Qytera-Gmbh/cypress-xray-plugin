@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { CONTEXT, initContext } from "../../../src/context";
 import { issuesByScenario } from "../../../src/cucumber/tagging";
 import { parseFeatureFile } from "../../../src/util/parsing";
-import { DummyClient, expectToExist } from "../helpers";
+import { DummyXrayClient, expectToExist } from "../helpers";
 
 describe("the cucumber tag extractor", () => {
     beforeEach(() => {
@@ -13,7 +13,7 @@ describe("the cucumber tag extractor", () => {
                 projectKey: "CYP",
             },
         });
-        CONTEXT.client = new DummyClient();
+        CONTEXT.xrayClient = new DummyXrayClient();
     });
 
     it("should be able to extract Xray server tags", async () => {

@@ -1,6 +1,6 @@
 import { CONTEXT } from "./context";
 import { issuesByScenario } from "./cucumber/tagging";
-import { error, log } from "./logging/logging";
+import { logError, logInfo, logWarning } from "./logging/logging";
 import { parseEnvironmentVariables } from "./util/config";
 import { parseFeatureFile } from "./util/parsing";
 
@@ -59,21 +59,47 @@ export async function afterRunHook(
         | CypressCommandLine.CypressFailedRunResult
 ) {
     if (results.status === "failed") {
-        error(
+        logError(
             `Aborting: failed to run ${results.failures} tests:`,
             results.message
         );
         return;
     }
     if (!CONTEXT.config.xray.uploadResults) {
-        log(
+        logWarning(
             "Skipping results upload: Plugin is configured to not upload test results."
         );
         return;
     }
-    await CONTEXT.client.importExecutionResults(
-        results as CypressCommandLine.CypressRunResult
+    const runResult = results as CypressCommandLine.CypressRunResult;
+    const issueKey = await CONTEXT.xrayClient.importTestExecutionResults(
+        runResult
     );
+    if (issueKey === undefined) {
+        logWarning(
+            "Execution results import failed. Skipping remaining tasks."
+        );
+        return;
+    } else if (issueKey === null) {
+        logWarning(
+            "Execution results import was skipped. Skipping remaining tasks."
+        );
+        return;
+    }
+    if (CONTEXT.jiraClient && CONTEXT.config.jira.attachVideo) {
+        const videos: string[] = runResult.runs.map(
+            (result: CypressCommandLine.RunResult) => {
+                return result.video;
+            }
+        );
+        if (videos.length === 0) {
+            logWarning(
+                "No videos were uploaded: No videos have been captured."
+            );
+        } else {
+            await CONTEXT.jiraClient.addAttachments(issueKey, ...videos);
+        }
+    }
 }
 
 export async function filePreprocessorHook(
@@ -96,14 +122,18 @@ export async function filePreprocessorHook(
                 throw new Error("feature not yet implemented");
             }
             if (CONTEXT.config.cucumber.uploadFeatures) {
-                log(`Synchronizing upstream Cucumber tests (${relativePath})`);
-                await CONTEXT.client.importCucumberTests(
+                logInfo(
+                    `Synchronizing upstream Cucumber tests (${relativePath})`
+                );
+                await CONTEXT.xrayClient.importCucumberTests(
                     file.filePath,
                     CONTEXT.config.jira.projectKey
                 );
             }
-        } catch (e: unknown) {
-            error(`Feature file invalid, skipping synchronization: ${e}`);
+        } catch (error: unknown) {
+            logError(
+                `Feature file invalid, skipping synchronization: ${error}`
+            );
         }
     }
     return file.filePath;
