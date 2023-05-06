@@ -44,7 +44,7 @@ export abstract class Client<T extends APICredentials<APICredentialsOptions>> {
             errorFileName = `${filename}.json`;
             errorData = JSON.stringify({
                 error: error.toJSON(),
-                response: error.response.data,
+                response: error.response?.data,
             });
         } else {
             errorFileName = `${filename}.log`;
