@@ -17,12 +17,12 @@ export interface JiraOptions {
      */
     projectKey: string;
     /**
-     * Use this parameter to specify the URL of your Jira instance.
+     * Use this parameter to specify the base URL of your Jira instance.
      *
-     * @example "https://example.org/development/jira"
-     * @example "https://your-domain.atlassian.net"
+     * @example "https://example.org/development/jira" // Jira server
+     * @example "https://your-domain.atlassian.net" // Jira cloud
      */
-    serverUrl?: string;
+    url?: string;
     /**
      * An execution issue key to attach run results to. If omitted, Jira
      * will always create a new test execution issue with each upload.

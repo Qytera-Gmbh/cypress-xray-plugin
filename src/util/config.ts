@@ -14,9 +14,9 @@ import {
     ENV_JIRA_ATTACH_VIDEO,
     ENV_JIRA_PASSWORD,
     ENV_JIRA_PROJECT_KEY,
-    ENV_JIRA_SERVER_URL,
     ENV_JIRA_TEST_EXECUTION_ISSUE_KEY,
     ENV_JIRA_TEST_PLAN_ISSUE_KEY,
+    ENV_JIRA_URL,
     ENV_JIRA_USERNAME,
     ENV_OPENSSL_ROOT_CA_PATH,
     ENV_OPENSSL_SECURE_OPTIONS,
@@ -38,8 +38,8 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
     if (ENV_JIRA_PROJECT_KEY in env) {
         CONTEXT.config.jira.projectKey = env[ENV_JIRA_PROJECT_KEY];
     }
-    if (ENV_JIRA_SERVER_URL in env) {
-        CONTEXT.config.jira.serverUrl = env[ENV_JIRA_SERVER_URL];
+    if (ENV_JIRA_URL in env) {
+        CONTEXT.config.jira.url = env[ENV_JIRA_URL];
     }
     if (ENV_JIRA_TEST_EXECUTION_ISSUE_KEY in env) {
         CONTEXT.config.jira.testExecutionIssueKey =
@@ -121,22 +121,22 @@ function chooseUploader(
                 env[ENV_XRAY_CLIENT_SECRET]
             )
         );
-    } else if (ENV_JIRA_API_TOKEN in env && CONTEXT.config.jira.serverUrl) {
+    } else if (ENV_JIRA_API_TOKEN in env && CONTEXT.config.jira.url) {
         logInfo("Jira PAT found. Setting up Xray PAT credentials.");
         return new XrayClientServer(
-            CONTEXT.config.jira.serverUrl,
+            CONTEXT.config.jira.url,
             new PATCredentials(env[ENV_JIRA_API_TOKEN])
         );
     } else if (
         ENV_JIRA_USERNAME in env &&
         ENV_JIRA_PASSWORD in env &&
-        CONTEXT.config.jira.serverUrl
+        CONTEXT.config.jira.url
     ) {
         logInfo(
             "Jira username and password found. Setting up Xray basic auth credentials."
         );
         return new XrayClientServer(
-            CONTEXT.config.jira.serverUrl,
+            CONTEXT.config.jira.url,
             new BasicAuthCredentials(
                 env[ENV_JIRA_USERNAME],
                 env[ENV_JIRA_PASSWORD]
@@ -154,7 +154,7 @@ function initJiraClient(env: Cypress.ObjectLike): JiraClient | undefined {
     if (!dependentOptions) {
         return;
     }
-    if (!CONTEXT.config.jira.serverUrl) {
+    if (!CONTEXT.config.jira.url) {
         throw new Error(
             `Failed to configure Jira client: no Jira URL was provided. Configured options which necessarily require a configured Jira client:\n${dependentOptions}`
         );
@@ -166,7 +166,7 @@ function initJiraClient(env: Cypress.ObjectLike): JiraClient | undefined {
                 "Jira username and API token found. Setting up basic auth credentials for Jira cloud."
             );
             return new JiraClient(
-                CONTEXT.config.jira.serverUrl,
+                CONTEXT.config.jira.url,
                 new BasicAuthCredentials(
                     env[ENV_JIRA_USERNAME],
                     env[ENV_JIRA_API_TOKEN]
@@ -176,7 +176,7 @@ function initJiraClient(env: Cypress.ObjectLike): JiraClient | undefined {
         // Jira Server authentication: no username, only token.
         logInfo("Jira PAT found. Setting up PAT credentials for Jira server.");
         return new JiraClient(
-            CONTEXT.config.jira.serverUrl,
+            CONTEXT.config.jira.url,
             new PATCredentials(env[ENV_JIRA_API_TOKEN])
         );
     } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env) {
@@ -185,7 +185,7 @@ function initJiraClient(env: Cypress.ObjectLike): JiraClient | undefined {
             "Jira username and password found. Setting up basic auth credentials for Jira server."
         );
         return new JiraClient(
-            CONTEXT.config.jira.serverUrl,
+            CONTEXT.config.jira.url,
             new BasicAuthCredentials(
                 env[ENV_JIRA_USERNAME],
                 env[ENV_JIRA_PASSWORD]

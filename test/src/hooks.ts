@@ -59,7 +59,7 @@ describe("the before run hook", () => {
         details.config.env = {};
         details.config.env[ENV_JIRA_USERNAME] = "user";
         details.config.env[ENV_JIRA_PASSWORD] = "xyz";
-        CONTEXT.config.jira.serverUrl = "https://example.org";
+        CONTEXT.config.jira.url = "https://example.org";
         await beforeRunHook(details);
         expect(CONTEXT.xrayClient).to.be.an.instanceof(XrayClientServer);
     });
@@ -68,7 +68,7 @@ describe("the before run hook", () => {
         details.config.env = {};
         details.config.env[ENV_JIRA_USERNAME] = "user";
         details.config.env[ENV_JIRA_API_TOKEN] = "1337";
-        CONTEXT.config.jira.serverUrl = "https://example.org";
+        CONTEXT.config.jira.url = "https://example.org";
         await beforeRunHook(details);
         expect(CONTEXT.xrayClient).to.be.an.instanceof(XrayClientServer);
     });
@@ -80,7 +80,7 @@ describe("the before run hook", () => {
         details.config.env[ENV_JIRA_API_TOKEN] = "1337";
         details.config.env[ENV_XRAY_CLIENT_ID] = "user";
         details.config.env[ENV_XRAY_CLIENT_SECRET] = "xyz";
-        CONTEXT.config.jira.serverUrl = "https://example.org";
+        CONTEXT.config.jira.url = "https://example.org";
         await beforeRunHook(details);
         expect(CONTEXT.xrayClient).to.be.an.instanceof(XrayClientCloud);
     });
@@ -110,7 +110,7 @@ describe("the before run hook", () => {
     describe("the Jira client instantiation", () => {
         beforeEach(() => {
             expectToExist(details.config.env);
-            CONTEXT.config.jira.serverUrl = "https://example.org";
+            CONTEXT.config.jira.url = "https://example.org";
             // Make Jira client instantiation mandatory.
             CONTEXT.config.jira.attachVideo = true;
         });
@@ -156,7 +156,7 @@ describe("the before run hook", () => {
         });
 
         it("should throw an error for missing Jira URLs", async () => {
-            CONTEXT.config.jira.serverUrl = undefined;
+            CONTEXT.config.jira.url = undefined;
             await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
                 "Failed to configure Jira client: no Jira URL was provided. Configured options which necessarily require a configured Jira client:\n[\n\tjira.attachVideo = true\n]"
             );

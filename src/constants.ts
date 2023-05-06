@@ -12,7 +12,7 @@ export const ENV_JIRA_API_TOKEN = "JIRA_API_TOKEN";
 // | Jira Configuration            | //
 // ================================= //
 export const ENV_JIRA_PROJECT_KEY = "JIRA_PROJECT_KEY";
-export const ENV_JIRA_SERVER_URL = "JIRA_SERVER_URL";
+export const ENV_JIRA_URL = "JIRA_URL";
 export const ENV_JIRA_TEST_EXECUTION_ISSUE_KEY =
     "JIRA_TEST_EXECUTION_ISSUE_KEY";
 export const ENV_JIRA_TEST_PLAN_ISSUE_KEY = "JIRA_TEST_PLAN_ISSUE_KEY";
