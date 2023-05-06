@@ -71,18 +71,23 @@ export async function afterRunHook(
         );
         return;
     }
-    try {
-        await CONTEXT.xrayClient.importTestExecutionResults(
-            results as CypressCommandLine.CypressRunResult
+    const runResult = results as CypressCommandLine.CypressRunResult;
+    const issueKey = await CONTEXT.xrayClient.importTestExecutionResults(
+        runResult
+    );
+    if (CONTEXT.jiraClient && CONTEXT.config.jira.attachVideo) {
+        const videos: string[] = runResult.runs.map(
+            (result: CypressCommandLine.RunResult) => {
+                return result.video;
+            }
         );
-    } catch (error: unknown) {
-        let reason: unknown;
-        if (error instanceof Error) {
-            reason = error.message;
+        if (videos.length === 0) {
+            logWarning(
+                "No videos were uploaded: No videos have been captured."
+            );
         } else {
-            reason = error;
+            await CONTEXT.jiraClient.addAttachments(issueKey, ...videos);
         }
-        logError(`${reason}. Skipping plugin execution.`);
     }
 }
 

@@ -7,7 +7,6 @@ import { logError } from "../../logging/logging";
 import {
     ExportCucumberTestsResponse,
     ImportCucumberTestsResponse,
-    ImportIssueResponse,
 } from "../../types/xray/responses";
 import { Client } from "../client";
 
@@ -35,7 +34,7 @@ export abstract class XrayClient<
      */
     public importTestExecutionResults(
         results: CypressCommandLine.CypressRunResult
-    ): Promise<ImportIssueResponse> {
+    ): Promise<string> {
         try {
             return this.dispatchImportTestExecutionResultsRequest(results);
         } catch (error: unknown) {
@@ -52,7 +51,7 @@ export abstract class XrayClient<
      */
     protected abstract dispatchImportTestExecutionResultsRequest(
         results: CypressCommandLine.CypressRunResult
-    ): Promise<ImportIssueResponse>;
+    ): Promise<string>;
 
     /**
      * Downloads feature (file) specifications from corresponding Xray issues.

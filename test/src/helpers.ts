@@ -3,7 +3,6 @@ import { XrayClientCloud } from "../../src/client/xray/xrayClientCloud";
 import {
     ExportCucumberTestsResponse,
     ImportCucumberTestsResponse,
-    ImportIssueResponse,
 } from "../../src/types/xray/responses";
 
 export class DummyXrayClient extends XrayClientCloud {
@@ -13,7 +12,7 @@ export class DummyXrayClient extends XrayClientCloud {
 
     public dispatchImportTestExecutionResultsRequest(
         results: CypressCommandLine.CypressRunResult
-    ): Promise<ImportIssueResponse> {
+    ): Promise<string> {
         throw new Error("Method not implemented.");
     }
 

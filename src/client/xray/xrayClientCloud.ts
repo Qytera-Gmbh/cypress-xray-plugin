@@ -8,7 +8,6 @@ import { XrayTestExecutionResultsCloud } from "../../types/xray/importTestExecut
 import {
     ExportCucumberTestsResponse,
     ImportCucumberTestsResponse,
-    ImportIssueResponse,
 } from "../../types/xray/responses";
 import { XrayClient } from "./xrayClient";
 
@@ -21,7 +20,7 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
 
     public async dispatchImportTestExecutionResultsRequest(
         results: CypressCommandLine.CypressRunResult
-    ): Promise<ImportIssueResponse> {
+    ): Promise<string> {
         const json: XrayTestExecutionResultsCloud =
             new ImportExecutionResultsConverterCloud().convertExecutionResults(
                 results
@@ -46,10 +45,9 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
                         }
                     );
                     logSuccess(
-                        "Successfully uploaded test execution results:",
-                        JSON.stringify(response.data)
+                        `Successfully uploaded test execution results to ${response.data.key}.`
                     );
-                    return response.data;
+                    return response.data.key;
                 } finally {
                     clearInterval(progressInterval);
                 }

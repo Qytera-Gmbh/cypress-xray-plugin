@@ -153,25 +153,13 @@ function chooseUploader(
     }
 }
 function initJiraClient(env: Cypress.ObjectLike): JiraClient | undefined {
-    let dependentOptions = [];
-    if (CONTEXT.config.jira.attachVideo) {
-        const optionName = `${getPropertyName(
-            CONTEXT.config,
-            (x) => x.jira
-        )}.${getPropertyName(CONTEXT.config.jira, (x) => x.attachVideo)}`;
-        dependentOptions.push(
-            `${optionName}=${CONTEXT.config.jira.attachVideo}`
-        );
-    }
-    if (dependentOptions.length === 0) {
+    const dependentOptions = getJiraClientDependentOptions();
+    if (!dependentOptions) {
         return;
     }
     if (!CONTEXT.config.jira.serverUrl) {
         throw new Error(
-            `Failed to configure Jira client: no Jira URL was provided.\n` +
-                `Configured options which necessarily require a configured Jira client: ${dependentOptions.join(
-                    ", "
-                )}`
+            `Failed to configure Jira client: no Jira URL was provided. Configured options which necessarily require a configured Jira client:\n${dependentOptions}`
         );
     }
     if (ENV_JIRA_API_TOKEN in env) {
@@ -211,6 +199,23 @@ function initJiraClient(env: Cypress.ObjectLike): JiraClient | undefined {
         "Failed to configure Jira client: no viable authentication method was configured.\n" +
             "You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
     );
+}
+
+function getJiraClientDependentOptions(): string | undefined {
+    let dependentOptions = [];
+    if (CONTEXT.config.jira.attachVideo) {
+        const optionName = `${getPropertyName(
+            CONTEXT.config,
+            (x) => x.jira
+        )}.${getPropertyName(CONTEXT.config.jira, (x) => x.attachVideo)}`;
+        dependentOptions.push(
+            `${optionName} = ${CONTEXT.config.jira.attachVideo}`
+        );
+    }
+    if (dependentOptions.length === 0) {
+        return;
+    }
+    return `[\n\t${dependentOptions.join("\t\n")}\n]`;
 }
 
 /**

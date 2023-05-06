@@ -7,7 +7,12 @@ import {
     PATCredentials,
 } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
-import { logInfo, logSuccess, logWarning } from "../../logging/logging";
+import {
+    logError,
+    logInfo,
+    logSuccess,
+    logWarning,
+} from "../../logging/logging";
 import { Attachment } from "../../types/jira/attachments";
 import { Client } from "../client";
 
@@ -42,56 +47,69 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/{issueIdOrKey}/attachments-addAttachment
      */
-    public async addAttachment(
+    public async addAttachments(
         issueIdOrKey: string,
         ...files: string[]
     ): Promise<Attachment[]> {
-        if (files.length === 0) {
+        logInfo(`Scanning files to attach to ${issueIdOrKey} ...`);
+        const existingFiles = files.filter((file: string) => {
+            if (!fs.existsSync(file)) {
+                logError(
+                    `Failed to add attachment ${file}: file does not exist.`
+                );
+                return false;
+            }
+            return true;
+        });
+        if (existingFiles.length === 0) {
             logWarning(
                 `No files provided to attach to issue ${issueIdOrKey}. Skipping attaching.`
             );
             return [];
         }
         const form = new FormData();
-        files.forEach((file: string) => {
+        existingFiles.forEach((file: string) => {
             const fileContent = fs.createReadStream(file);
             form.append("file", fileContent);
         });
 
-        return await this.credentials
-            .getAuthenticationHeader()
-            .then(async (header: HTTPHeader) => {
-                logInfo(`Attaching files to Jira issue ${issueIdOrKey}...`);
-                const progressInterval = setInterval(() => {
-                    logInfo(`Waiting for ${this.apiBaseURL} to respond...`);
-                }, 5000);
-                try {
-                    const response: AxiosResponse<Attachment[]> =
-                        await Requests.post(
-                            `${this.apiBaseURL}/rest/api/2/issue/${issueIdOrKey}/attachments`,
-                            form,
-                            {
-                                headers: {
-                                    ...header,
-                                    ...form.getHeaders(),
-                                },
-                            }
-                        );
-                    logSuccess(
-                        `Successfully attached files to issue ${issueIdOrKey}:`,
-                        JSON.stringify(
+        try {
+            return await this.credentials
+                .getAuthenticationHeader()
+                .then(async (header: HTTPHeader) => {
+                    logInfo(`Attaching files to Jira issue ${issueIdOrKey}...`);
+                    const progressInterval = setInterval(() => {
+                        logInfo(`Waiting for ${this.apiBaseURL} to respond...`);
+                    }, 5000);
+                    try {
+                        const response: AxiosResponse<Attachment[]> =
+                            await Requests.post(
+                                `${this.apiBaseURL}/rest/api/2/issue/${issueIdOrKey}/attachments`,
+                                form,
+                                {
+                                    headers: {
+                                        ...header,
+                                        ...form.getHeaders(),
+                                    },
+                                }
+                            );
+                        logSuccess(
+                            `Successfully attached files to issue ${issueIdOrKey}:`,
                             response.data
                                 .map(
                                     (attachment: Attachment) =>
                                         attachment.filename
                                 )
                                 .join(", ")
-                        )
-                    );
-                    return response.data;
-                } finally {
-                    clearInterval(progressInterval);
-                }
-            });
+                        );
+                        return response.data;
+                    } finally {
+                        clearInterval(progressInterval);
+                    }
+                });
+        } catch (error: unknown) {
+            logError(`Failed to attach files: "${error}"`);
+            this.writeErrorFile(error, "addAttachmentError");
+        }
     }
 }

@@ -1,4 +1,4 @@
-import { AxiosError, AxiosResponse } from "axios";
+import { AxiosResponse } from "axios";
 import { Requests } from "../https/requests";
 import { logInfo, logSuccess } from "../logging/logging";
 import { encode } from "../util/base64";
@@ -79,15 +79,11 @@ export class JWTCredentials extends APICredentials<JWTCredentialsOptions> {
             return Requests.post(authenticationURL, {
                 client_id: this.clientId,
                 client_secret: this.clientSecret,
-            })
-                .then((response: AxiosResponse) => {
-                    logSuccess("Authentication successful.");
-                    this.token = response.data;
-                    return this.token;
-                })
-                .catch((error: AxiosError) => {
-                    throw new Error(`Authentication failure: ${error}`);
-                });
+            }).then((response: AxiosResponse) => {
+                logSuccess("Authentication successful.");
+                this.token = response.data;
+                return this.token;
+            });
         }
         return this.token;
     }

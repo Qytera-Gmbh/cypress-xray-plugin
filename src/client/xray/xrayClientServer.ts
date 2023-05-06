@@ -12,7 +12,6 @@ import { XrayTestExecutionResultsServer } from "../../types/xray/importTestExecu
 import {
     ExportCucumberTestsResponse,
     ImportCucumberTestsResponse,
-    ImportIssueResponse,
 } from "../../types/xray/responses";
 import { XrayClient } from "./xrayClient";
 
@@ -37,7 +36,7 @@ export class XrayClientServer extends XrayClient<
 
     public async dispatchImportTestExecutionResultsRequest(
         results: CypressCommandLine.CypressRunResult
-    ): Promise<ImportIssueResponse> {
+    ): Promise<string> {
         const json: XrayTestExecutionResultsServer =
             new ImportExecutionResultsConverterServer().convertExecutionResults(
                 results
@@ -45,7 +44,7 @@ export class XrayClientServer extends XrayClient<
         return this.credentials
             .getAuthenticationHeader()
             .then(async (header: HTTPHeader) => {
-                logInfo(`Uploading test results to ${this.apiBaseURL} ...`);
+                logInfo(`Uploading test results to ${this.apiBaseURL}...`);
                 const progressInterval = setInterval(() => {
                     logInfo("Still uploading...");
                 }, 5000);
@@ -60,10 +59,9 @@ export class XrayClientServer extends XrayClient<
                         }
                     );
                     logSuccess(
-                        "Successfully uploaded test execution results:",
-                        JSON.stringify(response.data)
+                        `Successfully uploaded test execution results to ${response.data.testExecIssue.key}.`
                     );
-                    return response.data;
+                    return response.data.testExecIssue.key;
                 } finally {
                     clearInterval(progressInterval);
                 }
