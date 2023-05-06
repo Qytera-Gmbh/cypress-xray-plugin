@@ -29,6 +29,11 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
             .getAuthenticationHeader({
                 authenticationURL: `${XrayClientCloud.URL}/authenticate`,
             })
+            .catch((error: unknown) => {
+                logError(`Failed to authenticate: "${error}"`);
+                this.writeErrorFile(error, "authenticationError");
+                throw error;
+            })
             .then(async (header: HTTPHeader) => {
                 logInfo("Uploading test results...");
                 const progressInterval = setInterval(() => {

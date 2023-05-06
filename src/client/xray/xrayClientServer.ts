@@ -7,7 +7,7 @@ import {
 } from "../../authentication/credentials";
 import { ImportExecutionResultsConverterServer } from "../../conversion/importExecutionResults/importExecutionResultsConverterServer";
 import { Requests } from "../../https/requests";
-import { logInfo, logSuccess } from "../../logging/logging";
+import { logError, logInfo, logSuccess } from "../../logging/logging";
 import { XrayTestExecutionResultsServer } from "../../types/xray/importTestExecutionResults";
 import {
     ExportCucumberTestsResponse,
@@ -43,6 +43,11 @@ export class XrayClientServer extends XrayClient<
             );
         return this.credentials
             .getAuthenticationHeader()
+            .catch((error: unknown) => {
+                logError(`Failed to authenticate: "${error}"`);
+                this.writeErrorFile(error, "authenticationError");
+                throw error;
+            })
             .then(async (header: HTTPHeader) => {
                 logInfo(`Uploading test results to ${this.apiBaseURL}...`);
                 const progressInterval = setInterval(() => {

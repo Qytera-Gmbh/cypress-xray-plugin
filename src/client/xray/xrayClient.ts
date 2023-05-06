@@ -38,8 +38,8 @@ export abstract class XrayClient<
         try {
             return this.dispatchImportTestExecutionResultsRequest(results);
         } catch (error: unknown) {
-            this.writeErrorFile(error, "importExecutionResultsError");
             logError(`Failed to upload results to Xray: "${error}"`);
+            this.writeErrorFile(error, "importExecutionResultsError");
         }
     }
 
@@ -68,8 +68,8 @@ export abstract class XrayClient<
         try {
             return this.dispatchExportCucumberTestsRequest(keys, filter);
         } catch (error: unknown) {
-            this.writeErrorFile(error, "exportCucumberTestsError");
             logError(`Failed to export cucumber feature files: "${error}"`);
+            this.writeErrorFile(error, "exportCucumberTestsError");
         }
     }
 
@@ -109,8 +109,8 @@ export abstract class XrayClient<
                 source
             );
         } catch (error: unknown) {
-            this.writeErrorFile(error, "importCucumberTestsError");
             logError(`Failed to import cucumber feature files: "${error}"`);
+            this.writeErrorFile(error, "importCucumberTestsError");
         }
     }
 

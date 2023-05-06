@@ -51,7 +51,7 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
         issueIdOrKey: string,
         ...files: string[]
     ): Promise<Attachment[]> {
-        logInfo(`Scanning files to attach to ${issueIdOrKey} ...`);
+        logInfo(`Scanning files to attach to ${issueIdOrKey}...`);
         const existingFiles = files.filter((file: string) => {
             if (!fs.existsSync(file)) {
                 logError(
