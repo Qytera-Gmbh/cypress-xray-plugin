@@ -50,9 +50,9 @@ export class XrayClientServer extends XrayClient<
             })
             .then(async (header: HTTPHeader) => {
                 logInfo(`Uploading test results to ${this.apiBaseURL}...`);
-                const progressInterval = setInterval(() => {
-                    logInfo("Still uploading...");
-                }, 5000);
+                const progressInterval = this.startResponseInterval(
+                    this.apiBaseURL
+                );
                 try {
                     const response = await Requests.post(
                         `${this.apiBaseURL}/rest/raven/latest/api/import/execution`,

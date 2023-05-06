@@ -36,9 +36,9 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
             })
             .then(async (header: HTTPHeader) => {
                 logInfo("Uploading test results...");
-                const progressInterval = setInterval(() => {
-                    logInfo("Still uploading...");
-                }, 5000);
+                const progressInterval = this.startResponseInterval(
+                    XrayClientCloud.URL
+                );
                 try {
                     const response = await Requests.post(
                         `${XrayClientCloud.URL}/import/execution`,

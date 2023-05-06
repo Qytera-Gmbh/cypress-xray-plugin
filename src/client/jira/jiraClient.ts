@@ -77,10 +77,10 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
             return await this.credentials
                 .getAuthenticationHeader()
                 .then(async (header: HTTPHeader) => {
-                    logInfo(`Attaching files to Jira issue ${issueIdOrKey}...`);
-                    const progressInterval = setInterval(() => {
-                        logInfo(`Waiting for ${this.apiBaseURL} to respond...`);
-                    }, 5000);
+                    logInfo(`Attaching files...`);
+                    const progressInterval = this.startResponseInterval(
+                        this.apiBaseURL
+                    );
                     try {
                         const response: AxiosResponse<Attachment[]> =
                             await Requests.post(

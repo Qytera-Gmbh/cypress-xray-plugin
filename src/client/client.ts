@@ -4,7 +4,7 @@ import {
     APICredentials,
     APICredentialsOptions,
 } from "../authentication/credentials";
-import { logError } from "../logging/logging";
+import { logError, logInfo } from "../logging/logging";
 
 /**
  * A basic client interface which stores credentials data used for
@@ -52,5 +52,34 @@ export abstract class Client<T extends APICredentials<APICredentialsOptions>> {
         }
         writeFileSync(errorFileName, errorData);
         logError(`Complete error logs have been written to "${errorFileName}"`);
+    }
+
+    private readonly LOG_RESPONSE_INTERVAL_MS = 10000;
+
+    /**
+     * Starts an informative timer which tells the user for how long they have
+     * been waiting for a response already.
+     *
+     * @param url the request URL
+     * @returns the interval instance
+     */
+    protected startResponseInterval(url: string): NodeJS.Timer {
+        let sumTime = 0;
+        const callback = () => {
+            sumTime = sumTime + this.LOG_RESPONSE_INTERVAL_MS;
+            logInfo(
+                `Waiting for ${url} to respond... (${sumTime / 1000} seconds)`
+            );
+            clearInterval(progressInterval);
+            progressInterval = setInterval(
+                callback,
+                this.LOG_RESPONSE_INTERVAL_MS
+            );
+        };
+        let progressInterval = setInterval(
+            callback,
+            this.LOG_RESPONSE_INTERVAL_MS
+        );
+        return progressInterval;
     }
 }
