@@ -29,21 +29,22 @@ export abstract class XrayClient<
      * Uploads test results to the Xray instance.
      *
      * @param results the test results as provided by Cypress
-     * @returns the response of the Xray instance or null if the upload was skipped
+     * @returns the key of the test execution issue or null if the upload was skipped
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
     public async importTestExecutionResults(
         results: CypressCommandLine.CypressRunResult
     ): Promise<string | null> {
         try {
-            const response =
-                await this.dispatchImportTestExecutionResultsRequest(results);
-            if (response === null) {
+            const key = await this.dispatchImportTestExecutionResultsRequest(
+                results
+            );
+            if (key === null) {
                 logWarning(
                     "No tests linked to Xray were executed. Skipping upload."
                 );
-                return response;
             }
+            return key;
         } catch (error: unknown) {
             logError(`Failed to upload results to Xray: "${error}"`);
             this.writeErrorFile(error, "importExecutionResultsError");
