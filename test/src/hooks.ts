@@ -161,7 +161,7 @@ describe("the before run hook", () => {
         it("should throw an error for missing Jira URLs", async () => {
             CONTEXT.config.jira.serverUrl = undefined;
             await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
-                "Failed to configure Jira client: no Jira URL was provided.\nConfigured options which necessarily require a configured Jira client: jira.attachVideo=true"
+                "Failed to configure Jira client: no Jira URL was provided. Configured options which necessarily require a configured Jira client:\n[\n\tjira.attachVideo = true\n]"
             );
         });
 
