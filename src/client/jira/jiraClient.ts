@@ -90,6 +90,7 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
                                     headers: {
                                         ...header,
                                         ...form.getHeaders(),
+                                        "X-Atlassian-Token": "no-check",
                                     },
                                 }
                             );
