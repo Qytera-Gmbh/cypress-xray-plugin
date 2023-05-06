@@ -41,7 +41,7 @@ export interface JiraOptions {
      */
     testPlanIssueKey?: string;
     /**
-     * Whether any video Cypress captures during test execution should be
+     * Whether any videos Cypress captured during test execution should be
      * attached to the test execution issue on results upload.
      */
     attachVideo?: boolean;
