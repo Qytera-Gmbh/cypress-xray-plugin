@@ -19,3 +19,7 @@ export function logSuccess(...text: string[]) {
 export function logWarning(...text: string[]) {
     console.warn(prefix("WARNING"), chalk.yellow(text.join(" ")));
 }
+
+export function logDebug(...text: string[]) {
+    console.warn(prefix("DEBUG"), chalk.cyan(text.join(" ")));
+}
