@@ -26,7 +26,7 @@ export function initContext(config: Options) {
 
 const DEFAULT_OPTIONS_JIRA: JiraOptions = {
     projectKey: null,
-    attachVideo: false,
+    attachVideos: false,
 };
 const DEFAULT_OPTIONS_PLUGIN: PluginOptions = {
     overwriteIssueSummary: false,

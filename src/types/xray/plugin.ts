@@ -44,7 +44,7 @@ export interface JiraOptions {
      * Whether any videos Cypress captured during test execution should be
      * attached to the test execution issue on results upload.
      */
-    attachVideo?: boolean;
+    attachVideos?: boolean;
 }
 
 export interface XrayOptions {
