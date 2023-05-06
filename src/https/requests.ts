@@ -1,7 +1,8 @@
 import axios, { AxiosResponse, RawAxiosRequestConfig } from "axios";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { Agent } from "https";
 import { CONTEXT } from "../context";
+import { logInfo } from "../logging/logging";
 
 export class Requests {
     private static AGENT: Agent = undefined;
