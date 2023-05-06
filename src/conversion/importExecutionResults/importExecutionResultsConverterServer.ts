@@ -39,7 +39,7 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
                         screenshot.path.indexOf("cypress")
                     );
                     evidence.push({
-                        filename: basename(normalizedFilename(suffix)),
+                        filename: normalizedFilename(basename(suffix)),
                         data: encodeFile(screenshot.path),
                     });
                 }
