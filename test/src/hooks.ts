@@ -14,11 +14,8 @@ import {
     ENV_JIRA_PASSWORD,
     ENV_JIRA_PROJECT_KEY,
     ENV_JIRA_USERNAME,
-    ENV_XRAY_API_TOKEN,
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
-    ENV_XRAY_PASSWORD,
-    ENV_XRAY_USERNAME,
 } from "../../src/constants";
 import { CONTEXT, initContext } from "../../src/context";
 import { beforeRunHook } from "../../src/hooks";
@@ -60,8 +57,8 @@ describe("the before run hook", () => {
 
     it("should be able to detect basic server credentials", async () => {
         details.config.env = {};
-        details.config.env[ENV_XRAY_USERNAME] = "user";
-        details.config.env[ENV_XRAY_PASSWORD] = "xyz";
+        details.config.env[ENV_JIRA_USERNAME] = "user";
+        details.config.env[ENV_JIRA_PASSWORD] = "xyz";
         CONTEXT.config.jira.serverUrl = "https://example.org";
         await beforeRunHook(details);
         expect(CONTEXT.xrayClient).to.be.an.instanceof(XrayClientServer);
@@ -69,8 +66,8 @@ describe("the before run hook", () => {
 
     it("should be able to detect PAT server credentials", async () => {
         details.config.env = {};
-        details.config.env[ENV_XRAY_USERNAME] = "user";
-        details.config.env[ENV_XRAY_API_TOKEN] = "1337";
+        details.config.env[ENV_JIRA_USERNAME] = "user";
+        details.config.env[ENV_JIRA_API_TOKEN] = "1337";
         CONTEXT.config.jira.serverUrl = "https://example.org";
         await beforeRunHook(details);
         expect(CONTEXT.xrayClient).to.be.an.instanceof(XrayClientServer);
@@ -78,9 +75,9 @@ describe("the before run hook", () => {
 
     it("should be able to choose cloud credentials over server credentials", async () => {
         details.config.env = {};
-        details.config.env[ENV_XRAY_USERNAME] = "user";
-        details.config.env[ENV_XRAY_PASSWORD] = "xyz";
-        details.config.env[ENV_XRAY_API_TOKEN] = "1337";
+        details.config.env[ENV_JIRA_USERNAME] = "user";
+        details.config.env[ENV_JIRA_PASSWORD] = "xyz";
+        details.config.env[ENV_JIRA_API_TOKEN] = "1337";
         details.config.env[ENV_XRAY_CLIENT_ID] = "user";
         details.config.env[ENV_XRAY_CLIENT_SECRET] = "xyz";
         CONTEXT.config.jira.serverUrl = "https://example.org";

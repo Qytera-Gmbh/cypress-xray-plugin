@@ -2,9 +2,6 @@
 // | Authentication                | //
 // ================================= //
 // Xray.
-export const ENV_XRAY_USERNAME = "XRAY_USERNAME";
-export const ENV_XRAY_PASSWORD = "XRAY_PASSWORD";
-export const ENV_XRAY_API_TOKEN = "XRAY_API_TOKEN";
 export const ENV_XRAY_CLIENT_ID = "XRAY_CLIENT_ID";
 export const ENV_XRAY_CLIENT_SECRET = "XRAY_CLIENT_SECRET";
 // Jira.

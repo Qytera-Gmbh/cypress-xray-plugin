@@ -22,15 +22,12 @@ import {
     ENV_OPENSSL_SECURE_OPTIONS,
     ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES,
     ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY,
-    ENV_XRAY_API_TOKEN,
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
-    ENV_XRAY_PASSWORD,
     ENV_XRAY_STATUS_FAILED,
     ENV_XRAY_STATUS_PASSED,
     ENV_XRAY_UPLOAD_RESULTS,
     ENV_XRAY_UPLOAD_SCREENSHOTS,
-    ENV_XRAY_USERNAME,
 } from "../constants";
 import { CONTEXT } from "../context";
 import { logInfo } from "../logging/logging";
@@ -124,25 +121,25 @@ function chooseUploader(
                 env[ENV_XRAY_CLIENT_SECRET]
             )
         );
-    } else if (ENV_XRAY_API_TOKEN in env && CONTEXT.config.jira.serverUrl) {
-        logInfo("Xray PAT found. Setting up Xray PAT credentials.");
+    } else if (ENV_JIRA_API_TOKEN in env && CONTEXT.config.jira.serverUrl) {
+        logInfo("Jira PAT found. Setting up Xray PAT credentials.");
         return new XrayClientServer(
             CONTEXT.config.jira.serverUrl,
-            new PATCredentials(env[ENV_XRAY_API_TOKEN])
+            new PATCredentials(env[ENV_JIRA_API_TOKEN])
         );
     } else if (
-        ENV_XRAY_USERNAME in env &&
-        ENV_XRAY_PASSWORD in env &&
+        ENV_JIRA_USERNAME in env &&
+        ENV_JIRA_PASSWORD in env &&
         CONTEXT.config.jira.serverUrl
     ) {
         logInfo(
-            "Xray username and password found. Setting up Xray basic auth credentials."
+            "Jira username and password found. Setting up Xray basic auth credentials."
         );
         return new XrayClientServer(
             CONTEXT.config.jira.serverUrl,
             new BasicAuthCredentials(
-                env[ENV_XRAY_USERNAME],
-                env[ENV_XRAY_PASSWORD]
+                env[ENV_JIRA_USERNAME],
+                env[ENV_JIRA_PASSWORD]
             )
         );
     } else {
