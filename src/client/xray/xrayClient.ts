@@ -32,11 +32,13 @@ export abstract class XrayClient<
      * @returns the response of the Xray instance
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
-    public importTestExecutionResults(
+    public async importTestExecutionResults(
         results: CypressCommandLine.CypressRunResult
     ): Promise<string> {
         try {
-            return this.dispatchImportTestExecutionResultsRequest(results);
+            return await this.dispatchImportTestExecutionResultsRequest(
+                results
+            );
         } catch (error: unknown) {
             logError(`Failed to upload results to Xray: "${error}"`);
             this.writeErrorFile(error, "importExecutionResultsError");
