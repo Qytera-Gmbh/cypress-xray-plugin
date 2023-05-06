@@ -1,4 +1,3 @@
-import { basename } from "path";
 import { CONTEXT } from "../../context";
 import { logWarning } from "../../logging/logging";
 import { Status } from "../../types/testStatus";
@@ -108,23 +107,6 @@ export abstract class ImportExecutionResultsConverter<
      */
     protected truncateISOTime(time: DateTimeISO): string {
         return time.split(".")[0] + "Z";
-    }
-
-    /**
-     * Normalizes a filename by replacing invalid character sequences with `_`.
-     *
-     * @param filename any filename
-     * @returns the normalized filename
-     */
-    protected normalizedFilename(filename: string): string {
-        let normalizedFilename = basename(filename);
-        if (CONTEXT.config.plugin.normalizeScreenshotNames) {
-            normalizedFilename = normalizedFilename.replaceAll(
-                /[^\.a-zA-Z0-9]+/g,
-                "_"
-            );
-        }
-        return normalizedFilename;
     }
 
     /**

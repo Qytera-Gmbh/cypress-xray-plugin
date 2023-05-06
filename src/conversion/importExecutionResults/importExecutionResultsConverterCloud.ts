@@ -1,3 +1,4 @@
+import { basename } from "path";
 import { CONTEXT } from "../../context";
 import { Status } from "../../types/testStatus";
 import {
@@ -6,6 +7,7 @@ import {
     XrayTestInfoCloud,
 } from "../../types/xray/importTestExecutionResults";
 import { encodeFile } from "../../util/base64";
+import { normalizedFilename } from "../../util/files";
 import { ImportExecutionResultsConverter } from "./importExecutionResultsConverter";
 
 /**
@@ -37,7 +39,7 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
                         screenshot.path.indexOf("cypress")
                     );
                     evidence.push({
-                        filename: this.normalizedFilename(suffix),
+                        filename: basename(normalizedFilename(suffix)),
                         data: encodeFile(screenshot.path),
                     });
                 }
