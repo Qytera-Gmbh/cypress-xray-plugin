@@ -161,4 +161,19 @@ describe("the conversion function", () => {
         expect(json.tests[1].status).to.eq("it worked");
         expect(json.tests[2].status).to.eq("it did not work");
     });
+
+    it("should be able to skip screenshot evidence if disabled", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        expectToExist(CONTEXT.config.xray);
+        CONTEXT.config.xray.uploadScreenshots = false;
+        const json: XrayTestExecutionResultsCloud =
+            converter.convertExecutionResults(result);
+        expectToExist(json.tests);
+        expect(json.tests).to.have.length(3);
+        expect(json.tests[0].evidence).to.be.undefined;
+        expect(json.tests[1].evidence).to.be.undefined;
+        expect(json.tests[2].evidence).to.be.undefined;
+    });
 });

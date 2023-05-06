@@ -30,17 +30,19 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
             status: this.getXrayStatus(this.getStatus(attempt)),
         };
         const evidence: XrayEvidenceItem[] = [];
-        attempt.screenshots.forEach(
-            (screenshot: CypressCommandLine.ScreenshotInformation) => {
-                const suffix = screenshot.path.substring(
-                    screenshot.path.indexOf("cypress")
-                );
-                evidence.push({
-                    filename: this.normalizedFilename(suffix),
-                    data: encodeFile(screenshot.path),
-                });
-            }
-        );
+        if (CONTEXT.config.xray.uploadScreenshots) {
+            attempt.screenshots.forEach(
+                (screenshot: CypressCommandLine.ScreenshotInformation) => {
+                    const suffix = screenshot.path.substring(
+                        screenshot.path.indexOf("cypress")
+                    );
+                    evidence.push({
+                        filename: this.normalizedFilename(suffix),
+                        data: encodeFile(screenshot.path),
+                    });
+                }
+            );
+        }
         if (evidence.length > 0) {
             if (!json.evidence) {
                 json.evidence = [];
