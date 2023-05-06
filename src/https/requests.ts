@@ -38,6 +38,17 @@ export class Requests {
         data?: D,
         config?: RawAxiosRequestConfig<D>
     ): Promise<AxiosResponse> {
+        if (CONTEXT.config.plugin.debug) {
+            logInfo("Writing POST request data to post.json.");
+            writeFileSync(
+                "post.json",
+                JSON.stringify({
+                    url: url,
+                    body: data,
+                    config: config,
+                })
+            );
+        }
         return axios.post(url, data, {
             ...config,
             httpsAgent: Requests.agent(),

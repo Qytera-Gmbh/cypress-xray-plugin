@@ -31,6 +31,7 @@ const DEFAULT_OPTIONS_JIRA: JiraOptions = {
 const DEFAULT_OPTIONS_PLUGIN: PluginOptions = {
     overwriteIssueSummary: false,
     normalizeScreenshotNames: false,
+    debug: false,
 };
 
 const DEFAULT_OPTIONS_Xray: XrayOptions = {

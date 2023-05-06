@@ -142,6 +142,10 @@ export interface PluginOptions {
      * other sequences with `_`.
      */
     normalizeScreenshotNames?: boolean;
+    /**
+     * Turns on or off extensive debugging output.
+     */
+    debug?: boolean;
 }
 
 export interface OpenSSLOptions {
