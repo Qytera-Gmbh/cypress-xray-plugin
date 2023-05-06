@@ -86,7 +86,7 @@ export async function afterRunHook(
         );
         return;
     }
-    if (CONTEXT.jiraClient && CONTEXT.config.jira.attachVideo) {
+    if (CONTEXT.jiraClient && CONTEXT.config.jira.attachVideos) {
         const videos: string[] = runResult.runs.map(
             (result: CypressCommandLine.RunResult) => {
                 return result.video;

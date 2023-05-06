@@ -11,7 +11,7 @@ import {
     ENV_CUCUMBER_FEATURE_FILE_EXTENSION,
     ENV_CUCUMBER_UPLOAD_FEATURES,
     ENV_JIRA_API_TOKEN,
-    ENV_JIRA_ATTACH_VIDEO,
+    ENV_JIRA_ATTACH_VIDEOS,
     ENV_JIRA_PASSWORD,
     ENV_JIRA_PROJECT_KEY,
     ENV_JIRA_TEST_EXECUTION_ISSUE_KEY,
@@ -50,9 +50,9 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
         CONTEXT.config.jira.testPlanIssueKey =
             env[ENV_JIRA_TEST_PLAN_ISSUE_KEY];
     }
-    if (ENV_JIRA_ATTACH_VIDEO in env) {
-        CONTEXT.config.jira.attachVideo = parseBoolean(
-            env[ENV_JIRA_ATTACH_VIDEO]
+    if (ENV_JIRA_ATTACH_VIDEOS in env) {
+        CONTEXT.config.jira.attachVideos = parseBoolean(
+            env[ENV_JIRA_ATTACH_VIDEOS]
         );
     }
     // Xray.
@@ -204,13 +204,13 @@ function initJiraClient(env: Cypress.ObjectLike): JiraClient | undefined {
 
 function getJiraClientDependentOptions(): string | undefined {
     let dependentOptions = [];
-    if (CONTEXT.config.jira.attachVideo) {
+    if (CONTEXT.config.jira.attachVideos) {
         const optionName = `${getPropertyName(
             CONTEXT.config,
             (x) => x.jira
-        )}.${getPropertyName(CONTEXT.config.jira, (x) => x.attachVideo)}`;
+        )}.${getPropertyName(CONTEXT.config.jira, (x) => x.attachVideos)}`;
         dependentOptions.push(
-            `${optionName} = ${CONTEXT.config.jira.attachVideo}`
+            `${optionName} = ${CONTEXT.config.jira.attachVideos}`
         );
     }
     if (dependentOptions.length === 0) {
