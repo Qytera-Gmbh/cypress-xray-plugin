@@ -75,9 +75,14 @@ export async function afterRunHook(
     const issueKey = await CONTEXT.xrayClient.importTestExecutionResults(
         runResult
     );
-    if (!issueKey) {
+    if (issueKey === undefined) {
         logWarning(
-            "Execution results import failed, skipping remaining tasks."
+            "Execution results import failed. Skipping remaining tasks."
+        );
+        return;
+    } else if (issueKey === null) {
+        logWarning(
+            "Execution results import was skipped. Skipping remaining tasks."
         );
         return;
     }

@@ -34,13 +34,16 @@ export class XrayClientServer extends XrayClient<
         this.apiBaseURL = apiBaseURL;
     }
 
-    public async dispatchImportTestExecutionResultsRequest(
+    protected async dispatchImportTestExecutionResultsRequest(
         results: CypressCommandLine.CypressRunResult
-    ): Promise<string> {
+    ): Promise<string | null> {
         const json: XrayTestExecutionResultsServer =
             new ImportExecutionResultsConverterServer().convertExecutionResults(
                 results
             );
+        if (!json.tests || json.tests.length === 0) {
+            return null;
+        }
         return this.credentials
             .getAuthenticationHeader()
             .catch((error: unknown) => {
@@ -73,14 +76,14 @@ export class XrayClientServer extends XrayClient<
             });
     }
 
-    public dispatchExportCucumberTestsRequest(
+    protected dispatchExportCucumberTestsRequest(
         keys?: string,
         filter?: number
     ): Promise<ExportCucumberTestsResponse> {
         throw new Error("Method not implemented.");
     }
 
-    public async dispatchImportCucumberTestsRequest(
+    protected async dispatchImportCucumberTestsRequest(
         file: string,
         projectKey?: string
     ): Promise<ImportCucumberTestsResponse> {

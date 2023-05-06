@@ -18,13 +18,16 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
      */
     private static readonly URL = "https://xray.cloud.getxray.app/api/v2";
 
-    public async dispatchImportTestExecutionResultsRequest(
+    protected async dispatchImportTestExecutionResultsRequest(
         results: CypressCommandLine.CypressRunResult
-    ): Promise<string> {
+    ): Promise<string | null> {
         const json: XrayTestExecutionResultsCloud =
             new ImportExecutionResultsConverterCloud().convertExecutionResults(
                 results
             );
+        if (!json.tests || json.tests.length === 0) {
+            return null;
+        }
         return this.credentials
             .getAuthenticationHeader({
                 authenticationURL: `${XrayClientCloud.URL}/authenticate`,
@@ -59,7 +62,7 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
             });
     }
 
-    public async dispatchExportCucumberTestsRequest(
+    protected async dispatchExportCucumberTestsRequest(
         keys?: string,
         filter?: number
     ): Promise<ExportCucumberTestsResponse> {
@@ -106,7 +109,7 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
         }
     }
 
-    public async dispatchImportCucumberTestsRequest(
+    protected async dispatchImportCucumberTestsRequest(
         file: string,
         projectKey?: string,
         projectId?: string,

@@ -3,7 +3,7 @@ import {
     JWTCredentials,
     PATCredentials,
 } from "../../authentication/credentials";
-import { logError } from "../../logging/logging";
+import { logError, logWarning } from "../../logging/logging";
 import {
     ExportCucumberTestsResponse,
     ImportCucumberTestsResponse,
@@ -29,16 +29,21 @@ export abstract class XrayClient<
      * Uploads test results to the Xray instance.
      *
      * @param results the test results as provided by Cypress
-     * @returns the response of the Xray instance
+     * @returns the response of the Xray instance or null if the upload was skipped
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
     public async importTestExecutionResults(
         results: CypressCommandLine.CypressRunResult
-    ): Promise<string> {
+    ): Promise<string | null> {
         try {
-            return await this.dispatchImportTestExecutionResultsRequest(
-                results
-            );
+            const response =
+                await this.dispatchImportTestExecutionResultsRequest(results);
+            if (response === null) {
+                logWarning(
+                    "No tests linked to Xray were executed. Skipping upload."
+                );
+                return response;
+            }
         } catch (error: unknown) {
             logError(`Failed to upload results to Xray: "${error}"`);
             this.writeErrorFile(error, "importExecutionResultsError");
@@ -53,7 +58,7 @@ export abstract class XrayClient<
      */
     protected abstract dispatchImportTestExecutionResultsRequest(
         results: CypressCommandLine.CypressRunResult
-    ): Promise<string>;
+    ): Promise<string | null>;
 
     /**
      * Downloads feature (file) specifications from corresponding Xray issues.
@@ -82,7 +87,7 @@ export abstract class XrayClient<
      * @param filter an integer that represents the filter ID
      * @returns the response of the Xray instance
      */
-    public abstract dispatchExportCucumberTestsRequest(
+    protected abstract dispatchExportCucumberTestsRequest(
         keys?: string,
         filter?: number
     ): Promise<ExportCucumberTestsResponse>;
@@ -125,7 +130,7 @@ export abstract class XrayClient<
      * @param source a name designating the source of the features being imported (e.g. the source project name)
      * @returns the response of the Xray instance
      */
-    public abstract dispatchImportCucumberTestsRequest(
+    protected abstract dispatchImportCucumberTestsRequest(
         file: string,
         projectKey?: string,
         projectId?: string,
