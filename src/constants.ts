@@ -39,6 +39,7 @@ export const ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY =
     "PLUGIN_OVERWRITE_ISSUE_SUMMARY";
 export const ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES =
     "PLUGIN_NORMALIZE_SCREENSHOT_NAMES";
+export const ENV_PLUGIN_DEBUG = "PLUGIN_DEBUG";
 // ================================= //
 // | OpenSSL Configuration         | //
 // ================================= //

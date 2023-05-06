@@ -20,6 +20,7 @@ import {
     ENV_JIRA_USERNAME,
     ENV_OPENSSL_ROOT_CA_PATH,
     ENV_OPENSSL_SECURE_OPTIONS,
+    ENV_PLUGIN_DEBUG,
     ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES,
     ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY,
     ENV_XRAY_CLIENT_ID,
@@ -96,6 +97,9 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
         CONTEXT.config.plugin.normalizeScreenshotNames = parseBoolean(
             env[ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES]
         );
+    }
+    if (ENV_PLUGIN_DEBUG in env) {
+        CONTEXT.config.plugin.debug = parseBoolean(env[ENV_PLUGIN_DEBUG]);
     }
     // OpenSSL.
     if (ENV_OPENSSL_ROOT_CA_PATH in env) {
