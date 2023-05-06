@@ -27,7 +27,7 @@ describe("the Xray cloud client", () => {
         client = new XrayClientCloud(new JWTCredentials("user", "xyz"));
     });
 
-    it.only("should be able to skip empty test uploads", async () => {
+    it("should be able to skip empty test uploads", async () => {
         details.runs.forEach((run, i) =>
             run.tests.forEach(
                 (test, j) =>
