@@ -41,22 +41,11 @@ export abstract class ImportExecutionResultsConverter<
                 let test: XrayTestType;
                 const attempts = attemptsByIssueKey.get(key);
                 try {
-                    if (attempts.length === 1) {
-                        test = this.getSingleTest(attempts[0], key);
-                    } else {
-                        test = this.getIteratedTest(attempts, key);
-                    }
+                    test = this.getTest(attempts[attempts.length - 1], key);
                     if (CONTEXT.config.plugin.overwriteIssueSummary) {
-                        if (tests.length === 1) {
-                            test.testInfo = this.getTestInfoFromSingleTest(
-                                tests[0]
-                            );
-                        } else {
-                            test.testInfo = this.getTestInfoFromMultipleTests(
-                                tests,
-                                key
-                            );
-                        }
+                        test.testInfo = this.getTestInfo(
+                            tests[tests.length - 1]
+                        );
                     }
                     if (!json.tests) {
                         json.tests = [test];
@@ -84,20 +73,8 @@ export abstract class ImportExecutionResultsConverter<
      * @param testIssueKey the test's Jira issue key
      * @return the test entity
      */
-    protected abstract getSingleTest(
+    protected abstract getTest(
         attempt: CypressCommandLine.AttemptResult,
-        testIssueKey: string
-    ): XrayTestType;
-
-    /**
-     * Builds a test entity for an executed test with multiple iterations (DDT).
-     *
-     * @param testResults the Cypress test results
-     * @param testIssueKey the test's Jira issue key
-     * @return the test entity
-     */
-    protected abstract getIteratedTest(
-        attempts: CypressCommandLine.AttemptResult[],
         testIssueKey: string
     ): XrayTestType;
 
@@ -116,21 +93,8 @@ export abstract class ImportExecutionResultsConverter<
      * @param testResult the Cypress test result
      * @returns the test information
      */
-    protected abstract getTestInfoFromSingleTest(
+    protected abstract getTestInfo(
         testResult: CypressCommandLine.TestResult
-    ): XrayTestInfoType;
-
-    /**
-     * Constructs an {@link XrayTestInfoType} object based on multiple
-     * {@link CypressCommandLine.TestResult}.
-     *
-     * @param testResults the Cypress test results
-     * @param testIssueKey the designated Jira test issue key
-     * @returns the test information
-     */
-    protected abstract getTestInfoFromMultipleTests(
-        testResults: CypressCommandLine.TestResult[],
-        testIssueKey: string
     ): XrayTestInfoType;
 
     /**
@@ -233,9 +197,7 @@ export abstract class ImportExecutionResultsConverter<
      * @param attempt the Cypress test result
      * @returns a corresponding status
      */
-    protected getStatusFromSingleTest(
-        attempt: CypressCommandLine.AttemptResult
-    ): Status {
+    protected getStatus(attempt: CypressCommandLine.AttemptResult): Status {
         switch (attempt.state) {
             case "passed":
                 return Status.PASSED;
@@ -246,33 +208,6 @@ export abstract class ImportExecutionResultsConverter<
                     `Unknown Cypress test status: ${attempt.state}`
                 );
         }
-    }
-
-    /**
-     * Returns a {@link Status} enum value for an iterated Cypress test result.
-     *
-     * @param attempts the Cypress test results
-     * @returns a corresponding status
-     */
-    protected getStatusFromIteratedTest(
-        attempts: CypressCommandLine.AttemptResult[]
-    ): Status {
-        let status = Status.PASSED;
-        attempts.forEach((attempt: CypressCommandLine.AttemptResult) => {
-            const attemptStatus = this.getStatusFromSingleTest(attempt);
-            switch (attemptStatus) {
-                case Status.PASSED:
-                    // Do nothing.
-                    break;
-                case Status.FAILED:
-                    // Failed always takes precedence over all other statuses.
-                    status = Status.FAILED;
-                    return;
-                default:
-                    throw new Error(`Unknown status: ${status}`);
-            }
-        });
-        return status;
     }
 
     private mapTestsToIssueKeys(
