@@ -42,12 +42,13 @@ export abstract class ImportExecutionResultsConverter<
                 const testResult = testResults[testResults.length - 1];
                 try {
                     const issueKey = this.getTestIssueKey(testResult);
-                    if (issueKey === null) {
-                        if (!CONTEXT.config.jira.createTestIssues) {
-                            throw new Error(
-                                "No test issue key found in test title"
-                            );
-                        }
+                    if (
+                        issueKey === null &&
+                        !CONTEXT.config.jira.createTestIssues
+                    ) {
+                        throw new Error(
+                            "No test issue key found in test title"
+                        );
                     }
                     const attempts = attemptsByTitle.get(title);
                     // TODO: Support multiple iterations.
