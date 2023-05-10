@@ -27,6 +27,7 @@ export function initContext(config: Options) {
 const DEFAULT_OPTIONS_JIRA: JiraOptions = {
     projectKey: null,
     attachVideos: false,
+    createTestIssues: true,
 };
 const DEFAULT_OPTIONS_PLUGIN: PluginOptions = {
     overwriteIssueSummary: false,
@@ -43,7 +44,7 @@ const DEFAULT_OPTIONS_Xray: XrayOptions = {
 };
 
 const DEFAULT_OPTIONS_CUCUMBER: CucumberOptions = {
-    featureFileExtension: ".feature",
+    featureFileExtension: null,
     uploadFeatures: false,
     downloadFeatures: false,
 };

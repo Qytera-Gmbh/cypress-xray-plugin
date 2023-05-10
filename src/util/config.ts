@@ -12,6 +12,7 @@ import {
     ENV_CUCUMBER_UPLOAD_FEATURES,
     ENV_JIRA_API_TOKEN,
     ENV_JIRA_ATTACH_VIDEOS,
+    ENV_JIRA_CREATE_TEST_ISSUES,
     ENV_JIRA_PASSWORD,
     ENV_JIRA_PROJECT_KEY,
     ENV_JIRA_TEST_EXECUTION_ISSUE_KEY,
@@ -53,6 +54,11 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
     if (ENV_JIRA_ATTACH_VIDEOS in env) {
         CONTEXT.config.jira.attachVideos = parseBoolean(
             env[ENV_JIRA_ATTACH_VIDEOS]
+        );
+    }
+    if (ENV_JIRA_CREATE_TEST_ISSUES in env) {
+        CONTEXT.config.jira.createTestIssues = parseBoolean(
+            env[ENV_JIRA_CREATE_TEST_ISSUES]
         );
     }
     // Xray.

@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { readFileSync } from "fs";
 import { JWTCredentials } from "../../../../src/authentication/credentials";
 import { XrayClientCloud } from "../../../../src/client/xray/xrayClientCloud";
-import { initContext } from "../../../../src/context";
+import { CONTEXT, initContext } from "../../../../src/context";
 describe("the Xray cloud client", () => {
     let details: CypressCommandLine.CypressRunResult;
     let client: XrayClientCloud;
@@ -34,6 +34,7 @@ describe("the Xray cloud client", () => {
                     (test.title = ["nothing", i.toString(), j.toString()])
             )
         );
+        CONTEXT.config.jira.createTestIssues = false;
         const result = await client.importTestExecutionResults(details);
         expect(result).to.be.null;
     });

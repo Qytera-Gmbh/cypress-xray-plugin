@@ -37,6 +37,17 @@ describe("the conversion function", () => {
         expect(json.tests).to.have.length(3);
     });
 
+    it("should be able to convert test results into Xray JSON without creating test issues", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        CONTEXT.config.jira.createTestIssues = false;
+        const json: XrayTestExecutionResultsCloud =
+            converter.convertExecutionResults(result);
+
+        expect(json.tests).to.be.undefined;
+    });
+
     it("should be able to erase milliseconds from timestamps", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")

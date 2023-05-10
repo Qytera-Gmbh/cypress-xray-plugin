@@ -33,18 +33,31 @@ export abstract class ImportExecutionResultsConverter<
             testExecutionKey: CONTEXT.config.jira.testExecutionIssueKey,
         };
         json.info = this.getTestExecutionInfo(results);
-        const testsByIssueKey = this.mapTestsToIssueKeys(results);
-        const attemptsByIssueKey = this.mapAttemptsToIssueKeys(testsByIssueKey);
-        testsByIssueKey.forEach(
-            (tests: CypressCommandLine.TestResult[], key: string) => {
+        const testsByTitle = this.mapTestsToTitles(results);
+        const attemptsByTitle = this.mapAttemptsToTitles(testsByTitle);
+        testsByTitle.forEach(
+            (testResults: CypressCommandLine.TestResult[], title: string) => {
                 let test: XrayTestType;
-                const attempts = attemptsByIssueKey.get(key);
+                // TODO: Support multiple iterations.
+                const testResult = testResults[testResults.length - 1];
                 try {
-                    test = this.getTest(attempts[attempts.length - 1], key);
-                    if (CONTEXT.config.plugin.overwriteIssueSummary) {
-                        test.testInfo = this.getTestInfo(
-                            tests[tests.length - 1]
+                    const issueKey = this.getTestIssueKey(testResult);
+                    if (
+                        issueKey === null &&
+                        !CONTEXT.config.jira.createTestIssues
+                    ) {
+                        throw new Error(
+                            "No test issue key found in test title"
                         );
+                    }
+                    const attempts = attemptsByTitle.get(title);
+                    // TODO: Support multiple iterations.
+                    test = this.getTest(attempts[attempts.length - 1]);
+                    if (issueKey !== null) {
+                        test.testKey = issueKey;
+                    }
+                    if (CONTEXT.config.plugin.overwriteIssueSummary) {
+                        test.testInfo = this.getTestInfo(testResult);
                     }
                     if (!json.tests) {
                         json.tests = [test];
@@ -57,7 +70,7 @@ export abstract class ImportExecutionResultsConverter<
                         reason = error.message;
                     }
                     logWarning(
-                        `${reason}. Skipping result upload for test ${key}.`
+                        `${reason}. Skipping result upload for test "${title}".`
                     );
                 }
             }
@@ -69,12 +82,10 @@ export abstract class ImportExecutionResultsConverter<
      * Builds a test entity for an executed test.
      *
      * @param testResult the Cypress test result
-     * @param testIssueKey the test's Jira issue key
      * @return the test entity
      */
     protected abstract getTest(
-        attempt: CypressCommandLine.AttemptResult,
-        testIssueKey: string
+        attempt: CypressCommandLine.AttemptResult
     ): XrayTestType;
 
     /**
@@ -192,56 +203,38 @@ export abstract class ImportExecutionResultsConverter<
         }
     }
 
-    private mapTestsToIssueKeys(
+    private mapTestsToTitles(
         results: CypressCommandLine.CypressRunResult
     ): Map<string, CypressCommandLine.TestResult[]> {
         const map = new Map<string, CypressCommandLine.TestResult[]>();
         results.runs.forEach((run: CypressCommandLine.RunResult) => {
-            run.tests.forEach((result: CypressCommandLine.TestResult) => {
-                try {
-                    const testIssueKey = this.getTestIssueKey(result);
-                    if (!testIssueKey) {
-                        const title = result.title.join(" ");
-                        throw new Error(
-                            `No test issue key found for test "${title}"`
-                        );
-                    }
-                    if (!map.has(testIssueKey)) {
-                        map.set(testIssueKey, [result]);
-                    } else {
-                        map.get(testIssueKey).push(result);
-                    }
-                } catch (error: unknown) {
-                    let reason = error;
-                    if (error instanceof Error) {
-                        reason = error.message;
-                    }
-                    logWarning(
-                        `${reason}. Skipping result upload for this test.`
-                    );
+            run.tests.forEach((test: CypressCommandLine.TestResult) => {
+                const title = test.title.join(" ");
+                if (map.has(title)) {
+                    map.get(title).push(test);
+                } else {
+                    map.set(title, [test]);
                 }
             });
         });
         return map;
     }
 
-    private mapAttemptsToIssueKeys(
-        resultsByIssueKey: Map<string, CypressCommandLine.TestResult[]>
+    private mapAttemptsToTitles(
+        testsByTitle: Map<string, CypressCommandLine.TestResult[]>
     ): Map<string, CypressCommandLine.AttemptResult[]> {
         const map = new Map<string, CypressCommandLine.AttemptResult[]>();
-        resultsByIssueKey.forEach(
-            (value: CypressCommandLine.TestResult[], key: string) => {
-                value.forEach((result: CypressCommandLine.TestResult) => {
-                    result.attempts.forEach(
-                        (attempt: CypressCommandLine.AttemptResult) => {
-                            if (!map.has(key)) {
-                                map.set(key, [attempt]);
-                            } else {
-                                map.get(key).push(attempt);
-                            }
-                        }
-                    );
-                });
+        testsByTitle.forEach(
+            (testResults: CypressCommandLine.TestResult[], title: string) => {
+                const attempts = testResults.flatMap(
+                    (testResult: CypressCommandLine.TestResult) =>
+                        testResult.attempts
+                );
+                if (map.has(title)) {
+                    map.set(title, map.get(title).concat(attempts));
+                } else {
+                    map.set(title, attempts);
+                }
             }
         );
         return map;
