@@ -18,11 +18,9 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
     XrayTestInfoServer
 > {
     protected getTest(
-        attempt: CypressCommandLine.AttemptResult,
-        testIssueKey: string
+        attempt: CypressCommandLine.AttemptResult
     ): XrayTestServer {
         const json: XrayTestServer = {
-            testKey: testIssueKey,
             start: this.truncateISOTime(
                 this.getAttemptStartDate(attempt).toISOString()
             ),

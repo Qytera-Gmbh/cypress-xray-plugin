@@ -18,11 +18,9 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
     XrayTestInfoCloud
 > {
     protected getTest(
-        attempt: CypressCommandLine.AttemptResult,
-        testIssueKey: string
+        attempt: CypressCommandLine.AttemptResult
     ): XrayTestCloud {
         const json: XrayTestCloud = {
-            testKey: testIssueKey,
             start: this.truncateISOTime(
                 this.getAttemptStartDate(attempt).toISOString()
             ),

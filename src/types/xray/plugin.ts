@@ -13,6 +13,7 @@ export interface Options {
 export interface JiraOptions {
     /**
      * The Jira project key.
+     *
      * @example "CYP"
      */
     projectKey: string;
@@ -45,6 +46,11 @@ export interface JiraOptions {
      * attached to the test execution issue on results upload.
      */
     attachVideos?: boolean;
+    /**
+     * Whether the plugin should create test issues for Cypress tests that
+     * have not been mapped to existing test issues.
+     */
+    createTestIssues?: boolean;
 }
 
 export interface XrayOptions {
@@ -76,7 +82,6 @@ export interface XrayOptions {
      * The test type of the test issues. This option will be used to set the
      * corresponding field on issues created during upload (happens when a test
      * does not yet have a corresponding Xray issue).
-     * issue
      *
      * @example "Manual"
      */
