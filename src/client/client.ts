@@ -61,25 +61,16 @@ export abstract class Client<T extends APICredentials<APICredentialsOptions>> {
      * been waiting for a response already.
      *
      * @param url the request URL
-     * @returns a function to access the timer's underlying handler
+     * @returns the timer's handler
      */
-    protected startResponseInterval(url: string): () => NodeJS.Timer {
+    protected startResponseInterval(url: string): NodeJS.Timer {
         let sumTime = 0;
         const callback = () => {
             sumTime = sumTime + this.LOG_RESPONSE_INTERVAL_MS;
             logInfo(
                 `Waiting for ${url} to respond... (${sumTime / 1000} seconds)`
             );
-            clearInterval(progressInterval);
-            progressInterval = setInterval(
-                callback,
-                this.LOG_RESPONSE_INTERVAL_MS
-            );
         };
-        let progressInterval = setInterval(
-            callback,
-            this.LOG_RESPONSE_INTERVAL_MS
-        );
-        return () => progressInterval;
+        return setInterval(callback, this.LOG_RESPONSE_INTERVAL_MS);
     }
 }

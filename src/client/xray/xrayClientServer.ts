@@ -71,7 +71,7 @@ export class XrayClientServer extends XrayClient<
                     );
                     return response.data.testExecIssue.key;
                 } finally {
-                    clearInterval(progressInterval());
+                    clearInterval(progressInterval);
                 }
             });
     }
