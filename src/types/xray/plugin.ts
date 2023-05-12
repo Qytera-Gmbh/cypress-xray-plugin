@@ -53,6 +53,24 @@ export interface JiraOptions {
     createTestIssues?: boolean;
 }
 
+export interface XrayStepOptions {
+    /**
+     * Whether to update a manual test issue's test steps during execution
+     * results upload. If set to true, **all** existing steps will be replaced
+     * with the plugin's steps.
+     *
+     * Note: the plugin currently creates only one step containing the code of
+     * the corresponding Cypress test function.
+     */
+    update?: boolean;
+    /**
+     * The maximum length a step's action description can have in terms of
+     * characters. Some Xray instances might enforce limits on the length and
+     * reject step updates in case the action's description exceeds said limit.
+     */
+    maxLengthAction?: number;
+}
+
 export interface XrayOptions {
     /**
      * Turns execution results upload on or off. Useful when switching upload
@@ -86,6 +104,10 @@ export interface XrayOptions {
      * @example "Manual"
      */
     testType?: string;
+    /**
+     * All options related to manual test issue steps.
+     */
+    steps?: XrayStepOptions;
 }
 
 export interface CucumberOptions {

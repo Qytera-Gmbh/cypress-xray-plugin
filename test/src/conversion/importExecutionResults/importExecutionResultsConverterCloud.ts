@@ -187,4 +187,73 @@ describe("the conversion function", () => {
         expect(json.tests[1].evidence).to.be.undefined;
         expect(json.tests[2].evidence).to.be.undefined;
     });
+
+    it("should skip step updates if disabled", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        expectToExist(CONTEXT.config.xray);
+        CONTEXT.config.xray.steps = {
+            update: false,
+        };
+        const json: XrayTestExecutionResultsCloud =
+            converter.convertExecutionResults(result);
+        expectToExist(json.tests);
+        expect(json.tests).to.have.length(3);
+        expectToExist(json.tests[0].testInfo);
+        expect(json.tests[0].testInfo.steps).to.be.undefined;
+        expectToExist(json.tests[1].testInfo);
+        expect(json.tests[1].testInfo.steps).to.be.undefined;
+        expectToExist(json.tests[2].testInfo);
+        expect(json.tests[2].testInfo.steps).to.be.undefined;
+    });
+
+    it("should include step updates if enabled", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        expectToExist(CONTEXT.config.xray);
+        CONTEXT.config.xray.steps = {
+            update: true,
+        };
+        const json: XrayTestExecutionResultsCloud =
+            converter.convertExecutionResults(result);
+        expectToExist(json.tests);
+        expect(json.tests).to.have.length(3);
+        expectToExist(json.tests[0].testInfo);
+        expectToExist(json.tests[0].testInfo.steps);
+        expect(json.tests[0].testInfo.steps).to.have.length(1);
+        expect(json.tests[0].testInfo.steps[0].action).to.be.a("string");
+        expectToExist(json.tests[1].testInfo);
+        expectToExist(json.tests[1].testInfo.steps);
+        expect(json.tests[1].testInfo.steps).to.have.length(1);
+        expect(json.tests[1].testInfo.steps[0].action).to.be.a("string");
+        expectToExist(json.tests[2].testInfo);
+        expectToExist(json.tests[2].testInfo.steps);
+        expect(json.tests[2].testInfo.steps).to.have.length(1);
+        expect(json.tests[2].testInfo.steps[0].action).to.be.a("string");
+    });
+
+    it("should truncate step actions if enabled", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        expectToExist(CONTEXT.config.xray);
+        CONTEXT.config.xray.steps = {
+            update: true,
+            maxLengthAction: 5,
+        };
+        const json: XrayTestExecutionResultsCloud =
+            converter.convertExecutionResults(result);
+        expectToExist(json.tests);
+        expectToExist(json.tests[0].testInfo);
+        expectToExist(json.tests[0].testInfo.steps);
+        expect(json.tests[0].testInfo.steps[0].action.length).to.eq(5);
+        expectToExist(json.tests[1].testInfo);
+        expectToExist(json.tests[1].testInfo.steps);
+        expect(json.tests[1].testInfo.steps[0].action.length).to.eq(5);
+        expectToExist(json.tests[2].testInfo);
+        expectToExist(json.tests[2].testInfo.steps);
+        expect(json.tests[2].testInfo.steps[0].action.length).to.eq(5);
+    });
 });

@@ -107,6 +107,26 @@ describe("the before run hook", () => {
         );
     });
 
+    it("should not allow step lengths of length zero", async () => {
+        expectToExist(CONTEXT.config.xray);
+        CONTEXT.config.xray.steps = {
+            maxLengthAction: 0,
+        };
+        await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
+            "Xray plugin misconfiguration: max length of step actions must be a positive number: 0"
+        );
+    });
+
+    it("should not allow negative step action lengths", async () => {
+        expectToExist(CONTEXT.config.xray);
+        CONTEXT.config.xray.steps = {
+            maxLengthAction: -5,
+        };
+        await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
+            "Xray plugin misconfiguration: max length of step actions must be a positive number: -5"
+        );
+    });
+
     describe("the Jira client instantiation", () => {
         beforeEach(() => {
             expectToExist(details.config.env);

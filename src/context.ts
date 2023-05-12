@@ -41,6 +41,10 @@ const DEFAULT_OPTIONS_Xray: XrayOptions = {
     statusPassed: "PASSED",
     statusFailed: "FAILED",
     testType: "Manual",
+    steps: {
+        update: true,
+        maxLengthAction: 8000,
+    },
 };
 
 const DEFAULT_OPTIONS_CUCUMBER: CucumberOptions = {

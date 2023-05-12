@@ -4,6 +4,7 @@
         "source.fixAll": true,
         "source.organizeImports": true
     },
+    "editor.rulers": [80],
     "files.trimFinalNewlines": true,
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"

@@ -1,10 +1,11 @@
 import { CONTEXT } from "./context";
 import { issuesByScenario } from "./cucumber/tagging";
 import { logError, logInfo, logWarning } from "./logging/logging";
+import { XrayStepOptions } from "./types/xray/plugin";
 import { parseEnvironmentVariables } from "./util/config";
 import { parseFeatureFile } from "./util/parsing";
 
-function verifyProjectKey(projectKey?: string) {
+function verifyJiraProjectKey(projectKey?: string) {
     if (!projectKey) {
         throw new Error(
             "Xray plugin misconfiguration: Jira project key was not set"
@@ -12,7 +13,7 @@ function verifyProjectKey(projectKey?: string) {
     }
 }
 
-function verifyTestExecutionIssueKey(
+function verifyJiraTestExecutionIssueKey(
     projectKey: string,
     testExecutionIssueKey?: string
 ) {
@@ -26,10 +27,21 @@ function verifyTestExecutionIssueKey(
     }
 }
 
-function verifyTestPlanIssueKey(projectKey: string, testPlanIssueKey?: string) {
+function verifyJiraTestPlanIssueKey(
+    projectKey: string,
+    testPlanIssueKey?: string
+) {
     if (testPlanIssueKey && !testPlanIssueKey.startsWith(projectKey)) {
         throw new Error(
             `Xray plugin misconfiguration: test plan issue key ${testPlanIssueKey} does not belong to project ${projectKey}`
+        );
+    }
+}
+
+function verifyXraySteps(steps: XrayStepOptions) {
+    if (steps.maxLengthAction <= 0) {
+        throw new Error(
+            `Xray plugin misconfiguration: max length of step actions must be a positive number: ${steps.maxLengthAction}`
         );
     }
 }
@@ -42,15 +54,16 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
         );
     }
     parseEnvironmentVariables(runDetails.config.env);
-    verifyProjectKey(CONTEXT.config.jira.projectKey);
-    verifyTestExecutionIssueKey(
+    verifyJiraProjectKey(CONTEXT.config.jira.projectKey);
+    verifyJiraTestExecutionIssueKey(
         CONTEXT.config.jira.projectKey,
         CONTEXT.config.jira.testExecutionIssueKey
     );
-    verifyTestPlanIssueKey(
+    verifyJiraTestPlanIssueKey(
         CONTEXT.config.jira.projectKey,
         CONTEXT.config.jira.testPlanIssueKey
     );
+    verifyXraySteps(CONTEXT.config.xray.steps);
 }
 
 export async function afterRunHook(

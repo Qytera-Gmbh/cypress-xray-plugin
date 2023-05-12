@@ -28,6 +28,8 @@ import {
     ENV_XRAY_CLIENT_SECRET,
     ENV_XRAY_STATUS_FAILED,
     ENV_XRAY_STATUS_PASSED,
+    ENV_XRAY_STEPS_MAX_LENGTH_ACTION,
+    ENV_XRAY_STEPS_UPDATE,
     ENV_XRAY_UPLOAD_RESULTS,
     ENV_XRAY_UPLOAD_SCREENSHOTS,
 } from "../constants";
@@ -77,6 +79,16 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
     }
     if (ENV_XRAY_STATUS_FAILED in env) {
         CONTEXT.config.xray.statusFailed = env[ENV_XRAY_STATUS_FAILED];
+    }
+    if (ENV_XRAY_STEPS_UPDATE in env) {
+        CONTEXT.config.xray.steps.update = parseBoolean(
+            env[ENV_XRAY_STEPS_UPDATE]
+        );
+    }
+    if (ENV_XRAY_STEPS_MAX_LENGTH_ACTION in env) {
+        CONTEXT.config.xray.steps.maxLengthAction = Number.parseInt(
+            env[ENV_XRAY_STEPS_MAX_LENGTH_ACTION]
+        );
     }
     // Cucumber.
     if (ENV_CUCUMBER_FEATURE_FILE_EXTENSION in env) {
