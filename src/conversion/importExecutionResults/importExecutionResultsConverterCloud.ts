@@ -66,11 +66,16 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
     protected getTestInfo(
         testResult: CypressCommandLine.TestResult
     ): XrayTestInfoCloud {
-        return {
+        const testInfo: XrayTestInfoCloud = {
             projectKey: CONTEXT.config.jira.projectKey,
             summary: testResult.title.join(" "),
             type: CONTEXT.config.xray.testType,
-            steps: [{ action: testResult.body }],
         };
+        if (CONTEXT.config.xray.steps.update) {
+            testInfo.steps = [
+                { action: this.truncateStepAction(testResult.body) },
+            ];
+        }
+        return testInfo;
     }
 }

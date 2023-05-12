@@ -203,6 +203,25 @@ export abstract class ImportExecutionResultsConverter<
         }
     }
 
+    /**
+     * Returns a step action description truncated to the maximum length Xray
+     * allows.
+     *
+     * @param action the step's action description
+     * @returns the truncated or unmodified description if it's short enough
+     */
+    protected truncateStepAction(action: string): string {
+        if (action.length <= CONTEXT.config.xray.steps.maxLengthAction) {
+            return action;
+        }
+        // Subtract 3 for the dots.
+        const truncated = action.substring(
+            0,
+            CONTEXT.config.xray.steps.maxLengthAction - 3
+        );
+        return `${truncated}...`;
+    }
+
     private mapTestsToTitles(
         results: CypressCommandLine.CypressRunResult
     ): Map<string, CypressCommandLine.TestResult[]> {
