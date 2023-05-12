@@ -105,7 +105,7 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
                         );
                         return response.data;
                     } finally {
-                        clearInterval(progressInterval);
+                        clearInterval(progressInterval());
                     }
                 });
         } catch (error: unknown) {

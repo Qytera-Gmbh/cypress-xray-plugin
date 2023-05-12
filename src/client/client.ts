@@ -61,9 +61,9 @@ export abstract class Client<T extends APICredentials<APICredentialsOptions>> {
      * been waiting for a response already.
      *
      * @param url the request URL
-     * @returns the interval instance
+     * @returns a function to access the timer's underlying handler
      */
-    protected startResponseInterval(url: string): NodeJS.Timer {
+    protected startResponseInterval(url: string): () => NodeJS.Timer {
         let sumTime = 0;
         const callback = () => {
             sumTime = sumTime + this.LOG_RESPONSE_INTERVAL_MS;
@@ -80,6 +80,6 @@ export abstract class Client<T extends APICredentials<APICredentialsOptions>> {
             callback,
             this.LOG_RESPONSE_INTERVAL_MS
         );
-        return progressInterval;
+        return () => progressInterval;
     }
 }

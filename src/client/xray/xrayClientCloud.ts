@@ -57,7 +57,7 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
                     );
                     return response.data.key;
                 } finally {
-                    clearInterval(progressInterval);
+                    clearInterval(progressInterval());
                 }
             });
     }
