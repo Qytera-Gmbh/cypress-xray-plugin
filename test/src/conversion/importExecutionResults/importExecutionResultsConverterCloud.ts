@@ -196,6 +196,9 @@ describe("the conversion function", () => {
         CONTEXT.config.xray.steps = {
             update: false,
         };
+        // TODO: remove once #47 is fixed.
+        expectToExist(CONTEXT.config.plugin);
+        CONTEXT.config.plugin.overwriteIssueSummary = true;
         const json: XrayTestExecutionResultsCloud =
             converter.convertExecutionResults(result);
         expectToExist(json.tests);
@@ -216,6 +219,9 @@ describe("the conversion function", () => {
         CONTEXT.config.xray.steps = {
             update: true,
         };
+        // TODO: remove once #47 is fixed.
+        expectToExist(CONTEXT.config.plugin);
+        CONTEXT.config.plugin.overwriteIssueSummary = true;
         const json: XrayTestExecutionResultsCloud =
             converter.convertExecutionResults(result);
         expectToExist(json.tests);
@@ -243,6 +249,9 @@ describe("the conversion function", () => {
             update: true,
             maxLengthAction: 5,
         };
+        // TODO: remove once #47 is fixed.
+        expectToExist(CONTEXT.config.plugin);
+        CONTEXT.config.plugin.overwriteIssueSummary = true;
         const json: XrayTestExecutionResultsCloud =
             converter.convertExecutionResults(result);
         expectToExist(json.tests);
