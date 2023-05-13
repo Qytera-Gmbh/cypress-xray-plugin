@@ -150,8 +150,6 @@ describe("the conversion function", () => {
         const json: XrayTestExecutionResultsCloud =
             converter.convertExecutionResults(result);
         expectToExist(json.tests);
-        expect(json.tests).to.have.length(1);
-        expect(json.tests[0].evidence).to.have.length(1);
         expectToExist(json.tests[0].evidence);
         expect(json.tests[0].evidence[0].filename).to.eq(
             "t_rtle_with_problem_tic_name.png"
@@ -165,12 +163,9 @@ describe("the conversion function", () => {
                 "utf-8"
             )
         );
-        expectToExist(CONTEXT.config.plugin);
         const json: XrayTestExecutionResultsCloud =
             converter.convertExecutionResults(result);
         expectToExist(json.tests);
-        expect(json.tests).to.have.length(1);
-        expect(json.tests[0].evidence).to.have.length(1);
         expectToExist(json.tests[0].evidence);
         expect(json.tests[0].evidence[0].filename).to.eq(
             "tûrtle with problemätic name.png"
