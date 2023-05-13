@@ -138,7 +138,7 @@ describe("the conversion function", () => {
         expect(json.tests[2].testInfo).to.not.be.undefined;
     });
 
-    it("should be able to normalize screenshot filenames", () => {
+    it("should normalize screenshot filenames if enabled", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync(
                 "./test/resources/runResultProblematicScreenshot.json",
@@ -150,11 +150,25 @@ describe("the conversion function", () => {
         const json: XrayTestExecutionResultsCloud =
             converter.convertExecutionResults(result);
         expectToExist(json.tests);
-        expect(json.tests).to.have.length(1);
-        expect(json.tests[0].evidence).to.have.length(1);
         expectToExist(json.tests[0].evidence);
         expect(json.tests[0].evidence[0].filename).to.eq(
             "t_rtle_with_problem_tic_name.png"
+        );
+    });
+
+    it("should not normalize screenshot filenames if disabled", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync(
+                "./test/resources/runResultProblematicScreenshot.json",
+                "utf-8"
+            )
+        );
+        const json: XrayTestExecutionResultsCloud =
+            converter.convertExecutionResults(result);
+        expectToExist(json.tests);
+        expectToExist(json.tests[0].evidence);
+        expect(json.tests[0].evidence[0].filename).to.eq(
+            "tûrtle with problemätic name.png"
         );
     });
 

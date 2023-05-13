@@ -33,11 +33,12 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
         if (CONTEXT.config.xray.uploadScreenshots) {
             attempt.screenshots.forEach(
                 (screenshot: CypressCommandLine.ScreenshotInformation) => {
-                    const suffix = screenshot.path.substring(
-                        screenshot.path.indexOf("cypress")
-                    );
+                    let filename: string = basename(screenshot.path);
+                    if (CONTEXT.config.plugin.normalizeScreenshotNames) {
+                        filename = normalizedFilename(filename);
+                    }
                     evidence.push({
-                        filename: normalizedFilename(basename(suffix)),
+                        filename: filename,
                         data: encodeFile(screenshot.path),
                     });
                 }
