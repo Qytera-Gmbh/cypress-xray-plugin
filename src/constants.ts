@@ -20,6 +20,8 @@ export const ENV_JIRA_ATTACH_VIDEOS = "JIRA_ATTACH_VIDEOS";
 export const ENV_JIRA_CREATE_TEST_ISSUES = "JIRA_CREATE_TEST_ISSUES";
 export const ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY =
     "JIRA_TEST_EXECUTION_ISSUE_SUMMARY";
+export const ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION =
+    "JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION";
 // ================================= //
 // | Xray Configuration            | //
 // ================================= //

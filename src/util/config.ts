@@ -15,6 +15,7 @@ import {
     ENV_JIRA_CREATE_TEST_ISSUES,
     ENV_JIRA_PASSWORD,
     ENV_JIRA_PROJECT_KEY,
+    ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION,
     ENV_JIRA_TEST_EXECUTION_ISSUE_KEY,
     ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY,
     ENV_JIRA_TEST_PLAN_ISSUE_KEY,
@@ -67,6 +68,10 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
     if (ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY in env) {
         CONTEXT.config.jira.testExecutionIssueSummary =
             env[ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY];
+    }
+    if (ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION in env) {
+        CONTEXT.config.jira.testExecutionIssueDescription =
+            env[ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION];
     }
     // Xray.
     if (ENV_XRAY_UPLOAD_RESULTS in env) {

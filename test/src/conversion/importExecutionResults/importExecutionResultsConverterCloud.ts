@@ -300,6 +300,31 @@ describe("the conversion function", () => {
         const json: XrayTestExecutionResultsCloud =
             converter.convertExecutionResults(result);
         expectToExist(json.info);
-        expect(json.info.summary).to.eq(`Execution Results [1669657272234]`);
+        expect(json.info.summary).to.eq("Execution Results [1669657272234]");
+    });
+
+    it("should include a custom test execution description if provided", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        expectToExist(CONTEXT.config.jira);
+        CONTEXT.config.jira.testExecutionIssueDescription = "Very Useful Text";
+        const json: XrayTestExecutionResultsCloud =
+            converter.convertExecutionResults(result);
+        expectToExist(json.info);
+        expect(json.info.description).to.eq("Very Useful Text");
+    });
+
+    it("should use versions as test execution description by default", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        expectToExist(CONTEXT.config.jira);
+        const json: XrayTestExecutionResultsCloud =
+            converter.convertExecutionResults(result);
+        expectToExist(json.info);
+        expect(json.info.description).to.eq(
+            "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)"
+        );
     });
 });
