@@ -279,4 +279,27 @@ describe("the conversion function", () => {
         expectToExist(json.tests[2].testInfo.steps);
         expect(json.tests[2].testInfo.steps[0].action.length).to.eq(5);
     });
+
+    it("should include a custom test execution summary if provided", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        expectToExist(CONTEXT.config.jira);
+        CONTEXT.config.jira.testExecutionIssueSummary = "Jeffrey's Test";
+        const json: XrayTestExecutionResultsCloud =
+            converter.convertExecutionResults(result);
+        expectToExist(json.info);
+        expect(json.info.summary).to.eq("Jeffrey's Test");
+    });
+
+    it("should use a timestamp as test execution summary by default", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        expectToExist(CONTEXT.config.jira);
+        const json: XrayTestExecutionResultsCloud =
+            converter.convertExecutionResults(result);
+        expectToExist(json.info);
+        expect(json.info.summary).to.eq(`Execution Results [1669657272234]`);
+    });
 });
