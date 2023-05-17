@@ -51,6 +51,18 @@ export interface JiraOptions {
      * have not been mapped to existing test issues.
      */
     createTestIssues?: boolean;
+    /**
+     * The summary of the test execution issue, which will either be used for
+     * new test execution issues or for updating existing issues (if provided
+     * through {@link JiraOptions.testExecutionIssueKey}).
+     *
+     * If omitted, new test execution issues will be named:
+     * ```ts
+     * `Execution Results [${t}]`,
+     * ```
+     * where `t` is the timestamp when Cypress started testing.
+     */
+    testExecutionIssueSummary?: string;
 }
 
 export interface XrayStepOptions {

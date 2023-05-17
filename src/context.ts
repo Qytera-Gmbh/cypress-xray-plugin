@@ -22,7 +22,7 @@ export function initContext(config: Options) {
     };
 }
 
-// Set some default values.
+// Set some default values for constant options.
 
 const DEFAULT_OPTIONS_JIRA: JiraOptions = {
     projectKey: null,

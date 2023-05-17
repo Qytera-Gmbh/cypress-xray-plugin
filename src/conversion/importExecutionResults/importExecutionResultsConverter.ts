@@ -275,7 +275,10 @@ export abstract class ImportExecutionResultsConverter<
     private getTextExecutionResultSummary(
         results: CypressCommandLine.CypressRunResult
     ): string {
-        return `Execution Results [${Date.now()}]`;
+        return (
+            CONTEXT.config.jira.testExecutionIssueSummary ||
+            `Execution Results [${new Date(results.startedTestsAt).getTime()}]`
+        );
     }
 
     private getDescription(
