@@ -285,13 +285,14 @@ export abstract class ImportExecutionResultsConverter<
         results: CypressCommandLine.CypressRunResult
     ): string {
         return (
+            CONTEXT.config.jira.testExecutionIssueDescription ||
             "Cypress version: " +
-            results.cypressVersion +
-            " Browser: " +
-            results.browserName +
-            " (" +
-            results.browserVersion +
-            ")"
+                results.cypressVersion +
+                " Browser: " +
+                results.browserName +
+                " (" +
+                results.browserVersion +
+                ")"
         );
     }
 
