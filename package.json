@@ -30,7 +30,7 @@
         "lib": "src"
     },
     "scripts": {
-        "test": "mocha -r ts-node/register 'test/**/*.ts'",
+        "test": "nyc --reporter=html mocha -r ts-node/register 'test/**/*.ts'",
         "build": "tsc"
     },
     "dependencies": {
@@ -46,11 +46,15 @@
         "@types/chai-as-promised": "^7.1.5",
         "@types/decompress": "^4.2.4",
         "@types/mocha": "^10.0.1",
+        "@types/sinon-chai": "^3.2.9",
         "chai": "^4.3.7",
         "chai-as-promised": "^7.1.1",
         "cypress": "^12.7.0",
         "mocha": "^10.2.0",
+        "nyc": "^15.1.0",
         "shx": "^0.3.4",
+        "sinon": "^15.0.4",
+        "sinon-chai": "^3.7.0",
         "ts-node": "^10.9.1",
         "typescript": "^5.0.4"
     }
