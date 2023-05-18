@@ -41,25 +41,21 @@ export abstract class ImportExecutionResultsConverter<
                 // TODO: Support multiple iterations.
                 const testResult = testResults[testResults.length - 1];
                 try {
-                    const issueKey = this.getTestIssueKey(testResult);
-                    if (
-                        issueKey === null &&
-                        !CONTEXT.config.jira.createTestIssues
-                    ) {
-                        throw new Error(
-                            "No test issue key found in test title"
-                        );
-                    }
                     const attempts = attemptsByTitle.get(title);
                     // TODO: Support multiple iterations.
                     test = this.getTest(attempts[attempts.length - 1]);
+                    const issueKey = this.getTestIssueKey(testResult);
                     if (issueKey !== null) {
                         test.testKey = issueKey;
-                    }
-                    if (
-                        issueKey === null ||
-                        CONTEXT.config.plugin.overwriteIssueSummary
-                    ) {
+                        if (CONTEXT.config.plugin.overwriteIssueSummary) {
+                            test.testInfo = this.getTestInfo(testResult);
+                        }
+                    } else {
+                        if (!CONTEXT.config.jira.createTestIssues) {
+                            throw new Error(
+                                "No test issue key found in test title"
+                            );
+                        }
                         test.testInfo = this.getTestInfo(testResult);
                     }
                     if (!json.tests) {
