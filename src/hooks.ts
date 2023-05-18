@@ -1,7 +1,7 @@
 import { CONTEXT } from "./context";
 import { issuesByScenario } from "./cucumber/tagging";
 import { logError, logInfo, logWarning } from "./logging/logging";
-import { XrayStepOptions } from "./types/xray/plugin";
+import { XrayStepOptions } from "./types/plugin";
 import { parseEnvironmentVariables } from "./util/config";
 import { parseFeatureFile } from "./util/parsing";
 

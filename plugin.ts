@@ -1,6 +1,6 @@
 import { initContext } from "./src/context";
 import { afterRunHook, beforeRunHook, filePreprocessorHook } from "./src/hooks";
-import { Options } from "./src/types/xray/plugin";
+import { Options } from "./src/types/plugin";
 
 export async function configureXrayPlugin(options: Options) {
     initContext(options);

@@ -1,6 +1,6 @@
-import { JiraClient } from "../../client/jira/jiraClient";
-import { XrayClientCloud } from "../../client/xray/xrayClientCloud";
-import { XrayClientServer } from "../../client/xray/xrayClientServer";
+import { JiraClient } from "../client/jira/jiraClient";
+import { XrayClientCloud } from "../client/xray/xrayClientCloud";
+import { XrayClientServer } from "../client/xray/xrayClientServer";
 
 export interface Options {
     jira: JiraOptions;
