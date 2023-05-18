@@ -17,32 +17,24 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
     XrayTestServer,
     XrayTestInfoServer
 > {
-    protected getTest(
-        attempt: CypressCommandLine.AttemptResult
-    ): XrayTestServer {
+    protected getTest(attempt: CypressCommandLine.AttemptResult): XrayTestServer {
         const json: XrayTestServer = {
-            start: this.truncateISOTime(
-                this.getAttemptStartDate(attempt).toISOString()
-            ),
-            finish: this.truncateISOTime(
-                this.getAttemptEndDate(attempt).toISOString()
-            ),
+            start: this.truncateISOTime(this.getAttemptStartDate(attempt).toISOString()),
+            finish: this.truncateISOTime(this.getAttemptEndDate(attempt).toISOString()),
             status: this.getXrayStatus(this.getStatus(attempt)),
         };
         const evidence: XrayEvidenceItem[] = [];
         if (CONTEXT.config.xray.uploadScreenshots) {
-            attempt.screenshots.forEach(
-                (screenshot: CypressCommandLine.ScreenshotInformation) => {
-                    let filename: string = basename(screenshot.path);
-                    if (CONTEXT.config.plugin.normalizeScreenshotNames) {
-                        filename = normalizedFilename(filename);
-                    }
-                    evidence.push({
-                        filename: filename,
-                        data: encodeFile(screenshot.path),
-                    });
+            attempt.screenshots.forEach((screenshot: CypressCommandLine.ScreenshotInformation) => {
+                let filename: string = basename(screenshot.path);
+                if (CONTEXT.config.plugin.normalizeScreenshotNames) {
+                    filename = normalizedFilename(filename);
                 }
-            );
+                evidence.push({
+                    filename: filename,
+                    data: encodeFile(screenshot.path),
+                });
+            });
         }
         if (evidence.length > 0) {
             if (!json.evidence) {
@@ -64,18 +56,14 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
         }
     }
 
-    protected getTestInfo(
-        testResult: CypressCommandLine.TestResult
-    ): XrayTestInfoServer {
+    protected getTestInfo(testResult: CypressCommandLine.TestResult): XrayTestInfoServer {
         const testInfo: XrayTestInfoServer = {
             projectKey: CONTEXT.config.jira.projectKey,
             summary: testResult.title.join(" "),
             testType: CONTEXT.config.xray.testType,
         };
         if (CONTEXT.config.xray.steps.update) {
-            testInfo.steps = [
-                { action: this.truncateStepAction(testResult.body) },
-            ];
+            testInfo.steps = [{ action: this.truncateStepAction(testResult.body) }];
         }
         return testInfo;
     }

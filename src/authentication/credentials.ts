@@ -88,9 +88,7 @@ export class JWTCredentials extends APICredentials<JWTCredentialsOptions> {
         return this.token;
     }
 
-    public async getAuthenticationHeader(
-        options: JWTCredentialsOptions
-    ): Promise<HTTPHeader> {
+    public async getAuthenticationHeader(options: JWTCredentialsOptions): Promise<HTTPHeader> {
         const token = await this.getToken(options.authenticationURL);
         return {
             Authorization: `Bearer ${token}`,

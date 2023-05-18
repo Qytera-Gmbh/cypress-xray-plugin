@@ -106,9 +106,7 @@ export class Requests {
         response: AxiosResponse
     ) {
         const filename = normalizedFilename(`${method}_${url}_${timestamp}`);
-        logDebug(
-            `Writing ${method} response data to ${filename}_response.json.`
-        );
+        logDebug(`Writing ${method} response data to ${filename}_response.json.`);
         writeFileSync(
             `${filename}_response.json`,
             JSON.stringify({

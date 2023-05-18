@@ -1,7 +1,7 @@
 # language: de
 Funktionalität: Ein deutsches Feature
 
-  Grundlage: 
+  Grundlage:
     #@Precondition:CYP-111
 		Angenommen abc123
 		Dann xyz987

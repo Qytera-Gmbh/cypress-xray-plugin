@@ -15,8 +15,7 @@ describe("the zipping utility", () => {
     it("should be able to unzip a zip file including the .zip extension", async () => {
         await unzip("./test/resources/compressedContent.zip", ZIP_DIRECTORY);
         expect(fs.existsSync(`${ZIP_DIRECTORY}/content.txt`)).to.be.true;
-        expect(fs.existsSync(`${ZIP_DIRECTORY}/content/compressed.txt`)).to.be
-            .true;
+        expect(fs.existsSync(`${ZIP_DIRECTORY}/content/compressed.txt`)).to.be.true;
     });
 
     it("should not be able to overwrite existing files", async () => {

@@ -20,8 +20,8 @@ export abstract class ImportExecutionResultsConverter<
     XrayTestInfoType extends OneOf<[XrayTestInfoServer, XrayTestInfoCloud]>
 > {
     /**
-     * Convert Cypress run results into Xray JSON format, ready to be sent to
-     * Xray's import execution results endpoint.
+     * Convert Cypress run results into Xray JSON format, ready to be sent to Xray's import
+     * execution results endpoint.
      *
      * @param results the run results
      * @returns the Xray JSON data
@@ -35,45 +35,39 @@ export abstract class ImportExecutionResultsConverter<
         json.info = this.getTestExecutionInfo(results);
         const testsByTitle = this.mapTestsToTitles(results);
         const attemptsByTitle = this.mapAttemptsToTitles(testsByTitle);
-        testsByTitle.forEach(
-            (testResults: CypressCommandLine.TestResult[], title: string) => {
-                let test: XrayTestType;
+        testsByTitle.forEach((testResults: CypressCommandLine.TestResult[], title: string) => {
+            let test: XrayTestType;
+            // TODO: Support multiple iterations.
+            const testResult = testResults[testResults.length - 1];
+            try {
+                const attempts = attemptsByTitle.get(title);
                 // TODO: Support multiple iterations.
-                const testResult = testResults[testResults.length - 1];
-                try {
-                    const attempts = attemptsByTitle.get(title);
-                    // TODO: Support multiple iterations.
-                    test = this.getTest(attempts[attempts.length - 1]);
-                    const issueKey = this.getTestIssueKey(testResult);
-                    if (issueKey !== null) {
-                        test.testKey = issueKey;
-                        if (CONTEXT.config.plugin.overwriteIssueSummary) {
-                            test.testInfo = this.getTestInfo(testResult);
-                        }
-                    } else {
-                        if (!CONTEXT.config.jira.createTestIssues) {
-                            throw new Error(
-                                "No test issue key found in test title"
-                            );
-                        }
+                test = this.getTest(attempts[attempts.length - 1]);
+                const issueKey = this.getTestIssueKey(testResult);
+                if (issueKey !== null) {
+                    test.testKey = issueKey;
+                    if (CONTEXT.config.plugin.overwriteIssueSummary) {
                         test.testInfo = this.getTestInfo(testResult);
                     }
-                    if (!json.tests) {
-                        json.tests = [test];
-                    } else {
-                        json.tests.push(test);
+                } else {
+                    if (!CONTEXT.config.jira.createTestIssues) {
+                        throw new Error("No test issue key found in test title");
                     }
-                } catch (error: unknown) {
-                    let reason = error;
-                    if (error instanceof Error) {
-                        reason = error.message;
-                    }
-                    logWarning(
-                        `${reason}. Skipping result upload for test "${title}".`
-                    );
+                    test.testInfo = this.getTestInfo(testResult);
                 }
+                if (!json.tests) {
+                    json.tests = [test];
+                } else {
+                    json.tests.push(test);
+                }
+            } catch (error: unknown) {
+                let reason = error;
+                if (error instanceof Error) {
+                    reason = error.message;
+                }
+                logWarning(`${reason}. Skipping result upload for test "${title}".`);
             }
-        );
+        });
         return json;
     }
 
@@ -83,9 +77,7 @@ export abstract class ImportExecutionResultsConverter<
      * @param testResult the Cypress test result
      * @return the test entity
      */
-    protected abstract getTest(
-        attempt: CypressCommandLine.AttemptResult
-    ): XrayTestType;
+    protected abstract getTest(attempt: CypressCommandLine.AttemptResult): XrayTestType;
 
     /**
      * Extract the Xray status from a {@link Status} value.
@@ -102,9 +94,7 @@ export abstract class ImportExecutionResultsConverter<
      * @param testResult the Cypress test result
      * @returns the test information
      */
-    protected abstract getTestInfo(
-        testResult: CypressCommandLine.TestResult
-    ): XrayTestInfoType;
+    protected abstract getTestInfo(testResult: CypressCommandLine.TestResult): XrayTestInfoType;
 
     /**
      * Remove milliseconds from ISO time string. Some Jira Xray instances cannot handle milliseconds in the string.
@@ -125,9 +115,7 @@ export abstract class ImportExecutionResultsConverter<
      * @param attempts the Cypress test results
      * @returns the tests' start date
      */
-    protected getAttemptsStartDate(
-        attempts: CypressCommandLine.AttemptResult[]
-    ): Date | null {
+    protected getAttemptsStartDate(attempts: CypressCommandLine.AttemptResult[]): Date | null {
         let start: Date = null;
         attempts.forEach((attempt: CypressCommandLine.AttemptResult) => {
             const attemptDate = this.getAttemptStartDate(attempt);
@@ -144,9 +132,7 @@ export abstract class ImportExecutionResultsConverter<
      * @param attempt the Cypress test result
      * @returns the test's start date
      */
-    protected getAttemptStartDate(
-        attempt: CypressCommandLine.AttemptResult
-    ): Date {
+    protected getAttemptStartDate(attempt: CypressCommandLine.AttemptResult): Date {
         return new Date(attempt.startedAt);
     }
 
@@ -156,9 +142,7 @@ export abstract class ImportExecutionResultsConverter<
      * @param attempts the Cypress test results
      * @returns the tests' end date
      */
-    protected getAttemptsEndDate(
-        attempts: CypressCommandLine.AttemptResult[]
-    ): Date | null {
+    protected getAttemptsEndDate(attempts: CypressCommandLine.AttemptResult[]): Date | null {
         let end: Date = null;
         attempts.forEach((attempt: CypressCommandLine.AttemptResult) => {
             const attemptEndDate = this.getAttemptEndDate(attempt);
@@ -175,9 +159,7 @@ export abstract class ImportExecutionResultsConverter<
      * @param attempt the Cypress test result
      * @returns the test's end date
      */
-    protected getAttemptEndDate(
-        attempt: CypressCommandLine.AttemptResult
-    ): Date {
+    protected getAttemptEndDate(attempt: CypressCommandLine.AttemptResult): Date {
         const date = this.getAttemptStartDate(attempt);
         date.setMilliseconds(date.getMilliseconds() + attempt.duration);
         return date;
@@ -196,9 +178,7 @@ export abstract class ImportExecutionResultsConverter<
             case "failed":
                 return Status.FAILED;
             default:
-                throw new Error(
-                    `Unknown Cypress test status: ${attempt.state}`
-                );
+                throw new Error(`Unknown Cypress test status: ${attempt.state}`);
         }
     }
 
@@ -214,10 +194,7 @@ export abstract class ImportExecutionResultsConverter<
             return action;
         }
         // Subtract 3 for the dots.
-        const truncated = action.substring(
-            0,
-            CONTEXT.config.xray.steps.maxLengthAction - 3
-        );
+        const truncated = action.substring(0, CONTEXT.config.xray.steps.maxLengthAction - 3);
         return `${truncated}...`;
     }
 
@@ -242,19 +219,16 @@ export abstract class ImportExecutionResultsConverter<
         testsByTitle: Map<string, CypressCommandLine.TestResult[]>
     ): Map<string, CypressCommandLine.AttemptResult[]> {
         const map = new Map<string, CypressCommandLine.AttemptResult[]>();
-        testsByTitle.forEach(
-            (testResults: CypressCommandLine.TestResult[], title: string) => {
-                const attempts = testResults.flatMap(
-                    (testResult: CypressCommandLine.TestResult) =>
-                        testResult.attempts
-                );
-                if (map.has(title)) {
-                    map.set(title, map.get(title).concat(attempts));
-                } else {
-                    map.set(title, attempts);
-                }
+        testsByTitle.forEach((testResults: CypressCommandLine.TestResult[], title: string) => {
+            const attempts = testResults.flatMap(
+                (testResult: CypressCommandLine.TestResult) => testResult.attempts
+            );
+            if (map.has(title)) {
+                map.set(title, map.get(title).concat(attempts));
+            } else {
+                map.set(title, attempts);
             }
-        );
+        });
         return map;
     }
 
@@ -271,18 +245,14 @@ export abstract class ImportExecutionResultsConverter<
         };
     }
 
-    private getTextExecutionResultSummary(
-        results: CypressCommandLine.CypressRunResult
-    ): string {
+    private getTextExecutionResultSummary(results: CypressCommandLine.CypressRunResult): string {
         return (
             CONTEXT.config.jira.testExecutionIssueSummary ||
             `Execution Results [${new Date(results.startedTestsAt).getTime()}]`
         );
     }
 
-    private getDescription(
-        results: CypressCommandLine.CypressRunResult
-    ): string {
+    private getDescription(results: CypressCommandLine.CypressRunResult): string {
         return (
             CONTEXT.config.jira.testExecutionIssueDescription ||
             "Cypress version: " +
@@ -295,13 +265,8 @@ export abstract class ImportExecutionResultsConverter<
         );
     }
 
-    private getTestIssueKey(
-        testResult: CypressCommandLine.TestResult
-    ): string | null {
-        const regex = new RegExp(
-            `(${CONTEXT.config.jira.projectKey}-\\d+)`,
-            "g"
-        );
+    private getTestIssueKey(testResult: CypressCommandLine.TestResult): string | null {
+        const regex = new RegExp(`(${CONTEXT.config.jira.projectKey}-\\d+)`, "g");
         // The last element usually refers to an individual test.
         // The ones before might be test suite titles.
         const testCaseTitle = testResult.title[testResult.title.length - 1];
@@ -309,19 +274,14 @@ export abstract class ImportExecutionResultsConverter<
         if (!matches) {
             // Test case title does not contain the issue's key.
             // Maybe it was provided via Cucumber as a scenario tag?
-            if (
-                CONTEXT.config.cucumber.issues &&
-                testCaseTitle in CONTEXT.config.cucumber.issues
-            ) {
+            if (CONTEXT.config.cucumber.issues && testCaseTitle in CONTEXT.config.cucumber.issues) {
                 return CONTEXT.config.cucumber.issues[testCaseTitle];
             }
         } else if (matches.length === 1) {
             return matches[0];
         } else {
             throw new Error(
-                `Multiple test keys found in test "${testCaseTitle}": ${matches.join(
-                    ", "
-                )}`
+                `Multiple test keys found in test "${testCaseTitle}": ${matches.join(", ")}`
             );
         }
         return null;

@@ -31,8 +31,7 @@ describe("the conversion function", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
 
         expect(json.tests).to.have.length(3);
     });
@@ -61,21 +60,16 @@ describe("the conversion function", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expect(json.info?.startDate).to.eq("2022-11-28T17:41:12Z");
         expect(json.info?.finishDate).to.eq("2022-11-28T17:41:19Z");
     });
 
     it("should be able to detect re-use of existing test issues", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync(
-                "./test/resources/runResultExistingTestIssues.json",
-                "utf-8"
-            )
+            readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].testKey).to.eq("CYP-40");
@@ -91,8 +85,7 @@ describe("the conversion function", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         CONTEXT.config.jira.testExecutionIssueKey = "CYP-123";
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expect(json.testExecutionKey).to.eq("CYP-123");
     });
 
@@ -101,8 +94,7 @@ describe("the conversion function", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         CONTEXT.config.jira.testPlanIssueKey = "CYP-123";
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.info);
         expect(json.info.testPlanKey).to.eq("CYP-123");
     });
@@ -111,8 +103,7 @@ describe("the conversion function", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expect(json.testExecutionKey).to.be.undefined;
     });
 
@@ -120,23 +111,18 @@ describe("the conversion function", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.info);
         expect(json.info.testPlanKey).to.be.undefined;
     });
 
     it("should be able to overwrite existing test issues if specified", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync(
-                "./test/resources/runResultExistingTestIssues.json",
-                "utf-8"
-            )
+            readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         expectToExist(CONTEXT.config.plugin);
         CONTEXT.config.plugin.overwriteIssueSummary = true;
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].testKey).to.eq("CYP-40");
@@ -154,8 +140,7 @@ describe("the conversion function", () => {
         CONTEXT.config.plugin = {
             overwriteIssueSummary: false,
         };
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].testInfo).to.exist;
@@ -165,36 +150,24 @@ describe("the conversion function", () => {
 
     it("should normalize screenshot filenames if enabled", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync(
-                "./test/resources/runResultProblematicScreenshot.json",
-                "utf-8"
-            )
+            readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
         expectToExist(CONTEXT.config.plugin);
         CONTEXT.config.plugin.normalizeScreenshotNames = true;
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.tests);
         expectToExist(json.tests[0].evidence);
-        expect(json.tests[0].evidence[0].filename).to.eq(
-            "t_rtle_with_problem_tic_name.png"
-        );
+        expect(json.tests[0].evidence[0].filename).to.eq("t_rtle_with_problem_tic_name.png");
     });
 
     it("should not normalize screenshot filenames if disabled", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync(
-                "./test/resources/runResultProblematicScreenshot.json",
-                "utf-8"
-            )
+            readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.tests);
         expectToExist(json.tests[0].evidence);
-        expect(json.tests[0].evidence[0].filename).to.eq(
-            "tûrtle with problemätic name.png"
-        );
+        expect(json.tests[0].evidence[0].filename).to.eq("tûrtle with problemätic name.png");
     });
 
     it("should be able to use custom passed/failed statuses", () => {
@@ -204,8 +177,7 @@ describe("the conversion function", () => {
         expectToExist(CONTEXT.config.xray);
         CONTEXT.config.xray.statusPassed = "it worked";
         CONTEXT.config.xray.statusFailed = "it did not work";
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("it worked");
         expect(json.tests[1].status).to.eq("it worked");
@@ -218,8 +190,7 @@ describe("the conversion function", () => {
         );
         expectToExist(CONTEXT.config.xray);
         CONTEXT.config.xray.uploadScreenshots = false;
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].evidence).to.be.undefined;
@@ -238,8 +209,7 @@ describe("the conversion function", () => {
         // TODO: remove once #47 is fixed.
         expectToExist(CONTEXT.config.plugin);
         CONTEXT.config.plugin.overwriteIssueSummary = true;
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expectToExist(json.tests[0].testInfo);
@@ -261,8 +231,7 @@ describe("the conversion function", () => {
         // TODO: remove once #47 is fixed.
         expectToExist(CONTEXT.config.plugin);
         CONTEXT.config.plugin.overwriteIssueSummary = true;
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expectToExist(json.tests[0].testInfo);
@@ -291,8 +260,7 @@ describe("the conversion function", () => {
         // TODO: remove once #47 is fixed.
         expectToExist(CONTEXT.config.plugin);
         CONTEXT.config.plugin.overwriteIssueSummary = true;
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.tests);
         expectToExist(json.tests[0].testInfo);
         expectToExist(json.tests[0].testInfo.steps);
@@ -311,8 +279,7 @@ describe("the conversion function", () => {
         );
         expectToExist(CONTEXT.config.jira);
         CONTEXT.config.jira.testExecutionIssueSummary = "Jeffrey's Test";
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.info);
         expect(json.info.summary).to.eq("Jeffrey's Test");
     });
@@ -322,8 +289,7 @@ describe("the conversion function", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         expectToExist(CONTEXT.config.jira);
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.info);
         expect(json.info.summary).to.eq("Execution Results [1669657272234]");
     });
@@ -334,8 +300,7 @@ describe("the conversion function", () => {
         );
         expectToExist(CONTEXT.config.jira);
         CONTEXT.config.jira.testExecutionIssueDescription = "Very Useful Text";
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.info);
         expect(json.info.description).to.eq("Very Useful Text");
     });
@@ -345,8 +310,7 @@ describe("the conversion function", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         expectToExist(CONTEXT.config.jira);
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
         expectToExist(json.info);
         expect(json.info.description).to.eq(
             "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)"

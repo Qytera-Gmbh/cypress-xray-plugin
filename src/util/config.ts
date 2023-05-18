@@ -48,26 +48,19 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
         CONTEXT.config.jira.url = env[ENV_JIRA_URL];
     }
     if (ENV_JIRA_TEST_EXECUTION_ISSUE_KEY in env) {
-        CONTEXT.config.jira.testExecutionIssueKey =
-            env[ENV_JIRA_TEST_EXECUTION_ISSUE_KEY];
+        CONTEXT.config.jira.testExecutionIssueKey = env[ENV_JIRA_TEST_EXECUTION_ISSUE_KEY];
     }
     if (ENV_JIRA_TEST_PLAN_ISSUE_KEY in env) {
-        CONTEXT.config.jira.testPlanIssueKey =
-            env[ENV_JIRA_TEST_PLAN_ISSUE_KEY];
+        CONTEXT.config.jira.testPlanIssueKey = env[ENV_JIRA_TEST_PLAN_ISSUE_KEY];
     }
     if (ENV_JIRA_ATTACH_VIDEOS in env) {
-        CONTEXT.config.jira.attachVideos = parseBoolean(
-            env[ENV_JIRA_ATTACH_VIDEOS]
-        );
+        CONTEXT.config.jira.attachVideos = parseBoolean(env[ENV_JIRA_ATTACH_VIDEOS]);
     }
     if (ENV_JIRA_CREATE_TEST_ISSUES in env) {
-        CONTEXT.config.jira.createTestIssues = parseBoolean(
-            env[ENV_JIRA_CREATE_TEST_ISSUES]
-        );
+        CONTEXT.config.jira.createTestIssues = parseBoolean(env[ENV_JIRA_CREATE_TEST_ISSUES]);
     }
     if (ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY in env) {
-        CONTEXT.config.jira.testExecutionIssueSummary =
-            env[ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY];
+        CONTEXT.config.jira.testExecutionIssueSummary = env[ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY];
     }
     if (ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION in env) {
         CONTEXT.config.jira.testExecutionIssueDescription =
@@ -75,14 +68,10 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
     }
     // Xray.
     if (ENV_XRAY_UPLOAD_RESULTS in env) {
-        CONTEXT.config.xray.uploadResults = parseBoolean(
-            env[ENV_XRAY_UPLOAD_RESULTS]
-        );
+        CONTEXT.config.xray.uploadResults = parseBoolean(env[ENV_XRAY_UPLOAD_RESULTS]);
     }
     if (ENV_XRAY_UPLOAD_SCREENSHOTS in env) {
-        CONTEXT.config.xray.uploadScreenshots = parseBoolean(
-            env[ENV_XRAY_UPLOAD_SCREENSHOTS]
-        );
+        CONTEXT.config.xray.uploadScreenshots = parseBoolean(env[ENV_XRAY_UPLOAD_SCREENSHOTS]);
     }
     if (ENV_XRAY_STATUS_PASSED in env) {
         CONTEXT.config.xray.statusPassed = env[ENV_XRAY_STATUS_PASSED];
@@ -91,9 +80,7 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
         CONTEXT.config.xray.statusFailed = env[ENV_XRAY_STATUS_FAILED];
     }
     if (ENV_XRAY_STEPS_UPDATE in env) {
-        CONTEXT.config.xray.steps.update = parseBoolean(
-            env[ENV_XRAY_STEPS_UPDATE]
-        );
+        CONTEXT.config.xray.steps.update = parseBoolean(env[ENV_XRAY_STEPS_UPDATE]);
     }
     if (ENV_XRAY_STEPS_MAX_LENGTH_ACTION in env) {
         CONTEXT.config.xray.steps.maxLengthAction = Number.parseInt(
@@ -102,13 +89,10 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
     }
     // Cucumber.
     if (ENV_CUCUMBER_FEATURE_FILE_EXTENSION in env) {
-        CONTEXT.config.cucumber.featureFileExtension =
-            env[ENV_CUCUMBER_FEATURE_FILE_EXTENSION];
+        CONTEXT.config.cucumber.featureFileExtension = env[ENV_CUCUMBER_FEATURE_FILE_EXTENSION];
     }
     if (ENV_CUCUMBER_UPLOAD_FEATURES in env) {
-        CONTEXT.config.cucumber.uploadFeatures = parseBoolean(
-            env[ENV_CUCUMBER_UPLOAD_FEATURES]
-        );
+        CONTEXT.config.cucumber.uploadFeatures = parseBoolean(env[ENV_CUCUMBER_UPLOAD_FEATURES]);
     }
     if (ENV_CUCUMBER_DOWNLOAD_FEATURES in env) {
         CONTEXT.config.cucumber.downloadFeatures = parseBoolean(
@@ -140,18 +124,11 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
     CONTEXT.jiraClient = initJiraClient(env);
 }
 
-function chooseUploader(
-    env: Cypress.ObjectLike
-): XrayClientServer | XrayClientCloud {
+function chooseUploader(env: Cypress.ObjectLike): XrayClientServer | XrayClientCloud {
     if (ENV_XRAY_CLIENT_ID in env && ENV_XRAY_CLIENT_SECRET in env) {
-        logInfo(
-            "Xray client ID and client secret found. Setting up Xray cloud credentials."
-        );
+        logInfo("Xray client ID and client secret found. Setting up Xray cloud credentials.");
         return new XrayClientCloud(
-            new JWTCredentials(
-                env[ENV_XRAY_CLIENT_ID],
-                env[ENV_XRAY_CLIENT_SECRET]
-            )
+            new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET])
         );
     } else if (ENV_JIRA_API_TOKEN in env && CONTEXT.config.jira.url) {
         logInfo("Jira PAT found. Setting up Xray PAT credentials.");
@@ -159,20 +136,11 @@ function chooseUploader(
             CONTEXT.config.jira.url,
             new PATCredentials(env[ENV_JIRA_API_TOKEN])
         );
-    } else if (
-        ENV_JIRA_USERNAME in env &&
-        ENV_JIRA_PASSWORD in env &&
-        CONTEXT.config.jira.url
-    ) {
-        logInfo(
-            "Jira username and password found. Setting up Xray basic auth credentials."
-        );
+    } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && CONTEXT.config.jira.url) {
+        logInfo("Jira username and password found. Setting up Xray basic auth credentials.");
         return new XrayClientServer(
             CONTEXT.config.jira.url,
-            new BasicAuthCredentials(
-                env[ENV_JIRA_USERNAME],
-                env[ENV_JIRA_PASSWORD]
-            )
+            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD])
         );
     } else {
         throw new Error(
@@ -199,18 +167,12 @@ function initJiraClient(env: Cypress.ObjectLike): JiraClient | undefined {
             );
             return new JiraClient(
                 CONTEXT.config.jira.url,
-                new BasicAuthCredentials(
-                    env[ENV_JIRA_USERNAME],
-                    env[ENV_JIRA_API_TOKEN]
-                )
+                new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_API_TOKEN])
             );
         }
         // Jira Server authentication: no username, only token.
         logInfo("Jira PAT found. Setting up PAT credentials for Jira server.");
-        return new JiraClient(
-            CONTEXT.config.jira.url,
-            new PATCredentials(env[ENV_JIRA_API_TOKEN])
-        );
+        return new JiraClient(CONTEXT.config.jira.url, new PATCredentials(env[ENV_JIRA_API_TOKEN]));
     } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env) {
         // Jira Server authentication: username and password.
         logInfo(
@@ -218,10 +180,7 @@ function initJiraClient(env: Cypress.ObjectLike): JiraClient | undefined {
         );
         return new JiraClient(
             CONTEXT.config.jira.url,
-            new BasicAuthCredentials(
-                env[ENV_JIRA_USERNAME],
-                env[ENV_JIRA_PASSWORD]
-            )
+            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD])
         );
     }
     throw new Error(
@@ -233,13 +192,11 @@ function initJiraClient(env: Cypress.ObjectLike): JiraClient | undefined {
 function getJiraClientDependentOptions(): string | undefined {
     let dependentOptions = [];
     if (CONTEXT.config.jira.attachVideos) {
-        const optionName = `${getPropertyName(
-            CONTEXT.config,
-            (x) => x.jira
-        )}.${getPropertyName(CONTEXT.config.jira, (x) => x.attachVideos)}`;
-        dependentOptions.push(
-            `${optionName} = ${CONTEXT.config.jira.attachVideos}`
-        );
+        const optionName = `${getPropertyName(CONTEXT.config, (x) => x.jira)}.${getPropertyName(
+            CONTEXT.config.jira,
+            (x) => x.attachVideos
+        )}`;
+        dependentOptions.push(`${optionName} = ${CONTEXT.config.jira.attachVideos}`);
     }
     if (dependentOptions.length === 0) {
         return;

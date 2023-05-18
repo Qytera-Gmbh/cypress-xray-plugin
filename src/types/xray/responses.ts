@@ -27,8 +27,7 @@ export interface ImportCucumberTestsResponse {}
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
  */
-export interface CloudImportCucumberTestsResponse
-    extends ImportCucumberTestsResponse {
+export interface CloudImportCucumberTestsResponse extends ImportCucumberTestsResponse {
     errors: string[];
     updatedOrCreatedTests: ImportIssueResponse[];
     updatedOrCreatedPreconditions: ImportIssueResponse[];
@@ -37,8 +36,7 @@ export interface CloudImportCucumberTestsResponse
 /**
  * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
  */
-export interface ServerImportCucumberTestsResponse
-    extends ImportCucumberTestsResponse {
+export interface ServerImportCucumberTestsResponse extends ImportCucumberTestsResponse {
     message: string;
     testIssues: ImportIssueResponse[];
     preConditionIssues: ImportIssueResponse[];

@@ -23,18 +23,13 @@ describe("the Xray cloud client", () => {
                 featureFileExtension: ".feature",
             },
         });
-        details = JSON.parse(
-            readFileSync("./test/resources/runResult.json", "utf-8")
-        );
+        details = JSON.parse(readFileSync("./test/resources/runResult.json", "utf-8"));
         client = new XrayClientCloud(new JWTCredentials("user", "xyz"));
     });
 
     it("should be able to skip empty test uploads", async () => {
         details.runs.forEach((run, i) =>
-            run.tests.forEach(
-                (test, j) =>
-                    (test.title = ["nothing", i.toString(), j.toString()])
-            )
+            run.tests.forEach((test, j) => (test.title = ["nothing", i.toString(), j.toString()]))
         );
         CONTEXT.config.jira.createTestIssues = false;
         const stubbedWarning = stubLogWarning();

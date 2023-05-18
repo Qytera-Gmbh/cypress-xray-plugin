@@ -13,15 +13,12 @@ export const ENV_JIRA_API_TOKEN = "JIRA_API_TOKEN";
 // ================================= //
 export const ENV_JIRA_PROJECT_KEY = "JIRA_PROJECT_KEY";
 export const ENV_JIRA_URL = "JIRA_URL";
-export const ENV_JIRA_TEST_EXECUTION_ISSUE_KEY =
-    "JIRA_TEST_EXECUTION_ISSUE_KEY";
+export const ENV_JIRA_TEST_EXECUTION_ISSUE_KEY = "JIRA_TEST_EXECUTION_ISSUE_KEY";
 export const ENV_JIRA_TEST_PLAN_ISSUE_KEY = "JIRA_TEST_PLAN_ISSUE_KEY";
 export const ENV_JIRA_ATTACH_VIDEOS = "JIRA_ATTACH_VIDEOS";
 export const ENV_JIRA_CREATE_TEST_ISSUES = "JIRA_CREATE_TEST_ISSUES";
-export const ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY =
-    "JIRA_TEST_EXECUTION_ISSUE_SUMMARY";
-export const ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION =
-    "JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION";
+export const ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY = "JIRA_TEST_EXECUTION_ISSUE_SUMMARY";
+export const ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION = "JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION";
 // ================================= //
 // | Xray Configuration            | //
 // ================================= //
@@ -35,17 +32,14 @@ export const ENV_XRAY_STEPS_MAX_LENGTH_ACTION = "XRAY_STEPS_MAX_LENGTH_ACTION";
 // ================================= //
 // | Cucumber Configuration        | //
 // ================================= //
-export const ENV_CUCUMBER_FEATURE_FILE_EXTENSION =
-    "CUCUMBER_FEATURE_FILE_EXTENSION";
+export const ENV_CUCUMBER_FEATURE_FILE_EXTENSION = "CUCUMBER_FEATURE_FILE_EXTENSION";
 export const ENV_CUCUMBER_UPLOAD_FEATURES = "CUCUMBER_UPLOAD_FEATURES";
 export const ENV_CUCUMBER_DOWNLOAD_FEATURES = "CUCUMBER_DOWNLOAD_FEATURES";
 // ================================= //
 // | Plugin Configuration          | //
 // ================================= //
-export const ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY =
-    "PLUGIN_OVERWRITE_ISSUE_SUMMARY";
-export const ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES =
-    "PLUGIN_NORMALIZE_SCREENSHOT_NAMES";
+export const ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY = "PLUGIN_OVERWRITE_ISSUE_SUMMARY";
+export const ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES = "PLUGIN_NORMALIZE_SCREENSHOT_NAMES";
 export const ENV_PLUGIN_DEBUG = "PLUGIN_DEBUG";
 // ================================= //
 // | OpenSSL Configuration         | //

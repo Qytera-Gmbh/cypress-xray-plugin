@@ -7,30 +7,19 @@ import { parseFeatureFile } from "./util/parsing";
 
 function verifyJiraProjectKey(projectKey?: string) {
     if (!projectKey) {
-        throw new Error(
-            "Xray plugin misconfiguration: Jira project key was not set"
-        );
+        throw new Error("Xray plugin misconfiguration: Jira project key was not set");
     }
 }
 
-function verifyJiraTestExecutionIssueKey(
-    projectKey: string,
-    testExecutionIssueKey?: string
-) {
-    if (
-        testExecutionIssueKey &&
-        !testExecutionIssueKey.startsWith(projectKey)
-    ) {
+function verifyJiraTestExecutionIssueKey(projectKey: string, testExecutionIssueKey?: string) {
+    if (testExecutionIssueKey && !testExecutionIssueKey.startsWith(projectKey)) {
         throw new Error(
             `Xray plugin misconfiguration: test execution issue key ${testExecutionIssueKey} does not belong to project ${projectKey}`
         );
     }
 }
 
-function verifyJiraTestPlanIssueKey(
-    projectKey: string,
-    testPlanIssueKey?: string
-) {
+function verifyJiraTestPlanIssueKey(projectKey: string, testPlanIssueKey?: string) {
     if (testPlanIssueKey && !testPlanIssueKey.startsWith(projectKey)) {
         throw new Error(
             `Xray plugin misconfiguration: test plan issue key ${testPlanIssueKey} does not belong to project ${projectKey}`
@@ -67,64 +56,43 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
 }
 
 export async function afterRunHook(
-    results:
-        | CypressCommandLine.CypressRunResult
-        | CypressCommandLine.CypressFailedRunResult
+    results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
 ) {
     if (results.status === "failed") {
-        logError(
-            `Aborting: failed to run ${results.failures} tests:`,
-            results.message
-        );
+        logError(`Aborting: failed to run ${results.failures} tests:`, results.message);
         return;
     }
     if (!CONTEXT.config.xray.uploadResults) {
-        logWarning(
-            "Skipping results upload: Plugin is configured to not upload test results."
-        );
+        logWarning("Skipping results upload: Plugin is configured to not upload test results.");
         return;
     }
     const runResult = results as CypressCommandLine.CypressRunResult;
-    const issueKey = await CONTEXT.xrayClient.importTestExecutionResults(
-        runResult
-    );
+    const issueKey = await CONTEXT.xrayClient.importTestExecutionResults(runResult);
     if (issueKey === undefined) {
-        logWarning(
-            "Execution results import failed. Skipping remaining tasks."
-        );
+        logWarning("Execution results import failed. Skipping remaining tasks.");
         return;
     } else if (issueKey === null) {
-        logWarning(
-            "Execution results import was skipped. Skipping remaining tasks."
-        );
+        logWarning("Execution results import was skipped. Skipping remaining tasks.");
         return;
     }
     if (CONTEXT.jiraClient && CONTEXT.config.jira.attachVideos) {
-        const videos: string[] = runResult.runs.map(
-            (result: CypressCommandLine.RunResult) => {
-                return result.video;
-            }
-        );
+        const videos: string[] = runResult.runs.map((result: CypressCommandLine.RunResult) => {
+            return result.video;
+        });
         if (videos.length === 0) {
-            logWarning(
-                "No videos were uploaded: No videos have been captured."
-            );
+            logWarning("No videos were uploaded: No videos have been captured.");
         } else {
             await CONTEXT.jiraClient.addAttachments(issueKey, ...videos);
         }
     }
 }
 
-export async function filePreprocessorHook(
-    file: Cypress.FileObject
-): Promise<string> {
+export async function filePreprocessorHook(file: Cypress.FileObject): Promise<string> {
     if (file.filePath.endsWith(CONTEXT.config.cucumber.featureFileExtension)) {
-        const relativePath = file.filePath.substring(
-            file.filePath.indexOf("cypress")
-        );
+        const relativePath = file.filePath.substring(file.filePath.indexOf("cypress"));
         try {
-            // Extract tag information for later use, e.g. when uploading test
-            // results to specific issues.
+            // Extract tag information for later use, e.g. when uploading test results to specific
+            // issues.
             const feature = parseFeatureFile(file.filePath).feature;
             CONTEXT.config.cucumber.issues = issuesByScenario(
                 feature,
@@ -135,18 +103,14 @@ export async function filePreprocessorHook(
                 throw new Error("feature not yet implemented");
             }
             if (CONTEXT.config.cucumber.uploadFeatures) {
-                logInfo(
-                    `Synchronizing upstream Cucumber tests (${relativePath})`
-                );
+                logInfo(`Synchronizing upstream Cucumber tests (${relativePath})`);
                 await CONTEXT.xrayClient.importCucumberTests(
                     file.filePath,
                     CONTEXT.config.jira.projectKey
                 );
             }
         } catch (error: unknown) {
-            logError(
-                `Feature file invalid, skipping synchronization: ${error}`
-            );
+            logError(`Feature file invalid, skipping synchronization: ${error}`);
         }
     }
     return file.filePath;

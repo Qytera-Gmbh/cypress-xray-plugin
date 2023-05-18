@@ -1,8 +1,4 @@
-import {
-    AstBuilder,
-    GherkinClassicTokenMatcher,
-    Parser,
-} from "@cucumber/gherkin";
+import { AstBuilder, GherkinClassicTokenMatcher, Parser } from "@cucumber/gherkin";
 import { GherkinDocument, IdGenerator } from "@cucumber/messages";
 import { readFileSync } from "fs";
 
@@ -28,8 +24,7 @@ export function parseBoolean(value: string): boolean {
 }
 
 /**
- * Parses a Gherkin document (feature file) and returns the information
- * contained within.
+ * Parses a Gherkin document (feature file) and returns the information contained within.
  *
  * @param file the path to the feature file
  * @param encoding the file's encoding
