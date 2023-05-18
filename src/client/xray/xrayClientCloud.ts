@@ -22,9 +22,7 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
         results: CypressCommandLine.CypressRunResult
     ): Promise<string | null> {
         const json: XrayTestExecutionResultsCloud =
-            new ImportExecutionResultsConverterCloud().convertExecutionResults(
-                results
-            );
+            new ImportExecutionResultsConverterCloud().convertExecutionResults(results);
         if (!json.tests || json.tests.length === 0) {
             return null;
         }
@@ -39,9 +37,7 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
             })
             .then(async (header: HTTPHeader) => {
                 logInfo("Uploading test results...");
-                const progressInterval = this.startResponseInterval(
-                    XrayClientCloud.URL
-                );
+                const progressInterval = this.startResponseInterval(XrayClientCloud.URL);
                 try {
                     const response = await Requests.post(
                         `${XrayClientCloud.URL}/import/execution`,
@@ -74,35 +70,23 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
             logInfo("Still exporting...");
         }, 5000);
         try {
-            const response = await Requests.get(
-                `${XrayClientCloud.URL}/export/cucumber`,
-                {
-                    headers: {
-                        ...header,
-                    },
-                    params: {
-                        keys: keys,
-                        filter: filter,
-                    },
-                }
-            );
+            const response = await Requests.get(`${XrayClientCloud.URL}/export/cucumber`, {
+                headers: {
+                    ...header,
+                },
+                params: {
+                    keys: keys,
+                    filter: filter,
+                },
+            });
             // Extract filename from response.
             const contentDisposition = response.headers["Content-Disposition"];
             const filenameStart = contentDisposition.indexOf('"');
             const filenameEnd = contentDisposition.lastIndexOf('"');
-            const filename = contentDisposition.substring(
-                filenameStart,
-                filenameEnd
-            );
-            fs.writeFile(
-                filename,
-                response.data,
-                (error: NodeJS.ErrnoException | null) => {
-                    throw new Error(
-                        `Failed to export cucumber feature files: "${error}"`
-                    );
-                }
-            );
+            const filename = contentDisposition.substring(filenameStart, filenameEnd);
+            fs.writeFile(filename, response.data, (error: NodeJS.ErrnoException | null) => {
+                throw new Error(`Failed to export cucumber feature files: "${error}"`);
+            });
             throw new Error("Method not implemented.");
         } finally {
             clearInterval(progressInterval);
@@ -127,21 +111,17 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
             const form = new FormData();
             form.append("file", fileContent);
 
-            const response = await Requests.post(
-                `${XrayClientCloud.URL}/import/feature`,
-                form,
-                {
-                    headers: {
-                        ...header,
-                        ...form.getHeaders(),
-                    },
-                    params: {
-                        projectKey: projectKey,
-                        projectId: projectId,
-                        source: source,
-                    },
-                }
-            );
+            const response = await Requests.post(`${XrayClientCloud.URL}/import/feature`, form, {
+                headers: {
+                    ...header,
+                    ...form.getHeaders(),
+                },
+                params: {
+                    projectKey: projectKey,
+                    projectId: projectId,
+                    source: source,
+                },
+            });
             if (response.data.updatedOrCreatedTests.length > 0) {
                 logSuccess(
                     "Successfully updated or created test issues:",

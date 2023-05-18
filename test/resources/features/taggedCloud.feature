@@ -1,7 +1,7 @@
 @REQ_CALC-889
 Feature: A tagged feature
 
-  Background: 
+  Background:
     #@Precondition:CYP-111
 		Given abc123
 		Then xyz987

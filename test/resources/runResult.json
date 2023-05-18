@@ -49,10 +49,7 @@
             ],
             "tests": [
                 {
-                    "title": [
-                        "xray upload demo",
-                        "should look for paragraph elements"
-                    ],
+                    "title": ["xray upload demo", "should look for paragraph elements"],
                     "state": "passed",
                     "body": "function () {\r\n        cy.get(\"p\").should(\"exist\");\r\n    }",
                     "displayError": null,
@@ -68,10 +65,7 @@
                     ]
                 },
                 {
-                    "title": [
-                        "xray upload demo",
-                        "should look for the anchor element"
-                    ],
+                    "title": ["xray upload demo", "should look for the anchor element"],
                     "state": "passed",
                     "body": "function () {\r\n        cy.get(\"a\").should(\"exist\");\r\n    }",
                     "displayError": null,

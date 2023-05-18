@@ -1,10 +1,7 @@
 import { Feature, FeatureChild, Scenario } from "@cucumber/messages";
 import { logInfo, logWarning } from "../logging/logging";
 
-function issueTagOf(
-    scenario: Scenario,
-    projectKey: string
-): string | undefined {
+function issueTagOf(scenario: Scenario, projectKey: string): string | undefined {
     // Xray cloud: @TestName:CYP-123
     // Xray server: @CYP-123
     const regex = new RegExp(`@(?:TestName:)?(${projectKey}-\\d+)`);
@@ -14,8 +11,7 @@ function issueTagOf(
         if (!matches) {
             continue;
         } else if (matches.length === 2) {
-            // Element [0] is the entire matched string, element [1] the first
-            // captured group.
+            // Element [0] is the entire matched string, element [1] the first captured group.
             issueKeys.push(matches[1]);
         }
     }
@@ -34,8 +30,7 @@ function issueTagOf(
 }
 
 /**
- * Builds a mapping of scenarios titles to Xray issue keys based on the
- * provided feature.
+ * Builds a mapping of scenarios titles to Xray issue keys based on the provided feature.
  *
  * @param feature the Gherkin feature object with all its data
  * @param projectKey the project keys to look out for
@@ -62,17 +57,11 @@ function issueTagOf(
  *     'Unsuccessful login': 'PRJ-9876',
  *   }
  */
-export function issuesByScenario(
-    feature: Feature,
-    projectKey: string
-): { [key: string]: string } {
+export function issuesByScenario(feature: Feature, projectKey: string): { [key: string]: string } {
     const issues: { [key: string]: string } = {};
     feature.children.map((child: FeatureChild) => {
         if (child.scenario) {
-            issues[child.scenario.name] = issueTagOf(
-                child.scenario,
-                projectKey
-            );
+            issues[child.scenario.name] = issueTagOf(child.scenario, projectKey);
         }
     });
     return issues;

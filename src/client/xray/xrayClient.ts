@@ -36,13 +36,9 @@ export abstract class XrayClient<
         results: CypressCommandLine.CypressRunResult
     ): Promise<string | null> {
         try {
-            const key = await this.dispatchImportTestExecutionResultsRequest(
-                results
-            );
+            const key = await this.dispatchImportTestExecutionResultsRequest(results);
             if (key === null) {
-                logWarning(
-                    "No tests linked to Xray were executed. Skipping upload."
-                );
+                logWarning("No tests linked to Xray were executed. Skipping upload.");
             }
             return key;
         } catch (error: unknown) {
@@ -110,12 +106,7 @@ export abstract class XrayClient<
         source?: string
     ): Promise<ImportCucumberTestsResponse> {
         try {
-            return this.dispatchImportCucumberTestsRequest(
-                file,
-                projectKey,
-                projectId,
-                source
-            );
+            return this.dispatchImportCucumberTestsRequest(file, projectKey, projectId, source);
         } catch (error: unknown) {
             logError(`Failed to import cucumber feature files: "${error}"`);
             this.writeErrorFile(error, "importCucumberTestsError");

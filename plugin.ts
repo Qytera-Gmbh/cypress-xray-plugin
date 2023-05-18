@@ -14,9 +14,7 @@ export async function addXrayResultUpload(on: Cypress.PluginEvents) {
     on(
         "after:run",
         async (
-            results:
-                | CypressCommandLine.CypressRunResult
-                | CypressCommandLine.CypressFailedRunResult
+            results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
         ) => {
             await afterRunHook(results);
         }

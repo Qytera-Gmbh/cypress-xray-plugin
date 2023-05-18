@@ -26,13 +26,11 @@ export type XrayTestExecutionResults<XrayTestType> = {
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-XrayJSONformat
  */
-export type XrayTestExecutionResultsServer =
-    XrayTestExecutionResults<XrayTestServer>;
+export type XrayTestExecutionResultsServer = XrayTestExecutionResults<XrayTestServer>;
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-JSONformat
  */
-export type XrayTestExecutionResultsCloud =
-    XrayTestExecutionResults<XrayTestCloud>;
+export type XrayTestExecutionResultsCloud = XrayTestExecutionResults<XrayTestCloud>;
 
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22info%22object-TestExecutionissue
@@ -86,15 +84,9 @@ type XrayTest<
     XrayManualTestStepResultType extends OneOf<
         [XrayManualTestStepResultServer, XrayManualTestStepResultCloud]
     >,
-    XrayExamplesType extends OneOf<
-        [XrayExamplesTypeServer, XrayExamplesTypeCloud]
-    >,
-    XrayIterationResultType extends OneOf<
-        [XrayIterationResultServer, XrayIterationResultCloud]
-    >,
-    XrayCustomFieldType extends OneOf<
-        [XrayCustomFieldServer, XrayCustomFieldCloud]
-    >
+    XrayExamplesType extends OneOf<[XrayExamplesTypeServer, XrayExamplesTypeCloud]>,
+    XrayIterationResultType extends OneOf<[XrayIterationResultServer, XrayIterationResultCloud]>,
+    XrayCustomFieldType extends OneOf<[XrayCustomFieldServer, XrayCustomFieldCloud]>
 > = {
     /**
      * The test issue key.
@@ -334,45 +326,43 @@ type XrayIterationResult<
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22iterations%22object-Data-driventestresults
  */
-export type XrayIterationResultServer =
-    XrayIterationResult<XrayManualTestStepResultServer> & {
+export type XrayIterationResultServer = XrayIterationResult<XrayManualTestStepResultServer> & {
+    /**
+     * An array of parameters along with their values.
+     */
+    parameters?: {
         /**
-         * An array of parameters along with their values.
+         * The parameter name.
          */
-        parameters?: {
-            /**
-             * The parameter name.
-             */
-            name?: string;
-        }[];
-    };
+        name?: string;
+    }[];
+};
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22iteration%22object-Data-driventestresults
  */
-export type XrayIterationResultCloud =
-    XrayIterationResult<XrayManualTestStepResultCloud> & {
+export type XrayIterationResultCloud = XrayIterationResult<XrayManualTestStepResultCloud> & {
+    /**
+     * The iteration name.
+     */
+    name?: string;
+    /**
+     * An array of parameters along with their values.
+     */
+    parameters?: {
         /**
-         * The iteration name.
+         * The parameter name.
          */
-        name?: string;
-        /**
-         * An array of parameters along with their values.
-         */
-        parameters?: {
-            /**
-             * The parameter name.
-             */
-            name: string;
-        }[];
-        /**
-         * The log for the iteration.
-         */
-        log?: string;
-        /**
-         * A duration for the iteration.
-         */
-        duration?: string;
-    };
+        name: string;
+    }[];
+    /**
+     * The log for the iteration.
+     */
+    log?: string;
+    /**
+     * A duration for the iteration.
+     */
+    duration?: string;
+};
 
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22customFields%22object-storetestruncustomfields

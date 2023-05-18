@@ -17,27 +17,17 @@ describe("the cucumber tag extractor", () => {
     });
 
     it("should be able to extract Xray server tags", async () => {
-        const feature = parseFeatureFile(
-            "./test/resources/features/taggedServer.feature"
-        ).feature;
+        const feature = parseFeatureFile("./test/resources/features/taggedServer.feature").feature;
         expectToExist(feature);
-        const issueMapping = issuesByScenario(
-            feature,
-            CONTEXT.config.jira.projectKey
-        );
+        const issueMapping = issuesByScenario(feature, CONTEXT.config.jira.projectKey);
         expect(issueMapping).to.have.key("A tagged scenario");
         expect(issueMapping["A tagged scenario"]).to.eq("CYP-103");
     });
 
     it("should be able to extract Xray cloud tags", async () => {
-        const feature = parseFeatureFile(
-            "./test/resources/features/taggedCloud.feature"
-        ).feature;
+        const feature = parseFeatureFile("./test/resources/features/taggedCloud.feature").feature;
         expectToExist(feature);
-        const issueMapping = issuesByScenario(
-            feature,
-            CONTEXT.config.jira.projectKey
-        );
+        const issueMapping = issuesByScenario(feature, CONTEXT.config.jira.projectKey);
         expect(issueMapping).to.have.key("A tagged scenario");
         expect(issueMapping["A tagged scenario"]).to.eq("CYP-857");
     });

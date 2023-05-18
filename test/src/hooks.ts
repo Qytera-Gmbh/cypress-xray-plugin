@@ -3,10 +3,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
-import {
-    BasicAuthCredentials,
-    PATCredentials,
-} from "../../src/authentication/credentials";
+import { BasicAuthCredentials, PATCredentials } from "../../src/authentication/credentials";
 import { XrayClientCloud } from "../../src/client/xray/xrayClientCloud";
 import { XrayClientServer } from "../../src/client/xray/xrayClientServer";
 import {
@@ -42,9 +39,7 @@ describe("the before run hook", () => {
                 featureFileExtension: ".feature",
             },
         });
-        details = JSON.parse(
-            readFileSync("./test/resources/beforeRun.json", "utf-8")
-        );
+        details = JSON.parse(readFileSync("./test/resources/beforeRun.json", "utf-8"));
         // Set up cloud credentials for convenience purposes.
         details.config.env = {};
         details.config.env[ENV_XRAY_CLIENT_ID] = "user";
@@ -223,17 +218,13 @@ describe("the before run hook", () => {
 
             it("should throw an error for missing Jira URLs", async () => {
                 CONTEXT.config.jira.url = undefined;
-                await expect(
-                    beforeRunHook(details)
-                ).to.eventually.be.rejectedWith(
+                await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
                     "Failed to configure Jira client: no Jira URL was provided. Configured options which necessarily require a configured Jira client:\n[\n\tjira.attachVideos = true\n]"
                 );
             });
 
             it("should throw an error for missing Jira credentials", async () => {
-                await expect(
-                    beforeRunHook(details)
-                ).to.eventually.be.rejectedWith(
+                await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
                     "Failed to configure Jira client: no viable authentication method was configured.\nYou can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
                 );
             });

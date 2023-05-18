@@ -1,14 +1,10 @@
 import { isAxiosError } from "axios";
 import { writeFileSync } from "fs";
-import {
-    APICredentials,
-    APICredentialsOptions,
-} from "../authentication/credentials";
+import { APICredentials, APICredentialsOptions } from "../authentication/credentials";
 import { logError, logInfo } from "../logging/logging";
 
 /**
- * A basic client interface which stores credentials data used for
- * communicating with the server.
+ * A basic client interface which stores credentials data used for communicating with a server.
  */
 export abstract class Client<T extends APICredentials<APICredentialsOptions>> {
     protected readonly credentials: T;
@@ -67,9 +63,7 @@ export abstract class Client<T extends APICredentials<APICredentialsOptions>> {
         let sumTime = 0;
         const callback = () => {
             sumTime = sumTime + this.LOG_RESPONSE_INTERVAL_MS;
-            logInfo(
-                `Waiting for ${url} to respond... (${sumTime / 1000} seconds)`
-            );
+            logInfo(`Waiting for ${url} to respond... (${sumTime / 1000} seconds)`);
         };
         return setInterval(callback, this.LOG_RESPONSE_INTERVAL_MS);
     }

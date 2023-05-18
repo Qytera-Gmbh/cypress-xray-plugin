@@ -10,9 +10,7 @@ const VARIANTS = [INFO, ERROR, SUCCESS, WARNING, DEBUG];
 const MAX_PREFIX_LENGTH = Math.max(...VARIANTS.map((s) => s.length));
 
 function prefix(type: string): string {
-    return chalk.white(
-        `| Cypress Xray Plugin | ${type.padEnd(MAX_PREFIX_LENGTH, " ")} |`
-    );
+    return chalk.white(`| Cypress Xray Plugin | ${type.padEnd(MAX_PREFIX_LENGTH, " ")} |`);
 }
 
 export function logInfo(...text: string[]) {

@@ -49,10 +49,7 @@
             ],
             "tests": [
                 {
-                    "title": [
-                        "cypress xray plugin",
-                        "CYP-123 should throw an error CYP-456"
-                    ],
+                    "title": ["cypress xray plugin", "CYP-123 should throw an error CYP-456"],
                     "state": "passed",
                     "body": "function () {\r\n        cy.get(\"p\").should(\"exist\");\r\n    }",
                     "displayError": null,

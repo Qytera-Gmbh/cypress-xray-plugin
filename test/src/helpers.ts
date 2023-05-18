@@ -56,9 +56,7 @@ export function expectToExist<T>(value: T): asserts value is NonNullable<T> {
 export function env(key: string): string {
     const value = process.env[key];
     if (!value) {
-        throw new Error(
-            `Expected environment variable ${key} to not be undefined, which it was`
-        );
+        throw new Error(`Expected environment variable ${key} to not be undefined, which it was`);
     }
     return value as string;
 }

@@ -1,10 +1,6 @@
 import FormData from "form-data";
 import fs from "fs";
-import {
-    BasicAuthCredentials,
-    HTTPHeader,
-    PATCredentials,
-} from "../../authentication/credentials";
+import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authentication/credentials";
 import { ImportExecutionResultsConverterServer } from "../../conversion/importExecutionResults/importExecutionResultsConverterServer";
 import { Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess } from "../../logging/logging";
@@ -15,9 +11,7 @@ import {
 } from "../../types/xray/responses";
 import { XrayClient } from "./xrayClient";
 
-export class XrayClientServer extends XrayClient<
-    BasicAuthCredentials | PATCredentials
-> {
+export class XrayClientServer extends XrayClient<BasicAuthCredentials | PATCredentials> {
     private readonly apiBaseURL: string;
 
     /**
@@ -26,10 +20,7 @@ export class XrayClientServer extends XrayClient<
      * @param apiBaseURL the Xray server base endpoint
      * @param credentials the credentials to use during authentication
      */
-    constructor(
-        apiBaseURL: string,
-        credentials: BasicAuthCredentials | PATCredentials
-    ) {
+    constructor(apiBaseURL: string, credentials: BasicAuthCredentials | PATCredentials) {
         super(credentials);
         this.apiBaseURL = apiBaseURL;
     }
@@ -38,9 +29,7 @@ export class XrayClientServer extends XrayClient<
         results: CypressCommandLine.CypressRunResult
     ): Promise<string | null> {
         const json: XrayTestExecutionResultsServer =
-            new ImportExecutionResultsConverterServer().convertExecutionResults(
-                results
-            );
+            new ImportExecutionResultsConverterServer().convertExecutionResults(results);
         if (!json.tests || json.tests.length === 0) {
             return null;
         }
@@ -53,9 +42,7 @@ export class XrayClientServer extends XrayClient<
             })
             .then(async (header: HTTPHeader) => {
                 logInfo(`Uploading test results to ${this.apiBaseURL}...`);
-                const progressInterval = this.startResponseInterval(
-                    this.apiBaseURL
-                );
+                const progressInterval = this.startResponseInterval(this.apiBaseURL);
                 try {
                     const response = await Requests.post(
                         `${this.apiBaseURL}/rest/raven/latest/api/import/execution`,

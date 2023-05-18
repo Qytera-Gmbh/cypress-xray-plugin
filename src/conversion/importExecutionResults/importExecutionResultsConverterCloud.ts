@@ -17,32 +17,24 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
     XrayTestCloud,
     XrayTestInfoCloud
 > {
-    protected getTest(
-        attempt: CypressCommandLine.AttemptResult
-    ): XrayTestCloud {
+    protected getTest(attempt: CypressCommandLine.AttemptResult): XrayTestCloud {
         const json: XrayTestCloud = {
-            start: this.truncateISOTime(
-                this.getAttemptStartDate(attempt).toISOString()
-            ),
-            finish: this.truncateISOTime(
-                this.getAttemptEndDate(attempt).toISOString()
-            ),
+            start: this.truncateISOTime(this.getAttemptStartDate(attempt).toISOString()),
+            finish: this.truncateISOTime(this.getAttemptEndDate(attempt).toISOString()),
             status: this.getXrayStatus(this.getStatus(attempt)),
         };
         const evidence: XrayEvidenceItem[] = [];
         if (CONTEXT.config.xray.uploadScreenshots) {
-            attempt.screenshots.forEach(
-                (screenshot: CypressCommandLine.ScreenshotInformation) => {
-                    let filename = basename(screenshot.path);
-                    if (CONTEXT.config.plugin.normalizeScreenshotNames) {
-                        filename = normalizedFilename(filename);
-                    }
-                    evidence.push({
-                        filename: filename,
-                        data: encodeFile(screenshot.path),
-                    });
+            attempt.screenshots.forEach((screenshot: CypressCommandLine.ScreenshotInformation) => {
+                let filename = basename(screenshot.path);
+                if (CONTEXT.config.plugin.normalizeScreenshotNames) {
+                    filename = normalizedFilename(filename);
                 }
-            );
+                evidence.push({
+                    filename: filename,
+                    data: encodeFile(screenshot.path),
+                });
+            });
         }
         if (evidence.length > 0) {
             if (!json.evidence) {
@@ -64,18 +56,14 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
         }
     }
 
-    protected getTestInfo(
-        testResult: CypressCommandLine.TestResult
-    ): XrayTestInfoCloud {
+    protected getTestInfo(testResult: CypressCommandLine.TestResult): XrayTestInfoCloud {
         const testInfo: XrayTestInfoCloud = {
             projectKey: CONTEXT.config.jira.projectKey,
             summary: testResult.title.join(" "),
             type: CONTEXT.config.xray.testType,
         };
         if (CONTEXT.config.xray.steps.update) {
-            testInfo.steps = [
-                { action: this.truncateStepAction(testResult.body) },
-            ];
+            testInfo.steps = [{ action: this.truncateStepAction(testResult.body) }];
         }
         return testInfo;
     }
