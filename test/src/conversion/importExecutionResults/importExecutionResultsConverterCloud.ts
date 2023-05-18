@@ -1,10 +1,10 @@
 /// <reference types="cypress" />
-
 import { expect } from "chai";
 import { readFileSync } from "fs";
 import { CONTEXT, initContext } from "../../../../src/context";
 import { ImportExecutionResultsConverterCloud } from "../../../../src/conversion/importExecutionResults/importExecutionResultsConverterCloud";
 import { XrayTestExecutionResultsCloud } from "../../../../src/types/xray/importTestExecutionResults";
+import { stubLogWarning } from "../../../constants";
 import { DummyXrayClient, expectToExist } from "../../helpers";
 
 describe("the conversion function", () => {
@@ -37,15 +37,24 @@ describe("the conversion function", () => {
         expect(json.tests).to.have.length(3);
     });
 
-    it("should be able to convert test results into Xray JSON without creating test issues", () => {
+    it("should log warnings when unable to create test issues", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         CONTEXT.config.jira.createTestIssues = false;
-        const json: XrayTestExecutionResultsCloud =
-            converter.convertExecutionResults(result);
-
-        expect(json.tests).to.be.undefined;
+        const stubbedWarning = stubLogWarning();
+        const json = converter.convertExecutionResults(result);
+        expect(json.tests).to.not.exist;
+        expect(stubbedWarning).to.have.been.called.with.callCount(3);
+        expect(stubbedWarning).to.have.been.calledWith(
+            'No test issue key found in test title. Skipping result upload for test "xray upload demo should look for paragraph elements".'
+        );
+        expect(stubbedWarning).to.have.been.calledWith(
+            'No test issue key found in test title. Skipping result upload for test "xray upload demo should look for the anchor element".'
+        );
+        expect(stubbedWarning).to.have.been.calledWith(
+            'No test issue key found in test title. Skipping result upload for test "xray upload demo should fail".'
+        );
     });
 
     it("should be able to erase milliseconds from timestamps", () => {

@@ -5,6 +5,8 @@ import { readFileSync } from "fs";
 import { JWTCredentials } from "../../../../src/authentication/credentials";
 import { XrayClientCloud } from "../../../../src/client/xray/xrayClientCloud";
 import { CONTEXT, initContext } from "../../../../src/context";
+import { stubLogWarning } from "../../../constants";
+
 describe("the Xray cloud client", () => {
     let details: CypressCommandLine.CypressRunResult;
     let client: XrayClientCloud;
@@ -35,7 +37,21 @@ describe("the Xray cloud client", () => {
             )
         );
         CONTEXT.config.jira.createTestIssues = false;
+        const stubbedWarning = stubLogWarning();
         const result = await client.importTestExecutionResults(details);
         expect(result).to.be.null;
+        expect(stubbedWarning).to.have.been.called.with.callCount(4);
+        expect(stubbedWarning).to.have.been.calledWith(
+            'No test issue key found in test title. Skipping result upload for test "nothing 0 0".'
+        );
+        expect(stubbedWarning).to.have.been.calledWith(
+            'No test issue key found in test title. Skipping result upload for test "nothing 0 1".'
+        );
+        expect(stubbedWarning).to.have.been.calledWith(
+            'No test issue key found in test title. Skipping result upload for test "nothing 0 2".'
+        );
+        expect(stubbedWarning).to.have.been.calledWith(
+            "No tests linked to Xray were executed. Skipping upload."
+        );
     });
 });

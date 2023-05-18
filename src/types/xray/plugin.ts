@@ -84,6 +84,10 @@ export interface XrayStepOptions {
      *
      * Note: the plugin currently creates only one step containing the code of
      * the corresponding Cypress test function.
+     *
+     * Note: steps of existing issues can only be updated if
+     * {@link PluginOptions.overwriteIssueSummary} is enabled as well, since
+     * Xray requires an issue summary whenever test details are updated.
      */
     update?: boolean;
     /**
