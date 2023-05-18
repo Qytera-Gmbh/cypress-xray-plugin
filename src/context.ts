@@ -6,7 +6,7 @@ import {
     PluginContext,
     PluginOptions,
     XrayOptions,
-} from "./types/xray/plugin";
+} from "./types/plugin";
 
 export let CONTEXT: PluginContext = null;
 
