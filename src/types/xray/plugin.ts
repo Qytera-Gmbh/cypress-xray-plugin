@@ -18,30 +18,6 @@ export interface JiraOptions {
      */
     projectKey: string;
     /**
-     * Use this parameter to specify the base URL of your Jira instance.
-     *
-     * @example "https://example.org/development/jira" // Jira server
-     * @example "https://your-domain.atlassian.net" // Jira cloud
-     */
-    url?: string;
-    /**
-     * An execution issue key to attach run results to. If omitted, Jira will always create a new
-     * test execution issue with each upload.
-     *
-     * Note: it must be prefixed with the project key.
-     *
-     * @example "CYP-123"
-     */
-    testExecutionIssueKey?: string;
-    /**
-     * A test plan issue key to attach the execution to.
-     *
-     * Note: it must be prefixed with the project key.
-     *
-     * @example "CYP-567"
-     */
-    testPlanIssueKey?: string;
-    /**
      * Whether any videos Cypress captured during test execution should be attached to the test
      * execution issue on results upload.
      */
@@ -51,6 +27,26 @@ export interface JiraOptions {
      * existing test issues.
      */
     createTestIssues?: boolean;
+    /**
+     * The description of the test execution issue, which will be used both for new test execution
+     * issues as well as for updating existing issues (if provided through
+     * {@link JiraOptions.testExecutionIssueKey}).
+     *
+     * If omitted, test execution issues will have the following description:
+     * ```ts
+     * `Cypress version: ${cypressVersion} Browser: ${browserName} (${browserVersion})`
+     * ```
+     */
+    testExecutionIssueDescription?: string;
+    /**
+     * An execution issue key to attach run results to. If omitted, Jira will always create a new
+     * test execution issue with each upload.
+     *
+     * Note: it must be prefixed with the project key.
+     *
+     * @example "CYP-123"
+     */
+    testExecutionIssueKey?: string;
     /**
      * The summary of the test execution issue, which will be used both for new test execution
      * issues as well as for updating existing issues (if provided through
@@ -64,19 +60,29 @@ export interface JiraOptions {
      */
     testExecutionIssueSummary?: string;
     /**
-     * The description of the test execution issue, which will be used both for new test execution
-     * issues as well as for updating existing issues (if provided through
-     * {@link JiraOptions.testExecutionIssueKey}).
+     * A test plan issue key to attach the execution to.
      *
-     * If omitted, test execution issues will have the following description:
-     * ```ts
-     * `Cypress version: ${cypressVersion} Browser: ${browserName} (${browserVersion})`
-     * ```
+     * Note: it must be prefixed with the project key.
+     *
+     * @example "CYP-567"
      */
-    testExecutionIssueDescription?: string;
+    testPlanIssueKey?: string;
+    /**
+     * Use this parameter to specify the base URL of your Jira instance.
+     *
+     * @example "https://example.org/development/jira" // Jira server
+     * @example "https://your-domain.atlassian.net" // Jira cloud
+     */
+    url?: string;
 }
 
 export interface XrayStepOptions {
+    /**
+     * The maximum length a step's action description can have in terms of characters. Some Xray
+     * instances might enforce limits on the length and reject step updates in case the action's
+     * description exceeds said limit.
+     */
+    maxLengthAction?: number;
     /**
      * Whether to update a manual test issue's test steps during execution results upload. If set
      * to true, **all** existing steps will be replaced with the plugin's steps.
@@ -89,24 +95,16 @@ export interface XrayStepOptions {
      * summary whenever test details are updated.
      */
     update?: boolean;
-    /**
-     * The maximum length a step's action description can have in terms of characters. Some Xray
-     * instances might enforce limits on the length and reject step updates in case the action's
-     * description exceeds said limit.
-     */
-    maxLengthAction?: number;
 }
 
 export interface XrayOptions {
     /**
-     * Turns execution results upload on or off. Useful when switching upload on or off from the
-     * command line (via environment variables).
+     * The status name of a test marked as failed in Xray. Should be used when custom status names
+     * have been setup in Xray.
+     *
+     * @example "FEHLGESCHLAGEN" // german
      */
-    uploadResults?: boolean;
-    /**
-     * Turns on or off the upload of screenshots Cypress takes during test execution.
-     */
-    uploadScreenshots?: boolean;
+    statusFailed?: string;
     /**
      * The status name of a test marked as passed in Xray. Should be used when custom status names
      * have been setup in Xray.
@@ -115,12 +113,9 @@ export interface XrayOptions {
      */
     statusPassed?: string;
     /**
-     * The status name of a test marked as failed in Xray. Should be used when custom status names
-     * have been setup in Xray.
-     *
-     * @example "FEHLGESCHLAGEN" // german
+     * All options related to manual test issue steps.
      */
-    statusFailed?: string;
+    steps?: XrayStepOptions;
     /**
      * The test type of the test issues. This option will be used to set the corresponding field on
      * issues created during upload (happens when a test does not yet have a corresponding Xray
@@ -130,9 +125,14 @@ export interface XrayOptions {
      */
     testType?: string;
     /**
-     * All options related to manual test issue steps.
+     * Turns execution results upload on or off. Useful when switching upload on or off from the
+     * command line (via environment variables).
      */
-    steps?: XrayStepOptions;
+    uploadResults?: boolean;
+    /**
+     * Turns on or off the upload of screenshots Cypress takes during test execution.
+     */
+    uploadScreenshots?: boolean;
 }
 
 export interface CucumberOptions {
@@ -180,10 +180,9 @@ export interface CucumberOptions {
 
 export interface PluginOptions {
     /**
-     * Decide whether to keep the issues' existing summaries or whether to overwrite them with
-     * each upload.
+     * Turns on or off extensive debugging output.
      */
-    overwriteIssueSummary?: boolean;
+    debug?: boolean;
     /**
      * Some Xray setups might struggle with uploaded evidence if the filenames contain non-ASCII
      * characters. With this option enabled, the plugin only allows characters `a-zA-Z0-9.` in
@@ -191,9 +190,10 @@ export interface PluginOptions {
      */
     normalizeScreenshotNames?: boolean;
     /**
-     * Turns on or off extensive debugging output.
+     * Decide whether to keep the issues' existing summaries or whether to overwrite them with
+     * each upload.
      */
-    debug?: boolean;
+    overwriteIssueSummary?: boolean;
 }
 
 export interface OpenSSLOptions {
