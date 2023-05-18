@@ -56,7 +56,10 @@ export abstract class ImportExecutionResultsConverter<
                     if (issueKey !== null) {
                         test.testKey = issueKey;
                     }
-                    if (CONTEXT.config.plugin.overwriteIssueSummary) {
+                    if (
+                        issueKey === null ||
+                        CONTEXT.config.plugin.overwriteIssueSummary
+                    ) {
                         test.testInfo = this.getTestInfo(testResult);
                     }
                     if (!json.tests) {
