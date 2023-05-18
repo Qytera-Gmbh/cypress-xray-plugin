@@ -147,6 +147,22 @@ describe("the conversion function", () => {
         expect(json.tests[2].testInfo).to.not.be.undefined;
     });
 
+    it("should be able to create test issues with summary overwriting disabled", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult.json", "utf-8")
+        );
+        CONTEXT.config.plugin = {
+            overwriteIssueSummary: false,
+        };
+        const json: XrayTestExecutionResultsCloud =
+            converter.convertExecutionResults(result);
+        expectToExist(json.tests);
+        expect(json.tests).to.have.length(3);
+        expect(json.tests[0].testInfo).to.exist;
+        expect(json.tests[1].testInfo).to.exist;
+        expect(json.tests[2].testInfo).to.exist;
+    });
+
     it("should normalize screenshot filenames if enabled", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync(
