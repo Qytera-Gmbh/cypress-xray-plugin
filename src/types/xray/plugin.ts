@@ -145,22 +145,12 @@ export interface CucumberOptions {
      */
     featureFileExtension: string;
     /**
-     * A mapping of scenario titles to Xray issue keys. It is recommended to add tags containing
-     * the issue key to your scenarios instead of manually defining to which issue a scenario
-     * belongs.
+     * Set it to true to automatically download feature files from Xray for Cypress to execute.
      *
-     * @example
-     *   '@PRJ-1234'
-     *   'Scenario: Valid Login'
-     *   '[...]'
-     *
-     *   issues: {
-     *     "Valid Login": "PRJ-1234"
-     *   }
+     * Note: Enable this option if the source of truth for test cases are step definitions in Xray
+     * and Cypress is only used for running tests.
      */
-    issues?: {
-        [key: string]: string;
-    };
+    downloadFeatures?: boolean;
     /**
      * Set it to true to automatically create or update existing Xray issues (summary, steps),
      * based on the feature file executed by Cypress.
@@ -169,13 +159,6 @@ export interface CucumberOptions {
      * Cypress and Xray is only used for tracking execution status/history.
      */
     uploadFeatures?: boolean;
-    /**
-     * Set it to true to automatically download feature files from Xray for Cypress to execute.
-     *
-     * Note: Enable this option if the source of truth for test cases are step definitions in Xray
-     * and Cypress is only used for running tests.
-     */
-    downloadFeatures?: boolean;
 }
 
 export interface PluginOptions {
@@ -222,8 +205,32 @@ export interface OpenSSLOptions {
     secureOptions?: number;
 }
 
+/**
+ * Options only intended for internal plugin use.
+ */
+export type InternalOptions = Options & {
+    cucumber: {
+        /**
+         * A mapping of scenario titles to Xray issue keys. Built during file preprocessing, used
+         * during results upload.
+         *
+         * @example
+         *   '@PRJ-1234'
+         *   'Scenario: Valid Login'
+         *   '[...]'
+         *
+         *   issues: {
+         *     "Valid Login": "PRJ-1234"
+         *   }
+         */
+        issues?: {
+            [key: string]: string;
+        };
+    };
+};
+
 export interface PluginContext {
     xrayClient?: XrayClientServer | XrayClientCloud;
     jiraClient?: JiraClient;
-    config: Options;
+    config: InternalOptions;
 }
