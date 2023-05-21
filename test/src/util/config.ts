@@ -397,9 +397,16 @@ describe("the Xray client instantiation", () => {
         );
     });
 
-    it("should throw an error for missing credentials", () => {
-        expect(() => initXrayClient(env)).to.throw(
-            "Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported.\nYou can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
-        );
+    describe("the error handling", () => {
+        beforeEach(() => {
+            // We're not interested in informative log messages here.
+            stubLogInfo();
+        });
+
+        it("should throw an error for missing credentials", () => {
+            expect(() => initXrayClient(env)).to.throw(
+                "Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported.\nYou can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
+            );
+        });
     });
 });
