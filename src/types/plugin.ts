@@ -1,6 +1,10 @@
+import {
+    BasicAuthCredentials,
+    JWTCredentials,
+    PATCredentials,
+} from "../authentication/credentials";
 import { JiraClient } from "../client/jira/jiraClient";
-import { XrayClientCloud } from "../client/xray/xrayClientCloud";
-import { XrayClientServer } from "../client/xray/xrayClientServer";
+import { XrayClient } from "../client/xray/xrayClient";
 
 export interface Options {
     jira: JiraOptions;
@@ -230,7 +234,7 @@ export type InternalOptions = Options & {
 };
 
 export interface PluginContext {
-    xrayClient?: XrayClientServer | XrayClientCloud;
+    xrayClient?: XrayClient<BasicAuthCredentials | PATCredentials | JWTCredentials>;
     jiraClient?: JiraClient;
     config: InternalOptions;
 }

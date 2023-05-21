@@ -1,11 +1,11 @@
 import { JWTCredentials } from "../../src/authentication/credentials";
-import { XrayClientCloud } from "../../src/client/xray/xrayClientCloud";
+import { XrayClient } from "../../src/client/xray/xrayClient";
 import {
     ExportCucumberTestsResponse,
     ImportCucumberTestsResponse,
 } from "../../src/types/xray/responses";
 
-export class DummyXrayClient extends XrayClientCloud {
+export class DummyXrayClient extends XrayClient<JWTCredentials> {
     constructor() {
         super(new JWTCredentials("id", "secret"));
     }
