@@ -37,10 +37,7 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
             });
         }
         if (evidence.length > 0) {
-            if (!json.evidence) {
-                json.evidence = [];
-            }
-            json.evidence = [...json.evidence, ...evidence];
+            json.evidence = evidence;
         }
         return json;
     }
