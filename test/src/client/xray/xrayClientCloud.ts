@@ -37,13 +37,13 @@ describe("the Xray cloud client", () => {
         expect(result).to.be.null;
         expect(stubbedWarning).to.have.been.called.with.callCount(4);
         expect(stubbedWarning).to.have.been.calledWith(
-            'No test issue key found in test title. Skipping result upload for test "nothing 0 0".'
+            'No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test "nothing 0 0".'
         );
         expect(stubbedWarning).to.have.been.calledWith(
-            'No test issue key found in test title. Skipping result upload for test "nothing 0 1".'
+            'No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test "nothing 0 1".'
         );
         expect(stubbedWarning).to.have.been.calledWith(
-            'No test issue key found in test title. Skipping result upload for test "nothing 0 2".'
+            'No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test "nothing 0 2".'
         );
         expect(stubbedWarning).to.have.been.calledWith(
             "No tests linked to Xray were executed. Skipping upload."

@@ -2,12 +2,12 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
 import { CONTEXT, initContext } from "../../../../src/context";
-import { ImportExecutionResultsConverterCloud } from "../../../../src/conversion/importExecutionResults/importExecutionResultsConverterCloud";
+import { ImportExecutionResultsConverterServer } from "../../../../src/conversion/importExecutionResults/importExecutionResultsConverterServer";
 import { stubLogWarning } from "../../../constants";
 import { expectToExist } from "../../helpers";
 
-describe("the import execution results converter (cloud)", () => {
-    let converter: ImportExecutionResultsConverterCloud;
+describe("the import execution results converter (server)", () => {
+    let converter: ImportExecutionResultsConverterServer;
 
     beforeEach(() => {
         initContext({
@@ -22,7 +22,7 @@ describe("the import execution results converter (cloud)", () => {
                 featureFileExtension: ".feature",
             },
         });
-        converter = new ImportExecutionResultsConverterCloud();
+        converter = new ImportExecutionResultsConverterServer();
     });
 
     it("should upload screenshots by default", () => {
@@ -77,23 +77,23 @@ describe("the import execution results converter (cloud)", () => {
         expect(json.tests[0].evidence[0].filename).to.eq("tûrtle with problemätic name.png");
     });
 
-    it("should use PASSED as default status name for passed tests", () => {
+    it("should use PASS as default status name for passed tests", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const json = converter.convertExecutionResults(result);
         expectToExist(json.tests);
-        expect(json.tests[0].status).to.eq("PASSED");
-        expect(json.tests[1].status).to.eq("PASSED");
+        expect(json.tests[0].status).to.eq("PASS");
+        expect(json.tests[1].status).to.eq("PASS");
     });
 
-    it("should use FAILED as default status name for failed tests", () => {
+    it("should use FAIL as default status name for failed tests", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const json = converter.convertExecutionResults(result);
         expectToExist(json.tests);
-        expect(json.tests[2].status).to.eq("FAILED");
+        expect(json.tests[2].status).to.eq("FAIL");
     });
 
     it("should use TODO as default status name for pending tests", () => {
@@ -108,14 +108,14 @@ describe("the import execution results converter (cloud)", () => {
         expect(json.tests[3].status).to.eq("TODO");
     });
 
-    it("should use FAILED as default status name for skipped tests", () => {
+    it("should use FAIL as default status name for skipped tests", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultSkipped.json", "utf-8")
         );
         const json = converter.convertExecutionResults(result);
         expectToExist(json.tests);
-        expect(json.tests[0].status).to.eq("FAILED");
-        expect(json.tests[1].status).to.eq("FAILED");
+        expect(json.tests[0].status).to.eq("FAIL");
+        expect(json.tests[1].status).to.eq("FAIL");
     });
 
     it("should be able to use custom passed statuses", () => {
@@ -163,7 +163,7 @@ describe("the import execution results converter (cloud)", () => {
         CONTEXT.config.xray.statusSkipped = "omit";
         const json = converter.convertExecutionResults(result);
         expectToExist(json.tests);
-        expect(json.tests[0].status).to.eq("FAILED");
+        expect(json.tests[0].status).to.eq("FAIL");
         expect(json.tests[1].status).to.eq("omit");
     });
 

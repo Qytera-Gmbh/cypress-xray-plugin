@@ -37,10 +37,7 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
             });
         }
         if (evidence.length > 0) {
-            if (!json.evidence) {
-                json.evidence = [];
-            }
-            json.evidence = [...json.evidence, ...evidence];
+            json.evidence = evidence;
         }
         return json;
     }
@@ -51,8 +48,12 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
                 return CONTEXT.config.xray.statusPassed || "PASSED";
             case Status.FAILED:
                 return CONTEXT.config.xray.statusFailed || "FAILED";
+            case Status.PENDING:
+                return CONTEXT.config.xray.statusPending || "TODO";
+            case Status.SKIPPED:
+                return CONTEXT.config.xray.statusSkipped || "FAILED";
             default:
-                throw new Error(`Unknown status: ${status}`);
+                throw new Error(`Unknown status: '${status}'`);
         }
     }
 

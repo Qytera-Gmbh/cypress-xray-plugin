@@ -1,7 +1,7 @@
 import { CONTEXT } from "../../context";
 import { logWarning } from "../../logging/logging";
 import { Status } from "../../types/testStatus";
-import { DateTimeISO, OneOf } from "../../types/util";
+import { DateTimeISO, OneOf, getEnumKeyByEnumValue } from "../../types/util";
 import {
     XrayTestCloud,
     XrayTestExecutionInfo,
@@ -51,7 +51,9 @@ export abstract class ImportExecutionResultsConverter<
                     }
                 } else {
                     if (!CONTEXT.config.jira.createTestIssues) {
-                        throw new Error("No test issue key found in test title");
+                        throw new Error(
+                            "No test issue key found in test title and the plugin is not allowed to create new test issues"
+                        );
                     }
                     test.testInfo = this.getTestInfo(testResult);
                 }
@@ -172,14 +174,11 @@ export abstract class ImportExecutionResultsConverter<
      * @returns a corresponding status
      */
     protected getStatus(attempt: CypressCommandLine.AttemptResult): Status {
-        switch (attempt.state) {
-            case "passed":
-                return Status.PASSED;
-            case "failed":
-                return Status.FAILED;
-            default:
-                throw new Error(`Unknown Cypress test status: ${attempt.state}`);
+        const status: Status = Status[getEnumKeyByEnumValue(Status, attempt.state)];
+        if (!status) {
+            throw new Error(`Unknown Cypress test status: '${attempt.state}'`);
         }
+        return status;
     }
 
     /**

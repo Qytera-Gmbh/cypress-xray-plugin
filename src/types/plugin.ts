@@ -1,6 +1,10 @@
+import {
+    BasicAuthCredentials,
+    JWTCredentials,
+    PATCredentials,
+} from "../authentication/credentials";
 import { JiraClient } from "../client/jira/jiraClient";
-import { XrayClientCloud } from "../client/xray/xrayClientCloud";
-import { XrayClientServer } from "../client/xray/xrayClientServer";
+import { XrayClient } from "../client/xray/xrayClient";
 
 export interface Options {
     jira: JiraOptions;
@@ -99,19 +103,33 @@ export interface XrayStepOptions {
 
 export interface XrayOptions {
     /**
-     * The status name of a test marked as failed in Xray. Should be used when custom status names
-     * have been setup in Xray.
+     * The Xray status name of a test marked as failed by Cypress. Should be used when custom status
+     * names have been setup in Xray.
      *
      * @example "FEHLGESCHLAGEN" // german
      */
     statusFailed?: string;
     /**
-     * The status name of a test marked as passed in Xray. Should be used when custom status names
-     * have been setup in Xray.
+     * The Xray status name of a test marked as passed by Cypress. Should be used when custom status
+     * names have been setup in Xray.
      *
      * @example "BESTANDEN" // german
      */
     statusPassed?: string;
+    /**
+     * The Xray status name of a test marked as pending by Cypress. Should be used when custom
+     * status names have been setup in Xray.
+     *
+     * @example "EN_ATTENTE" // french
+     */
+    statusPending?: string;
+    /**
+     * The Xray status name of a test marked as skipped by Cypress. Should be used when custom
+     * status names have been setup in Xray.
+     *
+     * @example "OMIT" // french
+     */
+    statusSkipped?: string;
     /**
      * All options related to manual test issue steps.
      */
@@ -230,7 +248,7 @@ export type InternalOptions = Options & {
 };
 
 export interface PluginContext {
-    xrayClient?: XrayClientServer | XrayClientCloud;
+    xrayClient?: XrayClient<BasicAuthCredentials | PATCredentials | JWTCredentials>;
     jiraClient?: JiraClient;
     config: InternalOptions;
 }
