@@ -6,8 +6,8 @@ import { Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess } from "../../logging/logging";
 import { XrayTestExecutionResultsCloud } from "../../types/xray/importTestExecutionResults";
 import {
+    CloudImportCucumberTestsResponse,
     ExportCucumberTestsResponse,
-    ImportCucumberTestsResponse,
 } from "../../types/xray/responses";
 import { XrayClient } from "./xrayClient";
 
@@ -27,9 +27,7 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
             return null;
         }
         return this.credentials
-            .getAuthenticationHeader({
-                authenticationURL: `${XrayClientCloud.URL}/authenticate`,
-            })
+            .getAuthenticationHeader(`${XrayClientCloud.URL}/authenticate`)
             .catch((error: unknown) => {
                 logError(`Failed to authenticate: "${error}"`);
                 this.writeErrorFile(error, "authenticationError");
@@ -62,9 +60,9 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
         keys?: string,
         filter?: number
     ): Promise<ExportCucumberTestsResponse> {
-        const header = await this.credentials.getAuthenticationHeader({
-            authenticationURL: `${XrayClientCloud.URL}/authenticate`,
-        });
+        const header = await this.credentials.getAuthenticationHeader(
+            `${XrayClientCloud.URL}/authenticate`
+        );
         logInfo("Exporting cucumber tests...");
         const progressInterval = setInterval(() => {
             logInfo("Still exporting...");
@@ -98,10 +96,10 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<ImportCucumberTestsResponse> {
-        const header = await this.credentials.getAuthenticationHeader({
-            authenticationURL: `${XrayClientCloud.URL}/authenticate`,
-        });
+    ): Promise<CloudImportCucumberTestsResponse> {
+        const header = await this.credentials.getAuthenticationHeader(
+            `${XrayClientCloud.URL}/authenticate`
+        );
         logInfo("Importing cucumber feature files...");
         const progressInterval = setInterval(() => {
             logInfo("Still importing...");

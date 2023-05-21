@@ -7,7 +7,7 @@ import { logError, logInfo, logSuccess } from "../../logging/logging";
 import { XrayTestExecutionResultsServer } from "../../types/xray/importTestExecutionResults";
 import {
     ExportCucumberTestsResponse,
-    ImportCucumberTestsResponse,
+    ServerImportCucumberTestsResponse,
 } from "../../types/xray/responses";
 import { XrayClient } from "./xrayClient";
 
@@ -73,7 +73,7 @@ export class XrayClientServer extends XrayClient<BasicAuthCredentials | PATCrede
     protected async dispatchImportCucumberTestsRequest(
         file: string,
         projectKey?: string
-    ): Promise<ImportCucumberTestsResponse> {
+    ): Promise<ServerImportCucumberTestsResponse> {
         const header = await this.credentials.getAuthenticationHeader();
         logInfo("Importing cucumber feature files...");
         const progressInterval = setInterval(() => {

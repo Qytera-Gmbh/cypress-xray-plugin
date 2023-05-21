@@ -5,8 +5,9 @@ import {
 } from "../../authentication/credentials";
 import { logError, logWarning } from "../../logging/logging";
 import {
+    CloudImportCucumberTestsResponse,
     ExportCucumberTestsResponse,
-    ImportCucumberTestsResponse,
+    ServerImportCucumberTestsResponse,
 } from "../../types/xray/responses";
 import { Client } from "../client";
 
@@ -104,7 +105,7 @@ export abstract class XrayClient<
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<ImportCucumberTestsResponse> {
+    ): Promise<ServerImportCucumberTestsResponse | CloudImportCucumberTestsResponse> {
         try {
             return this.dispatchImportCucumberTestsRequest(file, projectKey, projectId, source);
         } catch (error: unknown) {
@@ -127,5 +128,5 @@ export abstract class XrayClient<
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<ImportCucumberTestsResponse>;
+    ): Promise<ServerImportCucumberTestsResponse | CloudImportCucumberTestsResponse>;
 }

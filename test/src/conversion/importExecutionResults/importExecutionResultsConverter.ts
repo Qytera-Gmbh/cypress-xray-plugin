@@ -26,7 +26,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should be able to convert test results into Xray JSON", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
@@ -35,7 +35,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should log warnings when unable to create test issues", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         CONTEXT.config.jira.createTestIssues = false;
@@ -55,7 +55,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should be able to erase milliseconds from timestamps", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
@@ -64,7 +64,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should be able to detect re-use of existing test issues", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
@@ -79,7 +79,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should be able to add test execution issue keys", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         CONTEXT.config.jira.testExecutionIssueKey = "CYP-123";
@@ -88,7 +88,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should be able to add test plan issue keys", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         CONTEXT.config.jira.testPlanIssueKey = "CYP-123";
@@ -98,7 +98,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should not add test execution issue keys on its own", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
@@ -106,7 +106,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should not add test plan issue keys on its own", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
@@ -115,7 +115,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should be able to overwrite existing test issues if specified", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         expectToExist(CONTEXT.config.plugin);
@@ -132,7 +132,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should be able to create test issues with summary overwriting disabled", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         CONTEXT.config.plugin = {
@@ -147,7 +147,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should include a custom test execution summary if provided", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         expectToExist(CONTEXT.config.jira);
@@ -158,7 +158,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should use a timestamp as test execution summary by default", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         expectToExist(CONTEXT.config.jira);
@@ -168,7 +168,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should include a custom test execution description if provided", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         expectToExist(CONTEXT.config.jira);
@@ -179,7 +179,7 @@ describe("the import execution results converter", () => {
     });
 
     it("should use versions as test execution description by default", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         expectToExist(CONTEXT.config.jira);
