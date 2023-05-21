@@ -11,4 +11,10 @@ export enum Status {
      * @see https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests#Failed
      */
     FAILED = "failed",
+    /**
+     * A test marked as pending.
+     *
+     * @see https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests#Pending
+     */
+    PENDING = "pending",
 }

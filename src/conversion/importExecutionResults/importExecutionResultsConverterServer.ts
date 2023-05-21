@@ -48,8 +48,10 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
                 return CONTEXT.config.xray.statusPassed || "PASS";
             case Status.FAILED:
                 return CONTEXT.config.xray.statusFailed || "FAIL";
+            case Status.PENDING:
+                return CONTEXT.config.xray.statusPending || "PENDING";
             default:
-                throw new Error(`Unknown Cypress test status: ${status}`);
+                throw new Error(`Unknown status: '${status}'`);
         }
     }
 

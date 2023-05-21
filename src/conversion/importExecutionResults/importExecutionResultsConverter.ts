@@ -51,7 +51,9 @@ export abstract class ImportExecutionResultsConverter<
                     }
                 } else {
                     if (!CONTEXT.config.jira.createTestIssues) {
-                        throw new Error("No test issue key found in test title");
+                        throw new Error(
+                            "No test issue key found in test title and the plugin is not allowed to create new test issues"
+                        );
                     }
                     test.testInfo = this.getTestInfo(testResult);
                 }

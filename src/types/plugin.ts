@@ -117,6 +117,13 @@ export interface XrayOptions {
      */
     statusPassed?: string;
     /**
+     * The Xray status name of a test marked as pending by Cypress. Should be used when custom
+     * status names have been setup in Xray.
+     *
+     * @example "EN_ATTENTE" // french
+     */
+    statusPending?: string;
+    /**
      * All options related to manual test issue steps.
      */
     steps?: XrayStepOptions;
