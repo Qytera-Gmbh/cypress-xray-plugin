@@ -9,7 +9,6 @@ import { expectToExist } from "../../helpers";
 
 describe("the import execution results converter", () => {
     let converter: ImportExecutionResultsConverterCloud;
-
     beforeEach(() => {
         initContext({
             jira: {

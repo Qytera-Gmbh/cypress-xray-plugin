@@ -2,7 +2,7 @@ import { CONTEXT } from "./context";
 import { issuesByScenario } from "./cucumber/tagging";
 import { logError, logInfo, logWarning } from "./logging/logging";
 import { XrayStepOptions } from "./types/plugin";
-import { parseEnvironmentVariables } from "./util/config";
+import { initJiraClient, initXrayClient, parseEnvironmentVariables } from "./util/config";
 import { parseFeatureFile } from "./util/parsing";
 
 function verifyJiraProjectKey(projectKey?: string) {
@@ -43,6 +43,8 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
         );
     }
     parseEnvironmentVariables(runDetails.config.env);
+    initXrayClient(runDetails.config.env);
+    initJiraClient(runDetails.config.env);
     verifyJiraProjectKey(CONTEXT.config.jira.projectKey);
     verifyJiraTestExecutionIssueKey(
         CONTEXT.config.jira.projectKey,
