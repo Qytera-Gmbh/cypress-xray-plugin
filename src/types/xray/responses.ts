@@ -18,25 +18,26 @@ export interface ExportCucumberTestsResponse {
 }
 
 /**
+ * The cucumber features were successfully imported to Jira.
+ *
  * Content type: application/octet-stream
  *
- * The cucumber features were successfully imported to Jira.
- */
-export interface ImportCucumberTestsResponse {}
-
-/**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
  */
-export interface CloudImportCucumberTestsResponse extends ImportCucumberTestsResponse {
+export interface CloudImportCucumberTestsResponse {
     errors: string[];
     updatedOrCreatedTests: ImportIssueResponse[];
     updatedOrCreatedPreconditions: ImportIssueResponse[];
 }
 
 /**
+ * The cucumber features were successfully imported to Jira.
+ *
+ * Content type: application/octet-stream
+ *
  * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
  */
-export interface ServerImportCucumberTestsResponse extends ImportCucumberTestsResponse {
+export interface ServerImportCucumberTestsResponse {
     message: string;
     testIssues: ImportIssueResponse[];
     preConditionIssues: ImportIssueResponse[];

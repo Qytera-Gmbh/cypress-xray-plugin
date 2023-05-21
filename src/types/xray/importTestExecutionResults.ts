@@ -243,7 +243,7 @@ export type XrayTestInfoCloud = XrayTestInfo & {
         /**
          * Any other step custom fields.
          */
-        [k: string]: any;
+        [k: string]: NonNullable<unknown>;
     }[];
 };
 

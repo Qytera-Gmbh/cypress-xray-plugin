@@ -1,12 +1,19 @@
 import { isAxiosError } from "axios";
 import { writeFileSync } from "fs";
-import { APICredentials, APICredentialsOptions } from "../authentication/credentials";
+import {
+    BasicAuthCredentials,
+    JWTCredentials,
+    PATCredentials,
+} from "../authentication/credentials";
 import { logError, logInfo } from "../logging/logging";
+import { OneOf } from "../types/util";
 
 /**
  * A basic client interface which stores credentials data used for communicating with a server.
  */
-export abstract class Client<T extends APICredentials<APICredentialsOptions>> {
+export abstract class Client<
+    T extends OneOf<[BasicAuthCredentials, PATCredentials, JWTCredentials]>
+> {
     protected readonly credentials: T;
 
     /**

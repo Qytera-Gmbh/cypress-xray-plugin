@@ -203,7 +203,7 @@ export function initJiraClient(env: Cypress.ObjectLike): void {
 }
 
 function getJiraClientDependentOptions(): string | undefined {
-    let dependentOptions = [];
+    const dependentOptions = [];
     if (CONTEXT.config.jira.attachVideos) {
         const optionName = `${getPropertyName(CONTEXT.config, (x) => x.jira)}.${getPropertyName(
             CONTEXT.config.jira,

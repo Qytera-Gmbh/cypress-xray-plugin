@@ -5,5 +5,5 @@
  * @returns the normalized filename
  */
 export function normalizedFilename(filename: string): string {
-    return filename.replaceAll(/[^\.a-zA-Z0-9]+/g, "_");
+    return filename.replaceAll(/[^.a-zA-Z0-9]+/g, "_");
 }

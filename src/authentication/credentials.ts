@@ -13,13 +13,11 @@ export interface HTTPHeader {
     [key: string]: string;
 }
 
-export interface APICredentialsOptions {}
-
-export abstract class APICredentials<O extends APICredentialsOptions> {
+export abstract class APICredentials<O> {
     public abstract getAuthenticationHeader(options?: O): Promise<HTTPHeader>;
 }
 
-export class BasicAuthCredentials extends APICredentials<APICredentialsOptions> {
+export class BasicAuthCredentials extends APICredentials<never> {
     private readonly username: string;
     private readonly password: string;
 
@@ -40,7 +38,7 @@ export class BasicAuthCredentials extends APICredentials<APICredentialsOptions> 
     }
 }
 
-export class PATCredentials extends APICredentials<APICredentialsOptions> {
+export class PATCredentials extends APICredentials<never> {
     private readonly token: string;
 
     constructor(token: string) {
@@ -56,11 +54,11 @@ export class PATCredentials extends APICredentials<APICredentialsOptions> {
         );
     }
 }
-export interface JWTCredentialsOptions extends APICredentialsOptions {
+export interface JWTCredentialsOptions {
     authenticationURL: string;
 }
 
-export class JWTCredentials extends APICredentials<JWTCredentialsOptions> {
+export class JWTCredentials extends APICredentials<string> {
     private readonly clientId: string;
     private readonly clientSecret: string;
 
@@ -88,8 +86,8 @@ export class JWTCredentials extends APICredentials<JWTCredentialsOptions> {
         return this.token;
     }
 
-    public async getAuthenticationHeader(options: JWTCredentialsOptions): Promise<HTTPHeader> {
-        const token = await this.getToken(options.authenticationURL);
+    public async getAuthenticationHeader(authenticationURL: string): Promise<HTTPHeader> {
+        const token = await this.getToken(authenticationURL);
         return {
             Authorization: `Bearer ${token}`,
         };

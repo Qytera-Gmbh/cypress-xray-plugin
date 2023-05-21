@@ -47,7 +47,7 @@ export class Requests {
         return response;
     }
 
-    public static async post<D = any>(
+    public static async post<D = unknown>(
         url: string,
         data?: D,
         config?: RawAxiosRequestConfig<D>

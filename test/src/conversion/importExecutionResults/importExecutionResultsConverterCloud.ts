@@ -26,7 +26,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should upload screenshots by default", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const json = converter.convertExecutionResults(result);
@@ -42,7 +42,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should be able to skip screenshot upload if disabled", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         expectToExist(CONTEXT.config.xray);
@@ -56,7 +56,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should normalize screenshot filenames if enabled", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
         expectToExist(CONTEXT.config.plugin);
@@ -68,7 +68,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should not normalize screenshot filenames by default", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
         const json = converter.convertExecutionResults(result);
@@ -78,7 +78,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should use PASSED as default status name for passed tests", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const json = converter.convertExecutionResults(result);
@@ -88,7 +88,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should use FAILED as default status name for failed tests", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const json = converter.convertExecutionResults(result);
@@ -97,7 +97,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should use TODO as default status name for pending tests", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultPending.json", "utf-8")
         );
         const json = converter.convertExecutionResults(result);
@@ -109,7 +109,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should use FAILED as default status name for skipped tests", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultSkipped.json", "utf-8")
         );
         const json = converter.convertExecutionResults(result);
@@ -119,7 +119,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should be able to use custom passed statuses", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         expectToExist(CONTEXT.config.xray);
@@ -131,7 +131,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should be able to use custom failed statuses", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         expectToExist(CONTEXT.config.xray);
@@ -142,7 +142,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should be able to use custom pending statuses", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultPending.json", "utf-8")
         );
         expectToExist(CONTEXT.config.xray);
@@ -156,7 +156,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should be able to use custom skipped statuses", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultSkipped.json", "utf-8")
         );
         expectToExist(CONTEXT.config.xray);
@@ -168,7 +168,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should skip tests when encountering unknown statuses", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
         );
         const stubbedWarning = stubLogWarning();
@@ -183,7 +183,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should include step updates by default", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const json = converter.convertExecutionResults(result);
@@ -204,7 +204,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should skip step updates if disabled", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         expectToExist(CONTEXT.config.xray);
@@ -223,7 +223,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should truncate step actions to 8000 characters by default", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
         );
         const json = converter.convertExecutionResults(result);
@@ -240,7 +240,7 @@ describe("the import execution results converter (cloud)", () => {
     });
 
     it("should truncate step actions to custom lengths if enabled", () => {
-        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
         );
         expectToExist(CONTEXT.config.xray?.steps);
