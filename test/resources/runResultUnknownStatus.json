@@ -45,14 +45,14 @@
                     "title": ["TodoMVC", "hides footer initially"],
                     "state": "of despair",
                     "body": "() => {\r\n    cy.get('[data-testid=\"filters\"]').should(\"not.exist\");\r\n  }",
-                    "displayError": "CypressError: `cy.visit()` failed trying to load:\n\nhttps://example.org/fail\n\nThe response we received from your web server was:\n\n  > 404: Not Found\n\nThis was considered a failure because the status code was not `2xx`.\n\nIf you do not want status codes to cause failures pass the option: `failOnStatusCode: false`\n\nBecause this error occurred during a `before each` hook we are skipping the remaining tests in the current suite: `TodoMVC`\n    at <unknown> (http://localhost:50205/__cypress/runner/cypress_runner.js:150265:84)\n    at visitFailedByErr (http://localhost:50205/__cypress/runner/cypress_runner.js:149673:12)\n    at <unknown> (http://localhost:50205/__cypress/runner/cypress_runner.js:150248:13)\n    at tryCatcher (http://localhost:50205/__cypress/runner/cypress_runner.js:20941:23)\n    at Promise._settlePromiseFromHandler (http://localhost:50205/__cypress/runner/cypress_runner.js:18876:31)\n    at Promise._settlePromise (http://localhost:50205/__cypress/runner/cypress_runner.js:18933:18)\n    at Promise._settlePromise0 (http://localhost:50205/__cypress/runner/cypress_runner.js:18978:10)\n    at Promise._settlePromises (http://localhost:50205/__cypress/runner/cypress_runner.js:19054:18)\n    at _drainQueueStep (http://localhost:50205/__cypress/runner/cypress_runner.js:15648:12)\n    at _drainQueue (http://localhost:50205/__cypress/runner/cypress_runner.js:15641:9)\n    at ../../node_modules/bluebird/js/release/async.js.Async._drainQueues (http://localhost:50205/__cypress/runner/cypress_runner.js:15657:5)\n    at Async.drainQueues (http://localhost:50205/__cypress/runner/cypress_runner.js:15527:14)\nFrom Your Spec Code:\n    at Context.eval (http://localhost:50205/__cypress/tests?p=cypress\\e2e\\statusSkipped.cy.js:3:8)",
+                    "displayError": "CypressError: `cy.visit()` failed trying to load:\n\nhttps://example.org/fail\n\nThe response we received from your web server was:\n\n  > 404: Not Found\n\nThis was considered a failure because the status code was not `2xx`.\n\nIf you do not want status codes to cause failures pass the option: `failOnStatusCode: false`\n\nBecause this error occurred during a `before each` hook we are skipping the remaining tests in the current suite: `TodoMVC`\n    at <unknown> (http://localhost:50205/__cypress/runner/cypress_runner.js:150265:84)\n    at visitFailedByErr (http://localhost:50205/__cypress/runner/cypress_runner.js:149673:12)\n    at <unknown> (http://localhost:50205/__cypress/runner/cypress_runner.js:150248:13)\n    at tryCatcher (http://localhost:50205/__cypress/runner/cypress_runner.js:20941:23)\n    at Promise._settlePromiseFromHandler (http://localhost:50205/__cypress/runner/cypress_runner.js:18876:31)\n    at Promise._settlePromise (http://localhost:50205/__cypress/runner/cypress_runner.js:18933:18)\n    at Promise._settlePromise0 (http://localhost:50205/__cypress/runner/cypress_runner.js:18978:10)\n    at Promise._settlePromises (http://localhost:50205/__cypress/runner/cypress_runner.js:19054:18)\n    at _drainQueueStep (http://localhost:50205/__cypress/runner/cypress_runner.js:15648:12)\n    at _drainQueue (http://localhost:50205/__cypress/runner/cypress_runner.js:15641:9)\n    at ../../node_modules/bluebird/js/release/async.js.Async._drainQueues (http://localhost:50205/__cypress/runner/cypress_runner.js:15657:5)\n    at Async.drainQueues (http://localhost:50205/__cypress/runner/cypress_runner.js:15527:14)\nFrom Your Spec Code:\n    at Context.eval (http://localhost:50205/__cypress/tests?p=cypress/e2e/statusSkipped.cy.js:3:8)",
                     "attempts": [
                         {
                             "state": "broken",
                             "error": {
                                 "name": "CypressError",
                                 "message": "`cy.visit()` failed trying to load:\n\nhttps://example.org/fail\n\nThe response we received from your web server was:\n\n  > 404: Not Found\n\nThis was considered a failure because the status code was not `2xx`.\n\nIf you do not want status codes to cause failures pass the option: `failOnStatusCode: false`\n\nBecause this error occurred during a `before each` hook we are skipping the remaining tests in the current suite: `TodoMVC`",
-                                "stack": "    at <unknown> (http://localhost:50205/__cypress/runner/cypress_runner.js:150265:84)\n    at visitFailedByErr (http://localhost:50205/__cypress/runner/cypress_runner.js:149673:12)\n    at <unknown> (http://localhost:50205/__cypress/runner/cypress_runner.js:150248:13)\n    at tryCatcher (http://localhost:50205/__cypress/runner/cypress_runner.js:20941:23)\n    at Promise._settlePromiseFromHandler (http://localhost:50205/__cypress/runner/cypress_runner.js:18876:31)\n    at Promise._settlePromise (http://localhost:50205/__cypress/runner/cypress_runner.js:18933:18)\n    at Promise._settlePromise0 (http://localhost:50205/__cypress/runner/cypress_runner.js:18978:10)\n    at Promise._settlePromises (http://localhost:50205/__cypress/runner/cypress_runner.js:19054:18)\n    at _drainQueueStep (http://localhost:50205/__cypress/runner/cypress_runner.js:15648:12)\n    at _drainQueue (http://localhost:50205/__cypress/runner/cypress_runner.js:15641:9)\n    at ../../node_modules/bluebird/js/release/async.js.Async._drainQueues (http://localhost:50205/__cypress/runner/cypress_runner.js:15657:5)\n    at Async.drainQueues (http://localhost:50205/__cypress/runner/cypress_runner.js:15527:14)\nFrom Your Spec Code:\n    at Context.eval (http://localhost:50205/__cypress/tests?p=cypress\\e2e\\statusSkipped.cy.js:3:8)"
+                                "stack": "    at <unknown> (http://localhost:50205/__cypress/runner/cypress_runner.js:150265:84)\n    at visitFailedByErr (http://localhost:50205/__cypress/runner/cypress_runner.js:149673:12)\n    at <unknown> (http://localhost:50205/__cypress/runner/cypress_runner.js:150248:13)\n    at tryCatcher (http://localhost:50205/__cypress/runner/cypress_runner.js:20941:23)\n    at Promise._settlePromiseFromHandler (http://localhost:50205/__cypress/runner/cypress_runner.js:18876:31)\n    at Promise._settlePromise (http://localhost:50205/__cypress/runner/cypress_runner.js:18933:18)\n    at Promise._settlePromise0 (http://localhost:50205/__cypress/runner/cypress_runner.js:18978:10)\n    at Promise._settlePromises (http://localhost:50205/__cypress/runner/cypress_runner.js:19054:18)\n    at _drainQueueStep (http://localhost:50205/__cypress/runner/cypress_runner.js:15648:12)\n    at _drainQueue (http://localhost:50205/__cypress/runner/cypress_runner.js:15641:9)\n    at ../../node_modules/bluebird/js/release/async.js.Async._drainQueues (http://localhost:50205/__cypress/runner/cypress_runner.js:15657:5)\n    at Async.drainQueues (http://localhost:50205/__cypress/runner/cypress_runner.js:15527:14)\nFrom Your Spec Code:\n    at Context.eval (http://localhost:50205/__cypress/tests?p=cypress/e2e/statusSkipped.cy.js:3:8)"
                             },
                             "videoTimestamp": 1507,
                             "duration": 833,
@@ -61,7 +61,7 @@
                                 {
                                     "name": null,
                                     "takenAt": "2023-05-21T10:06:47.052Z",
-                                    "path": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress\\cypress\\screenshots\\statusSkipped.cy.js\\TodoMVC -- hides footer initially -- before each hook (failed).png",
+                                    "path": "~/cypress/screenshots/statusSkipped.cy.js/TodoMVC -- hides footer initially -- before each hook (failed).png",
                                     "height": 720,
                                     "width": 1280
                                 }
@@ -87,7 +87,7 @@
                 }
             ],
             "error": null,
-            "video": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress\\cypress\\videos\\statusSkipped.cy.js.mp4",
+            "video": "~/cypress/videos/statusSkipped.cy.js.mp4",
             "spec": {
                 "fileExtension": ".js",
                 "baseName": "statusSkipped.cy.js",
@@ -96,8 +96,8 @@
                 "relativeToCommonRoot": "statusSkipped.cy.js",
                 "specType": "integration",
                 "name": "cypress/e2e/statusSkipped.cy.js",
-                "relative": "cypress\\e2e\\statusSkipped.cy.js",
-                "absolute": "C:/Users/Sebastian/Documents/Repositories/cypress/cypress/e2e/statusSkipped.cy.js"
+                "relative": "cypress/e2e/statusSkipped.cy.js",
+                "absolute": "/home/csvtuda/cypress/cypress/e2e/statusSkipped.cy.js"
             },
             "shouldUploadVideo": true
         }
@@ -111,17 +111,17 @@
     "config": {
         "setupNodeEvents": "[Function setupNodeEvents]",
         "video": true,
-        "projectRoot": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress",
+        "projectRoot": "~",
         "projectName": "cypress",
-        "repoRoot": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress",
+        "repoRoot": "~",
         "rawJson": {
             "e2e": { "setupNodeEvents": "[Function setupNodeEvents]", "video": true },
             "setupNodeEvents": "[Function setupNodeEvents]",
             "video": true,
             "envFile": {},
-            "projectRoot": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress",
+            "projectRoot": "~",
             "projectName": "cypress",
-            "repoRoot": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress"
+            "repoRoot": "~"
         },
         "configFile": "cypress.config.js",
         "morgan": false,
@@ -135,7 +135,7 @@
         "chromeWebSecurity": true,
         "clientCertificates": [],
         "defaultCommandTimeout": 4000,
-        "downloadsFolder": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress\\cypress\\downloads",
+        "downloadsFolder": "~/cypress/downloads",
         "env": {},
         "execTimeout": 60000,
         "experimentalFetchPolyfill": false,
@@ -149,8 +149,8 @@
         "experimentalSingleTabRunMode": false,
         "experimentalStudio": false,
         "experimentalWebKitSupport": false,
-        "fileServerFolder": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress",
-        "fixturesFolder": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress\\cypress\\fixtures",
+        "fileServerFolder": "~",
+        "fixturesFolder": "~/cypress/fixtures",
         "excludeSpecPattern": "*.hot-update.js",
         "includeShadowDom": false,
         "keystrokeDelay": 0,
@@ -164,22 +164,22 @@
         "reporter": "spec",
         "reporterOptions": null,
         "requestTimeout": 5000,
-        "resolvedNodePath": "X:\\Programme\\Node\\18.16.0\\node.exe",
+        "resolvedNodePath": "/home/opt/Node/18.16.0/node.exe",
         "resolvedNodeVersion": "18.16.0",
         "responseTimeout": 30000,
         "retries": { "runMode": 0, "openMode": 0 },
         "screenshotOnRunFailure": true,
-        "screenshotsFolder": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress\\cypress\\screenshots",
+        "screenshotsFolder": "~/cypress/screenshots",
         "slowTestThreshold": 10000,
         "scrollBehavior": "top",
-        "supportFile": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress\\cypress\\support\\e2e.js",
-        "supportFolder": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress\\cypress\\support",
+        "supportFile": "~/cypress/support/e2e.js",
+        "supportFolder": "~/cypress/support",
         "taskTimeout": 60000,
         "testIsolation": true,
         "trashAssetsBeforeRuns": true,
         "userAgent": null,
         "videoCompression": 32,
-        "videosFolder": "C:\\Users\\Sebastian\\Documents\\Repositories\\cypress\\cypress\\videos",
+        "videosFolder": "~/cypress/videos",
         "videoUploadOnPasses": true,
         "viewportHeight": 660,
         "viewportWidth": 1000,
@@ -195,7 +195,7 @@
                 "channel": "stable",
                 "displayName": "Chrome",
                 "version": "113.0.5672.127",
-                "path": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+                "path": "/home/opt/application/chrome",
                 "minSupportedVersion": 64,
                 "majorVersion": "113"
             },
@@ -205,7 +205,7 @@
                 "channel": "stable",
                 "displayName": "Firefox",
                 "version": "113.0.1",
-                "path": "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+                "path": "/home/opt/application/firefox",
                 "minSupportedVersion": 86,
                 "majorVersion": "113"
             },
@@ -215,7 +215,7 @@
                 "channel": "stable",
                 "displayName": "Edge",
                 "version": "113.0.1774.50",
-                "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+                "path": "/home/opt/application/msedge",
                 "minSupportedVersion": 79,
                 "majorVersion": "113"
             },
@@ -230,7 +230,7 @@
             }
         ],
         "clientRoute": "/__/",
-        "cypressBinaryRoot": "C:\\Users\\Sebastian\\AppData\\Local\\Cypress\\Cache\\12.10.0\\Cypress\\resources\\app",
+        "cypressBinaryRoot": "/home/opt/Cypress/Cache/12.10.0/Cypress/resources/app",
         "devServerPublicPathRoute": "/__cypress/src",
         "hosts": null,
         "isInteractive": true,
@@ -324,7 +324,7 @@
                         "channel": "stable",
                         "displayName": "Chrome",
                         "version": "113.0.5672.127",
-                        "path": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+                        "path": "/home/opt/application/chrome/Application/chrome",
                         "minSupportedVersion": 64,
                         "majorVersion": "113"
                     },
@@ -334,7 +334,7 @@
                         "channel": "stable",
                         "displayName": "Firefox",
                         "version": "113.0.1",
-                        "path": "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+                        "path": "/home/opt/application/firefox/firefox",
                         "minSupportedVersion": 86,
                         "majorVersion": "113"
                     },
@@ -344,7 +344,7 @@
                         "channel": "stable",
                         "displayName": "Edge",
                         "version": "113.0.1774.50",
-                        "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+                        "path": "/home/opt/application/msedge",
                         "minSupportedVersion": 79,
                         "majorVersion": "113"
                     },

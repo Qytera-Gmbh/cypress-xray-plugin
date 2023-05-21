@@ -94,7 +94,7 @@
                 "channel": "stable",
                 "displayName": "Chrome",
                 "version": "112.0.5615.49",
-                "path": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+                "path": "/home/opt/Google/Chrome/Application/chrome.exe",
                 "minSupportedVersion": 64,
                 "majorVersion": "112"
             },
@@ -104,7 +104,7 @@
                 "channel": "stable",
                 "displayName": "Firefox",
                 "version": "111.0.1",
-                "path": "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+                "path": "/home/opt/Mozilla Firefox/firefox.exe",
                 "minSupportedVersion": 86,
                 "majorVersion": "111",
                 "warning": "Your project has set the configuration option: `chromeWebSecurity` to `false`.\n\nThis option will not have an effect in Firefox. Tests that rely on web security being disabled will not run as expected."
@@ -115,7 +115,7 @@
                 "channel": "stable",
                 "displayName": "Edge",
                 "version": "112.0.1722.39",
-                "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+                "path": "/home/opt/Microsoft/Edge/Application/msedge.exe",
                 "minSupportedVersion": 79,
                 "majorVersion": "112"
             },
@@ -243,7 +243,7 @@
                         "channel": "stable",
                         "displayName": "Chrome",
                         "version": "112.0.5615.49",
-                        "path": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+                        "path": "/home/opt/Google/Chrome/Application/chrome.exe",
                         "minSupportedVersion": 64,
                         "majorVersion": "112"
                     },
@@ -253,7 +253,7 @@
                         "channel": "stable",
                         "displayName": "Firefox",
                         "version": "111.0.1",
-                        "path": "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+                        "path": "/home/opt/Mozilla Firefox/firefox.exe",
                         "minSupportedVersion": 86,
                         "majorVersion": "111"
                     },
@@ -263,7 +263,7 @@
                         "channel": "stable",
                         "displayName": "Edge",
                         "version": "112.0.1722.39",
-                        "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+                        "path": "/home/opt/Microsoft/Edge/Application/msedge.exe",
                         "minSupportedVersion": 79,
                         "majorVersion": "112"
                     },
@@ -316,7 +316,7 @@
             "relativeToCommonRoot": "test.cy.js",
             "specType": "integration",
             "name": "cypress/e2e/test.cy.js",
-            "relative": "cypress\\e2e\\test.cy.js",
+            "relative": "cypress/e2e/test.cy.js",
             "absolute": "~/demo/cypress/e2e/test.cy.js"
         }
     ],

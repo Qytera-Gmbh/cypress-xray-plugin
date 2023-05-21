@@ -143,7 +143,7 @@
                 "relativeToCommonRoot": "example.cy.ts",
                 "specType": "integration",
                 "name": "cypress/e2e/demo/example.cy.ts",
-                "relative": "cypress\\e2e\\demo\\example.cy.ts",
+                "relative": "cypress/e2e/demo/example.cy.ts",
                 "absolute": "~/repositories/xray/cypress/e2e/demo/example.cy.ts"
             },
             "shouldUploadVideo": true
@@ -303,7 +303,7 @@
                 "channel": "stable",
                 "displayName": "Chrome",
                 "version": "107.0.5304.107",
-                "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                "path": "/home/opt/Application/chrome",
                 "minSupportedVersion": 64,
                 "majorVersion": "107"
             },
@@ -313,7 +313,7 @@
                 "channel": "stable",
                 "displayName": "Firefox",
                 "version": "107.0",
-                "path": "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+                "path": "/home/opt/firefox",
                 "minSupportedVersion": 86,
                 "majorVersion": "107"
             },
@@ -323,7 +323,7 @@
                 "channel": "stable",
                 "displayName": "Edge",
                 "version": "107.0.1418.56",
-                "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+                "path": "/home/opt/Application/msedge",
                 "minSupportedVersion": 79,
                 "majorVersion": "107"
             },
@@ -607,7 +607,7 @@
                         "channel": "stable",
                         "displayName": "Chrome",
                         "version": "107.0.5304.107",
-                        "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                        "path": "/home/opt/Application/chrome",
                         "minSupportedVersion": 64,
                         "majorVersion": "107"
                     },
@@ -617,7 +617,7 @@
                         "channel": "stable",
                         "displayName": "Firefox",
                         "version": "107.0",
-                        "path": "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+                        "path": "/home/opt/firefox",
                         "minSupportedVersion": 86,
                         "majorVersion": "107"
                     },
@@ -627,7 +627,7 @@
                         "channel": "stable",
                         "displayName": "Edge",
                         "version": "107.0.1418.56",
-                        "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+                        "path": "/home/opt/Application/msedge",
                         "minSupportedVersion": 79,
                         "majorVersion": "107"
                     },
