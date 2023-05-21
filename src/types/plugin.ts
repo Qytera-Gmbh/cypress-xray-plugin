@@ -99,15 +99,15 @@ export interface XrayStepOptions {
 
 export interface XrayOptions {
     /**
-     * The status name of a test marked as failed in Xray. Should be used when custom status names
-     * have been setup in Xray.
+     * The Xray status name of a test marked as failed by Cypress. Should be used when custom status
+     * names have been setup in Xray.
      *
      * @example "FEHLGESCHLAGEN" // german
      */
     statusFailed?: string;
     /**
-     * The status name of a test marked as passed in Xray. Should be used when custom status names
-     * have been setup in Xray.
+     * The Xray status name of a test marked as passed by Cypress. Should be used when custom status
+     * names have been setup in Xray.
      *
      * @example "BESTANDEN" // german
      */
