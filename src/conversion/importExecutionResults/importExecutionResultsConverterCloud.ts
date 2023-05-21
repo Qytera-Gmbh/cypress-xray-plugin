@@ -49,7 +49,7 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
             case Status.FAILED:
                 return CONTEXT.config.xray.statusFailed || "FAILED";
             case Status.PENDING:
-                return CONTEXT.config.xray.statusPending || "PENDING";
+                return CONTEXT.config.xray.statusPending || "TODO";
             default:
                 throw new Error(`Unknown status: '${status}'`);
         }

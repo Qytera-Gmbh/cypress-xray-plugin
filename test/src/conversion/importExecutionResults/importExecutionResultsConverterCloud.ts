@@ -96,16 +96,17 @@ describe("the import execution results converter (cloud)", () => {
         expect(json.tests[2].status).to.eq("FAILED");
     });
 
-    it("should use PENDING as default status name for failed tests", () => {
+    it("should use TODO as default status name for pending tests", () => {
         let result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultPending.json", "utf-8")
         );
         const json = converter.convertExecutionResults(result);
         expectToExist(json.tests);
-        expect(json.tests[0].status).to.eq("PENDING");
-        expect(json.tests[1].status).to.eq("PENDING");
-        expect(json.tests[2].status).to.eq("PENDING");
-        expect(json.tests[3].status).to.eq("PENDING");
+        expect(json.tests[0].status).to.eq("TODO");
+        expect(json.tests[1].status).to.eq("TODO");
+        expect(json.tests[2].status).to.eq("TODO");
+        expect(json.tests[3].status).to.eq("TODO");
+    });
     });
 
     it("should be able to use custom passed statuses", () => {
