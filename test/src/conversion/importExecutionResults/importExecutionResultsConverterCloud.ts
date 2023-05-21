@@ -107,6 +107,15 @@ describe("the import execution results converter (cloud)", () => {
         expect(json.tests[2].status).to.eq("TODO");
         expect(json.tests[3].status).to.eq("TODO");
     });
+
+    it("should use FAILED as default status name for skipped tests", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResultSkipped.json", "utf-8")
+        );
+        const json = converter.convertExecutionResults(result);
+        expectToExist(json.tests);
+        expect(json.tests[0].status).to.eq("FAILED");
+        expect(json.tests[1].status).to.eq("FAILED");
     });
 
     it("should be able to use custom passed statuses", () => {
@@ -144,6 +153,18 @@ describe("the import execution results converter (cloud)", () => {
         expect(json.tests[1].status).to.eq("still pending");
         expect(json.tests[2].status).to.eq("still pending");
         expect(json.tests[3].status).to.eq("still pending");
+    });
+
+    it("should be able to use custom skipped statuses", () => {
+        let result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResultSkipped.json", "utf-8")
+        );
+        expectToExist(CONTEXT.config.xray);
+        CONTEXT.config.xray.statusSkipped = "omit";
+        const json = converter.convertExecutionResults(result);
+        expectToExist(json.tests);
+        expect(json.tests[0].status).to.eq("FAILED");
+        expect(json.tests[1].status).to.eq("omit");
     });
 
     it("should skip tests when encountering unknown statuses", () => {

@@ -25,6 +25,7 @@ export function initContext(config: Options) {
                 statusFailed: config.xray?.statusFailed,
                 statusPassed: config.xray?.statusPassed,
                 statusPending: config.xray?.statusPending,
+                statusSkipped: config.xray?.statusSkipped,
                 steps: {
                     maxLengthAction: config.xray?.steps?.maxLengthAction || 8000,
                     update: config.xray?.steps?.update || true,

@@ -124,6 +124,13 @@ export interface XrayOptions {
      */
     statusPending?: string;
     /**
+     * The Xray status name of a test marked as skipped by Cypress. Should be used when custom
+     * status names have been setup in Xray.
+     *
+     * @example "OMIT" // french
+     */
+    statusSkipped?: string;
+    /**
      * All options related to manual test issue steps.
      */
     steps?: XrayStepOptions;
