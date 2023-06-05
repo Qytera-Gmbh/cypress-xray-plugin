@@ -10,7 +10,7 @@ import * as logging from "../src/logging/logging";
 chai.use(sinonChai);
 
 export const stubLogInfo = () => stub(logging, "logInfo");
-export const stubOnLogError = () => stub(logging, "logError");
+export const stubLogError = () => stub(logging, "logError");
 export const stubLogSuccess = () => stub(logging, "logSuccess");
 export const stubLogWarning = () => stub(logging, "logWarning");
 export const stubLogDebug = () => stub(logging, "logDebug");

@@ -35,6 +35,26 @@ function verifyXraySteps(steps: XrayStepOptions) {
     }
 }
 
+function parseFeatureFiles(specs: Cypress.Spec[]) {
+    specs.forEach((spec: Cypress.Spec) => {
+        if (spec.absolute.endsWith(CONTEXT.config.cucumber.featureFileExtension)) {
+            try {
+                // Extract tag information for later use, e.g. when uploading test results to specific
+                // issues.
+                const feature = parseFeatureFile(spec.absolute).feature;
+                CONTEXT.config.cucumber.issues = {
+                    ...CONTEXT.config.cucumber.issues,
+                    ...issuesByScenario(feature, CONTEXT.config.jira.projectKey),
+                };
+            } catch (error: unknown) {
+                logError(
+                    `Feature file "${spec.absolute}" invalid, skipping synchronization: ${error}`
+                );
+            }
+        }
+    });
+}
+
 export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
     if (!CONTEXT) {
         throw new Error(
@@ -55,6 +75,7 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
         CONTEXT.config.jira.testPlanIssueKey
     );
     verifyXraySteps(CONTEXT.config.xray.steps);
+    parseFeatureFiles(runDetails.specs);
 }
 
 export async function afterRunHook(
@@ -93,13 +114,6 @@ export async function filePreprocessorHook(file: Cypress.FileObject): Promise<st
     if (file.filePath.endsWith(CONTEXT.config.cucumber.featureFileExtension)) {
         const relativePath = file.filePath.substring(file.filePath.indexOf("cypress"));
         try {
-            // Extract tag information for later use, e.g. when uploading test results to specific
-            // issues.
-            const feature = parseFeatureFile(file.filePath).feature;
-            CONTEXT.config.cucumber.issues = issuesByScenario(
-                feature,
-                CONTEXT.config.jira.projectKey
-            );
             if (CONTEXT.config.cucumber.downloadFeatures) {
                 // TODO: download feature file from Xray.
                 throw new Error("feature not yet implemented");
@@ -112,7 +126,7 @@ export async function filePreprocessorHook(file: Cypress.FileObject): Promise<st
                 );
             }
         } catch (error: unknown) {
-            logError(`Feature file invalid, skipping synchronization: ${error}`);
+            logError(`Feature file "${file}" invalid, skipping synchronization: ${error}`);
         }
     }
     return file.filePath;

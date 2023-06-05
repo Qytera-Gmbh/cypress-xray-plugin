@@ -10,7 +10,7 @@ import {
 } from "../../src/constants";
 import { CONTEXT, initContext } from "../../src/context";
 import { beforeRunHook } from "../../src/hooks";
-import { stubLogInfo } from "../constants";
+import { stubLogError, stubLogInfo } from "../constants";
 import { expectToExist } from "./helpers";
 
 // Enable promise assertions.
@@ -22,6 +22,8 @@ describe("the before run hook", () => {
     );
 
     beforeEach(() => {
+        // We're not interested in informative log messages here.
+        stubLogInfo();
         initContext({
             jira: {
                 projectKey: "CYP",
@@ -41,11 +43,6 @@ describe("the before run hook", () => {
     });
 
     describe("the error handling", () => {
-        beforeEach(() => {
-            // We're not interested in informative log messages here.
-            stubLogInfo();
-        });
-
         it("should be able to detect unset project keys", async () => {
             expectToExist(details.config.env);
             details.config.env[ENV_JIRA_PROJECT_KEY] = undefined;
@@ -87,5 +84,44 @@ describe("the before run hook", () => {
                 "Xray plugin misconfiguration: max length of step actions must be a positive number: -5"
             );
         });
+
+        it("should display errors for invalid feature files", async () => {
+            details.specs[0].absolute = "./test/resources/features/invalid.feature";
+            const stubbedError = stubLogError();
+            await beforeRunHook(details);
+            expect(stubbedError).to.have.been.called.with.callCount(1);
+            expect(stubbedError).to.have.been.calledWith(
+                'Feature file "./test/resources/features/invalid.feature" invalid, skipping synchronization: Error: Parser errors:\n' +
+                    "(9:3): expected: #EOF, #TableRow, #DocStringSeparator, #StepLine, #TagLine, #ScenarioLine, #RuleLine, #Comment, #Empty, got 'Invalid: Element'"
+            );
+        });
+    });
+
+    it("should not try to parse mismatched feature files", async () => {
+        details.specs[0].absolute = "./test/resources/greetings.txt";
+        const stubbedError = stubLogError();
+        await beforeRunHook(details);
+        expect(stubbedError).to.not.have.been.called;
+    });
+
+    it("should be able to correctly parse feature files", async () => {
+        details.specs[0].absolute = "./test/resources/features/taggedCloudExamples.feature";
+        await beforeRunHook(details);
+        expect(CONTEXT.config.cucumber.issues).to.have.property(
+            "A tagged scenario with examples",
+            "CYP-123"
+        );
+        expect(CONTEXT.config.cucumber.issues).to.have.property(
+            "A tagged scenario with examples (example #1)",
+            "CYP-123"
+        );
+        expect(CONTEXT.config.cucumber.issues).to.have.property(
+            "A tagged scenario with examples (example #2)",
+            "CYP-123"
+        );
+        expect(CONTEXT.config.cucumber.issues).to.have.property(
+            "A tagged scenario with examples (example #3)",
+            "CYP-123"
+        );
     });
 });

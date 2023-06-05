@@ -1,5 +1,5 @@
 import { Feature, FeatureChild, Scenario } from "@cucumber/messages";
-import { logInfo, logWarning } from "../logging/logging";
+import { logError, logInfo } from "../logging/logging";
 
 function issueTagOf(scenario: Scenario, projectKey: string): string | undefined {
     // Xray cloud: @TestName:CYP-123
@@ -16,15 +16,15 @@ function issueTagOf(scenario: Scenario, projectKey: string): string | undefined 
         }
     }
     if (issueKeys.length === 0) {
-        logInfo(`No issue keys found in tags of scenario "${scenario.name}.`);
+        logInfo(`No issue keys found in tags of scenario "${scenario.name}".`);
     } else if (issueKeys.length === 1) {
         return issueKeys[0];
     } else {
-        logWarning(
-            `Multiple issue keys found in tags of scenario "${scenario.name}": ` +
-                `${issueKeys.join(", ")}`
+        logError(
+            `Multiple issue keys found in tags of scenario "${scenario.name}": ${issueKeys.join(
+                ", "
+            )}`
         );
-        logWarning(`The plugin will use the first one: ${issueKeys[0]}.`);
     }
     return undefined;
 }
@@ -61,7 +61,19 @@ export function issuesByScenario(feature: Feature, projectKey: string): { [key: 
     const issues: { [key: string]: string } = {};
     feature.children.map((child: FeatureChild) => {
         if (child.scenario) {
-            issues[child.scenario.name] = issueTagOf(child.scenario, projectKey);
+            const scenario = child.scenario;
+            const issueKey = issueTagOf(scenario, projectKey);
+            if (!issueKey) {
+                return;
+            }
+            issues[scenario.name] = issueKey;
+            const exampleCount = scenario.examples.flatMap((examples) => examples.tableBody).length;
+            for (let i = 0; i < exampleCount; i++) {
+                // The Cucumber preprocessor plugin appends '(example #...)' to every example run:
+                // https://github.com/badeball/cypress-cucumber-preprocessor/blob/3c4f85de4d5ef1e2a339cdfd462f64e3cd606e48/lib/browser-runtime.ts#L260
+                const exampleTitle = `${scenario.name} (example #${i + 1})`;
+                issues[exampleTitle] = issueKey;
+            }
         }
     });
     return issues;
