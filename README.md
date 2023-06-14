@@ -1,15 +1,12 @@
 <h1 align="center">
-	<br>
-	<br>
 	<img width="100%" src="logo.svg" alt="Cypress Xray Plugin">
 	<br>
-	<br>
-	<a href="https://www.npmjs.com/package/cypress-xray-plugin">
-	    <img src=https://img.shields.io/npm/v/cypress-xray-plugin?style=flat-square alt="npm version">
-	</a>
-	<a href="https://www.npmjs.com/package/cypress-xray-plugin">
-	    <img src=https://img.shields.io/npm/dm/cypress-xray-plugin?style=flat-square alt="npm downloads">
-	</a>
+	<div align="left">
+		<a href="https://www.npmjs.com/package/cypress-xray-plugin">
+	    	<img src=https://img.shields.io/npm/v/cypress-xray-plugin?style=flat-square alt="npm version">
+	    	<img src=https://img.shields.io/npm/dm/cypress-xray-plugin?style=flat-square alt="npm downloads">
+		</a>
+	</div>
 </h1>
 
 # Cypress Xray Plugin
@@ -18,10 +15,16 @@
 
 Features include:
 
--   test results upload to Xray
-    -   including screenshots
--   Cucumber integration
-    -   synchronization/upload of step definitions with Xray
+  - upload test results to Xray
+    - attach screenshots as test execution evidence
+    - attach videos to test execution issues
+    - reuse existing test execution and test plan issues
+  - CI/CD ready
+    - no hardcoded credentials
+	- every option customizable in CLI
+  - Cucumber integration (experimental)
+    - synchronization/upload of step definitions with Xray
+	- results upload as described above
 
 ## Quick Setup
 
@@ -37,3 +40,7 @@ npm i -D cypress-xray-plugin
 ## Documentation
 
 Please [visit the documentation](https://qytera-gmbh.github.io/projects/cypress-xray-plugin) to find out how to fully setup the plugin, including a full list of options.
+
+## Issues
+
+If you're encountering strange behaviour or feel like a feature is missing, feel free to create a [GitHub issue](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues).
