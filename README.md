@@ -1,7 +1,7 @@
 <h1 align="center">
 	<br>
 	<br>
-	<img width="512" src="logo.svg" alt="Cypress Xray Plugin">
+	<img width="100%" src="logo.svg" alt="Cypress Xray Plugin">
 	<br>
 	<br>
 	<a href="https://www.npmjs.com/package/cypress-xray-plugin">
