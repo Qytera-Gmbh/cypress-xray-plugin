@@ -1,19 +1,11 @@
 <h1 align="center">
 	<img width="100%" src="logo.svg" alt="Cypress Xray Plugin">
-	<br>
-	<div align="left">
-		<a href="https://www.npmjs.com/package/cypress-xray-plugin">
-	    	<img src=https://img.shields.io/npm/v/cypress-xray-plugin?style=flat-square alt="npm version">
-	    	<img src=https://img.shields.io/npm/dm/cypress-xray-plugin?style=flat-square alt="npm downloads">
-		</a>
-		<a href="https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues?q=is%3Aissue+is%3Aopen">
-			<img src="https://img.shields.io/github/issues-raw/qytera-gmbh/cypress-xray-plugin?style=flat-square" alt="open GitHub issues">
-		</a>
-		<a href="https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues?q=is%3Aissue+is%3Aopen+no%3Aassignee">
-			<img src="https://img.shields.io/github/issues-search/qytera-gmbh/cypress-xray-plugin?label=unaddressed%20issues&query=no%3Aassignee%20is%3Aopen&style=flat-square" alt="unadressed GitHub issues">
-		</a>
-	</div>
 </h1>
+
+[![npm version](https://img.shields.io/npm/v/cypress-xray-plugin?style=flat-square)](https://www.npmjs.com/package/cypress-xray-plugin)
+[![npm downloads](https://img.shields.io/npm/dm/cypress-xray-plugin?style=flat-square)](https://www.npmjs.com/package/cypress-xray-plugin)
+[![open GitHub issues](https://img.shields.io/github/issues-raw/qytera-gmbh/cypress-xray-plugin?style=flat-square)](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues?q=is%3Aissue+is%3Aopen)
+[![unadressed GitHub issues](https://img.shields.io/github/issues-search/qytera-gmbh/cypress-xray-plugin?label=unaddressed%20issues&query=no%3Aassignee%20is%3Aopen&style=flat-square)](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues?q=is%3Aissue+is%3Aopen+no%3Aassignee)
 
 # Cypress Xray Plugin
 
