@@ -84,26 +84,9 @@
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0">
-    <sodipodi:guide
-       position="1691.0044,132.75409"
-       orientation="0,1"
-       id="guide4239" />
-    <sodipodi:guide
-       position="1691.7502,132.58884"
-       orientation="1,0"
-       id="guide4241" />
-    <sodipodi:guide
-       position="1032.9978,386.7354"
-       orientation="0,1"
-       id="guide4196" />
-    <sodipodi:guide
-       position="1775.4839,297.7598"
-       orientation="1,0"
-       id="guide4198" />
-  </sodipodi:namedview>
+     fit-margin-bottom="0" />
   <rect
-     style="opacity:1;fill:#0b251a;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:10;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     style="opacity:1;fill:#103324;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:10;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
      id="rect4178"
      width="3548.2388"
      height="761.20782"
