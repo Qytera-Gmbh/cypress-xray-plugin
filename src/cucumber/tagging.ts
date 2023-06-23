@@ -1,5 +1,5 @@
 import { Feature, FeatureChild, Scenario } from "@cucumber/messages";
-import { logError, logInfo } from "../logging/logging";
+import { logInfo, logWarning } from "../logging/logging";
 
 function issueTagOf(scenario: Scenario, projectKey: string): string | undefined {
     // Xray cloud: @TestName:CYP-123
@@ -20,10 +20,10 @@ function issueTagOf(scenario: Scenario, projectKey: string): string | undefined 
     } else if (issueKeys.length === 1) {
         return issueKeys[0];
     } else {
-        logError(
+        logWarning(
             `Multiple issue keys found in tags of scenario "${scenario.name}": ${issueKeys.join(
                 ", "
-            )}`
+            )}. Issue reuse will not work for this scenario.`
         );
     }
     return undefined;

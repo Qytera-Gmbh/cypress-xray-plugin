@@ -126,7 +126,7 @@ export async function filePreprocessorHook(file: Cypress.FileObject): Promise<st
                 );
             }
         } catch (error: unknown) {
-            logError(`Feature file "${file}" invalid, skipping synchronization: ${error}`);
+            logError(`Feature file "${file.filePath}" invalid, skipping synchronization: ${error}`);
         }
     }
     return file.filePath;
