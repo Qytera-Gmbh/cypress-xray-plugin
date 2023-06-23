@@ -1,14 +1,13 @@
-import axios, { AxiosResponse, RawAxiosRequestConfig } from "axios";
+import axios, { Axios, AxiosResponse, RawAxiosRequestConfig, isAxiosError } from "axios";
 import { readFileSync, writeFileSync } from "fs";
 import { Agent } from "https";
 import { CONTEXT } from "../context";
 import { logDebug } from "../logging/logging";
 import { normalizedFilename } from "../util/files";
 
-type Method = "GET" | "POST";
-
 export class Requests {
     private static AGENT: Agent = undefined;
+    private static AXIOS: Axios = undefined;
 
     private static agent(): Agent {
         if (!Requests.AGENT) {
@@ -18,6 +17,95 @@ export class Requests {
             });
         }
         return Requests.AGENT;
+    }
+
+    private static axios(): Axios {
+        if (!Requests.AXIOS) {
+            Requests.AXIOS = axios;
+            if (CONTEXT.config.plugin.debug) {
+                Requests.AXIOS.interceptors.request.use(
+                    (request) => {
+                        const method = request.method.toUpperCase();
+                        const url = request.url;
+                        const timestamp = Date.now();
+                        const filename = normalizedFilename(
+                            `${method}_${url}_${timestamp}_request.json`
+                        );
+                        logDebug(`Writing request to ${filename}.`);
+                        writeFileSync(
+                            filename,
+                            JSON.stringify({
+                                url: url,
+                                headers: request.headers,
+                                params: request.params,
+                                body: request.data,
+                            })
+                        );
+                        return request;
+                    },
+                    (error) => {
+                        const timestamp = Date.now();
+                        let filename: string;
+                        let data: unknown;
+                        if (isAxiosError(error)) {
+                            const method = error.config.method.toUpperCase();
+                            const url = error.config.url;
+                            filename = normalizedFilename(
+                                `${method}_${url}_${timestamp}_request.json`
+                            );
+                            data = error.toJSON();
+                        } else {
+                            filename = normalizedFilename(`request_${timestamp}.json`);
+                            data = error;
+                        }
+                        logDebug(`Writing request to ${filename}.`);
+                        writeFileSync(filename, JSON.stringify(data));
+                        throw error;
+                    }
+                );
+                Requests.AXIOS.interceptors.response.use(
+                    (response) => {
+                        const method = response.request.method.toUpperCase();
+                        const url = response.config.url;
+                        const timestamp = Date.now();
+                        const filename = normalizedFilename(
+                            `${method}_${url}_${timestamp}_response.json`
+                        );
+                        logDebug(`Writing response to ${filename}.`);
+                        writeFileSync(
+                            filename,
+                            JSON.stringify({
+                                data: response.data,
+                                headers: response.headers,
+                                status: response.status,
+                                statusText: response.statusText,
+                            })
+                        );
+                        return response;
+                    },
+                    (error) => {
+                        const timestamp = Date.now();
+                        let filename: string;
+                        let data: unknown;
+                        if (isAxiosError(error)) {
+                            const method = error.config.method.toUpperCase();
+                            const url = error.config.url;
+                            filename = normalizedFilename(
+                                `${method}_${url}_${timestamp}_response.json`
+                            );
+                            data = error.toJSON();
+                        } else {
+                            filename = normalizedFilename(`response_${timestamp}.json`);
+                            data = error;
+                        }
+                        logDebug(`Writing response to ${filename}.`);
+                        writeFileSync(filename, JSON.stringify(data));
+                        throw error;
+                    }
+                );
+            }
+        }
+        return Requests.AXIOS;
     }
 
     private static readCertificate(path?: string): Buffer {
@@ -31,20 +119,10 @@ export class Requests {
         url: string,
         config?: RawAxiosRequestConfig<undefined>
     ): Promise<AxiosResponse> {
-        if (!CONTEXT.config.plugin.debug) {
-            return axios.get(url, {
-                ...config,
-                httpsAgent: Requests.agent(),
-            });
-        }
-        const timestamp = Date.now();
-        this.logRequest("GET", url, timestamp, null, config);
-        const response = await axios.get(url, {
+        return Requests.axios().get(url, {
             ...config,
             httpsAgent: Requests.agent(),
         });
-        this.logResponse("GET", url, timestamp, response);
-        return response;
     }
 
     public static async post<D = unknown>(
@@ -52,69 +130,9 @@ export class Requests {
         data?: D,
         config?: RawAxiosRequestConfig<D>
     ): Promise<AxiosResponse> {
-        if (!CONTEXT.config.plugin.debug) {
-            return axios.post(url, data, {
-                ...config,
-                httpsAgent: Requests.agent(),
-            });
-        }
-        const timestamp = Date.now();
-        this.logRequest("POST", url, timestamp, data, config);
-        const response = await axios.post(url, data, {
+        return Requests.axios().post(url, data, {
             ...config,
             httpsAgent: Requests.agent(),
         });
-        this.logResponse("POST", url, timestamp, response);
-        return response;
-    }
-
-    // Debug utilities.
-
-    private static logRequest<D>(
-        method: Method,
-        url: string,
-        timestamp: number,
-        data: D | null,
-        config?: RawAxiosRequestConfig<D>
-    ) {
-        const filename = normalizedFilename(`${method}_${url}_${timestamp}`);
-        logDebug(`Writing ${method} request data to ${filename}_request.json.`);
-        if (data) {
-            writeFileSync(
-                `${filename}_request.json`,
-                JSON.stringify({
-                    url: url,
-                    body: data,
-                    config: config,
-                })
-            );
-        } else {
-            writeFileSync(
-                `${filename}_request.json`,
-                JSON.stringify({
-                    url: url,
-                    config: config,
-                })
-            );
-        }
-    }
-
-    private static logResponse(
-        method: Method,
-        url: string,
-        timestamp: number,
-        response: AxiosResponse
-    ) {
-        const filename = normalizedFilename(`${method}_${url}_${timestamp}`);
-        logDebug(`Writing ${method} response data to ${filename}_response.json.`);
-        writeFileSync(
-            `${filename}_response.json`,
-            JSON.stringify({
-                data: response.data,
-                headers: response.headers,
-                status: response.status,
-                statusText: response.statusText,
-            })
-        );
     }
 }

@@ -66,12 +66,12 @@ export abstract class XrayClient<
      * @returns the response of the Xray instance
      * @see https://docs.getxray.app/display/XRAYCLOUD/Exporting+Cucumber+Tests+-+REST+v2
      */
-    public exportCucumberTests(
+    public async exportCucumberTests(
         keys?: string,
         filter?: number
     ): Promise<ExportCucumberTestsResponse> {
         try {
-            return this.dispatchExportCucumberTestsRequest(keys, filter);
+            return await this.dispatchExportCucumberTestsRequest(keys, filter);
         } catch (error: unknown) {
             logError(`Failed to export cucumber feature files: "${error}"`);
             this.writeErrorFile(error, "exportCucumberTestsError");
@@ -100,14 +100,19 @@ export abstract class XrayClient<
      * @returns the response of the Xray instance
      * @see https://docs.getxray.app/display/XRAYCLOUD/Exporting+Cucumber+Tests+-+REST+v2
      */
-    public importCucumberTests(
+    public async importCucumberTests(
         file: string,
         projectKey?: string,
         projectId?: string,
         source?: string
     ): Promise<ServerImportCucumberTestsResponse | CloudImportCucumberTestsResponse> {
         try {
-            return this.dispatchImportCucumberTestsRequest(file, projectKey, projectId, source);
+            return await this.dispatchImportCucumberTestsRequest(
+                file,
+                projectKey,
+                projectId,
+                source
+            );
         } catch (error: unknown) {
             logError(`Failed to import cucumber feature files: "${error}"`);
             this.writeErrorFile(error, "importCucumberTestsError");
