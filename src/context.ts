@@ -8,8 +8,8 @@ export function initContext(config: Options) {
         config: {
             jira: {
                 projectKey: config.jira?.projectKey,
-                attachVideos: config.jira?.attachVideos || false,
-                createTestIssues: config.jira?.createTestIssues || true,
+                attachVideos: config.jira?.attachVideos ?? false,
+                createTestIssues: config.jira?.createTestIssues ?? true,
                 testExecutionIssueDescription: config.jira?.testExecutionIssueDescription,
                 testExecutionIssueKey: config.jira?.testExecutionIssueKey,
                 testExecutionIssueSummary: config.jira?.testExecutionIssueSummary,
@@ -17,9 +17,9 @@ export function initContext(config: Options) {
                 url: config.jira?.url,
             },
             plugin: {
-                overwriteIssueSummary: config.plugin?.overwriteIssueSummary || false,
-                normalizeScreenshotNames: config.plugin?.normalizeScreenshotNames || false,
-                debug: config.plugin?.debug || false,
+                overwriteIssueSummary: config.plugin?.overwriteIssueSummary ?? false,
+                normalizeScreenshotNames: config.plugin?.normalizeScreenshotNames ?? false,
+                debug: config.plugin?.debug ?? false,
             },
             xray: {
                 statusFailed: config.xray?.statusFailed,
@@ -27,18 +27,18 @@ export function initContext(config: Options) {
                 statusPending: config.xray?.statusPending,
                 statusSkipped: config.xray?.statusSkipped,
                 steps: {
-                    maxLengthAction: config.xray?.steps?.maxLengthAction || 8000,
-                    update: config.xray?.steps?.update || true,
+                    maxLengthAction: config.xray?.steps?.maxLengthAction ?? 8000,
+                    update: config.xray?.steps?.update ?? true,
                 },
-                testType: config.xray?.testType || "Manual",
-                uploadResults: config.xray?.uploadResults || true,
-                uploadScreenshots: config.xray?.uploadScreenshots || true,
+                testType: config.xray?.testType ?? "Manual",
+                uploadResults: config.xray?.uploadResults ?? true,
+                uploadScreenshots: config.xray?.uploadScreenshots ?? true,
             },
             cucumber: {
                 featureFileExtension: config.cucumber?.featureFileExtension,
-                downloadFeatures: config.cucumber?.downloadFeatures || false,
+                downloadFeatures: config.cucumber?.downloadFeatures ?? false,
                 issues: undefined,
-                uploadFeatures: config.cucumber?.uploadFeatures || false,
+                uploadFeatures: config.cucumber?.uploadFeatures ?? false,
             },
             openSSL: {
                 rootCAPath: config.openSSL?.rootCAPath,
