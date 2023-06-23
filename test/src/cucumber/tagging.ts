@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { CONTEXT, initContext } from "../../../src/context";
 import { issuesByScenario } from "../../../src/cucumber/tagging";
 import { parseFeatureFile } from "../../../src/util/parsing";
-import { stubLogError, stubLogInfo } from "../../constants";
+import { stubLogInfo, stubLogWarning } from "../../constants";
 import { DummyXrayClient, expectToExist } from "../helpers";
 
 describe("the cucumber tag extractor", () => {
@@ -50,12 +50,12 @@ describe("the cucumber tag extractor", () => {
         const feature = parseFeatureFile(
             "./test/resources/features/taggedServerMultiple.feature"
         ).feature;
-        const stubbedError = stubLogError();
+        const stubbedWarn = stubLogWarning();
         const issueMapping = issuesByScenario(feature, CONTEXT.config.jira.projectKey);
         expect(issueMapping).to.be.empty;
-        expect(stubbedError).to.have.been.called.with.callCount(1);
-        expect(stubbedError).to.have.been.calledWith(
-            'Multiple issue keys found in tags of scenario "A tagged scenario": CYP-123, CYP-456, CYP-789'
+        expect(stubbedWarn).to.have.been.called.with.callCount(1);
+        expect(stubbedWarn).to.have.been.calledWith(
+            'Multiple issue keys found in tags of scenario "A tagged scenario": CYP-123, CYP-456, CYP-789. Issue reuse will not work for this scenario.'
         );
     });
 });
