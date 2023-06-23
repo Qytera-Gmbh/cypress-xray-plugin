@@ -45,13 +45,13 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
     protected getXrayStatus(status: Status): string {
         switch (status) {
             case Status.PASSED:
-                return CONTEXT.config.xray.statusPassed || "PASSED";
+                return CONTEXT.config.xray.statusPassed ?? "PASSED";
             case Status.FAILED:
-                return CONTEXT.config.xray.statusFailed || "FAILED";
+                return CONTEXT.config.xray.statusFailed ?? "FAILED";
             case Status.PENDING:
-                return CONTEXT.config.xray.statusPending || "TODO";
+                return CONTEXT.config.xray.statusPending ?? "TODO";
             case Status.SKIPPED:
-                return CONTEXT.config.xray.statusSkipped || "FAILED";
+                return CONTEXT.config.xray.statusSkipped ?? "FAILED";
             default:
                 throw new Error(`Unknown status: '${status}'`);
         }
