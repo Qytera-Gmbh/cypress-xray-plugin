@@ -51,6 +51,10 @@ function parseFeatureFiles(specs: Cypress.Spec[]) {
                     `Feature file "${spec.absolute}" invalid, skipping synchronization: ${error}`
                 );
             }
+        } else {
+            logInfo(
+                `Feature file "${spec.absolute}" does not have extension "${CONTEXT.config.cucumber.featureFileExtension}", skipping synchronization.`
+            );
         }
     });
 }
@@ -59,10 +63,14 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
     if (!CONTEXT) {
         throw new Error(
             "Xray plugin misconfiguration: no configuration found." +
-                " Make sure your project has been set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+                " Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
         );
     }
     parseEnvironmentVariables(runDetails.config.env);
+    if (!CONTEXT.config.plugin.enabled) {
+        logInfo("Plugin disabled. Skipping before:run execution.");
+        return;
+    }
     verifyJiraProjectKey(CONTEXT.config.jira.projectKey);
     verifyJiraTestExecutionIssueKey(
         CONTEXT.config.jira.projectKey,
@@ -81,6 +89,10 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
 export async function afterRunHook(
     results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
 ) {
+    if (!CONTEXT.config.plugin.enabled) {
+        logInfo("Plugin disabled. Skipping after:run execution.");
+        return;
+    }
     if (results.status === "failed") {
         logError(`Aborting: failed to run ${results.failures} tests:`, results.message);
         return;
@@ -111,6 +123,10 @@ export async function afterRunHook(
 }
 
 export async function filePreprocessorHook(file: Cypress.FileObject): Promise<string> {
+    if (!CONTEXT.config.plugin.enabled) {
+        logInfo("Plugin disabled. Skipping feature file synchronization.");
+        return;
+    }
     if (file.filePath.endsWith(CONTEXT.config.cucumber.featureFileExtension)) {
         const relativePath = file.filePath.substring(file.filePath.indexOf("cypress"));
         try {
