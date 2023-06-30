@@ -45,6 +45,7 @@ describe("the before run hook", () => {
     describe("the error handling", () => {
         it("should be able to detect unset project keys", async () => {
             expectToExist(details.config.env);
+            CONTEXT.config.jira.projectKey = undefined;
             details.config.env[ENV_JIRA_PROJECT_KEY] = undefined;
             await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
                 "Xray plugin misconfiguration: Jira project key was not set"

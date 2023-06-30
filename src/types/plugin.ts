@@ -181,6 +181,11 @@ export interface CucumberOptions {
 
 export interface PluginOptions {
     /**
+     * Enables or disables the entire plugin. Setting this option to `false` disables all plugin
+     * functions, including authentication checks, uploads or feature file synchronization.
+     */
+    enabled?: boolean;
+    /**
      * Turns on or off extensive debugging output.
      */
     debug?: boolean;

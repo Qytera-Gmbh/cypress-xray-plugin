@@ -24,6 +24,7 @@ import {
     ENV_OPENSSL_ROOT_CA_PATH,
     ENV_OPENSSL_SECURE_OPTIONS,
     ENV_PLUGIN_DEBUG,
+    ENV_PLUGIN_ENABLED,
     ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES,
     ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY,
     ENV_XRAY_CLIENT_ID,
@@ -40,98 +41,93 @@ import {
 } from "../constants";
 import { CONTEXT } from "../context";
 import { logInfo } from "../logging/logging";
-import { parseBoolean } from "./parsing";
+import { asBoolean, asInt, asString } from "./parsing";
 
 export function parseEnvironmentVariables(env: Cypress.ObjectLike): void {
-    // Jira.
-    if (ENV_JIRA_PROJECT_KEY in env) {
-        CONTEXT.config.jira.projectKey = env[ENV_JIRA_PROJECT_KEY];
-    }
-    if (ENV_JIRA_URL in env) {
-        CONTEXT.config.jira.url = env[ENV_JIRA_URL];
-    }
-    if (ENV_JIRA_TEST_EXECUTION_ISSUE_KEY in env) {
-        CONTEXT.config.jira.testExecutionIssueKey = env[ENV_JIRA_TEST_EXECUTION_ISSUE_KEY];
-    }
-    if (ENV_JIRA_TEST_PLAN_ISSUE_KEY in env) {
-        CONTEXT.config.jira.testPlanIssueKey = env[ENV_JIRA_TEST_PLAN_ISSUE_KEY];
-    }
-    if (ENV_JIRA_ATTACH_VIDEOS in env) {
-        CONTEXT.config.jira.attachVideos = parseBoolean(env[ENV_JIRA_ATTACH_VIDEOS]);
-    }
-    if (ENV_JIRA_CREATE_TEST_ISSUES in env) {
-        CONTEXT.config.jira.createTestIssues = parseBoolean(env[ENV_JIRA_CREATE_TEST_ISSUES]);
-    }
-    if (ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY in env) {
-        CONTEXT.config.jira.testExecutionIssueSummary = env[ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY];
-    }
-    if (ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION in env) {
-        CONTEXT.config.jira.testExecutionIssueDescription =
-            env[ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION];
-    }
-    // Xray.
-    if (ENV_XRAY_TEST_TYPE in env) {
-        CONTEXT.config.xray.testType = env[ENV_XRAY_TEST_TYPE];
-    }
-    if (ENV_XRAY_UPLOAD_RESULTS in env) {
-        CONTEXT.config.xray.uploadResults = parseBoolean(env[ENV_XRAY_UPLOAD_RESULTS]);
-    }
-    if (ENV_XRAY_UPLOAD_SCREENSHOTS in env) {
-        CONTEXT.config.xray.uploadScreenshots = parseBoolean(env[ENV_XRAY_UPLOAD_SCREENSHOTS]);
-    }
-    if (ENV_XRAY_STATUS_PASSED in env) {
-        CONTEXT.config.xray.statusPassed = env[ENV_XRAY_STATUS_PASSED];
-    }
-    if (ENV_XRAY_STATUS_PENDING in env) {
-        CONTEXT.config.xray.statusPending = env[ENV_XRAY_STATUS_PENDING];
-    }
-    if (ENV_XRAY_STATUS_SKIPPED in env) {
-        CONTEXT.config.xray.statusSkipped = env[ENV_XRAY_STATUS_SKIPPED];
-    }
-    if (ENV_XRAY_STATUS_FAILED in env) {
-        CONTEXT.config.xray.statusFailed = env[ENV_XRAY_STATUS_FAILED];
-    }
-    if (ENV_XRAY_STEPS_UPDATE in env) {
-        CONTEXT.config.xray.steps.update = parseBoolean(env[ENV_XRAY_STEPS_UPDATE]);
-    }
-    if (ENV_XRAY_STEPS_MAX_LENGTH_ACTION in env) {
-        CONTEXT.config.xray.steps.maxLengthAction = Number.parseInt(
-            env[ENV_XRAY_STEPS_MAX_LENGTH_ACTION]
-        );
-    }
-    // Cucumber.
-    if (ENV_CUCUMBER_FEATURE_FILE_EXTENSION in env) {
-        CONTEXT.config.cucumber.featureFileExtension = env[ENV_CUCUMBER_FEATURE_FILE_EXTENSION];
-    }
-    if (ENV_CUCUMBER_UPLOAD_FEATURES in env) {
-        CONTEXT.config.cucumber.uploadFeatures = parseBoolean(env[ENV_CUCUMBER_UPLOAD_FEATURES]);
-    }
-    if (ENV_CUCUMBER_DOWNLOAD_FEATURES in env) {
-        CONTEXT.config.cucumber.downloadFeatures = parseBoolean(
-            env[ENV_CUCUMBER_DOWNLOAD_FEATURES]
-        );
-    }
-    // Plugin.
-    if (ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY in env) {
-        CONTEXT.config.plugin.overwriteIssueSummary = parseBoolean(
-            env[ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY]
-        );
-    }
-    if (ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES in env) {
-        CONTEXT.config.plugin.normalizeScreenshotNames = parseBoolean(
-            env[ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES]
-        );
-    }
-    if (ENV_PLUGIN_DEBUG in env) {
-        CONTEXT.config.plugin.debug = parseBoolean(env[ENV_PLUGIN_DEBUG]);
-    }
-    // OpenSSL.
-    if (ENV_OPENSSL_ROOT_CA_PATH in env) {
-        CONTEXT.config.openSSL.rootCAPath = env[ENV_OPENSSL_ROOT_CA_PATH];
-    }
-    if (ENV_OPENSSL_SECURE_OPTIONS in env) {
-        CONTEXT.config.openSSL.secureOptions = env[ENV_OPENSSL_SECURE_OPTIONS];
-    }
+    CONTEXT.config = {
+        jira: {
+            projectKey:
+                parse(env, ENV_JIRA_PROJECT_KEY, asString) ?? CONTEXT.config.jira.projectKey,
+            attachVideos:
+                parse(env, ENV_JIRA_ATTACH_VIDEOS, asBoolean) ?? CONTEXT.config.jira.attachVideos,
+            createTestIssues:
+                parse(env, ENV_JIRA_CREATE_TEST_ISSUES, asBoolean) ??
+                CONTEXT.config.jira.createTestIssues,
+            testExecutionIssueDescription:
+                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION, asString) ??
+                CONTEXT.config.jira.testExecutionIssueDescription,
+            testExecutionIssueKey:
+                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_KEY, asString) ??
+                CONTEXT.config.jira.testExecutionIssueKey,
+            testExecutionIssueSummary:
+                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY, asString) ??
+                CONTEXT.config.jira.testExecutionIssueSummary,
+            testPlanIssueKey:
+                parse(env, ENV_JIRA_TEST_PLAN_ISSUE_KEY, asString) ??
+                CONTEXT.config.jira.testPlanIssueKey,
+            url: parse(env, ENV_JIRA_URL, asString) ?? CONTEXT.config.jira.url,
+        },
+        xray: {
+            statusFailed:
+                parse(env, ENV_XRAY_STATUS_FAILED, asString) ?? CONTEXT.config.xray.statusFailed,
+            statusPassed:
+                parse(env, ENV_XRAY_STATUS_PASSED, asString) ?? CONTEXT.config.xray.statusPassed,
+            statusPending:
+                parse(env, ENV_XRAY_STATUS_PENDING, asString) ?? CONTEXT.config.xray.statusPending,
+            statusSkipped:
+                parse(env, ENV_XRAY_STATUS_SKIPPED, asString) ?? CONTEXT.config.xray.statusSkipped,
+            steps: {
+                maxLengthAction:
+                    parse(env, ENV_XRAY_STEPS_MAX_LENGTH_ACTION, asInt) ??
+                    CONTEXT.config.xray.steps.maxLengthAction,
+                update:
+                    parse(env, ENV_XRAY_STEPS_UPDATE, asBoolean) ??
+                    CONTEXT.config.xray.steps.update,
+            },
+            testType: parse(env, ENV_XRAY_TEST_TYPE, asString) ?? CONTEXT.config.xray.testType,
+            uploadResults:
+                parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean) ?? CONTEXT.config.xray.uploadResults,
+            uploadScreenshots:
+                parse(env, ENV_XRAY_UPLOAD_SCREENSHOTS, asBoolean) ??
+                CONTEXT.config.xray.uploadScreenshots,
+        },
+        cucumber: {
+            featureFileExtension:
+                parse(env, ENV_CUCUMBER_FEATURE_FILE_EXTENSION, asString) ??
+                CONTEXT.config.cucumber.featureFileExtension,
+            downloadFeatures:
+                parse(env, ENV_CUCUMBER_DOWNLOAD_FEATURES, asBoolean) ??
+                CONTEXT.config.cucumber.downloadFeatures,
+            uploadFeatures:
+                parse(env, ENV_CUCUMBER_UPLOAD_FEATURES, asBoolean) ??
+                CONTEXT.config.cucumber.uploadFeatures,
+        },
+        plugin: {
+            enabled: parse(env, ENV_PLUGIN_ENABLED, asBoolean) ?? CONTEXT.config.plugin.enabled,
+            debug: parse(env, ENV_PLUGIN_DEBUG, asBoolean) ?? CONTEXT.config.plugin.debug,
+            normalizeScreenshotNames:
+                parse(env, ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES, asBoolean) ??
+                CONTEXT.config.plugin.normalizeScreenshotNames,
+            overwriteIssueSummary:
+                parse(env, ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY, asBoolean) ??
+                CONTEXT.config.plugin.overwriteIssueSummary,
+        },
+        openSSL: {
+            rootCAPath:
+                parse(env, ENV_OPENSSL_ROOT_CA_PATH, asString) ?? CONTEXT.config.openSSL.rootCAPath,
+            secureOptions:
+                parse(env, ENV_OPENSSL_SECURE_OPTIONS, asInt) ??
+                CONTEXT.config.openSSL.secureOptions,
+        },
+    };
+}
+
+function parse<T>(
+    env: Cypress.ObjectLike,
+    variable: string,
+    parser: (parameter: string) => T
+): T | undefined {
+    return variable in env ? parser(env[variable]) : undefined;
 }
 
 export function initXrayClient(env: Cypress.ObjectLike): void {

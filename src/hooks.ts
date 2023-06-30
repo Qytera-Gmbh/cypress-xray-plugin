@@ -63,8 +63,6 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
         );
     }
     parseEnvironmentVariables(runDetails.config.env);
-    initXrayClient(runDetails.config.env);
-    initJiraClient(runDetails.config.env);
     verifyJiraProjectKey(CONTEXT.config.jira.projectKey);
     verifyJiraTestExecutionIssueKey(
         CONTEXT.config.jira.projectKey,
@@ -75,6 +73,8 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
         CONTEXT.config.jira.testPlanIssueKey
     );
     verifyXraySteps(CONTEXT.config.xray.steps);
+    initXrayClient(runDetails.config.env);
+    initJiraClient(runDetails.config.env);
     parseFeatureFiles(runDetails.specs);
 }
 
