@@ -7,9 +7,9 @@ export function initContext(config: Options) {
     CONTEXT = {
         config: {
             jira: {
-                projectKey: config.jira?.projectKey,
                 attachVideos: config.jira?.attachVideos ?? false,
                 createTestIssues: config.jira?.createTestIssues ?? true,
+                projectKey: config.jira?.projectKey,
                 testExecutionIssueDescription: config.jira?.testExecutionIssueDescription,
                 testExecutionIssueKey: config.jira?.testExecutionIssueKey,
                 testExecutionIssueSummary: config.jira?.testExecutionIssueSummary,
@@ -17,9 +17,10 @@ export function initContext(config: Options) {
                 url: config.jira?.url,
             },
             plugin: {
-                overwriteIssueSummary: config.plugin?.overwriteIssueSummary ?? false,
-                normalizeScreenshotNames: config.plugin?.normalizeScreenshotNames ?? false,
                 debug: config.plugin?.debug ?? false,
+                enabled: config.plugin?.enabled ?? true,
+                normalizeScreenshotNames: config.plugin?.normalizeScreenshotNames ?? false,
+                overwriteIssueSummary: config.plugin?.overwriteIssueSummary ?? false,
             },
             xray: {
                 statusFailed: config.xray?.statusFailed,

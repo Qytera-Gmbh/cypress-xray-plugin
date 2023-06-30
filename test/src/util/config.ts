@@ -43,10 +43,10 @@ describe("the environment variable configuration parser", () => {
 
         it("JIRA_CREATE_TEST_ISSUES", () => {
             env = {
-                JIRA_CREATE_TEST_ISSUES: "true",
+                JIRA_CREATE_TEST_ISSUES: "false",
             };
             parseEnvironmentVariables(env);
-            expect(CONTEXT.config.jira.createTestIssues).to.be.true;
+            expect(CONTEXT.config.jira.createTestIssues).to.be.false;
         });
 
         it("JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION", () => {
@@ -157,10 +157,10 @@ describe("the environment variable configuration parser", () => {
 
         it("XRAY_UPLOAD_SCREENSHOTS", () => {
             env = {
-                XRAY_UPLOAD_SCREENSHOTS: "true",
+                XRAY_UPLOAD_SCREENSHOTS: "false",
             };
             parseEnvironmentVariables(env);
-            expect(CONTEXT.config.xray?.uploadScreenshots).to.be.true;
+            expect(CONTEXT.config.xray?.uploadScreenshots).to.be.false;
         });
     });
 
@@ -183,28 +183,36 @@ describe("the environment variable configuration parser", () => {
 
         it("CUCUMBER_UPLOAD_FEATURES", () => {
             env = {
-                CUCUMBER_UPLOAD_FEATURES: "false",
+                CUCUMBER_UPLOAD_FEATURES: "true",
             };
             parseEnvironmentVariables(env);
-            expect(CONTEXT.config.cucumber?.downloadFeatures).to.be.false;
+            expect(CONTEXT.config.cucumber?.uploadFeatures).to.be.true;
         });
     });
 
     describe("should be able to parse Plugin options", () => {
         it("PLUGIN_DEBUG", () => {
             env = {
-                PLUGIN_DEBUG: "false",
+                PLUGIN_DEBUG: "true",
             };
             parseEnvironmentVariables(env);
-            expect(CONTEXT.config.plugin?.debug).to.be.false;
+            expect(CONTEXT.config.plugin?.debug).to.be.true;
+        });
+
+        it("PLUGIN_ENABLED", () => {
+            env = {
+                PLUGIN_ENABLED: "false",
+            };
+            parseEnvironmentVariables(env);
+            expect(CONTEXT.config.plugin?.enabled).to.be.false;
         });
 
         it("PLUGIN_NORMALIZE_SCREENSHOT_NAMES", () => {
             env = {
-                PLUGIN_NORMALIZE_SCREENSHOT_NAMES: "false",
+                PLUGIN_NORMALIZE_SCREENSHOT_NAMES: "true",
             };
             parseEnvironmentVariables(env);
-            expect(CONTEXT.config.plugin?.normalizeScreenshotNames).to.be.false;
+            expect(CONTEXT.config.plugin?.normalizeScreenshotNames).to.be.true;
         });
 
         it("PLUGIN_OVERWRITE_ISSUE_SUMMARY", () => {

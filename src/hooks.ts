@@ -59,12 +59,14 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
     if (!CONTEXT) {
         throw new Error(
             "Xray plugin misconfiguration: no configuration found." +
-                " Make sure your project has been set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+                " Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
         );
     }
     parseEnvironmentVariables(runDetails.config.env);
-    initXrayClient(runDetails.config.env);
-    initJiraClient(runDetails.config.env);
+    if (!CONTEXT.config.plugin.enabled) {
+        logInfo("Plugin disabled. Skipping before:run hook.");
+        return;
+    }
     verifyJiraProjectKey(CONTEXT.config.jira.projectKey);
     verifyJiraTestExecutionIssueKey(
         CONTEXT.config.jira.projectKey,
@@ -75,12 +77,18 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
         CONTEXT.config.jira.testPlanIssueKey
     );
     verifyXraySteps(CONTEXT.config.xray.steps);
+    initXrayClient(runDetails.config.env);
+    initJiraClient(runDetails.config.env);
     parseFeatureFiles(runDetails.specs);
 }
 
 export async function afterRunHook(
     results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
 ) {
+    if (!CONTEXT.config.plugin.enabled) {
+        logInfo("Plugin disabled. Skipping after:run hook.");
+        return;
+    }
     if (results.status === "failed") {
         logError(`Aborting: failed to run ${results.failures} tests:`, results.message);
         return;
@@ -111,6 +119,12 @@ export async function afterRunHook(
 }
 
 export async function filePreprocessorHook(file: Cypress.FileObject): Promise<string> {
+    if (!CONTEXT.config.plugin.enabled) {
+        logInfo(
+            `Plugin disabled. Skipping file:preprocessor hook triggered by "${file.filePath}".`
+        );
+        return;
+    }
     if (file.filePath.endsWith(CONTEXT.config.cucumber.featureFileExtension)) {
         const relativePath = file.filePath.substring(file.filePath.indexOf("cypress"));
         try {

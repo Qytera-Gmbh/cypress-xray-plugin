@@ -9,7 +9,7 @@ import {
     ENV_XRAY_CLIENT_SECRET,
 } from "../../src/constants";
 import { CONTEXT, initContext } from "../../src/context";
-import { beforeRunHook } from "../../src/hooks";
+import { afterRunHook, beforeRunHook, filePreprocessorHook } from "../../src/hooks";
 import { stubLogError, stubLogInfo } from "../constants";
 import { expectToExist } from "./helpers";
 
@@ -22,8 +22,6 @@ describe("the before run hook", () => {
     );
 
     beforeEach(() => {
-        // We're not interested in informative log messages here.
-        stubLogInfo();
         initContext({
             jira: {
                 projectKey: "CYP",
@@ -43,8 +41,14 @@ describe("the before run hook", () => {
     });
 
     describe("the error handling", () => {
+        beforeEach(() => {
+            // We're not interested in informative log messages here.
+            stubLogInfo();
+        });
+
         it("should be able to detect unset project keys", async () => {
             expectToExist(details.config.env);
+            CONTEXT.config.jira.projectKey = undefined;
             details.config.env[ENV_JIRA_PROJECT_KEY] = undefined;
             await expect(beforeRunHook(details)).to.eventually.be.rejectedWith(
                 "Xray plugin misconfiguration: Jira project key was not set"
@@ -100,12 +104,16 @@ describe("the before run hook", () => {
     it("should not try to parse mismatched feature files", async () => {
         details.specs[0].absolute = "./test/resources/greetings.txt";
         const stubbedError = stubLogError();
+        const stubbedInfo = stubLogInfo();
         await beforeRunHook(details);
         expect(stubbedError).to.not.have.been.called;
+        // Once during credentials parsing.
+        expect(stubbedInfo).to.have.been.called.with.callCount(1);
     });
 
     it("should be able to correctly parse feature files", async () => {
         details.specs[0].absolute = "./test/resources/features/taggedCloudExamples.feature";
+        const stubbedInfo = stubLogInfo();
         await beforeRunHook(details);
         expect(CONTEXT.config.cucumber.issues).to.have.property(
             "A tagged scenario with examples",
@@ -122,6 +130,80 @@ describe("the before run hook", () => {
         expect(CONTEXT.config.cucumber.issues).to.have.property(
             "A tagged scenario with examples (example #3)",
             "CYP-123"
+        );
+        // Once during credentials parsing.
+        expect(stubbedInfo).to.have.been.called.with.callCount(1);
+    });
+
+    it("should not do anything if disabled", async () => {
+        const stubbedInfo = stubLogInfo();
+        CONTEXT.config.plugin.enabled = false;
+        await beforeRunHook(details);
+        expect(stubbedInfo).to.have.been.called.with.callCount(1);
+        expect(stubbedInfo).to.have.been.calledWith("Plugin disabled. Skipping before:run hook.");
+    });
+});
+
+describe("the after run hook", () => {
+    let results: CypressCommandLine.CypressRunResult = JSON.parse(
+        readFileSync("./test/resources/runResult.json", "utf-8")
+    );
+
+    beforeEach(() => {
+        initContext({
+            jira: {
+                projectKey: "CYP",
+            },
+        });
+        results = JSON.parse(readFileSync("./test/resources/runResult.json", "utf-8"));
+    });
+
+    it("should not do anything if disabled", async () => {
+        const stubbedInfo = stubLogInfo();
+        CONTEXT.config.plugin.enabled = false;
+        await afterRunHook(results);
+        expect(stubbedInfo).to.have.been.called.with.callCount(1);
+        expect(stubbedInfo).to.have.been.calledWith("Plugin disabled. Skipping after:run hook.");
+    });
+});
+
+describe("the file preprocessor hook", () => {
+    const file: Cypress.FileObject = {
+        filePath: "./test/resources/features/taggedCloud.feature",
+        outputPath: "./test/resources/features/taggedCloud.feature",
+        shouldWatch: false,
+        addListener: null,
+        on: null,
+        once: null,
+        removeListener: null,
+        off: null,
+        removeAllListeners: null,
+        setMaxListeners: null,
+        getMaxListeners: null,
+        listeners: null,
+        rawListeners: null,
+        emit: null,
+        listenerCount: null,
+        prependListener: null,
+        prependOnceListener: null,
+        eventNames: null,
+    };
+
+    beforeEach(() => {
+        initContext({
+            jira: {
+                projectKey: "CYP",
+            },
+        });
+    });
+
+    it("should not do anything if disabled", async () => {
+        const stubbedInfo = stubLogInfo();
+        CONTEXT.config.plugin.enabled = false;
+        await filePreprocessorHook(file);
+        expect(stubbedInfo).to.have.been.called.with.callCount(1);
+        expect(stubbedInfo).to.have.been.calledWith(
+            'Plugin disabled. Skipping file:preprocessor hook triggered by "./test/resources/features/taggedCloud.feature".'
         );
     });
 });
