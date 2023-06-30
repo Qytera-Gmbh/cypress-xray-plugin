@@ -38,14 +38,17 @@ describe("the context configuration", () => {
         });
 
         describe("plugin", () => {
-            it("overwriteIssueSummary", () => {
-                expect(CONTEXT.config.plugin.overwriteIssueSummary).to.eq(false);
+            it("debug", () => {
+                expect(CONTEXT.config.plugin.debug).to.eq(false);
+            });
+            it("enabled", () => {
+                expect(CONTEXT.config.plugin.enabled).to.eq(true);
             });
             it("normalizeScreenshotNames", () => {
                 expect(CONTEXT.config.plugin.normalizeScreenshotNames).to.eq(false);
             });
-            it("debug", () => {
-                expect(CONTEXT.config.plugin.debug).to.eq(false);
+            it("overwriteIssueSummary", () => {
+                expect(CONTEXT.config.plugin.overwriteIssueSummary).to.eq(false);
             });
         });
 
@@ -94,7 +97,7 @@ describe("the context configuration", () => {
             it("openSSL", () => {
                 expect(CONTEXT.config.openSSL.rootCAPath).to.eq(undefined);
             });
-            it("uploadFeatures", () => {
+            it("secureOptions", () => {
                 expect(CONTEXT.config.openSSL.secureOptions).to.eq(undefined);
             });
         });
@@ -167,16 +170,27 @@ describe("the context configuration", () => {
         });
 
         describe("plugin", () => {
-            it("overwriteIssueSummary", () => {
+            it("debug", () => {
                 initContext({
                     jira: {
                         projectKey: "PRJ",
                     },
                     plugin: {
-                        overwriteIssueSummary: true,
+                        debug: true,
                     },
                 });
-                expect(CONTEXT.config.plugin.overwriteIssueSummary).to.eq(true);
+                expect(CONTEXT.config.plugin.debug).to.eq(true);
+            });
+            it("enabled", () => {
+                initContext({
+                    jira: {
+                        projectKey: "PRJ",
+                    },
+                    plugin: {
+                        enabled: false,
+                    },
+                });
+                expect(CONTEXT.config.plugin.enabled).to.eq(false);
             });
             it("normalizeScreenshotNames", () => {
                 initContext({
@@ -189,16 +203,16 @@ describe("the context configuration", () => {
                 });
                 expect(CONTEXT.config.plugin.normalizeScreenshotNames).to.eq(true);
             });
-            it("debug", () => {
+            it("overwriteIssueSummary", () => {
                 initContext({
                     jira: {
                         projectKey: "PRJ",
                     },
                     plugin: {
-                        debug: true,
+                        overwriteIssueSummary: true,
                     },
                 });
-                expect(CONTEXT.config.plugin.debug).to.eq(true);
+                expect(CONTEXT.config.plugin.overwriteIssueSummary).to.eq(true);
             });
         });
 
