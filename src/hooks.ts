@@ -51,10 +51,6 @@ function parseFeatureFiles(specs: Cypress.Spec[]) {
                     `Feature file "${spec.absolute}" invalid, skipping synchronization: ${error}`
                 );
             }
-        } else {
-            logInfo(
-                `Feature file "${spec.absolute}" does not have extension "${CONTEXT.config.cucumber.featureFileExtension}", skipping synchronization.`
-            );
         }
     });
 }
@@ -68,7 +64,7 @@ export async function beforeRunHook(runDetails: Cypress.BeforeRunDetails) {
     }
     parseEnvironmentVariables(runDetails.config.env);
     if (!CONTEXT.config.plugin.enabled) {
-        logInfo("Plugin disabled. Skipping before:run execution.");
+        logInfo("Plugin disabled. Skipping before:run hook.");
         return;
     }
     verifyJiraProjectKey(CONTEXT.config.jira.projectKey);
@@ -90,7 +86,7 @@ export async function afterRunHook(
     results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
 ) {
     if (!CONTEXT.config.plugin.enabled) {
-        logInfo("Plugin disabled. Skipping after:run execution.");
+        logInfo("Plugin disabled. Skipping after:run hook.");
         return;
     }
     if (results.status === "failed") {
@@ -124,7 +120,9 @@ export async function afterRunHook(
 
 export async function filePreprocessorHook(file: Cypress.FileObject): Promise<string> {
     if (!CONTEXT.config.plugin.enabled) {
-        logInfo("Plugin disabled. Skipping feature file synchronization.");
+        logInfo(
+            `Plugin disabled. Skipping file:preprocessor hook triggered by "${file.filePath}".`
+        );
         return;
     }
     if (file.filePath.endsWith(CONTEXT.config.cucumber.featureFileExtension)) {

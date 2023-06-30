@@ -107,9 +107,8 @@ describe("the before run hook", () => {
         const stubbedInfo = stubLogInfo();
         await beforeRunHook(details);
         expect(stubbedError).to.not.have.been.called;
-        expect(stubbedInfo).to.have.been.calledWith(
-            'Feature file "./test/resources/greetings.txt" does not have extension ".feature", skipping synchronization.'
-        );
+        // Once during credentials parsing.
+        expect(stubbedInfo).to.have.been.called.with.callCount(1);
     });
 
     it("should be able to correctly parse feature files", async () => {
@@ -141,9 +140,7 @@ describe("the before run hook", () => {
         CONTEXT.config.plugin.enabled = false;
         await beforeRunHook(details);
         expect(stubbedInfo).to.have.been.called.with.callCount(1);
-        expect(stubbedInfo).to.have.been.calledWith(
-            "Plugin disabled. Skipping before:run execution."
-        );
+        expect(stubbedInfo).to.have.been.calledWith("Plugin disabled. Skipping before:run hook.");
     });
 });
 
@@ -166,9 +163,7 @@ describe("the after run hook", () => {
         CONTEXT.config.plugin.enabled = false;
         await afterRunHook(results);
         expect(stubbedInfo).to.have.been.called.with.callCount(1);
-        expect(stubbedInfo).to.have.been.calledWith(
-            "Plugin disabled. Skipping after:run execution."
-        );
+        expect(stubbedInfo).to.have.been.calledWith("Plugin disabled. Skipping after:run hook.");
     });
 });
 
@@ -208,7 +203,7 @@ describe("the file preprocessor hook", () => {
         await filePreprocessorHook(file);
         expect(stubbedInfo).to.have.been.called.with.callCount(1);
         expect(stubbedInfo).to.have.been.calledWith(
-            "Plugin disabled. Skipping feature file synchronization."
+            'Plugin disabled. Skipping file:preprocessor hook triggered by "./test/resources/features/taggedCloud.feature".'
         );
     });
 });
