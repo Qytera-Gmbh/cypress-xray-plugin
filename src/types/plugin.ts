@@ -1,10 +1,7 @@
-import {
-    BasicAuthCredentials,
-    JWTCredentials,
-    PATCredentials,
-} from "../authentication/credentials";
 import { JiraClient } from "../client/jira/jiraClient";
-import { XrayClient } from "../client/xray/xrayClient";
+import { XrayClientCloud } from "../client/xray/xrayClientCloud";
+import { XrayClientServer } from "../client/xray/xrayClientServer";
+import { OneOf } from "./util";
 
 export interface Options {
     jira: JiraOptions;
@@ -232,7 +229,7 @@ export interface OpenSSLOptions {
  * Options only intended for internal plugin use.
  */
 export type InternalOptions = Options & {
-    cucumber: {
+    cucumber?: {
         /**
          * A mapping of scenario titles to Xray issue keys. Built during file preprocessing, used
          * during results upload.
@@ -253,7 +250,8 @@ export type InternalOptions = Options & {
 };
 
 export interface PluginContext {
-    xrayClient?: XrayClient<BasicAuthCredentials | PATCredentials | JWTCredentials>;
+    xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>;
     jiraClient?: JiraClient;
-    config: InternalOptions;
+    internal: InternalOptions;
+    cypress: Cypress.PluginConfigOptions;
 }

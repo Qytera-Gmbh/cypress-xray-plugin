@@ -1,10 +1,9 @@
-import { unzip } from "../../../src/util/zip";
-
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import path from "path";
-import { getTestDir } from "../../constants";
+import { getTestDir } from "../../test/util";
+import { unzip } from "./zip";
 
 // Enable promise assertions.
 chai.use(chaiAsPromised);

@@ -1,19 +1,25 @@
 import axios, { Axios, AxiosResponse, RawAxiosRequestConfig, isAxiosError } from "axios";
 import { readFileSync, writeFileSync } from "fs";
 import { Agent } from "https";
-import { CONTEXT } from "../context";
 import { logDebug } from "../logging/logging";
+import { InternalOptions } from "../types/plugin";
 import { normalizedFilename } from "../util/files";
 
 export class Requests {
     private static AGENT: Agent = undefined;
     private static AXIOS: Axios = undefined;
 
+    private static options: InternalOptions = undefined;
+
+    public static init(options: InternalOptions): void {
+        Requests.options = options;
+    }
+
     private static agent(): Agent {
         if (!Requests.AGENT) {
             Requests.AGENT = new Agent({
-                ca: Requests.readCertificate(CONTEXT.config.openSSL.rootCAPath),
-                secureOptions: CONTEXT.config.openSSL.secureOptions,
+                ca: Requests.readCertificate(Requests.options.openSSL.rootCAPath),
+                secureOptions: Requests.options.openSSL.secureOptions,
             });
         }
         return Requests.AGENT;
@@ -22,7 +28,7 @@ export class Requests {
     private static axios(): Axios {
         if (!Requests.AXIOS) {
             Requests.AXIOS = axios;
-            if (CONTEXT.config.plugin.debug) {
+            if (Requests.options.plugin.debug) {
                 Requests.AXIOS.interceptors.request.use(
                     (request) => {
                         const method = request.method.toUpperCase();

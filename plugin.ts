@@ -1,26 +1,54 @@
-import { initContext } from "./src/context";
-import { afterRunHook, beforeRunHook, filePreprocessorHook } from "./src/hooks";
-import { Options } from "./src/types/plugin";
+/// <reference types="cypress" />
 
-export async function configureXrayPlugin(options: Options) {
-    initContext(options);
+import {
+    initJiraClient,
+    initXrayClient,
+    mergeOptions,
+    initOptions as mergeWithDefaults,
+    parseEnvironmentVariables,
+    verifyContext,
+} from "./src/context";
+import { afterRunHook, synchronizeFile } from "./src/hooks";
+import { Requests } from "./src/https/requests";
+import { logInfo } from "./src/logging/logging";
+import { Options, PluginContext } from "./src/types/plugin";
+
+let context: PluginContext;
+
+export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, options: Options) {
+    const configOptions = mergeWithDefaults(options);
+    const envOptions = parseEnvironmentVariables(config.env);
+    context = {
+        internal: mergeOptions(configOptions, envOptions),
+        cypress: config,
+    };
+
+    if (!context.internal.plugin.enabled) {
+        logInfo("Plugin disabled. Skipping configuration verification.");
+        return;
+    }
+    verifyContext(context.internal);
+    context.xrayClient = initXrayClient(context.internal, context.cypress.env);
+    context.jiraClient = initJiraClient(context.internal, context.cypress.env);
+    Requests.init(context.internal);
 }
 
 export async function addXrayResultUpload(on: Cypress.PluginEvents) {
-    on("before:run", async (details: Cypress.BeforeRunDetails) => {
-        await beforeRunHook(details);
-    });
-
     on(
         "after:run",
         async (
             results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
         ) => {
-            await afterRunHook(results);
+            await afterRunHook(results, context.internal, context.xrayClient, context.jiraClient);
         }
     );
 }
 
-export function syncFeatureFile(file: Cypress.FileObject): Promise<string> {
-    return filePreprocessorHook(file);
+export async function syncFeatureFile(file: Cypress.FileObject): Promise<string> {
+    return await synchronizeFile(
+        file,
+        context.cypress.projectRoot,
+        context.internal,
+        context.xrayClient
+    );
 }

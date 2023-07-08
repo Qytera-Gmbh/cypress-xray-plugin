@@ -1,5 +1,4 @@
 import { basename } from "path";
-import { CONTEXT } from "../../context";
 import { Status } from "../../types/testStatus";
 import {
     XrayEvidenceItem,
@@ -24,10 +23,10 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
             status: this.getXrayStatus(this.getStatus(attempt)),
         };
         const evidence: XrayEvidenceItem[] = [];
-        if (CONTEXT.config.xray.uploadScreenshots) {
+        if (this.options.xray.uploadScreenshots) {
             attempt.screenshots.forEach((screenshot: CypressCommandLine.ScreenshotInformation) => {
                 let filename: string = basename(screenshot.path);
-                if (CONTEXT.config.plugin.normalizeScreenshotNames) {
+                if (this.options.plugin.normalizeScreenshotNames) {
                     filename = normalizedFilename(filename);
                 }
                 evidence.push({
@@ -45,13 +44,13 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
     protected getXrayStatus(status: Status): string {
         switch (status) {
             case Status.PASSED:
-                return CONTEXT.config.xray.statusPassed ?? "PASS";
+                return this.options.xray.statusPassed ?? "PASS";
             case Status.FAILED:
-                return CONTEXT.config.xray.statusFailed ?? "FAIL";
+                return this.options.xray.statusFailed ?? "FAIL";
             case Status.PENDING:
-                return CONTEXT.config.xray.statusPending ?? "TODO";
+                return this.options.xray.statusPending ?? "TODO";
             case Status.SKIPPED:
-                return CONTEXT.config.xray.statusSkipped ?? "FAIL";
+                return this.options.xray.statusSkipped ?? "FAIL";
             default:
                 throw new Error(`Unknown status: '${status}'`);
         }
@@ -59,11 +58,11 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
 
     protected getTestInfo(testResult: CypressCommandLine.TestResult): XrayTestInfoServer {
         const testInfo: XrayTestInfoServer = {
-            projectKey: CONTEXT.config.jira.projectKey,
+            projectKey: this.options.jira.projectKey,
             summary: testResult.title.join(" "),
-            testType: CONTEXT.config.xray.testType,
+            testType: this.options.xray.testType,
         };
-        if (CONTEXT.config.xray.steps.update) {
+        if (this.options.xray.steps.update) {
             testInfo.steps = [{ action: this.truncateStepAction(testResult.body) }];
         }
         return testInfo;

@@ -1,28 +1,41 @@
+import { AxiosResponse } from "axios";
 import FormData from "form-data";
 import fs from "fs";
 import { HTTPHeader, JWTCredentials } from "../../authentication/credentials";
 import { ImportExecutionResultsConverterCloud } from "../../conversion/importExecutionResults/importExecutionResultsConverterCloud";
 import { Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess } from "../../logging/logging";
+import { InternalOptions } from "../../types/plugin";
 import { XrayTestExecutionResultsCloud } from "../../types/xray/importTestExecutionResults";
-import {
-    CloudImportCucumberTestsResponse,
-    ExportCucumberTestsResponse,
-} from "../../types/xray/responses";
+import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
+import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
 import { XrayClient } from "./xrayClient";
 
-export class XrayClientCloud extends XrayClient<JWTCredentials> {
+export class XrayClientCloud extends XrayClient<JWTCredentials, ImportFeatureResponseCloud> {
     /**
      * The URL of Xray's Cloud API.
      * Note: API v1 would also work, but let's stick to the more recent one.
      */
     private static readonly URL = "https://xray.cloud.getxray.app/api/v2";
+    private readonly options: InternalOptions;
+
+    /**
+     * Construct a new Xray Cloud client.
+     *
+     * @param credentials the credentials to use during authentication
+     * @param options the plugin's options
+     */
+    constructor(credentials: JWTCredentials, options: InternalOptions) {
+        super(credentials);
+        this.options = options;
+    }
 
     protected async dispatchImportTestExecutionResultsRequest(
         results: CypressCommandLine.CypressRunResult
     ): Promise<string | null> {
-        const json: XrayTestExecutionResultsCloud =
-            new ImportExecutionResultsConverterCloud().convertExecutionResults(results);
+        const json: XrayTestExecutionResultsCloud = new ImportExecutionResultsConverterCloud(
+            this.options
+        ).convertExecutionResults(results);
         if (!json.tests || json.tests.length === 0) {
             return null;
         }
@@ -96,11 +109,11 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<CloudImportCucumberTestsResponse> {
+    ): Promise<ImportFeatureResponseCloud> {
         const header = await this.credentials.getAuthenticationHeader(
             `${XrayClientCloud.URL}/authenticate`
         );
-        logInfo("Importing cucumber feature files...");
+        logInfo("Importing cucumber feature file...");
         const progressInterval = setInterval(() => {
             logInfo("Still importing...");
         }, 5000);
@@ -109,33 +122,38 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
             const form = new FormData();
             form.append("file", fileContent);
 
-            const response = await Requests.post(`${XrayClientCloud.URL}/import/feature`, form, {
-                headers: {
-                    ...header,
-                    ...form.getHeaders(),
-                },
-                params: {
-                    projectKey: projectKey,
-                    projectId: projectId,
-                    source: source,
-                },
-            });
+            const response: AxiosResponse<ImportFeatureResponseCloud> = await Requests.post(
+                `${XrayClientCloud.URL}/import/feature`,
+                form,
+                {
+                    headers: {
+                        ...header,
+                        ...form.getHeaders(),
+                    },
+                    params: {
+                        projectKey: projectKey,
+                        projectId: projectId,
+                        source: source,
+                    },
+                }
+            );
+            if (response.data.errors.length > 0) {
+                logError("Encountered some errors during import:", ...response.data.errors);
+            }
             if (response.data.updatedOrCreatedTests.length > 0) {
                 logSuccess(
                     "Successfully updated or created test issues:",
-                    JSON.stringify(response.data.updatedOrCreatedTests)
+                    response.data.updatedOrCreatedTests
+                        .map((issue: IssueDetails) => issue.key)
+                        .join(", ")
                 );
             }
             if (response.data.updatedOrCreatedPreconditions.length > 0) {
                 logSuccess(
                     "Successfully updated or created precondition issues:",
-                    JSON.stringify(response.data.updatedOrCreatedPreconditions)
-                );
-            }
-            if (response.data.errors.length > 0) {
-                logError(
-                    "Encountered some errors during import:",
-                    JSON.stringify(response.data.errors)
+                    response.data.updatedOrCreatedPreconditions
+                        .map((issue: IssueDetails) => issue.key)
+                        .join(", ")
                 );
             }
             return response.data;

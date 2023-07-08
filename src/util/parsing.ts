@@ -54,6 +54,21 @@ export function asInt(value: string): number {
 }
 
 /**
+ * Parses an environment variable to arbitrary data types.
+ * @param env the object holding all environment variables as key-value pairs
+ * @param variable the variable name
+ * @param parser the parsing function
+ * @returns the parsed data or undefined if the variable does not exist
+ */
+export function parse<T>(
+    env: Cypress.ObjectLike,
+    variable: string,
+    parser: (parameter: string) => T
+): T | undefined {
+    return variable in env ? parser(env[variable]) : undefined;
+}
+
+/**
  * Parses a Gherkin document (feature file) and returns the information contained within.
  *
  * @param file the path to the feature file

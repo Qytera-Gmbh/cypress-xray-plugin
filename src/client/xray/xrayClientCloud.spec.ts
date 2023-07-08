@@ -2,17 +2,20 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { JWTCredentials } from "../../../../src/authentication/credentials";
-import { XrayClientCloud } from "../../../../src/client/xray/xrayClientCloud";
-import { CONTEXT, initContext } from "../../../../src/context";
-import { stubLogWarning } from "../../../constants";
+import { stubLogWarning } from "../../../test/util";
+import { JWTCredentials } from "../../authentication/credentials";
+import { initOptions } from "../../context";
+import { InternalOptions } from "../../types/plugin";
+import { XrayClientCloud } from "./xrayClientCloud";
 
 describe("the Xray cloud client", () => {
     let details: CypressCommandLine.CypressRunResult;
     let client: XrayClientCloud;
 
+    let options: InternalOptions;
+
     beforeEach(() => {
-        initContext({
+        options = initOptions({
             jira: {
                 projectKey: "CYP",
             },
@@ -24,14 +27,14 @@ describe("the Xray cloud client", () => {
             },
         });
         details = JSON.parse(readFileSync("./test/resources/runResult.json", "utf-8"));
-        client = new XrayClientCloud(new JWTCredentials("user", "xyz"));
     });
 
     it("should be able to skip empty test uploads", async () => {
         details.runs.forEach((run, i) =>
             run.tests.forEach((test, j) => (test.title = ["nothing", i.toString(), j.toString()]))
         );
-        CONTEXT.config.jira.createTestIssues = false;
+        options.jira.createTestIssues = false;
+        client = new XrayClientCloud(new JWTCredentials("user", "xyz"), options);
         const stubbedWarning = stubLogWarning();
         const result = await client.importTestExecutionResults(details);
         expect(result).to.be.null;

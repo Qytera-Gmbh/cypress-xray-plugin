@@ -1,6 +1,6 @@
 {
-    "include": ["register.ts", "plugin.ts", "src/**/*", "test/**/*"],
-    "exclude": ["node_modules/**/*", "dist/**/*"],
+    "include": ["**/*.ts"],
+    "exclude": ["node_modules/", "dist/"],
     "compilerOptions": {
         "target": "ESNext",
         "module": "CommonJS",

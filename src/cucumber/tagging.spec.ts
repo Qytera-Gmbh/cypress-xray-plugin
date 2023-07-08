@@ -1,34 +1,23 @@
 /// <reference types="cypress" />
 
 import { expect } from "chai";
-import { CONTEXT, initContext } from "../../../src/context";
-import { issuesByScenario } from "../../../src/cucumber/tagging";
-import { parseFeatureFile } from "../../../src/util/parsing";
-import { stubLogInfo, stubLogWarning } from "../../constants";
-import { DummyXrayClient, expectToExist } from "../helpers";
+import { stubLogInfo, stubLogWarning } from "../../test/util";
+import { parseFeatureFile } from "../util/parsing";
+import { issuesByScenario } from "./tagging";
 
 describe("the cucumber tag extractor", () => {
-    beforeEach(() => {
-        initContext({
-            jira: {
-                projectKey: "CYP",
-            },
-        });
-        CONTEXT.xrayClient = new DummyXrayClient();
-    });
-
     it("should be able to extract Xray server tags", () => {
         const feature = parseFeatureFile("./test/resources/features/taggedServer.feature").feature;
-        expectToExist(feature);
-        const issueMapping = issuesByScenario(feature, CONTEXT.config.jira.projectKey);
+        expect(feature).to.exist;
+        const issueMapping = issuesByScenario(feature, "CYP");
         expect(issueMapping).to.have.key("A tagged scenario");
         expect(issueMapping["A tagged scenario"]).to.eq("CYP-103");
     });
 
     it("should be able to extract Xray cloud tags", () => {
         const feature = parseFeatureFile("./test/resources/features/taggedCloud.feature").feature;
-        expectToExist(feature);
-        const issueMapping = issuesByScenario(feature, CONTEXT.config.jira.projectKey);
+        expect(feature).to.exist;
+        const issueMapping = issuesByScenario(feature, "CYP");
         expect(issueMapping).to.have.key("A tagged scenario");
         expect(issueMapping["A tagged scenario"]).to.eq("CYP-857");
     });
@@ -38,7 +27,7 @@ describe("the cucumber tag extractor", () => {
             "./test/resources/features/taggedServerUnrelated.feature"
         ).feature;
         const stubbedInfo = stubLogInfo();
-        const issueMapping = issuesByScenario(feature, CONTEXT.config.jira.projectKey);
+        const issueMapping = issuesByScenario(feature, "CYP");
         expect(issueMapping).to.be.empty;
         expect(stubbedInfo).to.have.been.called.with.callCount(1);
         expect(stubbedInfo).to.have.been.calledWith(
@@ -51,7 +40,7 @@ describe("the cucumber tag extractor", () => {
             "./test/resources/features/taggedServerMultiple.feature"
         ).feature;
         const stubbedWarn = stubLogWarning();
-        const issueMapping = issuesByScenario(feature, CONTEXT.config.jira.projectKey);
+        const issueMapping = issuesByScenario(feature, "CYP");
         expect(issueMapping).to.be.empty;
         expect(stubbedWarn).to.have.been.called.with.callCount(1);
         expect(stubbedWarn).to.have.been.calledWith(

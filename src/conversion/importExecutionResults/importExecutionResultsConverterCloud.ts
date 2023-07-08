@@ -1,5 +1,4 @@
 import { basename } from "path";
-import { CONTEXT } from "../../context";
 import { Status } from "../../types/testStatus";
 import {
     XrayEvidenceItem,
@@ -24,10 +23,10 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
             status: this.getXrayStatus(this.getStatus(attempt)),
         };
         const evidence: XrayEvidenceItem[] = [];
-        if (CONTEXT.config.xray.uploadScreenshots) {
+        if (this.options.xray.uploadScreenshots) {
             attempt.screenshots.forEach((screenshot: CypressCommandLine.ScreenshotInformation) => {
                 let filename = basename(screenshot.path);
-                if (CONTEXT.config.plugin.normalizeScreenshotNames) {
+                if (this.options.plugin.normalizeScreenshotNames) {
                     filename = normalizedFilename(filename);
                 }
                 evidence.push({
@@ -45,13 +44,13 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
     protected getXrayStatus(status: Status): string {
         switch (status) {
             case Status.PASSED:
-                return CONTEXT.config.xray.statusPassed ?? "PASSED";
+                return this.options.xray.statusPassed ?? "PASSED";
             case Status.FAILED:
-                return CONTEXT.config.xray.statusFailed ?? "FAILED";
+                return this.options.xray.statusFailed ?? "FAILED";
             case Status.PENDING:
-                return CONTEXT.config.xray.statusPending ?? "TODO";
+                return this.options.xray.statusPending ?? "TODO";
             case Status.SKIPPED:
-                return CONTEXT.config.xray.statusSkipped ?? "FAILED";
+                return this.options.xray.statusSkipped ?? "FAILED";
             default:
                 throw new Error(`Unknown status: '${status}'`);
         }
@@ -59,11 +58,11 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
 
     protected getTestInfo(testResult: CypressCommandLine.TestResult): XrayTestInfoCloud {
         const testInfo: XrayTestInfoCloud = {
-            projectKey: CONTEXT.config.jira.projectKey,
+            projectKey: this.options.jira.projectKey,
             summary: testResult.title.join(" "),
-            type: CONTEXT.config.xray.testType,
+            type: this.options.xray.testType,
         };
-        if (CONTEXT.config.xray.steps.update) {
+        if (this.options.xray.steps.update) {
             testInfo.steps = [{ action: this.truncateStepAction(testResult.body) }];
         }
         return testInfo;
