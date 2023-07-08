@@ -63,6 +63,16 @@ describe("the after run hook", () => {
             "Pretty messed up"
         );
     });
+
+    it("should skip the results upload if disabled", async () => {
+        const stubbedInfo = stubLogInfo();
+        options.xray.uploadResults = false;
+        await afterRunHook(results, options);
+        expect(stubbedInfo).to.have.been.called.with.callCount(1);
+        expect(stubbedInfo).to.have.been.calledWith(
+            "Skipping results upload: Plugin is configured to not upload test results."
+        );
+    });
 });
 
 describe("the synchronize file hook", () => {
