@@ -2,24 +2,24 @@ import axios, { Axios, AxiosResponse, RawAxiosRequestConfig, isAxiosError } from
 import { readFileSync, writeFileSync } from "fs";
 import { Agent } from "https";
 import { logDebug } from "../logging/logging";
-import { PluginContext } from "../types/plugin";
+import { InternalOptions } from "../types/plugin";
 import { normalizedFilename } from "../util/files";
 
 export class Requests {
     private static AGENT: Agent = undefined;
     private static AXIOS: Axios = undefined;
 
-    private static context: PluginContext = undefined;
+    private static options: InternalOptions = undefined;
 
-    public static init(context: PluginContext): void {
-        Requests.context = context;
+    public static init(options: InternalOptions): void {
+        Requests.options = options;
     }
 
     private static agent(): Agent {
         if (!Requests.AGENT) {
             Requests.AGENT = new Agent({
-                ca: Requests.readCertificate(Requests.context.internal.openSSL.rootCAPath),
-                secureOptions: Requests.context.internal.openSSL.secureOptions,
+                ca: Requests.readCertificate(Requests.options.openSSL.rootCAPath),
+                secureOptions: Requests.options.openSSL.secureOptions,
             });
         }
         return Requests.AGENT;
@@ -28,7 +28,7 @@ export class Requests {
     private static axios(): Axios {
         if (!Requests.AXIOS) {
             Requests.AXIOS = axios;
-            if (Requests.context.internal.plugin.debug) {
+            if (Requests.options.plugin.debug) {
                 Requests.AXIOS.interceptors.request.use(
                     (request) => {
                         const method = request.method.toUpperCase();
