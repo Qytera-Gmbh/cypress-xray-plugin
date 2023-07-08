@@ -3,6 +3,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
+import path from "path";
 import { stubLogError, stubLogInfo } from "../test/util";
 import { ENV_XRAY_CLIENT_ID, ENV_XRAY_CLIENT_SECRET } from "./constants";
 import { initOptions } from "./context";
@@ -143,7 +144,12 @@ describe("the synchronize file hook", () => {
         );
         expect(stubbedInfo).to.have.been.calledOnce;
         expect(stubbedInfo).to.have.been.calledWith(
-            "Preprocessing feature file test\\resources\\features\\invalid.feature..."
+            `Preprocessing feature file ${path.join(
+                "test",
+                "resources",
+                "features",
+                "invalid.feature"
+            )}...`
         );
     });
 
@@ -161,7 +167,12 @@ describe("the synchronize file hook", () => {
         expect(options.cucumber.issues).to.deep.equal({ "A tagged scenario": "CYP-857" });
         expect(stubbedInfo).to.have.been.calledOnce;
         expect(stubbedInfo).to.have.been.calledWith(
-            "Preprocessing feature file test\\resources\\features\\taggedCloud.feature..."
+            `Preprocessing feature file ${path.join(
+                "test",
+                "resources",
+                "features",
+                "taggedCloud.feature"
+            )}...`
         );
     });
 
@@ -177,7 +188,12 @@ describe("the synchronize file hook", () => {
         });
         expect(stubbedInfo).to.have.been.calledOnce;
         expect(stubbedInfo).to.have.been.calledWith(
-            "Preprocessing feature file test\\resources\\features\\taggedCloudExamples.feature..."
+            `Preprocessing feature file ${path.join(
+                "test",
+                "resources",
+                "features",
+                "taggedCloudExamples.feature"
+            )}...`
         );
     });
 });
