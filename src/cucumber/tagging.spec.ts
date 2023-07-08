@@ -1,9 +1,9 @@
 /// <reference types="cypress" />
 
 import { expect } from "chai";
-import { issuesByScenario } from "../../../src/cucumber/tagging";
-import { parseFeatureFile } from "../../../src/util/parsing";
-import { stubLogInfo, stubLogWarning } from "../../constants";
+import { stubLogInfo, stubLogWarning } from "../../test/util";
+import { parseFeatureFile } from "../util/parsing";
+import { issuesByScenario } from "./tagging";
 
 describe("the cucumber tag extractor", () => {
     it("should be able to extract Xray server tags", () => {

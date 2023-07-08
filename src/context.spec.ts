@@ -1,18 +1,16 @@
-/// <reference types="cypress" />
-
 import { expect } from "chai";
-import { BasicAuthCredentials, PATCredentials } from "../../src/authentication/credentials";
-import { XrayClientCloud } from "../../src/client/xray/xrayClientCloud";
-import { XrayClientServer } from "../../src/client/xray/xrayClientServer";
+import { stubLogInfo } from "../test/util";
+import { BasicAuthCredentials, PATCredentials } from "./authentication/credentials";
+import { XrayClientCloud } from "./client/xray/xrayClientCloud";
+import { XrayClientServer } from "./client/xray/xrayClientServer";
 import {
     initJiraClient,
     initOptions,
     initXrayClient,
     parseEnvironmentVariables,
     verifyContext as verifyOptions,
-} from "../../src/context";
-import { InternalOptions } from "../../src/types/plugin";
-import { stubLogInfo } from "../constants";
+} from "./context";
+import { InternalOptions } from "./types/plugin";
 
 describe("the plugin context configuration", () => {
     describe("the configuration variable parser", () => {

@@ -3,11 +3,11 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
-import { ENV_XRAY_CLIENT_ID, ENV_XRAY_CLIENT_SECRET } from "../../src/constants";
-import { initOptions } from "../../src/context";
-import { afterRunHook, synchronizeFile } from "../../src/hooks";
-import { InternalOptions } from "../../src/types/plugin";
-import { stubLogError, stubLogInfo } from "../constants";
+import { stubLogError, stubLogInfo } from "../test/util";
+import { ENV_XRAY_CLIENT_ID, ENV_XRAY_CLIENT_SECRET } from "./constants";
+import { initOptions } from "./context";
+import { afterRunHook, synchronizeFile } from "./hooks";
+import { InternalOptions } from "./types/plugin";
 
 // Enable promise assertions.
 chai.use(chaiAsPromised);

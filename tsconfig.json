@@ -1,5 +1,5 @@
 {
-    "include": ["register.ts", "plugin.ts", "src/**/*", "test/**/*"],
+    "include": ["*/**/*.ts"],
     "exclude": ["node_modules/**/*", "dist/**/*"],
     "compilerOptions": {
         "target": "ESNext",

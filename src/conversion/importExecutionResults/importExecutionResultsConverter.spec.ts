@@ -2,11 +2,11 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { initOptions } from "../../../../src/context";
-import { ImportExecutionResultsConverterCloud } from "../../../../src/conversion/importExecutionResults/importExecutionResultsConverterCloud";
-import { InternalOptions } from "../../../../src/types/plugin";
-import { XrayTestExecutionResultsCloud } from "../../../../src/types/xray/importTestExecutionResults";
-import { stubLogWarning } from "../../../constants";
+import { stubLogWarning } from "../../../test/util";
+import { initOptions } from "../../context";
+import { InternalOptions } from "../../types/plugin";
+import { XrayTestExecutionResultsCloud } from "../../types/xray/importTestExecutionResults";
+import { ImportExecutionResultsConverterCloud } from "./importExecutionResultsConverterCloud";
 
 describe("the import execution results converter", () => {
     let options: InternalOptions;

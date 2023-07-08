@@ -2,9 +2,9 @@
 
 import { expect } from "chai";
 import fs from "fs";
-import { configureXrayPlugin } from "../../plugin";
-import { Options } from "../../src/types/plugin";
-import { stubLogInfo } from "../constants";
+import { configureXrayPlugin } from "./plugin";
+import { Options } from "./src/types/plugin";
+import { stubLogInfo } from "./test/util";
 
 describe("the plugin configuration", () => {
     const config: Cypress.PluginConfigOptions = JSON.parse(
@@ -21,7 +21,6 @@ describe("the plugin configuration", () => {
                 enabled: false,
             },
         };
-        options.plugin.enabled = false;
         await configureXrayPlugin(config, options);
         expect(stubbedInfo).to.have.been.calledOnce;
         expect(stubbedInfo).to.have.been.calledWith(

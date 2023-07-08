@@ -2,11 +2,11 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { JWTCredentials } from "../../../../src/authentication/credentials";
-import { XrayClientCloud } from "../../../../src/client/xray/xrayClientCloud";
-import { initOptions } from "../../../../src/context";
-import { InternalOptions } from "../../../../src/types/plugin";
-import { stubLogWarning } from "../../../constants";
+import { stubLogWarning } from "../../../test/util";
+import { JWTCredentials } from "../../authentication/credentials";
+import { initOptions } from "../../context";
+import { InternalOptions } from "../../types/plugin";
+import { XrayClientCloud } from "./xrayClientCloud";
 
 describe("the Xray cloud client", () => {
     let details: CypressCommandLine.CypressRunResult;
