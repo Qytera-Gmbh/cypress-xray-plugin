@@ -30,7 +30,7 @@ export async function afterRunHook(
         return;
     }
     const runResult = results as CypressCommandLine.CypressRunResult;
-    if (options.xray.uploadResults) {
+    if (!options.xray.uploadResults) {
         logInfo("Skipping results upload: Plugin is configured to not upload test results.");
         return;
     }
