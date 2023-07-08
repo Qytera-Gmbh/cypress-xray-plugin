@@ -1,16 +1,16 @@
 /// <reference types="cypress" />
+
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { CONTEXT, initContext } from "../../../../src/context";
+import { initOptions } from "../../../../src/context";
 import { ImportExecutionResultsConverterCloud } from "../../../../src/conversion/importExecutionResults/importExecutionResultsConverterCloud";
+import { InternalOptions } from "../../../../src/types/plugin";
 import { stubLogWarning } from "../../../constants";
-import { expectToExist } from "../../helpers";
 
 describe("the import execution results converter (cloud)", () => {
-    let converter: ImportExecutionResultsConverterCloud;
-
+    let options: InternalOptions;
     beforeEach(() => {
-        initContext({
+        options = initOptions({
             jira: {
                 projectKey: "CYP",
             },
@@ -22,20 +22,17 @@ describe("the import execution results converter (cloud)", () => {
                 featureFileExtension: ".feature",
             },
         });
-        converter = new ImportExecutionResultsConverterCloud();
     });
 
     it("should upload screenshots by default", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
         expect(json.tests[0].evidence).to.not.exist;
-        expectToExist(json.tests[1].evidence);
         expect(json.tests[1].evidence).to.be.an("array").with.length(1);
         expect(json.tests[1].evidence[0].filename).to.eq("turtle.png");
-        expectToExist(json.tests[2].evidence);
         expect(json.tests[2].evidence).to.be.an("array").with.length(2);
         expect(json.tests[2].evidence[0].filename).to.eq("turtle.png");
         expect(json.tests[2].evidence[1].filename).to.eq("turtle.png");
@@ -45,10 +42,9 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        expectToExist(CONTEXT.config.xray);
-        CONTEXT.config.xray.uploadScreenshots = false;
+        options.xray.uploadScreenshots = false;
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].evidence).to.be.undefined;
         expect(json.tests[1].evidence).to.be.undefined;
@@ -59,11 +55,9 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
-        expectToExist(CONTEXT.config.plugin);
-        CONTEXT.config.plugin.normalizeScreenshotNames = true;
+        options.plugin.normalizeScreenshotNames = true;
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
-        expectToExist(json.tests[0].evidence);
         expect(json.tests[0].evidence[0].filename).to.eq("t_rtle_with_problem_tic_name.png");
     });
 
@@ -71,9 +65,8 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
-        expectToExist(json.tests[0].evidence);
         expect(json.tests[0].evidence[0].filename).to.eq("tûrtle with problemätic name.png");
     });
 
@@ -81,8 +74,8 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("PASSED");
         expect(json.tests[1].status).to.eq("PASSED");
     });
@@ -91,8 +84,8 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
         expect(json.tests[2].status).to.eq("FAILED");
     });
 
@@ -100,8 +93,8 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultPending.json", "utf-8")
         );
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("TODO");
         expect(json.tests[1].status).to.eq("TODO");
         expect(json.tests[2].status).to.eq("TODO");
@@ -112,8 +105,8 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultSkipped.json", "utf-8")
         );
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("FAILED");
         expect(json.tests[1].status).to.eq("FAILED");
     });
@@ -122,10 +115,9 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        expectToExist(CONTEXT.config.xray);
-        CONTEXT.config.xray.statusPassed = "it worked";
+        options.xray.statusPassed = "it worked";
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("it worked");
         expect(json.tests[1].status).to.eq("it worked");
     });
@@ -134,10 +126,9 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        expectToExist(CONTEXT.config.xray);
-        CONTEXT.config.xray.statusFailed = "it did not work";
+        options.xray.statusFailed = "it did not work";
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
         expect(json.tests[2].status).to.eq("it did not work");
     });
 
@@ -145,10 +136,9 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultPending.json", "utf-8")
         );
-        expectToExist(CONTEXT.config.xray);
-        CONTEXT.config.xray.statusPending = "still pending";
+        options.xray.statusPending = "still pending";
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("still pending");
         expect(json.tests[1].status).to.eq("still pending");
         expect(json.tests[2].status).to.eq("still pending");
@@ -159,10 +149,9 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultSkipped.json", "utf-8")
         );
-        expectToExist(CONTEXT.config.xray);
-        CONTEXT.config.xray.statusSkipped = "omit";
+        options.xray.statusSkipped = "omit";
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("FAILED");
         expect(json.tests[1].status).to.eq("omit");
     });
@@ -172,6 +161,7 @@ describe("the import execution results converter (cloud)", () => {
             readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
         );
         const stubbedWarning = stubLogWarning();
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
         expect(stubbedWarning).to.have.been.calledWith(
             "Unknown Cypress test status: 'broken'. Skipping result upload for test \"TodoMVC hides footer initially\"."
@@ -186,19 +176,13 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
-        expectToExist(json.tests[0].testInfo);
-        expectToExist(json.tests[0].testInfo.steps);
         expect(json.tests[0].testInfo.steps).to.have.length(1);
         expect(json.tests[0].testInfo.steps[0].action).to.be.a("string");
-        expectToExist(json.tests[1].testInfo);
-        expectToExist(json.tests[1].testInfo.steps);
         expect(json.tests[1].testInfo.steps).to.have.length(1);
         expect(json.tests[1].testInfo.steps[0].action).to.be.a("string");
-        expectToExist(json.tests[2].testInfo);
-        expectToExist(json.tests[2].testInfo.steps);
         expect(json.tests[2].testInfo.steps).to.have.length(1);
         expect(json.tests[2].testInfo.steps[0].action).to.be.a("string");
     });
@@ -207,18 +191,12 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        expectToExist(CONTEXT.config.xray);
-        CONTEXT.config.xray.steps = {
-            update: false,
-        };
+        options.xray.steps.update = false;
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
-        expectToExist(json.tests[0].testInfo);
         expect(json.tests[0].testInfo.steps).to.be.undefined;
-        expectToExist(json.tests[1].testInfo);
         expect(json.tests[1].testInfo.steps).to.be.undefined;
-        expectToExist(json.tests[2].testInfo);
         expect(json.tests[2].testInfo.steps).to.be.undefined;
     });
 
@@ -226,16 +204,10 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
         );
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
-        expectToExist(json.tests[0].testInfo);
-        expectToExist(json.tests[0].testInfo.steps);
         expect(json.tests[0].testInfo.steps[0].action).to.eq(`${"x".repeat(7997)}...`);
-        expectToExist(json.tests[1].testInfo);
-        expectToExist(json.tests[1].testInfo.steps);
         expect(json.tests[1].testInfo.steps[0].action).to.eq(`${"x".repeat(8000)}`);
-        expectToExist(json.tests[2].testInfo);
-        expectToExist(json.tests[2].testInfo.steps);
         expect(json.tests[2].testInfo.steps[0].action).to.eq(`${"x".repeat(2000)}`);
     });
 
@@ -243,18 +215,11 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
         );
-        expectToExist(CONTEXT.config.xray?.steps);
-        CONTEXT.config.xray.steps.maxLengthAction = 5;
+        options.xray.steps.maxLengthAction = 5;
+        const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
-        expectToExist(json.tests);
-        expectToExist(json.tests[0].testInfo);
-        expectToExist(json.tests[0].testInfo.steps);
         expect(json.tests[0].testInfo.steps[0].action).to.eq("xx...");
-        expectToExist(json.tests[1].testInfo);
-        expectToExist(json.tests[1].testInfo.steps);
         expect(json.tests[1].testInfo.steps[0].action).to.eq("xx...");
-        expectToExist(json.tests[2].testInfo);
-        expectToExist(json.tests[2].testInfo.steps);
         expect(json.tests[2].testInfo.steps[0].action).to.eq("xx...");
     });
 });

@@ -1,5 +1,5 @@
-import { CONTEXT } from "../../context";
 import { logWarning } from "../../logging/logging";
+import { InternalOptions } from "../../types/plugin";
 import { Status } from "../../types/testStatus";
 import { DateTimeISO, OneOf, getEnumKeyByEnumValue } from "../../types/util";
 import {
@@ -19,6 +19,12 @@ export abstract class ImportExecutionResultsConverter<
     XrayTestType extends OneOf<[XrayTestServer, XrayTestCloud]>,
     XrayTestInfoType extends OneOf<[XrayTestInfoServer, XrayTestInfoCloud]>
 > {
+    protected readonly options: InternalOptions;
+
+    constructor(options: InternalOptions) {
+        this.options = options;
+    }
+
     /**
      * Convert Cypress run results into Xray JSON format, ready to be sent to Xray's import
      * execution results endpoint.
@@ -30,7 +36,7 @@ export abstract class ImportExecutionResultsConverter<
         results: CypressCommandLine.CypressRunResult
     ): XrayTestExecutionResults<XrayTestType> {
         const json: XrayTestExecutionResults<XrayTestType> = {
-            testExecutionKey: CONTEXT.config.jira.testExecutionIssueKey,
+            testExecutionKey: this.options.jira.testExecutionIssueKey,
         };
         json.info = this.getTestExecutionInfo(results);
         const testsByTitle = this.mapTestsToTitles(results);
@@ -46,11 +52,11 @@ export abstract class ImportExecutionResultsConverter<
                 const issueKey = this.getTestIssueKey(testResult);
                 if (issueKey !== null) {
                     test.testKey = issueKey;
-                    if (CONTEXT.config.plugin.overwriteIssueSummary) {
+                    if (this.options.plugin.overwriteIssueSummary) {
                         test.testInfo = this.getTestInfo(testResult);
                     }
                 } else {
-                    if (!CONTEXT.config.jira.createTestIssues) {
+                    if (!this.options.jira.createTestIssues) {
                         throw new Error(
                             "No test issue key found in test title and the plugin is not allowed to create new test issues"
                         );
@@ -189,11 +195,11 @@ export abstract class ImportExecutionResultsConverter<
      * @returns the truncated or unmodified description if it's short enough
      */
     protected truncateStepAction(action: string): string {
-        if (action.length <= CONTEXT.config.xray.steps.maxLengthAction) {
+        if (action.length <= this.options.xray.steps.maxLengthAction) {
             return action;
         }
         // Subtract 3 for the dots.
-        const truncated = action.substring(0, CONTEXT.config.xray.steps.maxLengthAction - 3);
+        const truncated = action.substring(0, this.options.xray.steps.maxLengthAction - 3);
         return `${truncated}...`;
     }
 
@@ -235,25 +241,25 @@ export abstract class ImportExecutionResultsConverter<
         results: CypressCommandLine.CypressRunResult
     ): XrayTestExecutionInfo {
         return {
-            project: CONTEXT.config.jira.projectKey,
+            project: this.options.jira.projectKey,
             startDate: this.truncateISOTime(results.startedTestsAt),
             finishDate: this.truncateISOTime(results.endedTestsAt),
             description: this.getDescription(results),
             summary: this.getTextExecutionResultSummary(results),
-            testPlanKey: CONTEXT.config.jira.testPlanIssueKey,
+            testPlanKey: this.options.jira.testPlanIssueKey,
         };
     }
 
     private getTextExecutionResultSummary(results: CypressCommandLine.CypressRunResult): string {
         return (
-            CONTEXT.config.jira.testExecutionIssueSummary ||
+            this.options.jira.testExecutionIssueSummary ||
             `Execution Results [${new Date(results.startedTestsAt).getTime()}]`
         );
     }
 
     private getDescription(results: CypressCommandLine.CypressRunResult): string {
         return (
-            CONTEXT.config.jira.testExecutionIssueDescription ||
+            this.options.jira.testExecutionIssueDescription ||
             "Cypress version: " +
                 results.cypressVersion +
                 " Browser: " +
@@ -265,7 +271,7 @@ export abstract class ImportExecutionResultsConverter<
     }
 
     private getTestIssueKey(testResult: CypressCommandLine.TestResult): string | null {
-        const regex = new RegExp(`(${CONTEXT.config.jira.projectKey}-\\d+)`, "g");
+        const regex = new RegExp(`(${this.options.jira.projectKey}-\\d+)`, "g");
         // The last element usually refers to an individual test.
         // The ones before might be test suite titles.
         const testCaseTitle = testResult.title[testResult.title.length - 1];
@@ -273,8 +279,8 @@ export abstract class ImportExecutionResultsConverter<
         if (!matches) {
             // Test case title does not contain the issue's key.
             // Maybe it was provided via Cucumber as a scenario tag?
-            if (CONTEXT.config.cucumber.issues && testCaseTitle in CONTEXT.config.cucumber.issues) {
-                return CONTEXT.config.cucumber.issues[testCaseTitle];
+            if (this.options.cucumber.issues && testCaseTitle in this.options.cucumber.issues) {
+                return this.options.cucumber.issues[testCaseTitle];
             }
         } else if (matches.length === 1) {
             return matches[0];

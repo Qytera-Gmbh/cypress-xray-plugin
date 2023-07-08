@@ -4,24 +4,21 @@ import {
     PATCredentials,
 } from "../../authentication/credentials";
 import { logError, logWarning } from "../../logging/logging";
+import { OneOf } from "../../types/util";
+import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import {
-    CloudImportCucumberTestsResponse,
-    ExportCucumberTestsResponse,
-    ServerImportCucumberTestsResponse,
-} from "../../types/xray/responses";
+    ImportFeatureResponseCloud,
+    ImportFeatureResponseServer,
+} from "../../types/xray/responses/importFeature";
 import { Client } from "../client";
 
 /**
  * An abstract Xray client class for communicating with Xray instances.
  */
 export abstract class XrayClient<
-    T extends BasicAuthCredentials | PATCredentials | JWTCredentials
+    T extends BasicAuthCredentials | PATCredentials | JWTCredentials,
+    I extends OneOf<[ImportFeatureResponseServer, ImportFeatureResponseCloud]>
 > extends Client<T> {
-    /**
-     * Construct a new Xray client using the provided credentials.
-     *
-     * @param credentials the credentials to use during authentication
-     */
     constructor(credentials: T) {
         super(credentials);
     }
@@ -105,7 +102,7 @@ export abstract class XrayClient<
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<ServerImportCucumberTestsResponse | CloudImportCucumberTestsResponse> {
+    ): Promise<I> {
         try {
             return await this.dispatchImportCucumberTestsRequest(
                 file,
@@ -133,5 +130,5 @@ export abstract class XrayClient<
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<ServerImportCucumberTestsResponse | CloudImportCucumberTestsResponse>;
+    ): Promise<I>;
 }

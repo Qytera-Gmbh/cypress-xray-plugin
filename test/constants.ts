@@ -1,10 +1,8 @@
+import chai from "chai";
 import fs from "fs";
 import path from "path";
 import Sinon, { stub } from "sinon";
 import sinonChai from "sinon-chai";
-
-import chai from "chai";
-
 import * as logging from "../src/logging/logging";
 
 chai.use(sinonChai);

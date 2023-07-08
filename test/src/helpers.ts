@@ -1,7 +1,7 @@
 import { JWTCredentials } from "../../src/authentication/credentials";
 import { XrayClient } from "../../src/client/xray/xrayClient";
 
-export class DummyXrayClient extends XrayClient<JWTCredentials> {
+export class DummyXrayClient extends XrayClient<JWTCredentials, null> {
     constructor() {
         super(new JWTCredentials("id", "secret"));
     }
