@@ -9,7 +9,7 @@ import { ImportExecutionResultsConverterCloud } from "../../conversion/importExe
 import { InternalOptions } from "../../types/plugin";
 import { XrayClientServer } from "./xrayClientServer";
 
-describe("the Xray server client", () => {
+describe("the Xray Server client", () => {
     let details: CypressCommandLine.CypressRunResult;
     const client: XrayClientServer = new XrayClientServer(
         "https://example.org",

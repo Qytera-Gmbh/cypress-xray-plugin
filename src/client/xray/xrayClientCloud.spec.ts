@@ -9,7 +9,7 @@ import { ImportExecutionResultsConverterCloud } from "../../conversion/importExe
 import { InternalOptions } from "../../types/plugin";
 import { XrayClientCloud } from "./xrayClientCloud";
 
-describe("the Xray cloud client", () => {
+describe("the Xray Cloud client", () => {
     let details: CypressCommandLine.CypressRunResult;
     const client: XrayClientCloud = new XrayClientCloud(new JWTCredentials("user", "xyz"));
 
