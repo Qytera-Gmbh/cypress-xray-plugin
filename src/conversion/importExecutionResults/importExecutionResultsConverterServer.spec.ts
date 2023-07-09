@@ -13,6 +13,7 @@ describe("the import execution results converter (server)", () => {
         options = initOptions({
             jira: {
                 projectKey: "CYP",
+                url: "https://example.org",
             },
             xray: {
                 testType: "Manual",

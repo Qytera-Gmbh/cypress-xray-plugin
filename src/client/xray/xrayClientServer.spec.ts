@@ -22,6 +22,7 @@ describe("the Xray Server client", () => {
         options = initOptions({
             jira: {
                 projectKey: "CYP",
+                url: "https://example.org",
             },
             xray: {
                 testType: "Manual",

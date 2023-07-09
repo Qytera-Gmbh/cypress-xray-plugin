@@ -18,6 +18,7 @@ describe("the plugin context configuration", () => {
             const options: InternalOptions = initOptions({
                 jira: {
                     projectKey: "PRJ",
+                    url: "https://example.org",
                 },
             });
             describe("jira", () => {
@@ -38,9 +39,6 @@ describe("the plugin context configuration", () => {
                 });
                 it("testPlanIssueKey", () => {
                     expect(options.jira.testPlanIssueKey).to.eq(undefined);
-                });
-                it("url", () => {
-                    expect(options.jira.url).to.eq(undefined);
                 });
             });
 
@@ -116,6 +114,7 @@ describe("the plugin context configuration", () => {
                         jira: {
                             projectKey: "PRJ",
                             attachVideos: true,
+                            url: "https://example.org",
                         },
                     });
                     expect(options.jira.attachVideos).to.eq(true);
@@ -125,6 +124,7 @@ describe("the plugin context configuration", () => {
                         jira: {
                             projectKey: "PRJ",
                             createTestIssues: false,
+                            url: "https://example.org",
                         },
                     });
                     expect(options.jira.createTestIssues).to.eq(false);
@@ -134,6 +134,7 @@ describe("the plugin context configuration", () => {
                         jira: {
                             projectKey: "PRJ",
                             testExecutionIssueDescription: "hello",
+                            url: "https://example.org",
                         },
                     });
                     expect(options.jira.testExecutionIssueDescription).to.eq("hello");
@@ -143,6 +144,7 @@ describe("the plugin context configuration", () => {
                         jira: {
                             projectKey: "PRJ",
                             testExecutionIssueKey: "PRJ-123",
+                            url: "https://example.org",
                         },
                     });
                     expect(options.jira.testExecutionIssueKey).to.eq("PRJ-123");
@@ -152,6 +154,7 @@ describe("the plugin context configuration", () => {
                         jira: {
                             projectKey: "PRJ",
                             testExecutionIssueSummary: "Test - Login",
+                            url: "https://example.org",
                         },
                     });
                     expect(options.jira.testExecutionIssueSummary).to.eq("Test - Login");
@@ -161,6 +164,7 @@ describe("the plugin context configuration", () => {
                         jira: {
                             projectKey: "PRJ",
                             testPlanIssueKey: "PRJ-456",
+                            url: "https://example.org",
                         },
                     });
                     expect(options.jira.testPlanIssueKey).to.eq("PRJ-456");
@@ -181,6 +185,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         plugin: {
                             debug: true,
@@ -192,6 +197,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         plugin: {
                             enabled: false,
@@ -203,6 +209,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         plugin: {
                             normalizeScreenshotNames: true,
@@ -214,6 +221,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         plugin: {
                             overwriteIssueSummary: true,
@@ -228,6 +236,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         xray: {
                             statusFailed: "BAD",
@@ -239,6 +248,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         xray: {
                             statusPassed: "GOOD",
@@ -250,6 +260,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         xray: {
                             statusPending: "PENDULUM",
@@ -261,6 +272,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         xray: {
                             statusSkipped: "SKIPPING STONE",
@@ -274,6 +286,7 @@ describe("the plugin context configuration", () => {
                         const options = initOptions({
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             xray: {
                                 steps: {
@@ -287,6 +300,7 @@ describe("the plugin context configuration", () => {
                         const options = initOptions({
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             xray: {
                                 steps: {
@@ -301,6 +315,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         xray: {
                             testType: "Cucumber",
@@ -312,6 +327,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         xray: {
                             uploadResults: false,
@@ -323,6 +339,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         xray: {
                             uploadScreenshots: false,
@@ -337,6 +354,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         cucumber: {
                             featureFileExtension: ".feature",
@@ -349,6 +367,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         cucumber: {
                             featureFileExtension: ".feature",
@@ -364,6 +383,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         openSSL: {
                             rootCAPath: "/path/to/cert.pem",
@@ -375,6 +395,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions({
                         jira: {
                             projectKey: "PRJ",
+                            url: "https://example.org",
                         },
                         openSSL: {
                             secureOptions: 42,
@@ -606,6 +627,7 @@ describe("the plugin context configuration", () => {
                 verifyOptions({
                     jira: {
                         projectKey: undefined,
+                        url: "https://example.org",
                     },
                 })
             ).to.throw("Plugin misconfiguration: Jira project key was not set");
@@ -616,6 +638,7 @@ describe("the plugin context configuration", () => {
                     jira: {
                         projectKey: "CYP",
                         testExecutionIssueKey: "ABC-123",
+                        url: "https://example.org",
                     },
                 })
             ).to.throw(
@@ -628,6 +651,7 @@ describe("the plugin context configuration", () => {
                     jira: {
                         projectKey: "CYP",
                         testPlanIssueKey: "ABC-456",
+                        url: "https://example.org",
                     },
                 })
             ).to.throw(
@@ -639,6 +663,7 @@ describe("the plugin context configuration", () => {
                 verifyOptions({
                     jira: {
                         projectKey: "CYP",
+                        url: "https://example.org",
                     },
                     xray: {
                         steps: {
@@ -655,6 +680,7 @@ describe("the plugin context configuration", () => {
                 verifyOptions({
                     jira: {
                         projectKey: "CYP",
+                        url: "https://example.org",
                     },
                     xray: {
                         steps: {
@@ -745,7 +771,7 @@ describe("the plugin context configuration", () => {
             it("should throw an error for missing Jira URLs", () => {
                 options.jira.url = undefined;
                 expect(() => initJiraClient(options, {})).to.throw(
-                    "Failed to configure Jira client: no Jira URL was provided. Configured options which necessarily require a configured Jira client:\n[\n\tjira.attachVideos = true\n]"
+                    "Failed to configure Jira client: no Jira URL was provided.\nMake sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira"
                 );
             });
 
@@ -763,6 +789,7 @@ describe("the plugin context configuration", () => {
             options = initOptions({
                 jira: {
                     projectKey: "CYP",
+                    url: "https://example.org",
                 },
             });
         });

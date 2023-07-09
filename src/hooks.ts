@@ -1,3 +1,5 @@
+/// <reference types="cypress" />
+
 import path from "path";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
@@ -18,7 +20,7 @@ export async function beforeRunHook(
     jiraClient?: OneOf<[JiraClientServer, JiraClientCloud]>
 ) {
     if (!options) {
-        logError("Plugin misconfigured (no configuration was provided). Skipping after:run hook.");
+        logError("Plugin misconfigured (no configuration was provided). Skipping before:run hook.");
         logError(
             "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
         );
@@ -27,6 +29,16 @@ export async function beforeRunHook(
     if (!options.plugin.enabled) {
         logInfo("Plugin disabled. Skipping before:run hook.");
         return;
+    }
+    for (const spec of runDetails.specs) {
+        if (
+            spec.absolute.endsWith(options.cucumber.featureFileExtension) &&
+            options.xray.uploadResults
+        ) {
+            if (!jiraClient) {
+                // ...
+            }
+        }
     }
     console.log(runDetails);
 }

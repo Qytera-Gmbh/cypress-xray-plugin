@@ -25,6 +25,7 @@ describe("the after run hook", () => {
         options = initOptions({
             jira: {
                 projectKey: "CYP",
+                url: "https://example.org",
             },
         });
     });
@@ -107,6 +108,7 @@ describe("the synchronize file hook", () => {
         options = initOptions({
             jira: {
                 projectKey: "CYP",
+                url: "https://example.org",
             },
             cucumber: {
                 featureFileExtension: ".feature",

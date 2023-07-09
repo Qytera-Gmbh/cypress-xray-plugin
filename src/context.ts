@@ -265,13 +265,10 @@ export function initJiraClient(
     options: InternalOptions,
     env: Cypress.ObjectLike
 ): OneOf<[JiraClientServer, JiraClientCloud]> {
-    const dependentOptions = getJiraClientDependentOptions(options);
-    if (!dependentOptions) {
-        return;
-    }
     if (!options.jira.url) {
         throw new Error(
-            `Failed to configure Jira client: no Jira URL was provided. Configured options which necessarily require a configured Jira client:\n${dependentOptions}`
+            "Failed to configure Jira client: no Jira URL was provided.\n" +
+                "Make sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira"
         );
     }
     if (ENV_JIRA_API_TOKEN in env && ENV_JIRA_USERNAME in env) {
@@ -302,39 +299,4 @@ export function initJiraClient(
                 "You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
         );
     }
-}
-
-function getJiraClientDependentOptions(options: InternalOptions): string | undefined {
-    const dependentOptions = [];
-    if (options.jira.attachVideos) {
-        const optionName = `${getPropertyName(options, (x) => x.jira)}.${getPropertyName(
-            options.jira,
-            (x) => x.attachVideos
-        )}`;
-        dependentOptions.push(`${optionName} = ${options.jira.attachVideos}`);
-    }
-    if (dependentOptions.length === 0) {
-        return;
-    }
-    return `[\n\t${dependentOptions.join("\t\n")}\n]`;
-}
-
-/**
- * Returns a property's name from an object as a string.
- *
- * @param obj the object
- * @param selector the property whose name is required
- * @returns the property as a string
- * @see https://stackoverflow.com/a/59498264
- */
-function getPropertyName<T extends object>(
-    obj: T,
-    selector: (x: Record<keyof T, keyof T>) => keyof T
-): keyof T {
-    const keyRecord = Object.keys(obj).reduce((res, key) => {
-        const typedKey = key as keyof T;
-        res[typedKey] = typedKey;
-        return res;
-    }, {} as Record<keyof T, keyof T>);
-    return selector(keyRecord);
 }

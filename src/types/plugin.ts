@@ -2,6 +2,7 @@ import { JiraClientCloud } from "../client/jira/jiraClientCloud";
 import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
+import { IssueTypeDetailsCloud, IssueTypeDetailsServer } from "./jira/responses/issueTypeDetails";
 import { OneOf } from "./util";
 
 export interface Options {
@@ -75,7 +76,7 @@ export interface JiraOptions {
      * @example "https://example.org/development/jira" // Jira server
      * @example "https://your-domain.atlassian.net" // Jira cloud
      */
-    url?: string;
+    url: string;
 }
 
 export interface XrayStepOptions {
@@ -253,12 +254,16 @@ export type InternalOptions = Options & {
         issues?: {
             [key: string]: string;
         };
+        /**
+         * The details of the test execution issue type.
+         */
+        testExecutionIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
     };
 };
 
 export interface PluginContext {
-    xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>;
-    jiraClient?: OneOf<[JiraClientServer, JiraClientCloud]>;
+    xrayClient: OneOf<[XrayClientServer, XrayClientCloud]>;
+    jiraClient: OneOf<[JiraClientServer, JiraClientCloud]>;
     internal: InternalOptions;
     cypress: Cypress.PluginConfigOptions;
 }

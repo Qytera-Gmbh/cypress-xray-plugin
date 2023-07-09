@@ -18,20 +18,20 @@ let context: PluginContext;
 export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, options: Options) {
     const configOptions = mergeWithDefaults(options);
     const envOptions = parseEnvironmentVariables(config.env);
-    context = {
-        internal: mergeOptions(configOptions, envOptions),
-        cypress: config,
-    };
-
-    if (!context.internal.plugin.enabled) {
+    const mergedOptions = mergeOptions(configOptions, envOptions);
+    if (!mergedOptions.plugin.enabled) {
         logInfo("Plugin disabled. Skipping configuration verification.");
         return;
     }
-    verifyContext(context.internal);
-    context.xrayClient = initXrayClient(context.internal, context.cypress.env);
-    context.jiraClient = initJiraClient(context.internal, context.cypress.env);
-    Requests.init(context.internal);
-    initLogging({ debug: context.internal.plugin.debug });
+    verifyContext(mergedOptions);
+    context = {
+        internal: mergedOptions,
+        cypress: config,
+        xrayClient: initXrayClient(context.internal, context.cypress.env),
+        jiraClient: initJiraClient(context.internal, context.cypress.env),
+    };
+    Requests.init(mergedOptions);
+    initLogging({ debug: mergedOptions.plugin.debug });
 }
 
 export async function addXrayResultUpload(on: Cypress.PluginEvents) {
