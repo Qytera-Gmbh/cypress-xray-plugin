@@ -1,0 +1,286 @@
+[
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10010",
+        "id": "10010",
+        "description": "This is the Xray Sub Test Execution Issue Type. Used to execute test cases already defined. A Sub Test Execution can be created for a parent issue like a requirement in order to execute the test cases associated with it.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10517?size=medium",
+        "name": "Sub Test Execution",
+        "untranslatedName": "Sub Test Execution",
+        "subtask": true,
+        "avatarId": 10517,
+        "hierarchyLevel": -1
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10020",
+        "id": "10020",
+        "description": "Ein kleines Stück Arbeit, das Teil einer größeren Task ist.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10316?size=medium",
+        "name": "Sub-Task",
+        "untranslatedName": "Sub-Task",
+        "subtask": true,
+        "avatarId": 10316,
+        "hierarchyLevel": -1,
+        "scope": {
+            "type": "PROJECT",
+            "project": {
+                "id": "10009"
+            }
+        }
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10003",
+        "id": "10003",
+        "description": "Ein kleines Stück Arbeit, das Teil einer größeren Task ist.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10316?size=medium",
+        "name": "Sub-Task",
+        "untranslatedName": "Sub-task",
+        "subtask": true,
+        "avatarId": 10316,
+        "hierarchyLevel": -1
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10016",
+        "id": "10016",
+        "description": "Ein kleines Stück Arbeit, das Teil einer größeren Task ist.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10316?size=medium",
+        "name": "Sub-Task",
+        "untranslatedName": "Sub-Task",
+        "subtask": true,
+        "avatarId": 10316,
+        "hierarchyLevel": -1,
+        "scope": {
+            "type": "PROJECT",
+            "project": {
+                "id": "10008"
+            }
+        }
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10017",
+        "id": "10017",
+        "description": "Test",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10314?size=medium",
+        "name": "Test",
+        "untranslatedName": "Test",
+        "subtask": false,
+        "avatarId": 10314,
+        "hierarchyLevel": 0,
+        "scope": {
+            "type": "PROJECT",
+            "project": {
+                "id": "10008"
+            }
+        }
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10001",
+        "id": "10001",
+        "description": "Eine Funktionalität oder Funktion, ausgedrückt als Benutzerziel.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10315?size=medium",
+        "name": "Story",
+        "untranslatedName": "Story",
+        "subtask": false,
+        "avatarId": 10315,
+        "hierarchyLevel": 0
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10002",
+        "id": "10002",
+        "description": "Ein kleine, bestimmte Aufgabe.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium",
+        "name": "Task",
+        "untranslatedName": "Task",
+        "subtask": false,
+        "avatarId": 10318,
+        "hierarchyLevel": 0
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10039",
+        "id": "10039",
+        "description": "",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10557?size=medium",
+        "name": "Marketing",
+        "untranslatedName": "Marketing",
+        "subtask": false,
+        "avatarId": 10557,
+        "hierarchyLevel": 0
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10008",
+        "id": "10008",
+        "description": "This is the Xray Test Execution Issue Type. Used to execute test cases already defined.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10515?size=medium",
+        "name": "Test Execution",
+        "untranslatedName": "Test Execution",
+        "subtask": false,
+        "avatarId": 10515,
+        "hierarchyLevel": 0
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10009",
+        "id": "10009",
+        "description": "This is the Xray Precondition Issue Type. Used to abstract common actions that must be ensured before the test case execution. A Precondtion can be associated with multiple test cases.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10516?size=medium",
+        "name": "Precondition",
+        "untranslatedName": "Precondition",
+        "subtask": false,
+        "avatarId": 10516,
+        "hierarchyLevel": 0
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10014",
+        "id": "10014",
+        "description": "Ein kleine, bestimmte Aufgabe.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium",
+        "name": "Task",
+        "untranslatedName": "Task",
+        "subtask": false,
+        "avatarId": 10318,
+        "hierarchyLevel": 0,
+        "scope": {
+            "type": "PROJECT",
+            "project": {
+                "id": "10008"
+            }
+        }
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10021",
+        "id": "10021",
+        "description": "",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10300?size=medium",
+        "name": "Testfall",
+        "untranslatedName": "Testfall",
+        "subtask": false,
+        "avatarId": 10300,
+        "hierarchyLevel": 0,
+        "scope": {
+            "type": "PROJECT",
+            "project": {
+                "id": "10009"
+            }
+        }
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10022",
+        "id": "10022",
+        "description": "",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10303?size=medium",
+        "name": "Ausführung",
+        "untranslatedName": "Ausführung",
+        "subtask": false,
+        "avatarId": 10303,
+        "hierarchyLevel": 0,
+        "scope": {
+            "type": "PROJECT",
+            "project": {
+                "id": "10009"
+            }
+        }
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10007",
+        "id": "10007",
+        "description": "This is the Xray Test Plan Issue Type. Used to define the scope of test cases for a given test campaign and to aggregate all executions for those tests displaying the latest result for each test case.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10514?size=medium",
+        "name": "Test Plan",
+        "untranslatedName": "Test Plan",
+        "subtask": false,
+        "avatarId": 10514,
+        "hierarchyLevel": 0
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10004",
+        "id": "10004",
+        "description": "Ein Problem oder Fehler.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10303?size=medium",
+        "name": "Bug",
+        "untranslatedName": "Bug",
+        "subtask": false,
+        "avatarId": 10303,
+        "hierarchyLevel": 0
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10005",
+        "id": "10005",
+        "description": "This is the Xray Test Issue Type. Used to define test cases of different types that can be executed multiple times using Test Execution issues.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10512?size=medium",
+        "name": "Test",
+        "untranslatedName": "Test",
+        "subtask": false,
+        "avatarId": 10512,
+        "hierarchyLevel": 0
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10006",
+        "id": "10006",
+        "description": "This is the Xray Test Set Issue Type. Creates a group of test cases. Used to associate all included Tests with other Xray issue types like Test Execution and Test Plan. A Test Set can also be associated with a requirement issue to provide coverage and test status.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10513?size=medium",
+        "name": "Test Set",
+        "untranslatedName": "Test Set",
+        "subtask": false,
+        "avatarId": 10513,
+        "hierarchyLevel": 0
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10018",
+        "id": "10018",
+        "description": "Ein kleine, bestimmte Aufgabe.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium",
+        "name": "Task",
+        "untranslatedName": "Task",
+        "subtask": false,
+        "avatarId": 10318,
+        "hierarchyLevel": 0,
+        "scope": {
+            "type": "PROJECT",
+            "project": {
+                "id": "10009"
+            }
+        }
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10000",
+        "id": "10000",
+        "description": "Eine Sammlung ähnlicher Bugs, Stories und Tasks.",
+        "iconUrl": "https://example.org/images/icons/issuetypes/epic.svg",
+        "name": "Epic",
+        "untranslatedName": "Epic",
+        "subtask": false,
+        "hierarchyLevel": 1
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10015",
+        "id": "10015",
+        "description": "Eine Sammlung ähnlicher Bugs, Stories und Tasks.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10307?size=medium",
+        "name": "Epic",
+        "untranslatedName": "Epic",
+        "subtask": false,
+        "avatarId": 10307,
+        "hierarchyLevel": 1,
+        "scope": {
+            "type": "PROJECT",
+            "project": {
+                "id": "10008"
+            }
+        }
+    },
+    {
+        "self": "https://example.org/rest/api/2/issuetype/10019",
+        "id": "10019",
+        "description": "Eine Sammlung ähnlicher Bugs, Stories und Tasks.",
+        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10307?size=medium",
+        "name": "Epic",
+        "untranslatedName": "Epic",
+        "subtask": false,
+        "avatarId": 10307,
+        "hierarchyLevel": 1,
+        "scope": {
+            "type": "PROJECT",
+            "project": {
+                "id": "10009"
+            }
+        }
+    }
+]

@@ -342,5 +342,36 @@ describe("the Jira Cloud client", () => {
             const response = await client.getIssueTypes();
             expect(response).to.eq(mockedData);
         });
+
+        it("should fail on bad responses", async () => {
+            const { stubbedGet } = stubRequests();
+            const { stubbedError } = stubLogging();
+            stubbedGet.rejects(
+                new AxiosError(
+                    "Request failed with status code 401",
+                    HttpStatusCode.Unauthorized.toString(),
+                    undefined,
+                    null,
+                    {
+                        status: HttpStatusCode.Unauthorized,
+                        statusText: HttpStatusCode[HttpStatusCode.Unauthorized],
+                        config: { headers: new AxiosHeaders() },
+                        headers: {},
+                        data: {
+                            errorMessages: ["Authentication credentials incorrect"],
+                        },
+                    }
+                )
+            );
+            const response = await client.getIssueTypes();
+            expect(response).to.be.undefined;
+            expect(stubbedError).to.have.been.calledTwice;
+            expect(stubbedError).to.have.been.calledWithExactly(
+                'Failed to get issue types: "AxiosError: Request failed with status code 401"'
+            );
+            expect(stubbedError).to.have.been.calledWithExactly(
+                'Complete error logs have been written to "getIssueTypesError.json"'
+            );
+        });
     });
 });
