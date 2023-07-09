@@ -24,4 +24,8 @@ export class JiraClientCloud extends JiraClient<AttachmentCloud, IssueTypeDetail
     public getUrlGetIssueTypes(): string {
         return `${this.apiBaseURL}/rest/api/3/issuetype`;
     }
+
+    public getUrlGetFields(): string {
+        return `${this.apiBaseURL}/rest/api/3/field`;
+    }
 }

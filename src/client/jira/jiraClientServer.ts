@@ -13,4 +13,8 @@ export class JiraClientServer extends JiraClient<AttachmentServer, IssueTypeDeta
     public getUrlGetIssueTypes(): string {
         return `${this.apiBaseURL}/rest/api/2/issuetype`;
     }
+
+    public getUrlGetFields(): string {
+        return `${this.apiBaseURL}/rest/api/2/field`;
+    }
 }

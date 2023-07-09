@@ -5,6 +5,7 @@ import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authenti
 import { Requests } from "../../https/requests";
 import { logDebug, logError, logInfo, logSuccess, logWarning } from "../../logging/logging";
 import { AttachmentCloud, AttachmentServer } from "../../types/jira/responses/attachment";
+import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
 import {
     IssueTypeDetailsCloud,
     IssueTypeDetailsServer,
@@ -154,4 +155,61 @@ export abstract class JiraClient<
      * @returns the URL
      */
     public abstract getUrlGetIssueTypes(): string;
+
+    /**
+     * Returns system and custom issue fields according to the following rules:
+     * - Fields that cannot be added to the issue navigator are always returned
+     * - Fields that cannot be placed on an issue screen are always returned
+     * - Fields that depend on global Jira settings are only returned if the setting is enabled
+     *   That is, timetracking fields, subtasks, votes, and watches
+     * - For all other fields, this operation only returns the fields that the user has permission
+     *   to view (that is, the field is used in at least one project that the user has *Browse
+     *   Projects* project permission for)
+     *
+     * @returns the fields or `undefined` in case of errors
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/field-getFields
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
+     */
+    public async getFields<F extends OneOf<[FieldDetailServer, FieldDetailCloud]>>(): Promise<
+        F[] | undefined
+    > {
+        try {
+            return await this.credentials
+                .getAuthenticationHeader()
+                .then(async (header: HTTPHeader) => {
+                    logInfo("Getting fields...");
+                    const progressInterval = this.startResponseInterval(this.apiBaseURL);
+                    try {
+                        const response: AxiosResponse<F[]> = await Requests.get(
+                            this.getUrlGetFields(),
+                            {
+                                headers: {
+                                    ...header,
+                                },
+                            }
+                        );
+                        logSuccess(
+                            `Successfully retrieved data for ${response.data.length} fields.`
+                        );
+                        logDebug(
+                            "Received data for fields:",
+                            ...response.data.map((field: F) => `${field.name} (id: ${field.id})`)
+                        );
+                        return response.data;
+                    } finally {
+                        clearInterval(progressInterval);
+                    }
+                });
+        } catch (error: unknown) {
+            logError(`Failed to get fields: "${error}"`);
+            this.writeErrorFile(error, "getFields");
+        }
+    }
+
+    /**
+     * Returns the endpoint to use for retrieving fields.
+     *
+     * @returns the URL
+     */
+    public abstract getUrlGetFields(): string;
 }
