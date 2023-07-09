@@ -22,7 +22,10 @@ export const stubLogging = () => {
 };
 
 export const stubRequests = () => {
-    return { stubbedPost: stub(Requests, "post") };
+    return {
+        stubbedGet: stub(Requests, "get"),
+        stubbedPost: stub(Requests, "post"),
+    };
 };
 
 afterEach(() => {

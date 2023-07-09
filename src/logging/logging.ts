@@ -9,6 +9,16 @@ const DEBUG = "DEBUG";
 const VARIANTS = [INFO, ERROR, SUCCESS, WARNING, DEBUG];
 const MAX_PREFIX_LENGTH = Math.max(...VARIANTS.map((s) => s.length));
 
+let debugEnabled = true;
+
+export interface LoggingOptions {
+    debug: boolean;
+}
+
+export function initLogging(options: LoggingOptions) {
+    debugEnabled = options.debug;
+}
+
 function prefix(type: string): string {
     return chalk.white(`| Cypress Xray Plugin | ${type.padEnd(MAX_PREFIX_LENGTH, " ")} |`);
 }
@@ -30,5 +40,7 @@ export function logWarning(...text: string[]) {
 }
 
 export function logDebug(...text: string[]) {
-    console.warn(prefix(DEBUG), chalk.cyan(text.join(" ")));
+    if (debugEnabled) {
+        console.warn(prefix(DEBUG), chalk.cyan(text.join(" ")));
+    }
 }

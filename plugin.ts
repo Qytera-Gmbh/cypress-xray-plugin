@@ -10,7 +10,7 @@ import {
 } from "./src/context";
 import { afterRunHook, beforeRunHook, synchronizeFile } from "./src/hooks";
 import { Requests } from "./src/https/requests";
-import { logInfo } from "./src/logging/logging";
+import { initLogging, logInfo } from "./src/logging/logging";
 import { Options, PluginContext } from "./src/types/plugin";
 
 let context: PluginContext;
@@ -31,6 +31,7 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
     context.xrayClient = initXrayClient(context.internal, context.cypress.env);
     context.jiraClient = initJiraClient(context.internal, context.cypress.env);
     Requests.init(context.internal);
+    initLogging({ debug: context.internal.plugin.debug });
 }
 
 export async function addXrayResultUpload(on: Cypress.PluginEvents) {

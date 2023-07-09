@@ -3,7 +3,7 @@ import FormData from "form-data";
 import fs from "fs";
 import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
-import { logError, logInfo, logSuccess, logWarning } from "../../logging/logging";
+import { logDebug, logError, logInfo, logSuccess, logWarning } from "../../logging/logging";
 import { AttachmentCloud, AttachmentServer } from "../../types/jira/responses/attachment";
 import {
     IssueTypeDetailsCloud,
@@ -34,7 +34,7 @@ export abstract class JiraClient<
      *
      * @param issueIdOrKey the ID or key of the issue that attachments are added to
      * @param files the files to attach
-     * @returns a list of issue attachment responses
+     * @returns a list of issue attachment responses or `undefined` in case of errors
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/{issueIdOrKey}/attachments-addAttachment
      */
@@ -107,20 +107,18 @@ export abstract class JiraClient<
     public abstract getUrlAddAttachment(issueIdOrKey: string): string;
 
     /**
-     * Adds one or more attachments to an issue. Attachments are posted as multipart/form-data.
+     * Returns all issue types.
      *
-     * @param issueIdOrKey the ID or key of the issue that attachments are added to
-     * @param files the files to attach
-     * @returns a list of issue attachment responses
-     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
-     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/{issueIdOrKey}/attachments-addAttachment
+     * @returns the issue types or `undefined` in case of errors
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/issuetype-getIssueAllTypes
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-rest-api-3-issuetype-get
      */
-    public async getIssueTypes(): Promise<IssueTypeDetailsResponse[]> {
+    public async getIssueTypes(): Promise<IssueTypeDetailsResponse[] | undefined> {
         try {
             return await this.credentials
                 .getAuthenticationHeader()
                 .then(async (header: HTTPHeader) => {
-                    logInfo(`Getting issue types...`);
+                    logInfo("Getting issue types...");
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
                         const response: AxiosResponse<IssueTypeDetailsResponse[]> =
@@ -130,10 +128,14 @@ export abstract class JiraClient<
                                 },
                             });
                         logSuccess(
-                            `Successfully retrieved issue types:`,
-                            response.data
-                                .map((issueType: IssueTypeDetailsResponse) => issueType.name)
-                                .join(", ")
+                            `Successfully retrieved data for ${response.data.length} issue types.`
+                        );
+                        logDebug(
+                            "Received data for issue types:",
+                            ...response.data.map(
+                                (issueType: IssueTypeDetailsResponse) =>
+                                    `${issueType.name} (id: ${issueType.id})`
+                            )
                         );
                         return response.data;
                     } finally {

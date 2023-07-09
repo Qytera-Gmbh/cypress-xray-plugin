@@ -7,7 +7,7 @@ import { JiraClientServer } from "./jiraClientServer";
 describe("the Jira Server client", () => {
     const client: JiraClientServer = new JiraClientServer(
         "https://example.org",
-        new BasicAuthCredentials("user", "xyz")
+        new BasicAuthCredentials("user", "token")
     );
 
     describe("the URLs", () => {

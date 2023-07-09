@@ -8,6 +8,8 @@ import { BasicAuthCredentials } from "../../authentication/credentials";
 import { JiraClientCloud } from "./jiraClientCloud";
 
 describe("the Jira Cloud client", () => {
+    // The concrete client implementation does not matter here. The methods here only test the
+    // abstract base class's code.
     const client: JiraClientCloud = new JiraClientCloud(
         "https://example.org",
         new BasicAuthCredentials("user", "token")
@@ -251,6 +253,94 @@ describe("the Jira Cloud client", () => {
             expect(stubbedError).to.have.been.calledWithExactly(
                 'Complete error logs have been written to "addAttachmentError.json"'
             );
+        });
+    });
+
+    describe("get issue types", () => {
+        it("should use the correct headers", async () => {
+            stubLogging();
+            const { stubbedGet } = stubRequests();
+            stubbedGet.resolves({
+                status: HttpStatusCode.Ok,
+                data: JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/jira/responses/getIssueTypes.json",
+                        "utf-8"
+                    )
+                ),
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            await client.getIssueTypes();
+            const headers = stubbedGet.getCalls()[0].args[1]?.headers;
+            expect(headers["Authorization"]).to.eq("Basic dXNlcjp0b2tlbg==");
+        });
+
+        it("logs correct messages", async () => {
+            const { stubbedDebug, stubbedInfo, stubbedSuccess } = stubLogging();
+            const { stubbedGet } = stubRequests();
+            stubbedGet.resolves({
+                status: HttpStatusCode.Ok,
+                data: JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/jira/responses/getIssueTypes.json",
+                        "utf-8"
+                    )
+                ),
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            await client.getIssueTypes();
+            expect(stubbedInfo).to.have.been.calledWithExactly("Getting issue types...");
+            expect(stubbedSuccess).to.have.been.calledOnceWithExactly(
+                "Successfully retrieved data for 21 issue types."
+            );
+            expect(stubbedDebug).to.have.been.calledOnceWithExactly(
+                "Received data for issue types:",
+                "Sub Test Execution (id: 10010)",
+                "Sub-Task (id: 10020)",
+                "Sub-Task (id: 10003)",
+                "Sub-Task (id: 10016)",
+                "Test (id: 10017)",
+                "Story (id: 10001)",
+                "Task (id: 10002)",
+                "Marketing (id: 10039)",
+                "Test Execution (id: 10008)",
+                "Precondition (id: 10009)",
+                "Task (id: 10014)",
+                "Testfall (id: 10021)",
+                "Ausführung (id: 10022)",
+                "Test Plan (id: 10007)",
+                "Bug (id: 10004)",
+                "Test (id: 10005)",
+                "Test Set (id: 10006)",
+                "Task (id: 10018)",
+                "Epic (id: 10000)",
+                "Epic (id: 10015)",
+                "Epic (id: 10019)"
+            );
+        });
+
+        it("should return the correct values", async () => {
+            stubLogging();
+            const { stubbedGet } = stubRequests();
+            const mockedData = JSON.parse(
+                fs.readFileSync(
+                    "./test/resources/fixtures/jira/responses/getIssueTypes.json",
+                    "utf-8"
+                )
+            );
+            stubbedGet.resolves({
+                status: HttpStatusCode.Ok,
+                data: mockedData,
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            const response = await client.getIssueTypes();
+            expect(response).to.eq(mockedData);
         });
     });
 });
