@@ -71,6 +71,9 @@ export class DummyJiraClient extends JiraClient<null, null> {
     public getUrlGetIssueTypes(): string {
         throw new Error("Method not implemented.");
     }
+    public getUrlGetFields(): string {
+        throw new Error("Method not implemented.");
+    }
 }
 
 /**
