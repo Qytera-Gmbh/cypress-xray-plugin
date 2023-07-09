@@ -27,8 +27,8 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
     context = {
         internal: mergedOptions,
         cypress: config,
-        xrayClient: initXrayClient(context.internal, context.cypress.env),
-        jiraClient: initJiraClient(context.internal, context.cypress.env),
+        xrayClient: initXrayClient(mergedOptions, config.env),
+        jiraClient: initJiraClient(mergedOptions, config.env),
     };
     Requests.init(mergedOptions);
     initLogging({ debug: mergedOptions.plugin.debug });
