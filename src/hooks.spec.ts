@@ -4,7 +4,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import path from "path";
-import { stubLogging } from "../test/util";
+import { DummyJiraClient, DummyXrayClient, stubLogging } from "../test/util";
 import { ENV_XRAY_CLIENT_ID, ENV_XRAY_CLIENT_SECRET } from "./constants";
 import { initOptions } from "./context";
 import { afterRunHook, synchronizeFile } from "./hooks";
@@ -33,12 +33,9 @@ describe("the after run hook", () => {
     it("should display errors if the plugin was not configured", async () => {
         const { stubbedError } = stubLogging();
         await afterRunHook(results);
-        expect(stubbedError).to.have.been.calledTwice;
+        expect(stubbedError).to.have.been.calledOnce;
         expect(stubbedError).to.have.been.calledWith(
-            "Plugin misconfigured (no configuration was provided). Skipping after:run hook."
-        );
-        expect(stubbedError).to.have.been.calledWith(
-            "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+            "Plugin misconfigured (no configuration was provided). Skipping after:run hook.\nMake sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
         );
     });
 
@@ -68,8 +65,8 @@ describe("the after run hook", () => {
     it("should skip the results upload if disabled", async () => {
         const { stubbedInfo } = stubLogging();
         options.xray.uploadResults = false;
-        await afterRunHook(results, options);
-        expect(stubbedInfo).to.have.been.called.with.callCount(1);
+        await afterRunHook(results, options, new DummyXrayClient(), new DummyJiraClient());
+        expect(stubbedInfo).to.have.been.calledOnce;
         expect(stubbedInfo).to.have.been.calledWith(
             "Skipping results upload: Plugin is configured to not upload test results."
         );
@@ -124,12 +121,9 @@ describe("the synchronize file hook", () => {
     it("should display errors if the plugin was not configured", async () => {
         const { stubbedError } = stubLogging();
         await synchronizeFile(file, ".");
-        expect(stubbedError).to.have.been.calledTwice;
+        expect(stubbedError).to.have.been.calledOnce;
         expect(stubbedError).to.have.been.calledWith(
-            "Plugin misconfigured (no configuration was provided). Skipping feature file synchronization triggered by: ./test/resources/features/taggedCloud.feature"
-        );
-        expect(stubbedError).to.have.been.calledWith(
-            "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+            "Plugin misconfigured (no configuration was provided). Skipping feature file synchronization triggered by: ./test/resources/features/taggedCloud.feature\nMake sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
         );
     });
 
@@ -138,7 +132,7 @@ describe("the synchronize file hook", () => {
         const { stubbedInfo } = stubLogging();
         options.plugin = { enabled: false };
         await synchronizeFile(file, ".", options);
-        expect(stubbedInfo).to.have.been.called.with.callCount(1);
+        expect(stubbedInfo).to.have.been.calledOnce;
         expect(stubbedInfo).to.have.been.calledWith(
             "Plugin disabled. Skipping feature file synchronization triggered by: ./test/resources/features/taggedCloud.feature"
         );
@@ -148,7 +142,7 @@ describe("the synchronize file hook", () => {
         file.filePath = "./test/resources/features/invalid.feature";
         const { stubbedInfo, stubbedError } = stubLogging();
         await synchronizeFile(file, ".", options);
-        expect(stubbedError).to.have.been.called.with.callCount(1);
+        expect(stubbedError).to.have.been.calledOnce;
         expect(stubbedError).to.have.been.calledWith(
             'Feature file "./test/resources/features/invalid.feature" invalid, skipping synchronization: Error: Parser errors:\n' +
                 "(9:3): expected: #EOF, #TableRow, #DocStringSeparator, #StepLine, #TagLine, #ScenarioLine, #RuleLine, #Comment, #Empty, got 'Invalid: Element'"

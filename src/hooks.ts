@@ -20,9 +20,9 @@ export async function beforeRunHook(
     jiraClient?: OneOf<[JiraClientServer, JiraClientCloud]>
 ) {
     if (!options) {
-        logError("Plugin misconfigured (no configuration was provided). Skipping before:run hook.");
         logError(
-            "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+            "Plugin misconfigured (no configuration was provided). Skipping before:run hook.\n" +
+                "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
         );
         return;
     }
@@ -30,14 +30,39 @@ export async function beforeRunHook(
         logInfo("Plugin disabled. Skipping before:run hook.");
         return;
     }
+    if (!xrayClient) {
+        throw new Error(
+            "Plugin misconfigured (Xray client not configured). Skipping after:run hook.\n" +
+                "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+        );
+    }
+    if (!jiraClient) {
+        throw new Error(
+            "Plugin misconfigured (Jira client not configured). Skipping after:run hook.\n" +
+                "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+        );
+    }
     for (const spec of runDetails.specs) {
         if (
             spec.absolute.endsWith(options.cucumber.featureFileExtension) &&
             options.xray.uploadResults
         ) {
-            if (!jiraClient) {
-                // ...
+            const issueDetails = await jiraClient.getIssueTypes();
+            const executionDetails = issueDetails.filter(
+                (details) => details.name === options.jira.testExecutionIssueType
+            );
+            if (executionDetails.length === 0) {
+                throw new Error(
+                    `Failed to retrieve issue information for issue type "${options.jira.testExecutionIssueType}".\n` +
+                        "Make sure you have Xray installed."
+                );
+            } else if (executionDetails.length > 1) {
+                throw new Error(
+                    `Found multiple issue types named "${options.jira.testExecutionIssueType}".\n` +
+                        "Make sure to only make Xray test executions available."
+                );
             }
+            options.cucumber.testExecutionIssueDetails = executionDetails[0];
         }
     }
     console.log(runDetails);
@@ -50,9 +75,9 @@ export async function afterRunHook(
     jiraClient?: OneOf<[JiraClientServer, JiraClientCloud]>
 ) {
     if (!options) {
-        logError("Plugin misconfigured (no configuration was provided). Skipping after:run hook.");
         logError(
-            "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+            "Plugin misconfigured (no configuration was provided). Skipping after:run hook.\n" +
+                "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
         );
         return;
     }
@@ -63,6 +88,18 @@ export async function afterRunHook(
     if (results.status === "failed") {
         logError(`Aborting: failed to run ${results.failures} tests:`, results.message);
         return;
+    }
+    if (!xrayClient) {
+        throw new Error(
+            "Plugin misconfigured (Xray client not configured). Skipping after:run hook.\n" +
+                "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+        );
+    }
+    if (!jiraClient) {
+        throw new Error(
+            "Plugin misconfigured (Jira client not configured). Skipping after:run hook.\n" +
+                "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+        );
     }
     const runResult = results as CypressCommandLine.CypressRunResult;
     if (!options.xray.uploadResults) {
@@ -108,10 +145,8 @@ export async function synchronizeFile(
 ): Promise<string> {
     if (!options) {
         logError(
-            `Plugin misconfigured (no configuration was provided). Skipping feature file synchronization triggered by: ${file.filePath}`
-        );
-        logError(
-            "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+            `Plugin misconfigured (no configuration was provided). Skipping feature file synchronization triggered by: ${file.filePath}\n` +
+                "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
         );
         return;
     }

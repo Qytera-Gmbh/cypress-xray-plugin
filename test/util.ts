@@ -4,6 +4,7 @@ import path from "path";
 import Sinon, { stub } from "sinon";
 import sinonChai from "sinon-chai";
 import { JWTCredentials } from "../src/authentication/credentials";
+import { JiraClient } from "../src/client/jira/jiraClient";
 import { XrayClient } from "../src/client/xray/xrayClient";
 import { Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
@@ -52,10 +53,22 @@ export class DummyXrayClient extends XrayClient<ImportFeatureResponseCloud> {
     public getUrlImportExecution(): string {
         throw new Error("Method not implemented.");
     }
-    public getUrlExportCucumber(issueKeys?: string[], filter?: number): string {
+    public getUrlExportCucumber(): string {
         throw new Error("Method not implemented.");
     }
-    public getUrlImportFeature(projectKey: string): string {
+    public getUrlImportFeature(): string {
+        throw new Error("Method not implemented.");
+    }
+}
+
+export class DummyJiraClient extends JiraClient<null, null> {
+    constructor() {
+        super("https://example.org", null);
+    }
+    public getUrlAddAttachment(): string {
+        throw new Error("Method not implemented.");
+    }
+    public getUrlGetIssueTypes(): string {
         throw new Error("Method not implemented.");
     }
 }

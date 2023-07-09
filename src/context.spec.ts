@@ -37,6 +37,9 @@ describe("the plugin context configuration", () => {
                 it("testExecutionIssueSummary", () => {
                     expect(options.jira.testExecutionIssueSummary).to.eq(undefined);
                 });
+                it("testExecutionIssueType", () => {
+                    expect(options.jira.testExecutionIssueType).to.eq("Test Execution");
+                });
                 it("testPlanIssueKey", () => {
                     expect(options.jira.testPlanIssueKey).to.eq(undefined);
                 });
@@ -158,6 +161,16 @@ describe("the plugin context configuration", () => {
                         },
                     });
                     expect(options.jira.testExecutionIssueSummary).to.eq("Test - Login");
+                });
+                it("testExecutionIssueType", () => {
+                    const options = initOptions({
+                        jira: {
+                            projectKey: "PRJ",
+                            testExecutionIssueType: "Execution Ticket",
+                            url: "https://example.org",
+                        },
+                    });
+                    expect(options.jira.testExecutionIssueType).to.eq("Execution Ticket");
                 });
                 it("testPlanIssueKey", () => {
                     const options = initOptions({
@@ -454,6 +467,14 @@ describe("the plugin context configuration", () => {
                 };
                 const options = parseEnvironmentVariables(env);
                 expect(options.jira.testExecutionIssueSummary).to.eq("Some test case");
+            });
+
+            it("JIRA_TEST_EXECUTION_ISSUE_TYPE", () => {
+                const env = {
+                    JIRA_TEST_EXECUTION_ISSUE_TYPE: "Test Log",
+                };
+                const options = parseEnvironmentVariables(env);
+                expect(options.jira.testExecutionIssueType).to.eq("Test Log");
             });
 
             it("JIRA_TEST_PLAN_ISSUE_KEY", () => {

@@ -63,6 +63,11 @@ export interface JiraOptions {
      */
     testExecutionIssueSummary?: string;
     /**
+     * The issue type name of test executions. By default, Xray calls them `Test Execution`, but
+     * it's possible that they have been renamed or translated in your Jira instance.
+     */
+    testExecutionIssueType?: string;
+    /**
      * A test plan issue key to attach the execution to.
      *
      * Note: it must be prefixed with the project key.

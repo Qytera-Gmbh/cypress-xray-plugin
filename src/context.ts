@@ -15,6 +15,7 @@ import {
     ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION,
     ENV_JIRA_TEST_EXECUTION_ISSUE_KEY,
     ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY,
+    ENV_JIRA_TEST_EXECUTION_ISSUE_TYPE,
     ENV_JIRA_TEST_PLAN_ISSUE_KEY,
     ENV_JIRA_URL,
     ENV_JIRA_USERNAME,
@@ -51,6 +52,7 @@ export function initOptions(options: Options): InternalOptions {
             testExecutionIssueDescription: options.jira?.testExecutionIssueDescription,
             testExecutionIssueKey: options.jira?.testExecutionIssueKey,
             testExecutionIssueSummary: options.jira?.testExecutionIssueSummary,
+            testExecutionIssueType: options.jira?.testExecutionIssueType ?? "Test Execution",
             testPlanIssueKey: options.jira?.testPlanIssueKey,
             url: options.jira?.url,
         },
@@ -99,6 +101,7 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): InternalOpti
             ),
             testExecutionIssueKey: parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_KEY, asString),
             testExecutionIssueSummary: parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY, asString),
+            testExecutionIssueType: parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_TYPE, asString),
             testPlanIssueKey: parse(env, ENV_JIRA_TEST_PLAN_ISSUE_KEY, asString),
             url: parse(env, ENV_JIRA_URL, asString),
         },
@@ -152,6 +155,8 @@ export function mergeOptions(
             testExecutionIssueSummary:
                 envOptions.jira.testExecutionIssueSummary ??
                 configOptions.jira.testExecutionIssueSummary,
+            testExecutionIssueType:
+                envOptions.jira.testExecutionIssueType ?? configOptions.jira.testExecutionIssueType,
             testPlanIssueKey:
                 envOptions.jira.testPlanIssueKey ?? configOptions.jira.testPlanIssueKey,
             url: envOptions.jira.url ?? configOptions.jira.url,
