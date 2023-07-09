@@ -83,7 +83,7 @@ export async function afterRunHook(
         if (videos.length === 0) {
             logWarning("No videos were uploaded: No videos have been captured.");
         } else {
-            await jiraClient.addAttachments(issueKey, ...videos);
+            await jiraClient.addAttachment(issueKey, ...videos);
         }
     }
 }

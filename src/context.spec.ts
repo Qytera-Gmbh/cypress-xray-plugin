@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { stubLogInfo } from "../test/util";
+import { stubLogging } from "../test/util";
 import { BasicAuthCredentials, PATCredentials } from "./authentication/credentials";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
@@ -685,7 +685,7 @@ describe("the plugin context configuration", () => {
                 JIRA_USERNAME: "user@somewhere.xyz",
                 JIRA_API_TOKEN: "1337",
             };
-            const stubbedInfo = stubLogInfo();
+            const { stubbedInfo } = stubLogging();
             const client = initJiraClient(options, env);
             const credentials = client.getCredentials();
             expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
@@ -698,7 +698,7 @@ describe("the plugin context configuration", () => {
             const env = {
                 JIRA_API_TOKEN: "1337",
             };
-            const stubbedInfo = stubLogInfo();
+            const { stubbedInfo } = stubLogging();
             const client = initJiraClient(options, env);
             const credentials = client.getCredentials();
             expect(credentials).to.be.an.instanceof(PATCredentials);
@@ -712,7 +712,7 @@ describe("the plugin context configuration", () => {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "1337",
             };
-            const stubbedInfo = stubLogInfo();
+            const { stubbedInfo } = stubLogging();
             const client = initJiraClient(options, env);
             const credentials = client.getCredentials();
             expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
@@ -727,7 +727,7 @@ describe("the plugin context configuration", () => {
                 JIRA_PASSWORD: "xyz",
                 JIRA_API_TOKEN: "1337",
             };
-            const stubbedInfo = stubLogInfo();
+            const { stubbedInfo } = stubLogging();
             const client = initJiraClient(options, env);
             const credentials = client.getCredentials();
             expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
@@ -739,7 +739,7 @@ describe("the plugin context configuration", () => {
         describe("the error handling", () => {
             beforeEach(() => {
                 // We're not interested in informative log messages here.
-                stubLogInfo();
+                stubLogging();
             });
 
             it("should throw an error for missing Jira URLs", () => {
@@ -772,7 +772,7 @@ describe("the plugin context configuration", () => {
                 XRAY_CLIENT_ID: "user",
                 XRAY_CLIENT_SECRET: "xyz",
             };
-            const stubbedInfo = stubLogInfo();
+            const { stubbedInfo } = stubLogging();
             const client = initXrayClient(options, env);
             expect(client).to.be.an.instanceof(XrayClientCloud);
             expect(stubbedInfo).to.have.been.calledWith(
@@ -786,7 +786,7 @@ describe("the plugin context configuration", () => {
                 JIRA_PASSWORD: "xyz",
             };
             options.jira.url = "https://example.org";
-            const stubbedInfo = stubLogInfo();
+            const { stubbedInfo } = stubLogging();
             const client = initXrayClient(options, env);
             expect(client).to.be.an.instanceof(XrayClientServer);
             expect(stubbedInfo).to.have.been.calledWith(
@@ -799,7 +799,7 @@ describe("the plugin context configuration", () => {
                 JIRA_API_TOKEN: "1337",
             };
             options.jira.url = "https://example.org";
-            const stubbedInfo = stubLogInfo();
+            const { stubbedInfo } = stubLogging();
             const client = initXrayClient(options, env);
             expect(client).to.be.an.instanceof(XrayClientServer);
             expect(stubbedInfo).to.have.been.calledWith(
@@ -815,7 +815,7 @@ describe("the plugin context configuration", () => {
                 XRAY_CLIENT_ID: "id",
                 XRAY_CLIENT_SECRET: "secret",
             };
-            const stubbedInfo = stubLogInfo();
+            const { stubbedInfo } = stubLogging();
             const client = initXrayClient(options, env);
             expect(client).to.be.an.instanceof(XrayClientCloud);
             expect(stubbedInfo).to.have.been.calledWith(
@@ -826,7 +826,7 @@ describe("the plugin context configuration", () => {
         describe("the error handling", () => {
             beforeEach(() => {
                 // We're not interested in informative log messages here.
-                stubLogInfo();
+                stubLogging();
             });
 
             it("should throw an error for missing credentials", () => {

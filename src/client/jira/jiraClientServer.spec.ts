@@ -11,6 +11,11 @@ describe("the Jira Server client", () => {
     );
 
     describe("the URLs", () => {
+        it("add attachment", () => {
+            expect(client.getUrlAddAttachment("CYP-123")).to.eq(
+                "https://example.org/rest/api/2/issue/CYP-123/attachments"
+            );
+        });
         it("issue types", () => {
             expect(client.getUrlGetIssueTypes()).to.eq("https://example.org/rest/api/2/issuetype");
         });

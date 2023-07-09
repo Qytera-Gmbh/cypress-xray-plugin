@@ -2,7 +2,7 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { stubLogWarning } from "../../../test/util";
+import { stubLogging } from "../../../test/util";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
 import { ImportExecutionResultsConverterServer } from "./importExecutionResultsConverterServer";
@@ -160,7 +160,7 @@ describe("the import execution results converter (server)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
         );
-        const stubbedWarning = stubLogWarning();
+        const { stubbedWarning } = stubLogging();
         const converter = new ImportExecutionResultsConverterServer(options);
         const json = converter.convertExecutionResults(result);
         expect(stubbedWarning).to.have.been.calledWith(

@@ -5,16 +5,25 @@ import Sinon, { stub } from "sinon";
 import sinonChai from "sinon-chai";
 import { JWTCredentials } from "../src/authentication/credentials";
 import { XrayClient } from "../src/client/xray/xrayClient";
+import { Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { ImportFeatureResponseCloud } from "../src/types/xray/responses/importFeature";
 
 chai.use(sinonChai);
 
-export const stubLogInfo = () => stub(logging, "logInfo");
-export const stubLogError = () => stub(logging, "logError");
-export const stubLogSuccess = () => stub(logging, "logSuccess");
-export const stubLogWarning = () => stub(logging, "logWarning");
-export const stubLogDebug = () => stub(logging, "logDebug");
+export const stubLogging = () => {
+    return {
+        stubbedInfo: stub(logging, "logInfo"),
+        stubbedError: stub(logging, "logError"),
+        stubbedSuccess: stub(logging, "logSuccess"),
+        stubbedWarning: stub(logging, "logWarning"),
+        stubbedDebug: stub(logging, "logDebug"),
+    };
+};
+
+export const stubRequests = () => {
+    return { stubbedPost: stub(Requests, "post") };
+};
 
 afterEach(() => {
     Sinon.restore();

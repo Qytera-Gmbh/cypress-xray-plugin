@@ -2,7 +2,7 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { stubLogWarning } from "../../../test/util";
+import { stubLogging } from "../../../test/util";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
 import { XrayTestExecutionResultsCloud } from "../../types/xray/importTestExecutionResults";
@@ -40,7 +40,7 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         options.jira.createTestIssues = false;
-        const stubbedWarning = stubLogWarning();
+        const { stubbedWarning } = stubLogging();
         const converter = new ImportExecutionResultsConverterCloud(options);
         const json = converter.convertExecutionResults(result);
         expect(json.tests).to.not.exist;

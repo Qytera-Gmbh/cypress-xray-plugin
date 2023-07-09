@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 import { expect } from "chai";
-import { stubLogInfo, stubLogWarning } from "../../test/util";
+import { stubLogging } from "../../test/util";
 import { parseFeatureFile } from "../util/parsing";
 import { issuesByScenario } from "./tagging";
 
@@ -26,7 +26,7 @@ describe("the cucumber tag extractor", () => {
         const feature = parseFeatureFile(
             "./test/resources/features/taggedServerUnrelated.feature"
         ).feature;
-        const stubbedInfo = stubLogInfo();
+        const { stubbedInfo } = stubLogging();
         const issueMapping = issuesByScenario(feature, "CYP");
         expect(issueMapping).to.be.empty;
         expect(stubbedInfo).to.have.been.called.with.callCount(1);
@@ -39,11 +39,11 @@ describe("the cucumber tag extractor", () => {
         const feature = parseFeatureFile(
             "./test/resources/features/taggedServerMultiple.feature"
         ).feature;
-        const stubbedWarn = stubLogWarning();
+        const { stubbedWarning } = stubLogging();
         const issueMapping = issuesByScenario(feature, "CYP");
         expect(issueMapping).to.be.empty;
-        expect(stubbedWarn).to.have.been.called.with.callCount(1);
-        expect(stubbedWarn).to.have.been.calledWith(
+        expect(stubbedWarning).to.have.been.called.with.callCount(1);
+        expect(stubbedWarning).to.have.been.calledWith(
             'Multiple issue keys found in tags of scenario "A tagged scenario": CYP-123, CYP-456, CYP-789. Issue reuse will not work for this scenario.'
         );
     });

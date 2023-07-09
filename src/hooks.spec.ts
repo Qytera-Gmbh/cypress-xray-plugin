@@ -4,7 +4,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import path from "path";
-import { stubLogError, stubLogInfo } from "../test/util";
+import { stubLogging } from "../test/util";
 import { ENV_XRAY_CLIENT_ID, ENV_XRAY_CLIENT_SECRET } from "./constants";
 import { initOptions } from "./context";
 import { afterRunHook, synchronizeFile } from "./hooks";
@@ -30,7 +30,7 @@ describe("the after run hook", () => {
     });
 
     it("should display errors if the plugin was not configured", async () => {
-        const stubbedError = stubLogError();
+        const { stubbedError } = stubLogging();
         await afterRunHook(results);
         expect(stubbedError).to.have.been.calledTwice;
         expect(stubbedError).to.have.been.calledWith(
@@ -42,7 +42,7 @@ describe("the after run hook", () => {
     });
 
     it("should not do anything if disabled", async () => {
-        const stubbedInfo = stubLogInfo();
+        const { stubbedInfo } = stubLogging();
         options.plugin.enabled = false;
         await afterRunHook(results, options);
         expect(stubbedInfo).to.have.been.called.with.callCount(1);
@@ -50,7 +50,7 @@ describe("the after run hook", () => {
     });
 
     it("should display an error for failed runs", async () => {
-        const stubbedError = stubLogError();
+        const { stubbedError } = stubLogging();
         const failedResults: CypressCommandLine.CypressFailedRunResult = {
             status: "failed",
             failures: 47,
@@ -65,7 +65,7 @@ describe("the after run hook", () => {
     });
 
     it("should skip the results upload if disabled", async () => {
-        const stubbedInfo = stubLogInfo();
+        const { stubbedInfo } = stubLogging();
         options.xray.uploadResults = false;
         await afterRunHook(results, options);
         expect(stubbedInfo).to.have.been.called.with.callCount(1);
@@ -120,7 +120,7 @@ describe("the synchronize file hook", () => {
     });
 
     it("should display errors if the plugin was not configured", async () => {
-        const stubbedError = stubLogError();
+        const { stubbedError } = stubLogging();
         await synchronizeFile(file, ".");
         expect(stubbedError).to.have.been.calledTwice;
         expect(stubbedError).to.have.been.calledWith(
@@ -133,7 +133,7 @@ describe("the synchronize file hook", () => {
 
     it("should not do anything if disabled", async () => {
         file.filePath = "./test/resources/features/taggedCloud.feature";
-        const stubbedInfo = stubLogInfo();
+        const { stubbedInfo } = stubLogging();
         options.plugin = { enabled: false };
         await synchronizeFile(file, ".", options);
         expect(stubbedInfo).to.have.been.called.with.callCount(1);
@@ -144,8 +144,7 @@ describe("the synchronize file hook", () => {
 
     it("should display errors for invalid feature files", async () => {
         file.filePath = "./test/resources/features/invalid.feature";
-        const stubbedError = stubLogError();
-        const stubbedInfo = stubLogInfo();
+        const { stubbedInfo, stubbedError } = stubLogging();
         await synchronizeFile(file, ".", options);
         expect(stubbedError).to.have.been.called.with.callCount(1);
         expect(stubbedError).to.have.been.calledWith(
@@ -165,14 +164,14 @@ describe("the synchronize file hook", () => {
 
     it("should not try to parse mismatched feature files", async () => {
         file.filePath = "./test/resources/greetings.txt";
-        const stubbedError = stubLogError();
+        const { stubbedError } = stubLogging();
         await synchronizeFile(file, ".", options);
         expect(stubbedError).to.not.have.been.called;
     });
 
     it("should be able to correctly parse feature files", async () => {
         file.filePath = "./test/resources/features/taggedCloud.feature";
-        const stubbedInfo = stubLogInfo();
+        const { stubbedInfo } = stubLogging();
         await synchronizeFile(file, ".", options);
         expect(options.cucumber.issues).to.deep.equal({ "A tagged scenario": "CYP-857" });
         expect(stubbedInfo).to.have.been.calledOnce;
@@ -188,7 +187,7 @@ describe("the synchronize file hook", () => {
 
     it("should be able to correctly parse feature files with examples", async () => {
         file.filePath = "./test/resources/features/taggedCloudExamples.feature";
-        const stubbedInfo = stubLogInfo();
+        const { stubbedInfo } = stubLogging();
         await synchronizeFile(file, ".", options);
         expect(options.cucumber.issues).to.deep.equal({
             "A tagged scenario with examples": "CYP-123",

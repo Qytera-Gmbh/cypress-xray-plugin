@@ -2,7 +2,7 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { stubLogWarning } from "../../../test/util";
+import { stubLogging } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { initOptions } from "../../context";
 import { ImportExecutionResultsConverterCloud } from "../../conversion/importExecutionResults/importExecutionResultsConverterCloud";
@@ -38,7 +38,7 @@ describe("the Xray Server client", () => {
             run.tests.forEach((test, j) => (test.title = ["nothing", i.toString(), j.toString()]))
         );
         options.jira.createTestIssues = false;
-        const stubbedWarning = stubLogWarning();
+        const { stubbedWarning } = stubLogging();
         const results = new ImportExecutionResultsConverterCloud(options).convertExecutionResults(
             details
         );

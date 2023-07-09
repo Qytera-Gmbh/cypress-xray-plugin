@@ -16,8 +16,8 @@ import { Client } from "../client";
  * A Jira client class for communicating with Jira instances.
  */
 export abstract class JiraClient<
-    A extends OneOf<[AttachmentServer, AttachmentCloud]>,
-    I extends OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>
+    AttachmentType extends OneOf<[AttachmentServer, AttachmentCloud]>,
+    IssueTypeDetailsResponse extends OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>
 > extends Client<BasicAuthCredentials | PATCredentials> {
     /**
      * Construct a new Jira client using the provided credentials.
@@ -38,34 +38,40 @@ export abstract class JiraClient<
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/{issueIdOrKey}/attachments-addAttachment
      */
-    public async addAttachments(issueIdOrKey: string, ...files: string[]): Promise<A[]> {
-        logInfo(`Scanning files to attach to ${issueIdOrKey}...`);
-        const existingFiles = files.filter((file: string) => {
-            if (!fs.existsSync(file)) {
-                logError(`Failed to add attachment ${file}: file does not exist.`);
-                return false;
-            }
-            return true;
-        });
-        if (existingFiles.length === 0) {
+    public async addAttachment(
+        issueIdOrKey: string,
+        ...files: string[]
+    ): Promise<AttachmentType[] | undefined> {
+        if (files.length === 0) {
             logWarning(`No files provided to attach to issue ${issueIdOrKey}. Skipping attaching.`);
             return [];
         }
         const form = new FormData();
-        existingFiles.forEach((file: string) => {
+        let filesIncluded = 0;
+        files.forEach((file: string) => {
+            if (!fs.existsSync(file)) {
+                logWarning("File does not exist:", file);
+                return;
+            }
+            filesIncluded++;
             const fileContent = fs.createReadStream(file);
             form.append("file", fileContent);
         });
+
+        if (filesIncluded === 0) {
+            logWarning("All files do not exist. Skipping attaching.");
+            return [];
+        }
 
         try {
             return await this.credentials
                 .getAuthenticationHeader()
                 .then(async (header: HTTPHeader) => {
-                    logInfo(`Attaching files...`);
+                    logInfo("Attaching files:", ...files);
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
-                        const response: AxiosResponse<A[]> = await Requests.post(
-                            `${this.apiBaseURL}/rest/api/2/issue/${issueIdOrKey}/attachments`,
+                        const response: AxiosResponse<AttachmentType[]> = await Requests.post(
+                            this.getUrlAddAttachment(issueIdOrKey),
                             form,
                             {
                                 headers: {
@@ -77,7 +83,9 @@ export abstract class JiraClient<
                         );
                         logSuccess(
                             `Successfully attached files to issue ${issueIdOrKey}:`,
-                            response.data.map((attachment: A) => attachment.filename).join(", ")
+                            response.data
+                                .map((attachment: AttachmentType) => attachment.filename)
+                                .join(", ")
                         );
                         return response.data;
                     } finally {
@@ -86,9 +94,17 @@ export abstract class JiraClient<
                 });
         } catch (error: unknown) {
             logError(`Failed to attach files: "${error}"`);
-            this.writeErrorFile(error, "addAttachments");
+            this.writeErrorFile(error, "addAttachment");
         }
     }
+
+    /**
+     * Returns the endpoint to use for adding attchments to issues.
+     *
+     * @param issueIdOrKey the ID or key of the issue that attachments are added to
+     * @returns the URL
+     */
+    public abstract getUrlAddAttachment(issueIdOrKey: string): string;
 
     /**
      * Adds one or more attachments to an issue. Attachments are posted as multipart/form-data.
@@ -99,7 +115,7 @@ export abstract class JiraClient<
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/{issueIdOrKey}/attachments-addAttachment
      */
-    public async getIssueTypes(): Promise<I[]> {
+    public async getIssueTypes(): Promise<IssueTypeDetailsResponse[]> {
         try {
             return await this.credentials
                 .getAuthenticationHeader()
@@ -107,17 +123,17 @@ export abstract class JiraClient<
                     logInfo(`Getting issue types...`);
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
-                        const response: AxiosResponse<I[]> = await Requests.get(
-                            this.getUrlGetIssueTypes(),
-                            {
+                        const response: AxiosResponse<IssueTypeDetailsResponse[]> =
+                            await Requests.get(this.getUrlGetIssueTypes(), {
                                 headers: {
                                     ...header,
                                 },
-                            }
-                        );
+                            });
                         logSuccess(
                             `Successfully retrieved issue types:`,
-                            response.data.map((issueType: I) => issueType.name).join(", ")
+                            response.data
+                                .map((issueType: IssueTypeDetailsResponse) => issueType.name)
+                                .join(", ")
                         );
                         return response.data;
                     } finally {

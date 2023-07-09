@@ -4,7 +4,7 @@ import { expect } from "chai";
 import fs from "fs";
 import { configureXrayPlugin } from "./plugin";
 import { Options } from "./src/types/plugin";
-import { stubLogInfo } from "./test/util";
+import { stubLogging } from "./test/util";
 
 describe("the plugin configuration", () => {
     const config: Cypress.PluginConfigOptions = JSON.parse(
@@ -12,7 +12,7 @@ describe("the plugin configuration", () => {
     );
 
     it("should not verify if disabled", async () => {
-        const stubbedInfo = stubLogInfo();
+        const { stubbedInfo } = stubLogging();
         const options: Options = {
             jira: {
                 projectKey: "CYP",
