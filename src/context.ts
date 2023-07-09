@@ -1,5 +1,6 @@
 import { BasicAuthCredentials, JWTCredentials, PATCredentials } from "./authentication/credentials";
-import { JiraClient } from "./client/jira/jiraClient";
+import { JiraClientCloud } from "./client/jira/jiraClientCloud";
+import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
 import {
@@ -242,22 +243,16 @@ export function initXrayClient(
     if (ENV_XRAY_CLIENT_ID in env && ENV_XRAY_CLIENT_SECRET in env) {
         logInfo("Xray client ID and client secret found. Setting up Xray cloud credentials.");
         return new XrayClientCloud(
-            new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET]),
-            options
+            new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET])
         );
     } else if (ENV_JIRA_API_TOKEN in env && options.jira.url) {
         logInfo("Jira PAT found. Setting up Xray PAT credentials.");
-        return new XrayClientServer(
-            options.jira.url,
-            new PATCredentials(env[ENV_JIRA_API_TOKEN]),
-            options
-        );
+        return new XrayClientServer(options.jira.url, new PATCredentials(env[ENV_JIRA_API_TOKEN]));
     } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && options.jira.url) {
         logInfo("Jira username and password found. Setting up Xray basic auth credentials.");
         return new XrayClientServer(
             options.jira.url,
-            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD]),
-            options
+            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD])
         );
     } else {
         throw new Error(
@@ -266,7 +261,10 @@ export function initXrayClient(
         );
     }
 }
-export function initJiraClient(options: InternalOptions, env: Cypress.ObjectLike): JiraClient {
+export function initJiraClient(
+    options: InternalOptions,
+    env: Cypress.ObjectLike
+): OneOf<[JiraClientServer, JiraClientCloud]> {
     const dependentOptions = getJiraClientDependentOptions(options);
     if (!dependentOptions) {
         return;
@@ -281,20 +279,20 @@ export function initJiraClient(options: InternalOptions, env: Cypress.ObjectLike
         logInfo(
             "Jira username and API token found. Setting up basic auth credentials for Jira cloud."
         );
-        return new JiraClient(
+        return new JiraClientCloud(
             options.jira.url,
             new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_API_TOKEN])
         );
     } else if (ENV_JIRA_API_TOKEN in env) {
         // Jira Server authentication: no username, only token.
         logInfo("Jira PAT found. Setting up PAT credentials for Jira server.");
-        return new JiraClient(options.jira.url, new PATCredentials(env[ENV_JIRA_API_TOKEN]));
+        return new JiraClientServer(options.jira.url, new PATCredentials(env[ENV_JIRA_API_TOKEN]));
     } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env) {
         // Jira Server authentication: username and password.
         logInfo(
             "Jira username and password found. Setting up basic auth credentials for Jira server."
         );
-        return new JiraClient(
+        return new JiraClientServer(
             options.jira.url,
             new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD])
         );

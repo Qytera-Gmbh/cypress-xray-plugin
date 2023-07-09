@@ -8,7 +8,7 @@ import {
     parseEnvironmentVariables,
     verifyContext,
 } from "./src/context";
-import { afterRunHook, synchronizeFile } from "./src/hooks";
+import { afterRunHook, beforeRunHook, synchronizeFile } from "./src/hooks";
 import { Requests } from "./src/https/requests";
 import { logInfo } from "./src/logging/logging";
 import { Options, PluginContext } from "./src/types/plugin";
@@ -34,6 +34,9 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
 }
 
 export async function addXrayResultUpload(on: Cypress.PluginEvents) {
+    on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
+        await beforeRunHook(runDetails, context.internal, context.xrayClient, context.jiraClient);
+    });
     on(
         "after:run",
         async (

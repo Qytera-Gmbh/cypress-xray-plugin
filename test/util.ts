@@ -6,6 +6,7 @@ import sinonChai from "sinon-chai";
 import { JWTCredentials } from "../src/authentication/credentials";
 import { XrayClient } from "../src/client/xray/xrayClient";
 import * as logging from "../src/logging/logging";
+import { ImportFeatureResponseCloud } from "../src/types/xray/responses/importFeature";
 
 chai.use(sinonChai);
 
@@ -32,20 +33,17 @@ after(async () => {
     }
 });
 
-export class DummyXrayClient extends XrayClient<JWTCredentials, null> {
+export class DummyXrayClient extends XrayClient<ImportFeatureResponseCloud> {
     constructor() {
-        super(new JWTCredentials("id", "secret"));
+        super("https://example.org", new JWTCredentials("id", "secret"));
     }
-
-    public dispatchImportTestExecutionResultsRequest(): Promise<null> {
+    public getUrlImportExecution(): string {
         throw new Error("Method not implemented.");
     }
-
-    public dispatchExportCucumberTestsRequest(): Promise<null> {
+    public getUrlExportCucumber(issueKeys?: string[], filter?: number): string {
         throw new Error("Method not implemented.");
     }
-
-    public dispatchImportCucumberTestsRequest(): Promise<null> {
+    public getUrlImportFeature(projectKey: string): string {
         throw new Error("Method not implemented.");
     }
 }

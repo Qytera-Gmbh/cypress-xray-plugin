@@ -4,17 +4,21 @@ import fs from "fs";
 import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning } from "../../logging/logging";
-import { Attachment } from "../../types/jira/attachments";
+import { AttachmentCloud, AttachmentServer } from "../../types/jira/responses/attachment";
+import {
+    IssueTypeDetailsCloud,
+    IssueTypeDetailsServer,
+} from "../../types/jira/responses/issueTypeDetails";
+import { OneOf } from "../../types/util";
 import { Client } from "../client";
 
 /**
  * A Jira client class for communicating with Jira instances.
  */
-export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
-    /**
-     * The Jira URL.
-     */
-    private readonly apiBaseURL: string;
+export abstract class JiraClient<
+    A extends OneOf<[AttachmentServer, AttachmentCloud]>,
+    I extends OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>
+> extends Client<BasicAuthCredentials | PATCredentials> {
     /**
      * Construct a new Jira client using the provided credentials.
      *
@@ -22,8 +26,7 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
      * @param credentials the credentials to use during authentication
      */
     constructor(apiBaseURL: string, credentials: BasicAuthCredentials | PATCredentials) {
-        super(credentials);
-        this.apiBaseURL = apiBaseURL;
+        super(apiBaseURL, credentials);
     }
 
     /**
@@ -35,7 +38,7 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/{issueIdOrKey}/attachments-addAttachment
      */
-    public async addAttachments(issueIdOrKey: string, ...files: string[]): Promise<Attachment[]> {
+    public async addAttachments(issueIdOrKey: string, ...files: string[]): Promise<A[]> {
         logInfo(`Scanning files to attach to ${issueIdOrKey}...`);
         const existingFiles = files.filter((file: string) => {
             if (!fs.existsSync(file)) {
@@ -61,7 +64,7 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
                     logInfo(`Attaching files...`);
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
-                        const response: AxiosResponse<Attachment[]> = await Requests.post(
+                        const response: AxiosResponse<A[]> = await Requests.post(
                             `${this.apiBaseURL}/rest/api/2/issue/${issueIdOrKey}/attachments`,
                             form,
                             {
@@ -74,9 +77,7 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
                         );
                         logSuccess(
                             `Successfully attached files to issue ${issueIdOrKey}:`,
-                            response.data
-                                .map((attachment: Attachment) => attachment.filename)
-                                .join(", ")
+                            response.data.map((attachment: A) => attachment.filename).join(", ")
                         );
                         return response.data;
                     } finally {
@@ -85,7 +86,54 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
                 });
         } catch (error: unknown) {
             logError(`Failed to attach files: "${error}"`);
-            this.writeErrorFile(error, "addAttachmentError");
+            this.writeErrorFile(error, "addAttachments");
         }
     }
+
+    /**
+     * Adds one or more attachments to an issue. Attachments are posted as multipart/form-data.
+     *
+     * @param issueIdOrKey the ID or key of the issue that attachments are added to
+     * @param files the files to attach
+     * @returns a list of issue attachment responses
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/{issueIdOrKey}/attachments-addAttachment
+     */
+    public async getIssueTypes(): Promise<I[]> {
+        try {
+            return await this.credentials
+                .getAuthenticationHeader()
+                .then(async (header: HTTPHeader) => {
+                    logInfo(`Getting issue types...`);
+                    const progressInterval = this.startResponseInterval(this.apiBaseURL);
+                    try {
+                        const response: AxiosResponse<I[]> = await Requests.get(
+                            this.getUrlGetIssueTypes(),
+                            {
+                                headers: {
+                                    ...header,
+                                },
+                            }
+                        );
+                        logSuccess(
+                            `Successfully retrieved issue types:`,
+                            response.data.map((issueType: I) => issueType.name).join(", ")
+                        );
+                        return response.data;
+                    } finally {
+                        clearInterval(progressInterval);
+                    }
+                });
+        } catch (error: unknown) {
+            logError(`Failed to get issue types: "${error}"`);
+            this.writeErrorFile(error, "getIssueTypes");
+        }
+    }
+
+    /**
+     * Returns the endpoint to use for retrieving issue types.
+     *
+     * @returns the URL
+     */
+    public abstract getUrlGetIssueTypes(): string;
 }

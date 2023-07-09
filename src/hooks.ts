@@ -1,18 +1,41 @@
 import path from "path";
-import { JiraClient } from "./client/jira/jiraClient";
+import { JiraClientCloud } from "./client/jira/jiraClientCloud";
+import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
+import { ImportExecutionResultsConverterCloud } from "./conversion/importExecutionResults/importExecutionResultsConverterCloud";
+import { ImportExecutionResultsConverterServer } from "./conversion/importExecutionResults/importExecutionResultsConverterServer";
 import { issuesByScenario } from "./cucumber/tagging";
 import { logError, logInfo, logWarning } from "./logging/logging";
 import { InternalOptions } from "./types/plugin";
 import { OneOf } from "./types/util";
 import { parseFeatureFile } from "./util/parsing";
 
+export async function beforeRunHook(
+    runDetails: Cypress.BeforeRunDetails,
+    options?: InternalOptions,
+    xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>,
+    jiraClient?: OneOf<[JiraClientServer, JiraClientCloud]>
+) {
+    if (!options) {
+        logError("Plugin misconfigured (no configuration was provided). Skipping after:run hook.");
+        logError(
+            "Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+        );
+        return;
+    }
+    if (!options.plugin.enabled) {
+        logInfo("Plugin disabled. Skipping before:run hook.");
+        return;
+    }
+    console.log(runDetails);
+}
+
 export async function afterRunHook(
     results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult,
     options?: InternalOptions,
     xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>,
-    jiraClient?: JiraClient
+    jiraClient?: OneOf<[JiraClientServer, JiraClientCloud]>
 ) {
     if (!options) {
         logError("Plugin misconfigured (no configuration was provided). Skipping after:run hook.");
@@ -34,7 +57,18 @@ export async function afterRunHook(
         logInfo("Skipping results upload: Plugin is configured to not upload test results.");
         return;
     }
-    const issueKey = await xrayClient.importTestExecutionResults(runResult);
+    let issueKey;
+    if (xrayClient instanceof XrayClientServer) {
+        const execution = new ImportExecutionResultsConverterServer(
+            options
+        ).convertExecutionResults(runResult);
+        issueKey = await xrayClient.importExecution(execution);
+    } else {
+        const execution = new ImportExecutionResultsConverterCloud(options).convertExecutionResults(
+            runResult
+        );
+        issueKey = await xrayClient.importExecution(execution);
+    }
     if (issueKey === undefined) {
         logWarning("Execution results import failed. Skipping remaining tasks.");
         return;

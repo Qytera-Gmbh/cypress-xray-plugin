@@ -14,14 +14,23 @@ import { OneOf } from "../types/util";
 export abstract class Client<
     T extends OneOf<[BasicAuthCredentials, PATCredentials, JWTCredentials]>
 > {
+    /**
+     * The server URL.
+     */
+    protected readonly apiBaseURL: string;
+    /**
+     * The credentials to use for authentication.
+     */
     protected readonly credentials: T;
 
     /**
      * Construct a new client using the provided credentials.
      *
+     * @param apiBaseUrl the base URL for all HTTP requests
      * @param credentials the credentials to use during authentication
      */
-    constructor(credentials: T) {
+    constructor(apiBaseUrl: string, credentials: T) {
+        this.apiBaseURL = apiBaseUrl;
         this.credentials = credentials;
     }
 
@@ -38,19 +47,19 @@ export abstract class Client<
      * Writes an error to a file (e.g. HTTP response errors).
      *
      * @param error the error
-     * @param filename the filename to use for the file
+     * @param methodName a (readable) name of the method which caused the error
      */
-    protected writeErrorFile(error: unknown, filename: string): void {
+    protected writeErrorFile(error: unknown, methodName: string): void {
         let errorFileName: string;
         let errorData: string;
         if (isAxiosError(error)) {
-            errorFileName = `${filename}.json`;
+            errorFileName = `${methodName}Error.json`;
             errorData = JSON.stringify({
                 error: error.toJSON(),
                 response: error.response?.data,
             });
         } else {
-            errorFileName = `${filename}.log`;
+            errorFileName = `${methodName}Error.log`;
             errorData = JSON.stringify(error);
         }
         writeFileSync(errorFileName, errorData);

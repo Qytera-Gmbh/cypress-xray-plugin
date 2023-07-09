@@ -3,15 +3,18 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
 import { stubLogWarning } from "../../../test/util";
-import { JWTCredentials } from "../../authentication/credentials";
+import { BasicAuthCredentials } from "../../authentication/credentials";
 import { initOptions } from "../../context";
 import { ImportExecutionResultsConverterCloud } from "../../conversion/importExecutionResults/importExecutionResultsConverterCloud";
 import { InternalOptions } from "../../types/plugin";
-import { XrayClientCloud } from "./xrayClientCloud";
+import { XrayClientServer } from "./xrayClientServer";
 
-describe("the Xray cloud client", () => {
+describe("the Xray server client", () => {
     let details: CypressCommandLine.CypressRunResult;
-    const client: XrayClientCloud = new XrayClientCloud(new JWTCredentials("user", "xyz"));
+    const client: XrayClientServer = new XrayClientServer(
+        "https://example.org",
+        new BasicAuthCredentials("user", "xyz")
+    );
 
     let options: InternalOptions;
 
@@ -60,17 +63,17 @@ describe("the Xray cloud client", () => {
         describe("export cucumber", () => {
             it("keys", () => {
                 expect(client.getUrlExportCucumber(["CYP-123", "CYP-456"])).to.eq(
-                    "https://xray.cloud.getxray.app/api/v2/export/cucumber?keys=CYP-123;CYP-456"
+                    "https://example.org/rest/raven/latest/export/test?keys=CYP-123;CYP-456&fz=true"
                 );
             });
             it("filter", () => {
                 expect(client.getUrlExportCucumber(undefined, 56)).to.eq(
-                    "https://xray.cloud.getxray.app/api/v2/export/cucumber?filter=56"
+                    "https://example.org/rest/raven/latest/export/test?filter=56&fz=true"
                 );
             });
             it("keys and filter", () => {
                 expect(client.getUrlExportCucumber(["CYP-123", "CYP-456"], 56)).to.eq(
-                    "https://xray.cloud.getxray.app/api/v2/export/cucumber?keys=CYP-123;CYP-456&filter=56"
+                    "https://example.org/rest/raven/latest/export/test?keys=CYP-123;CYP-456&filter=56&fz=true"
                 );
             });
             it("neither keys nor filter", () => {
@@ -81,12 +84,12 @@ describe("the Xray cloud client", () => {
         });
         it("import execution", () => {
             expect(client.getUrlImportExecution()).to.eq(
-                "https://xray.cloud.getxray.app/api/v2/import/execution"
+                "https://example.org/rest/raven/latest/import/execution"
             );
         });
         it("import feature", () => {
             expect(client.getUrlImportFeature("CYP")).to.eq(
-                "https://xray.cloud.getxray.app/api/v2/import/feature?projectKey=CYP"
+                "https://example.org/rest/raven/latest/import/feature?projectKey=CYP"
             );
         });
     });
