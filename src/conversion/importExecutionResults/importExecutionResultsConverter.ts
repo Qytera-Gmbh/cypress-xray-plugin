@@ -5,7 +5,8 @@ import { DateTimeISO, OneOf, getEnumKeyByEnumValue } from "../../types/util";
 import {
     XrayTestCloud,
     XrayTestExecutionInfo,
-    XrayTestExecutionResults,
+    XrayTestExecutionResultsCloud,
+    XrayTestExecutionResultsServer,
     XrayTestInfoCloud,
     XrayTestInfoServer,
     XrayTestServer,
@@ -17,7 +18,10 @@ import {
  */
 export abstract class ImportExecutionResultsConverter<
     XrayTestType extends OneOf<[XrayTestServer, XrayTestCloud]>,
-    XrayTestInfoType extends OneOf<[XrayTestInfoServer, XrayTestInfoCloud]>
+    XrayTestInfoType extends OneOf<[XrayTestInfoServer, XrayTestInfoCloud]>,
+    XrayTestExecutionResultsType extends OneOf<
+        [XrayTestExecutionResultsServer, XrayTestExecutionResultsCloud]
+    >
 > {
     protected readonly options: InternalOptions;
 
@@ -33,13 +37,12 @@ export abstract class ImportExecutionResultsConverter<
      * @returns the Xray JSON data
      */
     public convertExecutionResults(
-        results: CypressCommandLine.CypressRunResult
-    ): XrayTestExecutionResults<XrayTestType> {
-        const json: XrayTestExecutionResults<XrayTestType> = {
-            testExecutionKey: this.options.jira.testExecutionIssueKey,
-        };
+        results: CypressCommandLine.CypressRunResult,
+        runs: CypressCommandLine.RunResult[]
+    ): XrayTestExecutionResultsType {
+        const json = this.initResult();
         json.info = this.getTestExecutionInfo(results);
-        const testsByTitle = this.mapTestsToTitles(results);
+        const testsByTitle = this.mapTestsToTitles(runs);
         const attemptsByTitle = this.mapAttemptsToTitles(testsByTitle);
         testsByTitle.forEach((testResults: CypressCommandLine.TestResult[], title: string) => {
             let test: XrayTestType;
@@ -63,11 +66,7 @@ export abstract class ImportExecutionResultsConverter<
                     }
                     test.testInfo = this.getTestInfo(testResult);
                 }
-                if (!json.tests) {
-                    json.tests = [test];
-                } else {
-                    json.tests.push(test);
-                }
+                this.addTest(json, test);
             } catch (error: unknown) {
                 let reason = error;
                 if (error instanceof Error) {
@@ -80,12 +79,26 @@ export abstract class ImportExecutionResultsConverter<
     }
 
     /**
+     * Build the initial results object.
+     *
+     * @return the result object for further modifications
+     */
+    protected abstract initResult(): XrayTestExecutionResultsType;
+
+    /**
      * Builds a test entity for an executed test.
      *
      * @param testResult the Cypress test result
      * @return the test entity
      */
     protected abstract getTest(attempt: CypressCommandLine.AttemptResult): XrayTestType;
+
+    /**
+     * Adds a test entity to the list of test execution results.
+     *
+     * @param testResult the test entity
+     */
+    protected abstract addTest(results: XrayTestExecutionResultsType, test: XrayTestType): void;
 
     /**
      * Extract the Xray status from a {@link Status} value.
@@ -204,10 +217,10 @@ export abstract class ImportExecutionResultsConverter<
     }
 
     private mapTestsToTitles(
-        results: CypressCommandLine.CypressRunResult
+        runs: CypressCommandLine.RunResult[]
     ): Map<string, CypressCommandLine.TestResult[]> {
         const map = new Map<string, CypressCommandLine.TestResult[]>();
-        results.runs.forEach((run: CypressCommandLine.RunResult) => {
+        runs.forEach((run: CypressCommandLine.RunResult) => {
             run.tests.forEach((test: CypressCommandLine.TestResult) => {
                 const title = test.title.join(" ");
                 if (map.has(title)) {

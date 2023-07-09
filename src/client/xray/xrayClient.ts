@@ -51,7 +51,7 @@ export abstract class XrayClient<
                     throw error;
                 })
                 .then(async (header: HTTPHeader) => {
-                    logInfo("Uploading test results...");
+                    logInfo("Importing execution...");
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
                         const response = await Requests.post(
@@ -165,7 +165,7 @@ export abstract class XrayClient<
                     throw error;
                 })
                 .then(async (header: HTTPHeader) => {
-                    logInfo("Importing cucumber feature file...");
+                    logInfo("Importing Cucumber tests...");
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
                         const fileContent = fs.createReadStream(file);

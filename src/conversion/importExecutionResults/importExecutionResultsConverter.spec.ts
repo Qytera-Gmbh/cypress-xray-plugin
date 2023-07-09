@@ -31,7 +31,10 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
 
         expect(json.tests).to.have.length(3);
     });
@@ -43,7 +46,7 @@ describe("the import execution results converter", () => {
         options.jira.createTestIssues = false;
         const { stubbedWarning } = stubLogging();
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json = converter.convertExecutionResults(result);
+        const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests).to.not.exist;
         expect(stubbedWarning).to.have.been.called.with.callCount(3);
         expect(stubbedWarning).to.have.been.calledWith(
@@ -62,7 +65,10 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
         expect(json.info?.startDate).to.eq("2022-11-28T17:41:12Z");
         expect(json.info?.finishDate).to.eq("2022-11-28T17:41:19Z");
     });
@@ -72,7 +78,10 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].testKey).to.eq("CYP-40");
         expect(json.tests[1].testKey).to.eq("CYP-41");
@@ -88,7 +97,10 @@ describe("the import execution results converter", () => {
         );
         options.jira.testExecutionIssueKey = "CYP-123";
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
         expect(json.testExecutionKey).to.eq("CYP-123");
     });
 
@@ -98,7 +110,10 @@ describe("the import execution results converter", () => {
         );
         options.jira.testPlanIssueKey = "CYP-123";
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
         expect(json.info.testPlanKey).to.eq("CYP-123");
     });
 
@@ -107,7 +122,10 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
         expect(json.testExecutionKey).to.be.undefined;
     });
 
@@ -116,7 +134,10 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
         expect(json.info.testPlanKey).to.be.undefined;
     });
 
@@ -126,7 +147,10 @@ describe("the import execution results converter", () => {
         );
         options.plugin.overwriteIssueSummary = true;
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].testKey).to.eq("CYP-40");
         expect(json.tests[1].testKey).to.eq("CYP-41");
@@ -142,7 +166,10 @@ describe("the import execution results converter", () => {
         );
         options.plugin.overwriteIssueSummary = false;
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].testInfo).to.exist;
         expect(json.tests[1].testInfo).to.exist;
@@ -155,7 +182,10 @@ describe("the import execution results converter", () => {
         );
         options.jira.testExecutionIssueSummary = "Jeffrey's Test";
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
         expect(json.info.summary).to.eq("Jeffrey's Test");
     });
 
@@ -164,7 +194,10 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
         expect(json.info.summary).to.eq("Execution Results [1669657272234]");
     });
 
@@ -174,7 +207,10 @@ describe("the import execution results converter", () => {
         );
         options.jira.testExecutionIssueDescription = "Very Useful Text";
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
         expect(json.info.description).to.eq("Very Useful Text");
     });
 
@@ -183,7 +219,10 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const converter = new ImportExecutionResultsConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(result);
+        const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
+            result,
+            result.runs
+        );
         expect(json.info.description).to.eq(
             "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)"
         );

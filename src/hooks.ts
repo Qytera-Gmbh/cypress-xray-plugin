@@ -11,6 +11,10 @@ import { issuesByScenario } from "./cucumber/tagging";
 import { logError, logInfo, logWarning } from "./logging/logging";
 import { InternalOptions } from "./types/plugin";
 import { OneOf } from "./types/util";
+import {
+    XrayTestExecutionResultsCloud,
+    XrayTestExecutionResultsServer,
+} from "./types/xray/importTestExecutionResults";
 import { parseFeatureFile } from "./util/parsing";
 
 export async function beforeRunHook(
@@ -53,7 +57,7 @@ export async function beforeRunHook(
             );
             if (executionDetails.length === 0) {
                 throw new Error(
-                    `Failed to retrieve issue information for issue type "${options.jira.testExecutionIssueType}".\n` +
+                    `Failed to retrieve issue type information for issue type "${options.jira.testExecutionIssueType}".\n` +
                         "Make sure you have Xray installed."
                 );
             } else if (executionDetails.length > 1) {
@@ -63,6 +67,21 @@ export async function beforeRunHook(
                 );
             }
             options.cucumber.testExecutionIssueDetails = executionDetails[0];
+            const planDetails = issueDetails.filter(
+                (details) => details.name === options.jira.testPlanIssueType
+            );
+            if (planDetails.length === 0) {
+                throw new Error(
+                    `Failed to retrieve issue type information for issue type "${options.jira.testPlanIssueType}".\n` +
+                        "Make sure you have Xray installed."
+                );
+            } else if (planDetails.length > 1) {
+                throw new Error(
+                    `Found multiple issue types named "${options.jira.testPlanIssueType}".\n` +
+                        "Make sure to only make Xray test plans available."
+                );
+            }
+            options.cucumber.testPlanIssueDetails = planDetails[0];
         }
     }
     console.log(runDetails);
@@ -106,17 +125,28 @@ export async function afterRunHook(
         logInfo("Skipping results upload: Plugin is configured to not upload test results.");
         return;
     }
-    let issueKey;
+    const cypressRuns: CypressCommandLine.RunResult[] = [];
+    const cucumberRuns: CypressCommandLine.RunResult[] = [];
+    for (const run of runResult.runs) {
+        if (run.spec.absolute.endsWith(options.cucumber.featureFileExtension)) {
+            cucumberRuns.push(run);
+        } else {
+            cypressRuns.push(run);
+        }
+    }
+    let cypressExecution: XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud;
     if (xrayClient instanceof XrayClientServer) {
-        const execution = new ImportExecutionResultsConverterServer(
+        cypressExecution = new ImportExecutionResultsConverterServer(
             options
-        ).convertExecutionResults(runResult);
-        issueKey = await xrayClient.importExecution(execution);
+        ).convertExecutionResults(runResult, cypressRuns);
     } else {
-        const execution = new ImportExecutionResultsConverterCloud(options).convertExecutionResults(
-            runResult
-        );
-        issueKey = await xrayClient.importExecution(execution);
+        cypressExecution = new ImportExecutionResultsConverterCloud(
+            options
+        ).convertExecutionResults(runResult, cypressRuns);
+    }
+    let issueKey: string;
+    if (cypressExecution.tests.length > 0) {
+        issueKey = await xrayClient.importExecution(cypressExecution);
     }
     if (issueKey === undefined) {
         logWarning("Execution results import failed. Skipping remaining tasks.");

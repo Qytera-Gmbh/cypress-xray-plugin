@@ -43,6 +43,9 @@ describe("the plugin context configuration", () => {
                 it("testPlanIssueKey", () => {
                     expect(options.jira.testPlanIssueKey).to.eq(undefined);
                 });
+                it("testPlanIssueType", () => {
+                    expect(options.jira.testPlanIssueType).to.eq("Test Plan");
+                });
             });
 
             describe("plugin", () => {
@@ -181,6 +184,16 @@ describe("the plugin context configuration", () => {
                         },
                     });
                     expect(options.jira.testPlanIssueKey).to.eq("PRJ-456");
+                });
+                it("testPlanIssueType", () => {
+                    const options = initOptions({
+                        jira: {
+                            projectKey: "PRJ",
+                            testPlanIssueType: "Plan Ticket",
+                            url: "https://example.org",
+                        },
+                    });
+                    expect(options.jira.testPlanIssueType).to.eq("Plan Ticket");
                 });
                 it("url", () => {
                     const options = initOptions({
@@ -483,6 +496,14 @@ describe("the plugin context configuration", () => {
                 };
                 const options = parseEnvironmentVariables(env);
                 expect(options.jira.testPlanIssueKey).to.eq("CYP-456");
+            });
+
+            it("JIRA_TEST_PLAN_ISSUE_TYPE", () => {
+                const env = {
+                    JIRA_TEST_PLAN_ISSUE_TYPE: "Test Activity",
+                };
+                const options = parseEnvironmentVariables(env);
+                expect(options.jira.testPlanIssueType).to.eq("Test Activity");
             });
 
             it("JIRA_URL", () => {

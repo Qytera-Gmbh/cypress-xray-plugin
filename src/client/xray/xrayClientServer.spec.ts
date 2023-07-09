@@ -41,7 +41,8 @@ describe("the Xray Server client", () => {
         options.jira.createTestIssues = false;
         const { stubbedWarning } = stubLogging();
         const results = new ImportExecutionResultsConverterCloud(options).convertExecutionResults(
-            details
+            details,
+            details.runs
         );
         const result = await client.importExecution(results);
         expect(result).to.be.null;

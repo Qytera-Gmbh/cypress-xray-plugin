@@ -17,6 +17,7 @@ import {
     ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY,
     ENV_JIRA_TEST_EXECUTION_ISSUE_TYPE,
     ENV_JIRA_TEST_PLAN_ISSUE_KEY,
+    ENV_JIRA_TEST_PLAN_ISSUE_TYPE,
     ENV_JIRA_URL,
     ENV_JIRA_USERNAME,
     ENV_OPENSSL_ROOT_CA_PATH,
@@ -54,6 +55,7 @@ export function initOptions(options: Options): InternalOptions {
             testExecutionIssueSummary: options.jira?.testExecutionIssueSummary,
             testExecutionIssueType: options.jira?.testExecutionIssueType ?? "Test Execution",
             testPlanIssueKey: options.jira?.testPlanIssueKey,
+            testPlanIssueType: options.jira?.testPlanIssueType ?? "Test Plan",
             url: options.jira?.url,
         },
         plugin: {
@@ -103,6 +105,7 @@ export function parseEnvironmentVariables(env: Cypress.ObjectLike): InternalOpti
             testExecutionIssueSummary: parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY, asString),
             testExecutionIssueType: parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_TYPE, asString),
             testPlanIssueKey: parse(env, ENV_JIRA_TEST_PLAN_ISSUE_KEY, asString),
+            testPlanIssueType: parse(env, ENV_JIRA_TEST_PLAN_ISSUE_TYPE, asString),
             url: parse(env, ENV_JIRA_URL, asString),
         },
         xray: {
@@ -159,6 +162,8 @@ export function mergeOptions(
                 envOptions.jira.testExecutionIssueType ?? configOptions.jira.testExecutionIssueType,
             testPlanIssueKey:
                 envOptions.jira.testPlanIssueKey ?? configOptions.jira.testPlanIssueKey,
+            testPlanIssueType:
+                envOptions.jira.testPlanIssueType ?? configOptions.jira.testPlanIssueType,
             url: envOptions.jira.url ?? configOptions.jira.url,
         },
         xray: {

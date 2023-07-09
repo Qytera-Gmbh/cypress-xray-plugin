@@ -76,6 +76,11 @@ export interface JiraOptions {
      */
     testPlanIssueKey?: string;
     /**
+     * The issue type name of test plans. By default, Xray calls them `Test Plan`, but it's possible
+     * that they have been renamed or translated in your Jira instance.
+     */
+    testPlanIssueType?: string;
+    /**
      * Use this parameter to specify the base URL of your Jira instance.
      *
      * @example "https://example.org/development/jira" // Jira server
@@ -263,6 +268,10 @@ export type InternalOptions = Options & {
          * The details of the test execution issue type.
          */
         testExecutionIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
+        /**
+         * The details of the test plan issue type.
+         */
+        testPlanIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
     };
 };
 

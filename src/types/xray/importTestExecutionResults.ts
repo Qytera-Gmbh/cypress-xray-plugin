@@ -9,7 +9,7 @@ import { DateTimeISO, OneOf } from "../util";
  *
  * Schemes transformed into TypeScript using https://github.com/bcherny/json-schema-to-typescript.
  */
-export type XrayTestExecutionResults<XrayTestType> = {
+type XrayTestExecutionResults<XrayTestType> = {
     /**
      * The test execution key where to import the execution results.
      */

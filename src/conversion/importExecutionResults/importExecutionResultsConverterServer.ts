@@ -2,6 +2,7 @@ import { basename } from "path";
 import { Status } from "../../types/testStatus";
 import {
     XrayEvidenceItem,
+    XrayTestExecutionResultsServer,
     XrayTestInfoServer,
     XrayTestServer,
 } from "../../types/xray/importTestExecutionResults";
@@ -14,8 +15,15 @@ import { ImportExecutionResultsConverter } from "./importExecutionResultsConvert
  */
 export class ImportExecutionResultsConverterServer extends ImportExecutionResultsConverter<
     XrayTestServer,
-    XrayTestInfoServer
+    XrayTestInfoServer,
+    XrayTestExecutionResultsServer
 > {
+    protected initResult(): XrayTestExecutionResultsServer {
+        return {
+            testExecutionKey: this.options.jira.testExecutionIssueKey,
+        };
+    }
+
     protected getTest(attempt: CypressCommandLine.AttemptResult): XrayTestServer {
         const json: XrayTestServer = {
             start: this.truncateISOTime(this.getAttemptStartDate(attempt).toISOString()),
@@ -39,6 +47,14 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
             json.evidence = evidence;
         }
         return json;
+    }
+
+    protected addTest(results: XrayTestExecutionResultsServer, test: XrayTestServer): void {
+        if (!results.tests) {
+            results.tests = [test];
+        } else {
+            results.tests.push(test);
+        }
     }
 
     protected getXrayStatus(status: Status): string {

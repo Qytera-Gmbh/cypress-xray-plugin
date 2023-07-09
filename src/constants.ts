@@ -19,6 +19,7 @@ export const ENV_JIRA_TEST_EXECUTION_ISSUE_KEY = "JIRA_TEST_EXECUTION_ISSUE_KEY"
 export const ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY = "JIRA_TEST_EXECUTION_ISSUE_SUMMARY";
 export const ENV_JIRA_TEST_EXECUTION_ISSUE_TYPE = "JIRA_TEST_EXECUTION_ISSUE_TYPE";
 export const ENV_JIRA_TEST_PLAN_ISSUE_KEY = "JIRA_TEST_PLAN_ISSUE_KEY";
+export const ENV_JIRA_TEST_PLAN_ISSUE_TYPE = "JIRA_TEST_PLAN_ISSUE_TYPE";
 export const ENV_JIRA_URL = "JIRA_URL";
 // ============================================================================================== //
 // | Xray Configuration                                                                         | //

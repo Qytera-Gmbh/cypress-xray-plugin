@@ -3,6 +3,7 @@ import { Status } from "../../types/testStatus";
 import {
     XrayEvidenceItem,
     XrayTestCloud,
+    XrayTestExecutionResultsCloud,
     XrayTestInfoCloud,
 } from "../../types/xray/importTestExecutionResults";
 import { encodeFile } from "../../util/base64";
@@ -14,8 +15,15 @@ import { ImportExecutionResultsConverter } from "./importExecutionResultsConvert
  */
 export class ImportExecutionResultsConverterCloud extends ImportExecutionResultsConverter<
     XrayTestCloud,
-    XrayTestInfoCloud
+    XrayTestInfoCloud,
+    XrayTestExecutionResultsCloud
 > {
+    protected initResult(): XrayTestExecutionResultsCloud {
+        return {
+            testExecutionKey: this.options.jira.testExecutionIssueKey,
+        };
+    }
+
     protected getTest(attempt: CypressCommandLine.AttemptResult): XrayTestCloud {
         const json: XrayTestCloud = {
             start: this.truncateISOTime(this.getAttemptStartDate(attempt).toISOString()),
@@ -39,6 +47,14 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
             json.evidence = evidence;
         }
         return json;
+    }
+
+    protected addTest(results: XrayTestExecutionResultsCloud, test: XrayTestCloud): void {
+        if (!results.tests) {
+            results.tests = [test];
+        } else {
+            results.tests.push(test);
+        }
     }
 
     protected getXrayStatus(status: Status): string {
