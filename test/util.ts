@@ -59,7 +59,7 @@ export class DummyXrayClient extends XrayClient<
     public getUrlImportExecution(): string {
         throw new Error("Method not implemented.");
     }
-    public parseResponseImportExecution(): string {
+    public handleResponseImportExecution(): string {
         throw new Error("Method not implemented.");
     }
     public getUrlExportCucumber(): string {
@@ -68,7 +68,13 @@ export class DummyXrayClient extends XrayClient<
     public getUrlImportFeature(): string {
         throw new Error("Method not implemented.");
     }
-    public parseResponseImportExecutionCucumberMultipart(): string {
+    public handleResponseImportFeature(): void {
+        throw new Error("Method not implemented.");
+    }
+    public getUrlImportExecutionCucumberMultipart(): string {
+        throw new Error("Method not implemented.");
+    }
+    public handleResponseImportExecutionCucumberMultipart(): string {
         throw new Error("Method not implemented.");
     }
 }

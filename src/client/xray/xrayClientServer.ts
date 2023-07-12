@@ -1,7 +1,11 @@
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
+import { logError, logSuccess } from "../../logging/logging";
 import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
-import { ImportFeatureResponseServer } from "../../types/xray/responses/importFeature";
+import {
+    ImportFeatureResponseServer,
+    IssueDetails,
+} from "../../types/xray/responses/importFeature";
 import { XrayClient } from "./xrayClient";
 
 export class XrayClientServer extends XrayClient<
@@ -23,7 +27,7 @@ export class XrayClientServer extends XrayClient<
         return `${this.apiBaseURL}/rest/raven/latest/import/execution`;
     }
 
-    public parseResponseImportExecution(response: ImportExecutionResponseServer): string {
+    public handleResponseImportExecution(response: ImportExecutionResponseServer): string {
         return response.testExecIssue.key;
     }
 
@@ -47,7 +51,37 @@ export class XrayClientServer extends XrayClient<
         return `${this.apiBaseURL}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
     }
 
-    public parseResponseImportExecutionCucumberMultipart(
+    public handleResponseImportFeature(response: ImportFeatureResponseServer): void {
+        // Happens when scenarios cause errors in Xray, e.g. typos in keywords ('Scenariot').
+        if (typeof response === "object" && "message" in response) {
+            if (response.message) {
+                logError("Encountered an error during import:", response.message);
+            }
+            if (response.testIssues.length > 0) {
+                logSuccess(
+                    "Successfully updated or created test issues:",
+                    response.testIssues.map((issue: IssueDetails) => issue.key).join(", ")
+                );
+            }
+            if (response.preconditionIssues.length > 0) {
+                logSuccess(
+                    "Successfully updated or created precondition issues:",
+                    response.preconditionIssues.map((issue: IssueDetails) => issue.key).join(", ")
+                );
+            }
+        } else if (Array.isArray(response)) {
+            logSuccess(
+                "Successfully updated or created issues:",
+                response.map((issue: IssueDetails) => issue.key).join(", ")
+            );
+        }
+    }
+
+    public getUrlImportExecutionCucumberMultipart(): string {
+        return `${this.apiBaseURL}/rest/raven/latest/import/execution/cucumber/multipart`;
+    }
+
+    public handleResponseImportExecutionCucumberMultipart(
         response: ImportExecutionResponseServer
     ): string {
         return response.testExecIssue.key;

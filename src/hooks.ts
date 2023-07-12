@@ -196,7 +196,7 @@ export async function synchronizeFile(
                 throw new Error("feature not yet implemented");
             }
             if (options.cucumber.uploadFeatures) {
-                await xrayClient.importCucumberTests(file.filePath, options.jira.projectKey);
+                await xrayClient.importFeature(file.filePath, options.jira.projectKey);
             }
         } catch (error: unknown) {
             logError(`Feature file "${file.filePath}" invalid, skipping synchronization: ${error}`);

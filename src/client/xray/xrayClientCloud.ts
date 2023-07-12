@@ -1,7 +1,8 @@
 import { JWTCredentials } from "../../authentication/credentials";
+import { logError, logSuccess } from "../../logging/logging";
 import { CucumberMultipartInfoCloud } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
-import { ImportFeatureResponseCloud } from "../../types/xray/responses/importFeature";
+import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
 import { XrayClient } from "./xrayClient";
 
 export class XrayClientCloud extends XrayClient<
@@ -29,7 +30,7 @@ export class XrayClientCloud extends XrayClient<
         return `${this.apiBaseURL}/import/execution`;
     }
 
-    public parseResponseImportExecution(response: ImportExecutionResponseCloud): string {
+    public handleResponseImportExecution(response: ImportExecutionResponseCloud): string {
         return response.key;
     }
 
@@ -51,7 +52,31 @@ export class XrayClientCloud extends XrayClient<
         return `${this.apiBaseURL}/import/feature?projectKey=${projectKey}`;
     }
 
-    public parseResponseImportExecutionCucumberMultipart(
+    public handleResponseImportFeature(response: ImportFeatureResponseCloud): void {
+        if (response.errors.length > 0) {
+            logError("Encountered some errors during import:", ...response.errors);
+        }
+        if (response.updatedOrCreatedTests.length > 0) {
+            logSuccess(
+                "Successfully updated or created test issues:",
+                response.updatedOrCreatedTests.map((issue: IssueDetails) => issue.key).join(", ")
+            );
+        }
+        if (response.updatedOrCreatedPreconditions.length > 0) {
+            logSuccess(
+                "Successfully updated or created precondition issues:",
+                response.updatedOrCreatedPreconditions
+                    .map((issue: IssueDetails) => issue.key)
+                    .join(", ")
+            );
+        }
+    }
+
+    public getUrlImportExecutionCucumberMultipart(): string {
+        return `${this.apiBaseURL}/import/execution/cucumber/multipart`;
+    }
+
+    public handleResponseImportExecutionCucumberMultipart(
         response: ImportExecutionResponseCloud
     ): string {
         return response.key;
