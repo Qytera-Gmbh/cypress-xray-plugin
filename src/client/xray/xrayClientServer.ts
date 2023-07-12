@@ -1,8 +1,14 @@
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
+import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseServer } from "../../types/xray/responses/importFeature";
 import { XrayClient } from "./xrayClient";
 
-export class XrayClientServer extends XrayClient<ImportFeatureResponseServer> {
+export class XrayClientServer extends XrayClient<
+    ImportFeatureResponseServer,
+    ImportExecutionResponseServer,
+    CucumberMultipartInfoServer
+> {
     /**
      * Construct a new Xray Cloud client using the provided credentials.
      *
@@ -15,6 +21,10 @@ export class XrayClientServer extends XrayClient<ImportFeatureResponseServer> {
 
     public getUrlImportExecution(): string {
         return `${this.apiBaseURL}/rest/raven/latest/import/execution`;
+    }
+
+    public parseResponseImportExecution(response: ImportExecutionResponseServer): string {
+        return response.testExecIssue.key;
     }
 
     public getUrlExportCucumber(issueKeys?: string[], filter?: number): string {
@@ -35,5 +45,11 @@ export class XrayClientServer extends XrayClient<ImportFeatureResponseServer> {
 
     public getUrlImportFeature(projectKey: string): string {
         return `${this.apiBaseURL}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
+    }
+
+    public parseResponseImportExecutionCucumberMultipart(
+        response: ImportExecutionResponseServer
+    ): string {
+        return response.testExecIssue.key;
     }
 }

@@ -1,8 +1,9 @@
 /// <reference types="cypress" />
 
+import { HttpStatusCode } from "axios";
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { stubLogging } from "../../../test/util";
+import { stubLogging, stubRequests } from "../../../test/util";
 import { JWTCredentials } from "../../authentication/credentials";
 import { initOptions } from "../../context";
 import { ImportExecutionResultsConverterCloud } from "../../conversion/importExecutionResults/importExecutionResultsConverterCloud";
@@ -56,6 +57,93 @@ describe("the Xray Cloud client", () => {
         expect(stubbedWarning).to.have.been.calledWith(
             "No tests linked to Xray were executed. Skipping upload."
         );
+    });
+
+    describe("import execution", () => {
+        it("should be able to handle successful responses", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedInfo, stubbedSuccess } = stubLogging();
+            stubbedPost.resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    id: "12345",
+                    key: "CYP-123",
+                    self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                },
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            const response = await client.importExecution({
+                testExecutionKey: "CYP-42",
+                info: {
+                    project: "CYP",
+                    startDate: "2022-11-28T17:41:12Z",
+                    finishDate: "2022-11-28T17:41:19Z",
+                    description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
+                    summary: "Test Execution Here",
+                },
+                tests: [
+                    {
+                        start: "2022-11-28T17:41:15Z",
+                        finish: "2022-11-28T17:41:15Z",
+                        status: "PASSED",
+                    },
+                    {
+                        start: "2022-11-28T17:41:15Z",
+                        finish: "2022-11-28T17:41:15Z",
+                        status: "PASSED",
+                    },
+                    {
+                        start: "2022-11-28T17:41:15Z",
+                        finish: "2022-11-28T17:41:19Z",
+                        status: "FAILED",
+                    },
+                ],
+            });
+            expect(response).to.eq("CYP-123");
+            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution...");
+            expect(stubbedSuccess).to.have.been.calledWithExactly(
+                "Successfully uploaded test execution results to CYP-123."
+            );
+        });
+    });
+
+    describe("import execution Cucumber multipart", () => {
+        it("should be able to handle successful responses", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedInfo, stubbedSuccess } = stubLogging();
+            stubbedPost.resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    id: "12345",
+                    key: "CYP-123",
+                    self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                },
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            const response = await client.importExecutionCucumberMultipart(
+                JSON.parse(
+                    readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipart.json",
+                        "utf-8"
+                    )
+                ),
+                JSON.parse(
+                    readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
+                        "utf-8"
+                    )
+                )
+            );
+            expect(response).to.eq("CYP-123");
+            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution (Cucumber)...");
+            expect(stubbedSuccess).to.have.been.calledWithExactly(
+                "Successfully uploaded Cucumber test execution results to CYP-123."
+            );
+        });
     });
 
     describe("the URLs", () => {

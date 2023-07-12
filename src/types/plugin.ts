@@ -179,12 +179,6 @@ export interface CucumberOptions {
      */
     downloadFeatures?: boolean;
     /**
-     * Path to the JSON report created by the `cypress-cucumber-preprocessor` plugin. This option is
-     * mandatory for result upload of executed feature files.
-     * @see https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
-     */
-    jsonReportPath?: string;
-    /**
      * Set it to true to automatically create or update existing Xray issues (summary, steps),
      * based on the feature file executed by Cypress.
      *

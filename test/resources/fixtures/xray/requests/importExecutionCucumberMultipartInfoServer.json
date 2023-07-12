@@ -1,0 +1,12 @@
+{
+    "fields": {
+        "project": {
+            "key": "CYP"
+        },
+        "summary": "Brand new Test execution",
+        "issuetype": {
+            "name": "Test Execution"
+        },
+        "customfield_12126": ["CYP-123"]
+    }
+}

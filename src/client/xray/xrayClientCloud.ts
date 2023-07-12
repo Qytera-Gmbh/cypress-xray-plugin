@@ -1,8 +1,14 @@
 import { JWTCredentials } from "../../authentication/credentials";
+import { CucumberMultipartInfoCloud } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud } from "../../types/xray/responses/importFeature";
 import { XrayClient } from "./xrayClient";
 
-export class XrayClientCloud extends XrayClient<ImportFeatureResponseCloud> {
+export class XrayClientCloud extends XrayClient<
+    ImportFeatureResponseCloud,
+    ImportExecutionResponseCloud,
+    CucumberMultipartInfoCloud
+> {
     /**
      * The URL of Xray's Cloud API.
      * Note: API v1 would also work, but let's stick to the more recent one.
@@ -23,6 +29,10 @@ export class XrayClientCloud extends XrayClient<ImportFeatureResponseCloud> {
         return `${this.apiBaseURL}/import/execution`;
     }
 
+    public parseResponseImportExecution(response: ImportExecutionResponseCloud): string {
+        return response.key;
+    }
+
     public getUrlExportCucumber(issueKeys?: string[], filter?: number): string {
         const query: string[] = [];
         if (issueKeys) {
@@ -39,5 +49,11 @@ export class XrayClientCloud extends XrayClient<ImportFeatureResponseCloud> {
 
     public getUrlImportFeature(projectKey: string): string {
         return `${this.apiBaseURL}/import/feature?projectKey=${projectKey}`;
+    }
+
+    public parseResponseImportExecutionCucumberMultipart(
+        response: ImportExecutionResponseCloud
+    ): string {
+        return response.key;
     }
 }

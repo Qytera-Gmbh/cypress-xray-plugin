@@ -14,6 +14,7 @@ import {
     XrayTestExecutionResultsCloud,
     XrayTestExecutionResultsServer,
 } from "../../types/xray/importTestExecutionResults";
+import { CucumberMultipart } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import {
     ImportFeatureResponseCloud,
@@ -26,7 +27,9 @@ import { Client } from "../client";
  * An abstract Xray client class for communicating with Xray instances.
  */
 export abstract class XrayClient<
-    I extends OneOf<[ImportFeatureResponseServer, ImportFeatureResponseCloud]>
+    I extends OneOf<[ImportFeatureResponseServer, ImportFeatureResponseCloud]>,
+    ImportExecutionResponseType,
+    CucumberMultipartInfoType
 > extends Client<BasicAuthCredentials | PATCredentials | JWTCredentials> {
     /**
      * Uploads test results to the Xray instance.
@@ -54,19 +57,15 @@ export abstract class XrayClient<
                     logInfo("Importing execution...");
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
-                        const response = await Requests.post(
-                            this.getUrlImportExecution(),
-                            execution,
-                            {
+                        const response: AxiosResponse<ImportExecutionResponseType> =
+                            await Requests.post(this.getUrlImportExecution(), execution, {
                                 headers: {
                                     ...header,
                                 },
-                            }
-                        );
-                        logSuccess(
-                            `Successfully uploaded test execution results to ${response.data.key}.`
-                        );
-                        return response.data.key;
+                            });
+                        const key = this.parseResponseImportExecution(response.data);
+                        logSuccess(`Successfully uploaded test execution results to ${key}.`);
+                        return key;
                     } finally {
                         clearInterval(progressInterval);
                     }
@@ -83,6 +82,13 @@ export abstract class XrayClient<
      * @returns the URL
      */
     public abstract getUrlImportExecution(): string;
+
+    /**
+     * Returns the test execution key from the import execution response.
+     *
+     * @param response the import execution response
+     */
+    public abstract parseResponseImportExecution(response: ImportExecutionResponseType): string;
 
     /**
      * Downloads feature (file) specifications from corresponding Xray issues.
@@ -227,4 +233,75 @@ export abstract class XrayClient<
      * @returns the URL
      */
     public abstract getUrlImportFeature(projectKey: string): string;
+
+    /**
+     * Uploads Cucumber test results to the Xray instance.
+     *
+     * @param results the test results as provided by the `cypress-cucumber-preprocessor`
+     * @returns the key of the test execution issue or null if the upload was skipped
+     * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-CucumberJSONresultsMultipart
+     * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
+     */
+    public async importExecutionCucumberMultipart(
+        cucumberJson: CucumberMultipart,
+        cucumberInfo: CucumberMultipartInfoType
+    ) {
+        try {
+            if (cucumberJson.length === 0) {
+                logWarning("No Cucumber tests were executed. Skipping upload.");
+                return null;
+            }
+
+            const formData = new FormData();
+            const resultString = JSON.stringify(cucumberJson);
+            const infoString = JSON.stringify(cucumberInfo);
+            formData.append("results", resultString, {
+                filename: "results.json",
+            });
+            formData.append("info", infoString, {
+                filename: "info.json",
+            });
+            return this.credentials
+                .getAuthenticationHeader(`${this.apiBaseURL}/authenticate`)
+                .catch((error: unknown) => {
+                    logError(`Failed to authenticate: "${error}"`);
+                    this.writeErrorFile(error, "authentication");
+                    throw error;
+                })
+                .then(async (header: HTTPHeader) => {
+                    logInfo("Importing execution (Cucumber)...");
+                    const progressInterval = this.startResponseInterval(this.apiBaseURL);
+                    try {
+                        const response: AxiosResponse<ImportExecutionResponseType> =
+                            await Requests.post(this.getUrlImportExecution(), formData, {
+                                headers: {
+                                    ...header,
+                                    ...formData.getHeaders(),
+                                },
+                            });
+                        const key = this.parseResponseImportExecutionCucumberMultipart(
+                            response.data
+                        );
+                        logSuccess(
+                            `Successfully uploaded Cucumber test execution results to ${key}.`
+                        );
+                        return key;
+                    } finally {
+                        clearInterval(progressInterval);
+                    }
+                });
+        } catch (error: unknown) {
+            logError(`Failed to upload Cucumber results to Xray: "${error}"`);
+            this.writeErrorFile(error, "importExecutionCucumberMultipart");
+        }
+    }
+
+    /**
+     * Returns the test execution key from the Cucumber multipart import execution response.
+     *
+     * @param response the import execution response
+     */
+    public abstract parseResponseImportExecutionCucumberMultipart(
+        response: ImportExecutionResponseType
+    ): string;
 }

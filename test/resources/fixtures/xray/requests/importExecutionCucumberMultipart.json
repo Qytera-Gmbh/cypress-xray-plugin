@@ -1,0 +1,593 @@
+[
+    {
+      "keyword": "Feature",
+      "name": "Arithmetic Operations",
+      "line": 3,
+      "description": "",
+      "tags": [
+
+      ],
+      "id": "arithmetic-operations",
+      "uri": "features/1_CYP-45.feature",
+      "elements": [
+        {
+          "comments": [
+            {
+              "value": "#In order to avoid silly mistakes",
+              "line": 4
+            },
+            {
+              "value": "#As a math idiot ",
+              "line": 5
+            },
+            {
+              "value": "#I want to be told the result of basic arithmetic operations between two numbers",
+              "line": 6
+            }
+          ],
+          "keyword": "Scenario Outline",
+          "name": "Add two Numbers",
+          "line": 18,
+          "description": "",
+          "tags": [
+            {
+              "name": "@CYP-261",
+              "line": 9
+            }
+          ],
+          "id": "arithmetic-operations;add-two-numbers;;2",
+          "type": "scenario",
+          "steps": [
+            {
+              "embeddings": [
+                {
+                    "mime_type": "text/plain",
+                    "data": "{data base64}"
+                },{
+                    "mime_type": "text/plain",
+                    "data": "{data base64}"
+                }],
+              "keyword": "Given ",
+              "name": "I have entered 20 into the calculator",
+              "line": 11,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 15,
+                    "val": "20"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:14"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 487000
+              }
+            },
+            {
+              "keyword": "And ",
+              "name": "I have entered 30 into the calculator",
+              "line": 12,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 15,
+                    "val": "30"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:14"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 340000
+              }
+            },
+            {
+              "keyword": "When ",
+              "name": "I press add",
+              "line": 13,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 8,
+                    "val": "add"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:18"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 327000
+              }
+            },
+            {
+              "keyword": "Then ",
+              "name": "the result should be 50 on the screen",
+              "line": 14,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 21,
+                    "val": "50"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:22"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 11723000
+              }
+            }
+          ]
+        },
+        {
+          "comments": [
+            {
+              "value": "#In order to avoid silly mistakes",
+              "line": 4
+            },
+            {
+              "value": "#As a math idiot ",
+              "line": 5
+            },
+            {
+              "value": "#I want to be told the result of basic arithmetic operations between two numbers",
+              "line": 6
+            }
+          ],
+          "keyword": "Scenario Outline",
+          "name": "Add two Numbers",
+          "line": 19,
+          "description": "",
+          "tags": [
+            {
+              "name": "@CYP-261",
+              "line": 9
+            }
+          ],
+          "id": "arithmetic-operations;add-two-numbers;;3",
+          "type": "scenario",
+          "steps": [
+            {
+              "keyword": "Given ",
+              "name": "I have entered 2 into the calculator",
+              "line": 11,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 15,
+                    "val": "2"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:14"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 992000
+              }
+            },
+            {
+              "keyword": "And ",
+              "name": "I have entered 5 into the calculator",
+              "line": 12,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 15,
+                    "val": "5"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:14"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 775000
+              }
+            },
+            {
+              "keyword": "When ",
+              "name": "I press add",
+              "line": 13,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 8,
+                    "val": "add"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:18"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 322000
+              }
+            },
+            {
+              "keyword": "Then ",
+              "name": "the result should be 7 on the screen",
+              "line": 14,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 21,
+                    "val": "7"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:22"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 423000
+              }
+            }
+          ]
+        },
+        {
+          "comments": [
+            {
+              "value": "#In order to avoid silly mistakes",
+              "line": 4
+            },
+            {
+              "value": "#As a math idiot ",
+              "line": 5
+            },
+            {
+              "value": "#I want to be told the result of basic arithmetic operations between two numbers",
+              "line": 6
+            }
+          ],
+          "keyword": "Scenario Outline",
+          "name": "Add two Numbers",
+          "line": 20,
+          "description": "",
+          "tags": [
+            {
+              "name": "@CYP-261",
+              "line": 9
+            }
+          ],
+          "id": "arithmetic-operations;add-two-numbers;;4",
+          "type": "scenario",
+          "steps": [
+            {
+              "keyword": "Given ",
+              "name": "I have entered 0 into the calculator",
+              "line": 11,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 15,
+                    "val": "0"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:14"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 384000
+              }
+            },
+            {
+              "keyword": "And ",
+              "name": "I have entered 40 into the calculator",
+              "line": 12,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 15,
+                    "val": "40"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:14"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 313000
+              }
+            },
+            {
+              "keyword": "When ",
+              "name": "I press add",
+              "line": 13,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 8,
+                    "val": "add"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:18"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 280000
+              }
+            },
+            {
+              "keyword": "Then ",
+              "name": "the result should be 40 on the screen",
+              "line": 14,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 21,
+                    "val": "40"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:22"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 350000
+              }
+            }
+          ]
+        },
+        {
+          "keyword": "Scenario Outline",
+          "name": "Divide Two Numbers",
+          "line": 32,
+          "description": "",
+          "tags": [
+            {
+              "name": "@CYP-46",
+              "line": 23
+            }
+          ],
+          "id": "arithmetic-operations;divide-two-numbers;;2",
+          "type": "scenario",
+          "steps": [
+            {
+              "keyword": "Given ",
+              "name": "I have entered 8 into the calculator",
+              "line": 25,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 15,
+                    "val": "8"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:14"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 344000
+              }
+            },
+            {
+              "keyword": "And ",
+              "name": "I have entered 4 into the calculator",
+              "line": 26,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 15,
+                    "val": "4"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:14"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 292000
+              }
+            },
+            {
+              "keyword": "When ",
+              "name": "I press divide",
+              "line": 27,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 8,
+                    "val": "divide"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:18"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 291000
+              }
+            },
+            {
+              "keyword": "Then ",
+              "name": "the result should be 2 on the screen",
+              "line": 28,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 21,
+                    "val": "2"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:22"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 320000
+              }
+            }
+          ]
+        },
+        {
+          "keyword": "Scenario Outline",
+          "name": "Divide Two Numbers",
+          "line": 33,
+          "description": "",
+          "tags": [
+            {
+              "name": "@CYP-46",
+              "line": 23
+            }
+          ],
+          "id": "arithmetic-operations;divide-two-numbers;;3",
+          "type": "scenario",
+          "steps": [
+            {
+              "keyword": "Given ",
+              "name": "I have entered 12 into the calculator",
+              "line": 25,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 15,
+                    "val": "12"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:14"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 1102000
+              }
+            },
+            {
+              "keyword": "And ",
+              "name": "I have entered 3 into the calculator",
+              "line": 26,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 15,
+                    "val": "3"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:14"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 891000
+              }
+            },
+            {
+              "keyword": "When ",
+              "name": "I press divide",
+              "line": 27,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 8,
+                    "val": "divide"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:18"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 291000
+              }
+            },
+            {
+              "keyword": "Then ",
+              "name": "the result should be 4 on the screen",
+              "line": 28,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 21,
+                    "val": "4"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:22"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 339000
+              }
+            }
+          ]
+        },
+        {
+          "keyword": "Scenario Outline",
+          "name": "Divide Two Numbers",
+          "line": 34,
+          "description": "",
+          "tags": [
+            {
+              "name": "@CYP-46",
+              "line": 23
+            }
+          ],
+          "id": "arithmetic-operations;divide-two-numbers;;4",
+          "type": "scenario",
+          "steps": [
+            {
+              "keyword": "Given ",
+              "name": "I have entered 3 into the calculator",
+              "line": 25,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 15,
+                    "val": "3"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:14"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 304000
+              }
+            },
+            {
+              "keyword": "And ",
+              "name": "I have entered 1 into the calculator",
+              "line": 26,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 15,
+                    "val": "1"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:14"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 309000
+              }
+            },
+            {
+              "keyword": "When ",
+              "name": "I press divide",
+              "line": 27,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 8,
+                    "val": "divide"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:18"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 257000
+              }
+            },
+            {
+              "keyword": "Then ",
+              "name": "the result should be 5 on the screen",
+              "line": 28,
+              "match": {
+                "arguments": [
+                  {
+                    "offset": 21,
+                    "val": "5"
+                  }
+                ],
+                "location": "features/step_definitions/calculator_steps.rb:22"
+              },
+              "result": {
+                "status": "passed",
+                "duration": 840000
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]

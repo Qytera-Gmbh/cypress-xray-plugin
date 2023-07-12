@@ -8,6 +8,8 @@ import { JiraClient } from "../src/client/jira/jiraClient";
 import { XrayClient } from "../src/client/xray/xrayClient";
 import { Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
+import { CucumberMultipartInfoCloud } from "../src/types/xray/requests/importExecutionCucumberMultipartInfo";
+import { ImportExecutionResponseCloud } from "../src/types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud } from "../src/types/xray/responses/importFeature";
 
 chai.use(sinonChai);
@@ -46,17 +48,27 @@ after(async () => {
     }
 });
 
-export class DummyXrayClient extends XrayClient<ImportFeatureResponseCloud> {
+export class DummyXrayClient extends XrayClient<
+    ImportFeatureResponseCloud,
+    ImportExecutionResponseCloud,
+    CucumberMultipartInfoCloud
+> {
     constructor() {
         super("https://example.org", new JWTCredentials("id", "secret"));
     }
     public getUrlImportExecution(): string {
         throw new Error("Method not implemented.");
     }
+    public parseResponseImportExecution(): string {
+        throw new Error("Method not implemented.");
+    }
     public getUrlExportCucumber(): string {
         throw new Error("Method not implemented.");
     }
     public getUrlImportFeature(): string {
+        throw new Error("Method not implemented.");
+    }
+    public parseResponseImportExecutionCucumberMultipart(): string {
         throw new Error("Method not implemented.");
     }
 }
