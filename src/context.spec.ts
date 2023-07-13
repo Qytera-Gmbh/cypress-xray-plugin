@@ -748,7 +748,7 @@ describe("the plugin context configuration", () => {
             options.jira.attachVideos = true;
         });
 
-        it("should be able to detect Jira cloud credentials", () => {
+        it("should be able to detect Jira Cloud credentials", () => {
             const env = {
                 JIRA_USERNAME: "user@somewhere.xyz",
                 JIRA_API_TOKEN: "1337",
@@ -758,11 +758,11 @@ describe("the plugin context configuration", () => {
             const credentials = client.getCredentials();
             expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
             expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and API token found. Setting up basic auth credentials for Jira cloud."
+                "Jira username and API token found. Setting up basic auth credentials for Jira Cloud."
             );
         });
 
-        it("should be able to detect Jira server PAT credentials", () => {
+        it("should be able to detect Jira Server PAT credentials", () => {
             const env = {
                 JIRA_API_TOKEN: "1337",
             };
@@ -771,11 +771,11 @@ describe("the plugin context configuration", () => {
             const credentials = client.getCredentials();
             expect(credentials).to.be.an.instanceof(PATCredentials);
             expect(stubbedInfo).to.have.been.calledWith(
-                "Jira PAT found. Setting up PAT credentials for Jira server."
+                "Jira PAT found. Setting up PAT credentials for Jira Server."
             );
         });
 
-        it("should be able to detect Jira server basic auth credentials", () => {
+        it("should be able to detect Jira Server basic auth credentials", () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "1337",
@@ -785,11 +785,11 @@ describe("the plugin context configuration", () => {
             const credentials = client.getCredentials();
             expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
             expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and password found. Setting up basic auth credentials for Jira server."
+                "Jira username and password found. Setting up basic auth credentials for Jira Server."
             );
         });
 
-        it("should be able to choose Jira cloud credentials over server credentials", () => {
+        it("should be able to choose Jira Cloud credentials over server credentials", () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "xyz",
@@ -800,7 +800,7 @@ describe("the plugin context configuration", () => {
             const credentials = client.getCredentials();
             expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
             expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and API token found. Setting up basic auth credentials for Jira cloud."
+                "Jira username and API token found. Setting up basic auth credentials for Jira Cloud."
             );
         });
 

@@ -284,7 +284,7 @@ export function initJiraClient(
     if (ENV_JIRA_API_TOKEN in env && ENV_JIRA_USERNAME in env) {
         // Jira Cloud authentication: username (Email) and token.
         logInfo(
-            "Jira username and API token found. Setting up basic auth credentials for Jira cloud."
+            "Jira username and API token found. Setting up basic auth credentials for Jira Cloud."
         );
         return new JiraClientCloud(
             options.jira.url,
@@ -292,12 +292,12 @@ export function initJiraClient(
         );
     } else if (ENV_JIRA_API_TOKEN in env) {
         // Jira Server authentication: no username, only token.
-        logInfo("Jira PAT found. Setting up PAT credentials for Jira server.");
+        logInfo("Jira PAT found. Setting up PAT credentials for Jira Server.");
         return new JiraClientServer(options.jira.url, new PATCredentials(env[ENV_JIRA_API_TOKEN]));
     } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env) {
         // Jira Server authentication: username and password.
         logInfo(
-            "Jira username and password found. Setting up basic auth credentials for Jira server."
+            "Jira username and password found. Setting up basic auth credentials for Jira Server."
         );
         return new JiraClientServer(
             options.jira.url,
