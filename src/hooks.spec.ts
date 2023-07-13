@@ -35,7 +35,7 @@ describe("the after run hook", () => {
         await afterRunHook(results);
         expect(stubbedError).to.have.been.calledOnce;
         expect(stubbedError).to.have.been.calledWith(
-            "Plugin misconfigured (no configuration was provided). Skipping after:run hook.\nMake sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+            "Plugin misconfigured: configureXrayPlugin() was not called. Skipping after:run hook.\nMake sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
         );
     });
 
