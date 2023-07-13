@@ -106,10 +106,6 @@ export abstract class XrayClient<
                     headers: {
                         ...authenticationHeader,
                     },
-                    params: {
-                        keys: keys,
-                        filter: filter,
-                    },
                 });
                 // Extract filename from response.
                 const contentDisposition = response.headers["Content-Disposition"];
@@ -145,7 +141,8 @@ export abstract class XrayClient<
      * @param projectKey key of the project where the tests and pre-conditions are going to be created
      * @param projectId id of the project where the tests and pre-conditions are going to be created
      * @param source a name designating the source of the features being imported (e.g. the source project name)
-     * @see https://docs.getxray.app/display/XRAYCLOUD/Exporting+Cucumber+Tests+-+REST+v2
+     * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+     * @see https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
      */
     public async importFeature(
         file: string,
@@ -165,17 +162,12 @@ export abstract class XrayClient<
                 form.append("file", fileContent);
 
                 const response: AxiosResponse<ImportFeatureResponseType> = await Requests.post(
-                    this.getUrlImportFeature(projectKey),
+                    this.getUrlImportFeature(projectKey, projectId, source),
                     form,
                     {
                         headers: {
                             ...authenticationHeader,
                             ...form.getHeaders(),
-                        },
-                        params: {
-                            projectKey: projectKey,
-                            projectId: projectId,
-                            source: source,
                         },
                     }
                 );
@@ -192,10 +184,16 @@ export abstract class XrayClient<
     /**
      * Returns the endpoint to use for importing Cucumber feature files.
      *
-     * @param projectKey project where the tests and pre-conditions are going to be created
+     * @param projectKey key of the project where the tests and pre-conditions are going to be created
+     * @param projectId id of the project where the tests and pre-conditions are going to be created
+     * @param source a name designating the source of the features being imported (e.g. the source project name)
      * @returns the URL
      */
-    public abstract getUrlImportFeature(projectKey: string): string;
+    public abstract getUrlImportFeature(
+        projectKey?: string,
+        projectId?: string,
+        source?: string
+    ): string;
 
     /**
      * This method is called when a feature file was successfully imported to Xray.

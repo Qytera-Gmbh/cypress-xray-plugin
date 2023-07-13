@@ -48,8 +48,15 @@ export class XrayClientCloud extends XrayClient<
         return `${this.apiBaseURL}/export/cucumber?${query.join("&")}`;
     }
 
-    public getUrlImportFeature(projectKey: string): string {
-        return `${this.apiBaseURL}/import/feature?projectKey=${projectKey}`;
+    public getUrlImportFeature(projectKey?: string, projectId?: string): string {
+        const query: string[] = [];
+        if (projectKey) {
+            query.push(`projectKey=${projectKey}`);
+        }
+        if (projectId) {
+            query.push(`projectId=${projectId}`);
+        }
+        return `${this.apiBaseURL}/import/feature?${query.join("&")}`;
     }
 
     public handleResponseImportFeature(response: ImportFeatureResponseCloud): void {
