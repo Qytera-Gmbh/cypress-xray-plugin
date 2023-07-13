@@ -1,7 +1,7 @@
-import { DateTimeISO, OneOf } from "../../util";
+import { DateTimeISO } from "../../util";
 import { UserCloud, UserServer } from "./user";
 
-type Attachment<U extends OneOf<[UserServer, UserCloud]>> = {
+type Attachment<UserType> = {
     /**
      * The URL of the attachment details response.
      */
@@ -13,7 +13,7 @@ type Attachment<U extends OneOf<[UserServer, UserCloud]>> = {
     /**
      * Details of the user who added the attachment.
      */
-    author?: U;
+    author?: UserType;
     /**
      * The datetime the attachment was created.
      */

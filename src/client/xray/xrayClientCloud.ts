@@ -14,7 +14,7 @@ export class XrayClientCloud extends XrayClient<
      * The URL of Xray's Cloud API.
      * Note: API v1 would also work, but let's stick to the more recent one.
      */
-    private static readonly URL = "https://xray.cloud.getxray.app/api/v2";
+    public static readonly URL = "https://xray.cloud.getxray.app/api/v2";
 
     /**
      * Construct a new Xray Cloud client using the provided credentials.

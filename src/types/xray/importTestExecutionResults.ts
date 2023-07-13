@@ -80,13 +80,11 @@ export type XrayTestExecutionInfo = {
 };
 
 type XrayTest<
-    XrayTestInfoType extends OneOf<[XrayTestInfoServer, XrayTestInfoCloud]>,
-    XrayManualTestStepResultType extends OneOf<
-        [XrayManualTestStepResultServer, XrayManualTestStepResultCloud]
-    >,
-    XrayExamplesType extends OneOf<[XrayExamplesTypeServer, XrayExamplesTypeCloud]>,
-    XrayIterationResultType extends OneOf<[XrayIterationResultServer, XrayIterationResultCloud]>,
-    XrayCustomFieldType extends OneOf<[XrayCustomFieldServer, XrayCustomFieldCloud]>
+    XrayTestInfoType,
+    XrayManualTestStepResultType,
+    XrayExamplesType,
+    XrayIterationResultType,
+    XrayCustomFieldType
 > = {
     /**
      * The test issue key.
@@ -300,11 +298,7 @@ export type XrayEvidenceItem = {
     contentType?: string;
 };
 
-type XrayIterationResult<
-    XrayManualTestStepResultType extends OneOf<
-        [XrayManualTestStepResultServer, XrayManualTestStepResultCloud]
-    >
-> = {
+type XrayIterationResult<XrayManualTestStepResultType> = {
     /**
      * An array of parameters along with their values.
      */

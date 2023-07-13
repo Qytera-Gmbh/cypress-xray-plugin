@@ -116,33 +116,30 @@ export abstract class JiraClient<
      */
     public async getIssueTypes(): Promise<IssueTypeDetailsResponse[] | undefined> {
         try {
-            return await this.credentials
-                .getAuthenticationHeader()
-                .then(async (header: HTTPHeader) => {
-                    logInfo("Getting issue types...");
-                    const progressInterval = this.startResponseInterval(this.apiBaseURL);
-                    try {
-                        const response: AxiosResponse<IssueTypeDetailsResponse[]> =
-                            await Requests.get(this.getUrlGetIssueTypes(), {
-                                headers: {
-                                    ...header,
-                                },
-                            });
-                        logSuccess(
-                            `Successfully retrieved data for ${response.data.length} issue types.`
-                        );
-                        logDebug(
-                            "Received data for issue types:",
-                            ...response.data.map(
-                                (issueType: IssueTypeDetailsResponse) =>
-                                    `${issueType.name} (id: ${issueType.id})`
-                            )
-                        );
-                        return response.data;
-                    } finally {
-                        clearInterval(progressInterval);
+            const authenticationHeader = await this.credentials.getAuthenticationHeader();
+            logInfo("Getting issue types...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const response: AxiosResponse<IssueTypeDetailsResponse[]> = await Requests.get(
+                    this.getUrlGetIssueTypes(),
+                    {
+                        headers: {
+                            ...authenticationHeader,
+                        },
                     }
-                });
+                );
+                logSuccess(`Successfully retrieved data for ${response.data.length} issue types.`);
+                logDebug(
+                    "Received data for issue types:",
+                    ...response.data.map(
+                        (issueType: IssueTypeDetailsResponse) =>
+                            `${issueType.name} (id: ${issueType.id})`
+                    )
+                );
+                return response.data;
+            } finally {
+                clearInterval(progressInterval);
+            }
         } catch (error: unknown) {
             logError(`Failed to get issue types: "${error}"`);
             this.writeErrorFile(error, "getIssueTypes");
@@ -174,32 +171,24 @@ export abstract class JiraClient<
         F[] | undefined
     > {
         try {
-            return await this.credentials
-                .getAuthenticationHeader()
-                .then(async (header: HTTPHeader) => {
-                    logInfo("Getting fields...");
-                    const progressInterval = this.startResponseInterval(this.apiBaseURL);
-                    try {
-                        const response: AxiosResponse<F[]> = await Requests.get(
-                            this.getUrlGetFields(),
-                            {
-                                headers: {
-                                    ...header,
-                                },
-                            }
-                        );
-                        logSuccess(
-                            `Successfully retrieved data for ${response.data.length} fields.`
-                        );
-                        logDebug(
-                            "Received data for fields:",
-                            ...response.data.map((field: F) => `${field.name} (id: ${field.id})`)
-                        );
-                        return response.data;
-                    } finally {
-                        clearInterval(progressInterval);
-                    }
+            const authenticationHeader = await this.credentials.getAuthenticationHeader();
+            logInfo("Getting fields...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const response: AxiosResponse<F[]> = await Requests.get(this.getUrlGetFields(), {
+                    headers: {
+                        ...authenticationHeader,
+                    },
                 });
+                logSuccess(`Successfully retrieved data for ${response.data.length} fields.`);
+                logDebug(
+                    "Received data for fields:",
+                    ...response.data.map((field: F) => `${field.name} (id: ${field.id})`)
+                );
+                return response.data;
+            } finally {
+                clearInterval(progressInterval);
+            }
         } catch (error: unknown) {
             logError(`Failed to get fields: "${error}"`);
             this.writeErrorFile(error, "getFields");

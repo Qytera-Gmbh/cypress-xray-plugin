@@ -1,14 +1,9 @@
-import { OneOf } from "../../util";
 import { EntityProperty } from "./entityProperty";
 import { FieldUpdateOperation } from "./fieldUpdateOperation";
 import { HistoryMetadata } from "./historyMetadata";
 import { IssueTransitionCloud, IssueTransitionServer } from "./issueTransition";
-import { IssueTypeDetailsCloud, IssueTypeDetailsServer } from "./issueTypeDetails";
 
-type IssueUpdate<
-    IssueTransitionType extends OneOf<[IssueTransitionServer, IssueTransitionCloud]>,
-    IssueTypeFieldType extends OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>
-> = {
+type IssueUpdate<IssueTransitionType> = {
     /**
      * Details of a transition. Required when performing a transition, optional when creating or
      * editing an issue.
@@ -21,7 +16,6 @@ type IssueUpdate<
      * here cannot be included in {@link update}.
      */
     fields?: {
-        issueType?: IssueTypeFieldType;
         /**
          * Fields to set and the values to set them to.
          */
@@ -43,5 +37,5 @@ type IssueUpdate<
      */
     properties?: EntityProperty[];
 };
-export type IssueUpdateServer = IssueUpdate<IssueTransitionServer, IssueTypeDetailsServer>;
-export type IssueUpdateCloud = IssueUpdate<IssueTransitionCloud, IssueTypeDetailsCloud>;
+export type IssueUpdateServer = IssueUpdate<IssueTransitionServer>;
+export type IssueUpdateCloud = IssueUpdate<IssueTransitionCloud>;

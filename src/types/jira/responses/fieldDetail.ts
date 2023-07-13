@@ -1,8 +1,7 @@
-import { OneOf } from "../../util";
 import { JsonTypeCloud, JsonTypeServer } from "./jsonType";
 import { Scope } from "./scope";
 
-type FieldDetail<J extends OneOf<[JsonTypeServer, JsonTypeCloud]>> = {
+type FieldDetail<JsonType> = {
     /**
      * The ID of the field.
      */
@@ -34,7 +33,7 @@ type FieldDetail<J extends OneOf<[JsonTypeServer, JsonTypeCloud]>> = {
     /**
      * The data schema for the field.
      */
-    schema: J;
+    schema: JsonType;
 };
 export type FieldDetailServer = FieldDetail<JsonTypeServer>;
 export type FieldDetailCloud = FieldDetail<JsonTypeCloud> & {

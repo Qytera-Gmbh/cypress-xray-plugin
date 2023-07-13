@@ -1,3 +1,4 @@
+import { resolvePreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import { JiraClientCloud } from "../client/jira/jiraClientCloud";
 import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../client/xray/xrayClientCloud";
@@ -241,6 +242,16 @@ export interface OpenSSLOptions {
  * Options only intended for internal plugin use.
  */
 export type InternalOptions = Options & {
+    jira: {
+        /**
+         * The details of the test execution issue type.
+         */
+        testExecutionIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
+        /**
+         * The details of the test plan issue type.
+         */
+        testPlanIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
+    };
     cucumber?: {
         /**
          * A mapping of scenario titles to Xray issue keys. Built during file preprocessing, used
@@ -258,14 +269,7 @@ export type InternalOptions = Options & {
         issues?: {
             [key: string]: string;
         };
-        /**
-         * The details of the test execution issue type.
-         */
-        testExecutionIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
-        /**
-         * The details of the test plan issue type.
-         */
-        testPlanIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
+        preprocessor?: Awaited<ReturnType<typeof resolvePreprocessorConfiguration>>;
     };
 };
 

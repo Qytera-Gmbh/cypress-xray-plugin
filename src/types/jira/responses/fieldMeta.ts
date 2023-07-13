@@ -1,7 +1,6 @@
-import { OneOf } from "../../util";
 import { JsonTypeCloud, JsonTypeServer } from "./jsonType";
 
-type FieldMeta<J extends OneOf<[JsonTypeServer, JsonTypeCloud]>> = {
+type FieldMeta<JsonType> = {
     /**
      * Whether the field is required.
      */
@@ -9,7 +8,7 @@ type FieldMeta<J extends OneOf<[JsonTypeServer, JsonTypeCloud]>> = {
     /**
      * The data type of the field.
      */
-    schema?: J;
+    schema?: JsonType;
     /**
      * The name of the field.
      */

@@ -1,17 +1,13 @@
-import { OneOf } from "../../util";
 import { FieldMetaCloud, FieldMetaServer } from "./fieldMeta";
 import { StatusDetailsCloud, StatusDetailsServer } from "./statusDetails";
 
-type IssueTransition<
-    F extends OneOf<[FieldMetaServer, FieldMetaCloud]>,
-    S extends OneOf<[StatusDetailsServer, StatusDetailsCloud]>
-> = {
+type IssueTransition<FieldMetaType, StatusDetailsType> = {
     /**
      * Details of the fields associated with the issue transition screen. Use this information to
      * populate `fields` and `update` in a transition request.
      */
     fields?: {
-        [k: string]: F;
+        [k: string]: FieldMetaType;
     };
     /**
      * The ID of the issue transition. Required when specifying a transition to undertake.
@@ -24,7 +20,7 @@ type IssueTransition<
     /**
      * Details of the issue status after the transition.
      */
-    to?: S;
+    to?: StatusDetailsType;
 };
 export type IssueTransitionServer = IssueTransition<FieldMetaServer, StatusDetailsServer> & {
     opsbarSequence?: number;

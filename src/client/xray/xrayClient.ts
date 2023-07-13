@@ -3,7 +3,6 @@ import FormData from "form-data";
 import fs from "fs";
 import {
     BasicAuthCredentials,
-    HTTPHeader,
     JWTCredentials,
     PATCredentials,
 } from "../../authentication/credentials";
@@ -30,43 +29,41 @@ export abstract class XrayClient<
      * Uploads test results to the Xray instance.
      *
      * @param results the test results as provided by Cypress
-     * @returns the key of the test execution issue or null if the upload was skipped
+     * @returns the key of the test execution issue, `null` if the upload was skipped or `undefined`
+     * in case of errors
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
     public async importExecution<
         R extends OneOf<[XrayTestExecutionResultsServer, XrayTestExecutionResultsCloud]>
-    >(execution: R): Promise<string | null> {
+    >(execution: R): Promise<string | null | undefined> {
         try {
             if (!execution.tests || execution.tests.length === 0) {
                 logWarning("No tests linked to Xray were executed. Skipping upload.");
                 return null;
             }
-            return this.credentials
-                .getAuthenticationHeader(`${this.apiBaseURL}/authenticate`)
-                .catch((error: unknown) => {
-                    logError(`Failed to authenticate: "${error}"`);
-                    this.writeErrorFile(error, "authentication");
-                    throw error;
-                })
-                .then(async (header: HTTPHeader) => {
-                    logInfo("Importing execution...");
-                    const progressInterval = this.startResponseInterval(this.apiBaseURL);
-                    try {
-                        const response: AxiosResponse<ImportExecutionResponseType> =
-                            await Requests.post(this.getUrlImportExecution(), execution, {
-                                headers: {
-                                    ...header,
-                                },
-                            });
-                        const key = this.handleResponseImportExecution(response.data);
-                        logSuccess(`Successfully uploaded test execution results to ${key}.`);
-                        return key;
-                    } finally {
-                        clearInterval(progressInterval);
+            const authenticationHeader = await this.credentials.getAuthenticationHeader(
+                `${this.apiBaseURL}/authenticate`
+            );
+            logInfo("Importing execution...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const response: AxiosResponse<ImportExecutionResponseType> = await Requests.post(
+                    this.getUrlImportExecution(),
+                    execution,
+                    {
+                        headers: {
+                            ...authenticationHeader,
+                        },
                     }
-                });
+                );
+                const key = this.handleResponseImportExecution(response.data);
+                logSuccess(`Successfully uploaded test execution results to ${key}.`);
+                return key;
+            } finally {
+                clearInterval(progressInterval);
+            }
         } catch (error: unknown) {
-            logError(`Failed to upload results to Xray: "${error}"`);
+            logError(`Failed to import execution: "${error}"`);
             this.writeErrorFile(error, "importExecution");
         }
     }
@@ -94,43 +91,42 @@ export abstract class XrayClient<
      * @returns the response of the Xray instance
      * @see https://docs.getxray.app/display/XRAYCLOUD/Exporting+Cucumber+Tests+-+REST+v2
      */
-    public async exportCucumberTests(
+    public async exportCucumber(
         keys?: string[],
         filter?: number
     ): Promise<ExportCucumberTestsResponse> {
-        return this.credentials
-            .getAuthenticationHeader(`${this.apiBaseURL}/authenticate`)
-            .catch((error: unknown) => {
-                logError(`Failed to authenticate: "${error}"`);
-                this.writeErrorFile(error, "authentication");
-                throw error;
-            })
-            .then(async (header: HTTPHeader) => {
-                logInfo("Exporting cucumber tests...");
-                const progressInterval = this.startResponseInterval(this.apiBaseURL);
-                try {
-                    const response = await Requests.get(this.getUrlExportCucumber(keys, filter), {
-                        headers: {
-                            ...header,
-                        },
-                        params: {
-                            keys: keys,
-                            filter: filter,
-                        },
-                    });
-                    // Extract filename from response.
-                    const contentDisposition = response.headers["Content-Disposition"];
-                    const filenameStart = contentDisposition.indexOf('"');
-                    const filenameEnd = contentDisposition.lastIndexOf('"');
-                    const filename = contentDisposition.substring(filenameStart, filenameEnd);
-                    fs.writeFile(filename, response.data, (error: NodeJS.ErrnoException | null) => {
-                        throw new Error(`Failed to export cucumber feature files: "${error}"`);
-                    });
-                    throw new Error("Method not implemented.");
-                } finally {
-                    clearInterval(progressInterval);
-                }
-            });
+        try {
+            const authenticationHeader = await this.credentials.getAuthenticationHeader(
+                `${this.apiBaseURL}/authenticate`
+            );
+            logInfo("Exporting Cucumber tests...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const response = await Requests.get(this.getUrlExportCucumber(keys, filter), {
+                    headers: {
+                        ...authenticationHeader,
+                    },
+                    params: {
+                        keys: keys,
+                        filter: filter,
+                    },
+                });
+                // Extract filename from response.
+                const contentDisposition = response.headers["Content-Disposition"];
+                const filenameStart = contentDisposition.indexOf('"');
+                const filenameEnd = contentDisposition.lastIndexOf('"');
+                const filename = contentDisposition.substring(filenameStart, filenameEnd);
+                fs.writeFile(filename, response.data, (error: NodeJS.ErrnoException | null) => {
+                    throw new Error(`Failed to export cucumber feature files: "${error}"`);
+                });
+            } finally {
+                clearInterval(progressInterval);
+            }
+        } catch (error: unknown) {
+            logError(`Failed to export Cucumber tests: "${error}"`);
+            this.writeErrorFile(error, "exportCucumber");
+        }
+        throw new Error("Method not implemented.");
     }
 
     /**
@@ -158,38 +154,35 @@ export abstract class XrayClient<
         source?: string
     ): Promise<void> {
         try {
-            this.credentials
-                .getAuthenticationHeader(`${this.apiBaseURL}/authenticate`)
-                .catch((error: unknown) => {
-                    logError(`Failed to authenticate: "${error}"`);
-                    this.writeErrorFile(error, "authentication");
-                    throw error;
-                })
-                .then(async (header: HTTPHeader) => {
-                    logInfo("Importing Cucumber tests...");
-                    const progressInterval = this.startResponseInterval(this.apiBaseURL);
-                    try {
-                        const fileContent = fs.createReadStream(file);
-                        const form = new FormData();
-                        form.append("file", fileContent);
+            const authenticationHeader = await this.credentials.getAuthenticationHeader(
+                `${this.apiBaseURL}/authenticate`
+            );
+            logInfo("Importing Cucumber tests...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const fileContent = fs.createReadStream(file);
+                const form = new FormData();
+                form.append("file", fileContent);
 
-                        const response: AxiosResponse<ImportFeatureResponseType> =
-                            await Requests.post(this.getUrlImportFeature(projectKey), form, {
-                                headers: {
-                                    ...header,
-                                    ...form.getHeaders(),
-                                },
-                                params: {
-                                    projectKey: projectKey,
-                                    projectId: projectId,
-                                    source: source,
-                                },
-                            });
-                        this.handleResponseImportFeature(response.data);
-                    } finally {
-                        clearInterval(progressInterval);
+                const response: AxiosResponse<ImportFeatureResponseType> = await Requests.post(
+                    this.getUrlImportFeature(projectKey),
+                    form,
+                    {
+                        headers: {
+                            ...authenticationHeader,
+                            ...form.getHeaders(),
+                        },
+                        params: {
+                            projectKey: projectKey,
+                            projectId: projectId,
+                            source: source,
+                        },
                     }
-                });
+                );
+                this.handleResponseImportFeature(response.data);
+            } finally {
+                clearInterval(progressInterval);
+            }
         } catch (error: unknown) {
             logError(`Failed to import cucumber feature files: "${error}"`);
             this.writeErrorFile(error, "importFeature");
@@ -215,20 +208,20 @@ export abstract class XrayClient<
      * Uploads Cucumber test results to the Xray instance.
      *
      * @param results the test results as provided by the `cypress-cucumber-preprocessor`
-     * @returns the key of the test execution issue or null if the upload was skipped
+     * @returns the key of the test execution issue, `null` if the upload was skipped or `undefined`
+     * in case of errors
      * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-CucumberJSONresultsMultipart
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
     public async importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipart,
         cucumberInfo: CucumberMultipartInfoType
-    ) {
+    ): Promise<string | null | undefined> {
         try {
             if (cucumberJson.length === 0) {
                 logWarning("No Cucumber tests were executed. Skipping upload.");
                 return null;
             }
-
             const formData = new FormData();
             const resultString = JSON.stringify(cucumberJson);
             const infoString = JSON.stringify(cucumberInfo);
@@ -238,37 +231,30 @@ export abstract class XrayClient<
             formData.append("info", infoString, {
                 filename: "info.json",
             });
-            return this.credentials
-                .getAuthenticationHeader(`${this.apiBaseURL}/authenticate`)
-                .catch((error: unknown) => {
-                    logError(`Failed to authenticate: "${error}"`);
-                    this.writeErrorFile(error, "authentication");
-                    throw error;
-                })
-                .then(async (header: HTTPHeader) => {
-                    logInfo("Importing execution (Cucumber)...");
-                    const progressInterval = this.startResponseInterval(this.apiBaseURL);
-                    try {
-                        const response: AxiosResponse<ImportExecutionResponseType> =
-                            await Requests.post(this.getUrlImportExecution(), formData, {
-                                headers: {
-                                    ...header,
-                                    ...formData.getHeaders(),
-                                },
-                            });
-                        const key = this.handleResponseImportExecutionCucumberMultipart(
-                            response.data
-                        );
-                        logSuccess(
-                            `Successfully uploaded Cucumber test execution results to ${key}.`
-                        );
-                        return key;
-                    } finally {
-                        clearInterval(progressInterval);
+            const authenticationHeader = await this.credentials.getAuthenticationHeader(
+                `${this.apiBaseURL}/authenticate`
+            );
+            logInfo("Importing execution (Cucumber)...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const response: AxiosResponse<ImportExecutionResponseType> = await Requests.post(
+                    this.getUrlImportExecutionCucumberMultipart(),
+                    formData,
+                    {
+                        headers: {
+                            ...authenticationHeader,
+                            ...formData.getHeaders(),
+                        },
                     }
-                });
+                );
+                const key = this.handleResponseImportExecutionCucumberMultipart(response.data);
+                logSuccess(`Successfully uploaded Cucumber test execution results to ${key}.`);
+                return key;
+            } finally {
+                clearInterval(progressInterval);
+            }
         } catch (error: unknown) {
-            logError(`Failed to upload Cucumber results to Xray: "${error}"`);
+            logError(`Failed to import Cucumber execution: "${error}"`);
             this.writeErrorFile(error, "importExecutionCucumberMultipart");
         }
     }

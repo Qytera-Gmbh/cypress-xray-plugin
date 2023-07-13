@@ -66,7 +66,7 @@ export class Requests {
                         }
                         logDebug(`Writing request to ${filename}.`);
                         writeFileSync(filename, JSON.stringify(data));
-                        throw error;
+                        return Promise.reject(error);
                     }
                 );
                 Requests.AXIOS.interceptors.response.use(
@@ -106,7 +106,7 @@ export class Requests {
                         }
                         logDebug(`Writing response to ${filename}.`);
                         writeFileSync(filename, JSON.stringify(data));
-                        throw error;
+                        return Promise.reject(error);
                     }
                 );
             }
