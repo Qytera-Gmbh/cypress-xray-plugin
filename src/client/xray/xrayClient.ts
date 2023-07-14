@@ -3,7 +3,7 @@ import {
     JWTCredentials,
     PATCredentials,
 } from "../../authentication/credentials";
-import { logError, logWarning } from "../../logging/logging";
+import { logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { OneOf } from "../../types/util";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import {
@@ -41,7 +41,7 @@ export abstract class XrayClient<
             return key;
         } catch (error: unknown) {
             logError(`Failed to upload results to Xray: "${error}"`);
-            this.writeErrorFile(error, "importExecutionResultsError");
+            writeErrorFile(error, "importExecutionResultsError");
         }
     }
 
@@ -71,7 +71,7 @@ export abstract class XrayClient<
             return await this.dispatchExportCucumberTestsRequest(keys, filter);
         } catch (error: unknown) {
             logError(`Failed to export cucumber feature files: "${error}"`);
-            this.writeErrorFile(error, "exportCucumberTestsError");
+            writeErrorFile(error, "exportCucumberTestsError");
         }
     }
 
@@ -112,7 +112,7 @@ export abstract class XrayClient<
             );
         } catch (error: unknown) {
             logError(`Failed to import cucumber feature files: "${error}"`);
-            this.writeErrorFile(error, "importCucumberTestsError");
+            writeErrorFile(error, "importCucumberTestsError");
         }
     }
 

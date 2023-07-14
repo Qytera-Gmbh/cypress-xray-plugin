@@ -19,7 +19,7 @@ afterEach(() => {
     Sinon.restore();
 });
 
-const TEST_TMP_DIR = "test/out";
+export const TEST_TMP_DIR = "test/out";
 
 export function getTestDir(dirName: string): string {
     return path.join(TEST_TMP_DIR, dirName);

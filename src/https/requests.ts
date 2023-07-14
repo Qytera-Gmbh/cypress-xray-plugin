@@ -1,7 +1,7 @@
 import axios, { Axios, AxiosResponse, RawAxiosRequestConfig, isAxiosError } from "axios";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync } from "fs";
 import { Agent } from "https";
-import { logDebug } from "../logging/logging";
+import { logDebug, writeFile } from "../logging/logging";
 import { InternalOptions } from "../types/plugin";
 import { normalizedFilename } from "../util/files";
 
@@ -38,14 +38,14 @@ export class Requests {
                             `${method}_${url}_${timestamp}_request.json`
                         );
                         logDebug(`Writing request to ${filename}.`);
-                        writeFileSync(
-                            filename,
-                            JSON.stringify({
+                        writeFile(
+                            {
                                 url: url,
                                 headers: request.headers,
                                 params: request.params,
                                 body: request.data,
-                            })
+                            },
+                            filename
                         );
                         return request;
                     },
@@ -65,7 +65,7 @@ export class Requests {
                             data = error;
                         }
                         logDebug(`Writing request to ${filename}.`);
-                        writeFileSync(filename, JSON.stringify(data));
+                        writeFile(data, filename);
                         throw error;
                     }
                 );
@@ -78,14 +78,14 @@ export class Requests {
                             `${method}_${url}_${timestamp}_response.json`
                         );
                         logDebug(`Writing response to ${filename}.`);
-                        writeFileSync(
-                            filename,
-                            JSON.stringify({
+                        writeFile(
+                            {
                                 data: response.data,
                                 headers: response.headers,
                                 status: response.status,
                                 statusText: response.statusText,
-                            })
+                            },
+                            filename
                         );
                         return response;
                     },
@@ -105,7 +105,7 @@ export class Requests {
                             data = error;
                         }
                         logDebug(`Writing response to ${filename}.`);
-                        writeFileSync(filename, JSON.stringify(data));
+                        writeFile(data, filename);
                         throw error;
                     }
                 );

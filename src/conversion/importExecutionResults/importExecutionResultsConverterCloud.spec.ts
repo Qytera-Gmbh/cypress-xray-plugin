@@ -10,18 +10,21 @@ import { ImportExecutionResultsConverterCloud } from "./importExecutionResultsCo
 describe("the import execution results converter (cloud)", () => {
     let options: InternalOptions;
     beforeEach(() => {
-        options = initOptions({
-            jira: {
-                projectKey: "CYP",
-            },
-            xray: {
-                testType: "Manual",
-                uploadResults: true,
-            },
-            cucumber: {
-                featureFileExtension: ".feature",
-            },
-        });
+        options = initOptions(
+            {},
+            {
+                jira: {
+                    projectKey: "CYP",
+                },
+                xray: {
+                    testType: "Manual",
+                    uploadResults: true,
+                },
+                cucumber: {
+                    featureFileExtension: ".feature",
+                },
+            }
+        );
     });
 
     it("should upload screenshots by default", () => {

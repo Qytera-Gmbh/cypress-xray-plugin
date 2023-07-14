@@ -1,11 +1,9 @@
-import { isAxiosError } from "axios";
-import { writeFileSync } from "fs";
 import {
     BasicAuthCredentials,
     JWTCredentials,
     PATCredentials,
 } from "../authentication/credentials";
-import { logError, logInfo } from "../logging/logging";
+import { logInfo } from "../logging/logging";
 import { OneOf } from "../types/util";
 
 /**
@@ -32,29 +30,6 @@ export abstract class Client<
      */
     public getCredentials(): T {
         return this.credentials;
-    }
-
-    /**
-     * Writes an error to a file (e.g. HTTP response errors).
-     *
-     * @param error the error
-     * @param filename the filename to use for the file
-     */
-    protected writeErrorFile(error: unknown, filename: string): void {
-        let errorFileName: string;
-        let errorData: string;
-        if (isAxiosError(error)) {
-            errorFileName = `${filename}.json`;
-            errorData = JSON.stringify({
-                error: error.toJSON(),
-                response: error.response?.data,
-            });
-        } else {
-            errorFileName = `${filename}.log`;
-            errorData = JSON.stringify(error);
-        }
-        writeFileSync(errorFileName, errorData);
-        logError(`Complete error logs have been written to "${errorFileName}"`);
     }
 
     private readonly LOG_RESPONSE_INTERVAL_MS = 10000;
