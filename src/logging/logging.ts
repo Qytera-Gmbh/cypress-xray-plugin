@@ -46,6 +46,20 @@ export const logDebug = (...text: string[]) => {
 };
 
 /**
+ * Writes arbitrary data to a file under the log path configured in
+ * {@link initLogging `initLogging`}.
+ *
+ * @param data the data to write
+ * @param filename the filename to use for the file
+ */
+export function writeFile<T>(data: T, filename: string): void {
+    const logDirectoryPath = path.resolve(loggingOptions.logDirectory);
+    fs.mkdirSync(logDirectoryPath, { recursive: true });
+    const filepath = path.resolve(logDirectoryPath, filename);
+    fs.writeFileSync(filepath, JSON.stringify(data));
+}
+
+/**
  * Writes an error to a file (e.g. HTTP response errors) under the log path configured in
  * {@link initLogging `initLogging`}.
  *
