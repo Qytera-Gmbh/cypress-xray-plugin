@@ -3,23 +3,20 @@ import { stubLogInfo } from "../test/util";
 import { BasicAuthCredentials, PATCredentials } from "./authentication/credentials";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
-import {
-    initJiraClient,
-    initOptions,
-    initXrayClient,
-    parseEnvironmentVariables,
-    verifyContext as verifyOptions,
-} from "./context";
+import { initJiraClient, initOptions, initXrayClient, verifyContext } from "./context";
 import { InternalOptions } from "./types/plugin";
 
 describe("the plugin context configuration", () => {
-    describe("the configuration variable parser", () => {
+    describe("the option initialization", () => {
         describe("should have certain default values", () => {
-            const options: InternalOptions = initOptions({
-                jira: {
-                    projectKey: "PRJ",
-                },
-            });
+            const options: InternalOptions = initOptions(
+                {},
+                {
+                    jira: {
+                        projectKey: "PRJ",
+                    },
+                }
+            );
             describe("jira", () => {
                 it("attachVideos", () => {
                     expect(options.jira.attachVideos).to.eq(false);
@@ -112,498 +109,741 @@ describe("the plugin context configuration", () => {
         describe("should prefer provided values over default ones", () => {
             describe("jira", () => {
                 it("attachVideos", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                            attachVideos: true,
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                                attachVideos: true,
+                            },
+                        }
+                    );
                     expect(options.jira.attachVideos).to.eq(true);
                 });
                 it("createTestIssues", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                            createTestIssues: false,
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                                createTestIssues: false,
+                            },
+                        }
+                    );
                     expect(options.jira.createTestIssues).to.eq(false);
                 });
                 it("testExecutionIssueDescription", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                            testExecutionIssueDescription: "hello",
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                                testExecutionIssueDescription: "hello",
+                            },
+                        }
+                    );
                     expect(options.jira.testExecutionIssueDescription).to.eq("hello");
                 });
                 it("testExecutionIssueKey", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                            testExecutionIssueKey: "PRJ-123",
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                                testExecutionIssueKey: "PRJ-123",
+                            },
+                        }
+                    );
                     expect(options.jira.testExecutionIssueKey).to.eq("PRJ-123");
                 });
                 it("testExecutionIssueSummary", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                            testExecutionIssueSummary: "Test - Login",
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                                testExecutionIssueSummary: "Test - Login",
+                            },
+                        }
+                    );
                     expect(options.jira.testExecutionIssueSummary).to.eq("Test - Login");
                 });
                 it("testPlanIssueKey", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                            testPlanIssueKey: "PRJ-456",
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                                testPlanIssueKey: "PRJ-456",
+                            },
+                        }
+                    );
                     expect(options.jira.testPlanIssueKey).to.eq("PRJ-456");
                 });
                 it("url", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                            url: "https://example.org",
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                                url: "https://example.org",
+                            },
+                        }
+                    );
                     expect(options.jira.url).to.eq("https://example.org");
                 });
             });
 
             describe("plugin", () => {
                 it("debug", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        plugin: {
-                            debug: true,
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            plugin: {
+                                debug: true,
+                            },
+                        }
+                    );
                     expect(options.plugin.debug).to.eq(true);
                 });
                 it("enabled", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        plugin: {
-                            enabled: false,
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            plugin: {
+                                enabled: false,
+                            },
+                        }
+                    );
                     expect(options.plugin.enabled).to.eq(false);
                 });
                 it("normalizeScreenshotNames", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        plugin: {
-                            normalizeScreenshotNames: true,
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            plugin: {
+                                normalizeScreenshotNames: true,
+                            },
+                        }
+                    );
                     expect(options.plugin.normalizeScreenshotNames).to.eq(true);
                 });
                 it("overwriteIssueSummary", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        plugin: {
-                            overwriteIssueSummary: true,
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            plugin: {
+                                overwriteIssueSummary: true,
+                            },
+                        }
+                    );
                     expect(options.plugin.overwriteIssueSummary).to.eq(true);
                 });
             });
 
             describe("xray", () => {
                 it("statusFailed", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        xray: {
-                            statusFailed: "BAD",
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            xray: {
+                                statusFailed: "BAD",
+                            },
+                        }
+                    );
                     expect(options.xray.statusFailed).to.eq("BAD");
                 });
                 it("statusPassed", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        xray: {
-                            statusPassed: "GOOD",
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            xray: {
+                                statusPassed: "GOOD",
+                            },
+                        }
+                    );
                     expect(options.xray.statusPassed).to.eq("GOOD");
                 });
                 it("statusPending", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        xray: {
-                            statusPending: "PENDULUM",
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            xray: {
+                                statusPending: "PENDULUM",
+                            },
+                        }
+                    );
                     expect(options.xray.statusPending).to.eq("PENDULUM");
                 });
                 it("statusSkipped", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        xray: {
-                            statusSkipped: "SKIPPING STONE",
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            xray: {
+                                statusSkipped: "SKIPPING STONE",
+                            },
+                        }
+                    );
                     expect(options.xray.statusSkipped).to.eq("SKIPPING STONE");
                 });
 
                 describe("steps", () => {
                     it("maxLengthAction", () => {
-                        const options = initOptions({
-                            jira: {
-                                projectKey: "PRJ",
-                            },
-                            xray: {
-                                steps: {
-                                    maxLengthAction: 42,
+                        const options = initOptions(
+                            {},
+                            {
+                                jira: {
+                                    projectKey: "PRJ",
                                 },
-                            },
-                        });
+                                xray: {
+                                    steps: {
+                                        maxLengthAction: 42,
+                                    },
+                                },
+                            }
+                        );
                         expect(options.xray.steps.maxLengthAction).to.eq(42);
                     });
                     it("update", () => {
-                        const options = initOptions({
-                            jira: {
-                                projectKey: "PRJ",
-                            },
-                            xray: {
-                                steps: {
-                                    update: false,
+                        const options = initOptions(
+                            {},
+                            {
+                                jira: {
+                                    projectKey: "PRJ",
                                 },
-                            },
-                        });
+                                xray: {
+                                    steps: {
+                                        update: false,
+                                    },
+                                },
+                            }
+                        );
                         expect(options.xray.steps.update).to.eq(false);
                     });
                 });
                 it("testType", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        xray: {
-                            testType: "Cucumber",
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            xray: {
+                                testType: "Cucumber",
+                            },
+                        }
+                    );
                     expect(options.xray.testType).to.eq("Cucumber");
                 });
                 it("uploadResults", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        xray: {
-                            uploadResults: false,
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            xray: {
+                                uploadResults: false,
+                            },
+                        }
+                    );
                     expect(options.xray.uploadResults).to.eq(false);
                 });
                 it("uploadScreenshots", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        xray: {
-                            uploadScreenshots: false,
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            xray: {
+                                uploadScreenshots: false,
+                            },
+                        }
+                    );
                     expect(options.xray.uploadScreenshots).to.eq(false);
                 });
             });
 
             describe("cucumber", () => {
                 it("downloadFeatures", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        cucumber: {
-                            featureFileExtension: ".feature",
-                            downloadFeatures: true,
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            cucumber: {
+                                featureFileExtension: ".feature",
+                                downloadFeatures: true,
+                            },
+                        }
+                    );
                     expect(options.cucumber.downloadFeatures).to.eq(true);
                 });
                 it("uploadFeatures", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        cucumber: {
-                            featureFileExtension: ".feature",
-                            uploadFeatures: true,
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            cucumber: {
+                                featureFileExtension: ".feature",
+                                uploadFeatures: true,
+                            },
+                        }
+                    );
                     expect(options.cucumber.uploadFeatures).to.eq(true);
                 });
             });
 
             describe("openSSL", () => {
                 it("rootCAPath", () => {
-                    const options = initOptions({
-                        jira: {
-                            projectKey: "PRJ",
-                        },
-                        openSSL: {
-                            rootCAPath: "/path/to/cert.pem",
-                        },
-                    });
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            openSSL: {
+                                rootCAPath: "/path/to/cert.pem",
+                            },
+                        }
+                    );
                     expect(options.openSSL.rootCAPath).to.eq("/path/to/cert.pem");
                 });
                 it("secureOptions", () => {
-                    const options = initOptions({
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            openSSL: {
+                                secureOptions: 42,
+                            },
+                        }
+                    );
+                    expect(options.openSSL.secureOptions).to.eq(42);
+                });
+            });
+        });
+        describe("should be able to prefer environment variables over provided values", () => {
+            describe("jira", () => {
+                it("JIRA_PROJECT_KEY", () => {
+                    const env = {
+                        JIRA_PROJECT_KEY: "ABC",
+                    };
+                    const options = initOptions(env, {
                         jira: {
-                            projectKey: "PRJ",
+                            projectKey: "CYP",
+                        },
+                    });
+                    expect(options.jira.projectKey).to.eq("ABC");
+                });
+
+                it("JIRA_ATTACH_VIDEOS", () => {
+                    const env = {
+                        JIRA_ATTACH_VIDEOS: "true",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                            attachVideos: false,
+                        },
+                    });
+                    expect(options.jira.attachVideos).to.be.true;
+                });
+
+                it("JIRA_CREATE_TEST_ISSUES", () => {
+                    const env = {
+                        JIRA_CREATE_TEST_ISSUES: "false",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                            createTestIssues: true,
+                        },
+                    });
+                    expect(options.jira.createTestIssues).to.be.false;
+                });
+
+                it("JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION", () => {
+                    const env = {
+                        JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION: "Good morning",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                            testExecutionIssueDescription: "Goodbye",
+                        },
+                    });
+                    expect(options.jira.testExecutionIssueDescription).to.eq("Good morning");
+                });
+
+                it("JIRA_TEST_EXECUTION_ISSUE_KEY", () => {
+                    const env = {
+                        JIRA_TEST_EXECUTION_ISSUE_KEY: "CYP-123",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                            testExecutionIssueKey: "CYP-789",
+                        },
+                    });
+                    expect(options.jira.testExecutionIssueKey).to.eq("CYP-123");
+                });
+
+                it("JIRA_TEST_EXECUTION_ISSUE_SUMMARY", () => {
+                    const env = {
+                        JIRA_TEST_EXECUTION_ISSUE_SUMMARY: "Some test case",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                            testExecutionIssueSummary: "Summarini",
+                        },
+                    });
+                    expect(options.jira.testExecutionIssueSummary).to.eq("Some test case");
+                });
+
+                it("JIRA_TEST_PLAN_ISSUE_KEY", () => {
+                    const env = {
+                        JIRA_TEST_PLAN_ISSUE_KEY: "CYP-456",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                            testPlanIssueKey: "CYP-123",
+                        },
+                    });
+                    expect(options.jira.testPlanIssueKey).to.eq("CYP-456");
+                });
+
+                it("JIRA_URL", () => {
+                    const env = {
+                        JIRA_URL: "https://example.org",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                            url: "https://some.domain.org",
+                        },
+                    });
+                    expect(options.jira.url).to.eq("https://example.org");
+                });
+            });
+            describe("xray", () => {
+                it("XRAY_STATUS_FAILED", () => {
+                    const env = {
+                        XRAY_STATUS_FAILED: "no",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        xray: {
+                            statusFailed: "ERROR",
+                        },
+                    });
+                    expect(options.xray?.statusFailed).to.eq("no");
+                });
+
+                it("XRAY_STATUS_PASSED", () => {
+                    const env = {
+                        XRAY_STATUS_PASSED: "ok",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        xray: {
+                            statusPassed: "FLYBY",
+                        },
+                    });
+                    expect(options.xray?.statusPassed).to.eq("ok");
+                });
+
+                it("XRAY_STATUS_PENDING", () => {
+                    const env = {
+                        XRAY_STATUS_PENDING: "pendulum",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        xray: {
+                            statusPending: "PENCIL",
+                        },
+                    });
+                    expect(options.xray?.statusPending).to.eq("pendulum");
+                });
+
+                it("XRAY_STATUS_SKIPPED", () => {
+                    const env = {
+                        XRAY_STATUS_SKIPPED: "ski-ba-bop-ba-dop-bop",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        xray: {
+                            statusSkipped: "HOP",
+                        },
+                    });
+                    expect(options.xray?.statusSkipped).to.eq("ski-ba-bop-ba-dop-bop");
+                });
+
+                it("XRAY_STEPS_MAX_LENGTH_ACTION", () => {
+                    const env = {
+                        XRAY_STEPS_MAX_LENGTH_ACTION: "12345",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        xray: {
+                            steps: {
+                                maxLengthAction: 500,
+                            },
+                        },
+                    });
+                    expect(options.xray?.steps?.maxLengthAction).to.eq(12345);
+                });
+
+                it("XRAY_STEPS_UPDATE", () => {
+                    const env = {
+                        XRAY_STEPS_UPDATE: "false",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        xray: {
+                            steps: {
+                                update: true,
+                            },
+                        },
+                    });
+                    expect(options.xray?.steps?.update).to.be.false;
+                });
+
+                it("XRAY_TEST_TYPE", () => {
+                    const env = {
+                        XRAY_TEST_TYPE: "Automated",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        xray: {
+                            testType: "Gherkin",
+                        },
+                    });
+                    expect(options.xray?.testType).to.eq("Automated");
+                });
+
+                it("XRAY_UPLOAD_RESULTS", () => {
+                    const env = {
+                        XRAY_UPLOAD_RESULTS: "false",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        xray: {
+                            uploadResults: true,
+                        },
+                    });
+                    expect(options.xray?.uploadResults).to.be.false;
+                });
+
+                it("XRAY_UPLOAD_SCREENSHOTS", () => {
+                    const env = {
+                        XRAY_UPLOAD_SCREENSHOTS: "false",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        xray: {
+                            uploadScreenshots: true,
+                        },
+                    });
+                    expect(options.xray?.uploadScreenshots).to.be.false;
+                });
+            });
+            describe("cucumber", () => {
+                it("CUCUMBER_FEATURE_FILE_EXTENSION", () => {
+                    const env = {
+                        CUCUMBER_FEATURE_FILE_EXTENSION: ".feature.file",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        cucumber: {
+                            featureFileExtension: ".feature",
+                        },
+                    });
+                    expect(options.cucumber.featureFileExtension).to.eq(".feature.file");
+                });
+
+                it("CUCUMBER_DOWNLOAD_FEATURES", () => {
+                    const env = {
+                        CUCUMBER_DOWNLOAD_FEATURES: "true",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        cucumber: {
+                            featureFileExtension: ".feature",
+                            downloadFeatures: false,
+                        },
+                    });
+                    expect(options.cucumber?.downloadFeatures).to.be.true;
+                });
+
+                it("CUCUMBER_UPLOAD_FEATURES", () => {
+                    const env = {
+                        CUCUMBER_UPLOAD_FEATURES: "true",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        cucumber: {
+                            featureFileExtension: ".feature",
+                            uploadFeatures: false,
+                        },
+                    });
+                    expect(options.cucumber?.uploadFeatures).to.be.true;
+                });
+            });
+            describe("plugin", () => {
+                it("PLUGIN_DEBUG", () => {
+                    const env = {
+                        PLUGIN_DEBUG: "true",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        plugin: {
+                            debug: false,
+                        },
+                    });
+                    expect(options.plugin?.debug).to.be.true;
+                });
+
+                it("PLUGIN_ENABLED", () => {
+                    const env = {
+                        PLUGIN_ENABLED: "false",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        plugin: {
+                            enabled: true,
+                        },
+                    });
+                    expect(options.plugin?.enabled).to.be.false;
+                });
+
+                it("PLUGIN_NORMALIZE_SCREENSHOT_NAMES", () => {
+                    const env = {
+                        PLUGIN_NORMALIZE_SCREENSHOT_NAMES: "true",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        plugin: {
+                            normalizeScreenshotNames: false,
+                        },
+                    });
+                    expect(options.plugin?.normalizeScreenshotNames).to.be.true;
+                });
+
+                it("PLUGIN_OVERWRITE_ISSUE_SUMMARY", () => {
+                    const env = {
+                        PLUGIN_OVERWRITE_ISSUE_SUMMARY: "true",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        plugin: {
+                            overwriteIssueSummary: false,
+                        },
+                    });
+                    expect(options.plugin?.overwriteIssueSummary).to.be.true;
+                });
+            });
+            describe("openSSL", () => {
+                it("OPENSSL_ROOT_CA_PATH ", () => {
+                    const env = {
+                        OPENSSL_ROOT_CA_PATH: "/home/ssl/ca.pem",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        openSSL: {
+                            rootCAPath: "/a/b/c.pem",
+                        },
+                    });
+                    expect(options.openSSL?.rootCAPath).to.eq("/home/ssl/ca.pem");
+                });
+
+                it("OPENSSL_SECURE_OPTIONS ", () => {
+                    const env = {
+                        OPENSSL_SECURE_OPTIONS: 415,
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
                         },
                         openSSL: {
                             secureOptions: 42,
                         },
                     });
-                    expect(options.openSSL.secureOptions).to.eq(42);
+                    expect(options.openSSL?.secureOptions).to.eq(415);
                 });
-            });
-        });
-    });
-    describe("the environment variable parser", () => {
-        describe("should be able to parse Jira options", () => {
-            it("JIRA_PROJECT_KEY", () => {
-                const env = {
-                    JIRA_PROJECT_KEY: "ABC",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.jira.projectKey).to.eq("ABC");
-            });
-
-            it("JIRA_ATTACH_VIDEOS", () => {
-                const env = {
-                    JIRA_ATTACH_VIDEOS: "true",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.jira.attachVideos).to.be.true;
-            });
-
-            it("JIRA_CREATE_TEST_ISSUES", () => {
-                const env = {
-                    JIRA_CREATE_TEST_ISSUES: "false",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.jira.createTestIssues).to.be.false;
-            });
-
-            it("JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION", () => {
-                const env = {
-                    JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION: "Good morning",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.jira.testExecutionIssueDescription).to.eq("Good morning");
-            });
-
-            it("JIRA_TEST_EXECUTION_ISSUE_KEY", () => {
-                const env = {
-                    JIRA_TEST_EXECUTION_ISSUE_KEY: "CYP-123",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.jira.testExecutionIssueKey).to.eq("CYP-123");
-            });
-
-            it("JIRA_TEST_EXECUTION_ISSUE_SUMMARY", () => {
-                const env = {
-                    JIRA_TEST_EXECUTION_ISSUE_SUMMARY: "Some test case",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.jira.testExecutionIssueSummary).to.eq("Some test case");
-            });
-
-            it("JIRA_TEST_PLAN_ISSUE_KEY", () => {
-                const env = {
-                    JIRA_TEST_PLAN_ISSUE_KEY: "CYP-456",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.jira.testPlanIssueKey).to.eq("CYP-456");
-            });
-
-            it("JIRA_URL", () => {
-                const env = {
-                    JIRA_URL: "https://example.org",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.jira.url).to.eq("https://example.org");
-            });
-        });
-        describe("should be able to parse Xray options", () => {
-            it("XRAY_STATUS_FAILED", () => {
-                const env = {
-                    XRAY_STATUS_FAILED: "no",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.xray?.statusFailed).to.eq("no");
-            });
-
-            it("XRAY_STATUS_PASSED", () => {
-                const env = {
-                    XRAY_STATUS_PASSED: "ok",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.xray?.statusPassed).to.eq("ok");
-            });
-
-            it("XRAY_STATUS_PENDING", () => {
-                const env = {
-                    XRAY_STATUS_PENDING: "pendulum",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.xray?.statusPending).to.eq("pendulum");
-            });
-
-            it("XRAY_STATUS_SKIPPED", () => {
-                const env = {
-                    XRAY_STATUS_SKIPPED: "ski-ba-bop-ba-dop-bop",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.xray?.statusSkipped).to.eq("ski-ba-bop-ba-dop-bop");
-            });
-
-            it("XRAY_STEPS_MAX_LENGTH_ACTION", () => {
-                const env = {
-                    XRAY_STEPS_MAX_LENGTH_ACTION: "12345",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.xray?.steps?.maxLengthAction).to.eq(12345);
-            });
-
-            it("XRAY_STEPS_UPDATE", () => {
-                const env = {
-                    XRAY_STEPS_UPDATE: "false",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.xray?.steps?.update).to.be.false;
-            });
-
-            it("XRAY_TEST_TYPE", () => {
-                const env = {
-                    XRAY_TEST_TYPE: "Automated",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.xray?.testType).to.eq("Automated");
-            });
-
-            it("XRAY_UPLOAD_RESULTS", () => {
-                const env = {
-                    XRAY_UPLOAD_RESULTS: "false",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.xray?.uploadResults).to.be.false;
-            });
-
-            it("XRAY_UPLOAD_SCREENSHOTS", () => {
-                const env = {
-                    XRAY_UPLOAD_SCREENSHOTS: "false",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.xray?.uploadScreenshots).to.be.false;
-            });
-        });
-        describe("should be able to parse Cucumber options", () => {
-            it("CUCUMBER_FEATURE_FILE_EXTENSION", () => {
-                const env = {
-                    CUCUMBER_FEATURE_FILE_EXTENSION: ".feature.file",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.cucumber.featureFileExtension).to.eq(".feature.file");
-            });
-
-            it("CUCUMBER_DOWNLOAD_FEATURES", () => {
-                const env = {
-                    CUCUMBER_DOWNLOAD_FEATURES: "true",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.cucumber?.downloadFeatures).to.be.true;
-            });
-
-            it("CUCUMBER_UPLOAD_FEATURES", () => {
-                const env = {
-                    CUCUMBER_UPLOAD_FEATURES: "true",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.cucumber?.uploadFeatures).to.be.true;
-            });
-        });
-        describe("should be able to parse Plugin options", () => {
-            it("PLUGIN_DEBUG", () => {
-                const env = {
-                    PLUGIN_DEBUG: "true",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.plugin?.debug).to.be.true;
-            });
-
-            it("PLUGIN_ENABLED", () => {
-                const env = {
-                    PLUGIN_ENABLED: "false",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.plugin?.enabled).to.be.false;
-            });
-
-            it("PLUGIN_NORMALIZE_SCREENSHOT_NAMES", () => {
-                const env = {
-                    PLUGIN_NORMALIZE_SCREENSHOT_NAMES: "true",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.plugin?.normalizeScreenshotNames).to.be.true;
-            });
-
-            it("PLUGIN_OVERWRITE_ISSUE_SUMMARY", () => {
-                const env = {
-                    PLUGIN_OVERWRITE_ISSUE_SUMMARY: "true",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.plugin?.overwriteIssueSummary).to.be.true;
-            });
-        });
-        describe("should be able to parse OpenSSL options", () => {
-            it("OPENSSL_ROOT_CA_PATH ", () => {
-                const env = {
-                    OPENSSL_ROOT_CA_PATH: "/home/ssl/ca.pem",
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.openSSL?.rootCAPath).to.eq("/home/ssl/ca.pem");
-            });
-
-            it("OPENSSL_SECURE_OPTIONS ", () => {
-                const env = {
-                    OPENSSL_SECURE_OPTIONS: 415,
-                };
-                const options = parseEnvironmentVariables(env);
-                expect(options.openSSL?.secureOptions).to.eq(415);
             });
         });
     });
     describe("the options verifier", () => {
         it("should be able to detect unset project keys", async () => {
             expect(() =>
-                verifyOptions({
+                verifyContext({
                     jira: {
                         projectKey: undefined,
                     },
@@ -612,7 +852,7 @@ describe("the plugin context configuration", () => {
         });
         it("should be able to detect mismatched test execution issue keys", async () => {
             expect(() =>
-                verifyOptions({
+                verifyContext({
                     jira: {
                         projectKey: "CYP",
                         testExecutionIssueKey: "ABC-123",
@@ -624,7 +864,7 @@ describe("the plugin context configuration", () => {
         });
         it("should be able to detect mismatched test plan issue keys", async () => {
             expect(() =>
-                verifyOptions({
+                verifyContext({
                     jira: {
                         projectKey: "CYP",
                         testPlanIssueKey: "ABC-456",
@@ -636,7 +876,7 @@ describe("the plugin context configuration", () => {
         });
         it("should not allow step lengths of length zero", async () => {
             expect(() =>
-                verifyOptions({
+                verifyContext({
                     jira: {
                         projectKey: "CYP",
                     },
@@ -652,7 +892,7 @@ describe("the plugin context configuration", () => {
         });
         it("should not allow negative step action lengths", async () => {
             expect(() =>
-                verifyOptions({
+                verifyContext({
                     jira: {
                         projectKey: "CYP",
                     },
@@ -670,12 +910,15 @@ describe("the plugin context configuration", () => {
     describe("the Jira client instantiation", () => {
         let options: InternalOptions;
         beforeEach(() => {
-            options = initOptions({
-                jira: {
-                    projectKey: "CYP",
-                    url: "https://example.org",
-                },
-            });
+            options = initOptions(
+                {},
+                {
+                    jira: {
+                        projectKey: "CYP",
+                        url: "https://example.org",
+                    },
+                }
+            );
             // Make Jira client instantiation mandatory.
             options.jira.attachVideos = true;
         });
@@ -760,11 +1003,14 @@ describe("the plugin context configuration", () => {
     describe("the Xray client instantiation", () => {
         let options: InternalOptions;
         beforeEach(() => {
-            options = initOptions({
-                jira: {
-                    projectKey: "CYP",
-                },
-            });
+            options = initOptions(
+                {},
+                {
+                    jira: {
+                        projectKey: "CYP",
+                    },
+                }
+            );
         });
 
         it("should be able to detect cloud credentials", () => {

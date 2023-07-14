@@ -1,13 +1,6 @@
 /// <reference types="cypress" />
 
-import {
-    initJiraClient,
-    initXrayClient,
-    mergeOptions,
-    initOptions as mergeWithDefaults,
-    parseEnvironmentVariables,
-    verifyContext,
-} from "./src/context";
+import { initJiraClient, initOptions, initXrayClient, verifyContext } from "./src/context";
 import { afterRunHook, synchronizeFile } from "./src/hooks";
 import { Requests } from "./src/https/requests";
 import { logInfo } from "./src/logging/logging";
@@ -16,10 +9,8 @@ import { Options, PluginContext } from "./src/types/plugin";
 let context: PluginContext;
 
 export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, options: Options) {
-    const configOptions = mergeWithDefaults(options);
-    const envOptions = parseEnvironmentVariables(config.env);
     context = {
-        internal: mergeOptions(configOptions, envOptions),
+        internal: initOptions(config.env, options),
         cypress: config,
     };
 

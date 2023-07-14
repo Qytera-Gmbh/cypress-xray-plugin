@@ -42,6 +42,7 @@ export const ENV_CUCUMBER_UPLOAD_FEATURES = "CUCUMBER_UPLOAD_FEATURES";
 // ============================================================================================== //
 export const ENV_PLUGIN_DEBUG = "PLUGIN_DEBUG";
 export const ENV_PLUGIN_ENABLED = "PLUGIN_ENABLED";
+export const ENV_PLUGIN_LOG_DIRECTORY = "PLUGIN_LOG_DIRECTORY";
 export const ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES = "PLUGIN_NORMALIZE_SCREENSHOT_NAMES";
 export const ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY = "PLUGIN_OVERWRITE_ISSUE_SUMMARY";
 // ============================================================================================== //

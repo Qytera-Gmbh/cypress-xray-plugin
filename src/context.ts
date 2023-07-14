@@ -21,6 +21,7 @@ import {
     ENV_OPENSSL_SECURE_OPTIONS,
     ENV_PLUGIN_DEBUG,
     ENV_PLUGIN_ENABLED,
+    ENV_PLUGIN_LOG_DIRECTORY,
     ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES,
     ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY,
     ENV_XRAY_CLIENT_ID,
@@ -40,160 +41,94 @@ import { InternalOptions, Options, XrayStepOptions } from "./types/plugin";
 import { OneOf } from "./types/util";
 import { asBoolean, asInt, asString, parse } from "./util/parsing";
 
-export function initOptions(options: Options): InternalOptions {
-    // Set some default values for constant options.
+export function initOptions(env: Cypress.ObjectLike, options: Options): InternalOptions {
     return {
         jira: {
-            attachVideos: options.jira?.attachVideos ?? false,
-            createTestIssues: options.jira?.createTestIssues ?? true,
-            projectKey: options.jira?.projectKey,
-            testExecutionIssueDescription: options.jira?.testExecutionIssueDescription,
-            testExecutionIssueKey: options.jira?.testExecutionIssueKey,
-            testExecutionIssueSummary: options.jira?.testExecutionIssueSummary,
-            testPlanIssueKey: options.jira?.testPlanIssueKey,
-            url: options.jira?.url,
-        },
-        plugin: {
-            debug: options.plugin?.debug ?? false,
-            enabled: options.plugin?.enabled ?? true,
-            normalizeScreenshotNames: options.plugin?.normalizeScreenshotNames ?? false,
-            overwriteIssueSummary: options.plugin?.overwriteIssueSummary ?? false,
-        },
-        xray: {
-            statusFailed: options.xray?.statusFailed,
-            statusPassed: options.xray?.statusPassed,
-            statusPending: options.xray?.statusPending,
-            statusSkipped: options.xray?.statusSkipped,
-            steps: {
-                maxLengthAction: options.xray?.steps?.maxLengthAction ?? 8000,
-                update: options.xray?.steps?.update ?? true,
-            },
-            testType: options.xray?.testType ?? "Manual",
-            uploadResults: options.xray?.uploadResults ?? true,
-            uploadScreenshots: options.xray?.uploadScreenshots ?? true,
-        },
-        cucumber: {
-            featureFileExtension: options.cucumber?.featureFileExtension,
-            downloadFeatures: options.cucumber?.downloadFeatures ?? false,
-            issues: {},
-            uploadFeatures: options.cucumber?.uploadFeatures ?? false,
-        },
-        openSSL: {
-            rootCAPath: options.openSSL?.rootCAPath,
-            secureOptions: options.openSSL?.secureOptions,
-        },
-    };
-}
-
-export function parseEnvironmentVariables(env: Cypress.ObjectLike): InternalOptions {
-    return {
-        jira: {
-            projectKey: parse(env, ENV_JIRA_PROJECT_KEY, asString),
-            attachVideos: parse(env, ENV_JIRA_ATTACH_VIDEOS, asBoolean),
-            createTestIssues: parse(env, ENV_JIRA_CREATE_TEST_ISSUES, asBoolean),
-            testExecutionIssueDescription: parse(
-                env,
-                ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION,
-                asString
-            ),
-            testExecutionIssueKey: parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_KEY, asString),
-            testExecutionIssueSummary: parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY, asString),
-            testPlanIssueKey: parse(env, ENV_JIRA_TEST_PLAN_ISSUE_KEY, asString),
-            url: parse(env, ENV_JIRA_URL, asString),
-        },
-        xray: {
-            statusFailed: parse(env, ENV_XRAY_STATUS_FAILED, asString),
-            statusPassed: parse(env, ENV_XRAY_STATUS_PASSED, asString),
-            statusPending: parse(env, ENV_XRAY_STATUS_PENDING, asString),
-            statusSkipped: parse(env, ENV_XRAY_STATUS_SKIPPED, asString),
-            steps: {
-                maxLengthAction: parse(env, ENV_XRAY_STEPS_MAX_LENGTH_ACTION, asInt),
-                update: parse(env, ENV_XRAY_STEPS_UPDATE, asBoolean),
-            },
-            testType: parse(env, ENV_XRAY_TEST_TYPE, asString),
-            uploadResults: parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean),
-            uploadScreenshots: parse(env, ENV_XRAY_UPLOAD_SCREENSHOTS, asBoolean),
-        },
-        cucumber: {
-            featureFileExtension: parse(env, ENV_CUCUMBER_FEATURE_FILE_EXTENSION, asString),
-            downloadFeatures: parse(env, ENV_CUCUMBER_DOWNLOAD_FEATURES, asBoolean),
-            issues: {},
-            uploadFeatures: parse(env, ENV_CUCUMBER_UPLOAD_FEATURES, asBoolean),
-        },
-        plugin: {
-            enabled: parse(env, ENV_PLUGIN_ENABLED, asBoolean),
-            debug: parse(env, ENV_PLUGIN_DEBUG, asBoolean),
-            normalizeScreenshotNames: parse(env, ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES, asBoolean),
-            overwriteIssueSummary: parse(env, ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY, asBoolean),
-        },
-        openSSL: {
-            rootCAPath: parse(env, ENV_OPENSSL_ROOT_CA_PATH, asString),
-            secureOptions: parse(env, ENV_OPENSSL_SECURE_OPTIONS, asInt),
-        },
-    };
-}
-
-export function mergeOptions(
-    configOptions: InternalOptions,
-    envOptions: InternalOptions
-): InternalOptions {
-    return {
-        jira: {
-            projectKey: envOptions.jira.projectKey ?? configOptions.jira.projectKey,
-            attachVideos: envOptions.jira.attachVideos ?? configOptions.jira.attachVideos,
+            attachVideos:
+                parse(env, ENV_JIRA_ATTACH_VIDEOS, asBoolean) ?? options.jira.attachVideos ?? false,
             createTestIssues:
-                envOptions.jira.createTestIssues ?? configOptions.jira.createTestIssues,
+                parse(env, ENV_JIRA_CREATE_TEST_ISSUES, asBoolean) ??
+                options.jira.createTestIssues ??
+                true,
+            projectKey: parse(env, ENV_JIRA_PROJECT_KEY, asString) ?? options.jira.projectKey,
             testExecutionIssueDescription:
-                envOptions.jira.testExecutionIssueDescription ??
-                configOptions.jira.testExecutionIssueDescription,
+                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION, asString) ??
+                options.jira.testExecutionIssueDescription,
             testExecutionIssueKey:
-                envOptions.jira.testExecutionIssueKey ?? configOptions.jira.testExecutionIssueKey,
+                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_KEY, asString) ??
+                options.jira.testExecutionIssueKey,
             testExecutionIssueSummary:
-                envOptions.jira.testExecutionIssueSummary ??
-                configOptions.jira.testExecutionIssueSummary,
+                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY, asString) ??
+                options.jira.testExecutionIssueSummary,
             testPlanIssueKey:
-                envOptions.jira.testPlanIssueKey ?? configOptions.jira.testPlanIssueKey,
-            url: envOptions.jira.url ?? configOptions.jira.url,
+                parse(env, ENV_JIRA_TEST_PLAN_ISSUE_KEY, asString) ?? options.jira.testPlanIssueKey,
+            url: parse(env, ENV_JIRA_URL, asString) ?? options.jira.url,
+        },
+        plugin: {
+            debug: parse(env, ENV_PLUGIN_DEBUG, asBoolean) ?? options.plugin?.debug ?? false,
+            enabled: parse(env, ENV_PLUGIN_ENABLED, asBoolean) ?? options.plugin?.enabled ?? true,
+            logDirectory:
+                parse(env, ENV_PLUGIN_LOG_DIRECTORY, asString) ??
+                options.plugin?.logDirectory ??
+                ".",
+            normalizeScreenshotNames:
+                parse(env, ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES, asBoolean) ??
+                options.plugin?.normalizeScreenshotNames ??
+                false,
+            overwriteIssueSummary:
+                parse(env, ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY, asBoolean) ??
+                options.plugin?.overwriteIssueSummary ??
+                false,
         },
         xray: {
-            statusFailed: envOptions.xray.statusFailed ?? configOptions.xray.statusFailed,
-            statusPassed: envOptions.xray.statusPassed ?? configOptions.xray.statusPassed,
-            statusPending: envOptions.xray.statusPending ?? configOptions.xray.statusPending,
-            statusSkipped: envOptions.xray.statusSkipped ?? configOptions.xray.statusSkipped,
+            statusFailed:
+                parse(env, ENV_XRAY_STATUS_FAILED, asString) ?? options.xray?.statusFailed,
+            statusPassed:
+                parse(env, ENV_XRAY_STATUS_PASSED, asString) ?? options.xray?.statusPassed,
+            statusPending:
+                parse(env, ENV_XRAY_STATUS_PENDING, asString) ?? options.xray?.statusPending,
+            statusSkipped:
+                parse(env, ENV_XRAY_STATUS_SKIPPED, asString) ?? options.xray?.statusSkipped,
             steps: {
                 maxLengthAction:
-                    envOptions.xray.steps.maxLengthAction ??
-                    configOptions.xray.steps.maxLengthAction,
-                update: envOptions.xray.steps.update ?? configOptions.xray.steps.update,
+                    parse(env, ENV_XRAY_STEPS_MAX_LENGTH_ACTION, asInt) ??
+                    options.xray?.steps?.maxLengthAction ??
+                    8000,
+                update:
+                    parse(env, ENV_XRAY_STEPS_UPDATE, asBoolean) ??
+                    options.xray?.steps?.update ??
+                    true,
             },
-            testType: envOptions.xray.testType ?? configOptions.xray.testType,
-            uploadResults: envOptions.xray.uploadResults ?? configOptions.xray.uploadResults,
+            testType:
+                parse(env, ENV_XRAY_TEST_TYPE, asString) ?? options.xray?.testType ?? "Manual",
+            uploadResults:
+                parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean) ??
+                options.xray?.uploadResults ??
+                true,
             uploadScreenshots:
-                envOptions.xray.uploadScreenshots ?? configOptions.xray.uploadScreenshots,
+                parse(env, ENV_XRAY_UPLOAD_SCREENSHOTS, asBoolean) ??
+                options.xray?.uploadScreenshots ??
+                true,
         },
         cucumber: {
             featureFileExtension:
-                envOptions.cucumber.featureFileExtension ??
-                configOptions.cucumber.featureFileExtension,
+                parse(env, ENV_CUCUMBER_FEATURE_FILE_EXTENSION, asString) ??
+                options.cucumber?.featureFileExtension,
             downloadFeatures:
-                envOptions.cucumber.downloadFeatures ?? configOptions.cucumber.downloadFeatures,
-            issues: envOptions.cucumber.issues ?? configOptions.cucumber.issues,
+                parse(env, ENV_CUCUMBER_DOWNLOAD_FEATURES, asBoolean) ??
+                options.cucumber?.downloadFeatures ??
+                false,
+            issues: {},
             uploadFeatures:
-                envOptions.cucumber.uploadFeatures ?? configOptions.cucumber.uploadFeatures,
-        },
-        plugin: {
-            enabled: envOptions.plugin.enabled ?? configOptions.plugin.enabled,
-            debug: envOptions.plugin.debug ?? configOptions.plugin.debug,
-            normalizeScreenshotNames:
-                envOptions.plugin.normalizeScreenshotNames ??
-                configOptions.plugin.normalizeScreenshotNames,
-            overwriteIssueSummary:
-                envOptions.plugin.overwriteIssueSummary ??
-                configOptions.plugin.overwriteIssueSummary,
+                parse(env, ENV_CUCUMBER_UPLOAD_FEATURES, asBoolean) ??
+                options.cucumber?.uploadFeatures ??
+                false,
         },
         openSSL: {
-            rootCAPath: envOptions.openSSL.rootCAPath ?? configOptions.openSSL.rootCAPath,
-            secureOptions: envOptions.openSSL.secureOptions ?? configOptions.openSSL.secureOptions,
+            rootCAPath:
+                parse(env, ENV_OPENSSL_ROOT_CA_PATH, asString) ?? options.openSSL?.rootCAPath,
+            secureOptions:
+                parse(env, ENV_OPENSSL_SECURE_OPTIONS, asInt) ?? options.openSSL?.secureOptions,
         },
     };
 }
