@@ -4,7 +4,7 @@ import fs from "fs";
 import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authentication/credentials";
 import { ImportExecutionResultsConverterServer } from "../../conversion/importExecutionResults/importExecutionResultsConverterServer";
 import { Requests } from "../../https/requests";
-import { logError, logInfo, logSuccess } from "../../logging/logging";
+import { logError, logInfo, logSuccess, writeErrorFile } from "../../logging/logging";
 import { InternalOptions } from "../../types/plugin";
 import { XrayTestExecutionResultsServer } from "../../types/xray/importTestExecutionResults";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
@@ -51,7 +51,7 @@ export class XrayClientServer extends XrayClient<
             .getAuthenticationHeader()
             .catch((error: unknown) => {
                 logError(`Failed to authenticate: "${error}"`);
-                this.writeErrorFile(error, "authenticationError");
+                writeErrorFile(error, "authenticationError");
                 throw error;
             })
             .then(async (header: HTTPHeader) => {

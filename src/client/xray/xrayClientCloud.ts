@@ -4,7 +4,7 @@ import fs from "fs";
 import { HTTPHeader, JWTCredentials } from "../../authentication/credentials";
 import { ImportExecutionResultsConverterCloud } from "../../conversion/importExecutionResults/importExecutionResultsConverterCloud";
 import { Requests } from "../../https/requests";
-import { logError, logInfo, logSuccess } from "../../logging/logging";
+import { logError, logInfo, logSuccess, writeErrorFile } from "../../logging/logging";
 import { InternalOptions } from "../../types/plugin";
 import { XrayTestExecutionResultsCloud } from "../../types/xray/importTestExecutionResults";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
@@ -43,7 +43,7 @@ export class XrayClientCloud extends XrayClient<JWTCredentials, ImportFeatureRes
             .getAuthenticationHeader(`${XrayClientCloud.URL}/authenticate`)
             .catch((error: unknown) => {
                 logError(`Failed to authenticate: "${error}"`);
-                this.writeErrorFile(error, "authenticationError");
+                writeErrorFile(error, "authenticationError");
                 throw error;
             })
             .then(async (header: HTTPHeader) => {

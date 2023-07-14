@@ -48,6 +48,9 @@ describe("the plugin context configuration", () => {
                 it("enabled", () => {
                     expect(options.plugin.enabled).to.eq(true);
                 });
+                it("logDirectory", () => {
+                    expect(options.plugin.logDirectory).to.eq("logs");
+                });
                 it("normalizeScreenshotNames", () => {
                     expect(options.plugin.normalizeScreenshotNames).to.eq(false);
                 });
@@ -222,6 +225,20 @@ describe("the plugin context configuration", () => {
                         }
                     );
                     expect(options.plugin.enabled).to.eq(false);
+                });
+                it("logDirectory", () => {
+                    const options = initOptions(
+                        {},
+                        {
+                            jira: {
+                                projectKey: "PRJ",
+                            },
+                            plugin: {
+                                logDirectory: "./logs/",
+                            },
+                        }
+                    );
+                    expect(options.plugin.logDirectory).to.eq("./logs/");
                 });
                 it("normalizeScreenshotNames", () => {
                     const options = initOptions(
@@ -775,6 +792,21 @@ describe("the plugin context configuration", () => {
                         },
                     });
                     expect(options.plugin?.enabled).to.be.false;
+                });
+
+                it("PLUGIN_LOG_DIRECTORY", () => {
+                    const env = {
+                        PLUGIN_LOG_DIRECTORY: "/home/logs/cypress-xray-plugin",
+                    };
+                    const options = initOptions(env, {
+                        jira: {
+                            projectKey: "CYP",
+                        },
+                        plugin: {
+                            logDirectory: "./logging/subdirectory",
+                        },
+                    });
+                    expect(options.plugin?.logDirectory).to.eq("/home/logs/cypress-xray-plugin");
                 });
 
                 it("PLUGIN_NORMALIZE_SCREENSHOT_NAMES", () => {

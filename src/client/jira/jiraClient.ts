@@ -3,7 +3,7 @@ import FormData from "form-data";
 import fs from "fs";
 import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
-import { logError, logInfo, logSuccess, logWarning } from "../../logging/logging";
+import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
 import { Attachment } from "../../types/jira/attachments";
 import { Client } from "../client";
 
@@ -85,7 +85,7 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
                 });
         } catch (error: unknown) {
             logError(`Failed to attach files: "${error}"`);
-            this.writeErrorFile(error, "addAttachmentError");
+            writeErrorFile(error, "addAttachmentError");
         }
     }
 }

@@ -70,7 +70,7 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
             logDirectory:
                 parse(env, ENV_PLUGIN_LOG_DIRECTORY, asString) ??
                 options.plugin?.logDirectory ??
-                ".",
+                "logs",
             normalizeScreenshotNames:
                 parse(env, ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES, asBoolean) ??
                 options.plugin?.normalizeScreenshotNames ??
