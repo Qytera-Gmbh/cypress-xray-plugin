@@ -149,6 +149,10 @@ export interface XrayOptions {
      * issues created during upload (happens when a test does not yet have a corresponding Xray
      * issue).
      *
+     * Please note that on Xray Server, this option will not apply to tests which are created for
+     * executed Cucumber feature files. These will always have `Cucumber` for test type (see
+     * {@link https://docs.getxray.app/display/XRAY/Test#Test-configuringtesttypesConfiguringTestTypes}).
+     *
      * @example "Manual"
      */
     testType?: string;
