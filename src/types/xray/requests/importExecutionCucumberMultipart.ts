@@ -1,15 +1,15 @@
-export type CucumberMultipart = Feature[];
-export interface Feature {
+export type CucumberMultipart = CucumberMultipartFeature[];
+export interface CucumberMultipartFeature {
     uri: string;
     id?: string;
     line?: number;
     keyword: string;
     name: string;
     description?: string;
-    elements: Element[];
-    tags?: Tag[];
+    elements: CucumberMultipartElement[];
+    tags?: CucumberMultipartTag[];
 }
-export interface Element {
+export interface CucumberMultipartElement {
     start_timestamp?: string;
     line: number;
     id?: string;
@@ -17,46 +17,46 @@ export interface Element {
     keyword: string;
     name: string;
     description: string;
-    before?: Hook[];
-    steps: Step[];
-    after?: Hook[];
-    tags?: Tag[];
+    before?: CucumberMultipartHook[];
+    steps: CucumberMultipartStep[];
+    after?: CucumberMultipartHook[];
+    tags?: CucumberMultipartTag[];
 }
-export interface Hook {
-    match?: Match;
-    result: Result;
+export interface CucumberMultipartHook {
+    match?: CucumberMultipartMatch;
+    result: CucumberMultipartResult;
 }
-export interface Match {
+export interface CucumberMultipartMatch {
     location?: string;
-    arguments?: Argument[];
+    arguments?: CucumberMultipartArgument[];
 }
-export interface Argument {
+export interface CucumberMultipartArgument {
     value: string;
     offset: number;
 }
-export interface Result {
+export interface CucumberMultipartResult {
     duration?: number;
     status: "passed" | "failed" | "skipped" | "undefined" | "pending" | "unknown";
     error_message?: string;
 }
-export interface Step {
+export interface CucumberMultipartStep {
     keyword: string;
     line: number;
-    match?: Match;
+    match?: CucumberMultipartMatch;
     name: string;
-    result: Result;
-    doc_string?: DocString;
-    rows?: DataTableRow[];
+    result: CucumberMultipartResult;
+    doc_string?: CucumberMultipartDocString;
+    rows?: CucumberMultipartDataTableRow[];
 }
-export interface DocString {
+export interface CucumberMultipartDocString {
     line: number;
     value: string;
     content_type?: string;
 }
-export interface DataTableRow {
+export interface CucumberMultipartDataTableRow {
     cells: string[];
 }
-export interface Tag {
+export interface CucumberMultipartTag {
     name: string;
     line?: number;
 }

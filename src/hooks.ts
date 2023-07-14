@@ -17,7 +17,10 @@ import {
     XrayTestExecutionResultsCloud,
     XrayTestExecutionResultsServer,
 } from "./types/xray/importTestExecutionResults";
-import { CucumberMultipart } from "./types/xray/requests/importExecutionCucumberMultipart";
+import {
+    CucumberMultipartFeature,
+    CucumberMultipartTag,
+} from "./types/xray/requests/importExecutionCucumberMultipart";
 import {
     CucumberMultipartInfoCloud,
     CucumberMultipartInfoServer,
@@ -217,9 +220,21 @@ async function uploadCucumberResults(
     options?: InternalOptions,
     xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>
 ) {
-    const results: CucumberMultipart = JSON.parse(
+    const results: CucumberMultipartFeature[] = JSON.parse(
         fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
     );
+    if (options.jira.testExecutionIssueKey) {
+        const testExecutionIssueTag: CucumberMultipartTag = {
+            name: `@${options.jira.testExecutionIssueKey}`,
+        };
+        results.forEach((result: CucumberMultipartFeature) => {
+            if (result.tags) {
+                result.tags = [];
+            }
+            // Xray uses the first encountered issue tag for deducing the test execution issue.
+            result.tags = [testExecutionIssueTag, ...result.tags];
+        });
+    }
     if (xrayClient instanceof XrayClientServer) {
         const info: CucumberMultipartInfoServer = {
             fields: {
