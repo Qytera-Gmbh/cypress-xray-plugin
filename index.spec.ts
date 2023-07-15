@@ -33,6 +33,7 @@ describe("the plugin exports should work", () => {
             const options: CypressXrayPluginOptions = {
                 jira: {
                     projectKey: "CYP-123",
+                    url: "https://example.org",
                 },
             };
             expect(options).to.exist;
