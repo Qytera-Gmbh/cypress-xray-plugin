@@ -31,7 +31,8 @@
         "lib": "src"
     },
     "scripts": {
-        "test": "nyc --reporter=html --exclude=**/*.spec.ts --exclude=test/ mocha",
+        "test": "mocha",
+        "coverage": "nyc --reporter=html --exclude=**/*.spec.ts --exclude=test/ mocha",
         "build": "tsc --project tsconfigBuild.json"
     },
     "dependencies": {
