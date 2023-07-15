@@ -38,7 +38,7 @@ export abstract class XrayClient<
     >(execution: R): Promise<string | null | undefined> {
         try {
             if (!execution.tests || execution.tests.length === 0) {
-                logWarning("No plain Cypress tests were executed. Skipping upload.");
+                logWarning("No native Cypress tests were executed. Skipping native upload.");
                 return null;
             }
             const authenticationHeader = await this.credentials.getAuthenticationHeader(
@@ -217,7 +217,7 @@ export abstract class XrayClient<
     ): Promise<string | null | undefined> {
         try {
             if (cucumberJson.length === 0) {
-                logWarning("No Cucumber tests were executed. Skipping upload.");
+                logWarning("No Cucumber tests were executed. Skipping Cucumber upload.");
                 return null;
             }
             const formData = new FormData();

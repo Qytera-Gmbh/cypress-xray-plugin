@@ -62,7 +62,7 @@ describe("the Xray Cloud client", () => {
                     "No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test: nothing 0 2"
                 );
                 expect(stubbedWarning).to.have.been.calledWith(
-                    "No plain Cypress tests were executed. Skipping upload."
+                    "No native Cypress tests were executed. Skipping native upload."
                 );
             });
             it("should be able to handle successful responses", async () => {
