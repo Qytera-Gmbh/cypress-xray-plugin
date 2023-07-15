@@ -1,5 +1,4 @@
 import { logWarning } from "../../logging/logging";
-import { InternalOptions } from "../../types/plugin";
 import { Status } from "../../types/testStatus";
 import { DateTimeISO, OneOf, getEnumKeyByEnumValue } from "../../types/util";
 import {
@@ -11,10 +10,12 @@ import {
     XrayTestInfoServer,
     XrayTestServer,
 } from "../../types/xray/importTestExecutionResults";
+import { Converter } from "../converter";
 
 /**
  * @template XrayTestType - the Xray test type
  * @template XrayTestInfoType - the Xray test information type
+ * @template XrayTestExecutionResultsType - the Xray JSON format type
  */
 export abstract class ImportExecutionConverter<
     XrayTestType extends OneOf<[XrayTestServer, XrayTestCloud]>,
@@ -22,24 +23,13 @@ export abstract class ImportExecutionConverter<
     XrayTestExecutionResultsType extends OneOf<
         [XrayTestExecutionResultsServer, XrayTestExecutionResultsCloud]
     >
-> {
-    protected readonly options: InternalOptions;
-
-    constructor(options: InternalOptions) {
-        this.options = options;
-    }
-
-    /**
-     * Convert Cypress run results into Xray JSON format, ready to be sent to Xray's import
-     * execution results endpoint.
-     *
-     * @param results the run results
-     * @returns the Xray JSON data
-     */
-    public convertExecutionResults(
-        results: CypressCommandLine.CypressRunResult,
-        runs: CypressCommandLine.RunResult[]
-    ): XrayTestExecutionResultsType {
+> extends Converter<XrayTestExecutionResultsType> {
+    public convert(results: CypressCommandLine.CypressRunResult): XrayTestExecutionResultsType {
+        const runs: CypressCommandLine.RunResult[] = results.runs.filter(
+            (run: CypressCommandLine.RunResult) => {
+                return !run.spec.absolute.endsWith(this.options.cucumber.featureFileExtension);
+            }
+        );
         const json = this.initResult();
         json.info = this.getTestExecutionInfo(results);
         const testsByTitle = this.mapTestsToTitles(runs);

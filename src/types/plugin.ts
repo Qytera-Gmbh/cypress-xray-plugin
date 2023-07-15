@@ -282,8 +282,8 @@ export type InternalOptions = Options & {
 };
 
 export interface PluginContext {
-    xrayClient: OneOf<[XrayClientServer, XrayClientCloud]>;
-    jiraClient: OneOf<[JiraClientServer, JiraClientCloud]>;
+    xrayClient: XrayClientServer | XrayClientCloud;
+    jiraClient: JiraClientServer | JiraClientCloud;
     internal: InternalOptions;
     cypress: Cypress.PluginConfigOptions;
 }

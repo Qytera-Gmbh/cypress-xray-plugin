@@ -33,7 +33,7 @@ describe("the import execution results converter (server)", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[0].evidence).to.not.exist;
         expect(json.tests[1].evidence).to.be.an("array").with.length(1);
         expect(json.tests[1].evidence[0].filename).to.eq("turtle.png");
@@ -48,7 +48,7 @@ describe("the import execution results converter (server)", () => {
         );
         options.xray.uploadScreenshots = false;
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].evidence).to.be.undefined;
         expect(json.tests[1].evidence).to.be.undefined;
@@ -61,7 +61,7 @@ describe("the import execution results converter (server)", () => {
         );
         options.plugin.normalizeScreenshotNames = true;
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[0].evidence[0].filename).to.eq("t_rtle_with_problem_tic_name.png");
     });
 
@@ -70,7 +70,7 @@ describe("the import execution results converter (server)", () => {
             readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[0].evidence[0].filename).to.eq("tûrtle with problemätic name.png");
     });
 
@@ -79,7 +79,7 @@ describe("the import execution results converter (server)", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[0].status).to.eq("PASS");
         expect(json.tests[1].status).to.eq("PASS");
     });
@@ -89,7 +89,7 @@ describe("the import execution results converter (server)", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[2].status).to.eq("FAIL");
     });
 
@@ -98,7 +98,7 @@ describe("the import execution results converter (server)", () => {
             readFileSync("./test/resources/runResultPending.json", "utf-8")
         );
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[0].status).to.eq("TODO");
         expect(json.tests[1].status).to.eq("TODO");
         expect(json.tests[2].status).to.eq("TODO");
@@ -110,7 +110,7 @@ describe("the import execution results converter (server)", () => {
             readFileSync("./test/resources/runResultSkipped.json", "utf-8")
         );
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[0].status).to.eq("FAIL");
         expect(json.tests[1].status).to.eq("FAIL");
     });
@@ -121,7 +121,7 @@ describe("the import execution results converter (server)", () => {
         );
         options.xray.statusPassed = "it worked";
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[0].status).to.eq("it worked");
         expect(json.tests[1].status).to.eq("it worked");
     });
@@ -132,7 +132,7 @@ describe("the import execution results converter (server)", () => {
         );
         options.xray.statusFailed = "it did not work";
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[2].status).to.eq("it did not work");
     });
 
@@ -142,7 +142,7 @@ describe("the import execution results converter (server)", () => {
         );
         options.xray.statusPending = "still pending";
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[0].status).to.eq("still pending");
         expect(json.tests[1].status).to.eq("still pending");
         expect(json.tests[2].status).to.eq("still pending");
@@ -155,7 +155,7 @@ describe("the import execution results converter (server)", () => {
         );
         options.xray.statusSkipped = "omit";
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[0].status).to.eq("FAIL");
         expect(json.tests[1].status).to.eq("omit");
     });
@@ -166,7 +166,7 @@ describe("the import execution results converter (server)", () => {
         );
         const { stubbedWarning } = stubLogging();
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(stubbedWarning).to.have.been.calledWith(
             "Unknown Cypress test status: 'broken'. Skipping result upload for test \"TodoMVC hides footer initially\"."
         );
@@ -181,7 +181,7 @@ describe("the import execution results converter (server)", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].testInfo.steps).to.have.length(1);
         expect(json.tests[0].testInfo.steps[0].action).to.be.a("string");
@@ -197,7 +197,7 @@ describe("the import execution results converter (server)", () => {
         );
         options.xray.steps.update = false;
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].testInfo.steps).to.be.undefined;
         expect(json.tests[1].testInfo.steps).to.be.undefined;
@@ -209,7 +209,7 @@ describe("the import execution results converter (server)", () => {
             readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
         );
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[0].testInfo.steps[0].action).to.eq(`${"x".repeat(7997)}...`);
         expect(json.tests[1].testInfo.steps[0].action).to.eq(`${"x".repeat(8000)}`);
         expect(json.tests[2].testInfo.steps[0].action).to.eq(`${"x".repeat(2000)}`);
@@ -221,7 +221,7 @@ describe("the import execution results converter (server)", () => {
         );
         options.xray.steps.maxLengthAction = 5;
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convertExecutionResults(result, result.runs);
+        const json = converter.convert(result);
         expect(json.tests[0].testInfo.steps[0].action).to.eq("xx...");
         expect(json.tests[1].testInfo.steps[0].action).to.eq("xx...");
         expect(json.tests[2].testInfo.steps[0].action).to.eq("xx...");

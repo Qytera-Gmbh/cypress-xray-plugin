@@ -48,10 +48,7 @@ describe("the Xray Cloud client", () => {
                 );
                 options.jira.createTestIssues = false;
                 const { stubbedWarning } = stubLogging();
-                const results = new ImportExecutionConverterCloud(options).convertExecutionResults(
-                    details,
-                    details.runs
-                );
+                const results = new ImportExecutionConverterCloud(options).convert(details);
                 const result = await client.importExecution(results);
                 expect(result).to.be.null;
                 expect(stubbedWarning).to.have.been.called.with.callCount(4);
@@ -65,7 +62,7 @@ describe("the Xray Cloud client", () => {
                     'No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test "nothing 0 2".'
                 );
                 expect(stubbedWarning).to.have.been.calledWith(
-                    "No tests linked to Xray were executed. Skipping upload."
+                    "No plain Cypress tests were executed. Skipping upload."
                 );
             });
             it("should be able to handle successful responses", async () => {

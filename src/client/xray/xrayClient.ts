@@ -38,7 +38,7 @@ export abstract class XrayClient<
     >(execution: R): Promise<string | null | undefined> {
         try {
             if (!execution.tests || execution.tests.length === 0) {
-                logWarning("No tests linked to Xray were executed. Skipping upload.");
+                logWarning("No plain Cypress tests were executed. Skipping upload.");
                 return null;
             }
             const authenticationHeader = await this.credentials.getAuthenticationHeader(

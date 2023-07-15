@@ -6,7 +6,7 @@ import { readFileSync } from "fs";
 import { stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { initOptions } from "../../context";
-import { ImportExecutionConverterCloud } from "../../conversion/importExecution/importExecutionConverterCloud";
+import { ImportExecutionConverterServer } from "../../conversion/importExecution/importExecutionConverterServer";
 import { InternalOptions } from "../../types/plugin";
 import { XrayClientServer } from "./xrayClientServer";
 
@@ -44,10 +44,7 @@ describe("the Xray Server client", () => {
         );
         options.jira.createTestIssues = false;
         const { stubbedWarning } = stubLogging();
-        const results = new ImportExecutionConverterCloud(options).convertExecutionResults(
-            details,
-            details.runs
-        );
+        const results = new ImportExecutionConverterServer(options).convert(details);
         const result = await client.importExecution(results);
         expect(result).to.be.null;
         expect(stubbedWarning).to.have.been.called.with.callCount(4);
@@ -61,7 +58,7 @@ describe("the Xray Server client", () => {
             'No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test "nothing 0 2".'
         );
         expect(stubbedWarning).to.have.been.calledWith(
-            "No tests linked to Xray were executed. Skipping upload."
+            "No plain Cypress tests were executed. Skipping upload."
         );
     });
 

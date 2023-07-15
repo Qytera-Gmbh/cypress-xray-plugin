@@ -41,7 +41,6 @@ import {
 } from "./constants";
 import { logInfo } from "./logging/logging";
 import { InternalOptions, Options, XrayStepOptions } from "./types/plugin";
-import { OneOf } from "./types/util";
 import { asBoolean, asInt, asString, parse } from "./util/parsing";
 
 export function initOptions(env: Cypress.ObjectLike, options: Options): InternalOptions {
@@ -184,7 +183,7 @@ function verifyXraySteps(steps: XrayStepOptions) {
 export function initXrayClient(
     options: InternalOptions,
     env: Cypress.ObjectLike
-): OneOf<[XrayClientServer, XrayClientCloud]> {
+): XrayClientServer | XrayClientCloud {
     if (ENV_XRAY_CLIENT_ID in env && ENV_XRAY_CLIENT_SECRET in env) {
         logInfo("Xray client ID and client secret found. Setting up Xray cloud credentials.");
         return new XrayClientCloud(
@@ -209,7 +208,7 @@ export function initXrayClient(
 export function initJiraClient(
     options: InternalOptions,
     env: Cypress.ObjectLike
-): OneOf<[JiraClientServer, JiraClientCloud]> {
+): JiraClientServer | JiraClientCloud {
     if (!options.jira.url) {
         throw new Error(
             "Failed to configure Jira client: no Jira URL was provided.\n" +

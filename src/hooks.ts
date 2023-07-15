@@ -12,7 +12,6 @@ import { ImportExecutionConverterServer } from "./conversion/importExecution/imp
 import { issuesByScenario } from "./cucumber/tagging";
 import { logError, logInfo, logWarning } from "./logging/logging";
 import { InternalOptions } from "./types/plugin";
-import { OneOf } from "./types/util";
 import {
     XrayTestExecutionResultsCloud,
     XrayTestExecutionResultsServer,
@@ -31,8 +30,8 @@ export async function beforeRunHook(
     config: Cypress.PluginConfigOptions,
     runDetails: Cypress.BeforeRunDetails,
     options?: InternalOptions,
-    xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>,
-    jiraClient?: OneOf<[JiraClientServer, JiraClientCloud]>
+    xrayClient?: XrayClientServer | XrayClientCloud,
+    jiraClient?: JiraClientServer | JiraClientCloud
 ) {
     if (!options) {
         logError(
@@ -118,8 +117,8 @@ export async function beforeRunHook(
 export async function afterRunHook(
     results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult,
     options?: InternalOptions,
-    xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>,
-    jiraClient?: OneOf<[JiraClientServer, JiraClientCloud]>
+    xrayClient?: XrayClientServer | XrayClientCloud,
+    jiraClient?: JiraClientServer | JiraClientCloud
 ) {
     if (!options) {
         logError(
@@ -153,28 +152,14 @@ export async function afterRunHook(
         logInfo("Skipping results upload: Plugin is configured to not upload test results.");
         return;
     }
-    const cypressRuns: CypressCommandLine.RunResult[] = [];
-    const cucumberRuns: CypressCommandLine.RunResult[] = [];
-    for (const run of runResult.runs) {
-        if (run.spec.absolute.endsWith(options.cucumber.featureFileExtension)) {
-            cucumberRuns.push(run);
-        } else {
-            cypressRuns.push(run);
-        }
-    }
-    let issueKey: string;
-    if (cypressRuns.length > 0) {
-        issueKey = await uploadCypressResults(runResult, cypressRuns, options, xrayClient);
-    }
-    if (cucumberRuns.length > 0) {
-        const cucumberIssueKey = await uploadCucumberResults(options, xrayClient);
-        if (issueKey && cucumberIssueKey !== issueKey) {
-            logWarning(
-                "Cucumber execution results were imported to a different test execution issue. This might be a bug, please report it at https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues"
-            );
-        } else if (!issueKey && cucumberIssueKey) {
-            issueKey = cucumberIssueKey;
-        }
+    let issueKey: string = await uploadCypressResults(runResult, options, xrayClient);
+    const cucumberIssueKey = await uploadCucumberResults(options, xrayClient);
+    if (issueKey && cucumberIssueKey !== issueKey) {
+        logWarning(
+            "Cucumber execution results were imported to a different test execution issue. This might be a bug, please report it at https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues"
+        );
+    } else if (!issueKey && cucumberIssueKey) {
+        issueKey = cucumberIssueKey;
     }
     if (issueKey === undefined) {
         logWarning("Execution results import failed. Skipping remaining tasks.");
@@ -197,30 +182,21 @@ export async function afterRunHook(
 
 async function uploadCypressResults(
     runResult: CypressCommandLine.CypressRunResult,
-    cypressRuns: CypressCommandLine.RunResult[],
     options?: InternalOptions,
-    xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>
+    xrayClient?: XrayClientServer | XrayClientCloud
 ) {
     let cypressExecution: XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud;
     if (xrayClient instanceof XrayClientServer) {
-        cypressExecution = new ImportExecutionConverterServer(options).convertExecutionResults(
-            runResult,
-            cypressRuns
-        );
+        cypressExecution = new ImportExecutionConverterServer(options).convert(runResult);
     } else {
-        cypressExecution = new ImportExecutionConverterCloud(options).convertExecutionResults(
-            runResult,
-            cypressRuns
-        );
+        cypressExecution = new ImportExecutionConverterCloud(options).convert(runResult);
     }
-    if (cypressExecution.tests.length > 0) {
-        return await xrayClient.importExecution(cypressExecution);
-    }
+    return await xrayClient.importExecution(cypressExecution);
 }
 
 async function uploadCucumberResults(
     options?: InternalOptions,
-    xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>
+    xrayClient?: XrayClientServer | XrayClientCloud
 ) {
     const results: CucumberMultipartFeature[] = JSON.parse(
         fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
@@ -269,7 +245,7 @@ export async function synchronizeFile(
     file: Cypress.FileObject,
     projectRoot: string,
     options?: InternalOptions,
-    xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>
+    xrayClient?: XrayClientServer | XrayClientCloud
 ): Promise<string> {
     if (!options) {
         logError(
