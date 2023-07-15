@@ -22,12 +22,15 @@ describe("the after run hook", () => {
 
     beforeEach(() => {
         results = JSON.parse(readFileSync("./test/resources/runResult.json", "utf-8"));
-        options = initOptions({
-            jira: {
-                projectKey: "CYP",
-                url: "https://example.org",
-            },
-        });
+        options = initOptions(
+            {},
+            {
+                jira: {
+                    projectKey: "CYP",
+                    url: "https://example.org",
+                },
+            }
+        );
     });
 
     it("should display errors if the plugin was not configured", async () => {
@@ -102,15 +105,18 @@ describe("the synchronize file hook", () => {
     let options: InternalOptions;
 
     beforeEach(() => {
-        options = initOptions({
-            jira: {
-                projectKey: "CYP",
-                url: "https://example.org",
-            },
-            cucumber: {
-                featureFileExtension: ".feature",
-            },
-        });
+        options = initOptions(
+            {},
+            {
+                jira: {
+                    projectKey: "CYP",
+                    url: "https://example.org",
+                },
+                cucumber: {
+                    featureFileExtension: ".feature",
+                },
+            }
+        );
         details = JSON.parse(readFileSync("./test/resources/beforeRun.json", "utf-8"));
         // Set up cloud credentials for convenience purposes.
         details.config.env = {};

@@ -8,6 +8,7 @@ import { JiraClient } from "../src/client/jira/jiraClient";
 import { XrayClient } from "../src/client/xray/xrayClient";
 import { Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
+import { initLogging } from "../src/logging/logging";
 import { CucumberMultipartInfoCloud } from "../src/types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseCloud } from "../src/types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud } from "../src/types/xray/responses/importFeature";
@@ -31,15 +32,16 @@ export const stubRequests = () => {
     };
 };
 
-afterEach(() => {
-    Sinon.restore();
-});
-
-const TEST_TMP_DIR = "test/out";
+export const TEST_TMP_DIR = "test/out";
 
 export function getTestDir(dirName: string): string {
     return path.join(TEST_TMP_DIR, dirName);
 }
+
+afterEach(() => {
+    Sinon.restore();
+    initLogging({ logDirectory: TEST_TMP_DIR });
+});
 
 // Clean up temporary directory at the end of all tests.
 after(async () => {

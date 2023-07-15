@@ -204,6 +204,10 @@ export interface PluginOptions {
      */
     debug?: boolean;
     /**
+     * The directory which all error and debug log files will be written to.
+     */
+    logDirectory?: string;
+    /**
      * Some Xray setups might struggle with uploaded evidence if the filenames contain non-ASCII
      * characters. With this option enabled, the plugin only allows characters `a-zA-Z0-9.` in
      * screenshot names and replaces all other sequences with `_`.

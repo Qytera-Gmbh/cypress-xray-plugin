@@ -7,7 +7,7 @@ import {
     PATCredentials,
 } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
-import { logError, logInfo, logSuccess, logWarning } from "../../logging/logging";
+import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
 import { OneOf } from "../../types/util";
 import {
     XrayTestExecutionResultsCloud,
@@ -63,8 +63,8 @@ export abstract class XrayClient<
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to import execution: "${error}"`);
-            this.writeErrorFile(error, "importExecution");
+            logError(`Failed to import execution: ${error}`);
+            writeErrorFile(error, "importExecutionError");
         }
     }
 
@@ -119,8 +119,8 @@ export abstract class XrayClient<
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to export Cucumber tests: "${error}"`);
-            this.writeErrorFile(error, "exportCucumber");
+            logError(`Failed to export Cucumber tests: ${error}`);
+            writeErrorFile(error, "exportCucumberError");
         }
         throw new Error("Method not implemented.");
     }
@@ -176,8 +176,8 @@ export abstract class XrayClient<
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to import cucumber feature files: "${error}"`);
-            this.writeErrorFile(error, "importFeature");
+            logError(`Failed to import cucumber feature files: ${error}`);
+            writeErrorFile(error, "importFeatureError");
         }
     }
 
@@ -252,8 +252,8 @@ export abstract class XrayClient<
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to import Cucumber execution: "${error}"`);
-            this.writeErrorFile(error, "importExecutionCucumberMultipart");
+            logError(`Failed to import Cucumber execution: ${error}`);
+            writeErrorFile(error, "importExecutionCucumberMultipartError");
         }
     }
 

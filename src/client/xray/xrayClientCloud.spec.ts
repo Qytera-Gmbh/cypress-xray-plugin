@@ -3,7 +3,8 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { stubLogging, stubRequests } from "../../../test/util";
+import path from "path";
+import { TEST_TMP_DIR, stubLogging, stubRequests } from "../../../test/util";
 import { JWTCredentials } from "../../authentication/credentials";
 import { initOptions } from "../../context";
 import { ImportExecutionResultsConverterCloud } from "../../conversion/importExecutionResults/importExecutionResultsConverterCloud";
@@ -16,18 +17,21 @@ describe("the Xray Cloud client", () => {
 
     beforeEach(() => {
         client = new XrayClientCloud(new JWTCredentials("user", "xyz"));
-        options = initOptions({
-            jira: {
-                projectKey: "CYP",
-                url: "https://example.org",
-            },
-            xray: {
-                testType: "Manual",
-            },
-            cucumber: {
-                featureFileExtension: ".feature",
-            },
-        });
+        options = initOptions(
+            {},
+            {
+                jira: {
+                    projectKey: "CYP",
+                    url: "https://example.org",
+                },
+                xray: {
+                    testType: "Manual",
+                },
+                cucumber: {
+                    featureFileExtension: ".feature",
+                },
+            }
+        );
     });
 
     describe("the API functions", () => {
@@ -171,10 +175,11 @@ describe("the Xray Cloud client", () => {
                 );
                 expect(stubbedError).to.have.been.calledTwice;
                 expect(stubbedError).to.have.been.calledWithExactly(
-                    'Failed to import execution: "AxiosError: Request failed with status code 400"'
+                    "Failed to import execution: AxiosError: Request failed with status code 400"
                 );
+                const expectedPath = path.resolve(TEST_TMP_DIR, "importExecutionError.json");
                 expect(stubbedError).to.have.been.calledWithExactly(
-                    'Complete error logs have been written to "importExecutionError.json"'
+                    `Complete error logs have been written to: ${expectedPath}`
                 );
             });
         });
@@ -269,10 +274,14 @@ describe("the Xray Cloud client", () => {
                     "Importing execution (Cucumber)..."
                 );
                 expect(stubbedError).to.have.been.calledWithExactly(
-                    'Failed to import Cucumber execution: "AxiosError: Request failed with status code 400"'
+                    "Failed to import Cucumber execution: AxiosError: Request failed with status code 400"
+                );
+                const expectedPath = path.resolve(
+                    TEST_TMP_DIR,
+                    "importExecutionCucumberMultipartError.json"
                 );
                 expect(stubbedError).to.have.been.calledWithExactly(
-                    'Complete error logs have been written to "importExecutionCucumberMultipartError.json"'
+                    `Complete error logs have been written to: ${expectedPath}`
                 );
             });
         });

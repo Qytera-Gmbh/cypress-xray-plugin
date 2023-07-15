@@ -3,7 +3,8 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
-import { expectToExist, stubLogging, stubRequests } from "../../../test/util";
+import path from "path";
+import { TEST_TMP_DIR, expectToExist, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { JiraClientCloud } from "./jiraClientCloud";
 
@@ -221,7 +222,7 @@ describe("the Jira Cloud client", () => {
             );
         });
 
-        it("should fail on bad responses", async () => {
+        it("should be able to handle bad responses", async () => {
             const { stubbedPost } = stubRequests();
             const { stubbedError } = stubLogging();
             stubbedPost.rejects(
@@ -248,10 +249,11 @@ describe("the Jira Cloud client", () => {
             expect(response).to.be.undefined;
             expect(stubbedError).to.have.been.calledTwice;
             expect(stubbedError).to.have.been.calledWithExactly(
-                'Failed to attach files: "AxiosError: Request failed with status code 413"'
+                "Failed to attach files: AxiosError: Request failed with status code 413"
             );
+            const expectedPath = path.resolve(TEST_TMP_DIR, "addAttachmentError.json");
             expect(stubbedError).to.have.been.calledWithExactly(
-                'Complete error logs have been written to "addAttachmentError.json"'
+                `Complete error logs have been written to: ${expectedPath}`
             );
         });
     });
@@ -367,10 +369,11 @@ describe("the Jira Cloud client", () => {
             expect(response).to.be.undefined;
             expect(stubbedError).to.have.been.calledTwice;
             expect(stubbedError).to.have.been.calledWithExactly(
-                'Failed to get issue types: "AxiosError: Request failed with status code 401"'
+                "Failed to get issue types: AxiosError: Request failed with status code 401"
             );
+            const expectedPath = path.resolve(TEST_TMP_DIR, "getIssueTypesError.json");
             expect(stubbedError).to.have.been.calledWithExactly(
-                'Complete error logs have been written to "getIssueTypesError.json"'
+                `Complete error logs have been written to: ${expectedPath}`
             );
         });
     });

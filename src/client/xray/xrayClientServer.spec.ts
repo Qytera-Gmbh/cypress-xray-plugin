@@ -20,18 +20,21 @@ describe("the Xray Server client", () => {
     let options: InternalOptions;
 
     beforeEach(() => {
-        options = initOptions({
-            jira: {
-                projectKey: "CYP",
-                url: "https://example.org",
-            },
-            xray: {
-                testType: "Manual",
-            },
-            cucumber: {
-                featureFileExtension: ".feature",
-            },
-        });
+        options = initOptions(
+            {},
+            {
+                jira: {
+                    projectKey: "CYP",
+                    url: "https://example.org",
+                },
+                xray: {
+                    testType: "Manual",
+                },
+                cucumber: {
+                    featureFileExtension: ".feature",
+                },
+            }
+        );
         details = JSON.parse(readFileSync("./test/resources/runResult.json", "utf-8"));
     });
 

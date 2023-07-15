@@ -1,13 +1,6 @@
 /// <reference types="cypress" />
 
-import {
-    initJiraClient,
-    initXrayClient,
-    mergeOptions,
-    initOptions as mergeWithDefaults,
-    parseEnvironmentVariables,
-    verifyContext,
-} from "./src/context";
+import { initJiraClient, initOptions, initXrayClient, verifyOptions } from "./src/context";
 import { afterRunHook, beforeRunHook, synchronizeFile } from "./src/hooks";
 import { Requests } from "./src/https/requests";
 import { initLogging, logInfo } from "./src/logging/logging";
@@ -16,22 +9,23 @@ import { Options, PluginContext } from "./src/types/plugin";
 let context: PluginContext;
 
 export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, options: Options) {
-    const configOptions = mergeWithDefaults(options);
-    const envOptions = parseEnvironmentVariables(config.env);
-    const mergedOptions = mergeOptions(configOptions, envOptions);
-    if (!mergedOptions.plugin.enabled) {
+    const internalOptions = initOptions(config.env, options);
+    if (!internalOptions.plugin.enabled) {
         logInfo("Plugin disabled. Skipping configuration verification.");
         return;
     }
-    verifyContext(mergedOptions);
+    verifyOptions(internalOptions);
     context = {
-        internal: mergedOptions,
+        internal: internalOptions,
         cypress: config,
-        xrayClient: initXrayClient(mergedOptions, config.env),
-        jiraClient: initJiraClient(mergedOptions, config.env),
+        xrayClient: initXrayClient(internalOptions, config.env),
+        jiraClient: initJiraClient(internalOptions, config.env),
     };
-    Requests.init(mergedOptions);
-    initLogging({ debug: mergedOptions.plugin.debug });
+    Requests.init(internalOptions);
+    initLogging({
+        debug: internalOptions.plugin.debug,
+        logDirectory: internalOptions.plugin.logDirectory,
+    });
 }
 
 export async function addXrayResultUpload(on: Cypress.PluginEvents) {

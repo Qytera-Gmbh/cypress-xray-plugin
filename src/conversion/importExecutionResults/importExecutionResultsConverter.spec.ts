@@ -11,19 +11,22 @@ import { ImportExecutionResultsConverterCloud } from "./importExecutionResultsCo
 describe("the import execution results converter", () => {
     let options: InternalOptions;
     beforeEach(() => {
-        options = initOptions({
-            jira: {
-                projectKey: "CYP",
-                url: "https://example.org",
-            },
-            xray: {
-                testType: "Manual",
-                uploadResults: true,
-            },
-            cucumber: {
-                featureFileExtension: ".feature",
-            },
-        });
+        options = initOptions(
+            {},
+            {
+                jira: {
+                    projectKey: "CYP",
+                    url: "https://example.org",
+                },
+                xray: {
+                    testType: "Manual",
+                    uploadResults: true,
+                },
+                cucumber: {
+                    featureFileExtension: ".feature",
+                },
+            }
+        );
     });
 
     it("should be able to convert test results into Xray JSON", () => {

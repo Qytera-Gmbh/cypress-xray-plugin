@@ -3,7 +3,14 @@ import FormData from "form-data";
 import fs from "fs";
 import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
-import { logDebug, logError, logInfo, logSuccess, logWarning } from "../../logging/logging";
+import {
+    logDebug,
+    logError,
+    logInfo,
+    logSuccess,
+    logWarning,
+    writeErrorFile,
+} from "../../logging/logging";
 import { AttachmentCloud, AttachmentServer } from "../../types/jira/responses/attachment";
 import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
 import {
@@ -94,8 +101,8 @@ export abstract class JiraClient<
                     }
                 });
         } catch (error: unknown) {
-            logError(`Failed to attach files: "${error}"`);
-            this.writeErrorFile(error, "addAttachment");
+            logError(`Failed to attach files: ${error}`);
+            writeErrorFile(error, "addAttachmentError");
         }
     }
 
@@ -141,8 +148,8 @@ export abstract class JiraClient<
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to get issue types: "${error}"`);
-            this.writeErrorFile(error, "getIssueTypes");
+            logError(`Failed to get issue types: ${error}`);
+            writeErrorFile(error, "getIssueTypesError");
         }
     }
 
@@ -190,8 +197,8 @@ export abstract class JiraClient<
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to get fields: "${error}"`);
-            this.writeErrorFile(error, "getFields");
+            logError(`Failed to get fields: ${error}`);
+            writeErrorFile(error, "getFieldsError");
         }
     }
 
