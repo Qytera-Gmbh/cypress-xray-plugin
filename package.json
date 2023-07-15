@@ -26,6 +26,7 @@
         "*.js",
         "*.ts"
     ],
+    "exports": "./index.js",
     "directories": {
         "lib": "src"
     },
