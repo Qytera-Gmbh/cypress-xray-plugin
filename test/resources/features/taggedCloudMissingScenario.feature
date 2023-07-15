@@ -1,13 +1,11 @@
-@REQ_CALC-889
 Feature: A tagged feature
 
-  Background:
-    #@Precondition:CYP-111
+  Background: A background
+    #@Precondition:CYP-244
 		Given abc123
 		Then xyz987
 
-  @TestName:CYP-857
-  Scenario: A tagged scenario
+  Scenario: A scenario
     Given an assumption
     When a when
     And an and

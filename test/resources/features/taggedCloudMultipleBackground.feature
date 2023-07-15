@@ -1,13 +1,13 @@
-@REQ_CALC-889
 Feature: A tagged feature
 
-  Background:
-    #@Precondition:CYP-111
+  Background: A background
+    #@Precondition:CYP-244
+    # a random comment
+    #@Precondition:CYP-262
 		Given abc123
 		Then xyz987
 
-  @CYP-103
-  Scenario: A tagged scenario
+  Scenario: A scenario
     Given an assumption
     When a when
     And an and

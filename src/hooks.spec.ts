@@ -5,7 +5,6 @@ import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import path from "path";
 import { DummyJiraClient, DummyXrayClient, stubLogging } from "../test/util";
-import { ENV_XRAY_CLIENT_ID, ENV_XRAY_CLIENT_SECRET } from "./constants";
 import { initOptions } from "./context";
 import { afterRunHook, synchronizeFile } from "./hooks";
 import { InternalOptions } from "./types/plugin";
@@ -98,10 +97,6 @@ describe("the synchronize file hook", () => {
         eventNames: null,
     };
 
-    let details: Cypress.BeforeRunDetails = JSON.parse(
-        readFileSync("./test/resources/beforeRun.json", "utf-8")
-    );
-
     let options: InternalOptions;
 
     beforeEach(() => {
@@ -117,11 +112,6 @@ describe("the synchronize file hook", () => {
                 },
             }
         );
-        details = JSON.parse(readFileSync("./test/resources/beforeRun.json", "utf-8"));
-        // Set up cloud credentials for convenience purposes.
-        details.config.env = {};
-        details.config.env[ENV_XRAY_CLIENT_ID] = "user";
-        details.config.env[ENV_XRAY_CLIENT_SECRET] = "xyz";
     });
 
     it("should display errors if the plugin was not configured", async () => {
@@ -147,10 +137,11 @@ describe("the synchronize file hook", () => {
     it("should display errors for invalid feature files", async () => {
         file.filePath = "./test/resources/features/invalid.feature";
         const { stubbedInfo, stubbedError } = stubLogging();
+        options.cucumber.uploadFeatures = true;
         await synchronizeFile(file, ".", options);
         expect(stubbedError).to.have.been.calledOnce;
         expect(stubbedError).to.have.been.calledWith(
-            'Feature file "./test/resources/features/invalid.feature" invalid, skipping synchronization: Error: Parser errors:\n' +
+            "Feature file invalid, skipping synchronization: Error: Parser errors:\n" +
                 "(9:3): expected: #EOF, #TableRow, #DocStringSeparator, #StepLine, #TagLine, #ScenarioLine, #RuleLine, #Comment, #Empty, got 'Invalid: Element'"
         );
         expect(stubbedInfo).to.have.been.calledOnce;

@@ -11,6 +11,7 @@ import { ImportExecutionConverterCloud } from "./conversion/importExecution/impo
 import { ImportExecutionConverterServer } from "./conversion/importExecution/importExecutionConverterServer";
 import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterCloud";
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
+import { preprocessFeatureFile } from "./cucumber/preprocessor";
 import { logError, logInfo, logWarning } from "./logging/logging";
 import { InternalOptions } from "./types/plugin";
 import {
@@ -22,7 +23,6 @@ import {
     CucumberMultipartFeature,
     CucumberMultipartServer,
 } from "./types/xray/requests/importExecutionCucumberMultipart";
-import { parseFeatureFile } from "./util/parsing";
 
 export async function beforeRunHook(
     config: Cypress.PluginConfigOptions,
@@ -275,23 +275,21 @@ export async function synchronizeFile(
         try {
             const relativePath = path.relative(projectRoot, file.filePath);
             logInfo(`Preprocessing feature file ${relativePath}...`);
-            preprocessFeatureFile(file.filePath, options);
             if (options.cucumber.downloadFeatures) {
                 // TODO: download feature file from Xray.
                 throw new Error("feature not yet implemented");
             }
             if (options.cucumber.uploadFeatures) {
+                preprocessFeatureFile(
+                    file.filePath,
+                    options,
+                    xrayClient instanceof XrayClientCloud
+                );
                 await xrayClient.importFeature(file.filePath, options.jira.projectKey);
             }
         } catch (error: unknown) {
-            logError(`Feature file "${file.filePath}" invalid, skipping synchronization: ${error}`);
+            logError(`Feature file invalid, skipping synchronization: ${error}`);
         }
     }
     return file.filePath;
-}
-
-function preprocessFeatureFile(filePath: string, options: InternalOptions) {
-    // Extract tag information for later use, e.g. when uploading test results to specific issues.
-    const feature = parseFeatureFile(filePath).feature;
-    // TODO: check if the feature file contains a tag
 }
