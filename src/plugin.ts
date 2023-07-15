@@ -1,10 +1,10 @@
 /// <reference types="cypress" />
 
-import { initJiraClient, initOptions, initXrayClient, verifyOptions } from "./src/context";
-import { afterRunHook, beforeRunHook, synchronizeFile } from "./src/hooks";
-import { Requests } from "./src/https/requests";
-import { initLogging, logInfo } from "./src/logging/logging";
-import { Options, PluginContext } from "./src/types/plugin";
+import { initJiraClient, initOptions, initXrayClient, verifyOptions } from "./context";
+import { afterRunHook, beforeRunHook, synchronizeFile } from "./hooks";
+import { Requests } from "./https/requests";
+import { initLogging, logInfo } from "./logging/logging";
+import { Options, PluginContext } from "./types/plugin";
 
 let context: PluginContext;
 

@@ -2,9 +2,9 @@
 
 import { expect } from "chai";
 import fs from "fs";
+import { stubLogging } from "../test/util";
 import { configureXrayPlugin } from "./plugin";
-import { Options } from "./src/types/plugin";
-import { stubLogging } from "./test/util";
+import { Options } from "./types/plugin";
 
 describe("the plugin configuration", () => {
     const config: Cypress.PluginConfigOptions = JSON.parse(
