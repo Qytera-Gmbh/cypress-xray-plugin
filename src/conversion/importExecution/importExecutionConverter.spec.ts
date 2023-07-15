@@ -50,13 +50,13 @@ describe("the import execution results converter", () => {
         expect(json.tests).to.not.exist;
         expect(stubbedWarning).to.have.been.called.with.callCount(3);
         expect(stubbedWarning).to.have.been.calledWith(
-            'No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test "xray upload demo should look for paragraph elements".'
+            "No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test: xray upload demo should look for paragraph elements"
         );
         expect(stubbedWarning).to.have.been.calledWith(
-            'No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test "xray upload demo should look for the anchor element".'
+            "No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test: xray upload demo should look for the anchor element"
         );
         expect(stubbedWarning).to.have.been.calledWith(
-            'No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test "xray upload demo should fail".'
+            "No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test: xray upload demo should fail"
         );
     });
 

@@ -68,7 +68,7 @@ export class ImportExecutionConverterServer extends ImportExecutionConverter<
             case Status.SKIPPED:
                 return this.options.xray.statusSkipped ?? "FAIL";
             default:
-                throw new Error(`Unknown status: '${status}'`);
+                throw new Error(`Unknown status: ${status}`);
         }
     }
 

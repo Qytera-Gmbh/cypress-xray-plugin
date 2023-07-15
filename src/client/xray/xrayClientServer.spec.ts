@@ -49,13 +49,13 @@ describe("the Xray Server client", () => {
         expect(result).to.be.null;
         expect(stubbedWarning).to.have.been.called.with.callCount(4);
         expect(stubbedWarning).to.have.been.calledWith(
-            'No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test "nothing 0 0".'
+            "No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test: nothing 0 0"
         );
         expect(stubbedWarning).to.have.been.calledWith(
-            'No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test "nothing 0 1".'
+            "No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test: nothing 0 1"
         );
         expect(stubbedWarning).to.have.been.calledWith(
-            'No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test "nothing 0 2".'
+            "No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test: nothing 0 2"
         );
         expect(stubbedWarning).to.have.been.calledWith(
             "No plain Cypress tests were executed. Skipping upload."
@@ -134,7 +134,7 @@ describe("the Xray Server client", () => {
             const response = await client.importExecutionCucumberMultipart(
                 JSON.parse(
                     readFileSync(
-                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipart.json",
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                         "utf-8"
                     )
                 ),

@@ -1,3 +1,4 @@
+import { CucumberMultipartTag } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionCucumberMultipartConverter } from "./importExecutionCucumberMultipartConverter";
 
@@ -8,11 +9,24 @@ export class ImportExecutionCucumberMultipartConverterServer extends ImportExecu
                 project: {
                     key: this.options.jira.projectKey,
                 },
-                summary: this.options.jira.testExecutionIssueSummary,
+                summary:
+                    this.options.jira.testExecutionIssueSummary ||
+                    `Execution Results [${new Date(this.startedTestsAt).getTime()}]`,
                 issuetype: this.options.jira.testExecutionIssueDetails,
             },
         };
-        info[this.options.jira.testPlanIssueDetails.id] = [this.options.jira.testPlanIssueKey];
+        if (this.options.jira.testPlanIssueKey) {
+            info.fields[this.options.jira.testPlanIssueDetails.id] = [
+                this.options.jira.testPlanIssueKey,
+            ];
+        }
         return info;
+    }
+
+    protected containsTestTag(tags: CucumberMultipartTag[]): boolean {
+        return tags.some((tag: CucumberMultipartTag) => {
+            const regex = new RegExp(`@${this.options.jira.projectKey}-\\d+`);
+            return regex.test(tag.name);
+        });
     }
 }

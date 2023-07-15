@@ -62,7 +62,7 @@ export abstract class ImportExecutionConverter<
                 if (error instanceof Error) {
                     reason = error.message;
                 }
-                logWarning(`${reason}. Skipping result upload for test "${title}".`);
+                logWarning(`${reason}. Skipping result upload for test: ${title}`);
             }
         });
         return json;
@@ -185,7 +185,7 @@ export abstract class ImportExecutionConverter<
     protected getStatus(attempt: CypressCommandLine.AttemptResult): Status {
         const status: Status = Status[getEnumKeyByEnumValue(Status, attempt.state)];
         if (!status) {
-            throw new Error(`Unknown Cypress test status: '${attempt.state}'`);
+            throw new Error(`Unknown Cypress test status: ${attempt.state}`);
         }
         return status;
     }

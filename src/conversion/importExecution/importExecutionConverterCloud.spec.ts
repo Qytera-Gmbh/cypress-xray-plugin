@@ -168,10 +168,10 @@ describe("the import execution results converter (cloud)", () => {
         const converter = new ImportExecutionConverterCloud(options);
         const json = converter.convert(result);
         expect(stubbedWarning).to.have.been.calledWith(
-            "Unknown Cypress test status: 'broken'. Skipping result upload for test \"TodoMVC hides footer initially\"."
+            "Unknown Cypress test status: broken. Skipping result upload for test: TodoMVC hides footer initially"
         );
         expect(stubbedWarning).to.have.been.calledWith(
-            "Unknown Cypress test status: 'california'. Skipping result upload for test \"TodoMVC adds 2 todos\"."
+            "Unknown Cypress test status: california. Skipping result upload for test: TodoMVC adds 2 todos"
         );
         expect(json.tests).to.be.undefined;
     });

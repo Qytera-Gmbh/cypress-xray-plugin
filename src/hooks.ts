@@ -60,11 +60,13 @@ export async function beforeRunHook(
             spec.absolute.endsWith(options.cucumber.featureFileExtension) &&
             options.xray.uploadResults
         ) {
-            options.cucumber.preprocessor = await resolvePreprocessorConfiguration(
-                config,
-                config.env,
-                "/"
-            );
+            if (!options.cucumber.preprocessor) {
+                options.cucumber.preprocessor = await resolvePreprocessorConfiguration(
+                    config,
+                    config.env,
+                    "/"
+                );
+            }
             if (!options.cucumber.preprocessor.json.enabled) {
                 throw new Error(
                     "Plugin misconfigured: Cucumber preprocessor JSON report disabled.\n" +
@@ -77,6 +79,9 @@ export async function beforeRunHook(
                 );
             }
             if (!options.jira.testExecutionIssueDetails) {
+                logInfo(
+                    "Fetching necessary Jira issue type information in preparation for result uploads..."
+                );
                 const issueDetails = await jiraClient.getIssueTypes();
                 const executionDetails = issueDetails.filter(
                     (details) => details.name === options.jira.testExecutionIssueType
@@ -152,13 +157,15 @@ export async function afterRunHook(
         return;
     }
     let issueKey: string = await uploadCypressResults(runResult, options, xrayClient);
-    const cucumberIssueKey = await uploadCucumberResults(options, xrayClient);
-    if (issueKey && cucumberIssueKey !== issueKey) {
-        logWarning(
-            "Cucumber execution results were imported to a different test execution issue. This might be a bug, please report it at https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues"
-        );
-    } else if (!issueKey && cucumberIssueKey) {
-        issueKey = cucumberIssueKey;
+    if (options.cucumber.preprocessor) {
+        const cucumberIssueKey = await uploadCucumberResults(runResult, options, xrayClient);
+        if (issueKey && cucumberIssueKey !== issueKey) {
+            logWarning(
+                "Cucumber execution results were imported to a different test execution issue. This might be a bug, please report it at https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues"
+            );
+        } else if (!issueKey && cucumberIssueKey) {
+            issueKey = cucumberIssueKey;
+        }
     }
     if (issueKey === undefined) {
         logWarning("Execution results import failed. Skipping remaining tasks.");
@@ -194,6 +201,7 @@ async function uploadCypressResults(
 }
 
 async function uploadCucumberResults(
+    runResult: CypressCommandLine.CypressRunResult,
     options?: InternalOptions,
     xrayClient?: XrayClientServer | XrayClientCloud
 ) {
@@ -202,13 +210,15 @@ async function uploadCucumberResults(
     );
     let cucumberMultipart: CucumberMultipartServer | CucumberMultipartCloud;
     if (xrayClient instanceof XrayClientServer) {
-        cucumberMultipart = new ImportExecutionCucumberMultipartConverterServer(options).convert(
-            results
-        );
+        cucumberMultipart = new ImportExecutionCucumberMultipartConverterServer(
+            options,
+            runResult.startedTestsAt
+        ).convert(results);
     } else {
-        cucumberMultipart = new ImportExecutionCucumberMultipartConverterCloud(options).convert(
-            results
-        );
+        cucumberMultipart = new ImportExecutionCucumberMultipartConverterCloud(
+            options,
+            runResult.startedTestsAt
+        ).convert(results);
     }
     return await xrayClient.importExecutionCucumberMultipart(
         cucumberMultipart.features,
