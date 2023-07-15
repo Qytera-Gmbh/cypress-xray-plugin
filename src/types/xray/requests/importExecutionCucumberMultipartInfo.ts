@@ -10,6 +10,7 @@ type CucumberMultipartInfo<IssueTypeDetails, IssueUpdateType> = IssueUpdateType 
             key: string;
         };
         summary: string;
+        description?: string;
         issuetype: IssueTypeDetails;
     };
 };

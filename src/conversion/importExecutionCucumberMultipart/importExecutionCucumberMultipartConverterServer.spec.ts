@@ -6,6 +6,7 @@ import { stubLogging } from "../../../test/util";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
+import { ConversionParameters } from "./importExecutionCucumberMultipartConverter";
 import { ImportExecutionCucumberMultipartConverterServer } from "./importExecutionCucumberMultipartConverterServer";
 
 describe("the import execution cucumber multipart server converter", () => {
@@ -16,6 +17,9 @@ describe("the import execution cucumber multipart server converter", () => {
             "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
             "utf-8"
         )
+    );
+    const parameters: ConversionParameters = JSON.parse(
+        readFileSync("./test/resources/runResult.json", "utf-8")
     );
     beforeEach(() => {
         options = initOptions(
@@ -34,16 +38,13 @@ describe("the import execution cucumber multipart server converter", () => {
                 },
             }
         );
-        converter = new ImportExecutionCucumberMultipartConverterServer(
-            options,
-            "2023-07-11T17:53:35.463Z"
-        );
+        converter = new ImportExecutionCucumberMultipartConverterServer(options);
     });
 
     it("should log warnings when unable to create test issues", () => {
         options.jira.createTestIssues = false;
         const { stubbedWarning } = stubLogging();
-        const multipart = converter.convert(result);
+        const multipart = converter.convert(result, parameters);
         expect(multipart.features).to.be.an("array").with.length(1);
         expect(multipart.features[0].elements).to.be.an("array").with.length(3);
         expect(stubbedWarning).to.have.been.called.with.callCount(1);
@@ -58,7 +59,7 @@ describe("the import execution cucumber multipart server converter", () => {
             id: "customfield_12126",
             subtask: false,
         };
-        const multipart = converter.convert(result);
+        const multipart = converter.convert(result, parameters);
         expect(multipart.info.fields["customfield_12126"]).to.deep.eq(["CYP-123"]);
     });
 });

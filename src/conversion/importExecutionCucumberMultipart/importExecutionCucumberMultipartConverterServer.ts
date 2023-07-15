@@ -1,17 +1,31 @@
 import { CucumberMultipartTag } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
-import { ImportExecutionCucumberMultipartConverter } from "./importExecutionCucumberMultipartConverter";
+import {
+    ConversionParameters,
+    ImportExecutionCucumberMultipartConverter,
+} from "./importExecutionCucumberMultipartConverter";
 
 export class ImportExecutionCucumberMultipartConverterServer extends ImportExecutionCucumberMultipartConverter<CucumberMultipartInfoServer> {
-    protected getMultipartInfo(): CucumberMultipartInfoServer {
+    protected getMultipartInfo(parameters: ConversionParameters): CucumberMultipartInfoServer {
+        const summary =
+            this.options.jira.testExecutionIssueSummary ||
+            `Execution Results [${new Date(parameters.startedTestsAt).getTime()}]`;
+        const description =
+            this.options.jira.testExecutionIssueDescription ||
+            "Cypress version: " +
+                parameters.cypressVersion +
+                " Browser: " +
+                parameters.browserName +
+                " (" +
+                parameters.browserVersion +
+                ")";
         const info: CucumberMultipartInfoServer = {
             fields: {
                 project: {
                     key: this.options.jira.projectKey,
                 },
-                summary:
-                    this.options.jira.testExecutionIssueSummary ||
-                    `Execution Results [${new Date(this.startedTestsAt).getTime()}]`,
+                summary: summary,
+                description: description,
                 issuetype: this.options.jira.testExecutionIssueDetails,
             },
         };

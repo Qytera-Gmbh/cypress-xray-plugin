@@ -1,5 +1,4 @@
 import { logWarning } from "../../logging/logging";
-import { InternalOptions } from "../../types/plugin";
 import {
     CucumberMultipart,
     CucumberMultipartElement,
@@ -12,27 +11,23 @@ import {
 } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { Converter } from "../converter";
 
+/**
+ * This type provides lots of information which the converters require for results conversion. The
+ * properties `runs` and `config` are excluded because in the scope of the converters, they have
+ * been replaced with the Cucumber JSON and the plugin's options respectively.
+ */
+export type ConversionParameters = Omit<CypressCommandLine.CypressRunResult, "runs" | "config">;
+
 export abstract class ImportExecutionCucumberMultipartConverter<
     CucumberMultipartInfoType extends CucumberMultipartInfoServer & CucumberMultipartInfoCloud
-> extends Converter<CucumberMultipartFeature[], CucumberMultipart<CucumberMultipartInfoType>> {
-    /**
-     * The timestamp when Cypress began testing.
-     */
-    protected readonly startedTestsAt: string;
-    /**
-     * Create a new converter for transforming Cucumber JSON reports into an Xray Cucumber multipart
-     * request.
-     *
-     * @param options the configured plugin options.
-     * @param startedTestsAt the timestamp when Cypress began testing
-     */
-    constructor(options: InternalOptions, startedTestsAt: string) {
-        super(options);
-        this.startedTestsAt = startedTestsAt;
-    }
-
+> extends Converter<
+    CucumberMultipartFeature[],
+    CucumberMultipart<CucumberMultipartInfoType>,
+    ConversionParameters
+> {
     public convert(
-        input: CucumberMultipartFeature[]
+        input: CucumberMultipartFeature[],
+        parameters: ConversionParameters
     ): CucumberMultipart<CucumberMultipartInfoType> {
         const tests: CucumberMultipartFeature[] = [];
         input.forEach((result: CucumberMultipartFeature) => {
@@ -40,7 +35,7 @@ export abstract class ImportExecutionCucumberMultipartConverter<
                 ...result,
             };
             if (this.options.jira.testExecutionIssueKey) {
-                // This time, there's no Cloud/Server distinction for some reason.
+                // For feature tags, there's no Cloud/Server distinction for some reason.
                 const testExecutionIssueTag: CucumberMultipartTag = {
                     name: `@${this.options.jira.testExecutionIssueKey}`,
                 };
@@ -74,7 +69,7 @@ export abstract class ImportExecutionCucumberMultipartConverter<
                 tests.push(test);
             }
         });
-        const info: CucumberMultipartInfoType = this.getMultipartInfo();
+        const info: CucumberMultipartInfoType = this.getMultipartInfo(parameters);
         return {
             features: tests,
             info: info,
@@ -84,9 +79,12 @@ export abstract class ImportExecutionCucumberMultipartConverter<
     /**
      * Build the test execution info object for this multipart conversion.
      *
+     * @param parameters the conversion parameters
      * @returns the multipart information
      */
-    protected abstract getMultipartInfo(): CucumberMultipartInfoType;
+    protected abstract getMultipartInfo(
+        parameters: ConversionParameters
+    ): CucumberMultipartInfoType;
 
     /**
      * Returns whether the array of tags contains a tag (potentially) describing a test issue.

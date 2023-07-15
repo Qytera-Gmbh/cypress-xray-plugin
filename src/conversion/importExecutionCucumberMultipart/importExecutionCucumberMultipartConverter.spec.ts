@@ -5,6 +5,7 @@ import { readFileSync } from "fs";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
+import { ConversionParameters } from "./importExecutionCucumberMultipartConverter";
 import { ImportExecutionCucumberMultipartConverterCloud } from "./importExecutionCucumberMultipartConverterCloud";
 import { ImportExecutionCucumberMultipartConverterServer } from "./importExecutionCucumberMultipartConverterServer";
 
@@ -14,6 +15,9 @@ describe("the import execution cucumber multipart converters", () => {
         | ImportExecutionCucumberMultipartConverterServer
         | ImportExecutionCucumberMultipartConverterCloud;
     let result: CucumberMultipartFeature[];
+    const parameters: ConversionParameters = JSON.parse(
+        readFileSync("./test/resources/runResult.json", "utf-8")
+    );
 
     ["server", "cloud"].forEach((converterType) => {
         describe(converterType, () => {
@@ -36,14 +40,8 @@ describe("the import execution cucumber multipart converters", () => {
                 );
                 converter =
                     converterType === "server"
-                        ? new ImportExecutionCucumberMultipartConverterServer(
-                              options,
-                              "2023-07-11T17:53:35.463Z"
-                          )
-                        : new ImportExecutionCucumberMultipartConverterCloud(
-                              options,
-                              "2023-07-11T17:53:35.463Z"
-                          );
+                        ? new ImportExecutionCucumberMultipartConverterServer(options)
+                        : new ImportExecutionCucumberMultipartConverterCloud(options);
                 result =
                     converterType === "server"
                         ? JSON.parse(
@@ -61,14 +59,14 @@ describe("the import execution cucumber multipart converters", () => {
             });
 
             it("should include all encountered features and tests", () => {
-                const multipart = converter.convert(result);
+                const multipart = converter.convert(result, parameters);
                 expect(multipart.features).to.be.an("array").with.length(2);
                 expect(multipart.features[0].elements).to.be.an("array").with.length(3);
                 expect(multipart.features[1].elements).to.be.an("array").with.length(1);
             });
 
             it("should use the configured project key", () => {
-                const multipart = converter.convert(result);
+                const multipart = converter.convert(result, parameters);
                 expect(multipart.info.fields.project).to.deep.eq({
                     key: "CYP",
                 });
@@ -76,13 +74,19 @@ describe("the import execution cucumber multipart converters", () => {
 
             it("should use the configured test execution summary", () => {
                 options.jira.testExecutionIssueSummary = "A summary";
-                const multipart = converter.convert(result);
+                const multipart = converter.convert(result, parameters);
                 expect(multipart.info.fields.summary).to.eq("A summary");
+            });
+
+            it("should use the configured test execution issue description", () => {
+                options.jira.testExecutionIssueDescription = "This is a nice description";
+                const multipart = converter.convert(result, parameters);
+                expect(multipart.info.fields.description).to.eq("This is a nice description");
             });
 
             it("should use the configured test execution issue key", () => {
                 options.jira.testExecutionIssueKey = "CYP-456";
-                const multipart = converter.convert(result);
+                const multipart = converter.convert(result, parameters);
                 expect(multipart.features[0].tags[0]).to.deep.eq({ name: "@CYP-456" });
                 expect(multipart.features[1].tags[0]).to.deep.eq({ name: "@CYP-456" });
             });
@@ -92,7 +96,7 @@ describe("the import execution cucumber multipart converters", () => {
                     name: options.jira.testExecutionIssueType,
                     subtask: false,
                 };
-                const multipart = converter.convert(result);
+                const multipart = converter.convert(result, parameters);
                 expect(multipart.info.fields.issuetype).to.deep.eq({
                     name: "Test Execution",
                     subtask: false,

@@ -210,15 +210,15 @@ async function uploadCucumberResults(
     );
     let cucumberMultipart: CucumberMultipartServer | CucumberMultipartCloud;
     if (xrayClient instanceof XrayClientServer) {
-        cucumberMultipart = new ImportExecutionCucumberMultipartConverterServer(
-            options,
-            runResult.startedTestsAt
-        ).convert(results);
+        cucumberMultipart = new ImportExecutionCucumberMultipartConverterServer(options).convert(
+            results,
+            runResult
+        );
     } else {
-        cucumberMultipart = new ImportExecutionCucumberMultipartConverterCloud(
-            options,
-            runResult.startedTestsAt
-        ).convert(results);
+        cucumberMultipart = new ImportExecutionCucumberMultipartConverterCloud(options).convert(
+            results,
+            runResult
+        );
     }
     return await xrayClient.importExecutionCucumberMultipart(
         cucumberMultipart.features,

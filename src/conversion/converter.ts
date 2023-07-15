@@ -3,10 +3,15 @@ import { InternalOptions } from "../types/plugin";
 /**
  * A basic class for converting data from an input type to a target type.
  *
- * @template ConversionInputType - the conversion innput type
- * @template ConversionTargetType - the conversion target type
+ * @template ConversionInputType the conversion innput type
+ * @template ConversionTargetType the conversion target type
+ * @template ConversionParametersType the conversion parameters type
  */
-export abstract class Converter<ConversionInputType, ConversionTargetType> {
+export abstract class Converter<
+    ConversionInputType,
+    ConversionTargetType,
+    ConversionParametersType = void
+> {
     /**
      * The configured plugin options.
      */
@@ -19,8 +24,12 @@ export abstract class Converter<ConversionInputType, ConversionTargetType> {
     /**
      * Convert an input object into a target object.
      *
-     * @param results the run results
+     * @param input the input object
+     * @param parameters additional conversion parameters
      * @returns the target object
      */
-    public abstract convert(input: ConversionInputType): ConversionTargetType;
+    public abstract convert(
+        input: ConversionInputType,
+        parameters?: ConversionParametersType
+    ): ConversionTargetType;
 }
