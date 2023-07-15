@@ -21,7 +21,7 @@ export type CucumberMultipartInfoCloud = CucumberMultipartInfo<
     IssueTypeDetailsCloud,
     IssueUpdateCloud
 > & {
-    xrayFields: {
+    xrayFields?: {
         testPlanKey?: string;
         environments?: string[];
     };

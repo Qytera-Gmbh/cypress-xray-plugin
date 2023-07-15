@@ -23,7 +23,7 @@ export abstract class ImportExecutionConverter<
     XrayTestExecutionResultsType extends OneOf<
         [XrayTestExecutionResultsServer, XrayTestExecutionResultsCloud]
     >
-> extends Converter<XrayTestExecutionResultsType> {
+> extends Converter<CypressCommandLine.CypressRunResult, XrayTestExecutionResultsType> {
     public convert(results: CypressCommandLine.CypressRunResult): XrayTestExecutionResultsType {
         const runs: CypressCommandLine.RunResult[] = results.runs.filter(
             (run: CypressCommandLine.RunResult) => {

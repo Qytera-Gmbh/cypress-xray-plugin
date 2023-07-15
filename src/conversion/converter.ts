@@ -1,9 +1,12 @@
 import { InternalOptions } from "../types/plugin";
 
 /**
+ * A basic class for converting data from an input type to a target type.
+ *
+ * @template ConversionInputType - the conversion innput type
  * @template ConversionTargetType - the conversion target type
  */
-export abstract class Converter<ConversionTargetType> {
+export abstract class Converter<ConversionInputType, ConversionTargetType> {
     /**
      * The configured plugin options.
      */
@@ -14,11 +17,10 @@ export abstract class Converter<ConversionTargetType> {
     }
 
     /**
-     * Convert Cypress run results into a target object, ready to be sent to Xray's import execution
-     * endpoints.
+     * Convert an input object into a target object.
      *
      * @param results the run results
      * @returns the target object
      */
-    public abstract convert(results: CypressCommandLine.CypressRunResult): ConversionTargetType;
+    public abstract convert(input: ConversionInputType): ConversionTargetType;
 }

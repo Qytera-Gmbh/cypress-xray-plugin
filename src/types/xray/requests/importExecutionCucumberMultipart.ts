@@ -1,4 +1,14 @@
-export type CucumberMultipart = CucumberMultipartFeature[];
+import {
+    CucumberMultipartInfoCloud,
+    CucumberMultipartInfoServer,
+} from "./importExecutionCucumberMultipartInfo";
+
+export type CucumberMultipart<CucumberMultipartInfoType> = {
+    features: CucumberMultipartFeature[];
+    info: CucumberMultipartInfoType;
+};
+export type CucumberMultipartServer = CucumberMultipart<CucumberMultipartInfoServer>;
+export type CucumberMultipartCloud = CucumberMultipart<CucumberMultipartInfoCloud>;
 export interface CucumberMultipartFeature {
     uri: string;
     id?: string;

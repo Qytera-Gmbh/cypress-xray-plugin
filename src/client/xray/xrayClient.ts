@@ -13,7 +13,7 @@ import {
     XrayTestExecutionResultsCloud,
     XrayTestExecutionResultsServer,
 } from "../../types/xray/importTestExecutionResults";
-import { CucumberMultipart } from "../../types/xray/requests/importExecutionCucumberMultipart";
+import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import { Client } from "../client";
 
@@ -212,7 +212,7 @@ export abstract class XrayClient<
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
     public async importExecutionCucumberMultipart(
-        cucumberJson: CucumberMultipart,
+        cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: CucumberMultipartInfoType
     ): Promise<string | null | undefined> {
         try {

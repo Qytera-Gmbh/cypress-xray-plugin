@@ -9,6 +9,8 @@ import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
 import { ImportExecutionConverterCloud } from "./conversion/importExecution/importExecutionConverterCloud";
 import { ImportExecutionConverterServer } from "./conversion/importExecution/importExecutionConverterServer";
+import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterCloud";
+import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
 import { issuesByScenario } from "./cucumber/tagging";
 import { logError, logInfo, logWarning } from "./logging/logging";
 import { InternalOptions } from "./types/plugin";
@@ -17,13 +19,10 @@ import {
     XrayTestExecutionResultsServer,
 } from "./types/xray/importTestExecutionResults";
 import {
+    CucumberMultipartCloud,
     CucumberMultipartFeature,
-    CucumberMultipartTag,
+    CucumberMultipartServer,
 } from "./types/xray/requests/importExecutionCucumberMultipart";
-import {
-    CucumberMultipartInfoCloud,
-    CucumberMultipartInfoServer,
-} from "./types/xray/requests/importExecutionCucumberMultipartInfo";
 import { parseFeatureFile } from "./util/parsing";
 
 export async function beforeRunHook(
@@ -201,44 +200,20 @@ async function uploadCucumberResults(
     const results: CucumberMultipartFeature[] = JSON.parse(
         fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
     );
-    if (options.jira.testExecutionIssueKey) {
-        const testExecutionIssueTag: CucumberMultipartTag = {
-            name: `@${options.jira.testExecutionIssueKey}`,
-        };
-        results.forEach((result: CucumberMultipartFeature) => {
-            if (result.tags) {
-                result.tags = [];
-            }
-            // Xray uses the first encountered issue tag for deducing the test execution issue.
-            result.tags = [testExecutionIssueTag, ...result.tags];
-        });
-    }
+    let cucumberMultipart: CucumberMultipartServer | CucumberMultipartCloud;
     if (xrayClient instanceof XrayClientServer) {
-        const info: CucumberMultipartInfoServer = {
-            fields: {
-                project: {
-                    key: options.jira.projectKey,
-                },
-                summary: options.jira.testExecutionIssueSummary,
-                issuetype: options.jira.testExecutionIssueDetails,
-            },
-        };
-        info[options.jira.testPlanIssueDetails.id] = [options.jira.testPlanIssueKey];
-        return await xrayClient.importExecutionCucumberMultipart(results, info);
+        cucumberMultipart = new ImportExecutionCucumberMultipartConverterServer(options).convert(
+            results
+        );
+    } else {
+        cucumberMultipart = new ImportExecutionCucumberMultipartConverterCloud(options).convert(
+            results
+        );
     }
-    const info: CucumberMultipartInfoCloud = {
-        fields: {
-            project: {
-                key: options.jira.projectKey,
-            },
-            summary: options.jira.testExecutionIssueSummary,
-            issuetype: options.jira.testExecutionIssueDetails,
-        },
-        xrayFields: {
-            testPlanKey: options.jira.testPlanIssueKey,
-        },
-    };
-    return await xrayClient.importExecutionCucumberMultipart(results, info);
+    return await xrayClient.importExecutionCucumberMultipart(
+        cucumberMultipart.features,
+        cucumberMultipart.info
+    );
 }
 
 export async function synchronizeFile(
