@@ -261,22 +261,6 @@ export type InternalOptions = Options & {
         testPlanIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
     };
     cucumber?: {
-        /**
-         * A mapping of scenario titles to Xray issue keys. Built during file preprocessing, used
-         * during results upload.
-         *
-         * @example
-         *   '@PRJ-1234'
-         *   'Scenario: Valid Login'
-         *   '[...]'
-         *
-         *   issues: {
-         *     "Valid Login": "PRJ-1234"
-         *   }
-         */
-        issues?: {
-            [key: string]: string;
-        };
         preprocessor?: Awaited<ReturnType<typeof resolvePreprocessorConfiguration>>;
     };
 };

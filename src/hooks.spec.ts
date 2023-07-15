@@ -170,41 +170,4 @@ describe("the synchronize file hook", () => {
         await synchronizeFile(file, ".", options);
         expect(stubbedError).to.not.have.been.called;
     });
-
-    it("should be able to correctly parse feature files", async () => {
-        file.filePath = "./test/resources/features/taggedCloud.feature";
-        const { stubbedInfo } = stubLogging();
-        await synchronizeFile(file, ".", options);
-        expect(options.cucumber.issues).to.deep.equal({ "A tagged scenario": "CYP-857" });
-        expect(stubbedInfo).to.have.been.calledOnce;
-        expect(stubbedInfo).to.have.been.calledWith(
-            `Preprocessing feature file ${path.join(
-                "test",
-                "resources",
-                "features",
-                "taggedCloud.feature"
-            )}...`
-        );
-    });
-
-    it("should be able to correctly parse feature files with examples", async () => {
-        file.filePath = "./test/resources/features/taggedCloudExamples.feature";
-        const { stubbedInfo } = stubLogging();
-        await synchronizeFile(file, ".", options);
-        expect(options.cucumber.issues).to.deep.equal({
-            "A tagged scenario with examples": "CYP-123",
-            "A tagged scenario with examples (example #1)": "CYP-123",
-            "A tagged scenario with examples (example #2)": "CYP-123",
-            "A tagged scenario with examples (example #3)": "CYP-123",
-        });
-        expect(stubbedInfo).to.have.been.calledOnce;
-        expect(stubbedInfo).to.have.been.calledWith(
-            `Preprocessing feature file ${path.join(
-                "test",
-                "resources",
-                "features",
-                "taggedCloudExamples.feature"
-            )}...`
-        );
-    });
 });

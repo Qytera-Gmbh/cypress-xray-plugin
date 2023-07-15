@@ -128,7 +128,6 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
                 parse(env, ENV_CUCUMBER_DOWNLOAD_FEATURES, asBoolean) ??
                 options.cucumber?.downloadFeatures ??
                 false,
-            issues: {},
             uploadFeatures:
                 parse(env, ENV_CUCUMBER_UPLOAD_FEATURES, asBoolean) ??
                 options.cucumber?.uploadFeatures ??

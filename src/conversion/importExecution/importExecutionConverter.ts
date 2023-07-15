@@ -279,18 +279,14 @@ export abstract class ImportExecutionConverter<
         // The ones before might be test suite titles.
         const testCaseTitle = testResult.title[testResult.title.length - 1];
         const matches = testCaseTitle.match(regex);
-        if (!matches) {
-            // Test case title does not contain the issue's key.
-            // Maybe it was provided via Cucumber as a scenario tag?
-            if (this.options.cucumber.issues && testCaseTitle in this.options.cucumber.issues) {
-                return this.options.cucumber.issues[testCaseTitle];
+        if (matches) {
+            if (matches.length === 1) {
+                return matches[0];
+            } else {
+                throw new Error(
+                    `Multiple test keys found in test "${testCaseTitle}": ${matches.join(", ")}`
+                );
             }
-        } else if (matches.length === 1) {
-            return matches[0];
-        } else {
-            throw new Error(
-                `Multiple test keys found in test "${testCaseTitle}": ${matches.join(", ")}`
-            );
         }
         return null;
     }

@@ -11,7 +11,6 @@ import { ImportExecutionConverterCloud } from "./conversion/importExecution/impo
 import { ImportExecutionConverterServer } from "./conversion/importExecution/importExecutionConverterServer";
 import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterCloud";
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
-import { issuesByScenario } from "./cucumber/tagging";
 import { logError, logInfo, logWarning } from "./logging/logging";
 import { InternalOptions } from "./types/plugin";
 import {
@@ -156,8 +155,11 @@ export async function afterRunHook(
         logInfo("Skipping results upload: Plugin is configured to not upload test results.");
         return;
     }
-    let issueKey: string = await uploadCypressResults(runResult, options, xrayClient);
-    if (options.cucumber.preprocessor) {
+    let issueKey: string = null;
+    if (containsNativeTest(runResult, options)) {
+        issueKey = await uploadCypressResults(runResult, options, xrayClient);
+    }
+    if (containsCucumberTest(runResult, options)) {
         const cucumberIssueKey = await uploadCucumberResults(runResult, options, xrayClient);
         if (issueKey && cucumberIssueKey !== issueKey) {
             logWarning(
@@ -184,6 +186,30 @@ export async function afterRunHook(
             await jiraClient.addAttachment(issueKey, ...videos);
         }
     }
+}
+
+function containsNativeTest(
+    runResult: CypressCommandLine.CypressRunResult,
+    options: InternalOptions
+): boolean {
+    return runResult.runs.some((run: CypressCommandLine.RunResult) => {
+        if (options.cucumber && run.spec.absolute.endsWith(options.cucumber.featureFileExtension)) {
+            return false;
+        }
+        return true;
+    });
+}
+
+function containsCucumberTest(
+    runResult: CypressCommandLine.CypressRunResult,
+    options: InternalOptions
+): boolean {
+    return runResult.runs.some((run: CypressCommandLine.RunResult) => {
+        if (options.cucumber && run.spec.absolute.endsWith(options.cucumber.featureFileExtension)) {
+            return true;
+        }
+        return false;
+    });
 }
 
 async function uploadCypressResults(
@@ -267,8 +293,5 @@ export async function synchronizeFile(
 function preprocessFeatureFile(filePath: string, options: InternalOptions) {
     // Extract tag information for later use, e.g. when uploading test results to specific issues.
     const feature = parseFeatureFile(filePath).feature;
-    options.cucumber.issues = {
-        ...options.cucumber.issues,
-        ...issuesByScenario(feature, options.jira.projectKey),
-    };
+    // TODO: check if the feature file contains a tag
 }
