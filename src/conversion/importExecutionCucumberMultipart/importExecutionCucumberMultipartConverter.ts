@@ -3,6 +3,7 @@ import {
     CucumberMultipart,
     CucumberMultipartElement,
     CucumberMultipartFeature,
+    CucumberMultipartStep,
     CucumberMultipartTag,
 } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import {
@@ -53,7 +54,11 @@ export abstract class ImportExecutionCucumberMultipartConverter<
                             `No test issue key found in ${element.type} tags and the plugin is not allowed to create new test issues`
                         );
                     }
-                    elements.push(element);
+                    const modifiedElement: CucumberMultipartElement = {
+                        ...element,
+                        steps: this.getSteps(element),
+                    };
+                    elements.push(modifiedElement);
                 } catch (error: unknown) {
                     let reason = error;
                     if (error instanceof Error) {
@@ -93,4 +98,15 @@ export abstract class ImportExecutionCucumberMultipartConverter<
      * @returns true if the array contains such a tag, false otherwise
      */
     protected abstract containsTestTag(tags: CucumberMultipartTag[]): boolean;
+
+    private getSteps(element: CucumberMultipartElement): CucumberMultipartStep[] {
+        const steps: CucumberMultipartStep[] = [];
+        element.steps.forEach((step: CucumberMultipartStep) => {
+            steps.push({
+                ...step,
+                embeddings: this.options.xray.uploadScreenshots ? step.embeddings : [],
+            });
+        });
+        return steps;
+    }
 }

@@ -102,73 +102,41 @@ describe("the import execution cucumber multipart converters", () => {
                     subtask: false,
                 });
             });
+
+            it("should include screenshots by default", () => {
+                const multipart = converter.convert(result, parameters);
+                expect(multipart.features[0].elements[2].steps[1].embeddings).to.have.length(1);
+                expect(multipart.features[0].elements[2].steps[1].embeddings[0].data).to.be.a(
+                    "string"
+                );
+                expect(multipart.features[0].elements[2].steps[1].embeddings[0].mime_type).to.eq(
+                    "image/png"
+                );
+                expect(multipart.features[1].elements[0].steps[0].embeddings).to.have.length(1);
+                expect(multipart.features[1].elements[0].steps[0].embeddings[0].data).to.be.a(
+                    "string"
+                );
+                expect(multipart.features[1].elements[0].steps[0].embeddings[0].mime_type).to.eq(
+                    "image/png"
+                );
+            });
+
+            it("should skip embeddings if screenshots are disabled", () => {
+                options.xray.uploadScreenshots = false;
+                const multipart = converter.convert(result, parameters);
+                expect(multipart.features[0].elements[0].steps[0].embeddings).to.be.empty;
+                expect(multipart.features[0].elements[0].steps[1].embeddings).to.be.empty;
+                expect(multipart.features[0].elements[1].steps[0].embeddings).to.be.empty;
+                expect(multipart.features[0].elements[1].steps[1].embeddings).to.be.empty;
+                expect(multipart.features[0].elements[2].steps[0].embeddings).to.be.empty;
+                expect(multipart.features[0].elements[2].steps[1].embeddings).to.be.empty;
+                expect(multipart.features[1].elements[0].steps[0].embeddings).to.be.empty;
+                expect(multipart.features[1].elements[0].steps[1].embeddings).to.be.empty;
+                expect(multipart.features[1].elements[0].steps[2].embeddings).to.be.empty;
+                expect(multipart.features[1].elements[0].steps[3].embeddings).to.be.empty;
+                expect(multipart.features[1].elements[0].steps[4].embeddings).to.be.empty;
+                expect(multipart.features[1].elements[0].steps[5].embeddings).to.be.empty;
+            });
         });
     });
-    /*
-
-    it("should be able to add test plan issue keys", () => {
-        const result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./test/resources/runResult.json", "utf-8")
-        );
-        options.jira.testPlanIssueKey = "CYP-123";
-        const converter = new ImportExecutionConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convert(result);
-        expect(json.info.testPlanKey).to.eq("CYP-123");
-    });
-
-
-
-    it("should be able to create test issues with summary overwriting disabled", () => {
-        const result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./test/resources/runResult.json", "utf-8")
-        );
-        options.plugin.overwriteIssueSummary = false;
-        const converter = new ImportExecutionConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convert(result);
-        expect(json.tests).to.have.length(3);
-        expect(json.tests[0].testInfo).to.exist;
-        expect(json.tests[1].testInfo).to.exist;
-        expect(json.tests[2].testInfo).to.exist;
-    });
-
-    it("should include a custom test execution summary if provided", () => {
-        const result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./test/resources/runResult.json", "utf-8")
-        );
-        options.jira.testExecutionIssueSummary = "Jeffrey's Test";
-        const converter = new ImportExecutionConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convert(result);
-        expect(json.info.summary).to.eq("Jeffrey's Test");
-    });
-
-    it("should use a timestamp as test execution summary by default", () => {
-        const result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./test/resources/runResult.json", "utf-8")
-        );
-        const converter = new ImportExecutionConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convert(result);
-        expect(json.info.summary).to.eq("Execution Results [1669657272234]");
-    });
-
-    it("should include a custom test execution description if provided", () => {
-        const result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./test/resources/runResult.json", "utf-8")
-        );
-        options.jira.testExecutionIssueDescription = "Very Useful Text";
-        const converter = new ImportExecutionConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convert(result);
-        expect(json.info.description).to.eq("Very Useful Text");
-    });
-
-    it("should use versions as test execution description by default", () => {
-        const result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./test/resources/runResult.json", "utf-8")
-        );
-        const converter = new ImportExecutionConverterCloud(options);
-        const json: XrayTestExecutionResultsCloud = converter.convert(result);
-        expect(json.info.description).to.eq(
-            "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)"
-        );
-    });
-*/
 });
