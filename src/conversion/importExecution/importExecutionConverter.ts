@@ -16,7 +16,7 @@ import {
  * @template XrayTestType - the Xray test type
  * @template XrayTestInfoType - the Xray test information type
  */
-export abstract class ImportExecutionResultsConverter<
+export abstract class ImportExecutionConverter<
     XrayTestType extends OneOf<[XrayTestServer, XrayTestCloud]>,
     XrayTestInfoType extends OneOf<[XrayTestInfoServer, XrayTestInfoCloud]>,
     XrayTestExecutionResultsType extends OneOf<

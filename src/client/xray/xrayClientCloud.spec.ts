@@ -7,7 +7,7 @@ import path from "path";
 import { TEST_TMP_DIR, stubLogging, stubRequests } from "../../../test/util";
 import { JWTCredentials } from "../../authentication/credentials";
 import { initOptions } from "../../context";
-import { ImportExecutionResultsConverterCloud } from "../../conversion/importExecutionResults/importExecutionResultsConverterCloud";
+import { ImportExecutionConverterCloud } from "../../conversion/importExecution/importExecutionConverterCloud";
 import { InternalOptions } from "../../types/plugin";
 import { XrayClientCloud } from "./xrayClientCloud";
 
@@ -48,9 +48,10 @@ describe("the Xray Cloud client", () => {
                 );
                 options.jira.createTestIssues = false;
                 const { stubbedWarning } = stubLogging();
-                const results = new ImportExecutionResultsConverterCloud(
-                    options
-                ).convertExecutionResults(details, details.runs);
+                const results = new ImportExecutionConverterCloud(options).convertExecutionResults(
+                    details,
+                    details.runs
+                );
                 const result = await client.importExecution(results);
                 expect(result).to.be.null;
                 expect(stubbedWarning).to.have.been.called.with.callCount(4);

@@ -8,12 +8,12 @@ import {
 } from "../../types/xray/importTestExecutionResults";
 import { encodeFile } from "../../util/base64";
 import { normalizedFilename } from "../../util/files";
-import { ImportExecutionResultsConverter } from "./importExecutionResultsConverter";
+import { ImportExecutionConverter } from "./importExecutionConverter";
 
 /**
  * Converts Cypress run results into Xray Cloud JSON execution results.
  */
-export class ImportExecutionResultsConverterCloud extends ImportExecutionResultsConverter<
+export class ImportExecutionConverterCloud extends ImportExecutionConverter<
     XrayTestCloud,
     XrayTestInfoCloud,
     XrayTestExecutionResultsCloud

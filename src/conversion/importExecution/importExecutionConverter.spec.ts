@@ -6,7 +6,7 @@ import { stubLogging } from "../../../test/util";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
 import { XrayTestExecutionResultsCloud } from "../../types/xray/importTestExecutionResults";
-import { ImportExecutionResultsConverterCloud } from "./importExecutionResultsConverterCloud";
+import { ImportExecutionConverterCloud } from "./importExecutionConverterCloud";
 
 describe("the import execution results converter", () => {
     let options: InternalOptions;
@@ -33,7 +33,7 @@ describe("the import execution results converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs
@@ -48,7 +48,7 @@ describe("the import execution results converter", () => {
         );
         options.jira.createTestIssues = false;
         const { stubbedWarning } = stubLogging();
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests).to.not.exist;
         expect(stubbedWarning).to.have.been.called.with.callCount(3);
@@ -67,7 +67,7 @@ describe("the import execution results converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs
@@ -80,7 +80,7 @@ describe("the import execution results converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs
@@ -99,7 +99,7 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         options.jira.testExecutionIssueKey = "CYP-123";
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs
@@ -112,7 +112,7 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         options.jira.testPlanIssueKey = "CYP-123";
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs
@@ -124,7 +124,7 @@ describe("the import execution results converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs
@@ -136,7 +136,7 @@ describe("the import execution results converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs
@@ -149,7 +149,7 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         options.plugin.overwriteIssueSummary = true;
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs
@@ -168,7 +168,7 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         options.plugin.overwriteIssueSummary = false;
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs
@@ -184,7 +184,7 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         options.jira.testExecutionIssueSummary = "Jeffrey's Test";
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs
@@ -196,7 +196,7 @@ describe("the import execution results converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs
@@ -209,7 +209,7 @@ describe("the import execution results converter", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         options.jira.testExecutionIssueDescription = "Very Useful Text";
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs
@@ -221,7 +221,7 @@ describe("the import execution results converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterCloud(options);
         const json: XrayTestExecutionResultsCloud = converter.convertExecutionResults(
             result,
             result.runs

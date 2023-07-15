@@ -7,8 +7,8 @@ import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
-import { ImportExecutionResultsConverterCloud } from "./conversion/importExecutionResults/importExecutionResultsConverterCloud";
-import { ImportExecutionResultsConverterServer } from "./conversion/importExecutionResults/importExecutionResultsConverterServer";
+import { ImportExecutionConverterCloud } from "./conversion/importExecution/importExecutionConverterCloud";
+import { ImportExecutionConverterServer } from "./conversion/importExecution/importExecutionConverterServer";
 import { issuesByScenario } from "./cucumber/tagging";
 import { logError, logInfo, logWarning } from "./logging/logging";
 import { InternalOptions } from "./types/plugin";
@@ -203,13 +203,15 @@ async function uploadCypressResults(
 ) {
     let cypressExecution: XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud;
     if (xrayClient instanceof XrayClientServer) {
-        cypressExecution = new ImportExecutionResultsConverterServer(
-            options
-        ).convertExecutionResults(runResult, cypressRuns);
+        cypressExecution = new ImportExecutionConverterServer(options).convertExecutionResults(
+            runResult,
+            cypressRuns
+        );
     } else {
-        cypressExecution = new ImportExecutionResultsConverterCloud(
-            options
-        ).convertExecutionResults(runResult, cypressRuns);
+        cypressExecution = new ImportExecutionConverterCloud(options).convertExecutionResults(
+            runResult,
+            cypressRuns
+        );
     }
     if (cypressExecution.tests.length > 0) {
         return await xrayClient.importExecution(cypressExecution);

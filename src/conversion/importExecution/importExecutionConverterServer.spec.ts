@@ -5,10 +5,10 @@ import { readFileSync } from "fs";
 import { stubLogging } from "../../../test/util";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
-import { ImportExecutionResultsConverterCloud } from "./importExecutionResultsConverterCloud";
-
-describe("the import execution results converter (cloud)", () => {
+import { ImportExecutionConverterServer } from "./importExecutionConverterServer";
+describe("the import execution results converter (server)", () => {
     let options: InternalOptions;
+
     beforeEach(() => {
         options = initOptions(
             {},
@@ -32,7 +32,7 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests[0].evidence).to.not.exist;
         expect(json.tests[1].evidence).to.be.an("array").with.length(1);
@@ -47,7 +47,7 @@ describe("the import execution results converter (cloud)", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         options.xray.uploadScreenshots = false;
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].evidence).to.be.undefined;
@@ -60,7 +60,7 @@ describe("the import execution results converter (cloud)", () => {
             readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
         options.plugin.normalizeScreenshotNames = true;
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests[0].evidence[0].filename).to.eq("t_rtle_with_problem_tic_name.png");
     });
@@ -69,35 +69,35 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests[0].evidence[0].filename).to.eq("tûrtle with problemätic name.png");
     });
 
-    it("should use PASSED as default status name for passed tests", () => {
+    it("should use PASS as default status name for passed tests", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
-        expect(json.tests[0].status).to.eq("PASSED");
-        expect(json.tests[1].status).to.eq("PASSED");
+        expect(json.tests[0].status).to.eq("PASS");
+        expect(json.tests[1].status).to.eq("PASS");
     });
 
-    it("should use FAILED as default status name for failed tests", () => {
+    it("should use FAIL as default status name for failed tests", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
-        expect(json.tests[2].status).to.eq("FAILED");
+        expect(json.tests[2].status).to.eq("FAIL");
     });
 
     it("should use TODO as default status name for pending tests", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultPending.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests[0].status).to.eq("TODO");
         expect(json.tests[1].status).to.eq("TODO");
@@ -105,14 +105,14 @@ describe("the import execution results converter (cloud)", () => {
         expect(json.tests[3].status).to.eq("TODO");
     });
 
-    it("should use FAILED as default status name for skipped tests", () => {
+    it("should use FAIL as default status name for skipped tests", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultSkipped.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
-        expect(json.tests[0].status).to.eq("FAILED");
-        expect(json.tests[1].status).to.eq("FAILED");
+        expect(json.tests[0].status).to.eq("FAIL");
+        expect(json.tests[1].status).to.eq("FAIL");
     });
 
     it("should be able to use custom passed statuses", () => {
@@ -120,7 +120,7 @@ describe("the import execution results converter (cloud)", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         options.xray.statusPassed = "it worked";
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests[0].status).to.eq("it worked");
         expect(json.tests[1].status).to.eq("it worked");
@@ -131,7 +131,7 @@ describe("the import execution results converter (cloud)", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         options.xray.statusFailed = "it did not work";
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests[2].status).to.eq("it did not work");
     });
@@ -141,7 +141,7 @@ describe("the import execution results converter (cloud)", () => {
             readFileSync("./test/resources/runResultPending.json", "utf-8")
         );
         options.xray.statusPending = "still pending";
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests[0].status).to.eq("still pending");
         expect(json.tests[1].status).to.eq("still pending");
@@ -154,9 +154,9 @@ describe("the import execution results converter (cloud)", () => {
             readFileSync("./test/resources/runResultSkipped.json", "utf-8")
         );
         options.xray.statusSkipped = "omit";
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
-        expect(json.tests[0].status).to.eq("FAILED");
+        expect(json.tests[0].status).to.eq("FAIL");
         expect(json.tests[1].status).to.eq("omit");
     });
 
@@ -165,7 +165,7 @@ describe("the import execution results converter (cloud)", () => {
             readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
         );
         const { stubbedWarning } = stubLogging();
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(stubbedWarning).to.have.been.calledWith(
             "Unknown Cypress test status: 'broken'. Skipping result upload for test \"TodoMVC hides footer initially\"."
@@ -180,7 +180,7 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].testInfo.steps).to.have.length(1);
@@ -196,7 +196,7 @@ describe("the import execution results converter (cloud)", () => {
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
         options.xray.steps.update = false;
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].testInfo.steps).to.be.undefined;
@@ -208,7 +208,7 @@ describe("the import execution results converter (cloud)", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
         );
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests[0].testInfo.steps[0].action).to.eq(`${"x".repeat(7997)}...`);
         expect(json.tests[1].testInfo.steps[0].action).to.eq(`${"x".repeat(8000)}`);
@@ -220,7 +220,7 @@ describe("the import execution results converter (cloud)", () => {
             readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
         );
         options.xray.steps.maxLengthAction = 5;
-        const converter = new ImportExecutionResultsConverterCloud(options);
+        const converter = new ImportExecutionConverterServer(options);
         const json = converter.convertExecutionResults(result, result.runs);
         expect(json.tests[0].testInfo.steps[0].action).to.eq("xx...");
         expect(json.tests[1].testInfo.steps[0].action).to.eq("xx...");

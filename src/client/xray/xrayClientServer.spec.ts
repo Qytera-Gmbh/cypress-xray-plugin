@@ -6,7 +6,7 @@ import { readFileSync } from "fs";
 import { stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { initOptions } from "../../context";
-import { ImportExecutionResultsConverterCloud } from "../../conversion/importExecutionResults/importExecutionResultsConverterCloud";
+import { ImportExecutionConverterCloud } from "../../conversion/importExecution/importExecutionConverterCloud";
 import { InternalOptions } from "../../types/plugin";
 import { XrayClientServer } from "./xrayClientServer";
 
@@ -44,7 +44,7 @@ describe("the Xray Server client", () => {
         );
         options.jira.createTestIssues = false;
         const { stubbedWarning } = stubLogging();
-        const results = new ImportExecutionResultsConverterCloud(options).convertExecutionResults(
+        const results = new ImportExecutionConverterCloud(options).convertExecutionResults(
             details,
             details.runs
         );
