@@ -1,7 +1,6 @@
-/// <reference types="cypress" />
-
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import dedent from "dedent";
 import { readFileSync } from "fs";
 import path from "path";
 import { DummyJiraClient, DummyXrayClient, stubLogging } from "../test/util";
@@ -37,7 +36,10 @@ describe("the after run hook", () => {
         await afterRunHook(results);
         expect(stubbedError).to.have.been.calledOnce;
         expect(stubbedError).to.have.been.calledWith(
-            "Plugin misconfigured: configureXrayPlugin() was not called. Skipping after:run hook.\nMake sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+            dedent(`
+                Plugin misconfigured: configureXrayPlugin() was not called. Skipping after:run hook
+                Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
+            `)
         );
     });
 
@@ -46,7 +48,7 @@ describe("the after run hook", () => {
         options.plugin.enabled = false;
         await afterRunHook(results, options);
         expect(stubbedInfo).to.have.been.called.with.callCount(1);
-        expect(stubbedInfo).to.have.been.calledWith("Plugin disabled. Skipping after:run hook.");
+        expect(stubbedInfo).to.have.been.calledWith("Plugin disabled. Skipping after:run hook");
     });
 
     it("should display an error for failed runs", async () => {
@@ -70,7 +72,7 @@ describe("the after run hook", () => {
         await afterRunHook(results, options, new DummyXrayClient(), new DummyJiraClient());
         expect(stubbedInfo).to.have.been.calledOnce;
         expect(stubbedInfo).to.have.been.calledWith(
-            "Skipping results upload: Plugin is configured to not upload test results."
+            "Skipping results upload: Plugin is configured to not upload test results"
         );
     });
 });
@@ -119,7 +121,10 @@ describe("the synchronize file hook", () => {
         await synchronizeFile(file, ".");
         expect(stubbedError).to.have.been.calledOnce;
         expect(stubbedError).to.have.been.calledWith(
-            "Plugin misconfigured (no configuration was provided). Skipping feature file synchronization triggered by: ./test/resources/features/taggedCloud.feature\nMake sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/"
+            dedent(`
+                Plugin misconfigured (no configuration was provided). Skipping feature file synchronization triggered by: ./test/resources/features/taggedCloud.feature
+                Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
+            `)
         );
     });
 

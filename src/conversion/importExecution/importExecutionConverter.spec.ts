@@ -54,50 +54,50 @@ describe("the import execution results converters", () => {
                 expect(stubbedWarning).to.have.been.called.with.callCount(3);
                 expect(stubbedWarning.firstCall).to.have.been.calledWithExactly(
                     dedent(`
-                    Skipping result upload for test: xray upload demo should look for paragraph elements:
+                        Skipping result upload for test: xray upload demo should look for paragraph elements:
 
-                    Plugin is not allowed to create test issues, but no test issue keys were found in the test's title.
-                    You can target existing test issues by adding a corresponding issue key:
+                        Plugin is not allowed to create test issues, but no test issue keys were found in the test's title.
+                        You can target existing test issues by adding a corresponding issue key:
 
-                    it("CYP-123 xray upload demo should look for paragraph elements", () => {
-                      // ...
-                    });
+                        it("CYP-123 xray upload demo should look for paragraph elements", () => {
+                          // ...
+                        });
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                     `)
                 );
                 expect(stubbedWarning.secondCall).to.have.been.calledWithExactly(
                     dedent(`
-                    Skipping result upload for test: xray upload demo should look for the anchor element:
+                        Skipping result upload for test: xray upload demo should look for the anchor element:
 
-                    Plugin is not allowed to create test issues, but no test issue keys were found in the test's title.
-                    You can target existing test issues by adding a corresponding issue key:
+                        Plugin is not allowed to create test issues, but no test issue keys were found in the test's title.
+                        You can target existing test issues by adding a corresponding issue key:
 
-                    it("CYP-123 xray upload demo should look for the anchor element", () => {
-                      // ...
-                    });
+                        it("CYP-123 xray upload demo should look for the anchor element", () => {
+                          // ...
+                        });
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                     `)
                 );
                 expect(stubbedWarning.thirdCall).to.have.been.calledWithExactly(
                     dedent(`
-                    Skipping result upload for test: xray upload demo should fail:
+                        Skipping result upload for test: xray upload demo should fail:
 
-                    Plugin is not allowed to create test issues, but no test issue keys were found in the test's title.
-                    You can target existing test issues by adding a corresponding issue key:
+                        Plugin is not allowed to create test issues, but no test issue keys were found in the test's title.
+                        You can target existing test issues by adding a corresponding issue key:
 
-                    it("CYP-123 xray upload demo should fail", () => {
-                      // ...
-                    });
+                        it("CYP-123 xray upload demo should fail", () => {
+                          // ...
+                        });
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                     `)
                 );
             });
@@ -115,19 +115,19 @@ describe("the import execution results converters", () => {
                 expect(json.tests).to.not.exist;
                 expect(stubbedWarning).to.have.been.calledOnceWithExactly(
                     dedent(`
-                    Skipping result upload for test: cypress xray plugin CYP-123 should throw an error CYP-456:
+                        Skipping result upload for test: cypress xray plugin CYP-123 should throw an error CYP-456:
 
-                    Plugin is not allowed to create test issues, but multiple test keys found in the test's title.
-                    The plugin cannot decide for you which one to use:
+                        Plugin is not allowed to create test issues, but multiple test keys found in the test's title.
+                        The plugin cannot decide for you which one to use:
 
-                    it("CYP-123 should throw an error CYP-456", () => {
-                        ^^^^^^^                       ^^^^^^^
-                      // ...
-                    });
+                        it("CYP-123 should throw an error CYP-456", () => {
+                            ^^^^^^^                       ^^^^^^^
+                          // ...
+                        });
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                     `)
                 );
             });
@@ -140,16 +140,16 @@ describe("the import execution results converters", () => {
                 const json = converter.convert(result);
                 expect(stubbedWarning.firstCall).to.have.been.calledWith(
                     dedent(`
-                    Skipping result upload for test: TodoMVC hides footer initially:
+                        Skipping result upload for test: TodoMVC hides footer initially:
 
-                    Unknown Cypress test status: broken
+                        Unknown Cypress test status: broken
                     `)
                 );
                 expect(stubbedWarning.secondCall).to.have.been.calledWith(
                     dedent(`
-                    Skipping result upload for test: TodoMVC adds 2 todos:
+                        Skipping result upload for test: TodoMVC adds 2 todos:
 
-                    Unknown Cypress test status: california
+                        Unknown Cypress test status: california
                     `)
                 );
                 expect(json.tests).to.be.undefined;
