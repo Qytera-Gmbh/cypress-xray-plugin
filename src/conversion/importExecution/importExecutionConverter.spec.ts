@@ -151,7 +151,7 @@ describe("the import execution results converters", () => {
 
             it("should erase milliseconds from timestamps", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 const json = converter.convert(result);
                 expect(json.info?.startDate).to.eq("2022-11-28T17:41:12Z");
@@ -160,7 +160,7 @@ describe("the import execution results converters", () => {
 
             it("should upload screenshots by default", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 const json = converter.convert(result);
                 expect(json.tests[0].evidence).to.be.undefined;
@@ -171,7 +171,7 @@ describe("the import execution results converters", () => {
 
             it("should skip screenshot upload if disabled", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 options.xray.uploadScreenshots = false;
                 const json = converter.convert(result);
@@ -204,7 +204,7 @@ describe("the import execution results converters", () => {
 
             it("should use custom passed statuses", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 options.xray.statusPassed = "it worked";
                 const json = converter.convert(result);
@@ -214,7 +214,7 @@ describe("the import execution results converters", () => {
 
             it("should use custom failed statuses", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 options.xray.statusFailed = "it did not work";
                 const json = converter.convert(result);
@@ -244,7 +244,7 @@ describe("the import execution results converters", () => {
 
             it("should include step updates if overwrite issue summaries is enabled", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 options.plugin.overwriteIssueSummary = true;
                 const json = converter.convert(result);
@@ -259,7 +259,7 @@ describe("the import execution results converters", () => {
 
             it("should skip step updates if disabled", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 options.plugin.overwriteIssueSummary = true;
                 options.xray.steps.update = false;
@@ -309,7 +309,7 @@ describe("the import execution results converters", () => {
 
             it("should add test execution issue keys", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 options.jira.testExecutionIssueKey = "CYP-123";
                 const json = converter.convert(result);
@@ -318,7 +318,7 @@ describe("the import execution results converters", () => {
 
             it("should add test plan issue keys", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 options.jira.testPlanIssueKey = "CYP-123";
                 const json = converter.convert(result);
@@ -327,7 +327,7 @@ describe("the import execution results converters", () => {
 
             it("should not add test execution issue keys on its own", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 const json = converter.convert(result);
                 expect(json.testExecutionKey).to.be.undefined;
@@ -335,7 +335,7 @@ describe("the import execution results converters", () => {
 
             it("should not add test plan issue keys on its own", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 const json = converter.convert(result);
                 expect(json.info.testPlanKey).to.be.undefined;
@@ -358,7 +358,7 @@ describe("the import execution results converters", () => {
 
             it("should not update test information with summary overwriting disabled", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 options.plugin.overwriteIssueSummary = false;
                 const json = converter.convert(result);
@@ -370,7 +370,7 @@ describe("the import execution results converters", () => {
 
             it("should include a custom test execution summary if provided", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 options.jira.testExecutionIssueSummary = "Jeffrey's Test";
                 const json = converter.convert(result);
@@ -379,7 +379,7 @@ describe("the import execution results converters", () => {
 
             it("should use a timestamp as test execution summary by default", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 const json = converter.convert(result);
                 expect(json.info.summary).to.eq("Execution Results [1669657272234]");
@@ -387,7 +387,7 @@ describe("the import execution results converters", () => {
 
             it("should include a custom test execution description if provided", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 options.jira.testExecutionIssueDescription = "Very Useful Text";
                 const json = converter.convert(result);
@@ -396,7 +396,7 @@ describe("the import execution results converters", () => {
 
             it("should use versions as test execution description by default", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestissues.json", "utf-8")
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 const json = converter.convert(result);
                 expect(json.info.description).to.eq(
