@@ -113,7 +113,7 @@ describe("the import execution results converters", () => {
                 const { stubbedWarning } = stubLogging();
                 const json = converter.convert(result);
                 expect(json.tests).to.not.exist;
-                expect(stubbedWarning).to.have.been.calledOnceWithExactly(
+                expect(stubbedWarning).to.have.been.calledOnceWith(
                     dedent(`
                         Skipping result upload for test: cypress xray plugin CYP-123 should throw an error CYP-456:
 

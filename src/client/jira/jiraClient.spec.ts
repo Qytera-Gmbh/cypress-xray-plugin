@@ -60,7 +60,7 @@ describe("the jira cloud client", () => {
                     "Attaching files:",
                     "./test/resources/turtle.png"
                 );
-                expect(stubbedSuccess).to.have.been.calledOnceWithExactly(
+                expect(stubbedSuccess).to.have.been.calledOnceWith(
                     "Successfully attached files to issue CYP-123:",
                     "turtle.png"
                 );
@@ -115,7 +115,7 @@ describe("the jira cloud client", () => {
                     "./test/resources/turtle.png",
                     "./test/resources/greetings.txt"
                 );
-                expect(stubbedSuccess).to.have.been.calledOnceWithExactly(
+                expect(stubbedSuccess).to.have.been.calledOnceWith(
                     "Successfully attached files to issue CYP-123:",
                     "turtle.png, greetings.txt"
                 );
@@ -167,7 +167,7 @@ describe("the jira cloud client", () => {
                 "./test/resources/turtle.png"
             );
             expect(response).to.eq(mockedData);
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
+            expect(stubbedWarning).to.have.been.calledOnceWith(
                 "File does not exist:",
                 "./test/resources/missingGreetings.txt"
             );

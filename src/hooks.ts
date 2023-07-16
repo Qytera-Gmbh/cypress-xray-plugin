@@ -12,6 +12,10 @@ import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/imp
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
 import { preprocessFeatureFile } from "./cucumber/preprocessor";
 import { logError, logInfo, logWarning } from "./logging/logging";
+import {
+    IssueTypeDetailsCloud,
+    IssueTypeDetailsServer,
+} from "./types/jira/responses/issueTypeDetails";
 import { InternalOptions } from "./types/plugin";
 import {
     XrayTestExecutionResultsCloud,
@@ -46,7 +50,7 @@ export async function beforeRunHook(
     if (!xrayClient) {
         throw new Error(
             dedent(`
-                Plugin misconfigured: Xray client not configured
+                Plugin misconfigured: Xray client was not configured
                 Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
             `)
         );
@@ -54,7 +58,7 @@ export async function beforeRunHook(
     if (!jiraClient) {
         throw new Error(
             dedent(`
-                Plugin misconfigured: Jira client not configured
+                Plugin misconfigured: Jira client was not configured
                 Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
             `)
         );
@@ -82,56 +86,78 @@ export async function beforeRunHook(
                 throw new Error(
                     dedent(`
                         Plugin misconfigured: Cucumber preprocessor JSON report path was not set
-                        Make sure to configure the JSOn report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                        Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
                     `)
                 );
             }
-            if (!options.jira.testExecutionIssueDetails) {
+            if (
+                !options.jira.testExecutionIssueDetails ||
+                (options.jira.testPlanIssueKey && !options.jira.testPlanIssueDetails)
+            ) {
                 logInfo(
-                    "Fetching necessary Jira issue type information in preparation for result uploads..."
+                    "Fetching necessary Jira issue type information in preparation for Cucumber result uploads..."
                 );
                 const issueDetails = await jiraClient.getIssueTypes();
-                const executionDetails = issueDetails.filter(
-                    (details) => details.name === options.jira.testExecutionIssueType
-                );
-                if (executionDetails.length === 0) {
+                if (!issueDetails) {
                     throw new Error(
                         dedent(`
-                            Failed to retrieve issue type information for issue type: ${options.jira.testExecutionIssueType}
-                            Make sure you have Xray installed.
-                        `)
-                    );
-                } else if (executionDetails.length > 1) {
-                    throw new Error(
-                        dedent(`
-                            Found multiple issue types named: ${options.jira.testExecutionIssueType}
-                            Make sure to only make a single Xray test execution issue type available in project ${options.jira.projectKey}.
+                            Jira issue type information could not be fetched.
+                            Please make sure project ${options.jira.projectKey} exists at ${options.jira.url}
+
+                            For more information, visit:
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#projectkey
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
                         `)
                     );
                 }
-                options.jira.testExecutionIssueDetails = executionDetails[0];
-                const planDetails = issueDetails.filter(
-                    (details) => details.name === options.jira.testPlanIssueType
-                );
-                if (planDetails.length === 0) {
-                    throw new Error(
-                        dedent(`
-                            Failed to retrieve issue type information for issue type: ${options.jira.testPlanIssueType}
-                            Make sure you have Xray installed.
-                        `)
-                    );
-                } else if (planDetails.length > 1) {
-                    throw new Error(
-                        dedent(`
-                            Found multiple issue types named: ${options.jira.testPlanIssueType}
-                            Make sure to only make a single Xray test plan issue type available in project ${options.jira.projectKey}.
-                        `)
+                if (!options.jira.testExecutionIssueDetails) {
+                    options.jira.testExecutionIssueDetails = retrieveIssueTypeInformation(
+                        options.jira.testExecutionIssueType,
+                        issueDetails,
+                        options.jira.projectKey
                     );
                 }
-                options.jira.testPlanIssueDetails = planDetails[0];
+                // Test plan information might not be needed.
+                if (options.jira.testPlanIssueKey && !options.jira.testPlanIssueDetails) {
+                    options.jira.testPlanIssueDetails = retrieveIssueTypeInformation(
+                        options.jira.testPlanIssueType,
+                        issueDetails,
+                        options.jira.projectKey
+                    );
+                }
             }
         }
     }
+}
+
+function retrieveIssueTypeInformation<
+    IssueTypeDetails extends IssueTypeDetailsServer & IssueTypeDetailsCloud
+>(type: string, issueDetails: IssueTypeDetails[], projectKey: string): IssueTypeDetails {
+    const details = issueDetails.filter((details) => details.name === type);
+    if (details.length === 0) {
+        throw new Error(
+            dedent(`
+                Failed to retrieve issue type information for issue type: ${type}
+                Make sure you have Xray installed.
+
+                For more information, visit:
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#testExecutionIssueType
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#testPlanIssueType
+            `)
+        );
+    } else if (details.length > 1) {
+        throw new Error(
+            dedent(`
+                Found multiple issue types named: ${type}
+                Make sure to only make a single one available in project ${projectKey}.
+
+                For more information, visit:
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#testExecutionIssueType
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#testPlanIssueType
+            `)
+        );
+    }
+    return details[0];
 }
 
 export async function afterRunHook(

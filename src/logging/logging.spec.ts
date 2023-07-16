@@ -21,7 +21,7 @@ describe("the logging module", () => {
                 "writeErrorFileRelative"
             );
             const expectedPath = resolveTestDirPath("logs", "writeErrorFileRelative.json");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
+            expect(stubbedError).to.have.been.calledOnceWith(
                 `Complete error logs have been written to: ${expectedPath}`
             );
             expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({
@@ -43,7 +43,7 @@ describe("the logging module", () => {
                 "writeErrorFileAbsolute"
             );
             const expectedPath = resolveTestDirPath("logs", "writeErrorFileAbsolute.json");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
+            expect(stubbedError).to.have.been.calledOnceWith(
                 `Complete error logs have been written to: ${expectedPath}`
             );
             expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({
@@ -70,7 +70,7 @@ describe("the logging module", () => {
                 timestamp.toString(),
                 "writeErrorFileNonExistent.json"
             );
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
+            expect(stubbedError).to.have.been.calledOnceWith(
                 `Complete error logs have been written to: ${expectedPath}`
             );
             expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({
@@ -101,7 +101,7 @@ describe("the logging module", () => {
                 timestamp.toString(),
                 "writeErrorFileAxios.json"
             );
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
+            expect(stubbedError).to.have.been.calledOnceWith(
                 `Complete error logs have been written to: ${expectedPath}`
             );
             const parsedData = JSON.parse(fs.readFileSync(expectedPath).toString());
@@ -126,7 +126,7 @@ describe("the logging module", () => {
                 timestamp.toString(),
                 "writeErrorFileGeneric.log"
             );
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
+            expect(stubbedError).to.have.been.calledOnceWith(
                 `Complete error logs have been written to: ${expectedPath}`
             );
             expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({

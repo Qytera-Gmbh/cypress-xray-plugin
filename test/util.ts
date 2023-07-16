@@ -73,7 +73,7 @@ export class DummyXrayClient extends XrayClient<
     CucumberMultipartInfoCloud
 > {
     constructor() {
-        super("https://example.org", new JWTCredentials("id", "secret"));
+        super("https://example.org", null);
     }
     public getUrlImportExecution(): string {
         throw new Error("Method not implemented.");
