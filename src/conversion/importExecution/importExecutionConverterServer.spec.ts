@@ -27,7 +27,7 @@ describe("the import execution results converter (server)", () => {
 
     it("should use PASS as default status name for passed tests", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./test/resources/runResult.json", "utf-8")
+            readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         const converter = new ImportExecutionConverterServer(options);
         const json = converter.convert(result);
@@ -37,7 +37,7 @@ describe("the import execution results converter (server)", () => {
 
     it("should use FAIL as default status name for failed tests", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./test/resources/runResult.json", "utf-8")
+            readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         const converter = new ImportExecutionConverterServer(options);
         const json = converter.convert(result);

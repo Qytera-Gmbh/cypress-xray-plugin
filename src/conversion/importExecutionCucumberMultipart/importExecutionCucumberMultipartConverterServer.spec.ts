@@ -41,15 +41,14 @@ describe("the import execution cucumber multipart server converter", () => {
         converter = new ImportExecutionCucumberMultipartConverterServer(options);
     });
 
-    it("should log warnings when unable to create test issues", () => {
-        options.jira.createTestIssues = false;
+    it("should log warnings for missing issue key tags", () => {
         const { stubbedWarning } = stubLogging();
         const multipart = converter.convert(result, parameters);
         expect(multipart.features).to.be.an("array").with.length(1);
         expect(multipart.features[0].elements).to.be.an("array").with.length(3);
         expect(stubbedWarning).to.have.been.called.with.callCount(1);
         expect(stubbedWarning).to.have.been.calledWith(
-            "No test issue key found in scenario tags and the plugin is not allowed to create new test issues. Skipping result upload for scenario: TC - Development"
+            "No test issue key found in scenario tags. Skipping result upload for scenario: TC - Development"
         );
     });
 
@@ -59,7 +58,7 @@ describe("the import execution cucumber multipart server converter", () => {
             id: "customfield_12126",
             subtask: false,
         };
-        const multipart = converter.convert(result, parameters);
+        const multipart = converter.convert([result[0]], parameters);
         expect(multipart.info.fields["customfield_12126"]).to.deep.eq(["CYP-123"]);
     });
 });

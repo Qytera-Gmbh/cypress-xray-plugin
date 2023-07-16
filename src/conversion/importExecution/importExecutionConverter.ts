@@ -50,23 +50,19 @@ export abstract class ImportExecutionConverter<
                         test.testInfo = this.getTestInfo(testResult);
                     }
                 } else {
-                    if (!this.options.jira.createTestIssues) {
-                        throw new Error(
-                            dedent(`
-                                Plugin is not allowed to create test issues, but no test issue keys were found in the test's title.
-                                You can target existing test issues by adding a corresponding issue key:
+                    throw new Error(
+                        dedent(`
+                            No test issue keys found in the test's title.
+                            You can target existing test issues by adding a corresponding issue key:
 
-                                it("${this.options.jira.projectKey}-123 ${title}", () => {
-                                  // ...
-                                });
+                            it("${this.options.jira.projectKey}-123 ${title}", () => {
+                              // ...
+                            });
 
-                                For more information, visit:
-                                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
-                            `)
-                        );
-                    }
-                    test.testInfo = this.getTestInfo(testResult);
+                            For more information, visit:
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        `)
+                    );
                 }
                 this.addTest(json, test);
             } catch (error: unknown) {
@@ -304,7 +300,7 @@ export abstract class ImportExecutionConverter<
                 indicatorLine = indicatorLine.replaceAll(/[^^]/g, " ");
                 throw new Error(
                     dedent(`
-                        Plugin is not allowed to create test issues, but multiple test keys found in the test's title.
+                        Multiple test keys found in the test's title.
                         The plugin cannot decide for you which one to use:
 
                         it("${testCaseTitle}", () => {
@@ -314,7 +310,6 @@ export abstract class ImportExecutionConverter<
 
                         For more information, visit:
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                     `)
                 );
             }

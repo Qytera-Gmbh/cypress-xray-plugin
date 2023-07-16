@@ -46,13 +46,8 @@ export abstract class ImportExecutionCucumberMultipartConverter<
             const elements: CucumberMultipartElement[] = [];
             result.elements.forEach((element: CucumberMultipartElement) => {
                 try {
-                    if (
-                        !this.options.jira.createTestIssues &&
-                        !this.containsTestTag(element.tags)
-                    ) {
-                        throw new Error(
-                            `No test issue key found in ${element.type} tags and the plugin is not allowed to create new test issues`
-                        );
+                    if (!this.containsTestTag(element.tags)) {
+                        throw new Error(`No test issue key found in ${element.type} tags`);
                     }
                     const modifiedElement: CucumberMultipartElement = {
                         ...element,

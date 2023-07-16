@@ -14,7 +14,6 @@ describe("the cucumber preprocessors", () => {
                 jira: {
                     projectKey: "CYP",
                     url: "https://example.org",
-                    createTestIssues: false,
                 },
                 cucumber: {
                     featureFileExtension: ".feature",
@@ -34,7 +33,7 @@ describe("the cucumber preprocessors", () => {
                 )
             ).to.throw(
                 dedent(`
-                    Plugin is not allowed to create test issues for scenarios, but no test issue keys were found in tags of scenario: A scenario
+                    No test issue keys found in tags of scenario: A scenario
                     You can target existing test issues by adding a corresponding tag:
 
                     @CYP-123
@@ -44,7 +43,6 @@ describe("the cucumber preprocessors", () => {
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                 `)
             );
         });
@@ -58,7 +56,7 @@ describe("the cucumber preprocessors", () => {
                 )
             ).to.throw(
                 dedent(`
-                    Plugin is not allowed to create test issues for scenarios, but multiple test issue keys were found in tags of scenario: A scenario
+                    Multiple test issue keys found in tags of scenario: A scenario
                     The plugin cannot decide for you which one to use:
 
                     @CYP-123 @Some @Other @CYP-456 @Tags
@@ -69,7 +67,6 @@ describe("the cucumber preprocessors", () => {
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                 `)
             );
         });
@@ -83,7 +80,7 @@ describe("the cucumber preprocessors", () => {
                 )
             ).to.throw(
                 dedent(`
-                    Plugin is not allowed to create precondition issues for backgrounds, but no precondition issue keys were found in comments of background: A background
+                    No precondition issue keys found in comments of background: A background
                     You can target existing precondition issues by adding a corresponding comment:
 
                     Background: A background
@@ -93,7 +90,6 @@ describe("the cucumber preprocessors", () => {
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                 `)
             );
         });
@@ -107,7 +103,7 @@ describe("the cucumber preprocessors", () => {
                 )
             ).to.throw(
                 dedent(`
-                    Plugin is not allowed to create precondition issues for backgrounds, but multiple precondition issue keys were found in comments of background: A background
+                    Multiple precondition issue keys found in comments of background: A background
                     The plugin cannot decide for you which one to use:
 
                     Background: A background
@@ -121,7 +117,6 @@ describe("the cucumber preprocessors", () => {
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                 `)
             );
         });
@@ -137,7 +132,7 @@ describe("the cucumber preprocessors", () => {
                 )
             ).to.throw(
                 dedent(`
-                    Plugin is not allowed to create test issues for scenarios, but no test issue keys were found in tags of scenario: A scenario
+                    No test issue keys found in tags of scenario: A scenario
                     You can target existing test issues by adding a corresponding tag:
 
                     @TestName:CYP-123
@@ -147,7 +142,6 @@ describe("the cucumber preprocessors", () => {
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                 `)
             );
         });
@@ -161,7 +155,7 @@ describe("the cucumber preprocessors", () => {
                 )
             ).to.throw(
                 dedent(`
-                    Plugin is not allowed to create test issues for scenarios, but multiple test issue keys were found in tags of scenario: A scenario
+                    Multiple test issue keys found in tags of scenario: A scenario
                     The plugin cannot decide for you which one to use:
 
                     @TestName:CYP-123 @Some @Other @TestName:CYP-456 @Tags
@@ -172,7 +166,6 @@ describe("the cucumber preprocessors", () => {
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                 `)
             );
         });
@@ -186,7 +179,7 @@ describe("the cucumber preprocessors", () => {
                 )
             ).to.throw(
                 dedent(`
-                    Plugin is not allowed to create precondition issues for backgrounds, but no precondition issue keys were found in comments of background: A background
+                    No precondition issue keys found in comments of background: A background
                     You can target existing precondition issues by adding a corresponding comment:
 
                     Background: A background
@@ -196,7 +189,6 @@ describe("the cucumber preprocessors", () => {
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                 `)
             );
         });
@@ -210,7 +202,7 @@ describe("the cucumber preprocessors", () => {
                 )
             ).to.throw(
                 dedent(`
-                    Plugin is not allowed to create precondition issues for backgrounds, but multiple precondition issue keys were found in comments of background: A background
+                    Multiple precondition issue keys found in comments of background: A background
                     The plugin cannot decide for you which one to use:
 
                     Background: A background
@@ -224,7 +216,6 @@ describe("the cucumber preprocessors", () => {
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
                 `)
             );
         });

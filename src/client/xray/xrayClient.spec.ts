@@ -42,7 +42,6 @@ describe("the xray clients", () => {
 
             describe("import execution", () => {
                 it("should skip empty test uploads", async () => {
-                    options.jira.createTestIssues = false;
                     const { stubbedWarning } = stubLogging();
                     const result = await client.importExecution({});
                     expect(result).to.be.null;

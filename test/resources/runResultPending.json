@@ -36,7 +36,7 @@
             "hooks": [],
             "tests": [
                 {
-                    "title": ["TodoMVC", "is not written yet"],
+                    "title": ["TodoMVC", "CYP-123 is not written yet"],
                     "state": "pending",
                     "body": "",
                     "displayError": null,
@@ -52,7 +52,7 @@
                     ]
                 },
                 {
-                    "title": ["TodoMVC", "adds 2 todos"],
+                    "title": ["TodoMVC", "CYP-456 adds 2 todos"],
                     "state": "pending",
                     "body": "function () {\r\n    cy.visit(\"https://example.org\");\r\n    cy.get('[data-testid=\"new-todo\"]').as(\"new\").type(\"learn testing{enter}\");\r\n    cy.get(\"@new\").type(\"be cool{enter}\");\r\n    cy.get('[data-testid=\"todo-list\"] li').should(\"have.length\", 100);\r\n  }",
                     "displayError": null,
@@ -68,7 +68,7 @@
                     ]
                 },
                 {
-                    "title": ["TodoMVC", "another test"],
+                    "title": ["TodoMVC", "CYP-789 another test"],
                     "state": "pending",
                     "body": "() => {\r\n    expect(false).to.true;\r\n  }",
                     "displayError": null,
@@ -84,7 +84,7 @@
                     ]
                 },
                 {
-                    "title": ["TodoMVC", "only test chrome"],
+                    "title": ["TodoMVC", "CYP-987 only test chrome"],
                     "state": "pending",
                     "body": "() => {\r\n    cy.visit(\"https://example.org\");\r\n    cy.contains(\"To Do\");\r\n  }",
                     "displayError": null,

@@ -1,6 +1,5 @@
 import { Background, Comment, Scenario, Tag } from "@cucumber/messages";
 import dedent from "dedent";
-import { logWarning } from "../logging/logging";
 import { InternalOptions } from "../types/plugin";
 import { getPreconditionIssueTags, getTestIssueTags, parseFeatureFile } from "./tagging";
 
@@ -14,12 +13,9 @@ export function preprocessFeatureFile(
         if (child.scenario) {
             const issueKeys = getTestIssueTags(child.scenario, options.jira.projectKey);
             if (issueKeys.length === 0) {
-                if (!options.jira.createTestIssues) {
-                    throw new Error(
-                        dedent(`
-                        Plugin is not allowed to create test issues for scenarios, but no test issue keys were found in tags of scenario: ${
-                            child.scenario.name
-                        }
+                throw new Error(
+                    dedent(`
+                        No test issue keys found in tags of scenario: ${child.scenario.name}
                         You can target existing test issues by adding a corresponding tag:
 
                         ${getScenarioTag(options.jira.projectKey, isCloudClient)}
@@ -29,18 +25,12 @@ export function preprocessFeatureFile(
                         For more information, visit:
                         - ${getHelpUrl(isCloudClient)}
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
-                        `)
-                    );
-                }
-            }
-            if (issueKeys.length > 1) {
-                if (!options.jira.createTestIssues) {
-                    throw new Error(
-                        dedent(`
-                        Plugin is not allowed to create test issues for scenarios, but multiple test issue keys were found in tags of scenario: ${
-                            child.scenario.name
-                        }
+                    `)
+                );
+            } else if (issueKeys.length > 1) {
+                throw new Error(
+                    dedent(`
+                        Multiple test issue keys found in tags of scenario: ${child.scenario.name}
                         The plugin cannot decide for you which one to use:
 
                         ${getScenarioMultipleTagsLine(child.scenario)}
@@ -51,15 +41,8 @@ export function preprocessFeatureFile(
                         For more information, visit:
                         - ${getHelpUrl(isCloudClient)}
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
-                        `)
-                    );
-                } else {
-                    logWarning(
-                        `Multiple test issue keys found in scenario tags: ${issueKeys.join(", ")}.`,
-                        "Issue reuse might not work for this test issue"
-                    );
-                }
+                    `)
+                );
             }
         } else if (child.background) {
             const preconditionKeys = getPreconditionIssueTags(
@@ -68,10 +51,9 @@ export function preprocessFeatureFile(
                 document.comments
             );
             if (preconditionKeys.length === 0) {
-                if (!options.jira.createTestIssues) {
-                    throw new Error(
-                        dedent(`
-                        Plugin is not allowed to create precondition issues for backgrounds, but no precondition issue keys were found in comments of background: ${
+                throw new Error(
+                    dedent(`
+                        No precondition issue keys found in comments of background: ${
                             child.background.name
                         }
                         You can target existing precondition issues by adding a corresponding comment:
@@ -83,36 +65,24 @@ export function preprocessFeatureFile(
                         For more information, visit:
                         - ${getHelpUrl(isCloudClient)}
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
-                        `)
-                    );
-                }
+                    `)
+                );
             } else if (preconditionKeys.length > 1) {
-                if (!options.jira.createTestIssues) {
-                    const lines = [
-                        `Plugin is not allowed to create precondition issues for backgrounds, but multiple precondition issue keys were found in comments of background: ${child.background.name}`,
-                        "The plugin cannot decide for you which one to use:",
-                        "",
-                        reconstructMultipleTagsBackground(
-                            child.background,
-                            preconditionKeys,
-                            document.comments
-                        ),
-                        "",
-                        "For more information, visit:",
-                        `- ${getHelpUrl(isCloudClient)}`,
-                        "- https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/",
-                        "- https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues",
-                    ];
-                    throw new Error(lines.join("\n"));
-                } else {
-                    logWarning(
-                        `Multiple precondition issue keys found in background comments: ${preconditionKeys.join(
-                            ", "
-                        )}.`,
-                        "Issue reuse might not work for this precondition"
-                    );
-                }
+                const lines = [
+                    `Multiple precondition issue keys found in comments of background: ${child.background.name}`,
+                    "The plugin cannot decide for you which one to use:",
+                    "",
+                    reconstructMultipleTagsBackground(
+                        child.background,
+                        preconditionKeys,
+                        document.comments
+                    ),
+                    "",
+                    "For more information, visit:",
+                    `- ${getHelpUrl(isCloudClient)}`,
+                    "- https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/",
+                ];
+                throw new Error(lines.join("\n"));
             }
         }
     }

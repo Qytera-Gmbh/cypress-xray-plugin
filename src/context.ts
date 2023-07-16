@@ -1,3 +1,4 @@
+import dedent from "dedent";
 import { BasicAuthCredentials, JWTCredentials, PATCredentials } from "./authentication/credentials";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
@@ -9,7 +10,6 @@ import {
     ENV_CUCUMBER_UPLOAD_FEATURES,
     ENV_JIRA_API_TOKEN,
     ENV_JIRA_ATTACH_VIDEOS,
-    ENV_JIRA_CREATE_TEST_ISSUES,
     ENV_JIRA_PASSWORD,
     ENV_JIRA_PROJECT_KEY,
     ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION,
@@ -48,10 +48,6 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
         jira: {
             attachVideos:
                 parse(env, ENV_JIRA_ATTACH_VIDEOS, asBoolean) ?? options.jira.attachVideos ?? false,
-            createTestIssues:
-                parse(env, ENV_JIRA_CREATE_TEST_ISSUES, asBoolean) ??
-                options.jira.createTestIssues ??
-                true,
             projectKey: parse(env, ENV_JIRA_PROJECT_KEY, asString) ?? options.jira.projectKey,
             testExecutionIssueDescription:
                 parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION, asString) ??
@@ -199,8 +195,10 @@ export function initXrayClient(
         );
     } else {
         throw new Error(
-            "Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported.\n" +
-                "You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
+            dedent(`
+                Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported
+                You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+            `)
         );
     }
 }
@@ -210,8 +208,10 @@ export function initJiraClient(
 ): JiraClientServer | JiraClientCloud {
     if (!options.jira.url) {
         throw new Error(
-            "Failed to configure Jira client: no Jira URL was provided.\n" +
-                "Make sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira"
+            dedent(`
+                Failed to configure Jira client: no Jira URL was provided
+                Make sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
+            `)
         );
     }
     if (ENV_JIRA_API_TOKEN in env && ENV_JIRA_USERNAME in env) {
@@ -238,8 +238,10 @@ export function initJiraClient(
         );
     } else {
         throw new Error(
-            "Failed to configure Jira client: no viable authentication method was configured.\n" +
-                "You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
+            dedent(`
+                Failed to configure Jira client: no viable authentication method was configured
+                You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+            `)
         );
     }
 }

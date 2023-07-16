@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import dedent from "dedent";
 import { stubLogging } from "../test/util";
 import { BasicAuthCredentials, PATCredentials } from "./authentication/credentials";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
@@ -21,9 +22,6 @@ describe("the plugin context configuration", () => {
             describe("jira", () => {
                 it("attachVideos", () => {
                     expect(options.jira.attachVideos).to.eq(false);
-                });
-                it("attachCreateTestIssues", () => {
-                    expect(options.jira.createTestIssues).to.eq(true);
                 });
                 it("testExecutionIssueDescription", () => {
                     expect(options.jira.testExecutionIssueDescription).to.eq(undefined);
@@ -127,19 +125,6 @@ describe("the plugin context configuration", () => {
                         }
                     );
                     expect(options.jira.attachVideos).to.eq(true);
-                });
-                it("createTestIssues", () => {
-                    const options = initOptions(
-                        {},
-                        {
-                            jira: {
-                                projectKey: "PRJ",
-                                createTestIssues: false,
-                                url: "https://example.org",
-                            },
-                        }
-                    );
-                    expect(options.jira.createTestIssues).to.eq(false);
                 });
                 it("testExecutionIssueDescription", () => {
                     const options = initOptions(
@@ -551,20 +536,6 @@ describe("the plugin context configuration", () => {
                         },
                     });
                     expect(options.jira.attachVideos).to.be.true;
-                });
-
-                it("JIRA_CREATE_TEST_ISSUES", () => {
-                    const env = {
-                        JIRA_CREATE_TEST_ISSUES: "false",
-                    };
-                    const options = initOptions(env, {
-                        jira: {
-                            projectKey: "CYP",
-                            createTestIssues: true,
-                            url: "https://example.org",
-                        },
-                    });
-                    expect(options.jira.createTestIssues).to.be.false;
                 });
 
                 it("JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION", () => {
@@ -1133,13 +1104,19 @@ describe("the plugin context configuration", () => {
             it("should throw an error for missing jira urls", () => {
                 options.jira.url = undefined;
                 expect(() => initJiraClient(options, {})).to.throw(
-                    "Failed to configure Jira client: no Jira URL was provided.\nMake sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira"
+                    dedent(`
+                        Failed to configure Jira client: no Jira URL was provided
+                        Make sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
+                    `)
                 );
             });
 
             it("should throw an error for missing credentials", () => {
                 expect(() => initJiraClient(options, {})).to.throw(
-                    "Failed to configure Jira client: no viable authentication method was configured.\nYou can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
+                    dedent(`
+                        Failed to configure Jira client: no viable authentication method was configured
+                        You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                    `)
                 );
             });
         });
@@ -1223,7 +1200,10 @@ describe("the plugin context configuration", () => {
 
             it("should throw an error for missing credentials", () => {
                 expect(() => initXrayClient(options, {})).to.throw(
-                    "Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported.\nYou can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
+                    dedent(`
+                        Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported
+                        You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                    `)
                 );
             });
         });
