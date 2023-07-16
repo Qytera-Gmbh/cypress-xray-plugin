@@ -207,12 +207,42 @@ export async function afterRunHook(
     let issueKey: string = null;
     if (containsNativeTest(runResult, options)) {
         issueKey = await uploadCypressResults(runResult, options, xrayClient);
+        if (
+            options.jira.testExecutionIssueKey &&
+            issueKey &&
+            issueKey !== options.jira.testExecutionIssueKey
+        ) {
+            logWarning(
+                dedent(`
+                    Cypress execution results were imported to test execution ${issueKey}, which is different from the configured one: ${options.jira.testExecutionIssueKey}
+                    Please make sure issue ${options.jira.testExecutionIssueKey} actually exists and is of type: ${options.jira.testExecutionIssueType}
+                `)
+            );
+        } else if (!options.jira.testExecutionIssueKey && issueKey) {
+            // Prevents Cucumber results upload from creating yet another execution issue.
+            options.jira.testExecutionIssueKey = issueKey;
+        }
     }
     if (containsCucumberTest(runResult, options)) {
         const cucumberIssueKey = await uploadCucumberResults(runResult, options, xrayClient);
-        if (issueKey && cucumberIssueKey !== issueKey) {
+        if (
+            options.jira.testExecutionIssueKey &&
+            cucumberIssueKey &&
+            cucumberIssueKey !== options.jira.testExecutionIssueKey
+        ) {
             logWarning(
-                "Cucumber execution results were imported to a different test execution issue. This might be a bug, please report it at https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues"
+                dedent(`
+                    Cucumber execution results were imported to test execution ${cucumberIssueKey}, which is different from the configured one: ${options.jira.testExecutionIssueKey}
+                    Please make sure issue ${options.jira.testExecutionIssueKey} actually exists and is of type: ${options.jira.testExecutionIssueType}
+                `)
+            );
+        }
+        if (options.jira.testExecutionIssueKey && issueKey && cucumberIssueKey !== issueKey) {
+            logWarning(
+                dedent(`
+                    Cucumber execution results were imported to a different test execution issue than the Cypress execution results.
+                    This might be a bug, please report it at: https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues
+                `)
             );
         } else if (!issueKey && cucumberIssueKey) {
             issueKey = cucumberIssueKey;
