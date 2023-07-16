@@ -24,7 +24,7 @@ describe("the cucumber preprocessor", () => {
     });
 
     describe("server", () => {
-        it("should be able to throw for missing scenario tags", async () => {
+        it("should throw for missing scenario tags", async () => {
             expect(() =>
                 preprocessFeatureFile(
                     "./test/resources/features/taggedServerMissingScenario.feature",
@@ -43,7 +43,7 @@ describe("the cucumber preprocessor", () => {
             );
         });
 
-        it("should be able to throw for multiple scenario tags", async () => {
+        it("should throw for multiple scenario tags", async () => {
             expect(() =>
                 preprocessFeatureFile(
                     "./test/resources/features/taggedServerMultipleScenario.feature",
@@ -63,7 +63,7 @@ describe("the cucumber preprocessor", () => {
             );
         });
 
-        it("should be able to throw for missing background tags", async () => {
+        it("should throw for missing background tags", async () => {
             expect(() =>
                 preprocessFeatureFile(
                     "./test/resources/features/taggedServerMissingBackground.feature",
@@ -82,7 +82,7 @@ describe("the cucumber preprocessor", () => {
             );
         });
 
-        it("should be able to throw for multiple background tags", async () => {
+        it("should throw for multiple background tags", async () => {
             expect(() =>
                 preprocessFeatureFile(
                     "./test/resources/features/taggedServerMultipleBackground.feature",
@@ -107,7 +107,7 @@ describe("the cucumber preprocessor", () => {
     });
 
     describe("cloud", () => {
-        it("should be able to throw for missing scenario tags", async () => {
+        it("should throw for missing scenario tags", async () => {
             expect(() =>
                 preprocessFeatureFile(
                     "./test/resources/features/taggedCloudMissingScenario.feature",
@@ -126,7 +126,7 @@ describe("the cucumber preprocessor", () => {
             );
         });
 
-        it("should be able to throw for multiple scenario tags", async () => {
+        it("should throw for multiple scenario tags", async () => {
             expect(() =>
                 preprocessFeatureFile(
                     "./test/resources/features/taggedCloudMultipleScenario.feature",
@@ -146,7 +146,7 @@ describe("the cucumber preprocessor", () => {
             );
         });
 
-        it("should be able to throw for missing background tags", async () => {
+        it("should throw for missing background tags", async () => {
             expect(() =>
                 preprocessFeatureFile(
                     "./test/resources/features/taggedCloudMissingBackground.feature",
@@ -165,7 +165,7 @@ describe("the cucumber preprocessor", () => {
             );
         });
 
-        it("should be able to throw for multiple background tags", async () => {
+        it("should throw for multiple background tags", async () => {
             expect(() =>
                 preprocessFeatureFile(
                     "./test/resources/features/taggedCloudMultipleBackground.feature",

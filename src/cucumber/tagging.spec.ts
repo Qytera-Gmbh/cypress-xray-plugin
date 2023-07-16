@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { getPreconditionIssueTags, getTestIssueTags, parseFeatureFile } from "./tagging";
 
 describe("the cucumber tag extractor", () => {
-    it("should be able to extract xray server background tags", () => {
+    it("should extract xray server background tags", () => {
         const document = parseFeatureFile(
             "./test/resources/features/taggedServerMultipleBackground.feature"
         );
@@ -13,7 +13,7 @@ describe("the cucumber tag extractor", () => {
         );
         expect(tag).to.deep.eq(["CYP-244", "CYP-262"]);
     });
-    it("should be able to extract xray cloud background tags", () => {
+    it("should extract xray cloud background tags", () => {
         const document = parseFeatureFile(
             "./test/resources/features/taggedCloudMultipleBackground.feature"
         );
@@ -25,7 +25,7 @@ describe("the cucumber tag extractor", () => {
         expect(tag).to.deep.eq(["CYP-244", "CYP-262"]);
     });
 
-    it("should be able to extract xray server scenario tags", () => {
+    it("should extract xray server scenario tags", () => {
         const feature = parseFeatureFile(
             "./test/resources/features/taggedServerMultipleScenario.feature"
         ).feature;
@@ -35,7 +35,7 @@ describe("the cucumber tag extractor", () => {
         ]);
     });
 
-    it("should be able to extract xray cloud scenario tags", () => {
+    it("should extract xray cloud scenario tags", () => {
         const feature = parseFeatureFile(
             "./test/resources/features/taggedCloudMultipleScenario.feature"
         ).feature;

@@ -42,7 +42,7 @@ describe("the import execution results converter (cloud)", () => {
         expect(json.tests[2].evidence[1].filename).to.eq("turtle.png");
     });
 
-    it("should be able to skip screenshot upload if disabled", () => {
+    it("should skip screenshot upload if disabled", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
@@ -115,7 +115,7 @@ describe("the import execution results converter (cloud)", () => {
         expect(json.tests[1].status).to.eq("FAILED");
     });
 
-    it("should be able to use custom passed statuses", () => {
+    it("should use custom passed statuses", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
@@ -126,7 +126,7 @@ describe("the import execution results converter (cloud)", () => {
         expect(json.tests[1].status).to.eq("it worked");
     });
 
-    it("should be able to use custom failed statuses", () => {
+    it("should use custom failed statuses", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult.json", "utf-8")
         );
@@ -136,7 +136,7 @@ describe("the import execution results converter (cloud)", () => {
         expect(json.tests[2].status).to.eq("it did not work");
     });
 
-    it("should be able to use custom pending statuses", () => {
+    it("should use custom pending statuses", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultPending.json", "utf-8")
         );
@@ -149,7 +149,7 @@ describe("the import execution results converter (cloud)", () => {
         expect(json.tests[3].status).to.eq("still pending");
     });
 
-    it("should be able to use custom skipped statuses", () => {
+    it("should use custom skipped statuses", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultSkipped.json", "utf-8")
         );

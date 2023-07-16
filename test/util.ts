@@ -1,3 +1,4 @@
+import { HttpStatusCode } from "axios";
 import chai from "chai";
 import fs from "fs";
 import path from "path";
@@ -32,13 +33,29 @@ export const stubRequests = () => {
     };
 };
 
-export const TEST_TMP_DIR = "test/out";
+const TEST_TMP_DIR = "test/out";
 
-export function getTestDir(dirName: string): string {
-    return path.join(TEST_TMP_DIR, dirName);
+export function resolveTestDirPath(...subPaths: string[]): string {
+    return path.resolve(TEST_TMP_DIR, ...subPaths);
 }
 
-afterEach(() => {
+export const RESOLVED_JWT_CREDENTIALS: JWTCredentials = new JWTCredentials("user", "token");
+
+before(() => {
+    // Resolve credentials so that they don't have to dispatch POST requests again.
+    stubLogging();
+    const { stubbedPost } = stubRequests();
+    stubbedPost.onFirstCall().resolves({
+        status: HttpStatusCode.Ok,
+        data: "ey12345Token",
+        headers: null,
+        statusText: HttpStatusCode[HttpStatusCode.Ok],
+        config: null,
+    });
+    RESOLVED_JWT_CREDENTIALS.getAuthenticationHeader("https://example.org");
+});
+
+beforeEach(() => {
     Sinon.restore();
     initLogging({ logDirectory: TEST_TMP_DIR });
 });

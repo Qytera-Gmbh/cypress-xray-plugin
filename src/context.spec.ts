@@ -511,7 +511,7 @@ describe("the plugin context configuration", () => {
                 });
             });
         });
-        describe("should be able to prefer environment variables over provided values", () => {
+        describe("should prefer environment variables over provided values", () => {
             describe("jira", () => {
                 it("JIRA_PROJECT_KEY", () => {
                     const env = {
@@ -940,7 +940,7 @@ describe("the plugin context configuration", () => {
         });
     });
     describe("the options verifier", () => {
-        it("should be able to detect unset project keys", async () => {
+        it("should detect unset project keys", async () => {
             expect(() =>
                 verifyOptions({
                     jira: {
@@ -950,7 +950,7 @@ describe("the plugin context configuration", () => {
                 })
             ).to.throw("Plugin misconfiguration: Jira project key was not set");
         });
-        it("should be able to detect mismatched test execution issue keys", async () => {
+        it("should detect mismatched test execution issue keys", async () => {
             expect(() =>
                 verifyOptions({
                     jira: {
@@ -963,7 +963,7 @@ describe("the plugin context configuration", () => {
                 "Plugin misconfiguration: test execution issue key ABC-123 does not belong to project CYP"
             );
         });
-        it("should be able to detect mismatched test plan issue keys", async () => {
+        it("should detect mismatched test plan issue keys", async () => {
             expect(() =>
                 verifyOptions({
                     jira: {
@@ -1027,7 +1027,7 @@ describe("the plugin context configuration", () => {
             options.jira.attachVideos = true;
         });
 
-        it("should be able to detect Jira Cloud credentials", () => {
+        it("should detect jira cloud credentials", () => {
             const env = {
                 JIRA_USERNAME: "user@somewhere.xyz",
                 JIRA_API_TOKEN: "1337",
@@ -1041,7 +1041,7 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should be able to detect Jira Server PAT credentials", () => {
+        it("should detect jira server PAT credentials", () => {
             const env = {
                 JIRA_API_TOKEN: "1337",
             };
@@ -1054,7 +1054,7 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should be able to detect Jira Server basic auth credentials", () => {
+        it("should detect jira server basic auth credentials", () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "1337",
@@ -1068,7 +1068,7 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should be able to choose Jira Cloud credentials over server credentials", () => {
+        it("should choose jira cloud credentials over server credentials", () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "xyz",
@@ -1089,7 +1089,7 @@ describe("the plugin context configuration", () => {
                 stubLogging();
             });
 
-            it("should throw an error for missing Jira URLs", () => {
+            it("should throw an error for missing jira urls", () => {
                 options.jira.url = undefined;
                 expect(() => initJiraClient(options, {})).to.throw(
                     "Failed to configure Jira client: no Jira URL was provided.\nMake sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira"
@@ -1104,7 +1104,7 @@ describe("the plugin context configuration", () => {
         });
     });
 
-    describe("the Xray client instantiation", () => {
+    describe("the xray client instantiation", () => {
         let options: InternalOptions;
         beforeEach(() => {
             options = initOptions(
@@ -1118,7 +1118,7 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should be able to detect cloud credentials", () => {
+        it("should detect cloud credentials", () => {
             const env = {
                 XRAY_CLIENT_ID: "user",
                 XRAY_CLIENT_SECRET: "xyz",
@@ -1131,7 +1131,7 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should be able to detect basic server credentials", () => {
+        it("should detect basic server credentials", () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "xyz",
@@ -1145,7 +1145,7 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should be able to detect PAT server credentials", () => {
+        it("should detect PAT server credentials", () => {
             const env = {
                 JIRA_API_TOKEN: "1337",
             };
@@ -1158,7 +1158,7 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should be able to choose cloud credentials over server credentials", () => {
+        it("should choose cloud credentials over server credentials", () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_API_TOKEN: "1337",

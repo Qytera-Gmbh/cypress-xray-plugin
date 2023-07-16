@@ -3,12 +3,11 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
-import path from "path";
-import { TEST_TMP_DIR, expectToExist, stubLogging, stubRequests } from "../../../test/util";
+import { expectToExist, resolveTestDirPath, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { JiraClientCloud } from "./jiraClientCloud";
 
-describe("the Jira Cloud client", () => {
+describe("the jira cloud client", () => {
     // The concrete client implementation does not matter here. The methods here only test the
     // abstract base class's code.
     const client: JiraClientCloud = new JiraClientCloud(
@@ -146,7 +145,7 @@ describe("the Jira Cloud client", () => {
             });
         });
 
-        it("should be able to log missing files", async () => {
+        it("should log missing files", async () => {
             const { stubbedPost } = stubRequests();
             const { stubbedWarning } = stubLogging();
             const mockedData = JSON.parse(
@@ -174,7 +173,7 @@ describe("the Jira Cloud client", () => {
             );
         });
 
-        it("should be able to skip missing files", async () => {
+        it("should skip missing files", async () => {
             const { stubbedPost } = stubRequests();
             // These are checked elsewhere.
             stubLogging();
@@ -222,7 +221,7 @@ describe("the Jira Cloud client", () => {
             );
         });
 
-        it("should be able to handle bad responses", async () => {
+        it("should handle bad responses", async () => {
             const { stubbedPost } = stubRequests();
             const { stubbedError } = stubLogging();
             stubbedPost.rejects(
@@ -251,7 +250,7 @@ describe("the Jira Cloud client", () => {
             expect(stubbedError).to.have.been.calledWithExactly(
                 "Failed to attach files: AxiosError: Request failed with status code 413"
             );
-            const expectedPath = path.resolve(TEST_TMP_DIR, "addAttachmentError.json");
+            const expectedPath = resolveTestDirPath("addAttachmentError.json");
             expect(stubbedError).to.have.been.calledWithExactly(
                 `Complete error logs have been written to: ${expectedPath}`
             );
@@ -371,7 +370,7 @@ describe("the Jira Cloud client", () => {
             expect(stubbedError).to.have.been.calledWithExactly(
                 "Failed to get issue types: AxiosError: Request failed with status code 401"
             );
-            const expectedPath = path.resolve(TEST_TMP_DIR, "getIssueTypesError.json");
+            const expectedPath = resolveTestDirPath("getIssueTypesError.json");
             expect(stubbedError).to.have.been.calledWithExactly(
                 `Complete error logs have been written to: ${expectedPath}`
             );

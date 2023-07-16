@@ -54,7 +54,7 @@ describe("the import execution cucumber multipart cloud converter", () => {
         );
     });
 
-    it("should be able to add test plan issue keys", () => {
+    it("should add test plan issue keys", () => {
         const result: CucumberMultipartFeature[] = JSON.parse(
             readFileSync(
                 "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",

@@ -5,65 +5,16 @@ import { expect } from "chai";
 import { readFileSync } from "fs";
 import { stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
-import { initOptions } from "../../context";
-import { ImportExecutionConverterServer } from "../../conversion/importExecution/importExecutionConverterServer";
-import { InternalOptions } from "../../types/plugin";
 import { XrayClientServer } from "./xrayClientServer";
 
-describe("the Xray Server client", () => {
-    let details: CypressCommandLine.CypressRunResult;
+describe("the xray server client", () => {
     const client: XrayClientServer = new XrayClientServer(
         "https://example.org",
         new BasicAuthCredentials("user", "xyz")
     );
 
-    let options: InternalOptions;
-
-    beforeEach(() => {
-        options = initOptions(
-            {},
-            {
-                jira: {
-                    projectKey: "CYP",
-                    url: "https://example.org",
-                },
-                xray: {
-                    testType: "Manual",
-                },
-                cucumber: {
-                    featureFileExtension: ".feature",
-                },
-            }
-        );
-        details = JSON.parse(readFileSync("./test/resources/runResult.json", "utf-8"));
-    });
-
-    it("should be able to skip empty test uploads", async () => {
-        details.runs.forEach((run, i) =>
-            run.tests.forEach((test, j) => (test.title = ["nothing", i.toString(), j.toString()]))
-        );
-        options.jira.createTestIssues = false;
-        const { stubbedWarning } = stubLogging();
-        const results = new ImportExecutionConverterServer(options).convert(details);
-        const result = await client.importExecution(results);
-        expect(result).to.be.null;
-        expect(stubbedWarning).to.have.been.called.with.callCount(4);
-        expect(stubbedWarning).to.have.been.calledWith(
-            "No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test: nothing 0 0"
-        );
-        expect(stubbedWarning).to.have.been.calledWith(
-            "No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test: nothing 0 1"
-        );
-        expect(stubbedWarning).to.have.been.calledWith(
-            "No test issue key found in test title and the plugin is not allowed to create new test issues. Skipping result upload for test: nothing 0 2"
-        );
-        expect(stubbedWarning).to.have.been.calledWith(
-            "No native Cypress tests were executed. Skipping native upload."
-        );
-    });
-
     describe("import execution", () => {
-        it("should be able to handle successful responses", async () => {
+        it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
             const { stubbedInfo, stubbedSuccess } = stubLogging();
             stubbedPost.resolves({
@@ -114,8 +65,8 @@ describe("the Xray Server client", () => {
         });
     });
 
-    describe("import execution Cucumber multipart", () => {
-        it("should be able to handle successful responses", async () => {
+    describe("import execution cucumber multipart", () => {
+        it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
             const { stubbedInfo, stubbedSuccess } = stubLogging();
             stubbedPost.resolves({
@@ -153,7 +104,7 @@ describe("the Xray Server client", () => {
         });
     });
 
-    describe("the URLs", () => {
+    describe("the urls", () => {
         describe("export cucumber", () => {
             it("keys", () => {
                 expect(client.getUrlExportCucumber(["CYP-123", "CYP-456"])).to.eq(
