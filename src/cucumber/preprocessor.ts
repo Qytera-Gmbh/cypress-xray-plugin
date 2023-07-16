@@ -1,4 +1,5 @@
 import { Background, Comment, Scenario, Tag } from "@cucumber/messages";
+import dedent from "dedent";
 import { logWarning } from "../logging/logging";
 import { InternalOptions } from "../types/plugin";
 import { getPreconditionIssueTags, getTestIssueTags, parseFeatureFile } from "./tagging";
@@ -15,28 +16,43 @@ export function preprocessFeatureFile(
             if (issueKeys.length === 0) {
                 if (!options.jira.createTestIssues) {
                     throw new Error(
-                        `Plugin is not allowed to create test issues for scenarios, but no test issue keys were found in tags of scenario: ${child.scenario.name}\n` +
-                            "You can target existing test issues by adding a corresponding tag:\n" +
-                            "\n" +
-                            `${constructTaggedScenario(
-                                child.scenario,
-                                options.jira.projectKey,
-                                isCloudClient
-                            )}\n` +
-                            "\n" +
-                            `For more information, visit: ${getHelpUrl(isCloudClient)}`
+                        dedent(`
+                        Plugin is not allowed to create test issues for scenarios, but no test issue keys were found in tags of scenario: ${
+                            child.scenario.name
+                        }
+                        You can target existing test issues by adding a corresponding tag:
+
+                        ${getScenarioTag(options.jira.projectKey, isCloudClient)}
+                        ${getScenarioLine(child.scenario)}
+                          # steps ...
+
+                        For more information, visit:
+                        - ${getHelpUrl(isCloudClient)}
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
+                        `)
                     );
                 }
             }
             if (issueKeys.length > 1) {
                 if (!options.jira.createTestIssues) {
                     throw new Error(
-                        `Plugin is not allowed to create test issues for scenarios, but multiple test issue keys were found in tags of scenario: ${child.scenario.name}\n` +
-                            "The plugin cannot decide for you which one to use:\n" +
-                            "\n" +
-                            `${reconstructMultipleTagsScenario(child.scenario, issueKeys)}\n` +
-                            "\n" +
-                            `For more information, visit: ${getHelpUrl(isCloudClient)}`
+                        dedent(`
+                        Plugin is not allowed to create test issues for scenarios, but multiple test issue keys were found in tags of scenario: ${
+                            child.scenario.name
+                        }
+                        The plugin cannot decide for you which one to use:
+
+                        ${getScenarioMultipleTagsLine(child.scenario)}
+                        ${getScenarioMultipleTagsIndicatorLine(child.scenario, issueKeys)}
+                        ${getScenarioLine(child.scenario)}
+                          # steps ...
+
+                        For more information, visit:
+                        - ${getHelpUrl(isCloudClient)}
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
+                        `)
                     );
                 } else {
                     logWarning(
@@ -54,31 +70,41 @@ export function preprocessFeatureFile(
             if (preconditionKeys.length === 0) {
                 if (!options.jira.createTestIssues) {
                     throw new Error(
-                        `Plugin is not allowed to create precondition issues for backgrounds, but no precondition issue keys were found in comments of background: ${child.background.name}\n` +
-                            "You can target existing precondition issues by adding a corresponding comment:\n" +
-                            "\n" +
-                            `${constructTaggedBackground(
-                                child.background,
-                                options.jira.projectKey
-                            )}\n` +
-                            "\n" +
-                            `For more information, visit: ${getHelpUrl(isCloudClient)}`
+                        dedent(`
+                        Plugin is not allowed to create precondition issues for backgrounds, but no precondition issue keys were found in comments of background: ${
+                            child.background.name
+                        }
+                        You can target existing precondition issues by adding a corresponding comment:
+
+                        ${getBackgroundLine(child.background)}
+                          ${getBackgroundTag(options.jira.projectKey)}
+                          # steps ...
+
+                        For more information, visit:
+                        - ${getHelpUrl(isCloudClient)}
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues
+                        `)
                     );
                 }
             } else if (preconditionKeys.length > 1) {
                 if (!options.jira.createTestIssues) {
-                    throw new Error(
-                        `Plugin is not allowed to create precondition issues for backgrounds, but multiple precondition issue keys were found in comments of background: ${child.background.name}\n` +
-                            "The plugin cannot decide for you which one to use:\n" +
-                            "\n" +
-                            `${reconstructMultipleTagsBackground(
-                                child.background,
-                                preconditionKeys,
-                                document.comments
-                            )}\n` +
-                            "\n" +
-                            `For more information, visit: ${getHelpUrl(isCloudClient)}`
-                    );
+                    const lines = [
+                        `Plugin is not allowed to create precondition issues for backgrounds, but multiple precondition issue keys were found in comments of background: ${child.background.name}`,
+                        "The plugin cannot decide for you which one to use:",
+                        "",
+                        reconstructMultipleTagsBackground(
+                            child.background,
+                            preconditionKeys,
+                            document.comments
+                        ),
+                        "",
+                        "For more information, visit:",
+                        `- ${getHelpUrl(isCloudClient)}`,
+                        "- https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/",
+                        "- https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#createtestissues",
+                    ];
+                    throw new Error(lines.join("\n"));
                 } else {
                     logWarning(
                         `Multiple precondition issue keys found in background comments: ${preconditionKeys.join(
@@ -98,40 +124,37 @@ function getHelpUrl(isCloudClient: boolean): string {
         : "https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST";
 }
 
-function constructTaggedScenario(
-    scenario: Scenario,
-    projectKey: string,
-    isCloudClient: boolean
-): string {
-    const tag = isCloudClient ? `@TestName:${projectKey}-123` : `@${projectKey}-123`;
-    return `${tag}\n` + `${scenario.keyword}: ${scenario.name}\n` + "  # steps ...";
+function getScenarioLine(scenario: Scenario): string {
+    return `${scenario.keyword}: ${scenario.name}`;
 }
 
-function reconstructMultipleTagsScenario(scenario: Scenario, issueKeys: string[]): string {
-    const tagLine = scenario.tags.map((tag: Tag) => tag.name).join(" ");
+function getScenarioTag(projectKey: string, isCloudClient: boolean): string {
+    return isCloudClient ? `@TestName:${projectKey}-123` : `@${projectKey}-123`;
+}
+
+function getScenarioMultipleTagsLine(scenario: Scenario): string {
+    return scenario.tags.map((tag: Tag) => tag.name).join(" ");
+}
+
+function getScenarioMultipleTagsIndicatorLine(scenario: Scenario, issueKeys: string[]): string {
     const indicatorLine = scenario.tags
         .map((tag: Tag) => {
             if (issueKeys.some((key) => tag.name.endsWith(key))) {
-                return tag.name.replaceAll(/./g, "^");
+                return "^".repeat(tag.name.length);
             }
-            return tag.name.replaceAll(/./g, " ");
+            return " ".repeat(tag.name.length);
         })
         .join(" ")
         .trimEnd();
-    return (
-        `${tagLine}\n` +
-        `${indicatorLine}\n` +
-        `${scenario.keyword}: ${scenario.name}\n` +
-        "  # steps ..."
-    );
+    return indicatorLine;
 }
 
-function constructTaggedBackground(background: Background, projectKey: string): string {
-    return (
-        `${background.keyword}: ${background.name}\n` +
-        `  #@Precondition:${projectKey}-123\n` +
-        "  # steps ..."
-    );
+function getBackgroundLine(background: Background): string {
+    return `${background.keyword}: ${background.name}`;
+}
+
+function getBackgroundTag(projectKey: string): string {
+    return `#@Precondition:${projectKey}-123`;
 }
 
 function reconstructMultipleTagsBackground(
