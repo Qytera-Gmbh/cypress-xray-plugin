@@ -1,5 +1,5 @@
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
-import { logError, logSuccess } from "../../logging/logging";
+import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import {
     ImportFeatureResponseServer,
@@ -10,6 +10,7 @@ import { JiraClientServer } from "../jira/jiraClientServer";
 import { XrayClient } from "./xrayClient";
 
 export class XrayClientServer extends XrayClient<
+    BasicAuthCredentials | PATCredentials,
     ImportFeatureResponseServer,
     ImportExecutionResponseServer
 > {
@@ -79,6 +80,32 @@ export class XrayClientServer extends XrayClient<
                 "Successfully updated or created issues:",
                 response.map((issue: IssueDetails) => issue.key).join(", ")
             );
+        }
+    }
+
+    public async getTestTypes(
+        projectKey: string,
+        ...issueKeys: string[]
+    ): Promise<{ [key: string]: string }> {
+        try {
+            if (!issueKeys || issueKeys.length === 0) {
+                logWarning("No issue keys provided. Skipping test type retrieval");
+                return null;
+            }
+            const authenticationHeader = await this.credentials.getAuthenticationHeader();
+            logInfo("Retrieving test types...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const types = {};
+                // TODO
+                logSuccess(`Successfully retrieved test types for ${issueKeys.length} issues`);
+                return types;
+            } finally {
+                clearInterval(progressInterval);
+            }
+        } catch (error: unknown) {
+            logError(`Failed to get test types: ${error}`);
+            writeErrorFile(error, "getTestTypes");
         }
     }
 }

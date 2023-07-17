@@ -67,6 +67,7 @@ after(async () => {
 });
 
 export class DummyXrayClient extends XrayClient<
+    null,
     ImportFeatureResponseCloud,
     ImportExecutionResponseCloud
 > {
@@ -88,6 +89,9 @@ export class DummyXrayClient extends XrayClient<
     public handleResponseImportFeature(): void {
         throw new Error("Method not implemented.");
     }
+    public getTestTypes(): Promise<{ [key: string]: string }> {
+        throw new Error("Method not implemented.");
+    }
 }
 
 export class DummyJiraClient extends JiraClient<null> {
@@ -98,6 +102,9 @@ export class DummyJiraClient extends JiraClient<null> {
         throw new Error("Method not implemented.");
     }
     public getUrlGetFields(): string {
+        throw new Error("Method not implemented.");
+    }
+    public getUrlSearchIssues(): string {
         throw new Error("Method not implemented.");
     }
 }

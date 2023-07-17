@@ -22,9 +22,10 @@ import { JiraClientServer } from "../jira/jiraClientServer";
  * An abstract Xray client class for communicating with Xray instances.
  */
 export abstract class XrayClient<
+    CredentialsType extends BasicAuthCredentials | PATCredentials | JWTCredentials,
     ImportFeatureResponseType,
     ImportExecutionResponseType
-> extends Client<BasicAuthCredentials | PATCredentials | JWTCredentials> {
+> extends Client<CredentialsType> {
     /**
      * The configured Jira client.
      */
@@ -38,7 +39,7 @@ export abstract class XrayClient<
      */
     constructor(
         apiBaseUrl: string,
-        credentials: BasicAuthCredentials | PATCredentials | JWTCredentials,
+        credentials: CredentialsType,
         jiraClient: JiraClientServer | JiraClientCloud
     ) {
         super(apiBaseUrl, credentials);
@@ -220,4 +221,18 @@ export abstract class XrayClient<
      * @param response the import feature response
      */
     public abstract handleResponseImportFeature(response: ImportFeatureResponseType): void;
+
+    /**
+     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
+     * `Generic`.
+     *
+     * @param projectKey key of the project containing the test issues
+     * @param issueKeys the keys of the test issues to retrieve test types for
+     * @returns a promise which will contain the mapping of issues to test types, `null` if the
+     * upload was skipped or `undefined` in case of errors
+     */
+    public abstract getTestTypes(
+        projectKey: string,
+        ...issueKeys: string[]
+    ): Promise<{ [key: string]: string }>;
 }

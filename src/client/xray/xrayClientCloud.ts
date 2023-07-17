@@ -1,20 +1,37 @@
+import { AxiosResponse } from "axios";
+import dedent from "dedent";
 import { JWTCredentials } from "../../authentication/credentials";
-import { logError, logSuccess } from "../../logging/logging";
+import { Requests } from "../../https/requests";
+import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
+import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
 import { JiraClientCloud } from "../jira/jiraClientCloud";
 import { JiraClientServer } from "../jira/jiraClientServer";
 import { XrayClient } from "./xrayClient";
 
+type GetTestsJiraData = {
+    key: string;
+};
+
 export class XrayClientCloud extends XrayClient<
+    JWTCredentials,
     ImportFeatureResponseCloud,
     ImportExecutionResponseCloud
 > {
     /**
-     * The URL of Xray's Cloud API.
+     * The URLs of Xray's Cloud API.
      * Note: API v1 would also work, but let's stick to the more recent one.
      */
     public static readonly URL = "https://xray.cloud.getxray.app/api/v2";
+    private static readonly URL_GRAPHQL = `${URL}/graphql`;
+    private static readonly GRAPHQL_LIMITS = {
+        /**
+         * @see https://xray.cloud.getxray.app/doc/graphql/gettests.doc.html
+         */
+        getTests: 100,
+    };
+
     /**
      * Construct a new Xray Cloud client using the provided credentials.
      *
@@ -76,6 +93,82 @@ export class XrayClientCloud extends XrayClient<
                     .map((issue: IssueDetails) => issue.key)
                     .join(", ")
             );
+        }
+    }
+
+    public async getTestTypes(
+        projectKey: string,
+        ...issueKeys: string[]
+    ): Promise<{ [key: string]: string }> {
+        try {
+            if (!issueKeys || issueKeys.length === 0) {
+                logWarning("No issue keys provided. Skipping test type retrieval");
+                return null;
+            }
+            const authenticationHeader = await this.credentials.getAuthenticationHeader(
+                `${this.apiBaseURL}/authenticate`
+            );
+            logInfo("Retrieving test types...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const types = {};
+                for (
+                    let i = 0;
+                    i < issueKeys.length;
+                    i = i + XrayClientCloud.GRAPHQL_LIMITS.getTests
+                ) {
+                    const slice = issueKeys.slice(i, i + XrayClientCloud.GRAPHQL_LIMITS.getTests);
+                    const jql = `project = '${projectKey}' AND issue in (${slice.join(",")})`;
+                    const response: AxiosResponse<GetTestsResponse<GetTestsJiraData>> =
+                        await Requests.post(
+                            XrayClientCloud.URL_GRAPHQL,
+                            dedent(`
+                        {
+                            getTests(limit: ${XrayClientCloud.GRAPHQL_LIMITS.getTests}, jql: "${jql}") {
+                                total
+                                start
+                                results {
+                                    testType {
+                                        name
+                                        kind
+                                    }
+                                    jira(fields: ["key"])
+                                }
+                            }
+                        }
+                        `),
+                            {
+                                headers: {
+                                    ...authenticationHeader,
+                                },
+                            }
+                        );
+                    const missingTypes: string[] = [];
+                    for (const issueKey of slice) {
+                        for (const test of response.data.data.getTests.results.results) {
+                            if (test.jira.key === issueKey) {
+                                types[issueKey] = test.testType.name;
+                                break;
+                            }
+                        }
+                        if (!(issueKey in types)) {
+                            missingTypes.push(issueKey);
+                        }
+                    }
+                    if (missingTypes.length > 0) {
+                        throw new Error(
+                            `Failed to retrieve test types for issues: ${missingTypes.join("\n")}`
+                        );
+                    }
+                }
+                logSuccess(`Successfully retrieved test types for ${issueKeys.length} issues`);
+                return types;
+            } finally {
+                clearInterval(progressInterval);
+            }
+        } catch (error: unknown) {
+            logError(`Failed to get test types: ${error}`);
+            writeErrorFile(error, "getTestTypes");
         }
     }
 }

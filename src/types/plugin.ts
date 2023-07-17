@@ -221,6 +221,16 @@ export interface OpenSSLOptions {
  * Options only intended for internal plugin use.
  */
 export type InternalOptions = Options & {
+    xray?: {
+        /**
+         * A mapping of issue keys to test types. Required for Cypress execution import, since the
+         * `testType` (Xray Server) or `type` (Xray Cloud) properties are required by Xray's JSON
+         * scheme for uploading results.
+         */
+        testTypes?: {
+            [key: string]: string;
+        };
+    };
     cucumber?: {
         /**
          * A mapping of scenario titles to Xray issue keys. Built during file preprocessing, used

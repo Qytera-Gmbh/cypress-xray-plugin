@@ -11,8 +11,10 @@ import {
     logWarning,
     writeErrorFile,
 } from "../../logging/logging";
+import { SearchRequestCloud, SearchRequestServer } from "../../types/jira/requests/search";
 import { AttachmentCloud, AttachmentServer } from "../../types/jira/responses/attachment";
 import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
+import { SearchResultsCloud, SearchResultsServer } from "../../types/jira/responses/searchResults";
 import { OneOf } from "../../types/util";
 import { Client } from "../client";
 
@@ -162,4 +164,74 @@ export abstract class JiraClient<
      * @returns the URL
      */
     public abstract getUrlGetFields(): string;
+
+    /**
+     * Searches for issues using JQL. Automatically performs pagination if necessary.
+     *
+     * @param request the search request
+     * @returns the search results (may contain multiple elements as a result of pagination) or
+     * `undefined` in case of errors
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
+     */
+    public async search<
+        SearchRequestType extends SearchRequestServer | SearchRequestCloud,
+        SearchResultsType extends SearchResultsServer | SearchResultsCloud
+    >(request: SearchRequestType): Promise<SearchResultsType[] | undefined> {
+        try {
+            return await this.credentials
+                .getAuthenticationHeader()
+                .then(async (header: HTTPHeader) => {
+                    logInfo(`Searching issues...`);
+                    const progressInterval = this.startResponseInterval(this.apiBaseURL);
+                    try {
+                        let total = 0;
+                        let startAt = request.startAt;
+                        const results: SearchResultsType[] = [];
+                        do {
+                            const paginatedRequest = {
+                                ...request,
+                            };
+                            if (startAt !== undefined) {
+                                paginatedRequest.startAt = startAt;
+                            }
+                            const response: AxiosResponse<SearchResultsType> = await Requests.post(
+                                this.getUrlSearchIssues(),
+                                paginatedRequest,
+                                {
+                                    headers: {
+                                        ...header,
+                                    },
+                                }
+                            );
+                            results.push(response.data);
+                            if (response.data.total) {
+                                total = response.data.total;
+                            }
+                            if (response.data.startAt !== undefined && response.data.issues) {
+                                startAt = response.data.startAt + response.data.issues.length;
+                            }
+                        } while (startAt && startAt < total);
+                        if (total === 1) {
+                            logSuccess("Found 1 issue.");
+                        } else {
+                            logSuccess(`Found ${total} issues.`);
+                        }
+                        return results;
+                    } finally {
+                        clearInterval(progressInterval);
+                    }
+                });
+        } catch (error: unknown) {
+            logError(`Failed to search issues: ${error}`);
+            writeErrorFile(error, "searchError");
+        }
+    }
+    /**
+     *
+     * Returns the endpoint to use for searching issues.
+     *
+     * @returns the endpoint
+     */
+    public abstract getUrlSearchIssues(): string;
 }

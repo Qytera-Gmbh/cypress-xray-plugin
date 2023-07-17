@@ -23,4 +23,8 @@ export class JiraClientCloud extends JiraClient<AttachmentCloud> {
     public getUrlGetFields(): string {
         return `${this.apiBaseURL}/rest/api/3/field`;
     }
+
+    public getUrlSearchIssues(): string {
+        return `${this.apiBaseURL}/rest/api/3/search`;
+    }
 }
