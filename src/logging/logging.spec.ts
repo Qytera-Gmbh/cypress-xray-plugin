@@ -4,7 +4,7 @@ import { AxiosError, AxiosHeaders } from "axios";
 import { expect } from "chai";
 import fs from "fs";
 import path from "path";
-import { TEST_TMP_DIR, stubLogError } from "../../test/util";
+import { TEST_TMP_DIR, stubLogging } from "../../test/util";
 import { initLogging, writeErrorFile } from "./logging";
 
 describe("the logging module", () => {
@@ -15,7 +15,7 @@ describe("the logging module", () => {
             initLogging({
                 logDirectory: `./${LOG_ROOT}`,
             });
-            const stubbedError = stubLogError();
+            const { stubbedError } = stubLogging();
             writeErrorFile(
                 new Error(
                     JSON.stringify({
@@ -37,7 +37,7 @@ describe("the logging module", () => {
             initLogging({
                 logDirectory: path.resolve(LOG_ROOT),
             });
-            const stubbedError = stubLogError();
+            const { stubbedError } = stubLogging();
             writeErrorFile(
                 new Error(
                     JSON.stringify({
@@ -60,7 +60,7 @@ describe("the logging module", () => {
             initLogging({
                 logDirectory: `./${LOG_ROOT}/${timestamp}`,
             });
-            const stubbedError = stubLogError();
+            const { stubbedError } = stubLogging();
             writeErrorFile(
                 new Error(
                     JSON.stringify({
@@ -87,7 +87,7 @@ describe("the logging module", () => {
             initLogging({
                 logDirectory: `./${LOG_ROOT}/${timestamp}`,
             });
-            const stubbedError = stubLogError();
+            const { stubbedError } = stubLogging();
             writeErrorFile(
                 new AxiosError("Request failed with status code 400", "400", null, null, {
                     status: 400,
@@ -123,7 +123,7 @@ describe("the logging module", () => {
             initLogging({
                 logDirectory: `./${LOG_ROOT}/${timestamp}`,
             });
-            const stubbedError = stubLogError();
+            const { stubbedError } = stubLogging();
             writeErrorFile({ good: "morning" }, "writeErrorFileGeneric");
             const expectedPath = path.resolve(
                 LOG_ROOT,
