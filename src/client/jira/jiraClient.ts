@@ -196,7 +196,7 @@ export abstract class JiraClient<
                                 paginatedRequest.startAt = startAt;
                             }
                             const response: AxiosResponse<SearchResultsType> = await Requests.post(
-                                this.getUrlSearchIssues(),
+                                this.getUrlPostSearch(),
                                 paginatedRequest,
                                 {
                                     headers: {
@@ -233,5 +233,5 @@ export abstract class JiraClient<
      *
      * @returns the endpoint
      */
-    public abstract getUrlSearchIssues(): string;
+    public abstract getUrlPostSearch(): string;
 }

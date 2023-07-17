@@ -13,7 +13,7 @@ export class JiraClientServer extends JiraClient<AttachmentServer> {
         return `${this.apiBaseURL}/rest/api/2/field`;
     }
 
-    public getUrlSearchIssues(): string {
+    public getUrlPostSearch(): string {
         return `${this.apiBaseURL}/rest/api/2/search`;
     }
 }
