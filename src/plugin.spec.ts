@@ -2,7 +2,7 @@
 
 import { expect } from "chai";
 import fs from "fs";
-import { stubLogInfo } from "../test/util";
+import { stubLogging } from "../test/util";
 import { configureXrayPlugin } from "./plugin";
 import { Options } from "./types/plugin";
 
@@ -12,7 +12,7 @@ describe("the plugin configuration", () => {
     );
 
     it("should not verify if disabled", async () => {
-        const stubbedInfo = stubLogInfo();
+        const { stubbedInfo } = stubLogging();
         const options: Options = {
             jira: {
                 projectKey: "CYP",

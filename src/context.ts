@@ -8,7 +8,6 @@ import {
     ENV_CUCUMBER_UPLOAD_FEATURES,
     ENV_JIRA_API_TOKEN,
     ENV_JIRA_ATTACH_VIDEOS,
-    ENV_JIRA_CREATE_TEST_ISSUES,
     ENV_JIRA_PASSWORD,
     ENV_JIRA_PROJECT_KEY,
     ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION,
@@ -46,10 +45,6 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
         jira: {
             attachVideos:
                 parse(env, ENV_JIRA_ATTACH_VIDEOS, asBoolean) ?? options.jira.attachVideos ?? false,
-            createTestIssues:
-                parse(env, ENV_JIRA_CREATE_TEST_ISSUES, asBoolean) ??
-                options.jira.createTestIssues ??
-                true,
             projectKey: parse(env, ENV_JIRA_PROJECT_KEY, asString) ?? options.jira.projectKey,
             testExecutionIssueDescription:
                 parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION, asString) ??

@@ -1,3 +1,4 @@
+import { HttpStatusCode } from "axios";
 import chai from "chai";
 import fs from "fs";
 import path from "path";
@@ -5,25 +6,55 @@ import Sinon, { stub } from "sinon";
 import sinonChai from "sinon-chai";
 import { JWTCredentials } from "../src/authentication/credentials";
 import { XrayClient } from "../src/client/xray/xrayClient";
+import { Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
+import { initLogging } from "../src/logging/logging";
 
 chai.use(sinonChai);
 
-export const stubLogInfo = () => stub(logging, "logInfo");
-export const stubLogError = () => stub(logging, "logError");
-export const stubLogSuccess = () => stub(logging, "logSuccess");
-export const stubLogWarning = () => stub(logging, "logWarning");
-export const stubLogDebug = () => stub(logging, "logDebug");
+export const stubLogging = () => {
+    return {
+        stubbedInfo: stub(logging, "logInfo"),
+        stubbedError: stub(logging, "logError"),
+        stubbedSuccess: stub(logging, "logSuccess"),
+        stubbedWarning: stub(logging, "logWarning"),
+        stubbedDebug: stub(logging, "logDebug"),
+    };
+};
 
-afterEach(() => {
-    Sinon.restore();
-});
+export const stubRequests = () => {
+    return {
+        stubbedGet: stub(Requests, "get"),
+        stubbedPost: stub(Requests, "post"),
+    };
+};
 
 export const TEST_TMP_DIR = "test/out";
 
 export function getTestDir(dirName: string): string {
     return path.join(TEST_TMP_DIR, dirName);
 }
+
+export const RESOLVED_JWT_CREDENTIALS: JWTCredentials = new JWTCredentials("user", "token");
+
+before(() => {
+    // Resolve credentials so that they don't have to dispatch POST requests again.
+    stubLogging();
+    const { stubbedPost } = stubRequests();
+    stubbedPost.onFirstCall().resolves({
+        status: HttpStatusCode.Ok,
+        data: "ey12345Token",
+        headers: null,
+        statusText: HttpStatusCode[HttpStatusCode.Ok],
+        config: null,
+    });
+    RESOLVED_JWT_CREDENTIALS.getAuthenticationHeader("https://example.org");
+});
+
+beforeEach(() => {
+    Sinon.restore();
+    initLogging({ logDirectory: TEST_TMP_DIR });
+});
 
 // Clean up temporary directory at the end of all tests.
 after(async () => {

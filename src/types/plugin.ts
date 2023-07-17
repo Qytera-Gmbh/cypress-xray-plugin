@@ -24,11 +24,6 @@ export interface JiraOptions {
      */
     attachVideos?: boolean;
     /**
-     * Whether the plugin should create test issues for Cypress tests that have not been mapped to
-     * existing test issues.
-     */
-    createTestIssues?: boolean;
-    /**
      * The description of the test execution issue, which will be used both for new test execution
      * issues as well as for updating existing issues (if provided through
      * {@link JiraOptions.testExecutionIssueKey}).

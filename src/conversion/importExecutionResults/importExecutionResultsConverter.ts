@@ -1,3 +1,4 @@
+import dedent from "dedent";
 import { logWarning } from "../../logging/logging";
 import { InternalOptions } from "../../types/plugin";
 import { Status } from "../../types/testStatus";
@@ -56,12 +57,19 @@ export abstract class ImportExecutionResultsConverter<
                         test.testInfo = this.getTestInfo(testResult);
                     }
                 } else {
-                    if (!this.options.jira.createTestIssues) {
-                        throw new Error(
-                            "No test issue key found in test title and the plugin is not allowed to create new test issues"
-                        );
-                    }
-                    test.testInfo = this.getTestInfo(testResult);
+                    throw new Error(
+                        dedent(`
+                            No test issue keys found in the test's title.
+                            You can target existing test issues by adding a corresponding issue key:
+
+                            it("${this.options.jira.projectKey}-123 ${title}", () => {
+                                // ...
+                            });
+
+                            For more information, visit:
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        `)
+                    );
                 }
                 if (!json.tests) {
                     json.tests = [test];
@@ -73,7 +81,7 @@ export abstract class ImportExecutionResultsConverter<
                 if (error instanceof Error) {
                     reason = error.message;
                 }
-                logWarning(`${reason}. Skipping result upload for test "${title}".`);
+                logWarning(`Skipping result upload for test: ${title}:\n\n${reason}`);
             }
         });
         return json;
@@ -182,7 +190,7 @@ export abstract class ImportExecutionResultsConverter<
     protected getStatus(attempt: CypressCommandLine.AttemptResult): Status {
         const status: Status = Status[getEnumKeyByEnumValue(Status, attempt.state)];
         if (!status) {
-            throw new Error(`Unknown Cypress test status: '${attempt.state}'`);
+            throw new Error(`Unknown Cypress test status: ${attempt.state}`);
         }
         return status;
     }
@@ -285,8 +293,26 @@ export abstract class ImportExecutionResultsConverter<
         } else if (matches.length === 1) {
             return matches[0];
         } else {
+            // Remove any circumflexes currently present in the title.
+            let indicatorLine = testCaseTitle.replaceAll("^", " ");
+            matches.forEach((match: string) => {
+                indicatorLine = indicatorLine.replaceAll(match, "^".repeat(match.length));
+            });
+            // Replace everything but circumflexes with space.
+            indicatorLine = indicatorLine.replaceAll(/[^^]/g, " ");
             throw new Error(
-                `Multiple test keys found in test "${testCaseTitle}": ${matches.join(", ")}`
+                dedent(`
+                    Multiple test keys found in the test's title.
+                    The plugin cannot decide for you which one to use:
+
+                    it("${testCaseTitle}", () => {
+                        ${indicatorLine}
+                        // ...
+                    });
+
+                    For more information, visit:
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                `)
             );
         }
         return null;

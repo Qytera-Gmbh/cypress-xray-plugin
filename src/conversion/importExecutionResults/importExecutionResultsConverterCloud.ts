@@ -52,7 +52,7 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
             case Status.SKIPPED:
                 return this.options.xray.statusSkipped ?? "FAILED";
             default:
-                throw new Error(`Unknown status: '${status}'`);
+                throw new Error(`Unknown status: ${status}`);
         }
     }
 
