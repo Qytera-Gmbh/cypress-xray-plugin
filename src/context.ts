@@ -164,21 +164,28 @@ function verifyXraySteps(steps: XrayStepOptions) {
 
 export function initXrayClient(
     options: InternalOptions,
-    env: Cypress.ObjectLike
+    env: Cypress.ObjectLike,
+    jiraClient: JiraClientServer | JiraClientCloud
 ): XrayClientServer | XrayClientCloud {
     if (ENV_XRAY_CLIENT_ID in env && ENV_XRAY_CLIENT_SECRET in env) {
         logInfo("Xray client ID and client secret found. Setting up Xray cloud credentials.");
         return new XrayClientCloud(
-            new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET])
+            new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET]),
+            jiraClient
         );
     } else if (ENV_JIRA_API_TOKEN in env && options.jira.url) {
         logInfo("Jira PAT found. Setting up Xray PAT credentials.");
-        return new XrayClientServer(options.jira.url, new PATCredentials(env[ENV_JIRA_API_TOKEN]));
+        return new XrayClientServer(
+            options.jira.url,
+            new PATCredentials(env[ENV_JIRA_API_TOKEN]),
+            jiraClient
+        );
     } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && options.jira.url) {
         logInfo("Jira username and password found. Setting up Xray basic auth credentials.");
         return new XrayClientServer(
             options.jira.url,
-            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD])
+            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD]),
+            jiraClient
         );
     } else {
         throw new Error(

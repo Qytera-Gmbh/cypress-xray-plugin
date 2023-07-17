@@ -2,14 +2,15 @@
 
 import { HttpStatusCode } from "axios";
 import { expect } from "chai";
-import { stubLogging, stubRequests } from "../../../test/util";
+import { DummyJiraClient, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { XrayClientServer } from "./xrayClientServer";
 
 describe("the xray server client", () => {
     const client: XrayClientServer = new XrayClientServer(
         "https://example.org",
-        new BasicAuthCredentials("user", "xyz")
+        new BasicAuthCredentials("user", "xyz"),
+        new DummyJiraClient()
     );
 
     describe("import execution", () => {

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { RESOLVED_JWT_CREDENTIALS, stubLogging } from "../../../test/util";
+import { DummyJiraClient, RESOLVED_JWT_CREDENTIALS, stubLogging } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
@@ -32,9 +32,10 @@ describe("the xray clients", () => {
                     clientType === "server"
                         ? new XrayClientServer(
                               "https://example.org",
-                              new BasicAuthCredentials("user", "token")
+                              new BasicAuthCredentials("user", "token"),
+                              new DummyJiraClient()
                           )
-                        : new XrayClientCloud(RESOLVED_JWT_CREDENTIALS);
+                        : new XrayClientCloud(RESOLVED_JWT_CREDENTIALS, new DummyJiraClient());
             });
 
             describe("import execution", () => {

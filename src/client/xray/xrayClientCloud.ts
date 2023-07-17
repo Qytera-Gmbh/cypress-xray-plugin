@@ -2,6 +2,8 @@ import { JWTCredentials } from "../../authentication/credentials";
 import { logError, logSuccess } from "../../logging/logging";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
+import { JiraClientCloud } from "../jira/jiraClientCloud";
+import { JiraClientServer } from "../jira/jiraClientServer";
 import { XrayClient } from "./xrayClient";
 
 export class XrayClientCloud extends XrayClient<
@@ -13,15 +15,15 @@ export class XrayClientCloud extends XrayClient<
      * Note: API v1 would also work, but let's stick to the more recent one.
      */
     public static readonly URL = "https://xray.cloud.getxray.app/api/v2";
-
     /**
      * Construct a new Xray Cloud client using the provided credentials.
      *
      * @param apiBaseUrl the base URL for all HTTP requests
      * @param credentials the credentials to use during authentication
+     * @param jiraClient the configured Jira client
      */
-    constructor(credentials: JWTCredentials) {
-        super(XrayClientCloud.URL, credentials);
+    constructor(credentials: JWTCredentials, jiraClient: JiraClientServer | JiraClientCloud) {
+        super(XrayClientCloud.URL, credentials, jiraClient);
     }
 
     public getUrlImportExecution(): string {

@@ -71,7 +71,7 @@ export class DummyXrayClient extends XrayClient<
     ImportExecutionResponseCloud
 > {
     constructor() {
-        super("https://example.org", null);
+        super("https://example.org", null, null);
     }
     public getUrlImportExecution(): string {
         throw new Error("Method not implemented.");

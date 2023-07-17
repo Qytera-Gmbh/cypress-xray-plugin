@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import dedent from "dedent";
-import { stubLogging } from "../test/util";
+import { DummyJiraClient, stubLogging } from "../test/util";
 import { BasicAuthCredentials, PATCredentials } from "./authentication/credentials";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
@@ -1048,7 +1048,7 @@ describe("the plugin context configuration", () => {
                 XRAY_CLIENT_SECRET: "xyz",
             };
             const { stubbedInfo } = stubLogging();
-            const client = initXrayClient(options, env);
+            const client = initXrayClient(options, env, new DummyJiraClient());
             expect(client).to.be.an.instanceof(XrayClientCloud);
             expect(stubbedInfo).to.have.been.calledWith(
                 "Xray client ID and client secret found. Setting up Xray cloud credentials."
@@ -1062,7 +1062,7 @@ describe("the plugin context configuration", () => {
             };
             options.jira.url = "https://example.org";
             const { stubbedInfo } = stubLogging();
-            const client = initXrayClient(options, env);
+            const client = initXrayClient(options, env, new DummyJiraClient());
             expect(client).to.be.an.instanceof(XrayClientServer);
             expect(stubbedInfo).to.have.been.calledWith(
                 "Jira username and password found. Setting up Xray basic auth credentials."
@@ -1075,7 +1075,7 @@ describe("the plugin context configuration", () => {
             };
             options.jira.url = "https://example.org";
             const { stubbedInfo } = stubLogging();
-            const client = initXrayClient(options, env);
+            const client = initXrayClient(options, env, new DummyJiraClient());
             expect(client).to.be.an.instanceof(XrayClientServer);
             expect(stubbedInfo).to.have.been.calledWith(
                 "Jira PAT found. Setting up Xray PAT credentials."
@@ -1091,7 +1091,7 @@ describe("the plugin context configuration", () => {
                 XRAY_CLIENT_SECRET: "secret",
             };
             const { stubbedInfo } = stubLogging();
-            const client = initXrayClient(options, env);
+            const client = initXrayClient(options, env, new DummyJiraClient());
             expect(client).to.be.an.instanceof(XrayClientCloud);
             expect(stubbedInfo).to.have.been.calledWith(
                 "Xray client ID and client secret found. Setting up Xray cloud credentials."
@@ -1105,7 +1105,7 @@ describe("the plugin context configuration", () => {
             });
 
             it("should throw an error for missing credentials", () => {
-                expect(() => initXrayClient(options, {})).to.throw(
+                expect(() => initXrayClient(options, {}, new DummyJiraClient())).to.throw(
                     dedent(`
                         Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported
                         You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/

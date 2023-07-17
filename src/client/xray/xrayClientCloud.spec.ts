@@ -1,6 +1,7 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import {
+    DummyJiraClient,
     RESOLVED_JWT_CREDENTIALS,
     getTestDir,
     stubLogging,
@@ -9,7 +10,10 @@ import {
 import { XrayClientCloud } from "./xrayClientCloud";
 
 describe("the xray cloud client", () => {
-    const client: XrayClientCloud = new XrayClientCloud(RESOLVED_JWT_CREDENTIALS);
+    const client: XrayClientCloud = new XrayClientCloud(
+        RESOLVED_JWT_CREDENTIALS,
+        new DummyJiraClient()
+    );
 
     describe("import execution", () => {
         it("should handle successful responses", async () => {

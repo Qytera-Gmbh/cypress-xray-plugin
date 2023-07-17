@@ -15,6 +15,8 @@ import {
 } from "../../types/xray/importTestExecutionResults";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import { Client } from "../client";
+import { JiraClientCloud } from "../jira/jiraClientCloud";
+import { JiraClientServer } from "../jira/jiraClientServer";
 
 /**
  * An abstract Xray client class for communicating with Xray instances.
@@ -23,6 +25,25 @@ export abstract class XrayClient<
     ImportFeatureResponseType,
     ImportExecutionResponseType
 > extends Client<BasicAuthCredentials | PATCredentials | JWTCredentials> {
+    /**
+     * The configured Jira client.
+     */
+    protected readonly jiraClient: JiraClientServer | JiraClientCloud;
+    /**
+     * Construct a new client using the provided credentials.
+     *
+     * @param apiBaseUrl the base URL for all HTTP requests
+     * @param credentials the credentials to use during authentication
+     * @param jiraClient the configured Jira client
+     */
+    constructor(
+        apiBaseUrl: string,
+        credentials: BasicAuthCredentials | PATCredentials | JWTCredentials,
+        jiraClient: JiraClientServer | JiraClientCloud
+    ) {
+        super(apiBaseUrl, credentials);
+        this.jiraClient = jiraClient;
+    }
     /**
      * Uploads test results to the Xray instance.
      *

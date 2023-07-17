@@ -15,11 +15,13 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
         return;
     }
     verifyOptions(internalOptions);
+    const jiraClient = initJiraClient(internalOptions, config.env);
+    const xrayClient = initXrayClient(internalOptions, config.env, jiraClient);
     context = {
         internal: internalOptions,
         cypress: config,
-        xrayClient: initXrayClient(internalOptions, config.env),
-        jiraClient: initJiraClient(internalOptions, config.env),
+        xrayClient: xrayClient,
+        jiraClient: jiraClient,
     };
     Requests.init(internalOptions);
     initLogging({
