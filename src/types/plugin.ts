@@ -1,4 +1,5 @@
-import { JiraClient } from "../client/jira/jiraClient";
+import { JiraClientCloud } from "../client/jira/jiraClientCloud";
+import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
 import { OneOf } from "./util";
@@ -242,7 +243,7 @@ export type InternalOptions = Options & {
 
 export interface PluginContext {
     xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>;
-    jiraClient?: JiraClient;
+    jiraClient?: OneOf<[JiraClientServer, JiraClientCloud]>;
     internal: InternalOptions;
     cypress: Cypress.PluginConfigOptions;
 }
