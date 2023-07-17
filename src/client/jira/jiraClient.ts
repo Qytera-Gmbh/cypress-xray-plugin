@@ -15,22 +15,25 @@ import { SearchRequestCloud, SearchRequestServer } from "../../types/jira/reques
 import { AttachmentCloud, AttachmentServer } from "../../types/jira/responses/attachment";
 import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
 import { SearchResultsCloud, SearchResultsServer } from "../../types/jira/responses/searchResults";
-import { OneOf } from "../../types/util";
 import { Client } from "../client";
 
 /**
  * A Jira client class for communicating with Jira instances.
  */
 export abstract class JiraClient<
-    AttachmentType extends OneOf<[AttachmentServer, AttachmentCloud]>
-> extends Client<BasicAuthCredentials | PATCredentials> {
+    CredentialsType extends BasicAuthCredentials | PATCredentials,
+    AttachmentType extends AttachmentServer | AttachmentCloud,
+    FieldDetailType extends FieldDetailServer | FieldDetailCloud,
+    SearchRequestType extends SearchRequestServer | SearchRequestCloud,
+    SearchResultsType extends SearchResultsServer | SearchResultsCloud
+> extends Client<CredentialsType> {
     /**
      * Construct a new Jira client using the provided credentials.
      *
      * @param apiBaseURL the Jira base endpoint
      * @param credentials the credentials to use during authentication
      */
-    constructor(apiBaseURL: string, credentials: BasicAuthCredentials | PATCredentials) {
+    constructor(apiBaseURL: string, credentials: CredentialsType) {
         super(apiBaseURL, credentials);
     }
 
@@ -125,9 +128,7 @@ export abstract class JiraClient<
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/field-getFields
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
      */
-    public async getFields<
-        FieldDetailType extends OneOf<[FieldDetailServer, FieldDetailCloud]>
-    >(): Promise<FieldDetailType[] | undefined> {
+    public async getFields(): Promise<FieldDetailType[] | undefined> {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logInfo("Getting fields...");
@@ -174,10 +175,7 @@ export abstract class JiraClient<
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
      */
-    public async search<
-        SearchRequestType extends SearchRequestServer | SearchRequestCloud,
-        SearchResultsType extends SearchResultsServer | SearchResultsCloud
-    >(request: SearchRequestType): Promise<SearchResultsType[] | undefined> {
+    public async search(request: SearchRequestType): Promise<SearchResultsType[] | undefined> {
         try {
             return await this.credentials
                 .getAuthenticationHeader()

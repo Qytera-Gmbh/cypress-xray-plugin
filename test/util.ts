@@ -10,8 +10,6 @@ import { XrayClient } from "../src/client/xray/xrayClient";
 import { Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
-import { ImportExecutionResponseCloud } from "../src/types/xray/responses/importExecution";
-import { ImportFeatureResponseCloud } from "../src/types/xray/responses/importFeature";
 
 chai.use(sinonChai);
 
@@ -66,11 +64,7 @@ after(async () => {
     }
 });
 
-export class DummyXrayClient extends XrayClient<
-    null,
-    ImportFeatureResponseCloud,
-    ImportExecutionResponseCloud
-> {
+export class DummyXrayClient extends XrayClient<null, null, null, null> {
     constructor() {
         super("https://example.org", null, null);
     }
@@ -94,7 +88,7 @@ export class DummyXrayClient extends XrayClient<
     }
 }
 
-export class DummyJiraClient extends JiraClient<null> {
+export class DummyJiraClient extends JiraClient<null, null, null, null, null> {
     constructor() {
         super("https://example.org", null);
     }
@@ -104,7 +98,7 @@ export class DummyJiraClient extends JiraClient<null> {
     public getUrlGetFields(): string {
         throw new Error("Method not implemented.");
     }
-    public getUrlSearchIssues(): string {
+    public getUrlPostSearch(): string {
         throw new Error("Method not implemented.");
     }
 }

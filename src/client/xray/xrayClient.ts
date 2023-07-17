@@ -23,13 +23,14 @@ import { JiraClientServer } from "../jira/jiraClientServer";
  */
 export abstract class XrayClient<
     CredentialsType extends BasicAuthCredentials | PATCredentials | JWTCredentials,
+    JiraClientType extends JiraClientServer | JiraClientCloud,
     ImportFeatureResponseType,
     ImportExecutionResponseType
 > extends Client<CredentialsType> {
     /**
      * The configured Jira client.
      */
-    protected readonly jiraClient: JiraClientServer | JiraClientCloud;
+    protected readonly jiraClient: JiraClientType;
     /**
      * Construct a new client using the provided credentials.
      *
@@ -37,11 +38,7 @@ export abstract class XrayClient<
      * @param credentials the credentials to use during authentication
      * @param jiraClient the configured Jira client
      */
-    constructor(
-        apiBaseUrl: string,
-        credentials: CredentialsType,
-        jiraClient: JiraClientServer | JiraClientCloud
-    ) {
+    constructor(apiBaseUrl: string, credentials: CredentialsType, jiraClient: JiraClientType) {
         super(apiBaseUrl, credentials);
         this.jiraClient = jiraClient;
     }

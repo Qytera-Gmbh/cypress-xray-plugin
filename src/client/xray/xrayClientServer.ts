@@ -1,16 +1,17 @@
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
+import { FieldDetailServer } from "../../types/jira/responses/fieldDetail";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import {
     ImportFeatureResponseServer,
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
-import { JiraClientCloud } from "../jira/jiraClientCloud";
 import { JiraClientServer } from "../jira/jiraClientServer";
 import { XrayClient } from "./xrayClient";
 
 export class XrayClientServer extends XrayClient<
     BasicAuthCredentials | PATCredentials,
+    JiraClientServer,
     ImportFeatureResponseServer,
     ImportExecutionResponseServer
 > {
@@ -24,7 +25,7 @@ export class XrayClientServer extends XrayClient<
     constructor(
         apiBaseUrl: string,
         credentials: BasicAuthCredentials | PATCredentials,
-        jiraClient: JiraClientServer | JiraClientCloud
+        jiraClient: JiraClientServer
     ) {
         super(apiBaseUrl, credentials, jiraClient);
     }
@@ -92,12 +93,32 @@ export class XrayClientServer extends XrayClient<
                 logWarning("No issue keys provided. Skipping test type retrieval");
                 return null;
             }
-            const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logInfo("Retrieving test types...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const types = {};
-                // TODO
+                const fields = this.jiraClient.getFields();
+                const testTypeField = (await fields).find((field: FieldDetailServer) => {
+                    field.name === "Test Type";
+                });
+                const searchResults = await this.jiraClient.search({
+                    jql: `project = ${projectKey} AND issue in (${issueKeys.join(",")})`,
+                    fields: [testTypeField.id],
+                });
+                for (const searchResult of searchResults) {
+                    for (const issue of searchResult.issues) {
+                        const testTypeData = issue.fields[testTypeField.id];
+                        if (typeof testTypeData === "object" && "value" in testTypeData) {
+                            types[issue.key] = testTypeData.value;
+                        }
+                    }
+                }
+                const missingTypes: string[] = issueKeys.filter((key: string) => !(key in types));
+                if (missingTypes.length > 0) {
+                    throw new Error(
+                        `Failed to retrieve test types for issues: ${missingTypes.join("\n")}`
+                    );
+                }
                 logSuccess(`Successfully retrieved test types for ${issueKeys.length} issues`);
                 return types;
             } finally {

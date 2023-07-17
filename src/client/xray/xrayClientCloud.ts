@@ -7,7 +7,6 @@ import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
 import { JiraClientCloud } from "../jira/jiraClientCloud";
-import { JiraClientServer } from "../jira/jiraClientServer";
 import { XrayClient } from "./xrayClient";
 
 type GetTestsJiraData = {
@@ -16,6 +15,7 @@ type GetTestsJiraData = {
 
 export class XrayClientCloud extends XrayClient<
     JWTCredentials,
+    JiraClientCloud,
     ImportFeatureResponseCloud,
     ImportExecutionResponseCloud
 > {
@@ -39,7 +39,7 @@ export class XrayClientCloud extends XrayClient<
      * @param credentials the credentials to use during authentication
      * @param jiraClient the configured Jira client
      */
-    constructor(credentials: JWTCredentials, jiraClient: JiraClientServer | JiraClientCloud) {
+    constructor(credentials: JWTCredentials, jiraClient: JiraClientCloud) {
         super(XrayClientCloud.URL, credentials, jiraClient);
     }
 
@@ -124,7 +124,7 @@ export class XrayClientCloud extends XrayClient<
                             XrayClientCloud.URL_GRAPHQL,
                             dedent(`
                         {
-                            getTests(limit: ${XrayClientCloud.GRAPHQL_LIMITS.getTests}, jql: "${jql}") {
+                            getTests(start: ${i}, limit: ${XrayClientCloud.GRAPHQL_LIMITS.getTests}, jql: "${jql}") {
                                 total
                                 start
                                 results {
