@@ -3,18 +3,25 @@ import FormData from "form-data";
 import fs from "fs";
 import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
-import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
-import { Attachment } from "../../types/jira/attachments";
+import {
+    logDebug,
+    logError,
+    logInfo,
+    logSuccess,
+    logWarning,
+    writeErrorFile,
+} from "../../logging/logging";
+import { AttachmentCloud, AttachmentServer } from "../../types/jira/responses/attachment";
+import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
+import { OneOf } from "../../types/util";
 import { Client } from "../client";
 
 /**
  * A Jira client class for communicating with Jira instances.
  */
-export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
-    /**
-     * The Jira URL.
-     */
-    private readonly apiBaseURL: string;
+export abstract class JiraClient<
+    AttachmentType extends OneOf<[AttachmentServer, AttachmentCloud]>
+> extends Client<BasicAuthCredentials | PATCredentials> {
     /**
      * Construct a new Jira client using the provided credentials.
      *
@@ -22,8 +29,7 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
      * @param credentials the credentials to use during authentication
      */
     constructor(apiBaseURL: string, credentials: BasicAuthCredentials | PATCredentials) {
-        super(credentials);
-        this.apiBaseURL = apiBaseURL;
+        super(apiBaseURL, credentials);
     }
 
     /**
@@ -31,38 +37,44 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
      *
      * @param issueIdOrKey the ID or key of the issue that attachments are added to
      * @param files the files to attach
-     * @returns a list of issue attachment responses
+     * @returns a list of issue attachment responses or `undefined` in case of errors
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/{issueIdOrKey}/attachments-addAttachment
      */
-    public async addAttachments(issueIdOrKey: string, ...files: string[]): Promise<Attachment[]> {
-        logInfo(`Scanning files to attach to ${issueIdOrKey}...`);
-        const existingFiles = files.filter((file: string) => {
-            if (!fs.existsSync(file)) {
-                logError(`Failed to add attachment ${file}: file does not exist.`);
-                return false;
-            }
-            return true;
-        });
-        if (existingFiles.length === 0) {
+    public async addAttachment(
+        issueIdOrKey: string,
+        ...files: string[]
+    ): Promise<AttachmentType[] | undefined> {
+        if (files.length === 0) {
             logWarning(`No files provided to attach to issue ${issueIdOrKey}. Skipping attaching.`);
             return [];
         }
         const form = new FormData();
-        existingFiles.forEach((file: string) => {
+        let filesIncluded = 0;
+        files.forEach((file: string) => {
+            if (!fs.existsSync(file)) {
+                logWarning("File does not exist:", file);
+                return;
+            }
+            filesIncluded++;
             const fileContent = fs.createReadStream(file);
             form.append("file", fileContent);
         });
+
+        if (filesIncluded === 0) {
+            logWarning("All files do not exist. Skipping attaching.");
+            return [];
+        }
 
         try {
             return await this.credentials
                 .getAuthenticationHeader()
                 .then(async (header: HTTPHeader) => {
-                    logInfo(`Attaching files...`);
+                    logInfo("Attaching files:", ...files);
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
-                        const response: AxiosResponse<Attachment[]> = await Requests.post(
-                            `${this.apiBaseURL}/rest/api/2/issue/${issueIdOrKey}/attachments`,
+                        const response: AxiosResponse<AttachmentType[]> = await Requests.post(
+                            this.getUrlAddAttachment(issueIdOrKey),
                             form,
                             {
                                 headers: {
@@ -75,7 +87,7 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
                         logSuccess(
                             `Successfully attached files to issue ${issueIdOrKey}:`,
                             response.data
-                                .map((attachment: Attachment) => attachment.filename)
+                                .map((attachment: AttachmentType) => attachment.filename)
                                 .join(", ")
                         );
                         return response.data;
@@ -84,8 +96,70 @@ export class JiraClient extends Client<BasicAuthCredentials | PATCredentials> {
                     }
                 });
         } catch (error: unknown) {
-            logError(`Failed to attach files: "${error}"`);
+            logError(`Failed to attach files: ${error}`);
             writeErrorFile(error, "addAttachmentError");
         }
     }
+
+    /**
+     * Returns the endpoint to use for adding attchments to issues.
+     *
+     * @param issueIdOrKey the ID or key of the issue that attachments are added to
+     * @returns the URL
+     */
+    public abstract getUrlAddAttachment(issueIdOrKey: string): string;
+
+    /**
+     * Returns system and custom issue fields according to the following rules:
+     * - Fields that cannot be added to the issue navigator are always returned
+     * - Fields that cannot be placed on an issue screen are always returned
+     * - Fields that depend on global Jira settings are only returned if the setting is enabled
+     *   That is, timetracking fields, subtasks, votes, and watches
+     * - For all other fields, this operation only returns the fields that the user has permission
+     *   to view (that is, the field is used in at least one project that the user has *Browse
+     *   Projects* project permission for)
+     *
+     * @returns the fields or `undefined` in case of errors
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/field-getFields
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
+     */
+    public async getFields<
+        FieldDetailType extends OneOf<[FieldDetailServer, FieldDetailCloud]>
+    >(): Promise<FieldDetailType[] | undefined> {
+        try {
+            const authenticationHeader = await this.credentials.getAuthenticationHeader();
+            logInfo("Getting fields...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const response: AxiosResponse<FieldDetailType[]> = await Requests.get(
+                    this.getUrlGetFields(),
+                    {
+                        headers: {
+                            ...authenticationHeader,
+                        },
+                    }
+                );
+                logSuccess(`Successfully retrieved data for ${response.data.length} fields.`);
+                logDebug(
+                    "Received data for fields:",
+                    ...response.data.map(
+                        (field: FieldDetailType) => `${field.name} (id: ${field.id})`
+                    )
+                );
+                return response.data;
+            } finally {
+                clearInterval(progressInterval);
+            }
+        } catch (error: unknown) {
+            logError(`Failed to get fields: ${error}`);
+            writeErrorFile(error, "getFieldsError");
+        }
+    }
+
+    /**
+     * Returns the endpoint to use for retrieving fields.
+     *
+     * @returns the URL
+     */
+    public abstract getUrlGetFields(): string;
 }

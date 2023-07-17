@@ -1,9 +1,10 @@
 import { expect } from "chai";
+import dedent from "dedent";
 import { stubLogging } from "../test/util";
 import { BasicAuthCredentials, PATCredentials } from "./authentication/credentials";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
-import { initJiraClient, initOptions, initXrayClient, verifyContext } from "./context";
+import { initJiraClient, initOptions, initXrayClient, verifyOptions } from "./context";
 import { InternalOptions } from "./types/plugin";
 
 describe("the plugin context configuration", () => {
@@ -14,6 +15,7 @@ describe("the plugin context configuration", () => {
                 {
                     jira: {
                         projectKey: "PRJ",
+                        url: "https://example.org",
                     },
                 }
             );
@@ -32,9 +34,6 @@ describe("the plugin context configuration", () => {
                 });
                 it("testPlanIssueKey", () => {
                     expect(options.jira.testPlanIssueKey).to.eq(undefined);
-                });
-                it("url", () => {
-                    expect(options.jira.url).to.eq(undefined);
                 });
             });
 
@@ -77,9 +76,6 @@ describe("the plugin context configuration", () => {
                         expect(options.xray.steps.update).to.eq(true);
                     });
                 });
-                it("testType", () => {
-                    expect(options.xray.testType).to.eq("Manual");
-                });
                 it("uploadResults", () => {
                     expect(options.xray.uploadResults).to.eq(true);
                 });
@@ -115,6 +111,7 @@ describe("the plugin context configuration", () => {
                             jira: {
                                 projectKey: "PRJ",
                                 attachVideos: true,
+                                url: "https://example.org",
                             },
                         }
                     );
@@ -127,6 +124,7 @@ describe("the plugin context configuration", () => {
                             jira: {
                                 projectKey: "PRJ",
                                 testExecutionIssueDescription: "hello",
+                                url: "https://example.org",
                             },
                         }
                     );
@@ -139,6 +137,7 @@ describe("the plugin context configuration", () => {
                             jira: {
                                 projectKey: "PRJ",
                                 testExecutionIssueKey: "PRJ-123",
+                                url: "https://example.org",
                             },
                         }
                     );
@@ -151,6 +150,7 @@ describe("the plugin context configuration", () => {
                             jira: {
                                 projectKey: "PRJ",
                                 testExecutionIssueSummary: "Test - Login",
+                                url: "https://example.org",
                             },
                         }
                     );
@@ -163,6 +163,7 @@ describe("the plugin context configuration", () => {
                             jira: {
                                 projectKey: "PRJ",
                                 testPlanIssueKey: "PRJ-456",
+                                url: "https://example.org",
                             },
                         }
                     );
@@ -189,6 +190,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             plugin: {
                                 debug: true,
@@ -203,6 +205,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             plugin: {
                                 enabled: false,
@@ -217,6 +220,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             plugin: {
                                 logDirectory: "./logs/",
@@ -231,6 +235,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             plugin: {
                                 normalizeScreenshotNames: true,
@@ -245,6 +250,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             plugin: {
                                 overwriteIssueSummary: true,
@@ -262,6 +268,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             xray: {
                                 statusFailed: "BAD",
@@ -276,6 +283,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             xray: {
                                 statusPassed: "GOOD",
@@ -290,6 +298,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             xray: {
                                 statusPending: "PENDULUM",
@@ -304,6 +313,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             xray: {
                                 statusSkipped: "SKIPPING STONE",
@@ -320,6 +330,7 @@ describe("the plugin context configuration", () => {
                             {
                                 jira: {
                                     projectKey: "PRJ",
+                                    url: "https://example.org",
                                 },
                                 xray: {
                                     steps: {
@@ -336,6 +347,7 @@ describe("the plugin context configuration", () => {
                             {
                                 jira: {
                                     projectKey: "PRJ",
+                                    url: "https://example.org",
                                 },
                                 xray: {
                                     steps: {
@@ -347,26 +359,13 @@ describe("the plugin context configuration", () => {
                         expect(options.xray.steps.update).to.eq(false);
                     });
                 });
-                it("testType", () => {
-                    const options = initOptions(
-                        {},
-                        {
-                            jira: {
-                                projectKey: "PRJ",
-                            },
-                            xray: {
-                                testType: "Cucumber",
-                            },
-                        }
-                    );
-                    expect(options.xray.testType).to.eq("Cucumber");
-                });
                 it("uploadResults", () => {
                     const options = initOptions(
                         {},
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             xray: {
                                 uploadResults: false,
@@ -381,6 +380,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             xray: {
                                 uploadScreenshots: false,
@@ -398,6 +398,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             cucumber: {
                                 featureFileExtension: ".feature",
@@ -413,6 +414,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             cucumber: {
                                 featureFileExtension: ".feature",
@@ -431,6 +433,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             openSSL: {
                                 rootCAPath: "/path/to/cert.pem",
@@ -445,6 +448,7 @@ describe("the plugin context configuration", () => {
                         {
                             jira: {
                                 projectKey: "PRJ",
+                                url: "https://example.org",
                             },
                             openSSL: {
                                 secureOptions: 42,
@@ -455,7 +459,7 @@ describe("the plugin context configuration", () => {
                 });
             });
         });
-        describe("should be able to prefer environment variables over provided values", () => {
+        describe("should prefer environment variables over provided values", () => {
             describe("jira", () => {
                 it("JIRA_PROJECT_KEY", () => {
                     const env = {
@@ -464,6 +468,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                     });
                     expect(options.jira.projectKey).to.eq("ABC");
@@ -477,6 +482,7 @@ describe("the plugin context configuration", () => {
                         jira: {
                             projectKey: "CYP",
                             attachVideos: false,
+                            url: "https://example.org",
                         },
                     });
                     expect(options.jira.attachVideos).to.be.true;
@@ -490,6 +496,7 @@ describe("the plugin context configuration", () => {
                         jira: {
                             projectKey: "CYP",
                             testExecutionIssueDescription: "Goodbye",
+                            url: "https://example.org",
                         },
                     });
                     expect(options.jira.testExecutionIssueDescription).to.eq("Good morning");
@@ -503,6 +510,7 @@ describe("the plugin context configuration", () => {
                         jira: {
                             projectKey: "CYP",
                             testExecutionIssueKey: "CYP-789",
+                            url: "https://example.org",
                         },
                     });
                     expect(options.jira.testExecutionIssueKey).to.eq("CYP-123");
@@ -516,6 +524,7 @@ describe("the plugin context configuration", () => {
                         jira: {
                             projectKey: "CYP",
                             testExecutionIssueSummary: "Summarini",
+                            url: "https://example.org",
                         },
                     });
                     expect(options.jira.testExecutionIssueSummary).to.eq("Some test case");
@@ -529,6 +538,7 @@ describe("the plugin context configuration", () => {
                         jira: {
                             projectKey: "CYP",
                             testPlanIssueKey: "CYP-123",
+                            url: "https://example.org",
                         },
                     });
                     expect(options.jira.testPlanIssueKey).to.eq("CYP-456");
@@ -555,6 +565,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         xray: {
                             statusFailed: "ERROR",
@@ -570,6 +581,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         xray: {
                             statusPassed: "FLYBY",
@@ -585,6 +597,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         xray: {
                             statusPending: "PENCIL",
@@ -600,6 +613,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         xray: {
                             statusSkipped: "HOP",
@@ -615,6 +629,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         xray: {
                             steps: {
@@ -632,6 +647,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         xray: {
                             steps: {
@@ -642,21 +658,6 @@ describe("the plugin context configuration", () => {
                     expect(options.xray?.steps?.update).to.be.false;
                 });
 
-                it("XRAY_TEST_TYPE", () => {
-                    const env = {
-                        XRAY_TEST_TYPE: "Automated",
-                    };
-                    const options = initOptions(env, {
-                        jira: {
-                            projectKey: "CYP",
-                        },
-                        xray: {
-                            testType: "Gherkin",
-                        },
-                    });
-                    expect(options.xray?.testType).to.eq("Automated");
-                });
-
                 it("XRAY_UPLOAD_RESULTS", () => {
                     const env = {
                         XRAY_UPLOAD_RESULTS: "false",
@@ -664,6 +665,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         xray: {
                             uploadResults: true,
@@ -679,6 +681,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         xray: {
                             uploadScreenshots: true,
@@ -695,6 +698,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         cucumber: {
                             featureFileExtension: ".feature",
@@ -710,6 +714,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         cucumber: {
                             featureFileExtension: ".feature",
@@ -726,6 +731,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         cucumber: {
                             featureFileExtension: ".feature",
@@ -743,6 +749,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         plugin: {
                             debug: false,
@@ -758,6 +765,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         plugin: {
                             enabled: true,
@@ -773,6 +781,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         plugin: {
                             logDirectory: "./logging/subdirectory",
@@ -788,6 +797,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         plugin: {
                             normalizeScreenshotNames: false,
@@ -803,6 +813,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         plugin: {
                             overwriteIssueSummary: false,
@@ -819,6 +830,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         openSSL: {
                             rootCAPath: "/a/b/c.pem",
@@ -834,6 +846,7 @@ describe("the plugin context configuration", () => {
                     const options = initOptions(env, {
                         jira: {
                             projectKey: "CYP",
+                            url: "https://example.org",
                         },
                         openSSL: {
                             secureOptions: 42,
@@ -845,33 +858,36 @@ describe("the plugin context configuration", () => {
         });
     });
     describe("the options verifier", () => {
-        it("should be able to detect unset project keys", async () => {
+        it("should detect unset project keys", async () => {
             expect(() =>
-                verifyContext({
+                verifyOptions({
                     jira: {
                         projectKey: undefined,
+                        url: "https://example.org",
                     },
                 })
             ).to.throw("Plugin misconfiguration: Jira project key was not set");
         });
-        it("should be able to detect mismatched test execution issue keys", async () => {
+        it("should detect mismatched test execution issue keys", async () => {
             expect(() =>
-                verifyContext({
+                verifyOptions({
                     jira: {
                         projectKey: "CYP",
                         testExecutionIssueKey: "ABC-123",
+                        url: "https://example.org",
                     },
                 })
             ).to.throw(
                 "Plugin misconfiguration: test execution issue key ABC-123 does not belong to project CYP"
             );
         });
-        it("should be able to detect mismatched test plan issue keys", async () => {
+        it("should detect mismatched test plan issue keys", async () => {
             expect(() =>
-                verifyContext({
+                verifyOptions({
                     jira: {
                         projectKey: "CYP",
                         testPlanIssueKey: "ABC-456",
+                        url: "https://example.org",
                     },
                 })
             ).to.throw(
@@ -880,9 +896,10 @@ describe("the plugin context configuration", () => {
         });
         it("should not allow step lengths of length zero", async () => {
             expect(() =>
-                verifyContext({
+                verifyOptions({
                     jira: {
                         projectKey: "CYP",
+                        url: "https://example.org",
                     },
                     xray: {
                         steps: {
@@ -896,9 +913,10 @@ describe("the plugin context configuration", () => {
         });
         it("should not allow negative step action lengths", async () => {
             expect(() =>
-                verifyContext({
+                verifyOptions({
                     jira: {
                         projectKey: "CYP",
+                        url: "https://example.org",
                     },
                     xray: {
                         steps: {
@@ -911,7 +929,7 @@ describe("the plugin context configuration", () => {
             );
         });
     });
-    describe("the Jira client instantiation", () => {
+    describe("the jira client instantiation", () => {
         let options: InternalOptions;
         beforeEach(() => {
             options = initOptions(
@@ -927,7 +945,7 @@ describe("the plugin context configuration", () => {
             options.jira.attachVideos = true;
         });
 
-        it("should be able to detect Jira cloud credentials", () => {
+        it("should detect jira cloud credentials", () => {
             const env = {
                 JIRA_USERNAME: "user@somewhere.xyz",
                 JIRA_API_TOKEN: "1337",
@@ -937,11 +955,11 @@ describe("the plugin context configuration", () => {
             const credentials = client.getCredentials();
             expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
             expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and API token found. Setting up basic auth credentials for Jira cloud."
+                "Jira username and API token found. Setting up basic auth credentials for Jira Cloud."
             );
         });
 
-        it("should be able to detect Jira server PAT credentials", () => {
+        it("should detect jira server PAT credentials", () => {
             const env = {
                 JIRA_API_TOKEN: "1337",
             };
@@ -950,11 +968,11 @@ describe("the plugin context configuration", () => {
             const credentials = client.getCredentials();
             expect(credentials).to.be.an.instanceof(PATCredentials);
             expect(stubbedInfo).to.have.been.calledWith(
-                "Jira PAT found. Setting up PAT credentials for Jira server."
+                "Jira PAT found. Setting up PAT credentials for Jira Server."
             );
         });
 
-        it("should be able to detect Jira server basic auth credentials", () => {
+        it("should detect jira server basic auth credentials", () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "1337",
@@ -964,11 +982,11 @@ describe("the plugin context configuration", () => {
             const credentials = client.getCredentials();
             expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
             expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and password found. Setting up basic auth credentials for Jira server."
+                "Jira username and password found. Setting up basic auth credentials for Jira Server."
             );
         });
 
-        it("should be able to choose Jira cloud credentials over server credentials", () => {
+        it("should choose jira cloud credentials over server credentials", () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "xyz",
@@ -979,7 +997,7 @@ describe("the plugin context configuration", () => {
             const credentials = client.getCredentials();
             expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
             expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and API token found. Setting up basic auth credentials for Jira cloud."
+                "Jira username and API token found. Setting up basic auth credentials for Jira Cloud."
             );
         });
 
@@ -989,22 +1007,28 @@ describe("the plugin context configuration", () => {
                 stubLogging();
             });
 
-            it("should throw an error for missing Jira URLs", () => {
+            it("should throw an error for missing jira urls", () => {
                 options.jira.url = undefined;
                 expect(() => initJiraClient(options, {})).to.throw(
-                    "Failed to configure Jira client: no Jira URL was provided. Configured options which necessarily require a configured Jira client:\n[\n\tjira.attachVideos = true\n]"
+                    dedent(`
+                        Failed to configure Jira client: no Jira URL was provided
+                        Make sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
+                    `)
                 );
             });
 
             it("should throw an error for missing credentials", () => {
                 expect(() => initJiraClient(options, {})).to.throw(
-                    "Failed to configure Jira client: no viable authentication method was configured.\nYou can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
+                    dedent(`
+                        Failed to configure Jira client: no viable authentication method was configured
+                        You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                    `)
                 );
             });
         });
     });
 
-    describe("the Xray client instantiation", () => {
+    describe("the xray client instantiation", () => {
         let options: InternalOptions;
         beforeEach(() => {
             options = initOptions(
@@ -1012,12 +1036,13 @@ describe("the plugin context configuration", () => {
                 {
                     jira: {
                         projectKey: "CYP",
+                        url: "https://example.org",
                     },
                 }
             );
         });
 
-        it("should be able to detect cloud credentials", () => {
+        it("should detect cloud credentials", () => {
             const env = {
                 XRAY_CLIENT_ID: "user",
                 XRAY_CLIENT_SECRET: "xyz",
@@ -1030,7 +1055,7 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should be able to detect basic server credentials", () => {
+        it("should detect basic server credentials", () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "xyz",
@@ -1044,7 +1069,7 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should be able to detect PAT server credentials", () => {
+        it("should detect PAT server credentials", () => {
             const env = {
                 JIRA_API_TOKEN: "1337",
             };
@@ -1057,7 +1082,7 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should be able to choose cloud credentials over server credentials", () => {
+        it("should choose cloud credentials over server credentials", () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_API_TOKEN: "1337",
@@ -1081,7 +1106,10 @@ describe("the plugin context configuration", () => {
 
             it("should throw an error for missing credentials", () => {
                 expect(() => initXrayClient(options, {})).to.throw(
-                    "Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported.\nYou can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
+                    dedent(`
+                        Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported
+                        You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                    `)
                 );
             });
         });

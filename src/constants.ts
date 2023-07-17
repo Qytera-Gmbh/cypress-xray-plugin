@@ -27,7 +27,6 @@ export const ENV_XRAY_STATUS_PENDING = "XRAY_STATUS_PENDING";
 export const ENV_XRAY_STATUS_SKIPPED = "XRAY_STATUS_SKIPPED";
 export const ENV_XRAY_STEPS_MAX_LENGTH_ACTION = "XRAY_STEPS_MAX_LENGTH_ACTION";
 export const ENV_XRAY_STEPS_UPDATE = "XRAY_STEPS_UPDATE";
-export const ENV_XRAY_TEST_TYPE = "XRAY_TEST_TYPE";
 export const ENV_XRAY_UPLOAD_RESULTS = "XRAY_UPLOAD_RESULTS";
 export const ENV_XRAY_UPLOAD_SCREENSHOTS = "XRAY_UPLOAD_SCREENSHOTS";
 // ============================================================================================== //

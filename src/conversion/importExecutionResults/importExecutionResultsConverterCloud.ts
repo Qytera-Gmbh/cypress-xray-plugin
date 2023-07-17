@@ -60,7 +60,7 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
         const testInfo: XrayTestInfoCloud = {
             projectKey: this.options.jira.projectKey,
             summary: testResult.title.join(" "),
-            type: this.options.xray.testType,
+            type: "TODO",
         };
         if (this.options.xray.steps.update) {
             testInfo.steps = [{ action: this.truncateStepAction(testResult.body) }];

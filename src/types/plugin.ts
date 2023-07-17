@@ -127,14 +127,6 @@ export interface XrayOptions {
      */
     steps?: XrayStepOptions;
     /**
-     * The test type of the test issues. This option will be used to set the corresponding field on
-     * issues created during upload (happens when a test does not yet have a corresponding Xray
-     * issue).
-     *
-     * @example "Manual"
-     */
-    testType?: string;
-    /**
      * Turns execution results upload on or off. Useful when switching upload on or off from the
      * command line (via environment variables).
      */

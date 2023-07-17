@@ -5,10 +5,13 @@ import path from "path";
 import Sinon, { stub } from "sinon";
 import sinonChai from "sinon-chai";
 import { JWTCredentials } from "../src/authentication/credentials";
+import { JiraClient } from "../src/client/jira/jiraClient";
 import { XrayClient } from "../src/client/xray/xrayClient";
 import { Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
+import { ImportExecutionResponseCloud } from "../src/types/xray/responses/importExecution";
+import { ImportFeatureResponseCloud } from "../src/types/xray/responses/importFeature";
 
 chai.use(sinonChai);
 
@@ -31,8 +34,8 @@ export const stubRequests = () => {
 
 export const TEST_TMP_DIR = "test/out";
 
-export function getTestDir(dirName: string): string {
-    return path.join(TEST_TMP_DIR, dirName);
+export function getTestDir(...subPaths: string[]): string {
+    return path.resolve(TEST_TMP_DIR, ...subPaths);
 }
 
 export const RESOLVED_JWT_CREDENTIALS: JWTCredentials = new JWTCredentials("user", "token");
@@ -63,20 +66,38 @@ after(async () => {
     }
 });
 
-export class DummyXrayClient extends XrayClient<JWTCredentials, null> {
+export class DummyXrayClient extends XrayClient<
+    ImportFeatureResponseCloud,
+    ImportExecutionResponseCloud
+> {
     constructor() {
-        super(new JWTCredentials("id", "secret"));
+        super("https://example.org", null);
     }
-
-    public dispatchImportTestExecutionResultsRequest(): Promise<null> {
+    public getUrlImportExecution(): string {
         throw new Error("Method not implemented.");
     }
-
-    public dispatchExportCucumberTestsRequest(): Promise<null> {
+    public handleResponseImportExecution(): string {
         throw new Error("Method not implemented.");
     }
+    public getUrlExportCucumber(): string {
+        throw new Error("Method not implemented.");
+    }
+    public getUrlImportFeature(): string {
+        throw new Error("Method not implemented.");
+    }
+    public handleResponseImportFeature(): void {
+        throw new Error("Method not implemented.");
+    }
+}
 
-    public dispatchImportCucumberTestsRequest(): Promise<null> {
+export class DummyJiraClient extends JiraClient<null> {
+    constructor() {
+        super("https://example.org", null);
+    }
+    public getUrlAddAttachment(): string {
+        throw new Error("Method not implemented.");
+    }
+    public getUrlGetFields(): string {
         throw new Error("Method not implemented.");
     }
 }

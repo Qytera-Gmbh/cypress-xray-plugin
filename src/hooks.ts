@@ -1,18 +1,25 @@
 import path from "path";
-import { JiraClient } from "./client/jira/jiraClient";
+import { JiraClientCloud } from "./client/jira/jiraClientCloud";
+import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
+import { ImportExecutionResultsConverterCloud } from "./conversion/importExecutionResults/importExecutionResultsConverterCloud";
+import { ImportExecutionResultsConverterServer } from "./conversion/importExecutionResults/importExecutionResultsConverterServer";
 import { issuesByScenario } from "./cucumber/tagging";
 import { logError, logInfo, logWarning } from "./logging/logging";
 import { InternalOptions } from "./types/plugin";
 import { OneOf } from "./types/util";
+import {
+    XrayTestExecutionResultsCloud,
+    XrayTestExecutionResultsServer,
+} from "./types/xray/importTestExecutionResults";
 import { parseFeatureFile } from "./util/parsing";
 
 export async function afterRunHook(
     results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult,
     options?: InternalOptions,
     xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>,
-    jiraClient?: JiraClient
+    jiraClient?: OneOf<[JiraClientServer, JiraClientCloud]>
 ) {
     if (!options) {
         logError("Plugin misconfigured (no configuration was provided). Skipping after:run hook.");
@@ -34,7 +41,17 @@ export async function afterRunHook(
         logInfo("Skipping results upload: Plugin is configured to not upload test results.");
         return;
     }
-    const issueKey = await xrayClient.importTestExecutionResults(runResult);
+    let cypressExecution: XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud;
+    if (xrayClient instanceof XrayClientServer) {
+        cypressExecution = new ImportExecutionResultsConverterServer(
+            options
+        ).convertExecutionResults(runResult);
+    } else {
+        cypressExecution = new ImportExecutionResultsConverterCloud(
+            options
+        ).convertExecutionResults(runResult);
+    }
+    const issueKey = await xrayClient.importExecution(cypressExecution);
     if (issueKey === undefined) {
         logWarning("Execution results import failed. Skipping remaining tasks.");
         return;
@@ -49,7 +66,7 @@ export async function afterRunHook(
         if (videos.length === 0) {
             logWarning("No videos were uploaded: No videos have been captured.");
         } else {
-            await jiraClient.addAttachments(issueKey, ...videos);
+            await jiraClient.addAttachment(issueKey, ...videos);
         }
     }
 }
@@ -85,7 +102,7 @@ export async function synchronizeFile(
                 throw new Error("feature not yet implemented");
             }
             if (options.cucumber.uploadFeatures) {
-                await xrayClient.importCucumberTests(file.filePath, options.jira.projectKey);
+                await xrayClient.importFeature(file.filePath, options.jira.projectKey);
             }
         } catch (error: unknown) {
             logError(`Feature file "${file.filePath}" invalid, skipping synchronization: ${error}`);

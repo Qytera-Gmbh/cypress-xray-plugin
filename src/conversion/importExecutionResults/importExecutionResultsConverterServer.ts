@@ -60,7 +60,7 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
         const testInfo: XrayTestInfoServer = {
             projectKey: this.options.jira.projectKey,
             summary: testResult.title.join(" "),
-            testType: this.options.xray.testType,
+            testType: "TODO",
         };
         if (this.options.xray.steps.update) {
             testInfo.steps = [{ action: this.truncateStepAction(testResult.body) }];

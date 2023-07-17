@@ -86,5 +86,5 @@ export function writeErrorFile(error: unknown, filename: string): void {
     fs.mkdirSync(logDirectoryPath, { recursive: true });
     errorFileName = path.resolve(logDirectoryPath, errorFileName);
     fs.writeFileSync(errorFileName, errorData);
-    logError(`Complete error logs have been written to "${errorFileName}"`);
+    logError(`Complete error logs have been written to: ${errorFileName}`);
 }

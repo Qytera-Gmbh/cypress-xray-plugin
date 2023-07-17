@@ -1,5 +1,7 @@
+import dedent from "dedent";
 import { BasicAuthCredentials, JWTCredentials, PATCredentials } from "./authentication/credentials";
-import { JiraClient } from "./client/jira/jiraClient";
+import { JiraClientCloud } from "./client/jira/jiraClientCloud";
+import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
 import {
@@ -31,13 +33,11 @@ import {
     ENV_XRAY_STATUS_SKIPPED,
     ENV_XRAY_STEPS_MAX_LENGTH_ACTION,
     ENV_XRAY_STEPS_UPDATE,
-    ENV_XRAY_TEST_TYPE,
     ENV_XRAY_UPLOAD_RESULTS,
     ENV_XRAY_UPLOAD_SCREENSHOTS,
 } from "./constants";
 import { logInfo } from "./logging/logging";
 import { InternalOptions, Options, XrayStepOptions } from "./types/plugin";
-import { OneOf } from "./types/util";
 import { asBoolean, asInt, asString, parse } from "./util/parsing";
 
 export function initOptions(env: Cypress.ObjectLike, options: Options): InternalOptions {
@@ -94,8 +94,6 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
                     options.xray?.steps?.update ??
                     true,
             },
-            testType:
-                parse(env, ENV_XRAY_TEST_TYPE, asString) ?? options.xray?.testType ?? "Manual",
             uploadResults:
                 parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean) ??
                 options.xray?.uploadResults ??
@@ -113,7 +111,6 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
                 parse(env, ENV_CUCUMBER_DOWNLOAD_FEATURES, asBoolean) ??
                 options.cucumber?.downloadFeatures ??
                 false,
-            issues: {},
             uploadFeatures:
                 parse(env, ENV_CUCUMBER_UPLOAD_FEATURES, asBoolean) ??
                 options.cucumber?.uploadFeatures ??
@@ -128,7 +125,7 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
     };
 }
 
-export function verifyContext(options: InternalOptions) {
+export function verifyOptions(options: InternalOptions) {
     verifyJiraProjectKey(options.jira.projectKey);
     verifyJiraTestExecutionIssueKey(options.jira.projectKey, options.jira.testExecutionIssueKey);
     verifyJiraTestPlanIssueKey(options.jira.projectKey, options.jira.testPlanIssueKey);
@@ -168,105 +165,70 @@ function verifyXraySteps(steps: XrayStepOptions) {
 export function initXrayClient(
     options: InternalOptions,
     env: Cypress.ObjectLike
-): OneOf<[XrayClientServer, XrayClientCloud]> {
+): XrayClientServer | XrayClientCloud {
     if (ENV_XRAY_CLIENT_ID in env && ENV_XRAY_CLIENT_SECRET in env) {
         logInfo("Xray client ID and client secret found. Setting up Xray cloud credentials.");
         return new XrayClientCloud(
-            new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET]),
-            options
+            new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET])
         );
     } else if (ENV_JIRA_API_TOKEN in env && options.jira.url) {
         logInfo("Jira PAT found. Setting up Xray PAT credentials.");
-        return new XrayClientServer(
-            options.jira.url,
-            new PATCredentials(env[ENV_JIRA_API_TOKEN]),
-            options
-        );
+        return new XrayClientServer(options.jira.url, new PATCredentials(env[ENV_JIRA_API_TOKEN]));
     } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && options.jira.url) {
         logInfo("Jira username and password found. Setting up Xray basic auth credentials.");
         return new XrayClientServer(
-            options.jira.url,
-            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD]),
-            options
-        );
-    } else {
-        throw new Error(
-            "Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported.\n" +
-                "You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
-        );
-    }
-}
-export function initJiraClient(options: InternalOptions, env: Cypress.ObjectLike): JiraClient {
-    const dependentOptions = getJiraClientDependentOptions(options);
-    if (!dependentOptions) {
-        return;
-    }
-    if (!options.jira.url) {
-        throw new Error(
-            `Failed to configure Jira client: no Jira URL was provided. Configured options which necessarily require a configured Jira client:\n${dependentOptions}`
-        );
-    }
-    if (ENV_JIRA_API_TOKEN in env && ENV_JIRA_USERNAME in env) {
-        // Jira Cloud authentication: username (Email) and token.
-        logInfo(
-            "Jira username and API token found. Setting up basic auth credentials for Jira cloud."
-        );
-        return new JiraClient(
-            options.jira.url,
-            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_API_TOKEN])
-        );
-    } else if (ENV_JIRA_API_TOKEN in env) {
-        // Jira Server authentication: no username, only token.
-        logInfo("Jira PAT found. Setting up PAT credentials for Jira server.");
-        return new JiraClient(options.jira.url, new PATCredentials(env[ENV_JIRA_API_TOKEN]));
-    } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env) {
-        // Jira Server authentication: username and password.
-        logInfo(
-            "Jira username and password found. Setting up basic auth credentials for Jira server."
-        );
-        return new JiraClient(
             options.jira.url,
             new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD])
         );
     } else {
         throw new Error(
-            "Failed to configure Jira client: no viable authentication method was configured.\n" +
-                "You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/"
+            dedent(`
+                Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported
+                You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+            `)
         );
     }
 }
-
-function getJiraClientDependentOptions(options: InternalOptions): string | undefined {
-    const dependentOptions = [];
-    if (options.jira.attachVideos) {
-        const optionName = `${getPropertyName(options, (x) => x.jira)}.${getPropertyName(
-            options.jira,
-            (x) => x.attachVideos
-        )}`;
-        dependentOptions.push(`${optionName} = ${options.jira.attachVideos}`);
+export function initJiraClient(
+    options: InternalOptions,
+    env: Cypress.ObjectLike
+): JiraClientServer | JiraClientCloud {
+    if (!options.jira.url) {
+        throw new Error(
+            dedent(`
+                Failed to configure Jira client: no Jira URL was provided
+                Make sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
+            `)
+        );
     }
-    if (dependentOptions.length === 0) {
-        return;
+    if (ENV_JIRA_API_TOKEN in env && ENV_JIRA_USERNAME in env) {
+        // Jira Cloud authentication: username (Email) and token.
+        logInfo(
+            "Jira username and API token found. Setting up basic auth credentials for Jira Cloud."
+        );
+        return new JiraClientCloud(
+            options.jira.url,
+            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_API_TOKEN])
+        );
+    } else if (ENV_JIRA_API_TOKEN in env) {
+        // Jira Server authentication: no username, only token.
+        logInfo("Jira PAT found. Setting up PAT credentials for Jira Server.");
+        return new JiraClientServer(options.jira.url, new PATCredentials(env[ENV_JIRA_API_TOKEN]));
+    } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env) {
+        // Jira Server authentication: username and password.
+        logInfo(
+            "Jira username and password found. Setting up basic auth credentials for Jira Server."
+        );
+        return new JiraClientServer(
+            options.jira.url,
+            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD])
+        );
+    } else {
+        throw new Error(
+            dedent(`
+                Failed to configure Jira client: no viable authentication method was configured
+                You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+            `)
+        );
     }
-    return `[\n\t${dependentOptions.join("\t\n")}\n]`;
-}
-
-/**
- * Returns a property's name from an object as a string.
- *
- * @param obj the object
- * @param selector the property whose name is required
- * @returns the property as a string
- * @see https://stackoverflow.com/a/59498264
- */
-function getPropertyName<T extends object>(
-    obj: T,
-    selector: (x: Record<keyof T, keyof T>) => keyof T
-): keyof T {
-    const keyRecord = Object.keys(obj).reduce((res, key) => {
-        const typedKey = key as keyof T;
-        res[typedKey] = typedKey;
-        return res;
-    }, {} as Record<keyof T, keyof T>);
-    return selector(keyRecord);
 }

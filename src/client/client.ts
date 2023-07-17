@@ -12,14 +12,23 @@ import { OneOf } from "../types/util";
 export abstract class Client<
     T extends OneOf<[BasicAuthCredentials, PATCredentials, JWTCredentials]>
 > {
+    /**
+     * The server URL.
+     */
+    protected readonly apiBaseURL: string;
+    /**
+     * The credentials to use for authentication.
+     */
     protected readonly credentials: T;
 
     /**
      * Construct a new client using the provided credentials.
      *
+     * @param apiBaseUrl the base URL for all HTTP requests
      * @param credentials the credentials to use during authentication
      */
-    constructor(credentials: T) {
+    constructor(apiBaseUrl: string, credentials: T) {
+        this.apiBaseURL = apiBaseUrl;
         this.credentials = credentials;
     }
 

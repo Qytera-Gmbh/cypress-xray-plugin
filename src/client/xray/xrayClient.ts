@@ -1,91 +1,136 @@
+import { AxiosResponse } from "axios";
+import FormData from "form-data";
+import fs from "fs";
 import {
     BasicAuthCredentials,
     JWTCredentials,
     PATCredentials,
 } from "../../authentication/credentials";
-import { logError, logWarning, writeErrorFile } from "../../logging/logging";
+import { Requests } from "../../https/requests";
+import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
 import { OneOf } from "../../types/util";
-import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import {
-    ImportFeatureResponseCloud,
-    ImportFeatureResponseServer,
-} from "../../types/xray/responses/importFeature";
+    XrayTestExecutionResultsCloud,
+    XrayTestExecutionResultsServer,
+} from "../../types/xray/importTestExecutionResults";
+import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import { Client } from "../client";
 
 /**
  * An abstract Xray client class for communicating with Xray instances.
  */
 export abstract class XrayClient<
-    T extends BasicAuthCredentials | PATCredentials | JWTCredentials,
-    I extends OneOf<[ImportFeatureResponseServer, ImportFeatureResponseCloud]>
-> extends Client<T> {
-    constructor(credentials: T) {
-        super(credentials);
-    }
-
+    ImportFeatureResponseType,
+    ImportExecutionResponseType
+> extends Client<BasicAuthCredentials | PATCredentials | JWTCredentials> {
     /**
      * Uploads test results to the Xray instance.
      *
      * @param results the test results as provided by Cypress
-     * @returns the key of the test execution issue or null if the upload was skipped
+     * @returns the key of the test execution issue, `null` if the upload was skipped or `undefined`
+     * in case of errors
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
-    public async importTestExecutionResults(
-        results: CypressCommandLine.CypressRunResult
-    ): Promise<string | null> {
+    public async importExecution<
+        R extends OneOf<[XrayTestExecutionResultsServer, XrayTestExecutionResultsCloud]>
+    >(execution: R): Promise<string | null | undefined> {
         try {
-            const key = await this.dispatchImportTestExecutionResultsRequest(results);
-            if (key === null) {
-                logWarning("No tests linked to Xray were executed. Skipping upload.");
+            if (!execution.tests || execution.tests.length === 0) {
+                logWarning("No native Cypress tests were executed. Skipping native upload.");
+                return null;
             }
-            return key;
+            const authenticationHeader = await this.credentials.getAuthenticationHeader(
+                `${this.apiBaseURL}/authenticate`
+            );
+            logInfo("Importing execution...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const response: AxiosResponse<ImportExecutionResponseType> = await Requests.post(
+                    this.getUrlImportExecution(),
+                    execution,
+                    {
+                        headers: {
+                            ...authenticationHeader,
+                        },
+                    }
+                );
+                const key = this.handleResponseImportExecution(response.data);
+                logSuccess(`Successfully uploaded test execution results to ${key}.`);
+                return key;
+            } finally {
+                clearInterval(progressInterval);
+            }
         } catch (error: unknown) {
-            logError(`Failed to upload results to Xray: "${error}"`);
-            writeErrorFile(error, "importExecutionResultsError");
+            logError(`Failed to import execution: ${error}`);
+            writeErrorFile(error, "importExecutionError");
         }
     }
 
     /**
-     * Dispatch the test results import request to the Xray instance.
+     * Returns the endpoint to use for importing test execution results.
      *
-     * @param results the test results as provided by Cypress
-     * @returns the response of the Xray instance
+     * @returns the URL
      */
-    protected abstract dispatchImportTestExecutionResultsRequest(
-        results: CypressCommandLine.CypressRunResult
-    ): Promise<string | null>;
+    public abstract getUrlImportExecution(): string;
+
+    /**
+     * Returns the test execution key from the import execution response.
+     *
+     * @param response the import execution response
+     * @returns the test execution issue key
+     */
+    public abstract handleResponseImportExecution(response: ImportExecutionResponseType): string;
 
     /**
      * Downloads feature (file) specifications from corresponding Xray issues.
      *
-     * @param keys a string containing a list of issue keys separated by ";"
+     * @param keys a list of issue keys
      * @param filter an integer that represents the filter ID
      * @returns the response of the Xray instance
      * @see https://docs.getxray.app/display/XRAYCLOUD/Exporting+Cucumber+Tests+-+REST+v2
      */
-    public async exportCucumberTests(
-        keys?: string,
+    public async exportCucumber(
+        keys?: string[],
         filter?: number
     ): Promise<ExportCucumberTestsResponse> {
         try {
-            return await this.dispatchExportCucumberTestsRequest(keys, filter);
+            const authenticationHeader = await this.credentials.getAuthenticationHeader(
+                `${this.apiBaseURL}/authenticate`
+            );
+            logInfo("Exporting Cucumber tests...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const response = await Requests.get(this.getUrlExportCucumber(keys, filter), {
+                    headers: {
+                        ...authenticationHeader,
+                    },
+                });
+                // Extract filename from response.
+                const contentDisposition = response.headers["Content-Disposition"];
+                const filenameStart = contentDisposition.indexOf('"');
+                const filenameEnd = contentDisposition.lastIndexOf('"');
+                const filename = contentDisposition.substring(filenameStart, filenameEnd);
+                fs.writeFile(filename, response.data, (error: NodeJS.ErrnoException | null) => {
+                    throw new Error(`Failed to export cucumber feature files: "${error}"`);
+                });
+            } finally {
+                clearInterval(progressInterval);
+            }
         } catch (error: unknown) {
-            logError(`Failed to export cucumber feature files: "${error}"`);
-            writeErrorFile(error, "exportCucumberTestsError");
+            logError(`Failed to export Cucumber tests: ${error}`);
+            writeErrorFile(error, "exportCucumberError");
         }
+        throw new Error("Method not implemented.");
     }
 
     /**
-     * Dispatch the export Cucumber test request to the Xray instance.
+     * Returns the endpoint to use for exporting Cucumber feature files.
      *
-     * @param keys a string containing a list of issue keys separated by ";"
+     * @param keys a list of issue keys
      * @param filter an integer that represents the filter ID
-     * @returns the response of the Xray instance
+     * @returns the URL
      */
-    protected abstract dispatchExportCucumberTestsRequest(
-        keys?: string,
-        filter?: number
-    ): Promise<ExportCucumberTestsResponse>;
+    public abstract getUrlExportCucumber(issueKeys?: string[], filter?: number): string;
 
     /**
      * Uploads (zipped) feature file(s) to corresponding Xray issues.
@@ -94,41 +139,64 @@ export abstract class XrayClient<
      * @param projectKey key of the project where the tests and pre-conditions are going to be created
      * @param projectId id of the project where the tests and pre-conditions are going to be created
      * @param source a name designating the source of the features being imported (e.g. the source project name)
-     * @returns the response of the Xray instance
-     * @see https://docs.getxray.app/display/XRAYCLOUD/Exporting+Cucumber+Tests+-+REST+v2
+     * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+     * @see https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
      */
-    public async importCucumberTests(
+    public async importFeature(
         file: string,
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<I> {
+    ): Promise<void> {
         try {
-            return await this.dispatchImportCucumberTestsRequest(
-                file,
-                projectKey,
-                projectId,
-                source
+            const authenticationHeader = await this.credentials.getAuthenticationHeader(
+                `${this.apiBaseURL}/authenticate`
             );
+            logInfo("Importing Cucumber tests...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const fileContent = fs.createReadStream(file);
+                const form = new FormData();
+                form.append("file", fileContent);
+
+                const response: AxiosResponse<ImportFeatureResponseType> = await Requests.post(
+                    this.getUrlImportFeature(projectKey, projectId, source),
+                    form,
+                    {
+                        headers: {
+                            ...authenticationHeader,
+                            ...form.getHeaders(),
+                        },
+                    }
+                );
+                this.handleResponseImportFeature(response.data);
+            } finally {
+                clearInterval(progressInterval);
+            }
         } catch (error: unknown) {
-            logError(`Failed to import cucumber feature files: "${error}"`);
-            writeErrorFile(error, "importCucumberTestsError");
+            logError(`Failed to import cucumber feature files: ${error}`);
+            writeErrorFile(error, "importFeatureError");
         }
     }
 
     /**
-     * Dispatch the import Cucumber test request to the Xray instance.
+     * Returns the endpoint to use for importing Cucumber feature files.
      *
-     * @param file the (zipped) Cucumber feature file(s)
      * @param projectKey key of the project where the tests and pre-conditions are going to be created
      * @param projectId id of the project where the tests and pre-conditions are going to be created
      * @param source a name designating the source of the features being imported (e.g. the source project name)
-     * @returns the response of the Xray instance
+     * @returns the URL
      */
-    protected abstract dispatchImportCucumberTestsRequest(
-        file: string,
+    public abstract getUrlImportFeature(
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<I>;
+    ): string;
+
+    /**
+     * This method is called when a feature file was successfully imported to Xray.
+     *
+     * @param response the import feature response
+     */
+    public abstract handleResponseImportFeature(response: ImportFeatureResponseType): void;
 }
