@@ -122,9 +122,10 @@ export class XrayClientCloud extends XrayClient<
                     const response: AxiosResponse<GetTestsResponse<GetTestsJiraData>> =
                         await Requests.post(
                             XrayClientCloud.URL_GRAPHQL,
-                            dedent(`
                         {
-                            getTests(start: ${i}, limit: ${XrayClientCloud.GRAPHQL_LIMITS.getTests}, jql: "${jql}") {
+                                query: dedent(`
+                                    query($jql: String, $start: Int!, $limit: Int!) {
+                                        getTests(jql: $jql, start: $start, limit: $limit) {
                                 total
                                 start
                                 results {
@@ -137,6 +138,12 @@ export class XrayClientCloud extends XrayClient<
                             }
                         }
                         `),
+                                variables: {
+                                    jql: jql,
+                                    start: i,
+                                    limit: XrayClientCloud.GRAPHQL_LIMITS.getTests,
+                                },
+                            },
                             {
                                 headers: {
                                     ...authenticationHeader,
@@ -145,7 +152,7 @@ export class XrayClientCloud extends XrayClient<
                         );
                     const missingTypes: string[] = [];
                     for (const issueKey of slice) {
-                        for (const test of response.data.data.getTests.results.results) {
+                        for (const test of response.data.data.getTests.results) {
                             if (test.jira.key === issueKey) {
                                 types[issueKey] = test.testType.name;
                                 break;
