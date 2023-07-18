@@ -24,9 +24,10 @@ describe("the logging module", () => {
             expect(stubbedError).to.have.been.calledOnceWith(
                 `Complete error logs have been written to: ${expectedPath}`
             );
-            expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({
-                something: "else",
-            });
+            expect(JSON.parse(fs.readFileSync(expectedPath, "utf-8"))).to.have.property(
+                "error",
+                'Error: {"something":"else"}'
+            );
         });
 
         it("should write to absolute directories", () => {
@@ -46,9 +47,10 @@ describe("the logging module", () => {
             expect(stubbedError).to.have.been.calledOnceWith(
                 `Complete error logs have been written to: ${expectedPath}`
             );
-            expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({
-                something: "entirely else",
-            });
+            expect(JSON.parse(fs.readFileSync(expectedPath, "utf-8"))).to.have.property(
+                "error",
+                'Error: {"something":"entirely else"}'
+            );
         });
 
         it("should write to non-existent directories", () => {
@@ -73,9 +75,10 @@ describe("the logging module", () => {
             expect(stubbedError).to.have.been.calledOnceWith(
                 `Complete error logs have been written to: ${expectedPath}`
             );
-            expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({
-                something: "entirely different",
-            });
+            expect(JSON.parse(fs.readFileSync(expectedPath, "utf-8"))).to.have.property(
+                "error",
+                'Error: {"something":"entirely different"}'
+            );
         });
 
         it("should write axios errors", () => {
