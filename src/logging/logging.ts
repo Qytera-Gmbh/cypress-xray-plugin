@@ -11,6 +11,13 @@ const DEBUG = "DEBUG";
 
 const VARIANTS = [INFO, ERROR, SUCCESS, WARNING, DEBUG];
 const MAX_PREFIX_LENGTH = Math.max(...VARIANTS.map((s) => s.length));
+const PREFIXES = {
+    info: prefix(INFO),
+    error: prefix(ERROR),
+    success: prefix(SUCCESS),
+    warning: prefix(WARNING),
+    debug: prefix(DEBUG),
+};
 
 export interface LoggingOptions {
     logDirectory: string;
@@ -22,28 +29,44 @@ export function initLogging(options: LoggingOptions) {
     loggingOptions = options;
 }
 function prefix(type: string): string {
-    return chalk.white(`| Cypress Xray Plugin | ${type.padEnd(MAX_PREFIX_LENGTH, " ")} |`);
+    return chalk.white(`│ Cypress Xray Plugin │ ${type.padEnd(MAX_PREFIX_LENGTH, " ")} │`);
 }
 
 export const logInfo = (...text: string[]) => {
-    console.info(prefix(INFO), chalk.gray(text.join(" ")));
+    log(text, PREFIXES.info, chalk.gray);
 };
 
 export const logError = (...text: string[]) => {
-    console.error(prefix(ERROR), chalk.red(text.join(" ")));
+    log(text, PREFIXES.error, chalk.red);
 };
 
 export const logSuccess = (...text: string[]) => {
-    console.log(prefix(SUCCESS), chalk.green(text.join(" ")));
+    log(text, PREFIXES.success, chalk.green);
 };
 
 export const logWarning = (...text: string[]) => {
-    console.warn(prefix(WARNING), chalk.yellow(text.join(" ")));
+    log(text, PREFIXES.warning, chalk.yellow);
 };
 
 export const logDebug = (...text: string[]) => {
-    console.warn(prefix(DEBUG), chalk.cyan(text.join(" ")));
+    log(text, PREFIXES.debug, chalk.cyan);
 };
+
+function log(text: string[], prefix: string, colorize: (...text: unknown[]) => string) {
+    const lines = text.join(" ").split("\n");
+    lines.forEach((line: string, index: number) => {
+        if (index === 0) {
+            console.log(`${prefix} ${colorize(line)}`);
+        } else {
+            console.log(`${prefix} ┊ ${colorize(line)}`);
+        }
+        // Pad multiline log messages with an extra new line to cleanly separate them from the
+        // following line.
+        if (index > 1 && index === lines.length - 1) {
+            console.log(`${prefix} ┊`);
+        }
+    });
+}
 
 /**
  * Writes arbitrary data to a file under the log path configured in
