@@ -164,7 +164,13 @@ export class XrayClientCloud extends XrayClient<
                     }
                     if (missingTypes.length > 0) {
                         throw new Error(
-                            `Failed to retrieve test types for issues: ${missingTypes.join("\n")}`
+                            dedent(`
+                                Failed to retrieve test types for issues:
+
+                                ${missingTypes.join("\n")}
+
+                                Make sure these issues exist and are actually test issues
+                            `)
                         );
                     }
                 }

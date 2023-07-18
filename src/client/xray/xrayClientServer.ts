@@ -1,3 +1,4 @@
+import dedent from "dedent";
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
 import { FieldDetailServer } from "../../types/jira/responses/fieldDetail";
@@ -116,7 +117,13 @@ export class XrayClientServer extends XrayClient<
                 const missingTypes: string[] = issueKeys.filter((key: string) => !(key in types));
                 if (missingTypes.length > 0) {
                     throw new Error(
-                        `Failed to retrieve test types for issues: ${missingTypes.join("\n")}`
+                        dedent(`
+                            Failed to retrieve test types for issues:
+
+                            ${missingTypes.join("\n")}
+
+                            Make sure these issues exist and are actually test issues
+                        `)
                     );
                 }
                 logSuccess(`Successfully retrieved test types for ${issueKeys.length} issues`);

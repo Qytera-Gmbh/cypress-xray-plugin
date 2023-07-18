@@ -146,7 +146,7 @@ export abstract class JiraClient<
                 logDebug(
                     "Received data for fields:",
                     ...response.data.map(
-                        (field: FieldDetailType) => `${field.name} (id: ${field.id})`
+                        (field: FieldDetailType) => `\n${field.name} (id: ${field.id})`
                     )
                 );
                 return response.data;
