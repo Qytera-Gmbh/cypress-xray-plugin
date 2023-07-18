@@ -24,7 +24,7 @@ export class XrayClientCloud extends XrayClient<
      * Note: API v1 would also work, but let's stick to the more recent one.
      */
     public static readonly URL = "https://xray.cloud.getxray.app/api/v2";
-    private static readonly URL_GRAPHQL = `${URL}/graphql`;
+    private static readonly URL_GRAPHQL = `${XrayClientCloud.URL}/graphql`;
     private static readonly GRAPHQL_LIMITS = {
         /**
          * @see https://xray.cloud.getxray.app/doc/graphql/gettests.doc.html
@@ -122,22 +122,22 @@ export class XrayClientCloud extends XrayClient<
                     const response: AxiosResponse<GetTestsResponse<GetTestsJiraData>> =
                         await Requests.post(
                             XrayClientCloud.URL_GRAPHQL,
-                        {
+                            {
                                 query: dedent(`
                                     query($jql: String, $start: Int!, $limit: Int!) {
                                         getTests(jql: $jql, start: $start, limit: $limit) {
-                                total
-                                start
-                                results {
-                                    testType {
-                                        name
-                                        kind
+                                            total
+                                            start
+                                            results {
+                                                testType {
+                                                    name
+                                                    kind
+                                                }
+                                                jira(fields: ["key"])
+                                            }
+                                        }
                                     }
-                                    jira(fields: ["key"])
-                                }
-                            }
-                        }
-                        `),
+                                `),
                                 variables: {
                                     jql: jql,
                                     start: i,
