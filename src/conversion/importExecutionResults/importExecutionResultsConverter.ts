@@ -54,7 +54,7 @@ export abstract class ImportExecutionResultsConverter<
                 if (issueKey !== null) {
                     test.testKey = issueKey;
                     if (this.options.plugin.overwriteIssueSummary) {
-                        test.testInfo = this.getTestInfo(testResult);
+                        test.testInfo = this.getTestInfo(issueKey, testResult);
                     }
                 } else {
                     throw new Error(
@@ -81,7 +81,7 @@ export abstract class ImportExecutionResultsConverter<
                 if (error instanceof Error) {
                     reason = error.message;
                 }
-                logWarning(`Skipping result upload for test: ${title}:\n\n${reason}`);
+                logWarning(`Skipping result upload for test: ${title}\n\n${reason}`);
             }
         });
         return json;
@@ -107,10 +107,14 @@ export abstract class ImportExecutionResultsConverter<
      * Constructs an {@link XrayTestInfoType} object based on a single
      * {@link CypressCommandLine.TestResult}.
      *
+     * @param issueKey the test issue key
      * @param testResult the Cypress test result
      * @returns the test information
      */
-    protected abstract getTestInfo(testResult: CypressCommandLine.TestResult): XrayTestInfoType;
+    protected abstract getTestInfo(
+        issueKey: string,
+        testResult: CypressCommandLine.TestResult
+    ): XrayTestInfoType;
 
     /**
      * Remove milliseconds from ISO time string. Some Jira Xray instances cannot handle milliseconds in the string.

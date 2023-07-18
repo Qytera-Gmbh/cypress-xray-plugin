@@ -56,12 +56,18 @@ export class ImportExecutionResultsConverterServer extends ImportExecutionResult
         }
     }
 
-    protected getTestInfo(testResult: CypressCommandLine.TestResult): XrayTestInfoServer {
+    protected getTestInfo(
+        issueKey: string,
+        testResult: CypressCommandLine.TestResult
+    ): XrayTestInfoServer {
         const testInfo: XrayTestInfoServer = {
             projectKey: this.options.jira.projectKey,
             summary: testResult.title.join(" "),
-            testType: "TODO",
+            testType: this.options.xray.testTypes[issueKey],
         };
+        if (!testInfo.testType) {
+            throw new Error(`Failed to find test type for issue: ${issueKey}`);
+        }
         if (this.options.xray.steps.update) {
             testInfo.steps = [{ action: this.truncateStepAction(testResult.body) }];
         }
