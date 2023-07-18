@@ -6,10 +6,6 @@ import { TestResults } from "./xray";
  */
 export type GetTestsResponse<JiraDataType> = {
     data: {
-        getTests: {
-            total: number;
-            start: number;
-            results: TestResults<JiraDataType>;
-        };
+        getTests: TestResults<JiraDataType>;
     };
 };
