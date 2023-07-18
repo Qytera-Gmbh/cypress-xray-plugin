@@ -98,9 +98,9 @@ export class XrayClientServer extends XrayClient<
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const types = {};
-                const fields = this.jiraClient.getFields();
-                const testTypeField = (await fields).find((field: FieldDetailServer) => {
-                    field.name === "Test Type";
+                const fields = await this.jiraClient.getFields();
+                const testTypeField = fields.find((field: FieldDetailServer) => {
+                    return field.name === "Test Type";
                 });
                 const searchResults = await this.jiraClient.search({
                     jql: `project = ${projectKey} AND issue in (${issueKeys.join(",")})`,
@@ -108,9 +108,11 @@ export class XrayClientServer extends XrayClient<
                 });
                 for (const searchResult of searchResults) {
                     for (const issue of searchResult.issues) {
-                        const testTypeData = issue.fields[testTypeField.id];
-                        if (typeof testTypeData === "object" && "value" in testTypeData) {
-                            types[issue.key] = testTypeData.value;
+                        if (issue.fields && testTypeField.id in issue.fields) {
+                            const testTypeData = issue.fields[testTypeField.id];
+                            if (typeof testTypeData === "object" && "value" in testTypeData) {
+                                types[issue.key] = testTypeData.value;
+                            }
                         }
                     }
                 }
