@@ -404,6 +404,37 @@ describe("the import execution results converters", () => {
                 expect(json.tests[2].testInfo).to.not.be.undefined;
             });
 
+            it("should not throw missing properties exceptions for uninitialized test types", () => {
+                const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+                );
+                options.plugin.overwriteIssueSummary = true;
+                const { stubbedWarning } = stubLogging();
+                const json = converter.convertExecutionResults(result);
+                expect(json.tests).to.be.undefined;
+                expect(stubbedWarning).to.have.been.calledWith(
+                    dedent(`
+                        Skipping result upload for test: cypress xray plugin passing test case with test issue key CYP-40
+
+                        Failed to find test type for issue: CYP-40
+                    `)
+                );
+                expect(stubbedWarning).to.have.been.calledWith(
+                    dedent(`
+                        Skipping result upload for test: cypress xray plugin passing test case with test issue key CYP-41 in the middle of the title
+
+                        Failed to find test type for issue: CYP-41
+                    `)
+                );
+                expect(stubbedWarning).to.have.been.calledWith(
+                    dedent(`
+                        Skipping result upload for test: cypress xray plugin CYP-49 failling test case with test issue key
+
+                        Failed to find test type for issue: CYP-49
+                    `)
+                );
+            });
+
             it("should not update test information with summary overwriting disabled", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
