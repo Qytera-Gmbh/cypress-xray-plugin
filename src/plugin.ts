@@ -1,6 +1,4 @@
-/// <reference types="cypress" />
-
-import { initJiraClient, initOptions, initXrayClient, verifyOptions } from "./context";
+import { initClients, initOptions, verifyOptions } from "./context";
 import { afterRunHook, synchronizeFile } from "./hooks";
 import { Requests } from "./https/requests";
 import { initLogging, logInfo } from "./logging/logging";
@@ -15,8 +13,7 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
         return;
     }
     verifyOptions(internalOptions);
-    const jiraClient = initJiraClient(internalOptions, config.env);
-    const xrayClient = initXrayClient(internalOptions, config.env, jiraClient);
+    const { jiraClient, xrayClient } = initClients(internalOptions, config.env);
     context = {
         internal: internalOptions,
         cypress: config,
