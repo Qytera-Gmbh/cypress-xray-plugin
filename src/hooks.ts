@@ -5,15 +5,14 @@ import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
 import { ImportExecutionResultsConverterCloud } from "./conversion/importExecutionResults/importExecutionResultsConverterCloud";
 import { ImportExecutionResultsConverterServer } from "./conversion/importExecutionResults/importExecutionResultsConverterServer";
-import { issuesByScenario } from "./cucumber/tagging";
 import { logError, logInfo, logWarning } from "./logging/logging";
+import { processFeatureFile, processRunResult } from "./processors";
 import { InternalOptions } from "./types/plugin";
 import { OneOf } from "./types/util";
 import {
     XrayTestExecutionResultsCloud,
     XrayTestExecutionResultsServer,
 } from "./types/xray/importTestExecutionResults";
-import { parseFeatureFile } from "./util/parsing";
 
 export async function afterRunHook(
     results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult,
@@ -41,6 +40,8 @@ export async function afterRunHook(
         logInfo("Skipping results upload: Plugin is configured to not upload test results.");
         return;
     }
+    const issueKeys = processRunResult(runResult, options);
+    const testTypes = await xrayClient.getTestTypes(options.jira.projectKey, ...issueKeys);
     let cypressExecution: XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud;
     if (xrayClient instanceof XrayClientServer) {
         cypressExecution = new ImportExecutionResultsConverterServer(
@@ -96,7 +97,7 @@ export async function synchronizeFile(
         try {
             const relativePath = path.relative(projectRoot, file.filePath);
             logInfo(`Preprocessing feature file ${relativePath}...`);
-            preprocessFeatureFile(file.filePath, options);
+            processFeatureFile(file.filePath, options);
             if (options.cucumber.downloadFeatures) {
                 // TODO: download feature file from Xray.
                 throw new Error("feature not yet implemented");
@@ -109,13 +110,4 @@ export async function synchronizeFile(
         }
     }
     return file.filePath;
-}
-
-function preprocessFeatureFile(filePath: string, options: InternalOptions) {
-    // Extract tag information for later use, e.g. when uploading test results to specific issues.
-    const feature = parseFeatureFile(filePath).feature;
-    options.cucumber.issues = {
-        ...options.cucumber.issues,
-        ...issuesByScenario(feature, options.jira.projectKey),
-    };
 }
