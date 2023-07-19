@@ -1,5 +1,7 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
+import dedent from "dedent";
+import fs from "fs";
 import {
     DummyJiraClient,
     RESOLVED_JWT_CREDENTIALS,
@@ -7,6 +9,7 @@ import {
     stubLogging,
     stubRequests,
 } from "../../../test/util";
+import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { XrayClientCloud } from "./xrayClientCloud";
 
 describe("the xray cloud client", () => {
@@ -102,6 +105,175 @@ describe("the xray cloud client", () => {
             const expectedPath = getTestDir("importExecutionError.json");
             expect(stubbedError).to.have.been.calledWithExactly(
                 `Complete error logs have been written to: ${expectedPath}`
+            );
+        });
+    });
+
+    describe("get test types", () => {
+        it("should handle successful responses", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedInfo, stubbedSuccess } = stubLogging();
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/xray/responses/getTestsTypes.json",
+                        "utf-8"
+                    )
+                ),
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
+            expect(response).to.deep.eq({
+                "CYP-330": "Generic",
+                "CYP-331": "Cucumber",
+                "CYP-332": "Manual",
+            });
+            expect(stubbedInfo).to.have.been.calledWithExactly("Retrieving test types...");
+            expect(stubbedSuccess).to.have.been.calledWithExactly(
+                "Successfully retrieved test types for 3 issues"
+            );
+        });
+
+        it("should paginate big requests", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedInfo, stubbedSuccess } = stubLogging();
+            const mockedData: GetTestsResponse<unknown> = JSON.parse(
+                fs.readFileSync(
+                    "./test/resources/fixtures/xray/responses/getTestsTypes.json",
+                    "utf-8"
+                )
+            );
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    data: {
+                        getTests: {
+                            ...mockedData.data.getTests,
+                            results: mockedData.data.getTests.results.slice(0, 1),
+                        },
+                    },
+                },
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            stubbedPost.onSecondCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    data: {
+                        getTests: {
+                            ...mockedData.data.getTests,
+                            start: 1,
+                            results: mockedData.data.getTests.results.slice(1, 2),
+                        },
+                    },
+                },
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            stubbedPost.onThirdCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    data: {
+                        getTests: {
+                            ...mockedData.data.getTests,
+                            start: 2,
+                            results: mockedData.data.getTests.results.slice(2, 3),
+                        },
+                    },
+                },
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
+            expect(response).to.deep.eq({
+                "CYP-330": "Generic",
+                "CYP-331": "Cucumber",
+                "CYP-332": "Manual",
+            });
+            expect(stubbedInfo).to.have.been.calledWithExactly("Retrieving test types...");
+            expect(stubbedSuccess).to.have.been.calledWithExactly(
+                "Successfully retrieved test types for 3 issues"
+            );
+        });
+
+        it("should throw for missing test types", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedError } = stubLogging();
+            const mockedData: GetTestsResponse<unknown> = JSON.parse(
+                fs.readFileSync(
+                    "./test/resources/fixtures/xray/responses/getTestsTypes.json",
+                    "utf-8"
+                )
+            );
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    data: {
+                        getTests: {
+                            ...mockedData.data.getTests,
+                            total: 1,
+                            results: mockedData.data.getTests.results.slice(1, 2),
+                        },
+                    },
+                },
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
+            expect(response).to.be.undefined;
+            expect(stubbedError).to.have.been.calledTwice;
+            expect(stubbedError).to.have.been.calledWith(
+                dedent(`
+                    Failed to get test types: Error: Failed to retrieve test types for issues:
+
+                    CYP-331
+                    CYP-332
+
+                    Make sure these issues exist and are actually test issues
+                `)
+            );
+        });
+
+        it("should handle bad responses", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedError } = stubLogging();
+            stubbedPost.onFirstCall().rejects(
+                new AxiosError("Request failed with status code 400", "400", null, null, {
+                    status: 400,
+                    statusText: "Bad Request",
+                    config: { headers: new AxiosHeaders() },
+                    headers: {},
+                    data: {
+                        error: "Must provide a project key",
+                    },
+                })
+            );
+            const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
+            expect(response).to.be.undefined;
+            expect(stubbedError).to.have.been.calledTwice;
+            expect(stubbedError).to.have.been.calledWith(
+                dedent(`
+                    Failed to get test types: AxiosError: Request failed with status code 400`)
+            );
+            const expectedPath = getTestDir("getTestTypes.json");
+            expect(stubbedError).to.have.been.calledWithExactly(
+                `Complete error logs have been written to: ${expectedPath}`
+            );
+        });
+
+        it("should skip empty issues", async () => {
+            const { stubbedWarning } = stubLogging();
+            const response = await client.getTestTypes("CYP");
+            expect(response).to.be.null;
+            expect(stubbedWarning).to.have.been.calledWithExactly(
+                "No issue keys provided. Skipping test type retrieval"
             );
         });
     });

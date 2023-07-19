@@ -1,4 +1,3 @@
-import { AxiosResponse } from "axios";
 import dedent from "dedent";
 import { JWTCredentials } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
@@ -112,67 +111,62 @@ export class XrayClientCloud extends XrayClient<
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const types = {};
-                for (
-                    let i = 0;
-                    i < issueKeys.length;
-                    i = i + XrayClientCloud.GRAPHQL_LIMITS.getTests
-                ) {
-                    const slice = issueKeys.slice(i, i + XrayClientCloud.GRAPHQL_LIMITS.getTests);
-                    const jql = `project = '${projectKey}' AND issue in (${slice.join(",")})`;
-                    const response: AxiosResponse<GetTestsResponse<GetTestsJiraData>> =
-                        await Requests.post(
-                            XrayClientCloud.URL_GRAPHQL,
-                            {
-                                query: dedent(`
-                                    query($jql: String, $start: Int!, $limit: Int!) {
-                                        getTests(jql: $jql, start: $start, limit: $limit) {
-                                            total
-                                            start
-                                            results {
-                                                testType {
-                                                    name
-                                                    kind
-                                                }
-                                                jira(fields: ["key"])
-                                            }
-                                        }
-                                    }
-                                `),
-                                variables: {
-                                    jql: jql,
-                                    start: i,
-                                    limit: XrayClientCloud.GRAPHQL_LIMITS.getTests,
-                                },
+                let total = 0;
+                let start = 0;
+                const jql = `project = '${projectKey}' AND issue in (${issueKeys.join(",")})`;
+                const query = dedent(`
+                    query($jql: String, $start: Int!, $limit: Int!) {
+                        getTests(jql: $jql, start: $start, limit: $limit) {
+                            total
+                            start
+                            results {
+                                testType {
+                                    name
+                                    kind
+                                }
+                                jira(fields: ["key"])
+                            }
+                        }
+                    }
+                `);
+                do {
+                    const paginatedRequest = {
+                        query: query,
+                        variables: {
+                            jql: jql,
+                            start: start,
+                            limit: XrayClientCloud.GRAPHQL_LIMITS.getTests,
+                        },
+                    };
+                    const response: GetTestsResponse<GetTestsJiraData> = (
+                        await Requests.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
+                            headers: {
+                                ...authenticationHeader,
                             },
-                            {
-                                headers: {
-                                    ...authenticationHeader,
-                                },
-                            }
-                        );
-                    const missingTypes: string[] = [];
-                    for (const issueKey of slice) {
-                        for (const test of response.data.data.getTests.results) {
-                            if (test.jira.key === issueKey) {
-                                types[issueKey] = test.testType.name;
-                                break;
-                            }
-                        }
-                        if (!(issueKey in types)) {
-                            missingTypes.push(issueKey);
-                        }
+                        })
+                    ).data;
+                    total = response.data.getTests.total;
+                    start = response.data.getTests.start + response.data.getTests.results.length;
+                    for (const test of response.data.getTests.results) {
+                        types[test.jira.key] = test.testType.name;
                     }
-                    if (missingTypes.length > 0) {
-                        throw new Error(
-                            dedent(`
-                                Failed to retrieve test types for issues:
-
-                                ${missingTypes.join("\n")}
-
-                                Make sure these issues exist and are actually test issues
-                            `)
-                        );
+                } while (start && start < total);
+                const missingTypes: string[] = [];
+                for (const issueKey of issueKeys) {
+                    if (!(issueKey in types)) {
+                        missingTypes.push(issueKey);
                     }
+                }
+                if (missingTypes.length > 0) {
+                    throw new Error(
+                        dedent(`
+                            Failed to retrieve test types for issues:
+
+                            ${missingTypes.join("\n")}
+
+                            Make sure these issues exist and are actually test issues
+                        `)
+                    );
                 }
                 logSuccess(`Successfully retrieved test types for ${issueKeys.length} issues`);
                 return types;
