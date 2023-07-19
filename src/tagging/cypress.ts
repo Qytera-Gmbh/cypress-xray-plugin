@@ -29,7 +29,7 @@ export function getTestIssueKey(title: string, projectKey: string): string | nul
         indicatorLine = indicatorLine.replaceAll(/[^^]/g, " ");
         throw new Error(
             dedent(`
-                Multiple test keys found title of test: ${title}
+                Multiple test keys found in title of test: ${title}
                 The plugin cannot decide for you which one to use:
 
                 it("${title}", () => {
