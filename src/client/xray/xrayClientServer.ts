@@ -106,13 +106,11 @@ export class XrayClientServer extends XrayClient<
                     jql: `project = ${projectKey} AND issue in (${issueKeys.join(",")})`,
                     fields: [testTypeField.id],
                 });
-                for (const searchResult of searchResults) {
-                    for (const issue of searchResult.issues) {
-                        if (issue.fields && testTypeField.id in issue.fields) {
-                            const testTypeData = issue.fields[testTypeField.id];
-                            if (typeof testTypeData === "object" && "value" in testTypeData) {
-                                types[issue.key] = testTypeData.value;
-                            }
+                for (const issue of searchResults) {
+                    if (issue.fields && testTypeField.id in issue.fields) {
+                        const testTypeData = issue.fields[testTypeField.id];
+                        if (typeof testTypeData === "object" && "value" in testTypeData) {
+                            types[issue.key] = testTypeData.value;
                         }
                     }
                 }

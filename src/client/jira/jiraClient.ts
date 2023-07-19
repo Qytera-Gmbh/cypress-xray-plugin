@@ -14,7 +14,9 @@ import {
 import { SearchRequestCloud, SearchRequestServer } from "../../types/jira/requests/search";
 import { AttachmentCloud, AttachmentServer } from "../../types/jira/responses/attachment";
 import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
-import { SearchResultsCloud, SearchResultsServer } from "../../types/jira/responses/searchResults";
+import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
+import { JsonTypeCloud, JsonTypeServer } from "../../types/jira/responses/jsonType";
+import { SearchResults } from "../../types/jira/responses/searchResults";
 import { Client } from "../client";
 
 /**
@@ -24,8 +26,9 @@ export abstract class JiraClient<
     CredentialsType extends BasicAuthCredentials | PATCredentials,
     AttachmentType extends AttachmentServer | AttachmentCloud,
     FieldDetailType extends FieldDetailServer | FieldDetailCloud,
-    SearchRequestType extends SearchRequestServer | SearchRequestCloud,
-    SearchResultsType extends SearchResultsServer | SearchResultsCloud
+    JsonType extends JsonTypeServer | JsonTypeCloud,
+    IssueType extends IssueServer | IssueCloud,
+    SearchRequestType extends SearchRequestServer | SearchRequestCloud
 > extends Client<CredentialsType> {
     /**
      * Construct a new Jira client using the provided credentials.
@@ -142,7 +145,7 @@ export abstract class JiraClient<
                         },
                     }
                 );
-                logSuccess(`Successfully retrieved data for ${response.data.length} fields.`);
+                logSuccess(`Successfully retrieved data for ${response.data.length} fields`);
                 logDebug(
                     "Received data for fields:",
                     ...response.data.map(
@@ -170,12 +173,11 @@ export abstract class JiraClient<
      * Searches for issues using JQL. Automatically performs pagination if necessary.
      *
      * @param request the search request
-     * @returns the search results (may contain multiple elements as a result of pagination) or
-     * `undefined` in case of errors
+     * @returns the search results or `undefined` in case of errors
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
      */
-    public async search(request: SearchRequestType): Promise<SearchResultsType[] | undefined> {
+    public async search(request: SearchRequestType): Promise<IssueType[] | undefined> {
         try {
             return await this.credentials
                 .getAuthenticationHeader()
@@ -185,7 +187,7 @@ export abstract class JiraClient<
                     try {
                         let total = 0;
                         let startAt = request.startAt;
-                        const results: SearchResultsType[] = [];
+                        const results: IssueType[] = [];
                         do {
                             const paginatedRequest = {
                                 ...request,
@@ -193,28 +195,17 @@ export abstract class JiraClient<
                             if (startAt !== undefined) {
                                 paginatedRequest.startAt = startAt;
                             }
-                            const response: AxiosResponse<SearchResultsType> = await Requests.post(
-                                this.getUrlPostSearch(),
-                                paginatedRequest,
-                                {
+                            const response: AxiosResponse<SearchResults<IssueType, JsonType>> =
+                                await Requests.post(this.getUrlPostSearch(), paginatedRequest, {
                                     headers: {
                                         ...header,
                                     },
-                                }
-                            );
-                            results.push(response.data);
-                            if (response.data.total) {
-                                total = response.data.total;
-                            }
-                            if (response.data.startAt !== undefined && response.data.issues) {
-                                startAt = response.data.startAt + response.data.issues.length;
-                            }
+                                });
+                            results.push(...response.data.issues);
+                            total = response.data.total;
+                            startAt = response.data.startAt + response.data.issues.length;
                         } while (startAt && startAt < total);
-                        if (total === 1) {
-                            logSuccess("Found 1 issue.");
-                        } else {
-                            logSuccess(`Found ${total} issues.`);
-                        }
+                        logSuccess(`Found ${total} issues`);
                         return results;
                     } finally {
                         clearInterval(progressInterval);

@@ -2,7 +2,8 @@ import { BasicAuthCredentials } from "../../authentication/credentials";
 import { SearchRequestCloud } from "../../types/jira/requests/search";
 import { AttachmentCloud } from "../../types/jira/responses/attachment";
 import { FieldDetailCloud } from "../../types/jira/responses/fieldDetail";
-import { SearchResultsCloud } from "../../types/jira/responses/searchResults";
+import { IssueCloud } from "../../types/jira/responses/issue";
+import { JsonTypeCloud } from "../../types/jira/responses/jsonType";
 import { JiraClient } from "./jiraClient";
 
 /**
@@ -12,8 +13,9 @@ export class JiraClientCloud extends JiraClient<
     BasicAuthCredentials,
     AttachmentCloud,
     FieldDetailCloud,
-    SearchRequestCloud,
-    SearchResultsCloud
+    JsonTypeCloud,
+    IssueCloud,
+    SearchRequestCloud
 > {
     public getUrlAddAttachment(issueIdOrKey: string): string {
         return `${this.apiBaseURL}/rest/api/3/issue/${issueIdOrKey}/attachments`;

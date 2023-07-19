@@ -88,7 +88,7 @@ export class DummyXrayClient extends XrayClient<null, null, null, null> {
     }
 }
 
-export class DummyJiraClient extends JiraClient<null, null, null, null, null> {
+export class DummyJiraClient extends JiraClient<null, null, null, null, null, null> {
     constructor() {
         super("https://example.org", null);
     }

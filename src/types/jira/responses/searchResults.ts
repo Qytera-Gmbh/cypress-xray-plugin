@@ -1,7 +1,7 @@
 import { IssueCloud, IssueServer } from "./issue";
 import { JsonTypeCloud, JsonTypeServer } from "./jsonType";
 
-type SearchResults<IssueType, JsonType> = {
+export type SearchResults<IssueType, JsonType> = {
     /**
      * Expand options that include additional search result details in the response.
      */

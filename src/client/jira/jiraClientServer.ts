@@ -2,7 +2,8 @@ import { BasicAuthCredentials, PATCredentials } from "../../authentication/crede
 import { SearchRequestServer } from "../../types/jira/requests/search";
 import { AttachmentServer } from "../../types/jira/responses/attachment";
 import { FieldDetailServer } from "../../types/jira/responses/fieldDetail";
-import { SearchResultsServer } from "../../types/jira/responses/searchResults";
+import { IssueServer } from "../../types/jira/responses/issue";
+import { JsonTypeServer } from "../../types/jira/responses/jsonType";
 import { JiraClient } from "./jiraClient";
 
 /**
@@ -12,8 +13,9 @@ export class JiraClientServer extends JiraClient<
     BasicAuthCredentials | PATCredentials,
     AttachmentServer,
     FieldDetailServer,
-    SearchRequestServer,
-    SearchResultsServer
+    JsonTypeServer,
+    IssueServer,
+    SearchRequestServer
 > {
     public getUrlAddAttachment(issueIdOrKey: string): string {
         return `${this.apiBaseURL}/rest/api/2/issue/${issueIdOrKey}/attachments`;
