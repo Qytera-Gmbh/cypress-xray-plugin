@@ -99,13 +99,24 @@ export class XrayClientServer extends XrayClient<
             try {
                 const types = {};
                 const fields = await this.jiraClient.getFields();
+                if (!fields) {
+                    throw new Error("Failed to fetch Jira fields");
+                }
                 const testTypeField = fields.find((field: FieldDetailServer) => {
                     return field.name === "Test Type";
                 });
+                if (!testTypeField) {
+                    throw new Error("Jira field does not exist: Test Type");
+                }
                 const searchResults = await this.jiraClient.search({
                     jql: `project = ${projectKey} AND issue in (${issueKeys.join(",")})`,
                     fields: [testTypeField.id],
                 });
+                if (!searchResults) {
+                    throw new Error(
+                        "Successfully retrieved test type field data, but failed to search issues"
+                    );
+                }
                 for (const issue of searchResults) {
                     if (issue.fields && testTypeField.id in issue.fields) {
                         const testTypeData = issue.fields[testTypeField.id];
@@ -133,7 +144,7 @@ export class XrayClientServer extends XrayClient<
             }
         } catch (error: unknown) {
             logError(`Failed to get test types: ${error}`);
-            writeErrorFile(error, "getTestTypes");
+            writeErrorFile(error, "getTestTypesError");
         }
     }
 }
