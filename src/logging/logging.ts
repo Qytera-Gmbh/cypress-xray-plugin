@@ -100,7 +100,10 @@ export function writeErrorFile(error: unknown, filename: string): void {
         });
     } else if (error instanceof Error) {
         errorFileName = `${filename}.json`;
-        errorData = error.message;
+        errorData = JSON.stringify({
+            error: `${error.name}: ${error.message}`,
+            stacktrace: error.stack,
+        });
     } else {
         errorFileName = `${filename}.log`;
         errorData = JSON.stringify(error);
@@ -109,5 +112,5 @@ export function writeErrorFile(error: unknown, filename: string): void {
     fs.mkdirSync(logDirectoryPath, { recursive: true });
     errorFileName = path.resolve(logDirectoryPath, errorFileName);
     fs.writeFileSync(errorFileName, errorData);
-    logError(`Complete error logs have been written to "${errorFileName}"`);
+    logError(`Complete error logs have been written to: ${errorFileName}`);
 }

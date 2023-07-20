@@ -1,4 +1,5 @@
-import { JiraClient } from "../client/jira/jiraClient";
+import { JiraClientCloud } from "../client/jira/jiraClientCloud";
+import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
 import { OneOf } from "./util";
@@ -127,14 +128,6 @@ export interface XrayOptions {
      */
     steps?: XrayStepOptions;
     /**
-     * The test type of the test issues. This option will be used to set the corresponding field on
-     * issues created during upload (happens when a test does not yet have a corresponding Xray
-     * issue).
-     *
-     * @example "Manual"
-     */
-    testType?: string;
-    /**
      * Turns execution results upload on or off. Useful when switching upload on or off from the
      * command line (via environment variables).
      */
@@ -228,6 +221,16 @@ export interface OpenSSLOptions {
  * Options only intended for internal plugin use.
  */
 export type InternalOptions = Options & {
+    xray?: {
+        /**
+         * A mapping of issue keys to test types. Required for Cypress execution import, since the
+         * `testType` (Xray Server) or `type` (Xray Cloud) properties are required by Xray's JSON
+         * scheme for uploading results.
+         */
+        testTypes?: {
+            [key: string]: string;
+        };
+    };
     cucumber?: {
         /**
          * A mapping of scenario titles to Xray issue keys. Built during file preprocessing, used
@@ -250,7 +253,7 @@ export type InternalOptions = Options & {
 
 export interface PluginContext {
     xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>;
-    jiraClient?: JiraClient;
+    jiraClient?: OneOf<[JiraClientServer, JiraClientCloud]>;
     internal: InternalOptions;
     cypress: Cypress.PluginConfigOptions;
 }

@@ -1,5 +1,6 @@
 import dedent from "dedent";
 import { logWarning } from "../../logging/logging";
+import { getTestIssueKey } from "../../tagging/cypress";
 import { InternalOptions } from "../../types/plugin";
 import { Status } from "../../types/testStatus";
 import { DateTimeISO, OneOf, getEnumKeyByEnumValue } from "../../types/util";
@@ -50,11 +51,11 @@ export abstract class ImportExecutionResultsConverter<
                 const attempts = attemptsByTitle.get(title);
                 // TODO: Support multiple iterations.
                 test = this.getTest(attempts[attempts.length - 1]);
-                const issueKey = this.getTestIssueKey(testResult);
+                const issueKey = getTestIssueKey(title, this.options.jira.projectKey);
                 if (issueKey !== null) {
                     test.testKey = issueKey;
                     if (this.options.plugin.overwriteIssueSummary) {
-                        test.testInfo = this.getTestInfo(testResult);
+                        test.testInfo = this.getTestInfo(issueKey, testResult);
                     }
                 } else {
                     throw new Error(
@@ -81,7 +82,7 @@ export abstract class ImportExecutionResultsConverter<
                 if (error instanceof Error) {
                     reason = error.message;
                 }
-                logWarning(`Skipping result upload for test: ${title}:\n\n${reason}`);
+                logWarning(`Skipping result upload for test: ${title}\n\n${reason}`);
             }
         });
         return json;
@@ -107,10 +108,14 @@ export abstract class ImportExecutionResultsConverter<
      * Constructs an {@link XrayTestInfoType} object based on a single
      * {@link CypressCommandLine.TestResult}.
      *
+     * @param issueKey the test issue key
      * @param testResult the Cypress test result
      * @returns the test information
      */
-    protected abstract getTestInfo(testResult: CypressCommandLine.TestResult): XrayTestInfoType;
+    protected abstract getTestInfo(
+        issueKey: string,
+        testResult: CypressCommandLine.TestResult
+    ): XrayTestInfoType;
 
     /**
      * Remove milliseconds from ISO time string. Some Jira Xray instances cannot handle milliseconds in the string.
@@ -276,45 +281,5 @@ export abstract class ImportExecutionResultsConverter<
                 results.browserVersion +
                 ")"
         );
-    }
-
-    private getTestIssueKey(testResult: CypressCommandLine.TestResult): string | null {
-        const regex = new RegExp(`(${this.options.jira.projectKey}-\\d+)`, "g");
-        // The last element usually refers to an individual test.
-        // The ones before might be test suite titles.
-        const testCaseTitle = testResult.title[testResult.title.length - 1];
-        const matches = testCaseTitle.match(regex);
-        if (!matches) {
-            // Test case title does not contain the issue's key.
-            // Maybe it was provided via Cucumber as a scenario tag?
-            if (this.options.cucumber.issues && testCaseTitle in this.options.cucumber.issues) {
-                return this.options.cucumber.issues[testCaseTitle];
-            }
-        } else if (matches.length === 1) {
-            return matches[0];
-        } else {
-            // Remove any circumflexes currently present in the title.
-            let indicatorLine = testCaseTitle.replaceAll("^", " ");
-            matches.forEach((match: string) => {
-                indicatorLine = indicatorLine.replaceAll(match, "^".repeat(match.length));
-            });
-            // Replace everything but circumflexes with space.
-            indicatorLine = indicatorLine.replaceAll(/[^^]/g, " ");
-            throw new Error(
-                dedent(`
-                    Multiple test keys found in the test's title.
-                    The plugin cannot decide for you which one to use:
-
-                    it("${testCaseTitle}", () => {
-                        ${indicatorLine}
-                        // ...
-                    });
-
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                `)
-            );
-        }
-        return null;
     }
 }

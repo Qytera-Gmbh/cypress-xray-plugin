@@ -23,7 +23,6 @@ describe("the import execution results converters", () => {
                             url: "https://example.org",
                         },
                         xray: {
-                            testType: "Manual",
                             uploadResults: true,
                         },
                         cucumber: {
@@ -45,89 +44,6 @@ describe("the import execution results converters", () => {
                 expect(json.tests).to.have.length(3);
             });
 
-            it("should log warnings for missing test issue keys", () => {
-                const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResult.json", "utf-8")
-                );
-                const { stubbedWarning } = stubLogging();
-                const json = converter.convertExecutionResults(result);
-                expect(json.tests).to.not.exist;
-                expect(stubbedWarning).to.have.been.called.with.callCount(3);
-                expect(stubbedWarning.firstCall).to.have.been.calledWithExactly(
-                    dedent(`
-                        Skipping result upload for test: xray upload demo should look for paragraph elements:
-
-                        No test issue keys found in the test's title.
-                        You can target existing test issues by adding a corresponding issue key:
-
-                        it("CYP-123 xray upload demo should look for paragraph elements", () => {
-                            // ...
-                        });
-
-                        For more information, visit:
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
-                );
-                expect(stubbedWarning.secondCall).to.have.been.calledWithExactly(
-                    dedent(`
-                        Skipping result upload for test: xray upload demo should look for the anchor element:
-
-                        No test issue keys found in the test's title.
-                        You can target existing test issues by adding a corresponding issue key:
-
-                        it("CYP-123 xray upload demo should look for the anchor element", () => {
-                            // ...
-                        });
-
-                        For more information, visit:
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
-                );
-                expect(stubbedWarning.thirdCall).to.have.been.calledWithExactly(
-                    dedent(`
-                        Skipping result upload for test: xray upload demo should fail:
-
-                        No test issue keys found in the test's title.
-                        You can target existing test issues by adding a corresponding issue key:
-
-                        it("CYP-123 xray upload demo should fail", () => {
-                            // ...
-                        });
-
-                        For more information, visit:
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
-                );
-            });
-
-            it("should log warnings for multiple test issue keys", () => {
-                const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync(
-                        "./test/resources/runResultExistingTestIssuesMultiple.json",
-                        "utf-8"
-                    )
-                );
-                const { stubbedWarning } = stubLogging();
-                const json = converter.convertExecutionResults(result);
-                expect(json.tests).to.not.exist;
-                expect(stubbedWarning).to.have.been.calledOnceWith(
-                    dedent(`
-                        Skipping result upload for test: cypress xray plugin CYP-123 should throw an error CYP-456:
-
-                        Multiple test keys found in the test's title.
-                        The plugin cannot decide for you which one to use:
-
-                        it("CYP-123 should throw an error CYP-456", () => {
-                            ^^^^^^^                       ^^^^^^^
-                            // ...
-                        });
-
-                        For more information, visit:
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
-                );
-            });
-
             it("should skip tests when encountering unknown statuses", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
@@ -136,14 +52,14 @@ describe("the import execution results converters", () => {
                 const json = converter.convertExecutionResults(result);
                 expect(stubbedWarning.firstCall).to.have.been.calledWith(
                     dedent(`
-                        Skipping result upload for test: TodoMVC hides footer initially:
+                        Skipping result upload for test: TodoMVC hides footer initially
 
                         Unknown Cypress test status: broken
                     `)
                 );
                 expect(stubbedWarning.secondCall).to.have.been.calledWith(
                     dedent(`
-                        Skipping result upload for test: TodoMVC adds 2 todos:
+                        Skipping result upload for test: TodoMVC adds 2 todos
 
                         Unknown Cypress test status: california
                     `)
@@ -249,6 +165,11 @@ describe("the import execution results converters", () => {
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 options.plugin.overwriteIssueSummary = true;
+                options.xray.testTypes = {
+                    "CYP-40": "Manual",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Manual",
+                };
                 const json = converter.convertExecutionResults(result);
                 expect(json.tests).to.have.length(3);
                 expect(json.tests[0].testInfo.steps).to.have.length(1);
@@ -265,6 +186,11 @@ describe("the import execution results converters", () => {
                 );
                 options.plugin.overwriteIssueSummary = true;
                 options.xray.steps.update = false;
+                options.xray.testTypes = {
+                    "CYP-40": "Manual",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Manual",
+                };
                 const json = converter.convertExecutionResults(result);
                 expect(json.tests).to.have.length(3);
                 expect(json.tests[0].testInfo.steps).to.be.undefined;
@@ -277,6 +203,11 @@ describe("the import execution results converters", () => {
                     readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
                 );
                 options.plugin.overwriteIssueSummary = true;
+                options.xray.testTypes = {
+                    "CYP-123": "Manual",
+                    "CYP-456": "Manual",
+                    "CYP-789": "Manual",
+                };
                 const json = converter.convertExecutionResults(result);
                 expect(json.tests[0].testInfo.steps[0].action).to.eq(`${"x".repeat(7997)}...`);
                 expect(json.tests[1].testInfo.steps[0].action).to.eq(`${"x".repeat(8000)}`);
@@ -289,6 +220,11 @@ describe("the import execution results converters", () => {
                 );
                 options.plugin.overwriteIssueSummary = true;
                 options.xray.steps.maxLengthAction = 5;
+                options.xray.testTypes = {
+                    "CYP-123": "Manual",
+                    "CYP-456": "Manual",
+                    "CYP-789": "Manual",
+                };
                 const json = converter.convertExecutionResults(result);
                 expect(json.tests[0].testInfo.steps[0].action).to.eq("xx...");
                 expect(json.tests[1].testInfo.steps[0].action).to.eq("xx...");
@@ -307,6 +243,28 @@ describe("the import execution results converters", () => {
                 expect(json.tests[0].testInfo).to.be.undefined;
                 expect(json.tests[1].testInfo).to.be.undefined;
                 expect(json.tests[2].testInfo).to.be.undefined;
+            });
+
+            it("should skip tests with unknown test type", () => {
+                const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+                );
+                options.plugin.overwriteIssueSummary = true;
+                options.xray.steps.update = false;
+                options.xray.testTypes = {
+                    "CYP-40": "Manual",
+                    "CYP-41": "Manual",
+                };
+                const { stubbedWarning } = stubLogging();
+                const json = converter.convertExecutionResults(result);
+                expect(json.tests).to.be.an("array").with.length(2);
+                expect(stubbedWarning).to.have.been.calledWith(
+                    dedent(`
+                        Skipping result upload for test: cypress xray plugin CYP-49 failling test case with test issue key
+
+                        Failed to find test type for issue: CYP-49
+                    `)
+                );
             });
 
             it("should add test execution issue keys", () => {
@@ -343,11 +301,16 @@ describe("the import execution results converters", () => {
                 expect(json.info.testPlanKey).to.be.undefined;
             });
 
-            it("should overwrite existing test issues if specified", () => {
+            it("should overwrite existing test issue information if specified", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
                 options.plugin.overwriteIssueSummary = true;
+                options.xray.testTypes = {
+                    "CYP-40": "Manual",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Manual",
+                };
                 const json = converter.convertExecutionResults(result);
                 expect(json.tests).to.have.length(3);
                 expect(json.tests[0].testKey).to.eq("CYP-40");
@@ -356,6 +319,37 @@ describe("the import execution results converters", () => {
                 expect(json.tests[0].testInfo).to.not.be.undefined;
                 expect(json.tests[1].testInfo).to.not.be.undefined;
                 expect(json.tests[2].testInfo).to.not.be.undefined;
+            });
+
+            it("should not throw missing properties exceptions for uninitialized test types", () => {
+                const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+                );
+                options.plugin.overwriteIssueSummary = true;
+                const { stubbedWarning } = stubLogging();
+                const json = converter.convertExecutionResults(result);
+                expect(json.tests).to.be.undefined;
+                expect(stubbedWarning).to.have.been.calledWith(
+                    dedent(`
+                        Skipping result upload for test: cypress xray plugin passing test case with test issue key CYP-40
+
+                        Failed to find test type for issue: CYP-40
+                    `)
+                );
+                expect(stubbedWarning).to.have.been.calledWith(
+                    dedent(`
+                        Skipping result upload for test: cypress xray plugin passing test case with test issue key CYP-41 in the middle of the title
+
+                        Failed to find test type for issue: CYP-41
+                    `)
+                );
+                expect(stubbedWarning).to.have.been.calledWith(
+                    dedent(`
+                        Skipping result upload for test: cypress xray plugin CYP-49 failling test case with test issue key
+
+                        Failed to find test type for issue: CYP-49
+                    `)
+                );
             });
 
             it("should not update test information with summary overwriting disabled", () => {

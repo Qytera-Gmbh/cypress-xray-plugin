@@ -1,143 +1,150 @@
-import { AxiosResponse } from "axios";
-import FormData from "form-data";
-import fs from "fs";
-import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authentication/credentials";
-import { ImportExecutionResultsConverterServer } from "../../conversion/importExecutionResults/importExecutionResultsConverterServer";
-import { Requests } from "../../https/requests";
-import { logError, logInfo, logSuccess, writeErrorFile } from "../../logging/logging";
-import { InternalOptions } from "../../types/plugin";
-import { XrayTestExecutionResultsServer } from "../../types/xray/importTestExecutionResults";
-import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
+import dedent from "dedent";
+import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
+import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
+import { FieldDetailServer } from "../../types/jira/responses/fieldDetail";
+import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import {
     ImportFeatureResponseServer,
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
+import { JiraClientServer } from "../jira/jiraClientServer";
 import { XrayClient } from "./xrayClient";
 
 export class XrayClientServer extends XrayClient<
     BasicAuthCredentials | PATCredentials,
-    ImportFeatureResponseServer
+    JiraClientServer,
+    ImportFeatureResponseServer,
+    ImportExecutionResponseServer
 > {
-    private readonly apiBaseURL: string;
-    private readonly options: InternalOptions;
-
     /**
-     * Construct a new Xray Server client.
+     * Construct a new Xray Server client using the provided credentials.
      *
-     * @param apiBaseURL the Xray server base endpoint
+     * @param apiBaseUrl the base URL for all HTTP requests
      * @param credentials the credentials to use during authentication
-     * @param options the plugin's options
+     * @param jiraClient the configured Jira client
      */
     constructor(
-        apiBaseURL: string,
+        apiBaseUrl: string,
         credentials: BasicAuthCredentials | PATCredentials,
-        options: InternalOptions
+        jiraClient: JiraClientServer
     ) {
-        super(credentials);
-        this.apiBaseURL = apiBaseURL;
-        this.options = options;
+        super(apiBaseUrl, credentials, jiraClient);
     }
 
-    protected async dispatchImportTestExecutionResultsRequest(
-        results: CypressCommandLine.CypressRunResult
-    ): Promise<string | null> {
-        const json: XrayTestExecutionResultsServer = new ImportExecutionResultsConverterServer(
-            this.options
-        ).convertExecutionResults(results);
-        if (!json.tests || json.tests.length === 0) {
-            return null;
+    public getUrlImportExecution(): string {
+        return `${this.apiBaseURL}/rest/raven/latest/import/execution`;
+    }
+
+    public handleResponseImportExecution(response: ImportExecutionResponseServer): string {
+        return response.testExecIssue.key;
+    }
+
+    public getUrlExportCucumber(issueKeys?: string[], filter?: number): string {
+        const query: string[] = [];
+        if (issueKeys) {
+            query.push(`keys=${issueKeys.join(";")}`);
         }
-        return this.credentials
-            .getAuthenticationHeader()
-            .catch((error: unknown) => {
-                logError(`Failed to authenticate: "${error}"`);
-                writeErrorFile(error, "authenticationError");
-                throw error;
-            })
-            .then(async (header: HTTPHeader) => {
-                logInfo(`Uploading test results to ${this.apiBaseURL}...`);
-                const progressInterval = this.startResponseInterval(this.apiBaseURL);
-                try {
-                    const response = await Requests.post(
-                        `${this.apiBaseURL}/rest/raven/latest/api/import/execution`,
-                        json,
-                        {
-                            headers: {
-                                ...header,
-                            },
-                        }
-                    );
-                    logSuccess(
-                        `Successfully uploaded test execution results to ${response.data.testExecIssue.key}.`
-                    );
-                    return response.data.testExecIssue.key;
-                } finally {
-                    clearInterval(progressInterval);
-                }
-            });
+        if (filter) {
+            query.push(`filter=${filter}`);
+        }
+        if (query.length === 0) {
+            throw new Error("One of issueKeys or filter must be provided to export feature files");
+        }
+        // Always zip feature files, even single ones.
+        query.push("fz=true");
+        return `${this.apiBaseURL}/rest/raven/latest/export/test?${query.join("&")}`;
     }
 
-    protected dispatchExportCucumberTestsRequest(
-        keys?: string,
-        filter?: number
-    ): Promise<ExportCucumberTestsResponse> {
-        throw new Error("Method not implemented.");
+    public getUrlImportFeature(projectKey: string): string {
+        return `${this.apiBaseURL}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
     }
 
-    protected async dispatchImportCucumberTestsRequest(
-        file: string,
-        projectKey?: string
-    ): Promise<ImportFeatureResponseServer> {
-        const header = await this.credentials.getAuthenticationHeader();
-        logInfo("Importing cucumber feature file...");
-        const progressInterval = setInterval(() => {
-            logInfo("Still importing...");
-        }, 5000);
-        try {
-            const fileContent = fs.createReadStream(file);
-            const form = new FormData();
-            form.append("file", fileContent);
-
-            const response: AxiosResponse<ImportFeatureResponseServer> =
-                await Requests.post<FormData>(
-                    `${this.apiBaseURL}/rest/raven/latest/import/feature?projectKey=${projectKey}`,
-                    form,
-                    {
-                        headers: {
-                            ...header,
-                            ...form.getHeaders(),
-                        },
-                    }
-                );
-            // Happens when scenarios cause errors in Xray.
-            // E.g. typos in Gherkin keywords ('Scenariot').
-            if (typeof response.data === "object" && "message" in response.data) {
-                if (response.data.message) {
-                    logError("Encountered an error during import:", response.data.message);
-                }
-                if (response.data.testIssues.length > 0) {
-                    logSuccess(
-                        "Successfully updated or created test issues:",
-                        response.data.testIssues.map((issue: IssueDetails) => issue.key).join(", ")
-                    );
-                }
-                if (response.data.preconditionIssues.length > 0) {
-                    logSuccess(
-                        "Successfully updated or created precondition issues:",
-                        response.data.preconditionIssues
-                            .map((issue: IssueDetails) => issue.key)
-                            .join(", ")
-                    );
-                }
-            } else if (Array.isArray(response.data)) {
+    public handleResponseImportFeature(response: ImportFeatureResponseServer): void {
+        // Happens when scenarios cause errors in Xray, e.g. typos in keywords ('Scenariot').
+        if (typeof response === "object" && "message" in response) {
+            if (response.message) {
+                logError("Encountered an error during import:", response.message);
+            }
+            if (response.testIssues.length > 0) {
                 logSuccess(
-                    "Successfully updated or created issues:",
-                    response.data.map((issue: IssueDetails) => issue.key).join(", ")
+                    "Successfully updated or created test issues:",
+                    response.testIssues.map((issue: IssueDetails) => issue.key).join(", ")
                 );
             }
-            return response.data;
-        } finally {
-            clearInterval(progressInterval);
+            if (response.preconditionIssues.length > 0) {
+                logSuccess(
+                    "Successfully updated or created precondition issues:",
+                    response.preconditionIssues.map((issue: IssueDetails) => issue.key).join(", ")
+                );
+            }
+        } else if (Array.isArray(response)) {
+            logSuccess(
+                "Successfully updated or created issues:",
+                response.map((issue: IssueDetails) => issue.key).join(", ")
+            );
+        }
+    }
+
+    public async getTestTypes(
+        projectKey: string,
+        ...issueKeys: string[]
+    ): Promise<{ [key: string]: string }> {
+        try {
+            if (!issueKeys || issueKeys.length === 0) {
+                logWarning("No issue keys provided. Skipping test type retrieval");
+                return null;
+            }
+            logInfo("Retrieving test types...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const types = {};
+                const fields = await this.jiraClient.getFields();
+                if (!fields) {
+                    throw new Error("Failed to fetch Jira fields");
+                }
+                const testTypeField = fields.find((field: FieldDetailServer) => {
+                    return field.name === "Test Type";
+                });
+                if (!testTypeField) {
+                    throw new Error("Jira field does not exist: Test Type");
+                }
+                const searchResults = await this.jiraClient.search({
+                    jql: `project = ${projectKey} AND issue in (${issueKeys.join(",")})`,
+                    fields: [testTypeField.id],
+                });
+                if (!searchResults) {
+                    throw new Error(
+                        "Successfully retrieved test type field data, but failed to search issues"
+                    );
+                }
+                for (const issue of searchResults) {
+                    if (issue.fields && testTypeField.id in issue.fields) {
+                        const testTypeData = issue.fields[testTypeField.id];
+                        if (typeof testTypeData === "object" && "value" in testTypeData) {
+                            types[issue.key] = testTypeData.value;
+                        }
+                    }
+                }
+                const missingTypes: string[] = issueKeys.filter((key: string) => !(key in types));
+                if (missingTypes.length > 0) {
+                    throw new Error(
+                        dedent(`
+                            Failed to retrieve test types for issues:
+
+                            ${missingTypes.join("\n")}
+
+                            Make sure these issues exist and are actually test issues
+                        `)
+                    );
+                }
+                logSuccess(`Successfully retrieved test types for ${issueKeys.length} issues`);
+                return types;
+            } finally {
+                clearInterval(progressInterval);
+            }
+        } catch (error: unknown) {
+            logError(`Failed to get test types: ${error}`);
+            writeErrorFile(error, "getTestTypesError");
         }
     }
 }

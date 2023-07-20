@@ -1,0 +1,28 @@
+{
+    "expand": "schema,names",
+    "startAt": 0,
+    "maxResults": 50,
+    "total": 2,
+    "issues": [
+        {
+            "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+            "id": "52511",
+            "self": "https://example.org/rest/api/2/issue/52511",
+            "key": "CYP-123",
+            "fields": {
+                "customfield_12100": "Bob Jeffrey"
+            }
+        },
+        {
+            "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+            "id": "51579",
+            "self": "https://example.org/rest/api/2/issue/51529",
+            "key": "CYP-456",
+            "fields": {
+                "customfield_12100": {
+                    "id": 12345
+                }
+            }
+        }
+    ]
+}

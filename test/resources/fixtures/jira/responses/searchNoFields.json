@@ -1,0 +1,38 @@
+{
+    "expand": "schema,names",
+    "startAt": 0,
+    "maxResults": 50,
+    "total": 5,
+    "issues": [
+        {
+            "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+            "id": "52511",
+            "self": "https://example.org/rest/api/2/issue/52511",
+            "key": "CYP-333"
+        },
+        {
+            "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+            "id": "51579",
+            "self": "https://example.org/rest/api/2/issue/51529",
+            "key": "CYP-338"
+        },
+        {
+            "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+            "id": "52504",
+            "self": "https://example.org/rest/api/2/issue/52504",
+            "key": "CYP-332"
+        },
+        {
+            "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+            "id": "51741",
+            "self": "https://example.org/rest/api/2/issue/51741",
+            "key": "CYP-268"
+        },
+        {
+            "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+            "id": "51529",
+            "self": "https://example.org/rest/api/2/issue/51529",
+            "key": "CYP-237"
+        }
+    ]
+}

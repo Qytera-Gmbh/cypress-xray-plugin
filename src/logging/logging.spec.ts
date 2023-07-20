@@ -1,19 +1,15 @@
-/// <reference types="cypress" />
-
 import { AxiosError, AxiosHeaders } from "axios";
 import { expect } from "chai";
 import fs from "fs";
 import path from "path";
-import { TEST_TMP_DIR, stubLogging } from "../../test/util";
+import { getTestDir, stubLogging } from "../../test/util";
 import { initLogging, writeErrorFile } from "./logging";
 
 describe("the logging module", () => {
     describe("writeErrorFile", () => {
-        const LOG_ROOT = `${TEST_TMP_DIR}/logs`;
-
-        it("should be able to write to relative directories", () => {
+        it("should write to relative directories", () => {
             initLogging({
-                logDirectory: `./${LOG_ROOT}`,
+                logDirectory: path.relative(".", getTestDir("logs")),
             });
             const { stubbedError } = stubLogging();
             writeErrorFile(
@@ -24,18 +20,19 @@ describe("the logging module", () => {
                 ),
                 "writeErrorFileRelative"
             );
-            const expectedPath = path.resolve(LOG_ROOT, "writeErrorFileRelative.json");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                `Complete error logs have been written to "${expectedPath}"`
+            const expectedPath = getTestDir("logs", "writeErrorFileRelative.json");
+            expect(stubbedError).to.have.been.calledOnceWith(
+                `Complete error logs have been written to: ${expectedPath}`
             );
-            expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({
-                something: "else",
-            });
+            expect(JSON.parse(fs.readFileSync(expectedPath, "utf-8"))).to.have.property(
+                "error",
+                'Error: {"something":"else"}'
+            );
         });
 
-        it("should be able to write to absolute directories", () => {
+        it("should write to absolute directories", () => {
             initLogging({
-                logDirectory: path.resolve(LOG_ROOT),
+                logDirectory: getTestDir("logs"),
             });
             const { stubbedError } = stubLogging();
             writeErrorFile(
@@ -46,19 +43,20 @@ describe("the logging module", () => {
                 ),
                 "writeErrorFileAbsolute"
             );
-            const expectedPath = path.resolve(LOG_ROOT, "writeErrorFileAbsolute.json");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                `Complete error logs have been written to "${expectedPath}"`
+            const expectedPath = getTestDir("logs", "writeErrorFileAbsolute.json");
+            expect(stubbedError).to.have.been.calledOnceWith(
+                `Complete error logs have been written to: ${expectedPath}`
             );
-            expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({
-                something: "entirely else",
-            });
+            expect(JSON.parse(fs.readFileSync(expectedPath, "utf-8"))).to.have.property(
+                "error",
+                'Error: {"something":"entirely else"}'
+            );
         });
 
-        it("should be able to write to non-existent directories", () => {
+        it("should write to non-existent directories", () => {
             const timestamp = Date.now();
             initLogging({
-                logDirectory: `./${LOG_ROOT}/${timestamp}`,
+                logDirectory: getTestDir("logs", timestamp.toString()),
             });
             const { stubbedError } = stubLogging();
             writeErrorFile(
@@ -69,23 +67,24 @@ describe("the logging module", () => {
                 ),
                 "writeErrorFileNonExistent"
             );
-            const expectedPath = path.resolve(
-                LOG_ROOT,
+            const expectedPath = getTestDir(
+                "logs",
                 timestamp.toString(),
                 "writeErrorFileNonExistent.json"
             );
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                `Complete error logs have been written to "${expectedPath}"`
+            expect(stubbedError).to.have.been.calledOnceWith(
+                `Complete error logs have been written to: ${expectedPath}`
             );
-            expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({
-                something: "entirely different",
-            });
+            expect(JSON.parse(fs.readFileSync(expectedPath, "utf-8"))).to.have.property(
+                "error",
+                'Error: {"something":"entirely different"}'
+            );
         });
 
-        it("should be able to write axios errors", () => {
+        it("should write axios errors", () => {
             const timestamp = Date.now();
             initLogging({
-                logDirectory: `./${LOG_ROOT}/${timestamp}`,
+                logDirectory: getTestDir("logs", timestamp.toString()),
             });
             const { stubbedError } = stubLogging();
             writeErrorFile(
@@ -100,13 +99,13 @@ describe("the logging module", () => {
                 }),
                 "writeErrorFileAxios"
             );
-            const expectedPath = path.resolve(
-                LOG_ROOT,
+            const expectedPath = getTestDir(
+                "logs",
                 timestamp.toString(),
                 "writeErrorFileAxios.json"
             );
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                `Complete error logs have been written to "${expectedPath}"`
+            expect(stubbedError).to.have.been.calledOnceWith(
+                `Complete error logs have been written to: ${expectedPath}`
             );
             const parsedData = JSON.parse(fs.readFileSync(expectedPath).toString());
             expect(parsedData.error.message).to.eq("Request failed with status code 400");
@@ -118,20 +117,20 @@ describe("the logging module", () => {
             });
         });
 
-        it("should be able to write generic errors", () => {
+        it("should write generic errors", () => {
             const timestamp = Date.now();
             initLogging({
-                logDirectory: `./${LOG_ROOT}/${timestamp}`,
+                logDirectory: getTestDir("logs", timestamp.toString()),
             });
             const { stubbedError } = stubLogging();
             writeErrorFile({ good: "morning" }, "writeErrorFileGeneric");
-            const expectedPath = path.resolve(
-                LOG_ROOT,
+            const expectedPath = getTestDir(
+                "logs",
                 timestamp.toString(),
                 "writeErrorFileGeneric.log"
             );
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                `Complete error logs have been written to "${expectedPath}"`
+            expect(stubbedError).to.have.been.calledOnceWith(
+                `Complete error logs have been written to: ${expectedPath}`
             );
             expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({
                 good: "morning",

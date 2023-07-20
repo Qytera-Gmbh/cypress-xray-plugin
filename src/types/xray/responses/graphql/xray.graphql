@@ -1,0 +1,807 @@
+# See: https://xray.cloud.getxray.app/doc/graphql/index.html
+type Test {
+  # Issue id of the Test issue.
+  issueId: String
+
+  # Project id of the Test issue.
+  projectId: String
+
+  # Test type of the Test issue.
+  testType: TestType
+
+  # Step definition of the Test issue.
+  steps: [Step]
+
+  # Unstructured definition of the Test issue.
+  unstructured: String
+
+  # Gherkin definition of the Test issue.
+  gherkin: String
+
+  # Test Repository folder of the Test.
+  folder: Folder
+
+  # Gherkin type of the Test issue.
+  # Possible values: 'scenario' or 'scenario_outline'.
+  scenarioType: String
+
+  # List of Precondition associated with the Test issue.
+  #
+  # Arguments
+  # issueIds: the ids of the Preconditions.
+  # limit: the maximum amount of Preconditions to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  preconditions(
+    issueIds: [String]
+    limit: Int!
+    start: Int
+  ): PreconditionResults
+
+  # List of Test Sets associated with the Test issue.
+  #
+  # Arguments
+  # issueIds: the issue ids of the Test Sets
+  # limit: the maximum amount of Test Sets to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  testSets(issueIds: [String], limit: Int!, start: Int): TestSetResults
+
+  # List of Test Plans associated with the Test issue.
+  #
+  # Arguments
+  # issueIds: the issue ids of the Test Plans
+  # limit: the maximum amount of Test Plans to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  testPlans(issueIds: [String], limit: Int!, start: Int): TestPlanResults
+
+  # List of Test Executions associated with the Test issue.
+  #
+  # Arguments
+  # issueIds: the issue ids of the Test Executions
+  # limit: the maximum amount of Test Executions to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  testExecutions(
+    issueIds: [String]
+    limit: Int!
+    start: Int
+  ): TestExecutionResults
+
+  # List of Test Runs for the Test issue
+  #
+  # Arguments
+  # limit: the maximum amount of Test Runs to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  testRuns(limit: Int!, start: Int): TestRunResults
+
+  # Extra Jira information of the Test issue.
+  #
+  # Arguments
+  # fields: List of the fields to be displayed.
+  # Check the field 'fields' of this Jira endpoint for more information.
+  jira(fields: [String]): JSON!
+
+  # Status of the Test. This status can be calculated based on latest status, version or Test Plan.
+  #
+  # Arguments
+  # environment: the environment for which to calculate the for status.
+  # isFinal: whether the final statuses has precedence over non-final.
+  # version: the version name for which to calculate the status for.
+  # testPlan: the Test Plan id for which to calculate the status for.
+  status(
+    environment: String
+    isFinal: Boolean
+    version: String
+    testPlan: String
+  ): TestStatusType
+
+  # Date when the test was last modified.
+  lastModified: String
+}
+
+type TestType {
+  # Id of the Test Type.
+  id: String
+
+  # Name of the Test Type.
+  name: String
+
+  # Kind of the Test Type.
+  # Possible values are "Gherkin", "Steps" or "Unstructured".
+  kind: String
+}
+
+type Step {
+  # Id of the Step.
+  id: String
+
+  # Action of the Step.
+  action: String
+
+  # Data of the Step.
+  data: String
+
+  # Result of the Step.
+  result: String
+
+  # Attachments of the Step.
+  attachments: [Attachment]
+
+  # Custom Fields of the Step.
+  customFields: [CustomStepField]
+
+  # The issue id of the test being called in the step.
+  callTestIssueId: String
+}
+
+type Folder {
+  # Folder name
+  name: String
+
+  # Folder path
+  path: String
+}
+
+type PreconditionResults {
+  # Total amount of issues.
+  total: Int
+
+  # Index of the first item to return in the page of results (page offset).
+  start: Int
+
+  # Maximum amount of Preconditions to be returned. The maximum is 100.
+  limit: Int
+
+  # Precondition issue results.
+  results: [Precondition]
+}
+
+type TestSetResults {
+  # Total amount of issues.
+  total: Int
+
+  # Index of the first item to return in the page of results (page offset).
+  start: Int
+
+  # Maximum amount of test sets to be returned. The maximum is 100.
+  limit: Int
+
+  # Test Set issue results.
+  results: [TestSet]
+}
+
+type TestPlanResults {
+  # Total amount of issues.
+  total: Int
+
+  # Index of the first item to return in the page of results (page offset).
+  start: Int
+
+  # Maximum amount of Test Plans to be returned. The maximum is 100.
+  limit: Int
+
+  # Test Plan issue results.
+  results: [TestPlan]
+}
+
+type TestExecutionResults {
+  # Total amount of issues.
+  total: Int
+
+  # Index of the first item to return in the page of results (page offset).
+  start: Int
+
+  # Maximum amount of Test Executions to be returned. The maximum is 100.
+  limit: Int
+
+  # Test Execution issue results.
+  results: [TestExecution]
+}
+
+type TestRunResults {
+  # Total amount of Test Runs.
+  total: Int
+
+  # The index of the first item to return in the page of results (page offset).
+  start: Int
+
+  # The maximum amount of Test Runs to be returned. The maximum is 100.
+  limit: Int
+
+  # Test Run results.
+  results: [TestRun]
+}
+
+scalar JSON
+
+type TestStatusType {
+  # Name of the Test Status.
+  name: String
+
+  # Description of the Test Status.
+  description: String
+
+  # Whether the status is final or not.
+  final: Boolean
+
+  # Color of the Test Status.
+  color: String
+}
+
+type Attachment {
+  # Id of the attachment.
+  id: String
+
+  # Filename of the attachment.
+  filename: String
+
+  # If the file is stored in Jira.
+  storedInJira: Boolean
+
+  # Download link of the attachment.
+  downloadLink: String
+}
+
+type CustomStepField {
+  # Id of the Custom Field.
+  id: String
+
+  # Name of the Custom Field.
+  name: String
+
+  # Value of the Custom Field.
+  value: JSON
+}
+
+type Precondition {
+  # Id of the Precondition issue.
+  issueId: String
+
+  # Project id of the Precondition issue.
+  projectId: String
+
+  # Precondition Type of the Precondition issue.
+  preconditionType: TestType
+
+  # Definition of the Precondition issue.
+  definition: String
+
+  # List of the Tests associated with the Precondition issue.
+  #
+  # Arguments
+  # issueIds: the issue ids of the Tests.
+  # limit: the maximum amount of Tests to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  tests(issueIds: [String], limit: Int!, start: Int): TestResults
+
+  # Extra Jira information of the Precondition Issue.
+  #
+  # Arguments
+  # fields: list of the fields to be displayed.
+  # Check the field 'fields' of this Jira endpoint for more information.
+  jira(fields: [String]): JSON
+
+  # Date when the precondition was last modified.
+  lastModified: String
+
+  # Test Repository folder of the Precondition.
+  folder: Folder
+}
+
+type TestSet {
+  # Issue id of the Test Set Issue.
+  issueId: String
+
+  # Project id of the Test Set Issue.
+  projectId: String
+
+  # List of Tests associated with the Test Set Issue.
+  #
+  # Arguments
+  # issueIds: Ids of the Tests.
+  # limit: Maximum amount of tests to be returned. The maximum is 100.
+  # start: Index of the first item to return in the page of results (page offset).
+  tests(issueIds: [String], limit: Int!, start: Int): TestResults
+
+  # Extra Jira information of the Test Set Issue.
+  #
+  # Arguments
+  # fields: List of the fields to be displayed.
+  # Check the field 'fields' of this Jira endpoint for more information.
+  jira(fields: [String]): JSON
+
+  # Date when the test set was last modified.
+  lastModified: String
+}
+
+type TestPlan {
+  # Id of the Test Plan issue.
+  issueId: String
+
+  # Project id of the Test Plan issue.
+  projectId: String
+
+  # List of Tests associated with the Test Plan issue.
+  #
+  # Arguments
+  # issueIds: the issue ids of the Tests.
+  # limit: the maximum amount of tests to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  tests(issueIds: [String], limit: Int!, start: Int): TestResults
+
+  # List of Test Executions associated with the Test Plan issue.
+  #
+  # Arguments
+  # issueIds: issue ids of the Test Executions.
+  # limit: the maximum amount of tests to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  testExecutions(
+    issueIds: [String]
+    limit: Int!
+    start: Int
+  ): TestExecutionResults
+
+  # Extra Jira information of the Test Plan issue.
+  #
+  # Arguments
+  # fields: list of the fields to be displayed.
+  # Check the field 'fields' of this Jira endpoint for more information.
+  jira(fields: [String]): JSON
+
+  # Folder structure of the Test Plan.
+  folders: FolderResults
+
+  # Date when the test plan was last modified.
+  lastModified: String
+}
+
+type TestExecution {
+  # Id of the Test Execution issue.
+  issueId: String
+
+  # Project id of the Test Execution issue.
+  projectId: String
+
+  # Test Environments of the Test Execution.
+  testEnvironments: [String]
+
+  # List of Tests associated with the Test Execution Issue.
+  #
+  # Arguments
+  # issueIds: the issue ids of the Tests.
+  # limit: the maximum amount of tests to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  tests(issueIds: [String], limit: Int!, start: Int): TestResults
+
+  # List of Test Plans associated with the Test Execution Issue.
+  #
+  # Arguments
+  # issueIds: Ids of the Test Plans.
+  # limit: the maximum amount of Test Plans to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  testPlans(issueIds: [String], limit: Int!, start: Int): TestPlanResults
+
+  # List of Test Runs for the Test Execution Issue.
+  #
+  # Arguments
+  # limit: the maximum amount of tests to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  testRuns(limit: Int!, start: Int): TestRunResults
+
+  # Extra Jira information of the Test Execution Issue.
+  #
+  # Arguments
+  # fields: List of the fields to be displayed.
+  # Check the field 'fields' of this Jira endpoint for more information.
+  jira(fields: [String]): JSON
+
+  # Date when the test exec was last modified.
+  lastModified: String
+}
+
+type TestRun {
+  # Id of the Test Run.
+  id: String
+
+  # Status of the Test Run.
+  status: Status
+
+  # Generic definition of the Test issue.
+  unstructured: String
+
+  # Cucumber definition of the Test issue.
+  gherkin: String
+
+  # Cucumber Type definition of the Test Run.
+  scenarioType: String
+
+  # Comment definition of the Test Run.
+  comment: String
+
+  # Started On date of the Test Run.
+  startedOn: String
+
+  # Evidence of the Test Run.
+  evidence: [Evidence]
+
+  # Defects of the Test Run.
+  defects: [String]
+
+  # Step definition of the Test Run.
+  steps: [TestRunStep]
+
+  # Examples of the Test Run.
+  examples: [Example]
+
+  # Results of the Test Run.
+  results: [Result]
+
+  # Test Type of the Test Run.
+  testType: TestType
+
+  # User's account id that executed the Test Run.
+  executedById: String
+
+  # User's account id assigned to the Test Run. This is user assigned to the Test Run, not taking into account the assignee of the test execution.
+  assigneeId: String
+
+  # Finished On date of the Test Run.
+  finishedOn: String
+
+  # Preconditions of the Test Run.
+  #
+  # Arguments
+  # limit: the maximum amount of Preconditions to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  preconditions(limit: Int!, start: Int): TestRunPreconditionResults
+
+  # Test of the Test Run.
+  test: Test
+
+  # Test Execution of the Test Run.
+  testExecution: TestExecution
+
+  # Date when the test run was last modified.
+  lastModified: String
+
+  # Custom Fields of the Test Run.
+  customFields: [TestRunCustomFieldValue]
+
+  # Parameters of the Test Run.
+  parameters: [TestRunParameter]
+
+  # Iterations of the Test Run.
+  #
+  # Arguments
+  # limit: the maximum amount of iterations to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  iterations(limit: Int!, start: Int): TestRunIterationResults
+}
+
+type TestResults {
+  # Total amount of issues.
+  total: Int
+
+  # The index of the first item to return in the page of results (page offset).
+  start: Int
+
+  # The maximum amount of Tests to be returned. The maximum is 100.
+  limit: Int
+
+  # Test issue results.
+  results: [Test]
+}
+
+type FolderResults {
+  # Folder name
+  name: String
+
+  # Folder path
+  path: String
+
+  # Folder issues count
+  issuesCount: Int
+
+  # Folder tests count
+  testsCount: Int
+
+  # Folder preconditions count
+  preconditionsCount: Int
+
+  # Folder children
+  folders: JSON
+}
+
+type Status {
+  # Name of the Status.
+  name: String
+
+  # Description of the Status.
+  description: String
+
+  # Whether the Status is final or not.
+  final: Boolean
+
+  # Color of the Status.
+  color: String
+
+  # Coverage mapping of the Status.
+  coverageStatus: String
+}
+
+type Evidence {
+  # Id of the Evidence.
+  id: String
+
+  # Filename of the Evidence.
+  filename: String
+
+  # If file is stored in Jira
+  storedInJira: Boolean
+
+  # Download link of the Evidence.
+  downloadLink: String
+
+  # File size in bytes.
+  size: Int
+
+  # Evidence creation timestamp.
+  createdOn: String
+}
+
+type TestRunStep {
+  # Id of the Test Run Step.
+  id: String
+
+  # Status of the Test Run Step.
+  status: StepStatus
+
+  # Action of the Test Run Step.
+  action: String
+
+  # Data of the Test Run Step.
+  data: String
+
+  # Result of the Test Run Step.
+  result: String
+
+  # Custom Fields of the Test Run Step.
+  customFields: [TestRunCustomStepField]
+
+  # Comment of the Test Run Step.
+  comment: String
+
+  # Evidence of the Test Run Step.
+  evidence: [Evidence]
+
+  # Attachments of the Test Run Step.
+  attachments: [Attachment]
+
+  # Defects of the Test Run Step.
+  defects: [String]
+
+  # Actual Result of the Test Run Step.
+  actualResult: String
+}
+
+type Example {
+  # Id of the Example.
+  id: String
+
+  # Status of the Example.
+  status: StepStatus
+
+  # Duration of the Example.
+  duration: Float
+}
+
+type Result {
+  # Output if exist an error or a failure (JUNIT, XUNIT, NUNIT, TESTNG)
+  log: String
+
+  # Examples of the Result.
+  examples: [ResultsExample]
+
+  # Whether or not the Result was imported.
+  wasImported: String
+
+  # Duration of the Result.
+  duration: Float
+
+  # Status of the Result.
+  status: StepStatus
+
+  # Name of the Result.
+  name: String
+
+  # Hooks of the Results.
+  hooks: [ResultsStep]
+
+  # Backgrounds of the Results.
+  backgrounds: [ResultsStep]
+
+  # Steps of the Results.
+  steps: [ResultsStep]
+}
+
+type TestRunPreconditionResults {
+  # Total amount of preconditions.
+  total: Int
+
+  # Index of the first item to return in the page of results (page offset).
+  start: Int
+
+  # Maximum amount of Preconditions to be returned. The maximum is 100.
+  limit: Int
+
+  # Precondition results.
+  results: [TestRunPrecondition]
+}
+
+type TestRunCustomFieldValue {
+  id: String
+
+  name: String
+
+  values: JSON
+}
+
+type TestRunParameter {
+  name: String
+
+  value: String
+}
+
+type TestRunIterationResults {
+  # Total amount of iterations.
+  total: Int
+
+  # Index of the first item to return in the page of results (page offset).
+  start: Int
+
+  # Maximum amount of iterations to be returned. The maximum is 100.
+  limit: Int
+
+  # Iteration results.
+  results: [TestRunIteration]
+}
+
+type StepStatus {
+  # Name of the Status.
+  name: String
+
+  # Description of the Status.
+  description: String
+
+  # Color of the Status.
+  color: String
+
+  # The test status to which the step status is mapped to.
+  testStatus: Status
+}
+
+type TestRunCustomStepField {
+  # Id of the Custom Field.
+  id: String
+
+  # Name of the Custom Field.
+  name: String
+
+  # Value of the Custom Field.
+  value: JSON
+}
+
+type ResultsExample {
+  # Whether or not the Result was imported.
+  wasImported: String
+
+  # Duration of the Result.
+  duration: Float
+
+  # Status of the Result.
+  status: StepStatus
+
+  # Hooks of the Results.
+  hooks: [ResultsStep]
+
+  # Backgrounds of the Results.
+  backgrounds: [ResultsStep]
+
+  # Steps of the Results.
+  steps: [ResultsStep]
+}
+
+type ResultsStep {
+  # If a gherkin step, keyword of the gherkin step.
+  keyword: String
+
+  # Name of the step.
+  name: String
+
+  # Embeddings of the step.
+  embeddings: [ResultsEmbedding]
+
+  # Duration of the step.
+  duration: Float
+
+  # Error of the step.
+  error: String
+
+  # Status of the step.
+  status: StepStatus
+
+  # If a Robot step, output of the Robot step.
+  log: String
+}
+
+type TestRunPrecondition {
+  # Precondition of the Test Run.
+  preconditionRef: Precondition
+
+  # Precondition definition.
+  definition: String
+}
+
+type TestRunIteration {
+  # Rank of the iteration.
+  rank: String
+
+  # Parameters of the iteration.
+  parameters: [TestRunParameter]
+
+  # Status of the iteration.
+  status: StepStatus
+
+  # Step results of the iteration.
+  #
+  # Arguments
+  # limit: the maximum amount of step results to be returned. The maximum is 100.
+  # start: the index of the first item to return in the page of results (page offset).
+  stepResults(limit: Int!, start: Int): TestRunIterationStepResults
+}
+
+type ResultsEmbedding {
+  # Filename of the Embedding.
+  filename: String
+
+  # Mime Type of the Embedding.
+  mimeType: String
+
+  # Data of the Embedding. Base64 format.
+  data: String
+
+  # Link to download the embedding if no data is present
+  downloadLink: String
+}
+
+type TestRunIterationStepResults {
+  # Total amount of steps.
+  total: Int
+
+  # Index of the first item to return in the page of results (page offset).
+  start: Int
+
+  # Maximum amount of step results to be returned. The maximum is 100.
+  limit: Int
+
+  # Step results.
+  results: [TestRunIterationStepResult]
+}
+
+type TestRunIterationStepResult {
+  # Id of the Test Run step.
+  id: String
+
+  # Status of the Test Run step.
+  status: StepStatus
+
+  # Comment of the Test Run step.
+  comment: String
+
+  # Evidence of the Test Run step.
+  evidence: [Evidence]
+
+  # Defects of the Test Run step.
+  defects: [String]
+
+  # Actual Result of the Test Run step.
+  actualResult: String
+}

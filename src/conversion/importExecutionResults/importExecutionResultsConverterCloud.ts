@@ -56,12 +56,18 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
         }
     }
 
-    protected getTestInfo(testResult: CypressCommandLine.TestResult): XrayTestInfoCloud {
+    protected getTestInfo(
+        issueKey: string,
+        testResult: CypressCommandLine.TestResult
+    ): XrayTestInfoCloud {
         const testInfo: XrayTestInfoCloud = {
             projectKey: this.options.jira.projectKey,
             summary: testResult.title.join(" "),
-            type: this.options.xray.testType,
+            type: this.options.xray.testTypes[issueKey],
         };
+        if (!testInfo.type) {
+            throw new Error(`Failed to find test type for issue: ${issueKey}`);
+        }
         if (this.options.xray.steps.update) {
             testInfo.steps = [{ action: this.truncateStepAction(testResult.body) }];
         }

@@ -35,7 +35,7 @@ export class Requests {
                         const url = request.url;
                         const timestamp = Date.now();
                         const filename = normalizedFilename(
-                            `${method}_${url}_${timestamp}_request.json`
+                            `${timestamp}_${method}_${url}_request.json`
                         );
                         logDebug(`Writing request to ${filename}.`);
                         writeFile(
@@ -57,16 +57,16 @@ export class Requests {
                             const method = error.config.method.toUpperCase();
                             const url = error.config.url;
                             filename = normalizedFilename(
-                                `${method}_${url}_${timestamp}_request.json`
+                                `${timestamp}_${method}_${url}_request.json`
                             );
                             data = error.toJSON();
                         } else {
-                            filename = normalizedFilename(`request_${timestamp}.json`);
+                            filename = normalizedFilename(`${timestamp}_request.json`);
                             data = error;
                         }
                         logDebug(`Writing request to ${filename}.`);
                         writeFile(data, filename);
-                        throw error;
+                        return Promise.reject(error);
                     }
                 );
                 Requests.AXIOS.interceptors.response.use(
@@ -75,7 +75,7 @@ export class Requests {
                         const url = response.config.url;
                         const timestamp = Date.now();
                         const filename = normalizedFilename(
-                            `${method}_${url}_${timestamp}_response.json`
+                            `${timestamp}_${method}_${url}_response.json`
                         );
                         logDebug(`Writing response to ${filename}.`);
                         writeFile(
@@ -97,16 +97,16 @@ export class Requests {
                             const method = error.config.method.toUpperCase();
                             const url = error.config.url;
                             filename = normalizedFilename(
-                                `${method}_${url}_${timestamp}_response.json`
+                                `${timestamp}_${method}_${url}_response.json`
                             );
                             data = error.toJSON();
                         } else {
-                            filename = normalizedFilename(`response_${timestamp}.json`);
+                            filename = normalizedFilename(`${timestamp}_response.json`);
                             data = error;
                         }
                         logDebug(`Writing response to ${filename}.`);
                         writeFile(data, filename);
-                        throw error;
+                        return Promise.reject(error);
                     }
                 );
             }

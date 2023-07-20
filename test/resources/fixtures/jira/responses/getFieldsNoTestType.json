@@ -1,0 +1,106 @@
+[
+    {
+        "id": "fixVersions",
+        "name": "Fix Version/s",
+        "custom": false,
+        "orderable": true,
+        "navigable": true,
+        "searchable": true,
+        "clauseNames": ["fixVersion"],
+        "schema": { "type": "array", "items": "version", "system": "fixVersions" }
+    },
+    {
+        "id": "customfield_11200",
+        "name": "Start date",
+        "custom": true,
+        "orderable": true,
+        "navigable": true,
+        "searchable": true,
+        "clauseNames": ["cf[11200]", "Start date"],
+        "schema": {
+            "type": "date",
+            "custom": "com.atlassian.jira.plugin.system.customfieldtypes:datepicker",
+            "customId": 11200
+        }
+    },
+    {
+        "id": "resolution",
+        "name": "Resolution",
+        "custom": false,
+        "orderable": true,
+        "navigable": true,
+        "searchable": true,
+        "clauseNames": ["resolution"],
+        "schema": { "type": "resolution", "system": "resolution" }
+    },
+    {
+        "id": "customfield_11201",
+        "name": "End date",
+        "custom": true,
+        "orderable": true,
+        "navigable": true,
+        "searchable": true,
+        "clauseNames": ["cf[11201]", "End date"],
+        "schema": {
+            "type": "date",
+            "custom": "com.atlassian.jira.plugin.system.customfieldtypes:datepicker",
+            "customId": 11201
+        }
+    },
+    {
+        "id": "customfield_11202",
+        "name": "Baseline start date",
+        "custom": true,
+        "orderable": true,
+        "navigable": true,
+        "searchable": true,
+        "clauseNames": ["Baseline start date", "cf[11202]"],
+        "schema": {
+            "type": "date",
+            "custom": "com.atlassian.jira.plugin.system.customfieldtypes:datepicker",
+            "customId": 11202
+        }
+    },
+    {
+        "id": "customfield_11203",
+        "name": "Baseline end date",
+        "custom": true,
+        "orderable": true,
+        "navigable": true,
+        "searchable": true,
+        "clauseNames": ["Baseline end date", "cf[11203]"],
+        "schema": {
+            "type": "date",
+            "custom": "com.atlassian.jira.plugin.system.customfieldtypes:datepicker",
+            "customId": 11203
+        }
+    },
+    {
+        "id": "customfield_12129",
+        "name": "Dataset values",
+        "custom": true,
+        "orderable": true,
+        "navigable": true,
+        "searchable": true,
+        "clauseNames": [],
+        "schema": {
+            "type": "any",
+            "custom": "com.xpandit.plugins.xray:test-dataset-custom-field",
+            "customId": 12129
+        }
+    },
+    {
+        "id": "customfield_10500",
+        "name": "Dauer bis zur Lösung",
+        "custom": true,
+        "orderable": true,
+        "navigable": true,
+        "searchable": true,
+        "clauseNames": ["cf[10500]", "Dauer bis zur Lösung"],
+        "schema": {
+            "type": "sd-servicelevelagreement",
+            "custom": "com.atlassian.servicedesk:sd-sla-field",
+            "customId": 10500
+        }
+    }
+]
