@@ -10,9 +10,13 @@ import { ImportExecutionConverterCloud } from "./conversion/importExecution/impo
 import { ImportExecutionConverterServer } from "./conversion/importExecution/importExecutionConverterServer";
 import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterCloud";
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
-import { preprocessFeatureFile } from "./cucumber/preprocessor";
 import { logError, logInfo, logWarning } from "./logging/logging";
-import { containsCucumberTest, containsNativeTest, getNativeTestIssueKeys } from "./processing";
+import {
+    containsCucumberTest,
+    containsNativeTest,
+    getNativeTestIssueKeys,
+    preprocessFeatureFile,
+} from "./preprocessing/preprocessing";
 import {
     IssueTypeDetailsCloud,
     IssueTypeDetailsServer,
