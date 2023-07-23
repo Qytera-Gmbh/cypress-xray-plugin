@@ -12,7 +12,7 @@ import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/imp
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
 import { preprocessFeatureFile } from "./cucumber/preprocessor";
 import { logError, logInfo, logWarning } from "./logging/logging";
-import { processRunResult } from "./processors";
+import { containsCucumberTest, containsNativeTest, getNativeTestIssueKeys } from "./processors";
 import {
     IssueTypeDetailsCloud,
     IssueTypeDetailsServer,
@@ -36,6 +36,8 @@ export async function beforeRunHook(
     jiraClient?: JiraClientServer | JiraClientCloud
 ) {
     if (!options) {
+        // Don't throw here in case someone simply doesn't want the plugin to run but forgot to
+        // remove the hook.
         logError(
             dedent(`
                 Plugin misconfigured: configureXrayPlugin() was not called. Skipping before:run hook
@@ -176,7 +178,8 @@ export async function afterRunHook(
     jiraClient?: JiraClientServer | JiraClientCloud
 ) {
     if (!options) {
-        // Don't throw here in case someone doesn't want the plugin to run.
+        // Don't throw here in case someone simply doesn't want the plugin to run but forgot to
+        // remove the hook.
         logError(
             dedent(`
                 Skipping after:run hook: Plugin misconfigured: configureXrayPlugin() was not called
@@ -278,39 +281,8 @@ export async function afterRunHook(
         return;
     }
     if (options.jira.attachVideos) {
-        const videos: string[] = runResult.runs.map((result: CypressCommandLine.RunResult) => {
-            return result.video;
-        });
-        if (videos.length === 0) {
-            logWarning("No videos were uploaded: No videos have been captured");
-        } else {
-            await jiraClient.addAttachment(issueKey, ...videos);
-        }
+        await attachVideos(runResult, issueKey, jiraClient);
     }
-}
-
-function containsNativeTest(
-    runResult: CypressCommandLine.CypressRunResult,
-    options: InternalOptions
-): boolean {
-    return runResult.runs.some((run: CypressCommandLine.RunResult) => {
-        if (options.cucumber && run.spec.absolute.endsWith(options.cucumber.featureFileExtension)) {
-            return false;
-        }
-        return true;
-    });
-}
-
-function containsCucumberTest(
-    runResult: CypressCommandLine.CypressRunResult,
-    options: InternalOptions
-): boolean {
-    return runResult.runs.some((run: CypressCommandLine.RunResult) => {
-        if (options.cucumber && run.spec.absolute.endsWith(options.cucumber.featureFileExtension)) {
-            return true;
-        }
-        return false;
-    });
 }
 
 async function uploadCypressResults(
@@ -318,7 +290,7 @@ async function uploadCypressResults(
     options?: InternalOptions,
     xrayClient?: XrayClientServer | XrayClientCloud
 ) {
-    const issueKeys = processRunResult(runResult, options);
+    const issueKeys = getNativeTestIssueKeys(runResult, options);
     const testTypes = await xrayClient.getTestTypes(options.jira.projectKey, ...issueKeys);
     options.xray.testTypes = testTypes;
     let cypressExecution: XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud;
@@ -354,6 +326,21 @@ async function uploadCucumberResults(
         cucumberMultipart.features,
         cucumberMultipart.info
     );
+}
+
+async function attachVideos(
+    runResult: CypressCommandLine.CypressRunResult,
+    issueKey: string,
+    jiraClient?: JiraClientServer | JiraClientCloud
+): Promise<void> {
+    const videos: string[] = runResult.runs.map((result: CypressCommandLine.RunResult) => {
+        return result.video;
+    });
+    if (videos.length === 0) {
+        logWarning("No videos were uploaded: No videos have been captured");
+    } else {
+        await jiraClient.addAttachment(issueKey, ...videos);
+    }
 }
 
 export async function synchronizeFile(
