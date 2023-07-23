@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 import { expect } from "chai";
 import fs from "fs";
 import { stubLogging } from "../test/util";

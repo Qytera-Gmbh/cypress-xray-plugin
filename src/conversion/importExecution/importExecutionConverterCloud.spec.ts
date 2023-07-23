@@ -15,7 +15,6 @@ describe("the import execution results converter (cloud)", () => {
                     url: "https://example.org",
                 },
                 xray: {
-                    testType: "Manual",
                     uploadResults: true,
                 },
                 cucumber: {

@@ -140,18 +140,6 @@ export interface XrayOptions {
      */
     steps?: XrayStepOptions;
     /**
-     * The test type of the test issues. This option will be used to set the corresponding field on
-     * issues created during upload (happens when a test does not yet have a corresponding Xray
-     * issue).
-     *
-     * Please note that on Xray Server, this option will not apply to tests which are created for
-     * executed Cucumber feature files. These will always have `Cucumber` for test type (see
-     * {@link https://docs.getxray.app/display/XRAY/Test#Test-configuringtesttypesConfiguringTestTypes}).
-     *
-     * @example "Manual"
-     */
-    testType?: string;
-    /**
      * Turns execution results upload on or off. Useful when switching upload on or off from the
      * command line (via environment variables).
      */
@@ -254,6 +242,16 @@ export type InternalOptions = Options & {
          * The details of the test plan issue type.
          */
         testPlanIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
+    };
+    xray?: {
+        /**
+         * A mapping of issue keys to test types. Required for Cypress execution import, since the
+         * `testType` (Xray Server) or `type` (Xray Cloud) properties are required by Xray's JSON
+         * scheme for uploading results.
+         */
+        testTypes?: {
+            [key: string]: string;
+        };
     };
     cucumber?: {
         preprocessor?: Awaited<ReturnType<typeof resolvePreprocessorConfiguration>>;

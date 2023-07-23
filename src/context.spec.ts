@@ -1,10 +1,12 @@
 import { expect } from "chai";
 import dedent from "dedent";
 import { stubLogging } from "../test/util";
-import { BasicAuthCredentials, PATCredentials } from "./authentication/credentials";
+import { BasicAuthCredentials, JWTCredentials, PATCredentials } from "./authentication/credentials";
+import { JiraClientCloud } from "./client/jira/jiraClientCloud";
+import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
-import { initJiraClient, initOptions, initXrayClient, verifyOptions } from "./context";
+import { initClients, initOptions, verifyOptions } from "./context";
 import { InternalOptions } from "./types/plugin";
 
 describe("the plugin context configuration", () => {
@@ -81,9 +83,6 @@ describe("the plugin context configuration", () => {
                     it("update", () => {
                         expect(options.xray.steps.update).to.eq(true);
                     });
-                });
-                it("testType", () => {
-                    expect(options.xray.testType).to.eq("Manual");
                 });
                 it("uploadResults", () => {
                     expect(options.xray.uploadResults).to.eq(true);
@@ -393,21 +392,6 @@ describe("the plugin context configuration", () => {
                         );
                         expect(options.xray.steps.update).to.eq(false);
                     });
-                });
-                it("testType", () => {
-                    const options = initOptions(
-                        {},
-                        {
-                            jira: {
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            },
-                            xray: {
-                                testType: "Cucumber",
-                            },
-                        }
-                    );
-                    expect(options.xray.testType).to.eq("Cucumber");
                 });
                 it("uploadResults", () => {
                     const options = initOptions(
@@ -736,22 +720,6 @@ describe("the plugin context configuration", () => {
                     expect(options.xray?.steps?.update).to.be.false;
                 });
 
-                it("XRAY_TEST_TYPE", () => {
-                    const env = {
-                        XRAY_TEST_TYPE: "Automated",
-                    };
-                    const options = initOptions(env, {
-                        jira: {
-                            projectKey: "CYP",
-                            url: "https://example.org",
-                        },
-                        xray: {
-                            testType: "Gherkin",
-                        },
-                    });
-                    expect(options.xray?.testType).to.eq("Automated");
-                });
-
                 it("XRAY_UPLOAD_RESULTS", () => {
                     const env = {
                         XRAY_UPLOAD_RESULTS: "false",
@@ -1023,7 +991,7 @@ describe("the plugin context configuration", () => {
             );
         });
     });
-    describe("the jira client instantiation", () => {
+    describe("the clients instantiation", () => {
         let options: InternalOptions;
         beforeEach(() => {
             options = initOptions(
@@ -1039,173 +1007,111 @@ describe("the plugin context configuration", () => {
             options.jira.attachVideos = true;
         });
 
-        it("should detect jira cloud credentials", () => {
+        it("should detect cloud credentials", () => {
+            const env = {
+                JIRA_USERNAME: "user@somewhere.xyz",
+                JIRA_API_TOKEN: "1337",
+                XRAY_CLIENT_ID: "abc",
+                XRAY_CLIENT_SECRET: "xyz",
+            };
+            const { stubbedInfo } = stubLogging();
+            const { jiraClient, xrayClient } = initClients(options, env);
+            expect(jiraClient.getCredentials()).to.be.an.instanceof(BasicAuthCredentials);
+            expect(xrayClient.getCredentials()).to.be.an.instanceof(JWTCredentials);
+            expect(stubbedInfo).to.have.been.calledWith(
+                "Jira username and API token found. Setting up Jira cloud basic auth credentials"
+            );
+            expect(stubbedInfo).to.have.been.calledWith(
+                "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
+            );
+        });
+
+        it("should throw for missing xray cloud credentials", () => {
             const env = {
                 JIRA_USERNAME: "user@somewhere.xyz",
                 JIRA_API_TOKEN: "1337",
             };
             const { stubbedInfo } = stubLogging();
-            const client = initJiraClient(options, env);
-            const credentials = client.getCredentials();
-            expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
+            expect(() => initClients(options, env)).to.throw(
+                dedent(`
+                    Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials
+                    You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                `)
+            );
             expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and API token found. Setting up basic auth credentials for Jira Cloud."
+                "Jira username and API token found. Setting up Jira cloud basic auth credentials"
             );
         });
 
-        it("should detect jira server PAT credentials", () => {
+        it("should detect PAT credentials", () => {
             const env = {
                 JIRA_API_TOKEN: "1337",
             };
             const { stubbedInfo } = stubLogging();
-            const client = initJiraClient(options, env);
-            const credentials = client.getCredentials();
-            expect(credentials).to.be.an.instanceof(PATCredentials);
+            const { jiraClient, xrayClient } = initClients(options, env);
+            expect(jiraClient).to.be.an.instanceof(JiraClientServer);
+            expect(xrayClient).to.be.an.instanceof(XrayClientServer);
+            expect(jiraClient.getCredentials()).to.be.an.instanceof(PATCredentials);
+            expect(xrayClient.getCredentials()).to.be.an.instanceof(PATCredentials);
             expect(stubbedInfo).to.have.been.calledWith(
-                "Jira PAT found. Setting up PAT credentials for Jira Server."
+                "Jira PAT found. Setting up Jira server PAT credentials"
+            );
+            expect(stubbedInfo).to.have.been.calledWith(
+                "Jira PAT found. Setting up Xray server PAT credentials"
             );
         });
 
-        it("should detect jira server basic auth credentials", () => {
+        it("should detect basic auth credentials", () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "1337",
             };
             const { stubbedInfo } = stubLogging();
-            const client = initJiraClient(options, env);
-            const credentials = client.getCredentials();
-            expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
+            const { jiraClient, xrayClient } = initClients(options, env);
+            expect(jiraClient).to.be.an.instanceof(JiraClientServer);
+            expect(xrayClient).to.be.an.instanceof(XrayClientServer);
+            expect(jiraClient.getCredentials()).to.be.an.instanceof(BasicAuthCredentials);
+            expect(xrayClient.getCredentials()).to.be.an.instanceof(BasicAuthCredentials);
             expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and password found. Setting up basic auth credentials for Jira Server."
+                "Jira username and password found. Setting up Jira server basic auth credentials"
             );
-        });
-
-        it("should choose jira cloud credentials over server credentials", () => {
-            const env = {
-                JIRA_USERNAME: "user",
-                JIRA_PASSWORD: "xyz",
-                JIRA_API_TOKEN: "1337",
-            };
-            const { stubbedInfo } = stubLogging();
-            const client = initJiraClient(options, env);
-            const credentials = client.getCredentials();
-            expect(credentials).to.be.an.instanceof(BasicAuthCredentials);
             expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and API token found. Setting up basic auth credentials for Jira Cloud."
-            );
-        });
-
-        describe("the error handling", () => {
-            beforeEach(() => {
-                // We're not interested in informative log messages here.
-                stubLogging();
-            });
-
-            it("should throw an error for missing jira urls", () => {
-                options.jira.url = undefined;
-                expect(() => initJiraClient(options, {})).to.throw(
-                    dedent(`
-                        Failed to configure Jira client: no Jira URL was provided
-                        Make sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
-                    `)
-                );
-            });
-
-            it("should throw an error for missing credentials", () => {
-                expect(() => initJiraClient(options, {})).to.throw(
-                    dedent(`
-                        Failed to configure Jira client: no viable authentication method was configured
-                        You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
-                    `)
-                );
-            });
-        });
-    });
-
-    describe("the xray client instantiation", () => {
-        let options: InternalOptions;
-        beforeEach(() => {
-            options = initOptions(
-                {},
-                {
-                    jira: {
-                        projectKey: "CYP",
-                        url: "https://example.org",
-                    },
-                }
-            );
-        });
-
-        it("should detect cloud credentials", () => {
-            const env = {
-                XRAY_CLIENT_ID: "user",
-                XRAY_CLIENT_SECRET: "xyz",
-            };
-            const { stubbedInfo } = stubLogging();
-            const client = initXrayClient(options, env);
-            expect(client).to.be.an.instanceof(XrayClientCloud);
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Xray client ID and client secret found. Setting up Xray cloud credentials."
-            );
-        });
-
-        it("should detect basic server credentials", () => {
-            const env = {
-                JIRA_USERNAME: "user",
-                JIRA_PASSWORD: "xyz",
-            };
-            options.jira.url = "https://example.org";
-            const { stubbedInfo } = stubLogging();
-            const client = initXrayClient(options, env);
-            expect(client).to.be.an.instanceof(XrayClientServer);
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and password found. Setting up Xray basic auth credentials."
-            );
-        });
-
-        it("should detect PAT server credentials", () => {
-            const env = {
-                JIRA_API_TOKEN: "1337",
-            };
-            options.jira.url = "https://example.org";
-            const { stubbedInfo } = stubLogging();
-            const client = initXrayClient(options, env);
-            expect(client).to.be.an.instanceof(XrayClientServer);
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Jira PAT found. Setting up Xray PAT credentials."
+                "Jira username and password found. Setting up Xray server basic auth credentials"
             );
         });
 
         it("should choose cloud credentials over server credentials", () => {
             const env = {
                 JIRA_USERNAME: "user",
-                JIRA_API_TOKEN: "1337",
                 JIRA_PASSWORD: "xyz",
-                XRAY_CLIENT_ID: "id",
-                XRAY_CLIENT_SECRET: "secret",
+                JIRA_API_TOKEN: "1337",
+                XRAY_CLIENT_ID: "abc",
+                XRAY_CLIENT_SECRET: "xyz",
             };
-            const { stubbedInfo } = stubLogging();
-            const client = initXrayClient(options, env);
-            expect(client).to.be.an.instanceof(XrayClientCloud);
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Xray client ID and client secret found. Setting up Xray cloud credentials."
+            stubLogging();
+            const { jiraClient, xrayClient } = initClients(options, env);
+            expect(jiraClient).to.be.an.instanceof(JiraClientCloud);
+            expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
+            expect(jiraClient.getCredentials()).to.be.an.instanceof(BasicAuthCredentials);
+            expect(xrayClient.getCredentials()).to.be.an.instanceof(JWTCredentials);
+        });
+        it("should throw an error for missing jira urls", () => {
+            options.jira.url = undefined;
+            expect(() => initClients(options, {})).to.throw(
+                dedent(`
+                    Failed to configure Jira client: no Jira URL was provided
+                    Make sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
+                `)
             );
         });
 
-        describe("the error handling", () => {
-            beforeEach(() => {
-                // We're not interested in informative log messages here.
-                stubLogging();
-            });
-
-            it("should throw an error for missing credentials", () => {
-                expect(() => initXrayClient(options, {})).to.throw(
-                    dedent(`
-                        Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported
-                        You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
-                    `)
-                );
-            });
+        it("should throw an error for missing credentials", () => {
+            expect(() => initClients(options, {})).to.throw(
+                dedent(`
+                    Failed to configure Jira client: no viable authentication method was configured
+                    You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                `)
+            );
         });
     });
 });

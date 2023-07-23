@@ -1,0 +1,43 @@
+{
+    "data": {
+        "getTests": {
+            "total": 3,
+            "start": 0,
+            "results": [
+                {
+                    "testType": {
+                        "id": "5e42b1d4d0257f0016808ef0",
+                        "name": "Cucumber",
+                        "kind": "Gherkin"
+                    },
+                    "jira": {
+                        "key": "CYP-331",
+                        "summary": "A background scenario"
+                    }
+                },
+                {
+                    "testType": {
+                        "id": "5e42b1d4d0257f0016808ef1",
+                        "name": "Generic",
+                        "kind": "Unstructured"
+                    },
+                    "jira": {
+                        "key": "CYP-330",
+                        "summary": "something happens"
+                    }
+                },
+                {
+                    "testType": {
+                        "id": "5e42b1d4d0257f0016808ef1",
+                        "name": "Manual",
+                        "kind": "Steps"
+                    },
+                    "jira": {
+                        "key": "CYP-332",
+                        "summary": "something happens"
+                    }
+                }
+            ]
+        }
+    }
+}

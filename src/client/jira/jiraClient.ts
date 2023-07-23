@@ -11,12 +11,16 @@ import {
     logWarning,
     writeErrorFile,
 } from "../../logging/logging";
+import { SearchRequestCloud, SearchRequestServer } from "../../types/jira/requests/search";
 import { AttachmentCloud, AttachmentServer } from "../../types/jira/responses/attachment";
 import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
+import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
 import {
     IssueTypeDetailsCloud,
     IssueTypeDetailsServer,
 } from "../../types/jira/responses/issueTypeDetails";
+import { JsonTypeCloud, JsonTypeServer } from "../../types/jira/responses/jsonType";
+import { SearchResults } from "../../types/jira/responses/searchResults";
 import { OneOf } from "../../types/util";
 import { Client } from "../client";
 
@@ -24,16 +28,21 @@ import { Client } from "../client";
  * A Jira client class for communicating with Jira instances.
  */
 export abstract class JiraClient<
-    AttachmentType extends OneOf<[AttachmentServer, AttachmentCloud]>,
-    IssueTypeDetailsResponse extends OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>
-> extends Client<BasicAuthCredentials | PATCredentials> {
+    CredentialsType extends BasicAuthCredentials | PATCredentials,
+    AttachmentType extends AttachmentServer | AttachmentCloud,
+    FieldDetailType extends FieldDetailServer | FieldDetailCloud,
+    JsonType extends JsonTypeServer | JsonTypeCloud,
+    IssueType extends IssueServer | IssueCloud,
+    IssueTypeDetailsResponse extends OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>,
+    SearchRequestType extends SearchRequestServer | SearchRequestCloud
+> extends Client<CredentialsType> {
     /**
      * Construct a new Jira client using the provided credentials.
      *
      * @param apiBaseURL the Jira base endpoint
      * @param credentials the credentials to use during authentication
      */
-    constructor(apiBaseURL: string, credentials: BasicAuthCredentials | PATCredentials) {
+    constructor(apiBaseURL: string, credentials: CredentialsType) {
         super(apiBaseURL, credentials);
     }
 
@@ -174,23 +183,26 @@ export abstract class JiraClient<
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/field-getFields
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
      */
-    public async getFields<F extends OneOf<[FieldDetailServer, FieldDetailCloud]>>(): Promise<
-        F[] | undefined
-    > {
+    public async getFields(): Promise<FieldDetailType[] | undefined> {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logInfo("Getting fields...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
-                const response: AxiosResponse<F[]> = await Requests.get(this.getUrlGetFields(), {
-                    headers: {
-                        ...authenticationHeader,
-                    },
-                });
-                logSuccess(`Successfully retrieved data for ${response.data.length} fields.`);
+                const response: AxiosResponse<FieldDetailType[]> = await Requests.get(
+                    this.getUrlGetFields(),
+                    {
+                        headers: {
+                            ...authenticationHeader,
+                        },
+                    }
+                );
+                logSuccess(`Successfully retrieved data for ${response.data.length} fields`);
                 logDebug(
                     "Received data for fields:",
-                    ...response.data.map((field: F) => `${field.name} (id: ${field.id})`)
+                    ...response.data.map(
+                        (field: FieldDetailType) => `\n${field.name} (id: ${field.id})`
+                    )
                 );
                 return response.data;
             } finally {
@@ -208,4 +220,59 @@ export abstract class JiraClient<
      * @returns the URL
      */
     public abstract getUrlGetFields(): string;
+
+    /**
+     * Searches for issues using JQL. Automatically performs pagination if necessary.
+     *
+     * @param request the search request
+     * @returns the search results or `undefined` in case of errors
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
+     */
+    public async search(request: SearchRequestType): Promise<IssueType[] | undefined> {
+        try {
+            return await this.credentials
+                .getAuthenticationHeader()
+                .then(async (header: HTTPHeader) => {
+                    logInfo(`Searching issues...`);
+                    const progressInterval = this.startResponseInterval(this.apiBaseURL);
+                    try {
+                        let total = 0;
+                        let startAt = request.startAt;
+                        const results: IssueType[] = [];
+                        do {
+                            const paginatedRequest = {
+                                ...request,
+                            };
+                            if (startAt !== undefined) {
+                                paginatedRequest.startAt = startAt;
+                            }
+                            const response: AxiosResponse<SearchResults<IssueType, JsonType>> =
+                                await Requests.post(this.getUrlPostSearch(), paginatedRequest, {
+                                    headers: {
+                                        ...header,
+                                    },
+                                });
+                            results.push(...response.data.issues);
+                            total = response.data.total;
+                            startAt = response.data.startAt + response.data.issues.length;
+                        } while (startAt && startAt < total);
+                        logSuccess(`Found ${total} issues`);
+                        return results;
+                    } finally {
+                        clearInterval(progressInterval);
+                    }
+                });
+        } catch (error: unknown) {
+            logError(`Failed to search issues: ${error}`);
+            writeErrorFile(error, "searchError");
+        }
+    }
+    /**
+     *
+     * Returns the endpoint to use for searching issues.
+     *
+     * @returns the endpoint
+     */
+    public abstract getUrlPostSearch(): string;
 }

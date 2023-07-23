@@ -35,7 +35,6 @@ import {
     ENV_XRAY_STATUS_SKIPPED,
     ENV_XRAY_STEPS_MAX_LENGTH_ACTION,
     ENV_XRAY_STEPS_UPDATE,
-    ENV_XRAY_TEST_TYPE,
     ENV_XRAY_UPLOAD_RESULTS,
     ENV_XRAY_UPLOAD_SCREENSHOTS,
 } from "./constants";
@@ -105,8 +104,7 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
                     options.xray?.steps?.update ??
                     true,
             },
-            testType:
-                parse(env, ENV_XRAY_TEST_TYPE, asString) ?? options.xray?.testType ?? "Manual",
+            testTypes: {},
             uploadResults:
                 parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean) ??
                 options.xray?.uploadResults ??
@@ -175,37 +173,13 @@ function verifyXraySteps(steps: XrayStepOptions) {
     }
 }
 
-export function initXrayClient(
+export function initClients(
     options: InternalOptions,
     env: Cypress.ObjectLike
-): XrayClientServer | XrayClientCloud {
-    if (ENV_XRAY_CLIENT_ID in env && ENV_XRAY_CLIENT_SECRET in env) {
-        logInfo("Xray client ID and client secret found. Setting up Xray cloud credentials.");
-        return new XrayClientCloud(
-            new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET])
-        );
-    } else if (ENV_JIRA_API_TOKEN in env && options.jira.url) {
-        logInfo("Jira PAT found. Setting up Xray PAT credentials.");
-        return new XrayClientServer(options.jira.url, new PATCredentials(env[ENV_JIRA_API_TOKEN]));
-    } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && options.jira.url) {
-        logInfo("Jira username and password found. Setting up Xray basic auth credentials.");
-        return new XrayClientServer(
-            options.jira.url,
-            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD])
-        );
-    } else {
-        throw new Error(
-            dedent(`
-                Failed to configure Xray uploader: no viable Xray configuration was found or the configuration you provided is not supported
-                You can find all configurations currently supported at https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
-            `)
-        );
-    }
-}
-export function initJiraClient(
-    options: InternalOptions,
-    env: Cypress.ObjectLike
-): JiraClientServer | JiraClientCloud {
+): {
+    jiraClient: JiraClientServer | JiraClientCloud;
+    xrayClient: XrayClientServer | XrayClientCloud;
+} {
     if (!options.jira.url) {
         throw new Error(
             dedent(`
@@ -214,27 +188,57 @@ export function initJiraClient(
             `)
         );
     }
-    if (ENV_JIRA_API_TOKEN in env && ENV_JIRA_USERNAME in env) {
-        // Jira Cloud authentication: username (Email) and token.
-        logInfo(
-            "Jira username and API token found. Setting up basic auth credentials for Jira Cloud."
-        );
-        return new JiraClientCloud(
+    let jiraClient: JiraClientServer | JiraClientCloud;
+    let xrayClient: XrayClientServer | XrayClientCloud;
+    if (ENV_JIRA_USERNAME in env && ENV_JIRA_API_TOKEN in env) {
+        // Jira cloud authentication: username (Email) and token.
+        logInfo("Jira username and API token found. Setting up Jira cloud basic auth credentials");
+        jiraClient = new JiraClientCloud(
             options.jira.url,
             new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_API_TOKEN])
         );
-    } else if (ENV_JIRA_API_TOKEN in env) {
-        // Jira Server authentication: no username, only token.
-        logInfo("Jira PAT found. Setting up PAT credentials for Jira Server.");
-        return new JiraClientServer(options.jira.url, new PATCredentials(env[ENV_JIRA_API_TOKEN]));
-    } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env) {
-        // Jira Server authentication: username and password.
-        logInfo(
-            "Jira username and password found. Setting up basic auth credentials for Jira Server."
+        if (ENV_XRAY_CLIENT_ID in env && ENV_XRAY_CLIENT_SECRET in env) {
+            // Xray cloud authentication: client ID and client secret.
+            logInfo(
+                "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
+            );
+            xrayClient = new XrayClientCloud(
+                new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET]),
+                jiraClient
+            );
+        } else {
+            throw new Error(
+                dedent(`
+                    Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials
+                    You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                `)
+            );
+        }
+    } else if (ENV_JIRA_API_TOKEN in env && options.jira.url) {
+        // Jira server authentication: no username, only token.
+        logInfo("Jira PAT found. Setting up Jira server PAT credentials");
+        jiraClient = new JiraClientServer(
+            options.jira.url,
+            new PATCredentials(env[ENV_JIRA_API_TOKEN])
         );
-        return new JiraClientServer(
+        // Xray server authentication: no username, only token.
+        logInfo("Jira PAT found. Setting up Xray server PAT credentials");
+        xrayClient = new XrayClientServer(
+            options.jira.url,
+            new PATCredentials(env[ENV_JIRA_API_TOKEN]),
+            jiraClient
+        );
+    } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && options.jira.url) {
+        logInfo("Jira username and password found. Setting up Jira server basic auth credentials");
+        jiraClient = new JiraClientServer(
             options.jira.url,
             new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD])
+        );
+        logInfo("Jira username and password found. Setting up Xray server basic auth credentials");
+        xrayClient = new XrayClientServer(
+            options.jira.url,
+            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD]),
+            jiraClient
         );
     } else {
         throw new Error(
@@ -244,4 +248,8 @@ export function initJiraClient(
             `)
         );
     }
+    return {
+        jiraClient: jiraClient,
+        xrayClient: xrayClient,
+    };
 }

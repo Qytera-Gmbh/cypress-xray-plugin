@@ -12,6 +12,7 @@ import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/imp
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
 import { preprocessFeatureFile } from "./cucumber/preprocessor";
 import { logError, logInfo, logWarning } from "./logging/logging";
+import { processRunResult } from "./processors";
 import {
     IssueTypeDetailsCloud,
     IssueTypeDetailsServer,
@@ -296,6 +297,11 @@ async function uploadCypressResults(
     options?: InternalOptions,
     xrayClient?: XrayClientServer | XrayClientCloud
 ) {
+    const issueKeys = processRunResult(runResult, options);
+    const testTypes = await xrayClient.getTestTypes(options.jira.projectKey, ...issueKeys);
+    if (testTypes || !testTypes) {
+        throw new Error("todo");
+    }
     let cypressExecution: XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud;
     if (xrayClient instanceof XrayClientServer) {
         cypressExecution = new ImportExecutionConverterServer(options).convert(runResult);

@@ -31,7 +31,6 @@ describe("the import execution cucumber multipart converters", () => {
                             url: "https://example.org",
                         },
                         xray: {
-                            testType: "Manual",
                             uploadResults: true,
                         },
                         cucumber: {

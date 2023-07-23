@@ -10,9 +10,6 @@ import { XrayClient } from "../src/client/xray/xrayClient";
 import { Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
-import { CucumberMultipartInfoCloud } from "../src/types/xray/requests/importExecutionCucumberMultipartInfo";
-import { ImportExecutionResponseCloud } from "../src/types/xray/responses/importExecution";
-import { ImportFeatureResponseCloud } from "../src/types/xray/responses/importFeature";
 
 chai.use(sinonChai);
 
@@ -67,13 +64,9 @@ after(async () => {
     }
 });
 
-export class DummyXrayClient extends XrayClient<
-    ImportFeatureResponseCloud,
-    ImportExecutionResponseCloud,
-    CucumberMultipartInfoCloud
-> {
+export class DummyXrayClient extends XrayClient<null, null, null, null, null> {
     constructor() {
-        super("https://example.org", null);
+        super("https://example.org", null, null);
     }
     public getUrlImportExecution(): string {
         throw new Error("Method not implemented.");
@@ -90,6 +83,9 @@ export class DummyXrayClient extends XrayClient<
     public handleResponseImportFeature(): void {
         throw new Error("Method not implemented.");
     }
+    public getTestTypes(): Promise<{ [key: string]: string }> {
+        throw new Error("Method not implemented.");
+    }
     public getUrlImportExecutionCucumberMultipart(): string {
         throw new Error("Method not implemented.");
     }
@@ -98,17 +94,20 @@ export class DummyXrayClient extends XrayClient<
     }
 }
 
-export class DummyJiraClient extends JiraClient<null, null> {
+export class DummyJiraClient extends JiraClient<null, null, null, null, null, null, null> {
     constructor() {
         super("https://example.org", null);
     }
     public getUrlAddAttachment(): string {
         throw new Error("Method not implemented.");
     }
-    public getUrlGetIssueTypes(): string {
+    public getUrlGetFields(): string {
         throw new Error("Method not implemented.");
     }
-    public getUrlGetFields(): string {
+    public getUrlPostSearch(): string {
+        throw new Error("Method not implemented.");
+    }
+    public getUrlGetIssueTypes(): string {
         throw new Error("Method not implemented.");
     }
 }
