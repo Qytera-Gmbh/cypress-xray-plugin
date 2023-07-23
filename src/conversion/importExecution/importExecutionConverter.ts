@@ -45,9 +45,7 @@ export abstract class ImportExecutionConverter<
                 test = this.getTest(attempts[attempts.length - 1]);
                 const issueKey = getTestIssueKey(title, this.options.jira.projectKey);
                 test.testKey = issueKey;
-                if (this.options.plugin.overwriteIssueSummary) {
-                    test.testInfo = this.getTestInfo(issueKey, testResult);
-                }
+                test.testInfo = this.getTestInfo(issueKey, testResult);
                 this.addTest(json, test);
             } catch (error: unknown) {
                 let reason = error;

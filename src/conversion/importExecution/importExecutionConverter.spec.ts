@@ -158,11 +158,10 @@ describe("the import execution converters", () => {
                 expect(json.tests[1].status).to.eq("omit");
             });
 
-            it("should include step updates if overwrite issue summaries is enabled", () => {
+            it("includes step updates", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                options.plugin.overwriteIssueSummary = true;
                 options.xray.testTypes = {
                     "CYP-40": "Manual",
                     "CYP-41": "Manual",
@@ -182,7 +181,6 @@ describe("the import execution converters", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                options.plugin.overwriteIssueSummary = true;
                 options.xray.steps.update = false;
                 options.xray.testTypes = {
                     "CYP-40": "Manual",
@@ -200,7 +198,6 @@ describe("the import execution converters", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
                 );
-                options.plugin.overwriteIssueSummary = true;
                 options.xray.testTypes = {
                     "CYP-123": "Manual",
                     "CYP-456": "Manual",
@@ -216,7 +213,6 @@ describe("the import execution converters", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
                 );
-                options.plugin.overwriteIssueSummary = true;
                 options.xray.steps.maxLengthAction = 5;
                 options.xray.testTypes = {
                     "CYP-123": "Manual",
@@ -247,7 +243,6 @@ describe("the import execution converters", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                options.plugin.overwriteIssueSummary = true;
                 options.xray.steps.update = false;
                 options.xray.testTypes = {
                     "CYP-40": "Manual",
@@ -297,38 +292,6 @@ describe("the import execution converters", () => {
                 );
                 const json = converter.convert(result);
                 expect(json.info.testPlanKey).to.be.undefined;
-            });
-
-            it("should overwrite existing test issue information if specified", () => {
-                const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-                );
-                options.plugin.overwriteIssueSummary = true;
-                options.xray.testTypes = {
-                    "CYP-40": "Manual",
-                    "CYP-41": "Manual",
-                    "CYP-49": "Manual",
-                };
-                const json = converter.convert(result);
-                expect(json.tests).to.have.length(3);
-                expect(json.tests[0].testKey).to.eq("CYP-40");
-                expect(json.tests[1].testKey).to.eq("CYP-41");
-                expect(json.tests[2].testKey).to.eq("CYP-49");
-                expect(json.tests[0].testInfo).to.not.be.undefined;
-                expect(json.tests[1].testInfo).to.not.be.undefined;
-                expect(json.tests[2].testInfo).to.not.be.undefined;
-            });
-
-            it("should not update test information with summary overwriting disabled", () => {
-                const result: CypressCommandLine.CypressRunResult = JSON.parse(
-                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-                );
-                options.plugin.overwriteIssueSummary = false;
-                const json = converter.convert(result);
-                expect(json.tests).to.have.length(3);
-                expect(json.tests[0].testInfo).to.not.exist;
-                expect(json.tests[1].testInfo).to.not.exist;
-                expect(json.tests[2].testInfo).to.not.exist;
             });
 
             it("should include a custom test execution summary if provided", () => {

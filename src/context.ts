@@ -26,7 +26,6 @@ import {
     ENV_PLUGIN_ENABLED,
     ENV_PLUGIN_LOG_DIRECTORY,
     ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES,
-    ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY,
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
     ENV_XRAY_STATUS_FAILED,
@@ -79,10 +78,6 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
             normalizeScreenshotNames:
                 parse(env, ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES, asBoolean) ??
                 options.plugin?.normalizeScreenshotNames ??
-                false,
-            overwriteIssueSummary:
-                parse(env, ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY, asBoolean) ??
-                options.plugin?.overwriteIssueSummary ??
                 false,
         },
         xray: {

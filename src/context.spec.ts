@@ -58,9 +58,6 @@ describe("the plugin context configuration", () => {
                 it("normalizeScreenshotNames", () => {
                     expect(options.plugin.normalizeScreenshotNames).to.eq(false);
                 });
-                it("overwriteIssueSummary", () => {
-                    expect(options.plugin.overwriteIssueSummary).to.eq(false);
-                });
             });
 
             describe("xray", () => {
@@ -277,21 +274,6 @@ describe("the plugin context configuration", () => {
                         }
                     );
                     expect(options.plugin.normalizeScreenshotNames).to.eq(true);
-                });
-                it("overwriteIssueSummary", () => {
-                    const options = initOptions(
-                        {},
-                        {
-                            jira: {
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            },
-                            plugin: {
-                                overwriteIssueSummary: true,
-                            },
-                        }
-                    );
-                    expect(options.plugin.overwriteIssueSummary).to.eq(true);
                 });
             });
 
@@ -866,22 +848,6 @@ describe("the plugin context configuration", () => {
                         },
                     });
                     expect(options.plugin?.normalizeScreenshotNames).to.be.true;
-                });
-
-                it("PLUGIN_OVERWRITE_ISSUE_SUMMARY", () => {
-                    const env = {
-                        PLUGIN_OVERWRITE_ISSUE_SUMMARY: "true",
-                    };
-                    const options = initOptions(env, {
-                        jira: {
-                            projectKey: "CYP",
-                            url: "https://example.org",
-                        },
-                        plugin: {
-                            overwriteIssueSummary: false,
-                        },
-                    });
-                    expect(options.plugin?.overwriteIssueSummary).to.be.true;
                 });
             });
             describe("openSSL", () => {
