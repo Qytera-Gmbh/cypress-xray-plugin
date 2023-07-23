@@ -46,9 +46,6 @@ export abstract class ImportExecutionCucumberMultipartConverter<
             const elements: CucumberMultipartElement[] = [];
             result.elements.forEach((element: CucumberMultipartElement) => {
                 try {
-                    if (!this.containsTestTag(element.tags)) {
-                        throw new Error(`No test issue key found in ${element.type} tags`);
-                    }
                     const modifiedElement: CucumberMultipartElement = {
                         ...element,
                         steps: this.getSteps(element),
@@ -85,14 +82,6 @@ export abstract class ImportExecutionCucumberMultipartConverter<
     protected abstract getMultipartInfo(
         parameters: ConversionParameters
     ): CucumberMultipartInfoType;
-
-    /**
-     * Returns whether the array of tags contains a tag (potentially) describing a test issue.
-     *
-     * @param tags the tags
-     * @returns true if the array contains such a tag, false otherwise
-     */
-    protected abstract containsTestTag(tags: CucumberMultipartTag[]): boolean;
 
     private getSteps(element: CucumberMultipartElement): CucumberMultipartStep[] {
         const steps: CucumberMultipartStep[] = [];

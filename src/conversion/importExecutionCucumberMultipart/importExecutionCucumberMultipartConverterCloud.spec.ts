@@ -2,7 +2,6 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { stubLogging } from "../../../test/util";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
@@ -33,23 +32,6 @@ describe("the import execution cucumber multipart cloud converter", () => {
             }
         );
         converter = new ImportExecutionCucumberMultipartConverterCloud(options);
-    });
-
-    it("should log warnings for missing issue key tags", () => {
-        const result: CucumberMultipartFeature[] = JSON.parse(
-            readFileSync(
-                "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
-                "utf-8"
-            )
-        );
-        const { stubbedWarning } = stubLogging();
-        const multipart = converter.convert(result, parameters);
-        expect(multipart.features).to.be.an("array").with.length(1);
-        expect(multipart.features[0].elements).to.be.an("array").with.length(3);
-        expect(stubbedWarning).to.have.been.called.with.callCount(1);
-        expect(stubbedWarning).to.have.been.calledWith(
-            "No test issue key found in scenario tags. Skipping result upload for scenario: TC - Development"
-        );
     });
 
     it("should add test plan issue keys", () => {

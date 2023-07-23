@@ -1,4 +1,3 @@
-import { CucumberMultipartTag } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfoCloud } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import {
     ConversionParameters,
@@ -34,12 +33,5 @@ export class ImportExecutionCucumberMultipartConverterCloud extends ImportExecut
             info.xrayFields.testPlanKey = this.options.jira.testPlanIssueKey;
         }
         return info;
-    }
-
-    protected containsTestTag(tags: CucumberMultipartTag[]): boolean {
-        return tags.some((tag: CucumberMultipartTag) => {
-            const regex = new RegExp(`@TestName:${this.options.jira.projectKey}-\\d+`);
-            return regex.test(tag.name);
-        });
     }
 }

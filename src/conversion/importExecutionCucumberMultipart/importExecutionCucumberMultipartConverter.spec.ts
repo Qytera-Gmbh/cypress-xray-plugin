@@ -2,7 +2,6 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { stubLogging } from "../../../test/util";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
@@ -59,13 +58,10 @@ describe("the import execution cucumber multipart converters", () => {
             });
 
             it("should include all tagged features and tests", () => {
-                const { stubbedWarning } = stubLogging();
                 const multipart = converter.convert(result, parameters);
-                expect(multipart.features).to.be.an("array").with.length(1);
+                expect(multipart.features).to.be.an("array").with.length(2);
                 expect(multipart.features[0].elements).to.be.an("array").with.length(3);
-                expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                    "No test issue key found in scenario tags. Skipping result upload for scenario: TC - Development"
-                );
+                expect(multipart.features[1].elements).to.be.an("array").with.length(1);
             });
 
             it("should use the configured project key", () => {

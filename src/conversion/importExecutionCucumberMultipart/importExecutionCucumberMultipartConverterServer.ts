@@ -1,4 +1,3 @@
-import { CucumberMultipartTag } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import {
     ConversionParameters,
@@ -35,12 +34,5 @@ export class ImportExecutionCucumberMultipartConverterServer extends ImportExecu
             ];
         }
         return info;
-    }
-
-    protected containsTestTag(tags: CucumberMultipartTag[]): boolean {
-        return tags.some((tag: CucumberMultipartTag) => {
-            const regex = new RegExp(`@${this.options.jira.projectKey}-\\d+`);
-            return regex.test(tag.name);
-        });
     }
 }

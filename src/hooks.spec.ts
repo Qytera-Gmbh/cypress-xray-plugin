@@ -44,6 +44,7 @@ describe("the before run hook", () => {
         expect(stubbedError).to.have.been.calledOnceWith(
             dedent(`
                 Plugin misconfigured: configureXrayPlugin() was not called. Skipping before:run hook
+
                 Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
             `)
         );
@@ -64,6 +65,7 @@ describe("the before run hook", () => {
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Plugin misconfigured: Xray client was not configured
+
                 Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
             `)
         );
@@ -75,6 +77,7 @@ describe("the before run hook", () => {
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Plugin misconfigured: Jira client was not configured
+
                 Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
             `)
         );
@@ -111,6 +114,7 @@ describe("the before run hook", () => {
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Plugin misconfigured: Cucumber preprocessor JSON report disabled
+
                 Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
             `)
         );
@@ -132,6 +136,7 @@ describe("the before run hook", () => {
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Plugin misconfigured: Cucumber preprocessor JSON report path was not set
+
                 Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
             `)
         );
@@ -226,6 +231,7 @@ describe("the before run hook", () => {
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to retrieve issue type information for issue type: Execution Issue
+
                 Make sure you have Xray installed.
 
                 For more information, visit:
@@ -272,6 +278,7 @@ describe("the before run hook", () => {
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Found multiple issue types named: Execution Issue
+
                 Make sure to only make a single one available in project CYP.
 
                 For more information, visit:
@@ -322,6 +329,7 @@ describe("the before run hook", () => {
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Found multiple issue types named: Test Plan
+
                 Make sure to only make a single one available in project CYP.
 
                 For more information, visit:
@@ -365,6 +373,7 @@ describe("the before run hook", () => {
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to retrieve issue type information for issue type: Plan Issue
+
                 Make sure you have Xray installed.
 
                 For more information, visit:
@@ -477,6 +486,7 @@ describe("the before run hook", () => {
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Jira issue type information could not be fetched.
+
                 Please make sure project CYP exists at https://example.org
 
                 For more information, visit:
@@ -514,6 +524,7 @@ describe("the after run hook", () => {
         expect(stubbedError).to.have.been.calledWith(
             dedent(`
                 Plugin misconfigured: configureXrayPlugin() was not called. Skipping after:run hook
+
                 Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
             `)
         );
@@ -599,6 +610,7 @@ describe("the synchronize file hook", () => {
         expect(stubbedError).to.have.been.calledWith(
             dedent(`
                 Plugin misconfigured (no configuration was provided). Skipping feature file synchronization triggered by: ./test/resources/features/taggedCloud.feature
+
                 Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
             `)
         );
