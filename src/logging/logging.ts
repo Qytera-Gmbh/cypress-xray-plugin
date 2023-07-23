@@ -46,7 +46,7 @@ export const logSuccess = (...text: string[]) => {
 };
 
 export const logWarning = (...text: string[]) => {
-    log(text, PREFIXES.warning, console.error, chalk.yellow);
+    log(text, PREFIXES.warning, console.log, chalk.yellow);
 };
 
 export const logDebug = (...text: string[]) => {
