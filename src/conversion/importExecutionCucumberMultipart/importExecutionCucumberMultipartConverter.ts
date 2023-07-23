@@ -60,7 +60,7 @@ export abstract class ImportExecutionCucumberMultipartConverter<
                         reason = error.message;
                     }
                     logWarning(
-                        `${reason}. Skipping result upload for ${element.type}: ${element.name}`
+                        `Skipping result upload for ${element.type}: ${element.name}\n\n${reason}`
                     );
                 }
             });
