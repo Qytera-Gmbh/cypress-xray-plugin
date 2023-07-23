@@ -1,80 +1,71 @@
-import { Feature, FeatureChild, Scenario } from "@cucumber/messages";
-import { logInfo, logWarning } from "../logging/logging";
+import { AstBuilder, GherkinClassicTokenMatcher, Parser } from "@cucumber/gherkin";
+import { Background, Comment, GherkinDocument, IdGenerator, Scenario } from "@cucumber/messages";
+import fs from "fs";
+/**
+ * Parses a Gherkin document (feature file) and returns the information contained within.
+ *
+ * @param file the path to the feature file
+ * @param encoding the file's encoding
+ * @returns an object containing the data of the feature file
+ * @example
+ *   const data = parseFeatureFile("myTetest.feature")
+ *   console.log(data.feature.children[0].scenario); // steps, name, ...
+ * @see https://github.com/cucumber/messages/blob/main/javascript/src/messages.ts
+ */
+export function parseFeatureFile(
+    file: string,
+    encoding: BufferEncoding = "utf-8"
+): GherkinDocument {
+    const uuidFn = IdGenerator.uuid();
+    const builder = new AstBuilder(uuidFn);
+    const matcher = new GherkinClassicTokenMatcher();
+    const parser = new Parser(builder, matcher);
+    return parser.parse(fs.readFileSync(file, { encoding: encoding }));
+}
 
-function issueTagOf(scenario: Scenario, projectKey: string): string | undefined {
+function scenarioRegex(projectKey: string) {
     // Xray cloud: @TestName:CYP-123
     // Xray server: @CYP-123
-    const regex = new RegExp(`@(?:TestName:)?(${projectKey}-\\d+)`);
+    return new RegExp(`@(?:TestName:)?(${projectKey}-\\d+)`);
+}
+
+export function getTestIssueTags(scenario: Scenario, projectKey: string): string[] {
     const issueKeys: string[] = [];
     for (const tag of scenario.tags) {
-        const matches = tag.name.match(regex);
+        const matches = tag.name.match(scenarioRegex(projectKey));
         if (!matches) {
             continue;
         } else if (matches.length === 2) {
-            // Element [0] is the entire matched string, element [1] the first captured group.
             issueKeys.push(matches[1]);
         }
     }
-    if (issueKeys.length === 0) {
-        logInfo(`No issue keys found in tags of scenario "${scenario.name}".`);
-    } else if (issueKeys.length === 1) {
-        return issueKeys[0];
-    } else {
-        logWarning(
-            `Multiple issue keys found in tags of scenario "${scenario.name}": ${issueKeys.join(
-                ", "
-            )}. Issue reuse will not work for this scenario.`
-        );
-    }
-    return undefined;
+    return issueKeys;
 }
 
-/**
- * Builds a mapping of scenarios titles to Xray issue keys based on the provided feature.
- *
- * @param feature the Gherkin feature object with all its data
- * @param projectKey the project keys to look out for
- * @returns an object mapping scenario titles to Xray issue keys
- *
- * @example
- *   // the following feature file:
- *
- *   'Feature: Logins'
- *
- *     '@PRJ-1234'
- *     'Scenario: Successful login'
- *        [...]
- *
- *     '@PRJ-9876'
- *     'Scenario: Unsuccessful login'
- *        [...]
- *
- *  const issues = issuesByScenario([...], 'PRJ');
- *  console.log(issues);
- *  // prints the following:
- *   {
- *     'Successful login': 'PRJ-1234',
- *     'Unsuccessful login': 'PRJ-9876',
- *   }
- */
-export function issuesByScenario(feature: Feature, projectKey: string): { [key: string]: string } {
-    const issues: { [key: string]: string } = {};
-    feature.children.map((child: FeatureChild) => {
-        if (child.scenario) {
-            const scenario = child.scenario;
-            const issueKey = issueTagOf(scenario, projectKey);
-            if (!issueKey) {
-                return;
-            }
-            issues[scenario.name] = issueKey;
-            const exampleCount = scenario.examples.flatMap((examples) => examples.tableBody).length;
-            for (let i = 0; i < exampleCount; i++) {
-                // The Cucumber preprocessor plugin appends '(example #...)' to every example run:
-                // https://github.com/badeball/cypress-cucumber-preprocessor/blob/3c4f85de4d5ef1e2a339cdfd462f64e3cd606e48/lib/browser-runtime.ts#L260
-                const exampleTitle = `${scenario.name} (example #${i + 1})`;
-                issues[exampleTitle] = issueKey;
+function backgroundRegex(projectKey: string) {
+    // @Precondition:CYP-111
+    return new RegExp(`@Precondition:(${projectKey}-\\d+)`);
+}
+
+export function getPreconditionIssueTags(
+    background: Background,
+    projectKey: string,
+    comments: readonly Comment[]
+): string[] {
+    const preconditionKeys: string[] = [];
+    if (background.steps.length > 0) {
+        const backgroundLine = background.location.line;
+        const firstStepLine = background.steps[0].location.line;
+        for (const comment of comments) {
+            if (comment.location.line > backgroundLine && comment.location.line < firstStepLine) {
+                const matches = comment.text.match(backgroundRegex(projectKey));
+                if (!matches) {
+                    continue;
+                } else if (matches.length === 2) {
+                    preconditionKeys.push(matches[1]);
+                }
             }
         }
-    });
-    return issues;
+    }
+    return preconditionKeys;
 }

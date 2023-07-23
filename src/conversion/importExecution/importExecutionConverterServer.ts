@@ -2,22 +2,30 @@ import { basename } from "path";
 import { Status } from "../../types/testStatus";
 import {
     XrayEvidenceItem,
-    XrayTestCloud,
-    XrayTestInfoCloud,
+    XrayTestExecutionResultsServer,
+    XrayTestInfoServer,
+    XrayTestServer,
 } from "../../types/xray/importTestExecutionResults";
 import { encodeFile } from "../../util/base64";
 import { normalizedFilename } from "../../util/files";
-import { ImportExecutionResultsConverter } from "./importExecutionResultsConverter";
+import { ImportExecutionConverter } from "./importExecutionConverter";
 
 /**
- * Converts Cypress run results into Xray Cloud JSON execution results.
+ * Converts Cypress run results into Xray Server JSON execution results.
  */
-export class ImportExecutionResultsConverterCloud extends ImportExecutionResultsConverter<
-    XrayTestCloud,
-    XrayTestInfoCloud
+export class ImportExecutionConverterServer extends ImportExecutionConverter<
+    XrayTestServer,
+    XrayTestInfoServer,
+    XrayTestExecutionResultsServer
 > {
-    protected getTest(attempt: CypressCommandLine.AttemptResult): XrayTestCloud {
-        const json: XrayTestCloud = {
+    protected initResult(): XrayTestExecutionResultsServer {
+        return {
+            testExecutionKey: this.options.jira.testExecutionIssueKey,
+        };
+    }
+
+    protected getTest(attempt: CypressCommandLine.AttemptResult): XrayTestServer {
+        const json: XrayTestServer = {
             start: this.truncateISOTime(this.getAttemptStartDate(attempt).toISOString()),
             finish: this.truncateISOTime(this.getAttemptEndDate(attempt).toISOString()),
             status: this.getXrayStatus(this.getStatus(attempt)),
@@ -25,7 +33,7 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
         const evidence: XrayEvidenceItem[] = [];
         if (this.options.xray.uploadScreenshots) {
             attempt.screenshots.forEach((screenshot: CypressCommandLine.ScreenshotInformation) => {
-                let filename = basename(screenshot.path);
+                let filename: string = basename(screenshot.path);
                 if (this.options.plugin.normalizeScreenshotNames) {
                     filename = normalizedFilename(filename);
                 }
@@ -41,16 +49,24 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
         return json;
     }
 
+    protected addTest(results: XrayTestExecutionResultsServer, test: XrayTestServer): void {
+        if (!results.tests) {
+            results.tests = [test];
+        } else {
+            results.tests.push(test);
+        }
+    }
+
     protected getXrayStatus(status: Status): string {
         switch (status) {
             case Status.PASSED:
-                return this.options.xray.statusPassed ?? "PASSED";
+                return this.options.xray.statusPassed ?? "PASS";
             case Status.FAILED:
-                return this.options.xray.statusFailed ?? "FAILED";
+                return this.options.xray.statusFailed ?? "FAIL";
             case Status.PENDING:
                 return this.options.xray.statusPending ?? "TODO";
             case Status.SKIPPED:
-                return this.options.xray.statusSkipped ?? "FAILED";
+                return this.options.xray.statusSkipped ?? "FAIL";
             default:
                 throw new Error(`Unknown status: ${status}`);
         }
@@ -59,13 +75,13 @@ export class ImportExecutionResultsConverterCloud extends ImportExecutionResults
     protected getTestInfo(
         issueKey: string,
         testResult: CypressCommandLine.TestResult
-    ): XrayTestInfoCloud {
-        const testInfo: XrayTestInfoCloud = {
+    ): XrayTestInfoServer {
+        const testInfo: XrayTestInfoServer = {
             projectKey: this.options.jira.projectKey,
             summary: testResult.title.join(" "),
-            type: this.options.xray.testTypes[issueKey],
+            testType: this.options.xray.testTypes[issueKey],
         };
-        if (!testInfo.type) {
+        if (!testInfo.testType) {
             throw new Error(`Failed to find test type for issue: ${issueKey}`);
         }
         if (this.options.xray.steps.update) {

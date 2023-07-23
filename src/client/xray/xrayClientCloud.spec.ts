@@ -5,7 +5,7 @@ import fs from "fs";
 import {
     DummyJiraClient,
     RESOLVED_JWT_CREDENTIALS,
-    getTestDir,
+    resolveTestDirPath,
     stubLogging,
     stubRequests,
 } from "../../../test/util";
@@ -102,7 +102,83 @@ describe("the xray cloud client", () => {
             expect(stubbedError).to.have.been.calledWithExactly(
                 "Failed to import execution: AxiosError: Request failed with status code 400"
             );
-            const expectedPath = getTestDir("importExecutionError.json");
+            const expectedPath = resolveTestDirPath("importExecutionError.json");
+            expect(stubbedError).to.have.been.calledWithExactly(
+                `Complete error logs have been written to: ${expectedPath}`
+            );
+        });
+    });
+
+    describe("import execution cucumber multipart", () => {
+        it("should handle successful responses", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedInfo, stubbedSuccess } = stubLogging();
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    id: "12345",
+                    key: "CYP-123",
+                    self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                },
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            const response = await client.importExecutionCucumberMultipart(
+                JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
+                        "utf-8"
+                    )
+                ),
+                JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
+                        "utf-8"
+                    )
+                )
+            );
+            expect(response).to.eq("CYP-123");
+            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution (Cucumber)...");
+            expect(stubbedSuccess).to.have.been.calledWithExactly(
+                "Successfully uploaded Cucumber test execution results to CYP-123."
+            );
+        });
+
+        it("should handle bad responses", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedInfo, stubbedError } = stubLogging();
+            stubbedPost.onFirstCall().rejects(
+                new AxiosError("Request failed with status code 400", "400", null, null, {
+                    status: 400,
+                    statusText: "Bad Request",
+                    config: { headers: new AxiosHeaders() },
+                    headers: {},
+                    data: {
+                        error: "There are no valid tests imported", // sic
+                    },
+                })
+            );
+            const response = await client.importExecutionCucumberMultipart(
+                JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
+                        "utf-8"
+                    )
+                ),
+                JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
+                        "utf-8"
+                    )
+                )
+            );
+            expect(response).to.be.undefined;
+            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution (Cucumber)...");
+            expect(stubbedError).to.have.been.calledWithExactly(
+                "Failed to import Cucumber execution: AxiosError: Request failed with status code 400"
+            );
+            const expectedPath = resolveTestDirPath("importExecutionCucumberMultipartError.json");
             expect(stubbedError).to.have.been.calledWithExactly(
                 `Complete error logs have been written to: ${expectedPath}`
             );
@@ -262,7 +338,7 @@ describe("the xray cloud client", () => {
                 dedent(`
                     Failed to get test types: AxiosError: Request failed with status code 400`)
             );
-            const expectedPath = getTestDir("getTestTypes.json");
+            const expectedPath = resolveTestDirPath("getTestTypes.json");
             expect(stubbedError).to.have.been.calledWithExactly(
                 `Complete error logs have been written to: ${expectedPath}`
             );

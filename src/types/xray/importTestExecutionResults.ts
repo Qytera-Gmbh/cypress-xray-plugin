@@ -9,7 +9,7 @@ import { DateTimeISO, OneOf } from "../util";
  *
  * Schemes transformed into TypeScript using https://github.com/bcherny/json-schema-to-typescript.
  */
-export type XrayTestExecutionResults<XrayTestType> = {
+type XrayTestExecutionResults<XrayTestType> = {
     /**
      * The test execution key where to import the execution results.
      */
@@ -80,13 +80,11 @@ export type XrayTestExecutionInfo = {
 };
 
 type XrayTest<
-    XrayTestInfoType extends OneOf<[XrayTestInfoServer, XrayTestInfoCloud]>,
-    XrayManualTestStepResultType extends OneOf<
-        [XrayManualTestStepResultServer, XrayManualTestStepResultCloud]
-    >,
-    XrayExamplesType extends OneOf<[XrayExamplesTypeServer, XrayExamplesTypeCloud]>,
-    XrayIterationResultType extends OneOf<[XrayIterationResultServer, XrayIterationResultCloud]>,
-    XrayCustomFieldType extends OneOf<[XrayCustomFieldServer, XrayCustomFieldCloud]>
+    XrayTestInfoType,
+    XrayManualTestStepResultType,
+    XrayExamplesType,
+    XrayIterationResultType,
+    XrayCustomFieldType
 > = {
     /**
      * The test issue key.
@@ -300,11 +298,7 @@ export type XrayEvidenceItem = {
     contentType?: string;
 };
 
-type XrayIterationResult<
-    XrayManualTestStepResultType extends OneOf<
-        [XrayManualTestStepResultServer, XrayManualTestStepResultCloud]
-    >
-> = {
+type XrayIterationResult<XrayManualTestStepResultType> = {
     /**
      * An array of parameters along with their values.
      */

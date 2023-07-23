@@ -2,6 +2,7 @@ import dedent from "dedent";
 import { JWTCredentials } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
+import { CucumberMultipartInfoCloud } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
@@ -16,7 +17,8 @@ export class XrayClientCloud extends XrayClient<
     JWTCredentials,
     JiraClientCloud,
     ImportFeatureResponseCloud,
-    ImportExecutionResponseCloud
+    ImportExecutionResponseCloud,
+    CucumberMultipartInfoCloud
 > {
     /**
      * The URLs of Xray's Cloud API.
@@ -32,9 +34,8 @@ export class XrayClientCloud extends XrayClient<
     };
 
     /**
-     * Construct a new Xray Cloud client using the provided credentials.
+     * Construct a new Xray cloud client using the provided credentials.
      *
-     * @param apiBaseUrl the base URL for all HTTP requests
      * @param credentials the credentials to use during authentication
      * @param jiraClient the configured Jira client
      */
@@ -177,5 +178,15 @@ export class XrayClientCloud extends XrayClient<
             logError(`Failed to get test types: ${error}`);
             writeErrorFile(error, "getTestTypes");
         }
+    }
+
+    public getUrlImportExecutionCucumberMultipart(): string {
+        return `${this.apiBaseURL}/import/execution/cucumber/multipart`;
+    }
+
+    public handleResponseImportExecutionCucumberMultipart(
+        response: ImportExecutionResponseCloud
+    ): string {
+        return response.key;
     }
 }

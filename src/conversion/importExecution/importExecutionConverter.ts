@@ -1,47 +1,39 @@
-import dedent from "dedent";
 import { logWarning } from "../../logging/logging";
 import { getTestIssueKey } from "../../tagging/cypress";
-import { InternalOptions } from "../../types/plugin";
 import { Status } from "../../types/testStatus";
 import { DateTimeISO, OneOf, getEnumKeyByEnumValue } from "../../types/util";
 import {
     XrayTestCloud,
     XrayTestExecutionInfo,
-    XrayTestExecutionResults,
+    XrayTestExecutionResultsCloud,
+    XrayTestExecutionResultsServer,
     XrayTestInfoCloud,
     XrayTestInfoServer,
     XrayTestServer,
 } from "../../types/xray/importTestExecutionResults";
+import { Converter } from "../converter";
 
 /**
  * @template XrayTestType - the Xray test type
  * @template XrayTestInfoType - the Xray test information type
+ * @template XrayTestExecutionResultsType - the Xray JSON format type
  */
-export abstract class ImportExecutionResultsConverter<
+export abstract class ImportExecutionConverter<
     XrayTestType extends OneOf<[XrayTestServer, XrayTestCloud]>,
-    XrayTestInfoType extends OneOf<[XrayTestInfoServer, XrayTestInfoCloud]>
-> {
-    protected readonly options: InternalOptions;
-
-    constructor(options: InternalOptions) {
-        this.options = options;
-    }
-
-    /**
-     * Convert Cypress run results into Xray JSON format, ready to be sent to Xray's import
-     * execution results endpoint.
-     *
-     * @param results the run results
-     * @returns the Xray JSON data
-     */
-    public convertExecutionResults(
-        results: CypressCommandLine.CypressRunResult
-    ): XrayTestExecutionResults<XrayTestType> {
-        const json: XrayTestExecutionResults<XrayTestType> = {
-            testExecutionKey: this.options.jira.testExecutionIssueKey,
-        };
+    XrayTestInfoType extends OneOf<[XrayTestInfoServer, XrayTestInfoCloud]>,
+    XrayTestExecutionResultsType extends OneOf<
+        [XrayTestExecutionResultsServer, XrayTestExecutionResultsCloud]
+    >
+> extends Converter<CypressCommandLine.CypressRunResult, XrayTestExecutionResultsType> {
+    public convert(results: CypressCommandLine.CypressRunResult): XrayTestExecutionResultsType {
+        const runs: CypressCommandLine.RunResult[] = results.runs.filter(
+            (run: CypressCommandLine.RunResult) => {
+                return !run.spec.absolute.endsWith(this.options.cucumber.featureFileExtension);
+            }
+        );
+        const json = this.initResult();
         json.info = this.getTestExecutionInfo(results);
-        const testsByTitle = this.mapTestsToTitles(results);
+        const testsByTitle = this.mapTestsToTitles(runs);
         const attemptsByTitle = this.mapAttemptsToTitles(testsByTitle);
         testsByTitle.forEach((testResults: CypressCommandLine.TestResult[], title: string) => {
             let test: XrayTestType;
@@ -52,31 +44,11 @@ export abstract class ImportExecutionResultsConverter<
                 // TODO: Support multiple iterations.
                 test = this.getTest(attempts[attempts.length - 1]);
                 const issueKey = getTestIssueKey(title, this.options.jira.projectKey);
-                if (issueKey !== null) {
-                    test.testKey = issueKey;
-                    if (this.options.plugin.overwriteIssueSummary) {
-                        test.testInfo = this.getTestInfo(issueKey, testResult);
-                    }
-                } else {
-                    throw new Error(
-                        dedent(`
-                            No test issue keys found in the test's title.
-                            You can target existing test issues by adding a corresponding issue key:
-
-                            it("${this.options.jira.projectKey}-123 ${title}", () => {
-                                // ...
-                            });
-
-                            For more information, visit:
-                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                        `)
-                    );
+                test.testKey = issueKey;
+                if (this.options.plugin.overwriteIssueSummary) {
+                    test.testInfo = this.getTestInfo(issueKey, testResult);
                 }
-                if (!json.tests) {
-                    json.tests = [test];
-                } else {
-                    json.tests.push(test);
-                }
+                this.addTest(json, test);
             } catch (error: unknown) {
                 let reason = error;
                 if (error instanceof Error) {
@@ -89,12 +61,26 @@ export abstract class ImportExecutionResultsConverter<
     }
 
     /**
+     * Build the initial results object.
+     *
+     * @return the result object for further modifications
+     */
+    protected abstract initResult(): XrayTestExecutionResultsType;
+
+    /**
      * Builds a test entity for an executed test.
      *
      * @param testResult the Cypress test result
      * @return the test entity
      */
     protected abstract getTest(attempt: CypressCommandLine.AttemptResult): XrayTestType;
+
+    /**
+     * Adds a test entity to the list of test execution results.
+     *
+     * @param testResult the test entity
+     */
+    protected abstract addTest(results: XrayTestExecutionResultsType, test: XrayTestType): void;
 
     /**
      * Extract the Xray status from a {@link Status} value.
@@ -217,10 +203,10 @@ export abstract class ImportExecutionResultsConverter<
     }
 
     private mapTestsToTitles(
-        results: CypressCommandLine.CypressRunResult
+        runs: CypressCommandLine.RunResult[]
     ): Map<string, CypressCommandLine.TestResult[]> {
         const map = new Map<string, CypressCommandLine.TestResult[]>();
-        results.runs.forEach((run: CypressCommandLine.RunResult) => {
+        runs.forEach((run: CypressCommandLine.RunResult) => {
             run.tests.forEach((test: CypressCommandLine.TestResult) => {
                 const title = test.title.join(" ");
                 if (map.has(title)) {

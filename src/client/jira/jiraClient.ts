@@ -15,8 +15,13 @@ import { SearchRequestCloud, SearchRequestServer } from "../../types/jira/reques
 import { AttachmentCloud, AttachmentServer } from "../../types/jira/responses/attachment";
 import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
 import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
+import {
+    IssueTypeDetailsCloud,
+    IssueTypeDetailsServer,
+} from "../../types/jira/responses/issueTypeDetails";
 import { JsonTypeCloud, JsonTypeServer } from "../../types/jira/responses/jsonType";
 import { SearchResults } from "../../types/jira/responses/searchResults";
+import { OneOf } from "../../types/util";
 import { Client } from "../client";
 
 /**
@@ -28,6 +33,7 @@ export abstract class JiraClient<
     FieldDetailType extends FieldDetailServer | FieldDetailCloud,
     JsonType extends JsonTypeServer | JsonTypeCloud,
     IssueType extends IssueServer | IssueCloud,
+    IssueTypeDetailsResponse extends OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>,
     SearchRequestType extends SearchRequestServer | SearchRequestCloud
 > extends Client<CredentialsType> {
     /**
@@ -116,6 +122,52 @@ export abstract class JiraClient<
      * @returns the URL
      */
     public abstract getUrlAddAttachment(issueIdOrKey: string): string;
+
+    /**
+     * Returns all issue types.
+     *
+     * @returns the issue types or `undefined` in case of errors
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/issuetype-getIssueAllTypes
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-rest-api-3-issuetype-get
+     */
+    public async getIssueTypes(): Promise<IssueTypeDetailsResponse[] | undefined> {
+        try {
+            const authenticationHeader = await this.credentials.getAuthenticationHeader();
+            logInfo("Getting issue types...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const response: AxiosResponse<IssueTypeDetailsResponse[]> = await Requests.get(
+                    this.getUrlGetIssueTypes(),
+                    {
+                        headers: {
+                            ...authenticationHeader,
+                        },
+                    }
+                );
+                logSuccess(`Successfully retrieved data for ${response.data.length} issue types.`);
+                logDebug(
+                    "Received data for issue types:",
+                    ...response.data.map(
+                        (issueType: IssueTypeDetailsResponse) =>
+                            `${issueType.name} (id: ${issueType.id})`
+                    )
+                );
+                return response.data;
+            } finally {
+                clearInterval(progressInterval);
+            }
+        } catch (error: unknown) {
+            logError(`Failed to get issue types: ${error}`);
+            writeErrorFile(error, "getIssueTypesError");
+        }
+    }
+
+    /**
+     * Returns the endpoint to use for retrieving issue types.
+     *
+     * @returns the URL
+     */
+    public abstract getUrlGetIssueTypes(): string;
 
     /**
      * Returns system and custom issue fields according to the following rules:

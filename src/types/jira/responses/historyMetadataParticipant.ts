@@ -1,4 +1,7 @@
 export type HistoryMetadataParticipant = {
+    /**
+     * The ID of the user or system associated with a history record.
+     */
     id?: string;
     /**
      * The display name of the user or system associated with a history record.

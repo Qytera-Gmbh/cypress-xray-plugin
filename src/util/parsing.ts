@@ -1,7 +1,3 @@
-import { AstBuilder, GherkinClassicTokenMatcher, Parser } from "@cucumber/gherkin";
-import { GherkinDocument, IdGenerator } from "@cucumber/messages";
-import { readFileSync } from "fs";
-
 /**
  * Parses and returns a boolean value from a string.
  *
@@ -55,6 +51,7 @@ export function asInt(value: string): number {
 
 /**
  * Parses an environment variable to arbitrary data types.
+ *
  * @param env the object holding all environment variables as key-value pairs
  * @param variable the variable name
  * @param parser the parsing function
@@ -66,26 +63,4 @@ export function parse<T>(
     parser: (parameter: string) => T
 ): T | undefined {
     return variable in env ? parser(env[variable]) : undefined;
-}
-
-/**
- * Parses a Gherkin document (feature file) and returns the information contained within.
- *
- * @param file the path to the feature file
- * @param encoding the file's encoding
- * @returns an object containing the data of the feature file
- * @example
- *   const data = parseFeatureFile("myTetest.feature")
- *   console.log(data.feature.children[0].scenario); // steps, name, ...
- * @see https://github.com/cucumber/messages/blob/main/javascript/src/messages.ts
- */
-export function parseFeatureFile(
-    file: string,
-    encoding: BufferEncoding = "utf-8"
-): GherkinDocument {
-    const uuidFn = IdGenerator.uuid();
-    const builder = new AstBuilder(uuidFn);
-    const matcher = new GherkinClassicTokenMatcher();
-    const parser = new Parser(builder, matcher);
-    return parser.parse(readFileSync(file, { encoding: encoding }));
 }

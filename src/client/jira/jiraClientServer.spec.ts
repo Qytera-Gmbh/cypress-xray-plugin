@@ -16,5 +16,8 @@ describe("the jira server client", () => {
                 "https://example.org/rest/api/2/issue/CYP-123/attachments"
             );
         });
+        it("issue types", () => {
+            expect(client.getUrlGetIssueTypes()).to.eq("https://example.org/rest/api/2/issuetype");
+        });
     });
 });

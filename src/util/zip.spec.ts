@@ -2,22 +2,22 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import path from "path";
-import { getTestDir } from "../../test/util";
+import { resolveTestDirPath } from "../../test/util";
 import { unzip } from "./zip";
 
 // Enable promise assertions.
 chai.use(chaiAsPromised);
 
-const ZIP_DIRECTORY = getTestDir("zip");
+const ZIP_DIRECTORY = resolveTestDirPath("zip");
 
 describe("the zipping utility", () => {
-    it("should be able to unzip a zip file including the .zip extension", async () => {
+    it("should unzip a zip file including the .zip extension", async () => {
         await unzip("./test/resources/compressedContent.zip", ZIP_DIRECTORY);
         expect(fs.existsSync(`${ZIP_DIRECTORY}/content.txt`)).to.be.true;
         expect(fs.existsSync(`${ZIP_DIRECTORY}/content/compressed.txt`)).to.be.true;
     });
 
-    it("should not be able to overwrite existing files", async () => {
+    it("should not overwrite existing files", async () => {
         const zipFilePath = ["test", "resources", "compressedContent.zip"];
         const existingFilePath = ["test", "resources", "compressedContent"];
         const absolutePath = path.resolve(...zipFilePath);

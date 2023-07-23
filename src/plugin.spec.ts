@@ -14,6 +14,7 @@ describe("the plugin configuration", () => {
         const options: Options = {
             jira: {
                 projectKey: "CYP",
+                url: "https://example.org",
             },
             plugin: {
                 enabled: false,

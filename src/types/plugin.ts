@@ -1,7 +1,9 @@
+import { resolvePreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import { JiraClientCloud } from "../client/jira/jiraClientCloud";
 import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
+import { IssueTypeDetailsCloud, IssueTypeDetailsServer } from "./jira/responses/issueTypeDetails";
 import { OneOf } from "./util";
 
 export interface Options {
@@ -57,6 +59,11 @@ export interface JiraOptions {
      */
     testExecutionIssueSummary?: string;
     /**
+     * The issue type name of test executions. By default, Xray calls them `Test Execution`, but
+     * it's possible that they have been renamed or translated in your Jira instance.
+     */
+    testExecutionIssueType?: string;
+    /**
      * A test plan issue key to attach the execution to.
      *
      * Note: it must be prefixed with the project key.
@@ -65,12 +72,17 @@ export interface JiraOptions {
      */
     testPlanIssueKey?: string;
     /**
+     * The issue type name of test plans. By default, Xray calls them `Test Plan`, but it's possible
+     * that they have been renamed or translated in your Jira instance.
+     */
+    testPlanIssueType?: string;
+    /**
      * Use this parameter to specify the base URL of your Jira instance.
      *
      * @example "https://example.org/development/jira" // Jira server
      * @example "https://your-domain.atlassian.net" // Jira cloud
      */
-    url?: string;
+    url: string;
 }
 
 export interface XrayStepOptions {
@@ -221,6 +233,16 @@ export interface OpenSSLOptions {
  * Options only intended for internal plugin use.
  */
 export type InternalOptions = Options & {
+    jira: {
+        /**
+         * The details of the test execution issue type.
+         */
+        testExecutionIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
+        /**
+         * The details of the test plan issue type.
+         */
+        testPlanIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
+    };
     xray?: {
         /**
          * A mapping of issue keys to test types. Required for Cypress execution import, since the
@@ -232,28 +254,13 @@ export type InternalOptions = Options & {
         };
     };
     cucumber?: {
-        /**
-         * A mapping of scenario titles to Xray issue keys. Built during file preprocessing, used
-         * during results upload.
-         *
-         * @example
-         *   '@PRJ-1234'
-         *   'Scenario: Valid Login'
-         *   '[...]'
-         *
-         *   issues: {
-         *     "Valid Login": "PRJ-1234"
-         *   }
-         */
-        issues?: {
-            [key: string]: string;
-        };
+        preprocessor?: Awaited<ReturnType<typeof resolvePreprocessorConfiguration>>;
     };
 };
 
 export interface PluginContext {
-    xrayClient?: OneOf<[XrayClientServer, XrayClientCloud]>;
-    jiraClient?: OneOf<[JiraClientServer, JiraClientCloud]>;
+    xrayClient: XrayClientServer | XrayClientCloud;
+    jiraClient: JiraClientServer | JiraClientCloud;
     internal: InternalOptions;
     cypress: Cypress.PluginConfigOptions;
 }

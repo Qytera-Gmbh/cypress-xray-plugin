@@ -1,5 +1,5 @@
 import { initClients, initOptions, verifyOptions } from "./context";
-import { afterRunHook, synchronizeFile } from "./hooks";
+import { afterRunHook, beforeRunHook, synchronizeFile } from "./hooks";
 import { Requests } from "./https/requests";
 import { initLogging, logInfo } from "./logging/logging";
 import { Options, PluginContext } from "./types/plugin";
@@ -22,17 +22,27 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
     };
     Requests.init(internalOptions);
     initLogging({
+        debug: internalOptions.plugin.debug,
         logDirectory: internalOptions.plugin.logDirectory,
     });
 }
 
 export async function addXrayResultUpload(on: Cypress.PluginEvents) {
+    on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
+        await beforeRunHook(
+            context.cypress,
+            runDetails,
+            context.internal,
+            context.xrayClient,
+            context.jiraClient
+        );
+    });
     on(
         "after:run",
         async (
             results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
         ) => {
-            await afterRunHook(results, context.internal, context.xrayClient);
+            await afterRunHook(results, context.internal, context.xrayClient, context.jiraClient);
         }
     );
 }

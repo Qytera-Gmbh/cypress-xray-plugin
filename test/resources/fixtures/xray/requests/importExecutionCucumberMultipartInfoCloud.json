@@ -1,0 +1,14 @@
+{
+    "fields": {
+        "project": {
+            "key": "CYP"
+        },
+        "summary": "Brand new Test execution",
+        "issuetype": {
+            "name": "Test Execution"
+        }
+    },
+    "xrayFields": {
+        "testPlanKey": "CYP-123"
+    }
+}

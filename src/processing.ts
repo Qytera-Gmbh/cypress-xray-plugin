@@ -1,22 +1,20 @@
-import { issuesByScenario } from "./cucumber/tagging";
 import { logWarning } from "./logging/logging";
 import { getTestIssueKey } from "./tagging/cypress";
-import { InternalOptions } from "./types/plugin";
-import { parseFeatureFile } from "./util/parsing";
+import { InternalOptions, Options } from "./types/plugin";
 
-export function processRunResult(
+export function getNativeTestIssueKeys(
     results: CypressCommandLine.CypressRunResult,
     options: InternalOptions
 ): string[] {
     const issueKeys: string[] = [];
     for (const runResult of results.runs) {
         const keyedTests: CypressCommandLine.TestResult[] = [];
-        // Cucumber tests aren't handled here. No need to process them.
+        // Cucumber tests aren't handled here. Let's skip them.
         if (
             options.cucumber &&
             runResult.spec.absolute.endsWith(options.cucumber.featureFileExtension)
         ) {
-            runResult.tests = [];
+            continue;
         }
         for (const testResult of runResult.tests) {
             const title = testResult.title.join(" ");
@@ -42,11 +40,26 @@ export function processRunResult(
     return issueKeys;
 }
 
-export function processFeatureFile(filePath: string, options: InternalOptions) {
-    // Extract tag information for later use, e.g. when uploading test results to specific issues.
-    const feature = parseFeatureFile(filePath).feature;
-    options.cucumber.issues = {
-        ...options.cucumber.issues,
-        ...issuesByScenario(feature, options.jira.projectKey),
-    };
+export function containsNativeTest(
+    runResult: CypressCommandLine.CypressRunResult,
+    options: Options
+): boolean {
+    return runResult.runs.some((run: CypressCommandLine.RunResult) => {
+        if (options.cucumber && run.spec.absolute.endsWith(options.cucumber.featureFileExtension)) {
+            return false;
+        }
+        return true;
+    });
+}
+
+export function containsCucumberTest(
+    runResult: CypressCommandLine.CypressRunResult,
+    options: Options
+): boolean {
+    return runResult.runs.some((run: CypressCommandLine.RunResult) => {
+        if (options.cucumber && run.spec.absolute.endsWith(options.cucumber.featureFileExtension)) {
+            return true;
+        }
+        return false;
+    });
 }

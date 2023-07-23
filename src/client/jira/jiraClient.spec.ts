@@ -1,7 +1,7 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
-import { expectToExist, getTestDir, stubLogging, stubRequests } from "../../../test/util";
+import { expectToExist, resolveTestDirPath, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { SearchResultsServer } from "../../types/jira/responses/searchResults";
 import { JiraClientCloud } from "./jiraClientCloud";
@@ -262,7 +262,7 @@ describe("the jira clients", () => {
                     expect(stubbedError).to.have.been.calledWithExactly(
                         "Failed to attach files: AxiosError: Request failed with status code 413"
                     );
-                    const expectedPath = getTestDir("addAttachmentError.json");
+                    const expectedPath = resolveTestDirPath("addAttachmentError.json");
                     expect(stubbedError).to.have.been.calledWithExactly(
                         `Complete error logs have been written to: ${expectedPath}`
                     );
@@ -337,7 +337,7 @@ describe("the jira clients", () => {
                     expect(stubbedError).to.have.been.calledWithExactly(
                         "Failed to get fields: AxiosError: Request failed with status code 409"
                     );
-                    const expectedPath = getTestDir("getFieldsError.json");
+                    const expectedPath = resolveTestDirPath("getFieldsError.json");
                     expect(stubbedError).to.have.been.calledWithExactly(
                         `Complete error logs have been written to: ${expectedPath}`
                     );
@@ -481,7 +481,7 @@ describe("the jira clients", () => {
                     expect(stubbedError).to.have.been.calledWithExactly(
                         "Failed to search issues: AxiosError: Request failed with status code 401"
                     );
-                    const expectedPath = getTestDir("searchError.json");
+                    const expectedPath = resolveTestDirPath("searchError.json");
                     expect(stubbedError).to.have.been.calledWithExactly(
                         `Complete error logs have been written to: ${expectedPath}`
                     );

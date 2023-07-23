@@ -48,6 +48,17 @@ describe("the xray clients", () => {
                     );
                 });
             });
+
+            describe("import execution cucumber multipart", () => {
+                it("should skip empty test uploads", async () => {
+                    const { stubbedWarning } = stubLogging();
+                    const response = await client.importExecutionCucumberMultipart([], null);
+                    expect(response).to.be.null;
+                    expect(stubbedWarning).to.have.been.calledWithExactly(
+                        "No Cucumber tests were executed. Skipping Cucumber upload."
+                    );
+                });
+            });
         });
     });
 });

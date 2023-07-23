@@ -30,9 +30,9 @@ export const stubRequests = () => {
     };
 };
 
-export const TEST_TMP_DIR = "test/out";
+const TEST_TMP_DIR = "test/out";
 
-export function getTestDir(...subPaths: string[]): string {
+export function resolveTestDirPath(...subPaths: string[]): string {
     return path.resolve(TEST_TMP_DIR, ...subPaths);
 }
 
@@ -64,7 +64,7 @@ after(async () => {
     }
 });
 
-export class DummyXrayClient extends XrayClient<null, null, null, null> {
+export class DummyXrayClient extends XrayClient<null, null, null, null, null> {
     constructor() {
         super("https://example.org", null, null);
     }
@@ -86,9 +86,15 @@ export class DummyXrayClient extends XrayClient<null, null, null, null> {
     public getTestTypes(): Promise<{ [key: string]: string }> {
         throw new Error("Method not implemented.");
     }
+    public getUrlImportExecutionCucumberMultipart(): string {
+        throw new Error("Method not implemented.");
+    }
+    public handleResponseImportExecutionCucumberMultipart(): string {
+        throw new Error("Method not implemented.");
+    }
 }
 
-export class DummyJiraClient extends JiraClient<null, null, null, null, null, null> {
+export class DummyJiraClient extends JiraClient<null, null, null, null, null, null, null> {
     constructor() {
         super("https://example.org", null);
     }
@@ -99,6 +105,9 @@ export class DummyJiraClient extends JiraClient<null, null, null, null, null, nu
         throw new Error("Method not implemented.");
     }
     public getUrlPostSearch(): string {
+        throw new Error("Method not implemented.");
+    }
+    public getUrlGetIssueTypes(): string {
         throw new Error("Method not implemented.");
     }
 }

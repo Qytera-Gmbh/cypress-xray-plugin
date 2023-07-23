@@ -2,7 +2,7 @@ import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import dedent from "dedent";
 import fs from "fs";
-import { getTestDir, stubLogging, stubRequests } from "../../../test/util";
+import { resolveTestDirPath, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { JiraClientServer } from "../jira/jiraClientServer";
 import { XrayClientServer } from "./xrayClientServer";
@@ -62,6 +62,45 @@ describe("the xray server client", () => {
             expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution...");
             expect(stubbedSuccess).to.have.been.calledWithExactly(
                 "Successfully uploaded test execution results to CYP-123."
+            );
+        });
+    });
+
+    describe("import execution cucumber multipart", () => {
+        it("should handle successful responses", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedInfo, stubbedSuccess } = stubLogging();
+            stubbedPost.resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    testExecIssue: {
+                        id: "12345",
+                        key: "CYP-123",
+                        self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                    },
+                },
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            const response = await client.importExecutionCucumberMultipart(
+                JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
+                        "utf-8"
+                    )
+                ),
+                JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
+                        "utf-8"
+                    )
+                )
+            );
+            expect(response).to.eq("CYP-123");
+            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution (Cucumber)...");
+            expect(stubbedSuccess).to.have.been.calledWithExactly(
+                "Successfully uploaded Cucumber test execution results to CYP-123."
             );
         });
     });
@@ -161,13 +200,17 @@ describe("the xray server client", () => {
                 "Failed to get fields: AxiosError: Request failed with status code 401"
             );
             expect(stubbedError.getCall(1)).to.have.been.calledWith(
-                `Complete error logs have been written to: ${getTestDir("getFieldsError.json")}`
+                `Complete error logs have been written to: ${resolveTestDirPath(
+                    "getFieldsError.json"
+                )}`
             );
             expect(stubbedError.getCall(2)).to.have.been.calledWith(
                 "Failed to get test types: Error: Failed to fetch Jira fields"
             );
             expect(stubbedError.getCall(3)).to.have.been.calledWith(
-                `Complete error logs have been written to: ${getTestDir("getTestTypesError.json")}`
+                `Complete error logs have been written to: ${resolveTestDirPath(
+                    "getTestTypesError.json"
+                )}`
             );
         });
 
@@ -193,7 +236,9 @@ describe("the xray server client", () => {
                 "Failed to get test types: Error: Jira field does not exist: Test Type"
             );
             expect(stubbedError.getCall(1)).to.have.been.calledWith(
-                `Complete error logs have been written to: ${getTestDir("getTestTypesError.json")}`
+                `Complete error logs have been written to: ${resolveTestDirPath(
+                    "getTestTypesError.json"
+                )}`
             );
         });
 
@@ -229,14 +274,14 @@ describe("the xray server client", () => {
             expect(stubbedError.getCall(0)).to.have.been.calledWith(
                 "Failed to search issues: AxiosError: Request failed with status code 400"
             );
-            let expectedPath = getTestDir("searchError.json");
+            let expectedPath = resolveTestDirPath("searchError.json");
             expect(stubbedError.getCall(1)).to.have.been.calledWith(
                 `Complete error logs have been written to: ${expectedPath}`
             );
             expect(stubbedError.getCall(2)).to.have.been.calledWith(
                 "Failed to get test types: Error: Successfully retrieved test type field data, but failed to search issues"
             );
-            expectedPath = getTestDir("getTestTypesError.json");
+            expectedPath = resolveTestDirPath("getTestTypesError.json");
             expect(stubbedError.getCall(3)).to.have.been.calledWith(
                 `Complete error logs have been written to: ${expectedPath}`
             );

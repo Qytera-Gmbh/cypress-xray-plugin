@@ -2,6 +2,7 @@ import dedent from "dedent";
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
 import { FieldDetailServer } from "../../types/jira/responses/fieldDetail";
+import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import {
     ImportFeatureResponseServer,
@@ -14,7 +15,8 @@ export class XrayClientServer extends XrayClient<
     BasicAuthCredentials | PATCredentials,
     JiraClientServer,
     ImportFeatureResponseServer,
-    ImportExecutionResponseServer
+    ImportExecutionResponseServer,
+    CucumberMultipartInfoServer
 > {
     /**
      * Construct a new Xray Server client using the provided credentials.
@@ -146,5 +148,15 @@ export class XrayClientServer extends XrayClient<
             logError(`Failed to get test types: ${error}`);
             writeErrorFile(error, "getTestTypesError");
         }
+    }
+
+    public getUrlImportExecutionCucumberMultipart(): string {
+        return `${this.apiBaseURL}/rest/raven/latest/import/execution/cucumber/multipart`;
+    }
+
+    public handleResponseImportExecutionCucumberMultipart(
+        response: ImportExecutionResponseServer
+    ): string {
+        return response.testExecIssue.key;
     }
 }

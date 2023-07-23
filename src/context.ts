@@ -15,7 +15,9 @@ import {
     ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION,
     ENV_JIRA_TEST_EXECUTION_ISSUE_KEY,
     ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY,
+    ENV_JIRA_TEST_EXECUTION_ISSUE_TYPE,
     ENV_JIRA_TEST_PLAN_ISSUE_KEY,
+    ENV_JIRA_TEST_PLAN_ISSUE_TYPE,
     ENV_JIRA_URL,
     ENV_JIRA_USERNAME,
     ENV_OPENSSL_ROOT_CA_PATH,
@@ -55,8 +57,16 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
             testExecutionIssueSummary:
                 parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY, asString) ??
                 options.jira.testExecutionIssueSummary,
+            testExecutionIssueType:
+                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_TYPE, asString) ??
+                options.jira.testExecutionIssueType ??
+                "Test Execution",
             testPlanIssueKey:
                 parse(env, ENV_JIRA_TEST_PLAN_ISSUE_KEY, asString) ?? options.jira.testPlanIssueKey,
+            testPlanIssueType:
+                parse(env, ENV_JIRA_TEST_PLAN_ISSUE_TYPE, asString) ??
+                options.jira.testPlanIssueType ??
+                "Test Plan",
             url: parse(env, ENV_JIRA_URL, asString) ?? options.jira.url,
         },
         plugin: {

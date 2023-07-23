@@ -20,6 +20,7 @@ const PREFIXES = {
 };
 
 export interface LoggingOptions {
+    debug?: boolean;
     logDirectory: string;
 }
 
@@ -33,37 +34,44 @@ function prefix(type: string): string {
 }
 
 export const logInfo = (...text: string[]) => {
-    log(text, PREFIXES.info, chalk.gray);
+    log(text, PREFIXES.info, console.log, chalk.gray);
 };
 
 export const logError = (...text: string[]) => {
-    log(text, PREFIXES.error, chalk.red);
+    log(text, PREFIXES.error, console.error, chalk.red);
 };
 
 export const logSuccess = (...text: string[]) => {
-    log(text, PREFIXES.success, chalk.green);
+    log(text, PREFIXES.success, console.log, chalk.green);
 };
 
 export const logWarning = (...text: string[]) => {
-    log(text, PREFIXES.warning, chalk.yellow);
+    log(text, PREFIXES.warning, console.log, chalk.yellow);
 };
 
 export const logDebug = (...text: string[]) => {
-    log(text, PREFIXES.debug, chalk.cyan);
+    if (loggingOptions.debug) {
+        log(text, PREFIXES.debug, console.log, chalk.cyan);
+    }
 };
 
-function log(text: string[], prefix: string, colorize: (...text: unknown[]) => string) {
+function log(
+    text: string[],
+    prefix: string,
+    logger: (...text: unknown[]) => void,
+    colorizer: (...text: unknown[]) => string
+) {
     const lines = text.join(" ").split("\n");
     lines.forEach((line: string, index: number) => {
         if (index === 0) {
-            console.log(`${prefix} ${colorize(line)}`);
+            logger(`${prefix} ${colorizer(line)}`);
         } else {
-            console.log(`${prefix} ┊ ${colorize(line)}`);
+            logger(`${prefix} ┊ ${colorizer(line)}`);
         }
         // Pad multiline log messages with an extra new line to cleanly separate them from the
         // following line.
         if (index > 1 && index === lines.length - 1) {
-            console.log(`${prefix} ┊`);
+            logger(`${prefix} ┊`);
         }
     });
 }
