@@ -173,7 +173,7 @@ export abstract class XrayClient<
             const authenticationHeader = await this.credentials.getAuthenticationHeader(
                 `${this.apiBaseURL}/authenticate`
             );
-            logInfo("Importing Cucumber tests...");
+            logInfo("Importing Cucumber features...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const fileContent = fs.createReadStream(file);
@@ -195,7 +195,7 @@ export abstract class XrayClient<
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to import cucumber feature files: ${error}`);
+            logError(`Failed to import cucumber features: ${error}`);
             writeErrorFile(error, "importFeatureError");
         }
     }

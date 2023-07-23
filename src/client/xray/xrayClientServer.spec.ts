@@ -66,6 +66,45 @@ describe("the xray server client", () => {
         });
     });
 
+    describe("import execution cucumber multipart", () => {
+        it("should handle successful responses", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedInfo, stubbedSuccess } = stubLogging();
+            stubbedPost.resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    testExecIssue: {
+                        id: "12345",
+                        key: "CYP-123",
+                        self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                    },
+                },
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            const response = await client.importExecutionCucumberMultipart(
+                JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
+                        "utf-8"
+                    )
+                ),
+                JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
+                        "utf-8"
+                    )
+                )
+            );
+            expect(response).to.eq("CYP-123");
+            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution (Cucumber)...");
+            expect(stubbedSuccess).to.have.been.calledWithExactly(
+                "Successfully uploaded Cucumber test execution results to CYP-123."
+            );
+        });
+    });
+
     describe("get test types", () => {
         it("should handle successful responses", async () => {
             const { stubbedInfo, stubbedSuccess } = stubLogging();
@@ -337,45 +376,6 @@ describe("the xray server client", () => {
             expect(response).to.be.null;
             expect(stubbedWarning).to.have.been.calledWithExactly(
                 "No issue keys provided. Skipping test type retrieval"
-            );
-        });
-    });
-
-    describe("import execution cucumber multipart", () => {
-        it("should handle successful responses", async () => {
-            const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
-            stubbedPost.resolves({
-                status: HttpStatusCode.Ok,
-                data: {
-                    testExecIssue: {
-                        id: "12345",
-                        key: "CYP-123",
-                        self: "http://www.example.org/jira/rest/api/2/issue/12345",
-                    },
-                },
-                headers: null,
-                statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
-            });
-            const response = await client.importExecutionCucumberMultipart(
-                JSON.parse(
-                    fs.readFileSync(
-                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
-                        "utf-8"
-                    )
-                ),
-                JSON.parse(
-                    fs.readFileSync(
-                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
-                        "utf-8"
-                    )
-                )
-            );
-            expect(response).to.eq("CYP-123");
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution (Cucumber)...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully uploaded Cucumber test execution results to CYP-123."
             );
         });
     });

@@ -176,9 +176,10 @@ export async function afterRunHook(
     jiraClient?: JiraClientServer | JiraClientCloud
 ) {
     if (!options) {
+        // Don't throw here in case someone doesn't want the plugin to run.
         logError(
             dedent(`
-                Plugin misconfigured: configureXrayPlugin() was not called. Skipping after:run hook
+                Skipping after:run hook: Plugin misconfigured: configureXrayPlugin() was not called
 
                 Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
             `)
@@ -186,11 +187,17 @@ export async function afterRunHook(
         return;
     }
     if (!options.plugin.enabled) {
-        logInfo("Plugin disabled. Skipping after:run hook");
+        logInfo("Skipping after:run hook: Plugin disabled");
         return;
     }
     if (results.status === "failed") {
-        logError(`Aborting: failed to run ${results.failures} tests:`, results.message);
+        logError(
+            dedent(`
+                Skipping after:run hook: Failed to run ${results.failures} tests
+
+                ${results.message}
+            `)
+        );
         return;
     }
     const runResult = results as CypressCommandLine.CypressRunResult;

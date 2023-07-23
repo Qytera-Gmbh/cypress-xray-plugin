@@ -523,19 +523,49 @@ describe("the after run hook", () => {
         expect(stubbedError).to.have.been.calledOnce;
         expect(stubbedError).to.have.been.calledWith(
             dedent(`
-                Plugin misconfigured: configureXrayPlugin() was not called. Skipping after:run hook
+                Skipping after:run hook: Plugin misconfigured: configureXrayPlugin() was not called
 
                 Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
             `)
         );
     });
 
-    it("should not do anything if disabled", async () => {
+    it("should throw an error for missing xray clients", async () => {
+        await expect(afterRunHook(results, options)).to.eventually.be.rejectedWith(
+            dedent(`
+                Plugin misconfigured: Xray client not configured
+
+                Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
+            `)
+        );
+    });
+
+    it("should not display an error for missing xray clients if disabled", async () => {
         const { stubbedInfo } = stubLogging();
         options.plugin.enabled = false;
         await afterRunHook(results, options);
-        expect(stubbedInfo).to.have.been.called.with.callCount(1);
-        expect(stubbedInfo).to.have.been.calledWith("Plugin disabled. Skipping after:run hook");
+        expect(stubbedInfo).to.have.been.calledOnce;
+        expect(stubbedInfo).to.have.been.calledWith("Skipping after:run hook: Plugin disabled");
+    });
+
+    it("should throw an error for missing jira clients", async () => {
+        await expect(
+            afterRunHook(results, options, new DummyXrayClient())
+        ).to.eventually.be.rejectedWith(
+            dedent(`
+                Plugin misconfigured: Jira client not configured
+
+                Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
+            `)
+        );
+    });
+
+    it("should not display an error for missing jira clients if disabled", async () => {
+        const { stubbedInfo } = stubLogging();
+        options.plugin.enabled = false;
+        await afterRunHook(results, options, new DummyXrayClient());
+        expect(stubbedInfo).to.have.been.calledOnce;
+        expect(stubbedInfo).to.have.been.calledWith("Skipping after:run hook: Plugin disabled");
     });
 
     it("should display an error for failed runs", async () => {
@@ -548,9 +578,25 @@ describe("the after run hook", () => {
         await afterRunHook(failedResults, options);
         expect(stubbedError).to.have.been.calledOnce;
         expect(stubbedError).to.have.been.calledWith(
-            "Aborting: failed to run 47 tests:",
-            "Pretty messed up"
+            dedent(`
+                Skipping after:run hook: Failed to run 47 tests
+
+                Pretty messed up
+            `)
         );
+    });
+
+    it("should not display an error for failed runs if disabled", async () => {
+        const { stubbedInfo } = stubLogging();
+        const failedResults: CypressCommandLine.CypressFailedRunResult = {
+            status: "failed",
+            failures: 47,
+            message: "Pretty messed up",
+        };
+        options.plugin.enabled = false;
+        await afterRunHook(failedResults, options);
+        expect(stubbedInfo).to.have.been.calledOnce;
+        expect(stubbedInfo).to.have.been.calledWith("Skipping after:run hook: Plugin disabled");
     });
 
     it("should skip the results upload if disabled", async () => {
