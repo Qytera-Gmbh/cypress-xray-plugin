@@ -41,7 +41,7 @@ export async function addXrayResultUpload(on: Cypress.PluginEvents) {
         async (
             results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
         ) => {
-            await afterRunHook(results, context.internal, context.xrayClient);
+            await afterRunHook(results, context.internal, context.xrayClient, context.jiraClient);
         }
     );
 }
