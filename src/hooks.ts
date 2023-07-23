@@ -12,7 +12,7 @@ import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/imp
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
 import { preprocessFeatureFile } from "./cucumber/preprocessor";
 import { logError, logInfo, logWarning } from "./logging/logging";
-import { containsCucumberTest, containsNativeTest, getNativeTestIssueKeys } from "./processors";
+import { containsCucumberTest, containsNativeTest, getNativeTestIssueKeys } from "./processing";
 import {
     IssueTypeDetailsCloud,
     IssueTypeDetailsServer,
