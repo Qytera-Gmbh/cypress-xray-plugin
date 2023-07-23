@@ -22,6 +22,7 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
     };
     Requests.init(internalOptions);
     initLogging({
+        debug: internalOptions.plugin.debug,
         logDirectory: internalOptions.plugin.logDirectory,
     });
 }
