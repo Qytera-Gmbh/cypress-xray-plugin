@@ -1,5 +1,5 @@
 import { logWarning } from "../../logging/logging";
-import { getTestIssueKey } from "../../tagging/cypress";
+import { getNativeTestIssueKey } from "../../preprocessing/preprocessing";
 import { Status } from "../../types/testStatus";
 import { DateTimeISO, OneOf, getEnumKeyByEnumValue } from "../../types/util";
 import {
@@ -43,7 +43,7 @@ export abstract class ImportExecutionConverter<
                 const attempts = attemptsByTitle.get(title);
                 // TODO: Support multiple iterations.
                 test = this.getTest(attempts[attempts.length - 1]);
-                const issueKey = getTestIssueKey(title, this.options.jira.projectKey);
+                const issueKey = getNativeTestIssueKey(title, this.options.jira.projectKey);
                 test.testKey = issueKey;
                 if (this.options.plugin.overwriteIssueSummary) {
                     test.testInfo = this.getTestInfo(issueKey, testResult);
