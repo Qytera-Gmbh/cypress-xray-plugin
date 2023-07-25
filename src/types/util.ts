@@ -26,3 +26,10 @@ export function getEnumKeyByEnumValue<K extends string, V extends string | numbe
     const keys = Object.keys(enumType).filter((x: string) => enumType[x] === enumValue);
     return keys.length === 1 ? keys[0] : null;
 }
+
+/**
+ * Type describing mappings of string keys to arbitrary values.
+ */
+export type StringMap<T> = {
+    [key: string]: T;
+};

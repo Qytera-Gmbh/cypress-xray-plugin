@@ -26,6 +26,9 @@ export class Requests {
     }
 
     private static axios(): Axios {
+        if (!Requests.options) {
+            throw new Error("Requests module has not been initialized");
+        }
         if (!Requests.AXIOS) {
             Requests.AXIOS = axios;
             if (Requests.options.plugin.debug) {
