@@ -2,6 +2,7 @@ import dedent from "dedent";
 import { JWTCredentials } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
+import { StringMap } from "../../types/util";
 import { CucumberMultipartInfoCloud } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
@@ -99,7 +100,7 @@ export class XrayClientCloud extends XrayClient<
     public async getTestTypes(
         projectKey: string,
         ...issueKeys: string[]
-    ): Promise<{ [key: string]: string }> {
+    ): Promise<StringMap<string>> {
         try {
             if (!issueKeys || issueKeys.length === 0) {
                 logWarning("No issue keys provided. Skipping test type retrieval");

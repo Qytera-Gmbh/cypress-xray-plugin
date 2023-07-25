@@ -8,7 +8,7 @@ import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
 import { IssueRepositoryServer } from "./issueRepositoryServer";
 
-describe.only("the server issue repository", () => {
+describe("the server issue repository", () => {
     let options: InternalOptions;
     let client: JiraClientServer;
     let repository: IssueRepositoryServer;

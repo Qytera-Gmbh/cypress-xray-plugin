@@ -15,7 +15,7 @@ export abstract class IssueRepository<
     protected readonly jiraClient: JiraClientType;
     protected readonly options: Options;
 
-    private readonly fieldIds: { [key: string]: string } = {};
+    private readonly fieldIds: StringMap<string> = {};
     private readonly summaries: StringMap<string> = {};
     private readonly descriptions: StringMap<string> = {};
     private readonly testTypes: StringMap<string> = {};

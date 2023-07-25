@@ -4,7 +4,7 @@ import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
 import { IssueTypeDetailsCloud, IssueTypeDetailsServer } from "./jira/responses/issueTypeDetails";
-import { OneOf } from "./util";
+import { OneOf, StringMap } from "./util";
 
 export interface Options {
     jira: JiraOptions;
@@ -240,9 +240,7 @@ export type InternalOptions = Options & {
          * `testType` (Xray Server) or `type` (Xray Cloud) properties are required by Xray's JSON
          * scheme for uploading results.
          */
-        testTypes?: {
-            [key: string]: string;
-        };
+        testTypes?: StringMap<string>;
     };
     cucumber?: {
         preprocessor?: Awaited<ReturnType<typeof resolvePreprocessorConfiguration>>;

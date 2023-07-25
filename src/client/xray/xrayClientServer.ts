@@ -2,6 +2,7 @@ import dedent from "dedent";
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
 import { FieldDetailServer } from "../../types/jira/responses/fieldDetail";
+import { StringMap } from "../../types/util";
 import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import {
@@ -90,7 +91,7 @@ export class XrayClientServer extends XrayClient<
     public async getTestTypes(
         projectKey: string,
         ...issueKeys: string[]
-    ): Promise<{ [key: string]: string }> {
+    ): Promise<StringMap<string>> {
         try {
             if (!issueKeys || issueKeys.length === 0) {
                 logWarning("No issue keys provided. Skipping test type retrieval");

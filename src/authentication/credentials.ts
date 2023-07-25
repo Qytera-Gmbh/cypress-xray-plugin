@@ -1,6 +1,7 @@
 import { AxiosResponse } from "axios";
 import { Requests } from "../https/requests";
 import { logInfo, logSuccess } from "../logging/logging";
+import { StringMap } from "../types/util";
 import { encode } from "../util/base64";
 
 /**
@@ -9,9 +10,7 @@ import { encode } from "../util/base64";
  *   { "Authorization": "Bearer xyz" }
  *   { "Content-Type": "application/json" }
  */
-export interface HTTPHeader {
-    [key: string]: string;
-}
+export type HTTPHeader = StringMap<string>;
 
 export abstract class APICredentials<O> {
     public abstract getAuthenticationHeader(options?: O): Promise<HTTPHeader>;

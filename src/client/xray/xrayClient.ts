@@ -8,7 +8,7 @@ import {
 } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
-import { OneOf } from "../../types/util";
+import { OneOf, StringMap } from "../../types/util";
 import {
     XrayTestExecutionResultsCloud,
     XrayTestExecutionResultsServer,
@@ -305,5 +305,5 @@ export abstract class XrayClient<
     public abstract getTestTypes(
         projectKey: string,
         ...issueKeys: string[]
-    ): Promise<{ [key: string]: string }>;
+    ): Promise<StringMap<string>>;
 }
