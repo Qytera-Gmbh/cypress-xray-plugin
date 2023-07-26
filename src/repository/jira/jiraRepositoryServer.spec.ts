@@ -4,14 +4,16 @@ import { stub } from "sinon";
 import { stubLogging } from "../../../test/util";
 import { PATCredentials } from "../../authentication/credentials";
 import { JiraClientServer } from "../../client/jira/jiraClientServer";
+import { XrayClientServer } from "../../client/xray/xrayClientServer";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
-import { IssueRepositoryServer } from "./issueRepositoryServer";
+import { JiraRepositoryServer } from "./jiraRepositoryServer";
 
 describe("the server issue repository", () => {
     let options: InternalOptions;
-    let client: JiraClientServer;
-    let repository: IssueRepositoryServer;
+    let xrayClient: XrayClientServer;
+    let jiraClient: JiraClientServer;
+    let repository: JiraRepositoryServer;
 
     beforeEach(() => {
         options = initOptions(
@@ -23,13 +25,18 @@ describe("the server issue repository", () => {
                 },
             }
         );
-        client = new JiraClientServer("https://example.org", new PATCredentials("token"));
-        repository = new IssueRepositoryServer(client, options);
+        jiraClient = new JiraClientServer("https://example.org", new PATCredentials("token"));
+        xrayClient = new XrayClientServer(
+            "https://example.org",
+            new PATCredentials("token"),
+            jiraClient
+        );
+        repository = new JiraRepositoryServer(jiraClient, xrayClient, options);
     });
 
     describe("getSummaries", () => {
         it("fetches summaries", async () => {
-            stub(client, "getFields").resolves([
+            stub(jiraClient, "getFields").resolves([
                 {
                     id: "summary",
                     name: "Summary",
@@ -44,7 +51,7 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const searchStub = stub(client, "search").resolves([
+            const searchStub = stub(jiraClient, "search").resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
                     id: "1000",
@@ -86,7 +93,7 @@ describe("the server issue repository", () => {
         });
 
         it("fetches summaries only for unknown issues", async () => {
-            const stubbedGetFields = stub(client, "getFields").resolves([
+            const stubbedGetFields = stub(jiraClient, "getFields").resolves([
                 {
                     id: "summary",
                     name: "Summary",
@@ -101,7 +108,7 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const stubbedSearch = stub(client, "search");
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.onFirstCall().resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -151,7 +158,7 @@ describe("the server issue repository", () => {
         });
 
         it("displays an error for issues which do not exist", async () => {
-            stub(client, "getFields").resolves([
+            stub(jiraClient, "getFields").resolves([
                 {
                     id: "summary",
                     name: "Summary",
@@ -166,7 +173,7 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const stubbedSearch = stub(client, "search");
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -193,8 +200,8 @@ describe("the server issue repository", () => {
         });
 
         it("displays a warning when the summary field does not exist", async () => {
-            stub(client, "getFields").resolves([]);
-            const stubbedSearch = stub(client, "search");
+            stub(jiraClient, "getFields").resolves([]);
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -219,8 +226,8 @@ describe("the server issue repository", () => {
         });
 
         it("handles get field failures gracefully", async () => {
-            stub(client, "getFields").resolves(undefined);
-            const stubbedSearch = stub(client, "search");
+            stub(jiraClient, "getFields").resolves(undefined);
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -242,7 +249,7 @@ describe("the server issue repository", () => {
         });
 
         it("handles unparseable field failures gracefully", async () => {
-            stub(client, "getFields").resolves([
+            stub(jiraClient, "getFields").resolves([
                 {
                     id: "summary",
                     name: "Summary",
@@ -257,7 +264,7 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const stubbedSearch = stub(client, "search");
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -311,7 +318,7 @@ describe("the server issue repository", () => {
 
     describe("getDescriptions", () => {
         it("fetches descriptions", async () => {
-            stub(client, "getFields").resolves([
+            stub(jiraClient, "getFields").resolves([
                 {
                     id: "description",
                     name: "Description",
@@ -326,7 +333,7 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const searchStub = stub(client, "search").resolves([
+            const searchStub = stub(jiraClient, "search").resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
                     id: "1000",
@@ -368,7 +375,7 @@ describe("the server issue repository", () => {
         });
 
         it("fetches descriptions only for unknown issues", async () => {
-            const stubbedGetFields = stub(client, "getFields").resolves([
+            const stubbedGetFields = stub(jiraClient, "getFields").resolves([
                 {
                     id: "description",
                     name: "Description",
@@ -383,7 +390,7 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const stubbedSearch = stub(client, "search");
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.onFirstCall().resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -433,7 +440,7 @@ describe("the server issue repository", () => {
         });
 
         it("displays an error for issues which do not exist", async () => {
-            stub(client, "getFields").resolves([
+            stub(jiraClient, "getFields").resolves([
                 {
                     id: "description",
                     name: "Description",
@@ -448,7 +455,7 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const stubbedSearch = stub(client, "search");
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -475,8 +482,8 @@ describe("the server issue repository", () => {
         });
 
         it("displays a warning when the description field does not exist", async () => {
-            stub(client, "getFields").resolves([]);
-            const stubbedSearch = stub(client, "search");
+            stub(jiraClient, "getFields").resolves([]);
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -501,8 +508,8 @@ describe("the server issue repository", () => {
         });
 
         it("handles get field failures gracefully", async () => {
-            stub(client, "getFields").resolves(undefined);
-            const stubbedSearch = stub(client, "search");
+            stub(jiraClient, "getFields").resolves(undefined);
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -524,7 +531,7 @@ describe("the server issue repository", () => {
         });
 
         it("handles unparseable field failures gracefully", async () => {
-            stub(client, "getFields").resolves([
+            stub(jiraClient, "getFields").resolves([
                 {
                     id: "description",
                     name: "Description",
@@ -539,7 +546,7 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const stubbedSearch = stub(client, "search");
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -593,7 +600,7 @@ describe("the server issue repository", () => {
 
     describe("getTestTypes", () => {
         it("fetches test types", async () => {
-            stub(client, "getFields").resolves([
+            stub(jiraClient, "getFields").resolves([
                 {
                     id: "customfield_12100",
                     name: "Test Type",
@@ -609,7 +616,7 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const searchStub = stub(client, "search").resolves([
+            const searchStub = stub(jiraClient, "search").resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
                     id: "1000",
@@ -666,7 +673,7 @@ describe("the server issue repository", () => {
         });
 
         it("fetches test types only for unknown issues", async () => {
-            const stubbedGetFields = stub(client, "getFields").resolves([
+            const stubbedGetFields = stub(jiraClient, "getFields").resolves([
                 {
                     id: "customfield_12100",
                     name: "Test Type",
@@ -682,7 +689,7 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const stubbedSearch = stub(client, "search");
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.onFirstCall().resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -747,7 +754,7 @@ describe("the server issue repository", () => {
         });
 
         it("displays an error for issues which do not exist", async () => {
-            stub(client, "getFields").resolves([
+            stub(jiraClient, "getFields").resolves([
                 {
                     id: "customfield_12100",
                     name: "Test Type",
@@ -763,7 +770,7 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const stubbedSearch = stub(client, "search");
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -795,8 +802,8 @@ describe("the server issue repository", () => {
         });
 
         it("displays a warning when the description field does not exist", async () => {
-            stub(client, "getFields").resolves([]);
-            const stubbedSearch = stub(client, "search");
+            stub(jiraClient, "getFields").resolves([]);
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -821,8 +828,8 @@ describe("the server issue repository", () => {
         });
 
         it("handles get field failures gracefully", async () => {
-            stub(client, "getFields").resolves(undefined);
-            const stubbedSearch = stub(client, "search");
+            stub(jiraClient, "getFields").resolves(undefined);
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
@@ -844,7 +851,7 @@ describe("the server issue repository", () => {
         });
 
         it("handles unparseable field failures gracefully", async () => {
-            stub(client, "getFields").resolves([
+            stub(jiraClient, "getFields").resolves([
                 {
                     id: "customfield_12100",
                     name: "Test Type",
@@ -860,7 +867,7 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const stubbedSearch = stub(client, "search");
+            const stubbedSearch = stub(jiraClient, "search");
             stubbedSearch.resolves([
                 {
                     expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",

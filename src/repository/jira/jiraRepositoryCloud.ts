@@ -1,9 +1,9 @@
 import { JiraClientCloud } from "../../client/jira/jiraClientCloud";
 import { XrayClientCloud } from "../../client/xray/xrayClientCloud";
 import { StringMap } from "../../types/util";
-import { IssueRepository } from "./issueRepository";
+import { JiraRepository } from "./jiraRepository";
 
-export class IssueRepositoryCloud extends IssueRepository<XrayClientCloud, JiraClientCloud> {
+export class JiraRepositoryCloud extends JiraRepository<JiraClientCloud, XrayClientCloud> {
     protected async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
         // Field property example:
         // summary: "Bug 12345"

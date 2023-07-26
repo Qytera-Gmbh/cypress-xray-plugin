@@ -7,12 +7,12 @@ import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
 import { Options } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 
-export abstract class IssueRepository<
-    XrayClientType extends XrayClientServer | XrayClientCloud,
-    JiraClientType extends JiraClientServer | JiraClientCloud
+export abstract class JiraRepository<
+    JiraClientType extends JiraClientServer | JiraClientCloud,
+    XrayClientType extends XrayClientServer | XrayClientCloud
 > {
-    protected readonly xrayClient: XrayClientType;
     protected readonly jiraClient: JiraClientType;
+    protected readonly xrayClient: XrayClientType;
     protected readonly options: Options;
 
     private readonly fieldIds: StringMap<string> = {};
@@ -20,8 +20,9 @@ export abstract class IssueRepository<
     private readonly descriptions: StringMap<string> = {};
     private readonly testTypes: StringMap<string> = {};
 
-    constructor(jiraClient: JiraClientType, options: Options) {
+    constructor(jiraClient: JiraClientType, xrayClient: XrayClientType, options: Options) {
         this.jiraClient = jiraClient;
+        this.xrayClient = xrayClient;
         this.options = options;
     }
 
