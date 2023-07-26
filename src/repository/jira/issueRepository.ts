@@ -43,30 +43,40 @@ export abstract class IssueRepository<
         return result;
     }
 
-    public async getDescriptions(...issueKeys: string[]): Promise<string[]> {
+    public async getDescriptions(...issueKeys: string[]): Promise<StringMap<string>> {
         const missingDescriptions: string[] = await this.fetchFields(
             this.descriptions,
-            this.fetchDescriptions,
+            this.fetchDescriptions.bind(this),
             ...issueKeys
         );
         if (missingDescriptions.length > 0) {
-            throw new Error(
-                `Failed to fetch descriptions of issues: ${missingDescriptions.join(",")}`
-            );
+            logError(`Failed to fetch descriptions of issues:\n${missingDescriptions.join("\n")}`);
         }
-        return issueKeys.map((key) => this.descriptions[key]);
+        const result: StringMap<string> = {};
+        issueKeys.forEach((key: string) => {
+            if (key in this.descriptions) {
+                result[key] = this.descriptions[key];
+            }
+        });
+        return result;
     }
 
-    public async getTestTypes(...issueKeys: string[]): Promise<string[]> {
+    public async getTestTypes(...issueKeys: string[]): Promise<StringMap<string>> {
         const missingTestTypes: string[] = await this.fetchFields(
-            this.descriptions,
-            this.fetchTestTypes,
+            this.testTypes,
+            this.fetchTestTypes.bind(this),
             ...issueKeys
         );
         if (missingTestTypes.length > 0) {
-            throw new Error(`Failed to fetch test types of issues: ${missingTestTypes.join(",")}`);
+            logError(`Failed to fetch test types of issues:\n${missingTestTypes.join("\n")}`);
         }
-        return issueKeys.map((key) => this.testTypes[key]);
+        const result: StringMap<string> = {};
+        issueKeys.forEach((key: string) => {
+            if (key in this.testTypes) {
+                result[key] = this.testTypes[key];
+            }
+        });
+        return result;
     }
 
     protected abstract fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>>;
@@ -109,7 +119,7 @@ export abstract class IssueRepository<
             });
             if (issuesWithUnparseableField.length > 0) {
                 logWarning(
-                    `Failed to parse the following field of the following issues: ${fieldName}\n${issuesWithUnparseableField.join(
+                    `Failed to parse the following Jira field of the following issues: ${fieldName}\n${issuesWithUnparseableField.join(
                         "\n"
                     )}`
                 );
