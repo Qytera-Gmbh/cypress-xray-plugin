@@ -154,12 +154,6 @@ export abstract class JiraRepository<
 
     protected abstract fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;
 
-    protected valueExtractor(data: unknown): string | undefined {
-        if (typeof data === "object" && data !== null) {
-            return data["value"];
-        }
-    }
-
     protected async getJiraField<T>(
         fieldName: string,
         extractor: FieldExtractor<T>,

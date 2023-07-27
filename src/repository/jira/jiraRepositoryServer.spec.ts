@@ -876,9 +876,23 @@ describe("the server issue repository", () => {
                         },
                     },
                 },
+                {
+                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+                    id: "1003",
+                    self: "https://example.org/rest/api/2/issue/1003",
+                    key: "CYP-420",
+                    fields: {
+                        customfield_12100: null,
+                    },
+                },
             ]);
             const { stubbedError } = stubLogging();
-            const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
+            const testTypes = await repository.getTestTypes(
+                "CYP-123",
+                "CYP-456",
+                "CYP-789",
+                "CYP-420"
+            );
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue test types
@@ -888,6 +902,7 @@ describe("the server issue repository", () => {
 
                     CYP-123: ["This is a somewhat unexpected","description"]
                     CYP-456: {"Something":5}
+                    CYP-420: null
                 `)
             );
             expect(testTypes).to.deep.eq({});
