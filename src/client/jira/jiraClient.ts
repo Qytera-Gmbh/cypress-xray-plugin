@@ -149,7 +149,7 @@ export abstract class JiraClient<
                     "Received data for issue types:",
                     ...response.data.map(
                         (issueType: IssueTypeDetailsResponse) =>
-                            `${issueType.name} (id: ${issueType.id})`
+                            `\n${issueType.name} (id: ${issueType.id})`
                     )
                 );
                 return response.data;
