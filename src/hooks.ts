@@ -299,8 +299,8 @@ async function uploadCypressResults(
     jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
 ) {
     const issueKeys = getNativeTestIssueKeys(runResult, options);
-    const issueSummaries = await jiraRepository.getSummaries(options.jira.projectKey, ...issueKeys);
-    const issueTestTypes = await jiraRepository.getTestTypes(options.jira.projectKey, ...issueKeys);
+    const issueSummaries = await jiraRepository.getSummaries(...issueKeys);
+    const issueTestTypes = await jiraRepository.getTestTypes(...issueKeys);
     let cypressExecution: XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud;
     if (xrayClient instanceof XrayClientServer) {
         cypressExecution = new ImportExecutionConverterServer(options).convert(runResult, {
