@@ -51,20 +51,23 @@ export abstract class JiraRepository<
     }
 
     public async getFieldId(fieldName: string): Promise<string> {
-        if (!(fieldName in this.fieldIds)) {
+        // Lowercase everything to work around case sensitivities.
+        // Jira sometimes returns field names capitalized, sometimes it doesn't.
+        const lowerCasedName = fieldName.toLowerCase();
+        if (!(lowerCasedName in this.fieldIds)) {
             const jiraFields = await this.jiraClient.getFields();
             if (jiraFields) {
                 jiraFields.forEach((jiraField) => {
-                    this.fieldIds[jiraField.name] = jiraField.id;
+                    this.fieldIds[jiraField.name.toLowerCase()] = jiraField.id;
                 });
             }
-            if (!(fieldName in this.fieldIds)) {
+            if (!(lowerCasedName in this.fieldIds)) {
                 throw new Error(
-                    `Failed to fetch Jira field ID for field: ${fieldName}\nMake sure the field actually exists`
+                    `Failed to fetch Jira field ID for field with name: ${lowerCasedName}\nMake sure the field actually exists`
                 );
             }
         }
-        return this.fieldIds[fieldName];
+        return this.fieldIds[lowerCasedName];
     }
 
     public async getSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
