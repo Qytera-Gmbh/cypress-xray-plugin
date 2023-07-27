@@ -210,7 +210,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field: Summary
+                    Failed to fetch Jira field ID for field with name: summary
                     Make sure the field actually exists
                 `)
             );
@@ -234,7 +234,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field: Summary
+                    Failed to fetch Jira field ID for field with name: summary
                     Make sure the field actually exists
                 `)
             );
@@ -294,7 +294,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to parse the following Jira field of some issues: Summary
+                    Failed to parse the following Jira field of some issues: summary
                     Expected the field to be: a string
                     Make sure the correct field is present on the following issues:
 
@@ -482,7 +482,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field: Description
+                    Failed to fetch Jira field ID for field with name: description
                     Make sure the field actually exists
                 `)
             );
@@ -506,7 +506,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field: Description
+                    Failed to fetch Jira field ID for field with name: description
                     Make sure the field actually exists
                 `)
             );
@@ -566,7 +566,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to parse the following Jira field of some issues: Description
+                    Failed to parse the following Jira field of some issues: description
                     Expected the field to be: a string
                     Make sure the correct field is present on the following issues:
 
@@ -792,7 +792,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue test types
-                    Failed to fetch Jira field ID for field: Test Type
+                    Failed to fetch Jira field ID for field with name: test type
                     Make sure the field actually exists
                 `)
             );
@@ -816,7 +816,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue test types
-                    Failed to fetch Jira field ID for field: Test Type
+                    Failed to fetch Jira field ID for field with name: test type
                     Make sure the field actually exists
                 `)
             );
@@ -896,7 +896,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue test types
-                    Failed to parse the following Jira field of some issues: Test Type
+                    Failed to parse the following Jira field of some issues: test type
                     Expected the field to be: an object with a value property
                     Make sure the correct field is present on the following issues:
 

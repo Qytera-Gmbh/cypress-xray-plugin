@@ -151,9 +151,21 @@ export abstract class JiraRepository<
         return result;
     }
 
-    protected abstract fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>>;
+    protected async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
+        // Field property example:
+        // summary: "Bug 12345"
+        return await this.getJiraField("summary", JiraRepository.STRING_EXTRACTOR, ...issueKeys);
+    }
 
-    protected abstract fetchDescriptions(...issueKeys: string[]): Promise<StringMap<string>>;
+    protected async fetchDescriptions(...issueKeys: string[]): Promise<StringMap<string>> {
+        // Field property example:
+        // description: "This is a description"
+        return await this.getJiraField(
+            "description",
+            JiraRepository.STRING_EXTRACTOR,
+            ...issueKeys
+        );
+    }
 
     protected abstract fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;
 

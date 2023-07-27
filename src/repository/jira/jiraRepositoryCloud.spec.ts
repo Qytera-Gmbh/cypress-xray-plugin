@@ -209,7 +209,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field: summary
+                    Failed to fetch Jira field ID for field with name: summary
                     Make sure the field actually exists
                 `)
             );
@@ -225,7 +225,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field: summary
+                    Failed to fetch Jira field ID for field with name: summary
                     Make sure the field actually exists
                 `)
             );
@@ -473,7 +473,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field: description
+                    Failed to fetch Jira field ID for field with name: description
                     Make sure the field actually exists
                 `)
             );
@@ -497,7 +497,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field: description
+                    Failed to fetch Jira field ID for field with name: description
                     Make sure the field actually exists
                 `)
             );
