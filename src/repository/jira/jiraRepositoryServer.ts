@@ -7,13 +7,17 @@ export class JiraRepositoryServer extends JiraRepository<JiraClientServer, XrayC
     protected async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
         // Field property example:
         // summary: "Bug 12345"
-        return await this.getJiraField("Summary", this.stringExtractor, ...issueKeys);
+        return await this.getJiraField("Summary", JiraRepository.STRING_EXTRACTOR, ...issueKeys);
     }
 
     protected async fetchDescriptions(...issueKeys: string[]): Promise<StringMap<string>> {
         // Field property example:
         // description: "This is a description"
-        return await this.getJiraField("Description", this.stringExtractor, ...issueKeys);
+        return await this.getJiraField(
+            "Description",
+            JiraRepository.STRING_EXTRACTOR,
+            ...issueKeys
+        );
     }
 
     protected async fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>> {
@@ -23,6 +27,10 @@ export class JiraRepositoryServer extends JiraRepository<JiraClientServer, XrayC
         //   id: "12702",
         //   disabled: false
         // }
-        return await this.getJiraField("Test Type", this.valueExtractor, ...issueKeys);
+        return await this.getJiraField(
+            "Test Type",
+            JiraRepository.OBJECT_VALUE_EXTRACTOR,
+            ...issueKeys
+        );
     }
 }

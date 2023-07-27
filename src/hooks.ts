@@ -17,6 +17,8 @@ import {
     getNativeTestIssueKeys,
     preprocessFeatureFile,
 } from "./preprocessing/preprocessing";
+import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
+import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
 import {
     IssueTypeDetailsCloud,
     IssueTypeDetailsServer,
@@ -179,7 +181,8 @@ export async function afterRunHook(
     results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult,
     options?: InternalOptions,
     xrayClient?: XrayClientServer | XrayClientCloud,
-    jiraClient?: JiraClientServer | JiraClientCloud
+    jiraClient?: JiraClientServer | JiraClientCloud,
+    jiraRepository?: JiraRepositoryServer | JiraRepositoryCloud
 ) {
     if (!options) {
         // Don't throw here in case someone simply doesn't want the plugin to run but forgot to
@@ -232,7 +235,7 @@ export async function afterRunHook(
     }
     let issueKey: string = null;
     if (containsNativeTest(runResult, options)) {
-        issueKey = await uploadCypressResults(runResult, options, xrayClient);
+        issueKey = await uploadCypressResults(runResult, options, xrayClient, jiraRepository);
         if (
             options.jira.testExecutionIssueKey &&
             issueKey &&
@@ -291,11 +294,12 @@ export async function afterRunHook(
 
 async function uploadCypressResults(
     runResult: CypressCommandLine.CypressRunResult,
-    options?: InternalOptions,
-    xrayClient?: XrayClientServer | XrayClientCloud
+    options: InternalOptions,
+    xrayClient: XrayClientServer | XrayClientCloud,
+    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
 ) {
     const issueKeys = getNativeTestIssueKeys(runResult, options);
-    const testTypes = await xrayClient.getTestTypes(options.jira.projectKey, ...issueKeys);
+    const testTypes = await jiraRepository.getTestTypes(options.jira.projectKey, ...issueKeys);
     options.xray.testTypes = testTypes;
     let cypressExecution: XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud;
     if (xrayClient instanceof XrayClientServer) {

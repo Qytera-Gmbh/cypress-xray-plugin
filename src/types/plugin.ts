@@ -3,6 +3,8 @@ import { JiraClientCloud } from "../client/jira/jiraClientCloud";
 import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
+import { JiraRepositoryCloud } from "../repository/jira/jiraRepositoryCloud";
+import { JiraRepositoryServer } from "../repository/jira/jiraRepositoryServer";
 import { IssueTypeDetailsCloud, IssueTypeDetailsServer } from "./jira/responses/issueTypeDetails";
 import { OneOf, StringMap } from "./util";
 
@@ -250,6 +252,7 @@ export type InternalOptions = Options & {
 export interface PluginContext {
     xrayClient: XrayClientServer | XrayClientCloud;
     jiraClient: JiraClientServer | JiraClientCloud;
+    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud;
     internal: InternalOptions;
     cypress: Cypress.PluginConfigOptions;
 }

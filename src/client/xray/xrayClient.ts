@@ -8,7 +8,7 @@ import {
 } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
-import { OneOf, StringMap } from "../../types/util";
+import { OneOf } from "../../types/util";
 import {
     XrayTestExecutionResultsCloud,
     XrayTestExecutionResultsServer,
@@ -16,33 +16,24 @@ import {
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import { Client } from "../client";
-import { JiraClientCloud } from "../jira/jiraClientCloud";
-import { JiraClientServer } from "../jira/jiraClientServer";
 
 /**
  * An abstract Xray client class for communicating with Xray instances.
  */
 export abstract class XrayClient<
     CredentialsType extends BasicAuthCredentials | PATCredentials | JWTCredentials,
-    JiraClientType extends JiraClientServer | JiraClientCloud,
     ImportFeatureResponseType,
     ImportExecutionResponseType,
     CucumberMultipartInfoType
 > extends Client<CredentialsType> {
     /**
-     * The configured Jira client.
-     */
-    protected readonly jiraClient: JiraClientType;
-    /**
      * Construct a new client using the provided credentials.
      *
      * @param apiBaseUrl the base URL for all HTTP requests
      * @param credentials the credentials to use during authentication
-     * @param jiraClient the configured Jira client
      */
-    constructor(apiBaseUrl: string, credentials: CredentialsType, jiraClient: JiraClientType) {
+    constructor(apiBaseUrl: string, credentials: CredentialsType) {
         super(apiBaseUrl, credentials);
-        this.jiraClient = jiraClient;
     }
     /**
      * Uploads test results to the Xray instance.
@@ -292,18 +283,4 @@ export abstract class XrayClient<
     public abstract handleResponseImportExecutionCucumberMultipart(
         response: ImportExecutionResponseType
     ): string;
-
-    /**
-     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
-     * `Generic`.
-     *
-     * @param projectKey key of the project containing the test issues
-     * @param issueKeys the keys of the test issues to retrieve test types for
-     * @returns a promise which will contain the mapping of issues to test types, `null` if the
-     * upload was skipped or `undefined` in case of errors
-     */
-    public abstract getTestTypes(
-        projectKey: string,
-        ...issueKeys: string[]
-    ): Promise<StringMap<string>>;
 }

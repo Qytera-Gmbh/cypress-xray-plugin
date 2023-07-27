@@ -7,7 +7,6 @@ import { CucumberMultipartInfoCloud } from "../../types/xray/requests/importExec
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
-import { JiraClientCloud } from "../jira/jiraClientCloud";
 import { XrayClient } from "./xrayClient";
 
 type GetTestsJiraData = {
@@ -16,7 +15,6 @@ type GetTestsJiraData = {
 
 export class XrayClientCloud extends XrayClient<
     JWTCredentials,
-    JiraClientCloud,
     ImportFeatureResponseCloud,
     ImportExecutionResponseCloud,
     CucumberMultipartInfoCloud
@@ -38,10 +36,9 @@ export class XrayClientCloud extends XrayClient<
      * Construct a new Xray cloud client using the provided credentials.
      *
      * @param credentials the credentials to use during authentication
-     * @param jiraClient the configured Jira client
      */
-    constructor(credentials: JWTCredentials, jiraClient: JiraClientCloud) {
-        super(XrayClientCloud.URL, credentials, jiraClient);
+    constructor(credentials: JWTCredentials) {
+        super(XrayClientCloud.URL, credentials);
     }
 
     public getUrlImportExecution(): string {
@@ -97,6 +94,15 @@ export class XrayClientCloud extends XrayClient<
         }
     }
 
+    /**
+     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
+     * `Generic`.
+     *
+     * @param projectKey key of the project containing the test issues
+     * @param issueKeys the keys of the test issues to retrieve test types for
+     * @returns a promise which will contain the mapping of issues to test types, `null` if the
+     * upload was skipped or `undefined` in case of errors
+     */
     public async getTestTypes(
         projectKey: string,
         ...issueKeys: string[]

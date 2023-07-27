@@ -3,7 +3,6 @@ import { expect } from "chai";
 import dedent from "dedent";
 import fs from "fs";
 import {
-    DummyJiraClient,
     RESOLVED_JWT_CREDENTIALS,
     resolveTestDirPath,
     stubLogging,
@@ -13,10 +12,7 @@ import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { XrayClientCloud } from "./xrayClientCloud";
 
 describe("the xray cloud client", () => {
-    const client: XrayClientCloud = new XrayClientCloud(
-        RESOLVED_JWT_CREDENTIALS,
-        new DummyJiraClient()
-    );
+    const client: XrayClientCloud = new XrayClientCloud(RESOLVED_JWT_CREDENTIALS);
 
     describe("import execution", () => {
         it("should handle successful responses", async () => {

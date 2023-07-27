@@ -1,19 +1,19 @@
 import { expect } from "chai";
 import dedent from "dedent";
 import { stub } from "sinon";
-import { stubLogging } from "../../../test/util";
-import { PATCredentials } from "../../authentication/credentials";
-import { JiraClientServer } from "../../client/jira/jiraClientServer";
-import { XrayClientServer } from "../../client/xray/xrayClientServer";
+import { RESOLVED_JWT_CREDENTIALS, stubLogging } from "../../../test/util";
+import { BasicAuthCredentials } from "../../authentication/credentials";
+import { JiraClientCloud } from "../../client/jira/jiraClientCloud";
+import { XrayClientCloud } from "../../client/xray/xrayClientCloud";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
-import { JiraRepositoryServer } from "./jiraRepositoryServer";
+import { JiraRepositoryCloud } from "./jiraRepositoryCloud";
 
-describe("the server issue repository", () => {
+describe.only("the cloud issue repository", () => {
     let options: InternalOptions;
-    let xrayClient: XrayClientServer;
-    let jiraClient: JiraClientServer;
-    let repository: JiraRepositoryServer;
+    let xrayClient: XrayClientCloud;
+    let jiraClient: JiraClientCloud;
+    let repository: JiraRepositoryCloud;
 
     beforeEach(() => {
         options = initOptions(
@@ -25,13 +25,12 @@ describe("the server issue repository", () => {
                 },
             }
         );
-        jiraClient = new JiraClientServer("https://example.org", new PATCredentials("token"));
-        xrayClient = new XrayClientServer(
+        jiraClient = new JiraClientCloud(
             "https://example.org",
-            new PATCredentials("token"),
-            jiraClient
+            new BasicAuthCredentials("user", "xyz")
         );
-        repository = new JiraRepositoryServer(jiraClient, xrayClient, options);
+        xrayClient = new XrayClientCloud(RESOLVED_JWT_CREDENTIALS);
+        repository = new JiraRepositoryCloud(jiraClient, xrayClient, options);
     });
 
     describe("getSummaries", () => {
@@ -39,7 +38,7 @@ describe("the server issue repository", () => {
             stub(jiraClient, "getFields").resolves([
                 {
                     id: "summary",
-                    name: "Summary",
+                    name: "summary",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -96,7 +95,7 @@ describe("the server issue repository", () => {
             const stubbedGetFields = stub(jiraClient, "getFields").resolves([
                 {
                     id: "summary",
-                    name: "Summary",
+                    name: "summary",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -161,7 +160,7 @@ describe("the server issue repository", () => {
             stub(jiraClient, "getFields").resolves([
                 {
                     id: "summary",
-                    name: "Summary",
+                    name: "summary",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -189,7 +188,9 @@ describe("the server issue repository", () => {
             const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch summaries of issues:
+                    Failed to fetch issue summaries
+                    Make sure these issues exist:
+
                     CYP-456
                     CYP-789
                 `)
@@ -202,16 +203,14 @@ describe("the server issue repository", () => {
         it("displays an error when the summary field does not exist", async () => {
             stub(jiraClient, "getFields").resolves([]);
             const stubbedSearch = stub(jiraClient, "search");
-            const { stubbedError, stubbedWarning } = stubLogging();
+            const { stubbedError } = stubLogging();
             const summaries = await repository.getSummaries("CYP-123");
             expect(stubbedSearch).to.not.have.been.called;
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                "Failed to fetch Jira field ID for field: Summary"
-            );
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch summaries of issues:
-                    CYP-123
+                    Failed to fetch issue summaries
+                    Failed to fetch Jira field ID for field: summary
+                    Make sure the field actually exists
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -220,21 +219,14 @@ describe("the server issue repository", () => {
         it("handles get field failures gracefully", async () => {
             stub(jiraClient, "getFields").resolves(undefined);
             const stubbedSearch = stub(jiraClient, "search");
-            stubbedSearch.resolves([
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1000",
-                    self: "https://example.org/rest/api/2/issue/1000",
-                    key: "CYP-123",
-                },
-            ]);
             const { stubbedError } = stubLogging();
             const summaries = await repository.getSummaries("CYP-123");
             expect(stubbedSearch).to.not.have.been.called;
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch summaries of issues:
-                    CYP-123
+                    Failed to fetch issue summaries
+                    Failed to fetch Jira field ID for field: summary
+                    Make sure the field actually exists
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -244,7 +236,7 @@ describe("the server issue repository", () => {
             stub(jiraClient, "getFields").resolves([
                 {
                     id: "summary",
-                    name: "Summary",
+                    name: "summary",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -288,23 +280,20 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const { stubbedError, stubbedWarning } = stubLogging();
+            const { stubbedError } = stubLogging();
             const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to parse the following Jira field of the following issues: Summary
-                    CYP-123
-                    CYP-456
-                `)
-            );
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch summaries of issues:
-                    CYP-123
-                    CYP-456
+                    Failed to fetch issue summaries
+                    Failed to parse the following Jira field of some issues: summary
+                    Expected the field to be: a string
+                    Make sure the correct field is present on the following issues:
+
+                    CYP-123: ["Good Morning","Summary 2"]
+                    CYP-456: {"Something":5}
                 `)
             );
-            expect(summaries).to.deep.eq({ "CYP-789": "Bonjour" });
+            expect(summaries).to.deep.eq({});
         });
     });
 
@@ -313,7 +302,7 @@ describe("the server issue repository", () => {
             stub(jiraClient, "getFields").resolves([
                 {
                     id: "description",
-                    name: "Description",
+                    name: "description",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -370,7 +359,7 @@ describe("the server issue repository", () => {
             const stubbedGetFields = stub(jiraClient, "getFields").resolves([
                 {
                     id: "description",
-                    name: "Description",
+                    name: "description",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -435,7 +424,7 @@ describe("the server issue repository", () => {
             stub(jiraClient, "getFields").resolves([
                 {
                     id: "description",
-                    name: "Description",
+                    name: "description",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -463,7 +452,9 @@ describe("the server issue repository", () => {
             const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch descriptions of issues:
+                    Failed to fetch issue descriptions
+                    Make sure these issues exist:
+
                     CYP-456
                     CYP-789
                 `)
@@ -476,16 +467,14 @@ describe("the server issue repository", () => {
         it("displays an error when the description field does not exist", async () => {
             stub(jiraClient, "getFields").resolves([]);
             const stubbedSearch = stub(jiraClient, "search");
-            const { stubbedError, stubbedWarning } = stubLogging();
+            const { stubbedError } = stubLogging();
             const descriptions = await repository.getDescriptions("CYP-123");
             expect(stubbedSearch).to.not.have.been.called;
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                "Failed to fetch Jira field ID for field: Description"
-            );
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch descriptions of issues:
-                    CYP-123
+                    Failed to fetch issue descriptions
+                    Failed to fetch Jira field ID for field: description
+                    Make sure the field actually exists
                 `)
             );
             expect(descriptions).to.deep.eq({});
@@ -507,8 +496,9 @@ describe("the server issue repository", () => {
             expect(stubbedSearch).to.not.have.been.called;
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch descriptions of issues:
-                    CYP-123
+                    Failed to fetch issue descriptions
+                    Failed to fetch Jira field ID for field: description
+                    Make sure the field actually exists
                 `)
             );
             expect(descriptions).to.deep.eq({});
@@ -518,7 +508,7 @@ describe("the server issue repository", () => {
             stub(jiraClient, "getFields").resolves([
                 {
                     id: "description",
-                    name: "Description",
+                    name: "description",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -562,164 +552,54 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const { stubbedError, stubbedWarning } = stubLogging();
+            const { stubbedError } = stubLogging();
             const summaries = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to parse the following Jira field of the following issues: Description
-                    CYP-123
-                    CYP-456
-                `)
-            );
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch descriptions of issues:
-                    CYP-123
-                    CYP-456
+                    Failed to fetch issue descriptions
+                    Failed to parse the following Jira field of some issues: description
+                    Expected the field to be: a string
+                    Make sure the correct field is present on the following issues:
+
+                    CYP-123: ["This is a somewhat unexpected","description"]
+                    CYP-456: {"Something":5}
                 `)
             );
-            expect(summaries).to.deep.eq({ "CYP-789": "Bonjour (encore)" });
+            expect(summaries).to.deep.eq({});
         });
     });
 
     describe("getTestTypes", () => {
         it("fetches test types", async () => {
-            stub(jiraClient, "getFields").resolves([
-                {
-                    id: "customfield_12100",
-                    name: "Test Type",
-                    custom: true,
-                    orderable: true,
-                    navigable: true,
-                    searchable: true,
-                    clauseNames: ["cf[12100]", "Test Type"],
-                    schema: {
-                        type: "option",
-                        custom: "com.xpandit.plugins.xray:test-type-custom-field",
-                        customId: 12100,
-                    },
-                },
-            ]);
-            const searchStub = stub(jiraClient, "search").resolves([
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1000",
-                    self: "https://example.org/rest/api/2/issue/1000",
-                    key: "CYP-123",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12702",
-                            value: "Cucumber",
-                            id: "12702",
-                            disabled: false,
-                        },
-                    },
-                },
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1001",
-                    self: "https://example.org/rest/api/2/issue/1001",
-                    key: "CYP-456",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12701",
-                            value: "Generic",
-                            id: "12701",
-                            disabled: false,
-                        },
-                    },
-                },
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1002",
-                    self: "https://example.org/rest/api/2/issue/1002",
-                    key: "CYP-789",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12700",
-                            value: "Manual",
-                            id: "12700",
-                            disabled: false,
-                        },
-                    },
-                },
-            ]);
+            const getTestTypesStub = stub(xrayClient, "getTestTypes").resolves({
+                "CYP-123": "Cucumber",
+                "CYP-456": "Generic",
+                "CYP-789": "Manual",
+            });
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(testTypes).to.deep.eq({
                 "CYP-123": "Cucumber",
                 "CYP-456": "Generic",
                 "CYP-789": "Manual",
             });
-            expect(searchStub).to.have.been.calledOnceWithExactly({
-                jql: "project = CYP AND issue in (CYP-123,CYP-456,CYP-789)",
-                fields: ["customfield_12100"],
-            });
+            expect(getTestTypesStub).to.have.been.calledOnceWithExactly(
+                "CYP",
+                "CYP-123",
+                "CYP-456",
+                "CYP-789"
+            );
         });
 
         it("fetches test types only for unknown issues", async () => {
-            const stubbedGetFields = stub(jiraClient, "getFields").resolves([
-                {
-                    id: "customfield_12100",
-                    name: "Test Type",
-                    custom: true,
-                    orderable: true,
-                    navigable: true,
-                    searchable: true,
-                    clauseNames: ["cf[12100]", "Test Type"],
-                    schema: {
-                        type: "option",
-                        custom: "com.xpandit.plugins.xray:test-type-custom-field",
-                        customId: 12100,
-                    },
-                },
-            ]);
-            const stubbedSearch = stub(jiraClient, "search");
-            stubbedSearch.onFirstCall().resolves([
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1000",
-                    self: "https://example.org/rest/api/2/issue/1000",
-                    key: "CYP-123",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12702",
-                            value: "Cucumber",
-                            id: "12702",
-                            disabled: false,
-                        },
-                    },
-                },
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1002",
-                    self: "https://example.org/rest/api/2/issue/1002",
-                    key: "CYP-789",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12700",
-                            value: "Manual",
-                            id: "12700",
-                            disabled: false,
-                        },
-                    },
-                },
-            ]);
-            stubbedSearch.onSecondCall().resolves([
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1001",
-                    self: "https://example.org/rest/api/2/issue/1001",
-                    key: "CYP-456",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12701",
-                            value: "Generic",
-                            id: "12701",
-                            disabled: false,
-                        },
-                    },
-                },
-            ]);
+            const getTestTypesStub = stub(xrayClient, "getTestTypes");
+            getTestTypesStub.onFirstCall().resolves({
+                "CYP-123": "Cucumber",
+                "CYP-456": "Generic",
+                "CYP-789": "Manual",
+            });
+            getTestTypesStub.onSecondCall().resolves({
+                "CYP-456": "Generic",
+            });
             await repository.getTestTypes("CYP-123", "CYP-789");
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(testTypes).to.deep.eq({
@@ -729,174 +609,43 @@ describe("the server issue repository", () => {
             });
             // Everything's fetched already, should not fetch anything again.
             await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedGetFields).to.have.been.calledOnce;
-            expect(stubbedSearch).to.have.been.calledTwice;
-            expect(stubbedSearch.secondCall).to.have.been.calledWithExactly({
-                jql: "project = CYP AND issue in (CYP-456)",
-                fields: ["customfield_12100"],
-            });
+            expect(getTestTypesStub).to.have.been.calledTwice;
+            expect(getTestTypesStub.secondCall).to.have.been.calledWithExactly("CYP", "CYP-456");
         });
 
         it("displays an error for issues which do not exist", async () => {
-            stub(jiraClient, "getFields").resolves([
-                {
-                    id: "customfield_12100",
-                    name: "Test Type",
-                    custom: true,
-                    orderable: true,
-                    navigable: true,
-                    searchable: true,
-                    clauseNames: ["cf[12100]", "Test Type"],
-                    schema: {
-                        type: "option",
-                        custom: "com.xpandit.plugins.xray:test-type-custom-field",
-                        customId: 12100,
-                    },
-                },
-            ]);
-            const stubbedSearch = stub(jiraClient, "search");
-            stubbedSearch.resolves([
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1000",
-                    self: "https://example.org/rest/api/2/issue/1000",
-                    key: "CYP-123",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12705",
-                            value: "Custom",
-                            id: "12705",
-                            disabled: false,
-                        },
-                    },
-                },
-            ]);
+            stub(xrayClient, "getTestTypes").resolves({
+                "CYP-123": "Cucumber",
+            });
             const { stubbedError } = stubLogging();
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch test types of issues:
+                    Failed to fetch issue test types
+                    Make sure these issues exist and are test issues:
+
                     CYP-456
                     CYP-789
                 `)
             );
-            expect(testTypes).to.deep.eq({
-                "CYP-123": "Custom",
-            });
+            expect(testTypes).to.deep.eq({ "CYP-123": "Cucumber" });
         });
 
-        it("displays an error when the description field does not exist", async () => {
-            stub(jiraClient, "getFields").resolves([]);
-            const stubbedSearch = stub(jiraClient, "search");
-            const { stubbedError, stubbedWarning } = stubLogging();
-            const testTypes = await repository.getTestTypes("CYP-123");
-            expect(stubbedSearch).to.not.have.been.called;
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                "Failed to fetch Jira field ID for field: Test Type"
-            );
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to fetch test types of issues:
-                    CYP-123
-                `)
-            );
-            expect(testTypes).to.deep.eq({});
-        });
-
-        it("handles get field failures gracefully", async () => {
-            stub(jiraClient, "getFields").resolves(undefined);
-            const stubbedSearch = stub(jiraClient, "search");
-            stubbedSearch.resolves([
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1000",
-                    self: "https://example.org/rest/api/2/issue/1000",
-                    key: "CYP-123",
-                },
-            ]);
+        it("handles failed test type requests gracefully", async () => {
+            stub(xrayClient, "getTestTypes").resolves(undefined);
             const { stubbedError } = stubLogging();
-            const testTypes = await repository.getTestTypes("CYP-123");
-            expect(stubbedSearch).to.not.have.been.called;
+            const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch test types of issues:
+                    Failed to fetch issue test types
+                    Make sure these issues exist and are test issues:
+
                     CYP-123
+                    CYP-456
+                    CYP-789
                 `)
             );
             expect(testTypes).to.deep.eq({});
-        });
-
-        it("handles unparseable field failures gracefully", async () => {
-            stub(jiraClient, "getFields").resolves([
-                {
-                    id: "customfield_12100",
-                    name: "Test Type",
-                    custom: true,
-                    orderable: true,
-                    navigable: true,
-                    searchable: true,
-                    clauseNames: ["cf[12100]", "Test Type"],
-                    schema: {
-                        type: "option",
-                        custom: "com.xpandit.plugins.xray:test-type-custom-field",
-                        customId: 12100,
-                    },
-                },
-            ]);
-            const stubbedSearch = stub(jiraClient, "search");
-            stubbedSearch.resolves([
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1000",
-                    self: "https://example.org/rest/api/2/issue/1000",
-                    key: "CYP-123",
-                    fields: {
-                        customfield_12100: ["This is a somewhat unexpected", "description"],
-                    },
-                },
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1001",
-                    self: "https://example.org/rest/api/2/issue/1001",
-                    key: "CYP-456",
-                    fields: {
-                        customfield_12100: {
-                            Something: 5,
-                        },
-                    },
-                },
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1002",
-                    self: "https://example.org/rest/api/2/issue/1002",
-                    key: "CYP-789",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12701",
-                            value: "Generic",
-                            id: "12701",
-                            disabled: false,
-                        },
-                    },
-                },
-            ]);
-            const { stubbedError, stubbedWarning } = stubLogging();
-            const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to parse the following Jira field of the following issues: Test Type
-                    CYP-123
-                    CYP-456
-                `)
-            );
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to fetch test types of issues:
-                    CYP-123
-                    CYP-456
-                `)
-            );
-            expect(testTypes).to.deep.eq({ "CYP-789": "Generic" });
         });
     });
 });

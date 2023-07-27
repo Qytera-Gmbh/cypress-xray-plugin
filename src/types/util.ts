@@ -1,3 +1,8 @@
+import { JiraClientCloud } from "../client/jira/jiraClientCloud";
+import { JiraClientServer } from "../client/jira/jiraClientServer";
+import { XrayClientCloud } from "../client/xray/xrayClientCloud";
+import { XrayClientServer } from "../client/xray/xrayClientServer";
+
 // https://stackoverflow.com/a/53229567
 type UnionKeys<T> = T extends T ? keyof T : never;
 type Expand<T> = T extends T ? { [K in keyof T]: T[K] } : never;
@@ -33,3 +38,18 @@ export function getEnumKeyByEnumValue<K extends string, V extends string | numbe
 export type StringMap<T> = {
     [key: string]: T;
 };
+
+/**
+ * Type describing the possible client combinations.
+ */
+export type ClientCombination =
+    | {
+          kind: "server";
+          jiraClient: JiraClientServer;
+          xrayClient: XrayClientServer;
+      }
+    | {
+          kind: "cloud";
+          jiraClient: JiraClientCloud;
+          xrayClient: XrayClientCloud;
+      };
