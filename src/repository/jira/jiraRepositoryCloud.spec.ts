@@ -9,7 +9,7 @@ import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
 import { JiraRepositoryCloud } from "./jiraRepositoryCloud";
 
-describe.only("the cloud issue repository", () => {
+describe("the cloud issue repository", () => {
     let options: InternalOptions;
     let xrayClient: XrayClientCloud;
     let jiraClient: JiraClientCloud;

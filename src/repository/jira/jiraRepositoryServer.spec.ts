@@ -189,7 +189,9 @@ describe("the server issue repository", () => {
             const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch summaries of issues:
+                    Failed to fetch issue summaries
+                    Make sure these issues exist:
+
                     CYP-456
                     CYP-789
                 `)
@@ -202,16 +204,14 @@ describe("the server issue repository", () => {
         it("displays an error when the summary field does not exist", async () => {
             stub(jiraClient, "getFields").resolves([]);
             const stubbedSearch = stub(jiraClient, "search");
-            const { stubbedError, stubbedWarning } = stubLogging();
+            const { stubbedError } = stubLogging();
             const summaries = await repository.getSummaries("CYP-123");
             expect(stubbedSearch).to.not.have.been.called;
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                "Failed to fetch Jira field ID for field: Summary"
-            );
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch summaries of issues:
-                    CYP-123
+                    Failed to fetch issue summaries
+                    Failed to fetch Jira field ID for field: Summary
+                    Make sure the field actually exists
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -233,8 +233,9 @@ describe("the server issue repository", () => {
             expect(stubbedSearch).to.not.have.been.called;
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch summaries of issues:
-                    CYP-123
+                    Failed to fetch issue summaries
+                    Failed to fetch Jira field ID for field: Summary
+                    Make sure the field actually exists
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -288,23 +289,20 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const { stubbedError, stubbedWarning } = stubLogging();
+            const { stubbedError } = stubLogging();
             const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to parse the following Jira field of the following issues: Summary
-                    CYP-123
-                    CYP-456
-                `)
-            );
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch summaries of issues:
-                    CYP-123
-                    CYP-456
+                    Failed to fetch issue summaries
+                    Failed to parse the following Jira field of some issues: Summary
+                    Expected the field to be: a string
+                    Make sure the correct field is present on the following issues:
+
+                    CYP-123: ["Good Morning","Summary 2"]
+                    CYP-456: {"Something":5}
                 `)
             );
-            expect(summaries).to.deep.eq({ "CYP-789": "Bonjour" });
+            expect(summaries).to.deep.eq({});
         });
     });
 
@@ -463,7 +461,9 @@ describe("the server issue repository", () => {
             const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch descriptions of issues:
+                    Failed to fetch issue descriptions
+                    Make sure these issues exist:
+
                     CYP-456
                     CYP-789
                 `)
@@ -476,16 +476,14 @@ describe("the server issue repository", () => {
         it("displays an error when the description field does not exist", async () => {
             stub(jiraClient, "getFields").resolves([]);
             const stubbedSearch = stub(jiraClient, "search");
-            const { stubbedError, stubbedWarning } = stubLogging();
+            const { stubbedError } = stubLogging();
             const descriptions = await repository.getDescriptions("CYP-123");
             expect(stubbedSearch).to.not.have.been.called;
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                "Failed to fetch Jira field ID for field: Description"
-            );
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch descriptions of issues:
-                    CYP-123
+                    Failed to fetch issue descriptions
+                    Failed to fetch Jira field ID for field: Description
+                    Make sure the field actually exists
                 `)
             );
             expect(descriptions).to.deep.eq({});
@@ -507,8 +505,9 @@ describe("the server issue repository", () => {
             expect(stubbedSearch).to.not.have.been.called;
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch descriptions of issues:
-                    CYP-123
+                    Failed to fetch issue descriptions
+                    Failed to fetch Jira field ID for field: Description
+                    Make sure the field actually exists
                 `)
             );
             expect(descriptions).to.deep.eq({});
@@ -562,23 +561,20 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const { stubbedError, stubbedWarning } = stubLogging();
+            const { stubbedError } = stubLogging();
             const summaries = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to parse the following Jira field of the following issues: Description
-                    CYP-123
-                    CYP-456
-                `)
-            );
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch descriptions of issues:
-                    CYP-123
-                    CYP-456
+                    Failed to fetch issue descriptions
+                    Failed to parse the following Jira field of some issues: Description
+                    Expected the field to be: a string
+                    Make sure the correct field is present on the following issues:
+
+                    CYP-123: ["This is a somewhat unexpected","description"]
+                    CYP-456: {"Something":5}
                 `)
             );
-            expect(summaries).to.deep.eq({ "CYP-789": "Bonjour (encore)" });
+            expect(summaries).to.deep.eq({});
         });
     });
 
@@ -775,7 +771,9 @@ describe("the server issue repository", () => {
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch test types of issues:
+                    Failed to fetch issue test types
+                    Make sure these issues exist and are test issues:
+
                     CYP-456
                     CYP-789
                 `)
@@ -788,16 +786,14 @@ describe("the server issue repository", () => {
         it("displays an error when the description field does not exist", async () => {
             stub(jiraClient, "getFields").resolves([]);
             const stubbedSearch = stub(jiraClient, "search");
-            const { stubbedError, stubbedWarning } = stubLogging();
+            const { stubbedError } = stubLogging();
             const testTypes = await repository.getTestTypes("CYP-123");
             expect(stubbedSearch).to.not.have.been.called;
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                "Failed to fetch Jira field ID for field: Test Type"
-            );
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch test types of issues:
-                    CYP-123
+                    Failed to fetch issue test types
+                    Failed to fetch Jira field ID for field: Test Type
+                    Make sure the field actually exists
                 `)
             );
             expect(testTypes).to.deep.eq({});
@@ -819,8 +815,9 @@ describe("the server issue repository", () => {
             expect(stubbedSearch).to.not.have.been.called;
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch test types of issues:
-                    CYP-123
+                    Failed to fetch issue test types
+                    Failed to fetch Jira field ID for field: Test Type
+                    Make sure the field actually exists
                 `)
             );
             expect(testTypes).to.deep.eq({});
@@ -880,23 +877,20 @@ describe("the server issue repository", () => {
                     },
                 },
             ]);
-            const { stubbedError, stubbedWarning } = stubLogging();
+            const { stubbedError } = stubLogging();
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to parse the following Jira field of the following issues: Test Type
-                    CYP-123
-                    CYP-456
-                `)
-            );
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch test types of issues:
-                    CYP-123
-                    CYP-456
+                    Failed to fetch issue test types
+                    Failed to parse the following Jira field of some issues: Test Type
+                    Expected the field to be: an object with a value property
+                    Make sure the correct field is present on the following issues:
+
+                    CYP-123: ["This is a somewhat unexpected","description"]
+                    CYP-456: {"Something":5}
                 `)
             );
-            expect(testTypes).to.deep.eq({ "CYP-789": "Generic" });
+            expect(testTypes).to.deep.eq({});
         });
     });
 });
