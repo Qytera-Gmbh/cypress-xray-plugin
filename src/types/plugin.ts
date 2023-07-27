@@ -6,7 +6,7 @@ import { XrayClientServer } from "../client/xray/xrayClientServer";
 import { JiraRepositoryCloud } from "../repository/jira/jiraRepositoryCloud";
 import { JiraRepositoryServer } from "../repository/jira/jiraRepositoryServer";
 import { IssueTypeDetailsCloud, IssueTypeDetailsServer } from "./jira/responses/issueTypeDetails";
-import { OneOf, StringMap } from "./util";
+import { OneOf } from "./util";
 
 export interface Options {
     jira: JiraOptions;
@@ -235,14 +235,6 @@ export type InternalOptions = Options & {
          * The details of the test plan issue type.
          */
         testPlanIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
-    };
-    xray?: {
-        /**
-         * A mapping of issue keys to test types. Required for Cypress execution import, since the
-         * `testType` (Xray Server) or `type` (Xray Cloud) properties are required by Xray's JSON
-         * scheme for uploading results.
-         */
-        testTypes?: StringMap<string>;
     };
     cucumber?: {
         preprocessor?: Awaited<ReturnType<typeof resolvePreprocessorConfiguration>>;

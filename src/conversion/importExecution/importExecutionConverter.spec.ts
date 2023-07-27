@@ -4,6 +4,7 @@ import { readFileSync } from "fs";
 import { stubLogging } from "../../../test/util";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
+import { TestIssueData } from "./importExecutionConverter";
 import { ImportExecutionConverterCloud } from "./importExecutionConverterCloud";
 import { ImportExecutionConverterServer } from "./importExecutionConverterServer";
 
@@ -12,6 +13,7 @@ describe("the import execution converters", () => {
         describe(converterType, () => {
             let options: InternalOptions;
             let converter: ImportExecutionConverterServer | ImportExecutionConverterCloud;
+            let testIssueData: TestIssueData;
             beforeEach(() => {
                 options = initOptions(
                     {},
@@ -32,22 +34,33 @@ describe("the import execution converters", () => {
                     converterType === "server"
                         ? new ImportExecutionConverterServer(options)
                         : new ImportExecutionConverterCloud(options);
+                testIssueData = { summaries: {}, testTypes: {} };
             });
 
-            it("should convert test results into xray json", () => {
+            it("converts test results into xray json", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                const json = converter.convert(result);
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests).to.have.length(3);
             });
 
-            it("should skip tests when encountering unknown statuses", () => {
+            it("skips tests when encountering unknown statuses", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
                 );
                 const { stubbedWarning } = stubLogging();
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(stubbedWarning.firstCall).to.have.been.calledWith(
                     dedent(`
                         Skipping result upload for test: TodoMVC hides footer initially
@@ -65,96 +78,178 @@ describe("the import execution converters", () => {
                 expect(json.tests).to.be.undefined;
             });
 
-            it("should erase milliseconds from timestamps", () => {
+            it("erases milliseconds from timestamps", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                const json = converter.convert(result);
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
+                const json = converter.convert(result, testIssueData);
                 expect(json.info?.startDate).to.eq("2022-11-28T17:41:12Z");
                 expect(json.info?.finishDate).to.eq("2022-11-28T17:41:19Z");
             });
 
-            it("should upload screenshots by default", () => {
+            it("uploads screenshots by default", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                const json = converter.convert(result);
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests[0].evidence).to.be.undefined;
                 expect(json.tests[1].evidence).to.be.undefined;
                 expect(json.tests[2].evidence).to.be.an("array").with.length(1);
                 expect(json.tests[2].evidence[0].filename).to.eq("turtle.png");
             });
 
-            it("should skip screenshot upload if disabled", () => {
+            it("skips screenshot upload if disabled", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
                 options.xray.uploadScreenshots = false;
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests).to.have.length(3);
                 expect(json.tests[0].evidence).to.be.undefined;
                 expect(json.tests[1].evidence).to.be.undefined;
                 expect(json.tests[2].evidence).to.be.undefined;
             });
 
-            it("should normalize screenshot filenames if enabled", () => {
+            it("normalizes screenshot filenames if enabled", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
                 );
+                testIssueData.summaries = {
+                    "CYP-123": "Test issue",
+                };
+                testIssueData.testTypes = {
+                    "CYP-123": "Manual",
+                };
                 options.plugin.normalizeScreenshotNames = true;
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests[0].evidence[0].filename).to.eq(
                     "t_rtle_with_problem_tic_name.png"
                 );
             });
 
-            it("should not normalize screenshot filenames by default", () => {
+            it("does not normalize screenshot filenames by default", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
                 );
-                const json = converter.convert(result);
+                testIssueData.summaries = {
+                    "CYP-123": "Big test",
+                };
+                testIssueData.testTypes = {
+                    "CYP-123": "Generic",
+                };
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests[0].evidence[0].filename).to.eq(
                     "tûrtle with problemätic name.png"
                 );
             });
 
-            it("should use custom passed statuses", () => {
+            it("uses custom passed statuses", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
                 options.xray.statusPassed = "it worked";
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests[0].status).to.eq("it worked");
                 expect(json.tests[1].status).to.eq("it worked");
             });
 
-            it("should use custom failed statuses", () => {
+            it("uses custom failed statuses", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
                 options.xray.statusFailed = "it did not work";
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests[2].status).to.eq("it did not work");
             });
 
-            it("should use custom pending statuses", () => {
+            it("uses custom pending statuses", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultPending.json", "utf-8")
                 );
+                testIssueData.summaries = {
+                    "CYP-123": "This is",
+                    "CYP-456": "a distributed",
+                    "CYP-789": "summary",
+                    "CYP-987": "!!!",
+                };
+                testIssueData.testTypes = {
+                    "CYP-123": "Generic",
+                    "CYP-456": "Manual",
+                    "CYP-789": "Cucumber",
+                    "CYP-987": "No idea",
+                };
                 options.xray.statusPending = "still pending";
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests[0].status).to.eq("still pending");
                 expect(json.tests[1].status).to.eq("still pending");
                 expect(json.tests[2].status).to.eq("still pending");
                 expect(json.tests[3].status).to.eq("still pending");
             });
 
-            it("should use custom skipped statuses", () => {
+            it("uses custom skipped statuses", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultSkipped.json", "utf-8")
                 );
+                testIssueData.summaries = {
+                    "CYP-123": "This is",
+                    "CYP-456": "a summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-123": "Generic",
+                    "CYP-456": "Manual",
+                };
                 options.xray.statusSkipped = "omit";
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests[1].status).to.eq("omit");
             });
 
@@ -162,12 +257,17 @@ describe("the import execution converters", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                options.xray.testTypes = {
-                    "CYP-40": "Manual",
-                    "CYP-41": "Manual",
-                    "CYP-49": "Manual",
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
                 };
-                const json = converter.convert(result);
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests).to.have.length(3);
                 expect(json.tests[0].testInfo.steps).to.have.length(1);
                 expect(json.tests[0].testInfo.steps[0].action).to.be.a("string");
@@ -177,154 +277,308 @@ describe("the import execution converters", () => {
                 expect(json.tests[2].testInfo.steps[0].action).to.be.a("string");
             });
 
-            it("should skip step updates if disabled", () => {
+            it("skips step updates if disabled", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                options.xray.steps.update = false;
-                options.xray.testTypes = {
-                    "CYP-40": "Manual",
-                    "CYP-41": "Manual",
-                    "CYP-49": "Manual",
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
                 };
-                const json = converter.convert(result);
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
+                options.xray.steps.update = false;
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests).to.have.length(3);
                 expect(json.tests[0].testInfo.steps).to.be.undefined;
                 expect(json.tests[1].testInfo.steps).to.be.undefined;
                 expect(json.tests[2].testInfo.steps).to.be.undefined;
             });
 
-            it("should truncate step actions to 8000 characters by default", () => {
+            it("truncates step actions to 8000 characters by default", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
                 );
-                options.xray.testTypes = {
+                testIssueData.summaries = {
+                    "CYP-123": "Summary 1",
+                    "CYP-456": "Summary 2",
+                    "CYP-789": "Summary 3",
+                };
+                testIssueData.testTypes = {
                     "CYP-123": "Manual",
                     "CYP-456": "Manual",
                     "CYP-789": "Manual",
                 };
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests[0].testInfo.steps[0].action).to.eq(`${"x".repeat(7997)}...`);
                 expect(json.tests[1].testInfo.steps[0].action).to.eq(`${"x".repeat(8000)}`);
                 expect(json.tests[2].testInfo.steps[0].action).to.eq(`${"x".repeat(2000)}`);
             });
 
-            it("should truncate step actions to custom lengths if enabled", () => {
+            it("truncates step actions to custom lengths if enabled", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
                 );
                 options.xray.steps.maxLengthAction = 5;
-                options.xray.testTypes = {
+                testIssueData.summaries = {
+                    "CYP-123": "1st summary",
+                    "CYP-456": "2nd summary",
+                    "CYP-789": "3rd summary",
+                };
+                testIssueData.testTypes = {
                     "CYP-123": "Manual",
                     "CYP-456": "Manual",
                     "CYP-789": "Manual",
                 };
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests[0].testInfo.steps[0].action).to.eq("xx...");
                 expect(json.tests[1].testInfo.steps[0].action).to.eq("xx...");
                 expect(json.tests[2].testInfo.steps[0].action).to.eq("xx...");
             });
 
-            it("should detect re-use of existing test issues", () => {
+            it("includes issue summaries", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                const json = converter.convert(result);
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
+                const json = converter.convert(result, testIssueData);
+                expect(json.tests).to.have.length(3);
+                expect(json.tests[0].testInfo.summary).to.eq("This is");
+                expect(json.tests[1].testInfo.summary).to.eq("a distributed");
+                expect(json.tests[2].testInfo.summary).to.eq("summary");
+            });
+
+            it("includes test issue keys", () => {
+                const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+                );
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests).to.have.length(3);
                 expect(json.tests[0].testKey).to.eq("CYP-40");
                 expect(json.tests[1].testKey).to.eq("CYP-41");
                 expect(json.tests[2].testKey).to.eq("CYP-49");
-                expect(json.tests[0].testInfo).to.be.undefined;
-                expect(json.tests[1].testInfo).to.be.undefined;
-                expect(json.tests[2].testInfo).to.be.undefined;
             });
 
-            it("should skip tests with unknown test type", () => {
+            it("skips tests with missing test type", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                options.xray.steps.update = false;
-                options.xray.testTypes = {
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
                     "CYP-40": "Manual",
                     "CYP-41": "Manual",
                 };
+                options.xray.steps.update = false;
                 const { stubbedWarning } = stubLogging();
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.tests).to.be.an("array").with.length(2);
                 expect(stubbedWarning).to.have.been.calledWith(
                     dedent(`
                         Skipping result upload for test: cypress xray plugin CYP-49 failling test case with test issue key
 
-                        Failed to find test type for issue: CYP-49
+                        Test type of corresponding issue is missing: CYP-49
                     `)
                 );
             });
 
-            it("should add test execution issue keys", () => {
+            it("skips tests with missing summaries", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Manual",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
+                options.xray.steps.update = false;
+                const { stubbedWarning } = stubLogging();
+                const json = converter.convert(result, testIssueData);
+                expect(json.tests).to.be.an("array").with.length(2);
+                expect(stubbedWarning).to.have.been.calledWith(
+                    dedent(`
+                        Skipping result upload for test: cypress xray plugin CYP-49 failling test case with test issue key
+
+                        Summary of corresponding issue is missing: CYP-49
+                    `)
+                );
+            });
+
+            it("adds test execution issue keys", () => {
+                const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+                );
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
                 options.jira.testExecutionIssueKey = "CYP-123";
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.testExecutionKey).to.eq("CYP-123");
             });
 
-            it("should add test plan issue keys", () => {
+            it("adds test plan issue keys", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
                 options.jira.testPlanIssueKey = "CYP-123";
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.info.testPlanKey).to.eq("CYP-123");
             });
 
-            it("should not add test execution issue keys on its own", () => {
+            it("does not add test execution issue keys on its own", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                const json = converter.convert(result);
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
+                const json = converter.convert(result, testIssueData);
                 expect(json.testExecutionKey).to.be.undefined;
             });
 
-            it("should not add test plan issue keys on its own", () => {
+            it("does not add test plan issue keys on its own", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                const json = converter.convert(result);
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
+                const json = converter.convert(result, testIssueData);
                 expect(json.info.testPlanKey).to.be.undefined;
             });
 
-            it("should include a custom test execution summary if provided", () => {
+            it("includes a custom test execution summary if provided", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
                 options.jira.testExecutionIssueSummary = "Jeffrey's Test";
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.info.summary).to.eq("Jeffrey's Test");
             });
 
-            it("should use a timestamp as test execution summary by default", () => {
+            it("uses a timestamp as test execution summary by default", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                const json = converter.convert(result);
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
+                const json = converter.convert(result, testIssueData);
                 expect(json.info.summary).to.eq("Execution Results [1669657272234]");
             });
 
-            it("should include a custom test execution description if provided", () => {
+            it("includes a custom test execution description if provided", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
                 options.jira.testExecutionIssueDescription = "Very Useful Text";
-                const json = converter.convert(result);
+                const json = converter.convert(result, testIssueData);
                 expect(json.info.description).to.eq("Very Useful Text");
             });
 
-            it("should use versions as test execution description by default", () => {
+            it("uses versions as test execution description by default", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
-                const json = converter.convert(result);
+                testIssueData.summaries = {
+                    "CYP-40": "This is",
+                    "CYP-41": "a distributed",
+                    "CYP-49": "summary",
+                };
+                testIssueData.testTypes = {
+                    "CYP-40": "Generic",
+                    "CYP-41": "Manual",
+                    "CYP-49": "Cucumber",
+                };
+                const json = converter.convert(result, testIssueData);
                 expect(json.info.description).to.eq(
                     "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)"
                 );

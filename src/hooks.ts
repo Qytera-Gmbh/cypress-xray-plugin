@@ -299,13 +299,19 @@ async function uploadCypressResults(
     jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
 ) {
     const issueKeys = getNativeTestIssueKeys(runResult, options);
-    const testTypes = await jiraRepository.getTestTypes(options.jira.projectKey, ...issueKeys);
-    options.xray.testTypes = testTypes;
+    const issueSummaries = await jiraRepository.getSummaries(options.jira.projectKey, ...issueKeys);
+    const issueTestTypes = await jiraRepository.getTestTypes(options.jira.projectKey, ...issueKeys);
     let cypressExecution: XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud;
     if (xrayClient instanceof XrayClientServer) {
-        cypressExecution = new ImportExecutionConverterServer(options).convert(runResult);
+        cypressExecution = new ImportExecutionConverterServer(options).convert(runResult, {
+            summaries: issueSummaries,
+            testTypes: issueTestTypes,
+        });
     } else {
-        cypressExecution = new ImportExecutionConverterCloud(options).convert(runResult);
+        cypressExecution = new ImportExecutionConverterCloud(options).convert(runResult, {
+            summaries: issueSummaries,
+            testTypes: issueTestTypes,
+        });
     }
     return await xrayClient.importExecution(cypressExecution);
 }
