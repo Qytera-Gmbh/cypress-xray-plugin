@@ -131,7 +131,10 @@ export interface FeatureFileIssueData {
         key: string;
         summary: string;
     }[];
-    preconditions: string[];
+    preconditions: {
+        key: string;
+        summary: string;
+    }[];
 }
 
 export function getCucumberIssueData(
@@ -185,7 +188,7 @@ export function getCucumberIssueData(
             }
             featureFileIssueKeys.tests.push({
                 key: issueKeys[0],
-                summary: child.scenario.name,
+                summary: child.scenario.name ? child.scenario.name : "<empty>",
             });
         } else if (child.background) {
             const preconditionKeys = getCucumberPreconditionIssueTags(
@@ -228,7 +231,10 @@ export function getCucumberIssueData(
                 ];
                 throw new Error(lines.join("\n"));
             }
-            featureFileIssueKeys.preconditions.push(preconditionKeys[0]);
+            featureFileIssueKeys.preconditions.push({
+                key: preconditionKeys[0],
+                summary: child.background.name ? child.background.name : "<empty>",
+            });
         }
     }
     return featureFileIssueKeys;

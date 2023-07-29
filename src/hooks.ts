@@ -386,12 +386,15 @@ export async function synchronizeFile(
                     options,
                     clients.kind === "cloud"
                 );
-                // Xray currently does not allow keeping the test issues' summaries when importing
-                // feature files to existing issues. Therefore, we manually need to backup and
-                // reset the summary once the import is done.
+                // Xray currently (almost) always overwrites issue summaries when importing feature
+                // files to existing issues. Therefore, we manually need to backup and reset the
+                // summary once the import is done.
                 // See: https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                 // See: https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                const testIssueKeys = issueData.tests.map((data) => data.key);
+                const testIssueKeys = [
+                    ...issueData.tests.map((data) => data.key),
+                    ...issueData.preconditions.map((data) => data.key),
+                ];
                 logDebug(
                     dedent(`
                         Creating issue summary backups for issues:
@@ -425,10 +428,11 @@ async function resetSummaries(
     jiraClient: JiraClientServer | JiraClientCloud,
     jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
 ) {
-    for (let i = 0; i < issueData.tests.length; i++) {
-        const issueKey = issueData.tests[i].key;
+    const allIssues = [...issueData.tests, ...issueData.preconditions];
+    for (let i = 0; i < allIssues.length; i++) {
+        const issueKey = allIssues[i].key;
         const oldSummary = testSummaries[issueKey];
-        const newSummary = issueData.tests[i].summary;
+        const newSummary = allIssues[i].summary;
         if (oldSummary !== newSummary) {
             const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {
                 fields: {},
