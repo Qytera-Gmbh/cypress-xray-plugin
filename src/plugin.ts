@@ -7,33 +7,31 @@ import { Options, PluginContext } from "./types/plugin";
 let context: PluginContext;
 
 export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, options: Options) {
-    const internalOptions = initOptions(config.env, options);
-    if (!internalOptions.plugin.enabled) {
+    context = {
+        cypress: config,
+        internal: initOptions(config.env, options),
+    };
+    if (!context.internal.plugin.enabled) {
         logInfo("Plugin disabled. Skipping configuration verification.");
         return;
     }
-    verifyOptions(internalOptions);
-    const clients = initClients(internalOptions, config.env);
-    const jiraRepository = initJiraRepository(clients, options);
-    context = {
-        internal: internalOptions,
-        cypress: config,
-        xrayClient: clients.xrayClient,
-        jiraClient: clients.jiraClient,
-        jiraRepository: jiraRepository,
-    };
-    Requests.init(internalOptions);
+    verifyOptions(context.internal);
+    const clients = initClients(context.internal, config.env);
+    context.xrayClient = clients.xrayClient;
+    context.jiraClient = clients.jiraClient;
+    context.jiraRepository = initJiraRepository(clients, options);
+    Requests.init(context.internal);
     initLogging({
-        debug: internalOptions.plugin.debug,
-        logDirectory: internalOptions.plugin.logDirectory,
+        debug: context.internal.plugin.debug,
+        logDirectory: context.internal.plugin.logDirectory,
     });
 }
 
 export async function addXrayResultUpload(on: Cypress.PluginEvents) {
     on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
         await beforeRunHook(
-            context.cypress,
             runDetails,
+            context.cypress,
             context.internal,
             context.xrayClient,
             context.jiraClient

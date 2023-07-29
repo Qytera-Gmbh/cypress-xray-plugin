@@ -40,7 +40,7 @@ describe("the before run hook", () => {
 
     it("should throw if the plugin was not configured", async () => {
         const { stubbedError } = stubLogging();
-        await beforeRunHook(config, beforeRunDetails);
+        await beforeRunHook(beforeRunDetails, config);
         expect(stubbedError).to.have.been.calledOnceWith(
             dedent(`
                 Plugin misconfigured: configureXrayPlugin() was not called. Skipping before:run hook
@@ -53,7 +53,7 @@ describe("the before run hook", () => {
     it("should not do anything if disabled", async () => {
         const { stubbedInfo } = stubLogging();
         options.plugin.enabled = false;
-        await beforeRunHook(config, beforeRunDetails, options);
+        await beforeRunHook(beforeRunDetails, config, options);
         expect(stubbedInfo).to.have.been.calledOnceWith(
             "Plugin disabled. Skipping before:run hook"
         );
@@ -61,7 +61,7 @@ describe("the before run hook", () => {
 
     it("should throw if the xray client was not configured", async () => {
         await expect(
-            beforeRunHook(config, beforeRunDetails, options)
+            beforeRunHook(beforeRunDetails, config, options)
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Plugin misconfigured: Xray client was not configured
@@ -73,7 +73,7 @@ describe("the before run hook", () => {
 
     it("should throw if the jira client was not configured", async () => {
         await expect(
-            beforeRunHook(config, beforeRunDetails, options, new DummyXrayClient())
+            beforeRunHook(beforeRunDetails, config, options, new DummyXrayClient())
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Plugin misconfigured: Jira client was not configured
@@ -89,8 +89,8 @@ describe("the before run hook", () => {
         );
         options.xray.uploadResults = false;
         await beforeRunHook(
-            config,
             beforeRunDetails,
+            config,
             options,
             new DummyXrayClient(),
             new DummyJiraClient()
@@ -105,8 +105,8 @@ describe("the before run hook", () => {
         config.env["jsonEnabled"] = false;
         await expect(
             beforeRunHook(
-                config,
                 beforeRunDetails,
+                config,
                 options,
                 new DummyXrayClient(),
                 new DummyJiraClient()
@@ -127,8 +127,8 @@ describe("the before run hook", () => {
         config.env["jsonOutput"] = "";
         await expect(
             beforeRunHook(
-                config,
                 beforeRunDetails,
+                config,
                 options,
                 new DummyXrayClient(),
                 new DummyJiraClient()
@@ -166,8 +166,8 @@ describe("the before run hook", () => {
             config: null,
         });
         await beforeRunHook(
-            config,
             beforeRunDetails,
+            config,
             options,
             new DummyXrayClient(),
             new JiraClientCloud("https://example.org", new BasicAuthCredentials("user", "token"))
@@ -189,8 +189,8 @@ describe("the before run hook", () => {
         const { stubbedInfo } = stubLogging();
         beforeRunDetails = JSON.parse(readFileSync("./test/resources/beforeRun.json", "utf-8"));
         await beforeRunHook(
-            config,
             beforeRunDetails,
+            config,
             options,
             new DummyXrayClient(),
             new DummyJiraClient()
@@ -219,8 +219,8 @@ describe("the before run hook", () => {
         });
         await expect(
             beforeRunHook(
-                config,
                 beforeRunDetails,
+                config,
                 options,
                 new DummyXrayClient(),
                 new JiraClientCloud(
@@ -266,8 +266,8 @@ describe("the before run hook", () => {
         });
         await expect(
             beforeRunHook(
-                config,
                 beforeRunDetails,
+                config,
                 options,
                 new DummyXrayClient(),
                 new JiraClientCloud(
@@ -317,8 +317,8 @@ describe("the before run hook", () => {
         });
         await expect(
             beforeRunHook(
-                config,
                 beforeRunDetails,
+                config,
                 options,
                 new DummyXrayClient(),
                 new JiraClientCloud(
@@ -361,8 +361,8 @@ describe("the before run hook", () => {
         });
         await expect(
             beforeRunHook(
-                config,
                 beforeRunDetails,
+                config,
                 options,
                 new DummyXrayClient(),
                 new JiraClientCloud(
@@ -402,8 +402,8 @@ describe("the before run hook", () => {
             config: null,
         });
         await beforeRunHook(
-            config,
             beforeRunDetails,
+            config,
             options,
             new DummyXrayClient(),
             new JiraClientCloud("https://example.org", new BasicAuthCredentials("user", "token"))
@@ -439,8 +439,8 @@ describe("the before run hook", () => {
             config: null,
         });
         await beforeRunHook(
-            config,
             beforeRunDetails,
+            config,
             options,
             new DummyXrayClient(),
             new JiraClientCloud("https://example.org", new BasicAuthCredentials("user", "token"))
@@ -474,8 +474,8 @@ describe("the before run hook", () => {
         );
         await expect(
             beforeRunHook(
-                config,
                 beforeRunDetails,
+                config,
                 options,
                 new DummyXrayClient(),
                 new JiraClientCloud(

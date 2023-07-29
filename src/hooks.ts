@@ -35,8 +35,8 @@ import {
 } from "./types/xray/requests/importExecutionCucumberMultipart";
 
 export async function beforeRunHook(
-    config: Cypress.PluginConfigOptions,
     runDetails: Cypress.BeforeRunDetails,
+    config?: Cypress.PluginConfigOptions,
     options?: InternalOptions,
     xrayClient?: XrayClientServer | XrayClientCloud,
     jiraClient?: JiraClientServer | JiraClientCloud
