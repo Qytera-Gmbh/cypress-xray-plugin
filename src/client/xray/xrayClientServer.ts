@@ -1,5 +1,8 @@
+import FormData from "form-data";
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
+import { RequestConfigPost } from "../../https/requests";
 import { logError, logSuccess } from "../../logging/logging";
+import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import {
@@ -90,8 +93,30 @@ export class XrayClientServer extends XrayClient<
         }
     }
 
-    public getUrlImportExecutionCucumberMultipart(): string {
-        return `${this.apiBaseURL}/rest/raven/latest/import/execution/cucumber/multipart`;
+    public async prepareRequestImportExecutionCucumberMultipart(
+        cucumberJson: CucumberMultipartFeature[],
+        cucumberInfo: CucumberMultipartInfoServer
+    ): Promise<RequestConfigPost<FormData>> {
+        const formData = new FormData();
+        const resultString = JSON.stringify(cucumberJson);
+        const infoString = JSON.stringify(cucumberInfo);
+        formData.append("result", resultString, {
+            filename: "results.json",
+        });
+        formData.append("info", infoString, {
+            filename: "info.json",
+        });
+        const authenticationHeader = await this.credentials.getAuthenticationHeader();
+        return {
+            url: `${this.apiBaseURL}/rest/raven/latest/import/execution/cucumber/multipart`,
+            data: formData,
+            config: {
+                headers: {
+                    ...authenticationHeader,
+                    ...formData.getHeaders(),
+                },
+            },
+        };
     }
 
     public handleResponseImportExecutionCucumberMultipart(

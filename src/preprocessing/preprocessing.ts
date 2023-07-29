@@ -146,7 +146,11 @@ export function getCucumberIssueData(
     const document = parseFeatureFile(filePath);
     for (const child of document.feature.children) {
         if (child.scenario) {
-            const issueKeys = getCucumberScenarioIssueTags(child.scenario, options.jira.projectKey);
+            const issueKeys = getCucumberScenarioIssueTags(
+                child.scenario,
+                options.jira.projectKey,
+                isCloudClient
+            );
             if (issueKeys.length === 0) {
                 throw new Error(
                     dedent(`
@@ -187,6 +191,7 @@ export function getCucumberIssueData(
             const preconditionKeys = getCucumberPreconditionIssueTags(
                 child.background,
                 options.jira.projectKey,
+                isCloudClient,
                 document.comments
             );
             if (preconditionKeys.length === 0) {
@@ -198,7 +203,7 @@ export function getCucumberIssueData(
                         You can target existing precondition issues by adding a corresponding comment:
 
                         ${getBackgroundLine(child.background)}
-                          ${getBackgroundTag(options.jira.projectKey)}
+                          ${getBackgroundTag(options.jira.projectKey, isCloudClient)}
                           # steps ...
 
                         For more information, visit:
@@ -264,8 +269,8 @@ function getBackgroundLine(background: Background): string {
     return `${background.keyword}: ${background.name}`;
 }
 
-function getBackgroundTag(projectKey: string): string {
-    return `#@Precondition:${projectKey}-123`;
+function getBackgroundTag(projectKey: string, isCloudClient: boolean): string {
+    return isCloudClient ? `#@Precondition:${projectKey}-123` : `#@${projectKey}-123`;
 }
 
 function reconstructMultipleTagsBackground(
@@ -310,10 +315,14 @@ export function parseFeatureFile(
     return parser.parse(fs.readFileSync(file, { encoding: encoding }));
 }
 
-export function getCucumberScenarioIssueTags(scenario: Scenario, projectKey: string): string[] {
+export function getCucumberScenarioIssueTags(
+    scenario: Scenario,
+    projectKey: string,
+    isCloudClient: boolean
+): string[] {
     const issueKeys: string[] = [];
     for (const tag of scenario.tags) {
-        const matches = tag.name.match(scenarioRegex(projectKey));
+        const matches = tag.name.match(scenarioRegex(projectKey, isCloudClient));
         if (!matches) {
             continue;
         } else if (matches.length === 2) {
@@ -323,15 +332,19 @@ export function getCucumberScenarioIssueTags(scenario: Scenario, projectKey: str
     return issueKeys;
 }
 
-function scenarioRegex(projectKey: string) {
-    // Xray cloud: @TestName:CYP-123
-    // Xray server: @CYP-123
-    return new RegExp(`@(?:TestName:)?(${projectKey}-\\d+)`);
+function scenarioRegex(projectKey: string, isCloudClient: boolean) {
+    if (isCloudClient) {
+        // @TestName:CYP-123
+        return new RegExp(`@TestName:(${projectKey}-\\d+)`);
+    }
+    // @CYP-123
+    return new RegExp(`@(${projectKey}-\\d+)`);
 }
 
 export function getCucumberPreconditionIssueTags(
     background: Background,
     projectKey: string,
+    isCloudClient: boolean,
     comments: readonly Comment[]
 ): string[] {
     const preconditionKeys: string[] = [];
@@ -340,7 +353,7 @@ export function getCucumberPreconditionIssueTags(
         const firstStepLine = background.steps[0].location.line;
         for (const comment of comments) {
             if (comment.location.line > backgroundLine && comment.location.line < firstStepLine) {
-                const matches = comment.text.match(backgroundRegex(projectKey));
+                const matches = comment.text.match(backgroundRegex(projectKey, isCloudClient));
                 if (!matches) {
                     continue;
                 } else if (matches.length === 2) {
@@ -352,7 +365,11 @@ export function getCucumberPreconditionIssueTags(
     return preconditionKeys;
 }
 
-function backgroundRegex(projectKey: string) {
-    // @Precondition:CYP-111
-    return new RegExp(`@Precondition:(${projectKey}-\\d+)`);
+function backgroundRegex(projectKey: string, isCloudClient: boolean) {
+    if (isCloudClient) {
+        // @Precondition:CYP-111
+        return new RegExp(`@Precondition:(${projectKey}-\\d+)`);
+    }
+    // @CYP-111
+    return new RegExp(`@(${projectKey}-\\d+)`);
 }

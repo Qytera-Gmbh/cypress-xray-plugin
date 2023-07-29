@@ -26,7 +26,7 @@ describe("the import execution results converter (server)", () => {
         testIssueData = { summaries: {}, testTypes: {} };
     });
 
-    it("uses PASS as default status name for passed tests", () => {
+    it("uses PASS as default status name for passed tests", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
@@ -41,12 +41,12 @@ describe("the import execution results converter (server)", () => {
             "CYP-49": "Cucumber",
         };
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convert(result, testIssueData);
+        const json = await converter.convert(result, testIssueData);
         expect(json.tests[0].status).to.eq("PASS");
         expect(json.tests[1].status).to.eq("PASS");
     });
 
-    it("uses FAIL as default status name for failed tests", () => {
+    it("uses FAIL as default status name for failed tests", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
@@ -61,11 +61,11 @@ describe("the import execution results converter (server)", () => {
             "CYP-49": "Cucumber",
         };
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convert(result, testIssueData);
+        const json = await converter.convert(result, testIssueData);
         expect(json.tests[2].status).to.eq("FAIL");
     });
 
-    it("uses TODO as default status name for pending tests", () => {
+    it("uses TODO as default status name for pending tests", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultPending.json", "utf-8")
         );
@@ -82,14 +82,14 @@ describe("the import execution results converter (server)", () => {
             "CYP-987": "No idea",
         };
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convert(result, testIssueData);
+        const json = await converter.convert(result, testIssueData);
         expect(json.tests[0].status).to.eq("TODO");
         expect(json.tests[1].status).to.eq("TODO");
         expect(json.tests[2].status).to.eq("TODO");
         expect(json.tests[3].status).to.eq("TODO");
     });
 
-    it("uses FAIL as default status name for skipped tests", () => {
+    it("uses FAIL as default status name for skipped tests", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultSkipped.json", "utf-8")
         );
@@ -102,7 +102,7 @@ describe("the import execution results converter (server)", () => {
             "CYP-456": "Cucumber",
         };
         const converter = new ImportExecutionConverterServer(options);
-        const json = converter.convert(result, testIssueData);
+        const json = await converter.convert(result, testIssueData);
         expect(json.tests[0].status).to.eq("FAIL");
         expect(json.tests[1].status).to.eq("FAIL");
     });

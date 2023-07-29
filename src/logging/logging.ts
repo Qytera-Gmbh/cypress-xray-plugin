@@ -83,11 +83,12 @@ function log(
  * @param data the data to write
  * @param filename the filename to use for the file
  */
-export function writeFile<T>(data: T, filename: string): void {
+export function writeFile<T>(data: T, filename: string): string {
     const logDirectoryPath = path.resolve(loggingOptions.logDirectory);
     fs.mkdirSync(logDirectoryPath, { recursive: true });
     const filepath = path.resolve(logDirectoryPath, filename);
     fs.writeFileSync(filepath, JSON.stringify(data));
+    return filepath;
 }
 
 /**

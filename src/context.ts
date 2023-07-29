@@ -40,8 +40,7 @@ import {
 import { logInfo } from "./logging/logging";
 import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
 import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
-import { InternalOptions, Options, XrayStepOptions } from "./types/plugin";
-import { ClientCombination } from "./types/util";
+import { ClientCombination, InternalOptions, Options, XrayStepOptions } from "./types/plugin";
 import { asBoolean, asInt, asString, parse } from "./util/parsing";
 
 export function initOptions(env: Cypress.ObjectLike, options: Options): InternalOptions {
@@ -198,6 +197,7 @@ export function initClients(options: InternalOptions, env: Cypress.ObjectLike): 
                 kind: "cloud",
                 jiraClient: jiraClient,
                 xrayClient: xrayClient,
+                jiraRepository: new JiraRepositoryCloud(jiraClient, xrayClient, options),
             };
         } else {
             throw new Error(
@@ -225,6 +225,7 @@ export function initClients(options: InternalOptions, env: Cypress.ObjectLike): 
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
+            jiraRepository: new JiraRepositoryServer(jiraClient, xrayClient, options),
         };
     } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && options.jira.url) {
         logInfo("Jira username and password found. Setting up Jira server basic auth credentials");
@@ -242,6 +243,7 @@ export function initClients(options: InternalOptions, env: Cypress.ObjectLike): 
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
+            jiraRepository: new JiraRepositoryServer(jiraClient, xrayClient, options),
         };
     } else {
         throw new Error(

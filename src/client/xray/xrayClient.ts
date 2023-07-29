@@ -6,7 +6,7 @@ import {
     JWTCredentials,
     PATCredentials,
 } from "../../authentication/credentials";
-import { Requests } from "../../https/requests";
+import { RequestConfigPost, Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
 import { OneOf } from "../../types/util";
 import {
@@ -218,7 +218,8 @@ export abstract class XrayClient<
     /**
      * Uploads Cucumber test results to the Xray instance.
      *
-     * @param results the test results as provided by the `cypress-cucumber-preprocessor`
+     * @param cucumberJson the test results as provided by the `cypress-cucumber-preprocessor`
+     * @param cucumberInfo the test execution information
      * @returns the key of the test execution issue, `null` if the upload was skipped or `undefined`
      * in case of errors
      * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-CucumberJSONresultsMultipart
@@ -233,30 +234,17 @@ export abstract class XrayClient<
                 logWarning("No Cucumber tests were executed. Skipping Cucumber upload.");
                 return null;
             }
-            const formData = new FormData();
-            const resultString = JSON.stringify(cucumberJson);
-            const infoString = JSON.stringify(cucumberInfo);
-            formData.append("results", resultString, {
-                filename: "results.json",
-            });
-            formData.append("info", infoString, {
-                filename: "info.json",
-            });
-            const authenticationHeader = await this.credentials.getAuthenticationHeader(
-                `${this.apiBaseURL}/authenticate`
-            );
             logInfo("Importing execution (Cucumber)...");
+            const request = await this.prepareRequestImportExecutionCucumberMultipart(
+                cucumberJson,
+                cucumberInfo
+            );
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const response: AxiosResponse<ImportExecutionResponseType> = await Requests.post(
-                    this.getUrlImportExecutionCucumberMultipart(),
-                    formData,
-                    {
-                        headers: {
-                            ...authenticationHeader,
-                            ...formData.getHeaders(),
-                        },
-                    }
+                    request.url,
+                    request.data,
+                    request.config
                 );
                 const key = this.handleResponseImportExecutionCucumberMultipart(response.data);
                 logSuccess(`Successfully uploaded Cucumber test execution results to ${key}.`);
@@ -271,11 +259,16 @@ export abstract class XrayClient<
     }
 
     /**
-     * Returns the endpoint to use for importing Cucumber multipart execution results.
+     * Prepares the Cucumber multipart import execution request.
      *
-     * @returns the URL
+     * @param cucumberJson the test results as provided by the `cypress-cucumber-preprocessor`
+     * @param cucumberInfo the test execution information
+     * @returns the import execution request
      */
-    public abstract getUrlImportExecutionCucumberMultipart(): string;
+    public abstract prepareRequestImportExecutionCucumberMultipart(
+        cucumberJson: CucumberMultipartFeature[],
+        cucumberInfo: CucumberMultipartInfoType
+    ): Promise<RequestConfigPost<FormData>>;
 
     /**
      * Returns the test execution key from the Cucumber multipart import execution response.

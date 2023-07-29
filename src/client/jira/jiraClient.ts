@@ -244,7 +244,7 @@ export abstract class JiraClient<
             return await this.credentials
                 .getAuthenticationHeader()
                 .then(async (header: HTTPHeader) => {
-                    logInfo(`Searching issues...`);
+                    logInfo("Searching issues...");
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
                         let total = 0;
@@ -305,7 +305,7 @@ export abstract class JiraClient<
     ): Promise<string | undefined> {
         try {
             await this.credentials.getAuthenticationHeader().then(async (header: HTTPHeader) => {
-                logInfo(`Editing issue...`);
+                logInfo("Editing issue...");
                 const progressInterval = this.startResponseInterval(this.apiBaseURL);
                 try {
                     await Requests.put(this.getUrlEditIssue(issueIdOrKey), issueUpdateData, {

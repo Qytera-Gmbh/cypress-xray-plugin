@@ -1,9 +1,14 @@
 import dedent from "dedent";
+import FormData from "form-data";
 import { JWTCredentials } from "../../authentication/credentials";
-import { Requests } from "../../https/requests";
+import { RequestConfigPost, Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
 import { StringMap } from "../../types/util";
-import { CucumberMultipartInfoCloud } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
+import {
+    CucumberMultipartInfoCloud,
+    CucumberMultipartInfoServer,
+} from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
@@ -187,8 +192,32 @@ export class XrayClientCloud extends XrayClient<
         }
     }
 
-    public getUrlImportExecutionCucumberMultipart(): string {
-        return `${this.apiBaseURL}/import/execution/cucumber/multipart`;
+    public async prepareRequestImportExecutionCucumberMultipart(
+        cucumberJson: CucumberMultipartFeature[],
+        cucumberInfo: CucumberMultipartInfoServer
+    ): Promise<RequestConfigPost<FormData>> {
+        const formData = new FormData();
+        const resultString = JSON.stringify(cucumberJson);
+        const infoString = JSON.stringify(cucumberInfo);
+        formData.append("results", resultString, {
+            filename: "results.json",
+        });
+        formData.append("info", infoString, {
+            filename: "info.json",
+        });
+        const authenticationHeader = await this.credentials.getAuthenticationHeader(
+            `${this.apiBaseURL}/authenticate`
+        );
+        return {
+            url: `${this.apiBaseURL}/import/execution/cucumber/multipart`,
+            data: formData,
+            config: {
+                headers: {
+                    ...authenticationHeader,
+                    ...formData.getHeaders(),
+                },
+            },
+        };
     }
 
     public handleResponseImportExecutionCucumberMultipart(

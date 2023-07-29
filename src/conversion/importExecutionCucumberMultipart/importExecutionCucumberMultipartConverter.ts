@@ -26,10 +26,10 @@ export abstract class ImportExecutionCucumberMultipartConverter<
     CucumberMultipart<CucumberMultipartInfoType>,
     ConversionParameters
 > {
-    public convert(
+    public async convert(
         input: CucumberMultipartFeature[],
         parameters: ConversionParameters
-    ): CucumberMultipart<CucumberMultipartInfoType> {
+    ): Promise<CucumberMultipart<CucumberMultipartInfoType>> {
         const tests: CucumberMultipartFeature[] = [];
         input.forEach((result: CucumberMultipartFeature) => {
             const test: CucumberMultipartFeature = {
@@ -66,7 +66,7 @@ export abstract class ImportExecutionCucumberMultipartConverter<
                 tests.push(test);
             }
         });
-        const info: CucumberMultipartInfoType = this.getMultipartInfo(parameters);
+        const info: CucumberMultipartInfoType = await this.getMultipartInfo(parameters);
         return {
             features: tests,
             info: info,
@@ -81,7 +81,7 @@ export abstract class ImportExecutionCucumberMultipartConverter<
      */
     protected abstract getMultipartInfo(
         parameters: ConversionParameters
-    ): CucumberMultipartInfoType;
+    ): Promise<CucumberMultipartInfoType>;
 
     private getSteps(element: CucumberMultipartElement): CucumberMultipartStep[] {
         const steps: CucumberMultipartStep[] = [];

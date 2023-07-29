@@ -34,7 +34,7 @@ describe("the import execution cucumber multipart cloud converter", () => {
         converter = new ImportExecutionCucumberMultipartConverterCloud(options);
     });
 
-    it("should add test plan issue keys", () => {
+    it("should add test plan issue keys", async () => {
         const result: CucumberMultipartFeature[] = JSON.parse(
             readFileSync(
                 "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
@@ -42,7 +42,7 @@ describe("the import execution cucumber multipart cloud converter", () => {
             )
         );
         options.jira.testPlanIssueKey = "CYP-123";
-        const multipart = converter.convert([result[0]], parameters);
+        const multipart = await converter.convert([result[0]], parameters);
         expect(multipart.info.xrayFields.testPlanKey).to.eq("CYP-123");
     });
 });

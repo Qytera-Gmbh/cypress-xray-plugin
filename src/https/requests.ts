@@ -5,6 +5,12 @@ import { logDebug, writeFile } from "../logging/logging";
 import { InternalOptions } from "../types/plugin";
 import { normalizedFilename } from "../util/files";
 
+export type RequestConfigPost<D = unknown> = {
+    url: string;
+    data?: D;
+    config?: RawAxiosRequestConfig<D>;
+};
+
 export class Requests {
     private static AGENT: Agent = undefined;
     private static AXIOS: Axios = undefined;
@@ -40,8 +46,7 @@ export class Requests {
                         const filename = normalizedFilename(
                             `${timestamp}_${method}_${url}_request.json`
                         );
-                        logDebug(`Writing request to ${filename}.`);
-                        writeFile(
+                        const resolvedFilename = writeFile(
                             {
                                 url: url,
                                 headers: request.headers,
@@ -50,6 +55,7 @@ export class Requests {
                             },
                             filename
                         );
+                        logDebug(`Request:  ${resolvedFilename}`);
                         return request;
                     },
                     (error) => {
@@ -67,8 +73,8 @@ export class Requests {
                             filename = normalizedFilename(`${timestamp}_request.json`);
                             data = error;
                         }
-                        logDebug(`Writing request to ${filename}.`);
-                        writeFile(data, filename);
+                        const resolvedFilename = writeFile(data, filename);
+                        logDebug(`Request:  ${resolvedFilename}`);
                         return Promise.reject(error);
                     }
                 );
@@ -80,8 +86,7 @@ export class Requests {
                         const filename = normalizedFilename(
                             `${timestamp}_${method}_${url}_response.json`
                         );
-                        logDebug(`Writing response to ${filename}.`);
-                        writeFile(
+                        const resolvedFilename = writeFile(
                             {
                                 data: response.data,
                                 headers: response.headers,
@@ -90,6 +95,7 @@ export class Requests {
                             },
                             filename
                         );
+                        logDebug(`Response: ${resolvedFilename}`);
                         return response;
                     },
                     (error) => {
@@ -107,8 +113,8 @@ export class Requests {
                             filename = normalizedFilename(`${timestamp}_response.json`);
                             data = error;
                         }
-                        logDebug(`Writing response to ${filename}.`);
-                        writeFile(data, filename);
+                        const resolvedFilename = writeFile(data, filename);
+                        logDebug(`Response: ${resolvedFilename}`);
                         return Promise.reject(error);
                     }
                 );

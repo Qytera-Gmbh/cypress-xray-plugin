@@ -1,4 +1,4 @@
-import { initClients, initJiraRepository, initOptions, verifyOptions } from "./context";
+import { initClients, initOptions, verifyOptions } from "./context";
 import { afterRunHook, beforeRunHook, synchronizeFile } from "./hooks";
 import { Requests } from "./https/requests";
 import { initLogging, logInfo } from "./logging/logging";
@@ -16,10 +16,7 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
         return;
     }
     verifyOptions(context.internal);
-    const clients = initClients(context.internal, config.env);
-    context.xrayClient = clients.xrayClient;
-    context.jiraClient = clients.jiraClient;
-    context.jiraRepository = initJiraRepository(clients, options);
+    context.clients = initClients(context.internal, config.env);
     Requests.init(context.internal);
     initLogging({
         debug: context.internal.plugin.debug,
@@ -29,26 +26,14 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
 
 export async function addXrayResultUpload(on: Cypress.PluginEvents) {
     on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
-        await beforeRunHook(
-            runDetails,
-            context.cypress,
-            context.internal,
-            context.xrayClient,
-            context.jiraClient
-        );
+        await beforeRunHook(runDetails, context.cypress, context.internal, context.clients);
     });
     on(
         "after:run",
         async (
             results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
         ) => {
-            await afterRunHook(
-                results,
-                context.internal,
-                context.xrayClient,
-                context.jiraClient,
-                context.jiraRepository
-            );
+            await afterRunHook(results, context.internal, context.clients);
         }
     );
 }
@@ -58,8 +43,6 @@ export async function syncFeatureFile(file: Cypress.FileObject): Promise<string>
         file,
         context.cypress.projectRoot,
         context.internal,
-        context.xrayClient,
-        context.jiraClient,
-        context.jiraRepository
+        context.clients
     );
 }

@@ -34,10 +34,10 @@ export abstract class ImportExecutionConverter<
     XrayTestExecutionResultsType,
     TestIssueData
 > {
-    public convert(
+    public async convert(
         results: CypressCommandLine.CypressRunResult,
         issueData: TestIssueData
-    ): XrayTestExecutionResultsType {
+    ): Promise<XrayTestExecutionResultsType> {
         const runs: CypressCommandLine.RunResult[] = results.runs.filter(
             (run: CypressCommandLine.RunResult) => {
                 return !run.spec.absolute.endsWith(this.options.cucumber.featureFileExtension);

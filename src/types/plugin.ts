@@ -231,20 +231,31 @@ export type InternalOptions = Options & {
          * The details of the test execution issue type.
          */
         testExecutionIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
-        /**
-         * The details of the test plan issue type.
-         */
-        testPlanIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
     };
     cucumber?: {
         preprocessor?: Awaited<ReturnType<typeof resolvePreprocessorConfiguration>>;
     };
 };
 
+/**
+ * Type describing the possible client combinations.
+ */
+export type ClientCombination =
+    | {
+          kind: "server";
+          jiraClient: JiraClientServer;
+          xrayClient: XrayClientServer;
+          jiraRepository: JiraRepositoryServer;
+      }
+    | {
+          kind: "cloud";
+          jiraClient: JiraClientCloud;
+          xrayClient: XrayClientCloud;
+          jiraRepository: JiraRepositoryCloud;
+      };
+
 export interface PluginContext {
     cypress: Cypress.PluginConfigOptions;
     internal: InternalOptions;
-    xrayClient?: XrayClientServer | XrayClientCloud;
-    jiraClient?: JiraClientServer | JiraClientCloud;
-    jiraRepository?: JiraRepositoryServer | JiraRepositoryCloud;
+    clients?: ClientCombination;
 }
