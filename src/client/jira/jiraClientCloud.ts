@@ -4,6 +4,7 @@ import { AttachmentCloud } from "../../types/jira/responses/attachment";
 import { FieldDetailCloud } from "../../types/jira/responses/fieldDetail";
 import { IssueCloud } from "../../types/jira/responses/issue";
 import { IssueTypeDetailsCloud } from "../../types/jira/responses/issueTypeDetails";
+import { IssueUpdateCloud } from "../../types/jira/responses/issueUpdate";
 import { JsonTypeCloud } from "../../types/jira/responses/jsonType";
 import { JiraClient } from "./jiraClient";
 
@@ -17,7 +18,8 @@ export class JiraClientCloud extends JiraClient<
     JsonTypeCloud,
     IssueCloud,
     IssueTypeDetailsCloud,
-    SearchRequestCloud
+    SearchRequestCloud,
+    IssueUpdateCloud
 > {
     public getUrlAddAttachment(issueIdOrKey: string): string {
         return `${this.apiBaseURL}/rest/api/3/issue/${issueIdOrKey}/attachments`;
@@ -33,5 +35,9 @@ export class JiraClientCloud extends JiraClient<
 
     public getUrlPostSearch(): string {
         return `${this.apiBaseURL}/rest/api/3/search`;
+    }
+
+    public getUrlEditIssue(issueIdOrKey: string): string {
+        return `${this.apiBaseURL}/rest/api/3/issue/${issueIdOrKey}`;
     }
 }

@@ -7,12 +7,12 @@ import { InternalOptions } from "../types/plugin";
 import {
     containsCucumberTest,
     containsNativeTest,
+    getCucumberIssueData,
     getCucumberPreconditionIssueTags,
     getCucumberScenarioIssueTags,
     getNativeTestIssueKey,
     getNativeTestIssueKeys,
     parseFeatureFile,
-    preprocessFeatureFile,
 } from "./preprocessing";
 
 describe("cypress preprocessing", () => {
@@ -199,7 +199,7 @@ describe("cucumber preprocessing", () => {
     describe("server", () => {
         it("should throw for missing scenario tags", () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedServerMissingScenario.feature",
                     options,
                     false
@@ -222,7 +222,7 @@ describe("cucumber preprocessing", () => {
 
         it("should throw for multiple scenario tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedServerMultipleScenario.feature",
                     options,
                     false
@@ -246,7 +246,7 @@ describe("cucumber preprocessing", () => {
 
         it("should throw for missing background tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedServerMissingBackground.feature",
                     options,
                     false
@@ -269,7 +269,7 @@ describe("cucumber preprocessing", () => {
 
         it("should throw for multiple background tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedServerMultipleBackground.feature",
                     options,
                     false
@@ -320,7 +320,7 @@ describe("cucumber preprocessing", () => {
     describe("cloud", () => {
         it("should throw for missing scenario tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedCloudMissingScenario.feature",
                     options,
                     true
@@ -343,7 +343,7 @@ describe("cucumber preprocessing", () => {
 
         it("should throw for multiple scenario tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedCloudMultipleScenario.feature",
                     options,
                     true
@@ -367,7 +367,7 @@ describe("cucumber preprocessing", () => {
 
         it("should throw for missing background tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedCloudMissingBackground.feature",
                     options,
                     true
@@ -390,7 +390,7 @@ describe("cucumber preprocessing", () => {
 
         it("should throw for multiple background tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedCloudMultipleBackground.feature",
                     options,
                     true

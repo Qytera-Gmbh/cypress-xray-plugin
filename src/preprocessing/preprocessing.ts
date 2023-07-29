@@ -126,11 +126,23 @@ export function containsCucumberTest(
     });
 }
 
-export function preprocessFeatureFile(
+export interface FeatureFileIssueData {
+    tests: {
+        key: string;
+        summary: string;
+    }[];
+    preconditions: string[];
+}
+
+export function getCucumberIssueData(
     filePath: string,
     options: InternalOptions,
     isCloudClient: boolean
-) {
+): FeatureFileIssueData {
+    const featureFileIssueKeys: FeatureFileIssueData = {
+        tests: [],
+        preconditions: [],
+    };
     const document = parseFeatureFile(filePath);
     for (const child of document.feature.children) {
         if (child.scenario) {
@@ -167,6 +179,10 @@ export function preprocessFeatureFile(
                     `)
                 );
             }
+            featureFileIssueKeys.tests.push({
+                key: issueKeys[0],
+                summary: child.scenario.name,
+            });
         } else if (child.background) {
             const preconditionKeys = getCucumberPreconditionIssueTags(
                 child.background,
@@ -207,8 +223,10 @@ export function preprocessFeatureFile(
                 ];
                 throw new Error(lines.join("\n"));
             }
+            featureFileIssueKeys.preconditions.push(preconditionKeys[0]);
         }
     }
+    return featureFileIssueKeys;
 }
 
 function getHelpUrl(isCloudClient: boolean): string {

@@ -94,7 +94,7 @@ export class DummyXrayClient extends XrayClient<null, null, null, null> {
     }
 }
 
-export class DummyJiraClient extends JiraClient<null, null, null, null, null, null, null> {
+export class DummyJiraClient extends JiraClient<null, null, null, null, null, null, null, null> {
     constructor() {
         super("https://example.org", null);
     }
@@ -108,6 +108,9 @@ export class DummyJiraClient extends JiraClient<null, null, null, null, null, nu
         throw new Error("Method not implemented.");
     }
     public getUrlGetIssueTypes(): string {
+        throw new Error("Method not implemented.");
+    }
+    public getUrlEditIssue(): string {
         throw new Error("Method not implemented.");
     }
 }

@@ -151,6 +151,7 @@ export abstract class XrayClient<
      * @param projectKey key of the project where the tests and pre-conditions are going to be created
      * @param projectId id of the project where the tests and pre-conditions are going to be created
      * @param source a name designating the source of the features being imported (e.g. the source project name)
+     * @returns `true` if the import was successful, `false` otherwise
      * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
      * @see https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
      */
@@ -159,7 +160,7 @@ export abstract class XrayClient<
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<void> {
+    ): Promise<boolean> {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader(
                 `${this.apiBaseURL}/authenticate`
@@ -182,6 +183,7 @@ export abstract class XrayClient<
                     }
                 );
                 this.handleResponseImportFeature(response.data);
+                return true;
             } finally {
                 clearInterval(progressInterval);
             }
@@ -189,6 +191,7 @@ export abstract class XrayClient<
             logError(`Failed to import cucumber features: ${error}`);
             writeErrorFile(error, "importFeatureError");
         }
+        return false;
     }
 
     /**

@@ -144,4 +144,15 @@ export class Requests {
             httpsAgent: Requests.agent(),
         });
     }
+
+    public static async put<D = unknown>(
+        url: string,
+        data?: D,
+        config?: RawAxiosRequestConfig<D>
+    ): Promise<AxiosResponse> {
+        return Requests.axios().put(url, data, {
+            ...config,
+            httpsAgent: Requests.agent(),
+        });
+    }
 }

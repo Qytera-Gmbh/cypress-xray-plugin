@@ -10,12 +10,13 @@ import { ImportExecutionConverterCloud } from "./conversion/importExecution/impo
 import { ImportExecutionConverterServer } from "./conversion/importExecution/importExecutionConverterServer";
 import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterCloud";
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
-import { logError, logInfo, logWarning } from "./logging/logging";
+import { logDebug, logError, logInfo, logWarning } from "./logging/logging";
 import {
+    FeatureFileIssueData,
     containsCucumberTest,
     containsNativeTest,
+    getCucumberIssueData,
     getNativeTestIssueKeys,
-    preprocessFeatureFile,
 } from "./preprocessing/preprocessing";
 import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
 import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
@@ -23,7 +24,9 @@ import {
     IssueTypeDetailsCloud,
     IssueTypeDetailsServer,
 } from "./types/jira/responses/issueTypeDetails";
+import { IssueUpdateCloud, IssueUpdateServer } from "./types/jira/responses/issueUpdate";
 import { InternalOptions } from "./types/plugin";
+import { StringMap } from "./types/util";
 import {
     XrayTestExecutionResultsCloud,
     XrayTestExecutionResultsServer,
@@ -360,8 +363,10 @@ async function attachVideos(
 export async function synchronizeFile(
     file: Cypress.FileObject,
     projectRoot: string,
-    options?: InternalOptions,
-    xrayClient?: XrayClientServer | XrayClientCloud
+    options: InternalOptions,
+    xrayClient: XrayClientServer | XrayClientCloud,
+    jiraClient: JiraClientServer | JiraClientCloud,
+    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
 ): Promise<string> {
     if (!options) {
         logError(
@@ -388,16 +393,79 @@ export async function synchronizeFile(
                 throw new Error("feature not yet implemented");
             }
             if (options.cucumber.uploadFeatures) {
-                preprocessFeatureFile(
+                const issueData = getCucumberIssueData(
                     file.filePath,
                     options,
                     xrayClient instanceof XrayClientCloud
                 );
-                await xrayClient.importFeature(file.filePath, options.jira.projectKey);
+                // Xray currently does not allow keeping the test issues' summaries when importing
+                // feature files to existing issues. Therefore, we manually need to backup and
+                // reset the summary once the import is done.
+                // See: https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                // See: https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                const testIssueKeys = issueData.tests.map((data) => data.key);
+                logDebug(
+                    dedent(`
+                        Creating issue summary backups for issues:
+                        ${testIssueKeys.join("\n")}
+                    `)
+                );
+                const testSummaries = await jiraRepository.getSummaries(...testIssueKeys);
+                const wasImportSuccessful = await xrayClient.importFeature(
+                    file.filePath,
+                    options.jira.projectKey
+                );
+                if (wasImportSuccessful) {
+                    await resetSummaries(issueData, testSummaries, jiraClient, jiraRepository);
+                }
             }
         } catch (error: unknown) {
             logError(`Feature file invalid, skipping synchronization: ${error}`);
         }
     }
     return file.filePath;
+}
+
+async function resetSummaries(
+    issueData: FeatureFileIssueData,
+    testSummaries: StringMap<string>,
+    jiraClient: JiraClientServer | JiraClientCloud,
+    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
+) {
+    for (let i = 0; i < issueData.tests.length; i++) {
+        const issueKey = issueData.tests[i].key;
+        const oldSummary = testSummaries[issueKey];
+        const newSummary = issueData.tests[i].summary;
+        if (oldSummary !== newSummary) {
+            const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {
+                fields: {},
+            };
+            const summaryFieldId = await jiraRepository.getFieldId("Summary");
+            issueUpdate.fields[summaryFieldId] = oldSummary;
+            logDebug(
+                dedent(`
+                    Resetting issue summary of issue: ${issueKey}
+
+                    Old summary  (pre sync): ${oldSummary}
+                    New summary (post sync): ${newSummary}
+            `)
+            );
+            if (!(await jiraClient.editIssue(issueKey, issueUpdate))) {
+                logError(
+                    dedent(`
+                        Failed to reset issue summary of issue to its old summary: ${issueKey}
+
+                        Old summary  (pre sync): ${oldSummary}
+                        New summary (post sync): ${newSummary}
+
+                        Make sure to reset it manually if needed
+                    `)
+                );
+            }
+        } else {
+            logDebug(
+                `Issue summary is identical to scenario (outline) name already: ${issueKey} (${oldSummary})`
+            );
+        }
+    }
 }

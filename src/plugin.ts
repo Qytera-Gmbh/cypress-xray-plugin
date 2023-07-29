@@ -58,6 +58,8 @@ export async function syncFeatureFile(file: Cypress.FileObject): Promise<string>
         file,
         context.cypress.projectRoot,
         context.internal,
-        context.xrayClient
+        context.xrayClient,
+        context.jiraClient,
+        context.jiraRepository
     );
 }

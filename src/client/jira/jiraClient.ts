@@ -1,4 +1,5 @@
 import { AxiosResponse } from "axios";
+import dedent from "dedent";
 import FormData from "form-data";
 import fs from "fs";
 import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authentication/credentials";
@@ -19,9 +20,9 @@ import {
     IssueTypeDetailsCloud,
     IssueTypeDetailsServer,
 } from "../../types/jira/responses/issueTypeDetails";
+import { IssueUpdateCloud, IssueUpdateServer } from "../../types/jira/responses/issueUpdate";
 import { JsonTypeCloud, JsonTypeServer } from "../../types/jira/responses/jsonType";
 import { SearchResults } from "../../types/jira/responses/searchResults";
-import { OneOf } from "../../types/util";
 import { Client } from "../client";
 
 /**
@@ -33,8 +34,9 @@ export abstract class JiraClient<
     FieldDetailType extends FieldDetailServer | FieldDetailCloud,
     JsonType extends JsonTypeServer | JsonTypeCloud,
     IssueType extends IssueServer | IssueCloud,
-    IssueTypeDetailsResponse extends OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>,
-    SearchRequestType extends SearchRequestServer | SearchRequestCloud
+    IssueTypeDetailsResponse extends IssueTypeDetailsServer | IssueTypeDetailsCloud,
+    SearchRequestType extends SearchRequestServer | SearchRequestCloud,
+    IssueUpdateType extends IssueUpdateServer | IssueUpdateCloud
 > extends Client<CredentialsType> {
     /**
      * Construct a new Jira client using the provided credentials.
@@ -99,10 +101,12 @@ export abstract class JiraClient<
                             }
                         );
                         logSuccess(
-                            `Successfully attached files to issue ${issueIdOrKey}:`,
-                            response.data
-                                .map((attachment: AttachmentType) => attachment.filename)
-                                .join(", ")
+                            dedent(`
+                                Successfully attached files to issue: ${issueIdOrKey}
+                                ${response.data
+                                    .map((attachment: AttachmentType) => attachment.filename)
+                                    .join("\n")}
+                            `)
                         );
                         return response.data;
                     } finally {
@@ -146,11 +150,15 @@ export abstract class JiraClient<
                 );
                 logSuccess(`Successfully retrieved data for ${response.data.length} issue types.`);
                 logDebug(
-                    "Received data for issue types:",
-                    ...response.data.map(
-                        (issueType: IssueTypeDetailsResponse) =>
-                            `\n${issueType.name} (id: ${issueType.id})`
-                    )
+                    dedent(`
+                        Received data for issue types:
+                        ${response.data
+                            .map(
+                                (issueType: IssueTypeDetailsResponse) =>
+                                    `${issueType.name} (id: ${issueType.id})`
+                            )
+                            .join("\n")}
+                    `)
                 );
                 return response.data;
             } finally {
@@ -199,10 +207,12 @@ export abstract class JiraClient<
                 );
                 logSuccess(`Successfully retrieved data for ${response.data.length} fields`);
                 logDebug(
-                    "Received data for fields:",
-                    ...response.data.map(
-                        (field: FieldDetailType) => `\n${field.name} (id: ${field.id})`
-                    )
+                    dedent(`
+                        Received data for fields:
+                        ${response.data
+                            .map((field: FieldDetailType) => `${field.name} (id: ${field.id})`)
+                            .join("\n")}
+                    `)
                 );
                 return response.data;
             } finally {
@@ -275,4 +285,51 @@ export abstract class JiraClient<
      * @returns the endpoint
      */
     public abstract getUrlPostSearch(): string;
+
+    /**
+     * Edits an issue. A transition may be applied and issue properties updated as part of the edit.
+     * The edits to the issue's fields are defined using `update` and `fields`.
+     *
+     * The parent field may be set by key or ID. For standard issue types, the parent may be removed
+     * by setting `update.parent.set.none` to `true`.
+     *
+     * @param issueIdOrKey the ID or key of the issue
+     * @param issueUpdateData the edit data
+     * @returns the ID or key of the edited issue or `undefined` in case of errors
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-put
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.10.0/#api/2/issue-editIssue
+     */
+    public async editIssue(
+        issueIdOrKey: string,
+        issueUpdateData: IssueUpdateType
+    ): Promise<string | undefined> {
+        try {
+            await this.credentials.getAuthenticationHeader().then(async (header: HTTPHeader) => {
+                logInfo(`Editing issue...`);
+                const progressInterval = this.startResponseInterval(this.apiBaseURL);
+                try {
+                    await Requests.put(this.getUrlEditIssue(issueIdOrKey), issueUpdateData, {
+                        headers: {
+                            ...header,
+                        },
+                    });
+                    logSuccess(`Successfully edited issue: ${issueIdOrKey}`);
+                } finally {
+                    clearInterval(progressInterval);
+                }
+            });
+            return issueIdOrKey;
+        } catch (error: unknown) {
+            logError(`Failed to edit issue: ${error}`);
+            writeErrorFile(error, "editIssue");
+        }
+    }
+    /**
+     *
+     * Returns the endpoint to use for editing issues.
+     *
+     * @param issueIdOrKey the ID or key of the issue
+     * @returns the endpoint
+     */
+    public abstract getUrlEditIssue(issueIdOrKey: string): string;
 }

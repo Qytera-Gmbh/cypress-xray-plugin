@@ -70,7 +70,7 @@ function log(
         }
         // Pad multiline log messages with an extra new line to cleanly separate them from the
         // following line.
-        if (index > 1 && index === lines.length - 1) {
+        if (index > 0 && index === lines.length - 1) {
             logger(`${prefix} ┊`);
         }
     });

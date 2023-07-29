@@ -1,5 +1,6 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
+import dedent from "dedent";
 import fs from "fs";
 import { expectToExist, resolveTestDirPath, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
@@ -73,8 +74,10 @@ describe("the jira clients", () => {
                             "./test/resources/turtle.png"
                         );
                         expect(stubbedSuccess).to.have.been.calledOnceWith(
-                            "Successfully attached files to issue CYP-123:",
-                            "turtle.png"
+                            dedent(`
+                                Successfully attached files to issue: CYP-123
+                                turtle.png
+                            `)
                         );
                     });
                     it("returns the correct values", async () => {
@@ -128,8 +131,11 @@ describe("the jira clients", () => {
                             "./test/resources/greetings.txt"
                         );
                         expect(stubbedSuccess).to.have.been.calledOnceWith(
-                            "Successfully attached files to issue CYP-123:",
-                            "turtle.png, greetings.txt"
+                            dedent(`
+                                Successfully attached files to issue: CYP-123
+                                turtle.png
+                                greetings.txt
+                            `)
                         );
                     });
                     it("returns the correct values", async () => {

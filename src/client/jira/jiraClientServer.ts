@@ -4,6 +4,7 @@ import { AttachmentServer } from "../../types/jira/responses/attachment";
 import { FieldDetailServer } from "../../types/jira/responses/fieldDetail";
 import { IssueServer } from "../../types/jira/responses/issue";
 import { IssueTypeDetailsServer } from "../../types/jira/responses/issueTypeDetails";
+import { IssueUpdateServer } from "../../types/jira/responses/issueUpdate";
 import { JsonTypeServer } from "../../types/jira/responses/jsonType";
 import { JiraClient } from "./jiraClient";
 
@@ -17,7 +18,8 @@ export class JiraClientServer extends JiraClient<
     JsonTypeServer,
     IssueServer,
     IssueTypeDetailsServer,
-    SearchRequestServer
+    SearchRequestServer,
+    IssueUpdateServer
 > {
     public getUrlAddAttachment(issueIdOrKey: string): string {
         return `${this.apiBaseURL}/rest/api/2/issue/${issueIdOrKey}/attachments`;
@@ -33,5 +35,9 @@ export class JiraClientServer extends JiraClient<
 
     public getUrlPostSearch(): string {
         return `${this.apiBaseURL}/rest/api/2/search`;
+    }
+
+    public getUrlEditIssue(issueIdOrKey: string): string {
+        return `${this.apiBaseURL}/rest/api/2/issue/${issueIdOrKey}`;
     }
 }

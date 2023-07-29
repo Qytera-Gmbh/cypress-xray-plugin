@@ -651,7 +651,7 @@ describe("the synchronize file hook", () => {
 
     it("should display errors if the plugin was not configured", async () => {
         const { stubbedError } = stubLogging();
-        await synchronizeFile(file, ".");
+        await synchronizeFile(file, ".", null, null, null, null);
         expect(stubbedError).to.have.been.calledOnce;
         expect(stubbedError).to.have.been.calledWith(
             dedent(`
@@ -666,7 +666,7 @@ describe("the synchronize file hook", () => {
         file.filePath = "./test/resources/features/taggedCloud.feature";
         const { stubbedInfo } = stubLogging();
         options.plugin = { enabled: false };
-        await synchronizeFile(file, ".", options);
+        await synchronizeFile(file, ".", options, null, null, null);
         expect(stubbedInfo).to.have.been.calledOnce;
         expect(stubbedInfo).to.have.been.calledWith(
             "Plugin disabled. Skipping feature file synchronization triggered by: ./test/resources/features/taggedCloud.feature"
@@ -677,7 +677,7 @@ describe("the synchronize file hook", () => {
         file.filePath = "./test/resources/features/invalid.feature";
         const { stubbedInfo, stubbedError } = stubLogging();
         options.cucumber.uploadFeatures = true;
-        await synchronizeFile(file, ".", options);
+        await synchronizeFile(file, ".", options, null, null, null);
         expect(stubbedError).to.have.been.calledOnce;
         expect(stubbedError).to.have.been.calledWith(
             "Feature file invalid, skipping synchronization: Error: Parser errors:\n" +
@@ -697,7 +697,7 @@ describe("the synchronize file hook", () => {
     it("should not try to parse mismatched feature files", async () => {
         file.filePath = "./test/resources/greetings.txt";
         const { stubbedError } = stubLogging();
-        await synchronizeFile(file, ".", options);
+        await synchronizeFile(file, ".", options, null, null, null);
         expect(stubbedError).to.not.have.been.called;
     });
 });
