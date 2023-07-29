@@ -19,5 +19,10 @@ describe("the jira server client", () => {
         it("issue types", () => {
             expect(client.getUrlGetIssueTypes()).to.eq("https://example.org/rest/api/2/issuetype");
         });
+        it("edit issue", () => {
+            expect(client.getUrlEditIssue("CYP-123")).to.eq(
+                "https://example.org/rest/api/2/issue/CYP-123"
+            );
+        });
     });
 });

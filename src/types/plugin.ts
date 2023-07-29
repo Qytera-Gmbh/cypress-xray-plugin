@@ -3,6 +3,8 @@ import { JiraClientCloud } from "../client/jira/jiraClientCloud";
 import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
+import { JiraRepositoryCloud } from "../repository/jira/jiraRepositoryCloud";
+import { JiraRepositoryServer } from "../repository/jira/jiraRepositoryServer";
 import { IssueTypeDetailsCloud, IssueTypeDetailsServer } from "./jira/responses/issueTypeDetails";
 import { OneOf } from "./util";
 
@@ -98,10 +100,6 @@ export interface XrayStepOptions {
      *
      * Note: the plugin currently creates only one step containing the code of the corresponding
      * Cypress test function.
-     *
-     * Note: steps of existing issues can only be updated if
-     * {@link PluginOptions.overwriteIssueSummary} is enabled as well, since Xray requires an issue
-     * summary whenever test details are updated.
      */
     update?: boolean;
 }
@@ -196,11 +194,6 @@ export interface PluginOptions {
      * screenshot names and replaces all other sequences with `_`.
      */
     normalizeScreenshotNames?: boolean;
-    /**
-     * Decide whether to keep the issues' existing summaries or whether to overwrite them with
-     * each upload.
-     */
-    overwriteIssueSummary?: boolean;
 }
 
 export interface OpenSSLOptions {
@@ -238,29 +231,31 @@ export type InternalOptions = Options & {
          * The details of the test execution issue type.
          */
         testExecutionIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
-        /**
-         * The details of the test plan issue type.
-         */
-        testPlanIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
-    };
-    xray?: {
-        /**
-         * A mapping of issue keys to test types. Required for Cypress execution import, since the
-         * `testType` (Xray Server) or `type` (Xray Cloud) properties are required by Xray's JSON
-         * scheme for uploading results.
-         */
-        testTypes?: {
-            [key: string]: string;
-        };
     };
     cucumber?: {
         preprocessor?: Awaited<ReturnType<typeof resolvePreprocessorConfiguration>>;
     };
 };
 
+/**
+ * Type describing the possible client combinations.
+ */
+export type ClientCombination =
+    | {
+          kind: "server";
+          jiraClient: JiraClientServer;
+          xrayClient: XrayClientServer;
+          jiraRepository: JiraRepositoryServer;
+      }
+    | {
+          kind: "cloud";
+          jiraClient: JiraClientCloud;
+          xrayClient: XrayClientCloud;
+          jiraRepository: JiraRepositoryCloud;
+      };
+
 export interface PluginContext {
-    xrayClient: XrayClientServer | XrayClientCloud;
-    jiraClient: JiraClientServer | JiraClientCloud;
-    internal: InternalOptions;
     cypress: Cypress.PluginConfigOptions;
+    internal: InternalOptions;
+    clients?: ClientCombination;
 }

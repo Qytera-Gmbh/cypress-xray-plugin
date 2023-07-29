@@ -1,7 +1,7 @@
 Feature: A tagged feature
 
   Background: A background
-    #@Precondition:CYP-123
+    #@CYP-123
 		Given abc123
 		Then xyz987
 

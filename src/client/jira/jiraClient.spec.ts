@@ -1,5 +1,6 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
+import dedent from "dedent";
 import fs from "fs";
 import { expectToExist, resolveTestDirPath, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
@@ -73,8 +74,10 @@ describe("the jira clients", () => {
                             "./test/resources/turtle.png"
                         );
                         expect(stubbedSuccess).to.have.been.calledOnceWith(
-                            "Successfully attached files to issue CYP-123:",
-                            "turtle.png"
+                            dedent(`
+                                Successfully attached files to issue: CYP-123
+                                turtle.png
+                            `)
                         );
                     });
                     it("returns the correct values", async () => {
@@ -128,8 +131,11 @@ describe("the jira clients", () => {
                             "./test/resources/greetings.txt"
                         );
                         expect(stubbedSuccess).to.have.been.calledOnceWith(
-                            "Successfully attached files to issue CYP-123:",
-                            "turtle.png, greetings.txt"
+                            dedent(`
+                                Successfully attached files to issue: CYP-123
+                                turtle.png
+                                greetings.txt
+                            `)
                         );
                     });
                     it("returns the correct values", async () => {
@@ -482,6 +488,61 @@ describe("the jira clients", () => {
                         "Failed to search issues: AxiosError: Request failed with status code 401"
                     );
                     const expectedPath = resolveTestDirPath("searchError.json");
+                    expect(stubbedError).to.have.been.calledWithExactly(
+                        `Complete error logs have been written to: ${expectedPath}`
+                    );
+                });
+            });
+
+            describe("editIssue", () => {
+                it("logs correct messages", async () => {
+                    const { stubbedInfo, stubbedSuccess } = stubLogging();
+                    const { stubbedPut } = stubRequests();
+                    stubbedPut.onFirstCall().resolves({
+                        status: HttpStatusCode.NoContent,
+                        data: null,
+                        headers: null,
+                        statusText: HttpStatusCode[HttpStatusCode.NoContent],
+                        config: null,
+                    });
+                    await client.editIssue("CYP-123", {
+                        fields: { summary: "Hello" },
+                    });
+                    expect(stubbedInfo).to.have.been.calledOnceWithExactly("Editing issue...");
+                    expect(stubbedSuccess).to.have.been.calledOnceWithExactly(
+                        "Successfully edited issue: CYP-123"
+                    );
+                });
+
+                it("should handle bad responses", async () => {
+                    const { stubbedError } = stubLogging();
+                    const { stubbedPut } = stubRequests();
+                    stubbedPut.onFirstCall().rejects(
+                        new AxiosError(
+                            "Request failed with status code 400",
+                            HttpStatusCode.BadRequest.toString(),
+                            undefined,
+                            null,
+                            {
+                                status: HttpStatusCode.BadRequest,
+                                statusText: HttpStatusCode[HttpStatusCode.BadRequest],
+                                config: { headers: new AxiosHeaders() },
+                                headers: {},
+                                data: {
+                                    errorMessages: ["issue CYP-XYZ does not exist"],
+                                },
+                            }
+                        )
+                    );
+                    const response = await client.editIssue("CYP-XYZ", {
+                        fields: { summary: "Hi" },
+                    });
+                    expect(response).to.be.undefined;
+                    expect(stubbedError).to.have.been.calledTwice;
+                    expect(stubbedError).to.have.been.calledWithExactly(
+                        "Failed to edit issue: AxiosError: Request failed with status code 400"
+                    );
+                    const expectedPath = resolveTestDirPath("editIssue.json");
                     expect(stubbedError).to.have.been.calledWithExactly(
                         `Complete error logs have been written to: ${expectedPath}`
                     );

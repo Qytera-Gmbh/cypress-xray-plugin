@@ -1,9 +1,9 @@
 Feature: A tagged feature
 
   Background: A background
-    #@Precondition:CYP-244
+    #@CYP-244
     # a random comment
-    #@Precondition:CYP-262
+    #@CYP-262
 		Given abc123
 		Then xyz987
 

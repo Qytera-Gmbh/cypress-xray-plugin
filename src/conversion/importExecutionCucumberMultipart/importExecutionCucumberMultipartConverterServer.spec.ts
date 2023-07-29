@@ -2,7 +2,9 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
+import { stub } from "sinon";
 import { initOptions } from "../../context";
+import { JiraRepositoryServer } from "../../repository/jira/jiraRepositoryServer";
 import { InternalOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ConversionParameters } from "./importExecutionCucumberMultipartConverter";
@@ -11,6 +13,7 @@ import { ImportExecutionCucumberMultipartConverterServer } from "./importExecuti
 describe("the import execution cucumber multipart server converter", () => {
     let options: InternalOptions;
     let converter: ImportExecutionCucumberMultipartConverterServer;
+    let jiraRepository: JiraRepositoryServer;
     const result: CucumberMultipartFeature[] = JSON.parse(
         readFileSync(
             "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
@@ -36,16 +39,14 @@ describe("the import execution cucumber multipart server converter", () => {
                 },
             }
         );
-        converter = new ImportExecutionCucumberMultipartConverterServer(options);
+        jiraRepository = new JiraRepositoryServer(null, null, options);
+        converter = new ImportExecutionCucumberMultipartConverterServer(options, jiraRepository);
     });
 
-    it("should be able to add test plan issue keys", () => {
+    it("should be able to add test plan issue keys", async () => {
+        stub(jiraRepository, "getFieldId").withArgs("Test Plan").resolves("customfield_12126");
         options.jira.testPlanIssueKey = "CYP-123";
-        options.jira.testPlanIssueDetails = {
-            id: "customfield_12126",
-            subtask: false,
-        };
-        const multipart = converter.convert([result[0]], parameters);
+        const multipart = await converter.convert([result[0]], parameters);
         expect(multipart.info.fields["customfield_12126"]).to.deep.eq(["CYP-123"]);
     });
 });

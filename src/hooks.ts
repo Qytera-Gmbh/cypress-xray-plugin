@@ -10,18 +10,23 @@ import { ImportExecutionConverterCloud } from "./conversion/importExecution/impo
 import { ImportExecutionConverterServer } from "./conversion/importExecution/importExecutionConverterServer";
 import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterCloud";
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
-import { logError, logInfo, logWarning } from "./logging/logging";
+import { logDebug, logError, logInfo, logWarning } from "./logging/logging";
 import {
+    FeatureFileIssueData,
     containsCucumberTest,
     containsNativeTest,
+    getCucumberIssueData,
     getNativeTestIssueKeys,
-    preprocessFeatureFile,
 } from "./preprocessing/preprocessing";
+import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
+import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
 import {
     IssueTypeDetailsCloud,
     IssueTypeDetailsServer,
 } from "./types/jira/responses/issueTypeDetails";
-import { InternalOptions } from "./types/plugin";
+import { IssueUpdateCloud, IssueUpdateServer } from "./types/jira/responses/issueUpdate";
+import { ClientCombination, InternalOptions } from "./types/plugin";
+import { StringMap } from "./types/util";
 import {
     XrayTestExecutionResultsCloud,
     XrayTestExecutionResultsServer,
@@ -33,11 +38,10 @@ import {
 } from "./types/xray/requests/importExecutionCucumberMultipart";
 
 export async function beforeRunHook(
-    config: Cypress.PluginConfigOptions,
     runDetails: Cypress.BeforeRunDetails,
+    config?: Cypress.PluginConfigOptions,
     options?: InternalOptions,
-    xrayClient?: XrayClientServer | XrayClientCloud,
-    jiraClient?: JiraClientServer | JiraClientCloud
+    clients?: ClientCombination
 ) {
     if (!options) {
         // Don't throw here in case someone simply doesn't want the plugin to run but forgot to
@@ -55,7 +59,7 @@ export async function beforeRunHook(
         logInfo("Plugin disabled. Skipping before:run hook");
         return;
     }
-    if (!xrayClient) {
+    if (!clients.xrayClient) {
         throw new Error(
             dedent(`
                 Plugin misconfigured: Xray client was not configured
@@ -64,7 +68,7 @@ export async function beforeRunHook(
             `)
         );
     }
-    if (!jiraClient) {
+    if (!clients.jiraClient) {
         throw new Error(
             dedent(`
                 Plugin misconfigured: Jira client was not configured
@@ -102,14 +106,11 @@ export async function beforeRunHook(
                     `)
                 );
             }
-            if (
-                !options.jira.testExecutionIssueDetails ||
-                (options.jira.testPlanIssueKey && !options.jira.testPlanIssueDetails)
-            ) {
+            if (!options.jira.testExecutionIssueDetails) {
                 logInfo(
                     "Fetching necessary Jira issue type information in preparation for Cucumber result uploads..."
                 );
-                const issueDetails = await jiraClient.getIssueTypes();
+                const issueDetails = await clients.jiraClient.getIssueTypes();
                 if (!issueDetails) {
                     throw new Error(
                         dedent(`
@@ -126,14 +127,6 @@ export async function beforeRunHook(
                 if (!options.jira.testExecutionIssueDetails) {
                     options.jira.testExecutionIssueDetails = retrieveIssueTypeInformation(
                         options.jira.testExecutionIssueType,
-                        issueDetails,
-                        options.jira.projectKey
-                    );
-                }
-                // Test plan information might not be needed.
-                if (options.jira.testPlanIssueKey && !options.jira.testPlanIssueDetails) {
-                    options.jira.testPlanIssueDetails = retrieveIssueTypeInformation(
-                        options.jira.testPlanIssueType,
                         issueDetails,
                         options.jira.projectKey
                     );
@@ -178,8 +171,7 @@ function retrieveIssueTypeInformation<
 export async function afterRunHook(
     results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult,
     options?: InternalOptions,
-    xrayClient?: XrayClientServer | XrayClientCloud,
-    jiraClient?: JiraClientServer | JiraClientCloud
+    clients?: ClientCombination
 ) {
     if (!options) {
         // Don't throw here in case someone simply doesn't want the plugin to run but forgot to
@@ -212,7 +204,7 @@ export async function afterRunHook(
         logInfo("Skipping results upload: Plugin is configured to not upload test results");
         return;
     }
-    if (!xrayClient) {
+    if (!clients?.xrayClient) {
         throw new Error(
             dedent(`
                 Plugin misconfigured: Xray client not configured
@@ -221,7 +213,7 @@ export async function afterRunHook(
             `)
         );
     }
-    if (!jiraClient) {
+    if (!clients?.jiraClient) {
         throw new Error(
             dedent(`
                 Plugin misconfigured: Jira client not configured
@@ -232,7 +224,12 @@ export async function afterRunHook(
     }
     let issueKey: string = null;
     if (containsNativeTest(runResult, options)) {
-        issueKey = await uploadCypressResults(runResult, options, xrayClient);
+        issueKey = await uploadCypressResults(
+            runResult,
+            options,
+            clients.xrayClient,
+            clients.jiraRepository
+        );
         if (
             options.jira.testExecutionIssueKey &&
             issueKey &&
@@ -251,7 +248,7 @@ export async function afterRunHook(
         }
     }
     if (containsCucumberTest(runResult, options)) {
-        const cucumberIssueKey = await uploadCucumberResults(runResult, options, xrayClient);
+        const cucumberIssueKey = await uploadCucumberResults(runResult, options, clients);
         if (
             options.jira.testExecutionIssueKey &&
             cucumberIssueKey &&
@@ -285,48 +282,54 @@ export async function afterRunHook(
         return;
     }
     if (options.jira.attachVideos) {
-        await attachVideos(runResult, issueKey, jiraClient);
+        await attachVideos(runResult, issueKey, clients.jiraClient);
     }
 }
 
 async function uploadCypressResults(
     runResult: CypressCommandLine.CypressRunResult,
-    options?: InternalOptions,
-    xrayClient?: XrayClientServer | XrayClientCloud
+    options: InternalOptions,
+    xrayClient: XrayClientServer | XrayClientCloud,
+    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
 ) {
     const issueKeys = getNativeTestIssueKeys(runResult, options);
-    const testTypes = await xrayClient.getTestTypes(options.jira.projectKey, ...issueKeys);
-    options.xray.testTypes = testTypes;
+    const issueSummaries = await jiraRepository.getSummaries(...issueKeys);
+    const issueTestTypes = await jiraRepository.getTestTypes(...issueKeys);
     let cypressExecution: XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud;
     if (xrayClient instanceof XrayClientServer) {
-        cypressExecution = new ImportExecutionConverterServer(options).convert(runResult);
+        cypressExecution = await new ImportExecutionConverterServer(options).convert(runResult, {
+            summaries: issueSummaries,
+            testTypes: issueTestTypes,
+        });
     } else {
-        cypressExecution = new ImportExecutionConverterCloud(options).convert(runResult);
+        cypressExecution = await new ImportExecutionConverterCloud(options).convert(runResult, {
+            summaries: issueSummaries,
+            testTypes: issueTestTypes,
+        });
     }
     return await xrayClient.importExecution(cypressExecution);
 }
 
 async function uploadCucumberResults(
     runResult: CypressCommandLine.CypressRunResult,
-    options?: InternalOptions,
-    xrayClient?: XrayClientServer | XrayClientCloud
+    options: InternalOptions,
+    clients: ClientCombination
 ) {
     const results: CucumberMultipartFeature[] = JSON.parse(
         fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
     );
     let cucumberMultipart: CucumberMultipartServer | CucumberMultipartCloud;
-    if (xrayClient instanceof XrayClientServer) {
-        cucumberMultipart = new ImportExecutionCucumberMultipartConverterServer(options).convert(
-            results,
-            runResult
-        );
+    if (clients.kind === "server") {
+        cucumberMultipart = await new ImportExecutionCucumberMultipartConverterServer(
+            options,
+            clients.jiraRepository
+        ).convert(results, runResult);
     } else {
-        cucumberMultipart = new ImportExecutionCucumberMultipartConverterCloud(options).convert(
-            results,
-            runResult
-        );
+        cucumberMultipart = await new ImportExecutionCucumberMultipartConverterCloud(
+            options
+        ).convert(results, runResult);
     }
-    return await xrayClient.importExecutionCucumberMultipart(
+    return await clients.xrayClient.importExecutionCucumberMultipart(
         cucumberMultipart.features,
         cucumberMultipart.info
     );
@@ -350,8 +353,8 @@ async function attachVideos(
 export async function synchronizeFile(
     file: Cypress.FileObject,
     projectRoot: string,
-    options?: InternalOptions,
-    xrayClient?: XrayClientServer | XrayClientCloud
+    options: InternalOptions,
+    clients: ClientCombination
 ): Promise<string> {
     if (!options) {
         logError(
@@ -378,16 +381,88 @@ export async function synchronizeFile(
                 throw new Error("feature not yet implemented");
             }
             if (options.cucumber.uploadFeatures) {
-                preprocessFeatureFile(
+                const issueData = getCucumberIssueData(
                     file.filePath,
                     options,
-                    xrayClient instanceof XrayClientCloud
+                    clients.kind === "cloud"
                 );
-                await xrayClient.importFeature(file.filePath, options.jira.projectKey);
+                // Xray currently (almost) always overwrites issue summaries when importing feature
+                // files to existing issues. Therefore, we manually need to backup and reset the
+                // summary once the import is done.
+                // See: https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                // See: https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                const testIssueKeys = [
+                    ...issueData.tests.map((data) => data.key),
+                    ...issueData.preconditions.map((data) => data.key),
+                ];
+                logDebug(
+                    dedent(`
+                        Creating issue summary backups for issues:
+                        ${testIssueKeys.join("\n")}
+                    `)
+                );
+                const testSummaries = await clients.jiraRepository.getSummaries(...testIssueKeys);
+                const wasImportSuccessful = await clients.xrayClient.importFeature(
+                    file.filePath,
+                    options.jira.projectKey
+                );
+                if (wasImportSuccessful) {
+                    await resetSummaries(
+                        issueData,
+                        testSummaries,
+                        clients.jiraClient,
+                        clients.jiraRepository
+                    );
+                }
             }
         } catch (error: unknown) {
             logError(`Feature file invalid, skipping synchronization: ${error}`);
         }
     }
     return file.filePath;
+}
+
+async function resetSummaries(
+    issueData: FeatureFileIssueData,
+    testSummaries: StringMap<string>,
+    jiraClient: JiraClientServer | JiraClientCloud,
+    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
+) {
+    const allIssues = [...issueData.tests, ...issueData.preconditions];
+    for (let i = 0; i < allIssues.length; i++) {
+        const issueKey = allIssues[i].key;
+        const oldSummary = testSummaries[issueKey];
+        const newSummary = allIssues[i].summary;
+        if (oldSummary !== newSummary) {
+            const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {
+                fields: {},
+            };
+            const summaryFieldId = await jiraRepository.getFieldId("Summary");
+            issueUpdate.fields[summaryFieldId] = oldSummary;
+            logDebug(
+                dedent(`
+                    Resetting issue summary of issue: ${issueKey}
+
+                    Summary pre sync:  ${oldSummary}
+                    Summary post sync: ${newSummary}
+            `)
+            );
+            if (!(await jiraClient.editIssue(issueKey, issueUpdate))) {
+                logError(
+                    dedent(`
+                        Failed to reset issue summary of issue to its old summary: ${issueKey}
+
+                        Summary pre sync:  ${oldSummary}
+                        Summary post sync: ${newSummary}
+
+                        Make sure to reset it manually if needed
+                    `)
+                );
+            }
+        } else {
+            logDebug(
+                `Issue summary is identical to scenario (outline) name already: ${issueKey} (${oldSummary})`
+            );
+        }
+    }
 }

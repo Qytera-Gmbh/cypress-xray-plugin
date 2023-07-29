@@ -31,5 +31,5 @@ export abstract class Converter<
     public abstract convert(
         input: ConversionInputType,
         parameters?: ConversionParametersType
-    ): ConversionTargetType;
+    ): Promise<ConversionTargetType>;
 }

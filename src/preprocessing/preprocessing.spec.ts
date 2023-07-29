@@ -7,12 +7,12 @@ import { InternalOptions } from "../types/plugin";
 import {
     containsCucumberTest,
     containsNativeTest,
+    getCucumberIssueData,
     getCucumberPreconditionIssueTags,
     getCucumberScenarioIssueTags,
     getNativeTestIssueKey,
     getNativeTestIssueKeys,
     parseFeatureFile,
-    preprocessFeatureFile,
 } from "./preprocessing";
 
 describe("cypress preprocessing", () => {
@@ -197,9 +197,9 @@ describe("cucumber preprocessing", () => {
     });
 
     describe("server", () => {
-        it("should throw for missing scenario tags", () => {
+        it("throws for missing scenario tags", () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedServerMissingScenario.feature",
                     options,
                     false
@@ -220,9 +220,9 @@ describe("cucumber preprocessing", () => {
             );
         });
 
-        it("should throw for multiple scenario tags", async () => {
+        it("throws for multiple scenario tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedServerMultipleScenario.feature",
                     options,
                     false
@@ -246,7 +246,7 @@ describe("cucumber preprocessing", () => {
 
         it("should throw for missing background tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedServerMissingBackground.feature",
                     options,
                     false
@@ -257,7 +257,7 @@ describe("cucumber preprocessing", () => {
                     You can target existing precondition issues by adding a corresponding comment:
 
                     Background: A background
-                      #@Precondition:CYP-123
+                      #@CYP-123
                       # steps ...
 
                     For more information, visit:
@@ -269,7 +269,7 @@ describe("cucumber preprocessing", () => {
 
         it("should throw for multiple background tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedServerMultipleBackground.feature",
                     options,
                     false
@@ -280,11 +280,11 @@ describe("cucumber preprocessing", () => {
                     The plugin cannot decide for you which one to use:
 
                     Background: A background
-                      #@Precondition:CYP-244
-                      ^^^^^^^^^^^^^^^^^^^^^^
+                      #@CYP-244
+                      ^^^^^^^^^
                       # a random comment
-                      #@Precondition:CYP-262
-                      ^^^^^^^^^^^^^^^^^^^^^^
+                      #@CYP-262
+                      ^^^^^^^^^
                       # steps ...
 
                     For more information, visit:
@@ -301,6 +301,7 @@ describe("cucumber preprocessing", () => {
             const tag = getCucumberPreconditionIssueTags(
                 document.feature.children[0].background,
                 "CYP",
+                false,
                 document.comments
             );
             expect(tag).to.deep.eq(["CYP-244", "CYP-262"]);
@@ -310,17 +311,16 @@ describe("cucumber preprocessing", () => {
             const feature = parseFeatureFile(
                 "./test/resources/features/taggedServerMultipleScenario.feature"
             ).feature;
-            expect(getCucumberScenarioIssueTags(feature.children[1].scenario, "CYP")).to.deep.eq([
-                "CYP-123",
-                "CYP-456",
-            ]);
+            expect(
+                getCucumberScenarioIssueTags(feature.children[1].scenario, "CYP", false)
+            ).to.deep.eq(["CYP-123", "CYP-456"]);
         });
     });
 
     describe("cloud", () => {
-        it("should throw for missing scenario tags", async () => {
+        it("throws for missing scenario tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedCloudMissingScenario.feature",
                     options,
                     true
@@ -341,9 +341,9 @@ describe("cucumber preprocessing", () => {
             );
         });
 
-        it("should throw for multiple scenario tags", async () => {
+        it("throws for multiple scenario tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedCloudMultipleScenario.feature",
                     options,
                     true
@@ -365,9 +365,9 @@ describe("cucumber preprocessing", () => {
             );
         });
 
-        it("should throw for missing background tags", async () => {
+        it("throws for missing background tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedCloudMissingBackground.feature",
                     options,
                     true
@@ -388,9 +388,9 @@ describe("cucumber preprocessing", () => {
             );
         });
 
-        it("should throw for multiple background tags", async () => {
+        it("throws for multiple background tags", async () => {
             expect(() =>
-                preprocessFeatureFile(
+                getCucumberIssueData(
                     "./test/resources/features/taggedCloudMultipleBackground.feature",
                     options,
                     true
@@ -422,6 +422,7 @@ describe("cucumber preprocessing", () => {
             const tag = getCucumberPreconditionIssueTags(
                 document.feature.children[0].background,
                 "CYP",
+                true,
                 document.comments
             );
             expect(tag).to.deep.eq(["CYP-244", "CYP-262"]);
@@ -431,10 +432,9 @@ describe("cucumber preprocessing", () => {
             const feature = parseFeatureFile(
                 "./test/resources/features/taggedCloudMultipleScenario.feature"
             ).feature;
-            expect(getCucumberScenarioIssueTags(feature.children[1].scenario, "CYP")).to.deep.eq([
-                "CYP-123",
-                "CYP-456",
-            ]);
+            expect(
+                getCucumberScenarioIssueTags(feature.children[1].scenario, "CYP", true)
+            ).to.deep.eq(["CYP-123", "CYP-456"]);
         });
     });
 

@@ -35,7 +35,7 @@ describe("the xray clients", () => {
                               new BasicAuthCredentials("user", "token"),
                               new DummyJiraClient()
                           )
-                        : new XrayClientCloud(RESOLVED_JWT_CREDENTIALS, new DummyJiraClient());
+                        : new XrayClientCloud(RESOLVED_JWT_CREDENTIALS);
             });
 
             describe("import execution", () => {

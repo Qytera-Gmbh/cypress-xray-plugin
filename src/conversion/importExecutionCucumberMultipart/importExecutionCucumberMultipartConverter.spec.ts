@@ -39,7 +39,7 @@ describe("the import execution cucumber multipart converters", () => {
                 );
                 converter =
                     converterType === "server"
-                        ? new ImportExecutionCucumberMultipartConverterServer(options)
+                        ? new ImportExecutionCucumberMultipartConverterServer(options, null)
                         : new ImportExecutionCucumberMultipartConverterCloud(options);
                 result =
                     converterType === "server"
@@ -57,53 +57,53 @@ describe("the import execution cucumber multipart converters", () => {
                           );
             });
 
-            it("should include all tagged features and tests", () => {
-                const multipart = converter.convert(result, parameters);
+            it("should include all tagged features and tests", async () => {
+                const multipart = await converter.convert(result, parameters);
                 expect(multipart.features).to.be.an("array").with.length(2);
                 expect(multipart.features[0].elements).to.be.an("array").with.length(3);
                 expect(multipart.features[1].elements).to.be.an("array").with.length(1);
             });
 
-            it("should use the configured project key", () => {
-                const multipart = converter.convert([result[0]], parameters);
+            it("should use the configured project key", async () => {
+                const multipart = await converter.convert([result[0]], parameters);
                 expect(multipart.info.fields.project).to.deep.eq({
                     key: "CYP",
                 });
             });
 
-            it("should use the configured test execution summary", () => {
+            it("should use the configured test execution summary", async () => {
                 options.jira.testExecutionIssueSummary = "A summary";
-                const multipart = converter.convert([result[0]], parameters);
+                const multipart = await converter.convert([result[0]], parameters);
                 expect(multipart.info.fields.summary).to.eq("A summary");
             });
 
-            it("should use the configured test execution issue description", () => {
+            it("should use the configured test execution issue description", async () => {
                 options.jira.testExecutionIssueDescription = "This is a nice description";
-                const multipart = converter.convert([result[0]], parameters);
+                const multipart = await converter.convert([result[0]], parameters);
                 expect(multipart.info.fields.description).to.eq("This is a nice description");
             });
 
-            it("should use the configured test execution issue key", () => {
+            it("should use the configured test execution issue key", async () => {
                 options.jira.testExecutionIssueKey = "CYP-456";
-                const multipart = converter.convert([result[0], result[0]], parameters);
+                const multipart = await converter.convert([result[0], result[0]], parameters);
                 expect(multipart.features[0].tags[0]).to.deep.eq({ name: "@CYP-456" });
                 expect(multipart.features[1].tags[0]).to.deep.eq({ name: "@CYP-456" });
             });
 
-            it("should use the configured test execution issue details", () => {
+            it("should use the configured test execution issue details", async () => {
                 options.jira.testExecutionIssueDetails = {
                     name: options.jira.testExecutionIssueType,
                     subtask: false,
                 };
-                const multipart = converter.convert([result[0]], parameters);
+                const multipart = await converter.convert([result[0]], parameters);
                 expect(multipart.info.fields.issuetype).to.deep.eq({
                     name: "Test Execution",
                     subtask: false,
                 });
             });
 
-            it("should include screenshots by default", () => {
-                const multipart = converter.convert([result[0]], parameters);
+            it("should include screenshots by default", async () => {
+                const multipart = await converter.convert([result[0]], parameters);
                 expect(multipart.features[0].elements[2].steps[1].embeddings).to.have.length(1);
                 expect(multipart.features[0].elements[2].steps[1].embeddings[0].data).to.be.a(
                     "string"
@@ -113,9 +113,9 @@ describe("the import execution cucumber multipart converters", () => {
                 );
             });
 
-            it("should skip embeddings if screenshots are disabled", () => {
+            it("should skip embeddings if screenshots are disabled", async () => {
                 options.xray.uploadScreenshots = false;
-                const multipart = converter.convert([result[0]], parameters);
+                const multipart = await converter.convert([result[0]], parameters);
                 expect(multipart.features[0].elements[0].steps[0].embeddings).to.be.empty;
                 expect(multipart.features[0].elements[0].steps[1].embeddings).to.be.empty;
                 expect(multipart.features[0].elements[1].steps[0].embeddings).to.be.empty;

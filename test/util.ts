@@ -1,5 +1,6 @@
 import { HttpStatusCode } from "axios";
 import chai from "chai";
+import FormData from "form-data";
 import fs from "fs";
 import path from "path";
 import Sinon, { stub } from "sinon";
@@ -7,7 +8,7 @@ import sinonChai from "sinon-chai";
 import { JWTCredentials } from "../src/authentication/credentials";
 import { JiraClient } from "../src/client/jira/jiraClient";
 import { XrayClient } from "../src/client/xray/xrayClient";
-import { Requests } from "../src/https/requests";
+import { RequestConfigPost, Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
 
@@ -27,6 +28,7 @@ export const stubRequests = () => {
     return {
         stubbedGet: stub(Requests, "get"),
         stubbedPost: stub(Requests, "post"),
+        stubbedPut: stub(Requests, "put"),
     };
 };
 
@@ -64,9 +66,9 @@ after(async () => {
     }
 });
 
-export class DummyXrayClient extends XrayClient<null, null, null, null, null> {
+export class DummyXrayClient extends XrayClient<null, null, null, null> {
     constructor() {
-        super("https://example.org", null, null);
+        super("https://example.org", null);
     }
     public getUrlImportExecution(): string {
         throw new Error("Method not implemented.");
@@ -86,7 +88,7 @@ export class DummyXrayClient extends XrayClient<null, null, null, null, null> {
     public getTestTypes(): Promise<{ [key: string]: string }> {
         throw new Error("Method not implemented.");
     }
-    public getUrlImportExecutionCucumberMultipart(): string {
+    public prepareRequestImportExecutionCucumberMultipart(): Promise<RequestConfigPost<FormData>> {
         throw new Error("Method not implemented.");
     }
     public handleResponseImportExecutionCucumberMultipart(): string {
@@ -94,7 +96,7 @@ export class DummyXrayClient extends XrayClient<null, null, null, null, null> {
     }
 }
 
-export class DummyJiraClient extends JiraClient<null, null, null, null, null, null, null> {
+export class DummyJiraClient extends JiraClient<null, null, null, null, null, null, null, null> {
     constructor() {
         super("https://example.org", null);
     }
@@ -108,6 +110,9 @@ export class DummyJiraClient extends JiraClient<null, null, null, null, null, nu
         throw new Error("Method not implemented.");
     }
     public getUrlGetIssueTypes(): string {
+        throw new Error("Method not implemented.");
+    }
+    public getUrlEditIssue(): string {
         throw new Error("Method not implemented.");
     }
 }

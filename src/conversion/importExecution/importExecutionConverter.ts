@@ -1,7 +1,7 @@
 import { logWarning } from "../../logging/logging";
 import { getNativeTestIssueKey } from "../../preprocessing/preprocessing";
 import { Status } from "../../types/testStatus";
-import { DateTimeISO, OneOf, getEnumKeyByEnumValue } from "../../types/util";
+import { DateTimeISO, OneOf, StringMap, getEnumKeyByEnumValue } from "../../types/util";
 import {
     XrayTestCloud,
     XrayTestExecutionInfo,
@@ -12,6 +12,11 @@ import {
     XrayTestServer,
 } from "../../types/xray/importTestExecutionResults";
 import { Converter } from "../converter";
+
+export type TestIssueData = {
+    summaries: StringMap<string>;
+    testTypes: StringMap<string>;
+};
 
 /**
  * @template XrayTestType - the Xray test type
@@ -24,8 +29,15 @@ export abstract class ImportExecutionConverter<
     XrayTestExecutionResultsType extends OneOf<
         [XrayTestExecutionResultsServer, XrayTestExecutionResultsCloud]
     >
-> extends Converter<CypressCommandLine.CypressRunResult, XrayTestExecutionResultsType> {
-    public convert(results: CypressCommandLine.CypressRunResult): XrayTestExecutionResultsType {
+> extends Converter<
+    CypressCommandLine.CypressRunResult,
+    XrayTestExecutionResultsType,
+    TestIssueData
+> {
+    public async convert(
+        results: CypressCommandLine.CypressRunResult,
+        issueData: TestIssueData
+    ): Promise<XrayTestExecutionResultsType> {
         const runs: CypressCommandLine.RunResult[] = results.runs.filter(
             (run: CypressCommandLine.RunResult) => {
                 return !run.spec.absolute.endsWith(this.options.cucumber.featureFileExtension);
@@ -45,9 +57,17 @@ export abstract class ImportExecutionConverter<
                 test = this.getTest(attempts[attempts.length - 1]);
                 const issueKey = getNativeTestIssueKey(title, this.options.jira.projectKey);
                 test.testKey = issueKey;
-                if (this.options.plugin.overwriteIssueSummary) {
-                    test.testInfo = this.getTestInfo(issueKey, testResult);
+                if (!issueData.summaries[issueKey]) {
+                    throw new Error(`Summary of corresponding issue is missing: ${issueKey}`);
                 }
+                if (!issueData.testTypes[issueKey]) {
+                    throw new Error(`Test type of corresponding issue is missing: ${issueKey}`);
+                }
+                test.testInfo = this.getTestInfo(
+                    issueData.summaries[issueKey],
+                    issueData.testTypes[issueKey],
+                    testResult
+                );
                 this.addTest(json, test);
             } catch (error: unknown) {
                 let reason = error;
@@ -94,12 +114,14 @@ export abstract class ImportExecutionConverter<
      * Constructs an {@link XrayTestInfoType} object based on a single
      * {@link CypressCommandLine.TestResult}.
      *
-     * @param issueKey the test issue key
+     * @param issueSummary the test issue summary
+     * @param issueTestType the test issue test type
      * @param testResult the Cypress test result
      * @returns the test information
      */
     protected abstract getTestInfo(
-        issueKey: string,
+        issueSummary: string,
+        issueTestType: string,
         testResult: CypressCommandLine.TestResult
     ): XrayTestInfoType;
 

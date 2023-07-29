@@ -1,13 +1,15 @@
+import { StringMap } from "../../../util";
+
 /*
  * Generated using: https://transform.tools/graphql-to-typescript
- * Generic types added manually.
+ * Some type parameters have been added manually.
  */
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+export type Exact<T extends StringMap<unknown>> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = {
+export type MakeEmpty<T extends StringMap<unknown>, K extends keyof T> = {
     [_ in K]?: never;
 };
 export type Incremental<T> =

@@ -26,7 +26,6 @@ import {
     ENV_PLUGIN_ENABLED,
     ENV_PLUGIN_LOG_DIRECTORY,
     ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES,
-    ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY,
     ENV_XRAY_CLIENT_ID,
     ENV_XRAY_CLIENT_SECRET,
     ENV_XRAY_STATUS_FAILED,
@@ -39,7 +38,9 @@ import {
     ENV_XRAY_UPLOAD_SCREENSHOTS,
 } from "./constants";
 import { logInfo } from "./logging/logging";
-import { InternalOptions, Options, XrayStepOptions } from "./types/plugin";
+import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
+import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
+import { ClientCombination, InternalOptions, Options, XrayStepOptions } from "./types/plugin";
 import { asBoolean, asInt, asString, parse } from "./util/parsing";
 
 export function initOptions(env: Cypress.ObjectLike, options: Options): InternalOptions {
@@ -80,10 +81,6 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
                 parse(env, ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES, asBoolean) ??
                 options.plugin?.normalizeScreenshotNames ??
                 false,
-            overwriteIssueSummary:
-                parse(env, ENV_PLUGIN_OVERWRITE_ISSUE_SUMMARY, asBoolean) ??
-                options.plugin?.overwriteIssueSummary ??
-                false,
         },
         xray: {
             statusFailed:
@@ -104,7 +101,6 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
                     options.xray?.steps?.update ??
                     true,
             },
-            testTypes: {},
             uploadResults:
                 parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean) ??
                 options.xray?.uploadResults ??
@@ -173,13 +169,7 @@ function verifyXraySteps(steps: XrayStepOptions) {
     }
 }
 
-export function initClients(
-    options: InternalOptions,
-    env: Cypress.ObjectLike
-): {
-    jiraClient: JiraClientServer | JiraClientCloud;
-    xrayClient: XrayClientServer | XrayClientCloud;
-} {
+export function initClients(options: InternalOptions, env: Cypress.ObjectLike): ClientCombination {
     if (!options.jira.url) {
         throw new Error(
             dedent(`
@@ -188,12 +178,10 @@ export function initClients(
             `)
         );
     }
-    let jiraClient: JiraClientServer | JiraClientCloud;
-    let xrayClient: XrayClientServer | XrayClientCloud;
     if (ENV_JIRA_USERNAME in env && ENV_JIRA_API_TOKEN in env) {
         // Jira cloud authentication: username (Email) and token.
         logInfo("Jira username and API token found. Setting up Jira cloud basic auth credentials");
-        jiraClient = new JiraClientCloud(
+        const jiraClient = new JiraClientCloud(
             options.jira.url,
             new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_API_TOKEN])
         );
@@ -202,10 +190,15 @@ export function initClients(
             logInfo(
                 "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
             );
-            xrayClient = new XrayClientCloud(
-                new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET]),
-                jiraClient
+            const xrayClient = new XrayClientCloud(
+                new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET])
             );
+            return {
+                kind: "cloud",
+                jiraClient: jiraClient,
+                xrayClient: xrayClient,
+                jiraRepository: new JiraRepositoryCloud(jiraClient, xrayClient, options),
+            };
         } else {
             throw new Error(
                 dedent(`
@@ -217,29 +210,41 @@ export function initClients(
     } else if (ENV_JIRA_API_TOKEN in env && options.jira.url) {
         // Jira server authentication: no username, only token.
         logInfo("Jira PAT found. Setting up Jira server PAT credentials");
-        jiraClient = new JiraClientServer(
+        const jiraClient = new JiraClientServer(
             options.jira.url,
             new PATCredentials(env[ENV_JIRA_API_TOKEN])
         );
         // Xray server authentication: no username, only token.
         logInfo("Jira PAT found. Setting up Xray server PAT credentials");
-        xrayClient = new XrayClientServer(
+        const xrayClient = new XrayClientServer(
             options.jira.url,
             new PATCredentials(env[ENV_JIRA_API_TOKEN]),
             jiraClient
         );
+        return {
+            kind: "server",
+            jiraClient: jiraClient,
+            xrayClient: xrayClient,
+            jiraRepository: new JiraRepositoryServer(jiraClient, xrayClient, options),
+        };
     } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && options.jira.url) {
         logInfo("Jira username and password found. Setting up Jira server basic auth credentials");
-        jiraClient = new JiraClientServer(
+        const jiraClient = new JiraClientServer(
             options.jira.url,
             new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD])
         );
         logInfo("Jira username and password found. Setting up Xray server basic auth credentials");
-        xrayClient = new XrayClientServer(
+        const xrayClient = new XrayClientServer(
             options.jira.url,
             new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD]),
             jiraClient
         );
+        return {
+            kind: "server",
+            jiraClient: jiraClient,
+            xrayClient: xrayClient,
+            jiraRepository: new JiraRepositoryServer(jiraClient, xrayClient, options),
+        };
     } else {
         throw new Error(
             dedent(`
@@ -248,8 +253,14 @@ export function initClients(
             `)
         );
     }
-    return {
-        jiraClient: jiraClient,
-        xrayClient: xrayClient,
-    };
+}
+export function initJiraRepository(
+    clients: ClientCombination,
+    options: Options
+): JiraRepositoryServer | JiraRepositoryCloud {
+    if (clients.kind === "cloud") {
+        return new JiraRepositoryCloud(clients.jiraClient, clients.xrayClient, options);
+    } else {
+        return new JiraRepositoryServer(clients.jiraClient, clients.xrayClient, options);
+    }
 }

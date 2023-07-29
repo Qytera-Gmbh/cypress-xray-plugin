@@ -6,7 +6,7 @@ import {
     JWTCredentials,
     PATCredentials,
 } from "../../authentication/credentials";
-import { Requests } from "../../https/requests";
+import { RequestConfigPost, Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
 import { OneOf } from "../../types/util";
 import {
@@ -16,33 +16,24 @@ import {
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import { Client } from "../client";
-import { JiraClientCloud } from "../jira/jiraClientCloud";
-import { JiraClientServer } from "../jira/jiraClientServer";
 
 /**
  * An abstract Xray client class for communicating with Xray instances.
  */
 export abstract class XrayClient<
     CredentialsType extends BasicAuthCredentials | PATCredentials | JWTCredentials,
-    JiraClientType extends JiraClientServer | JiraClientCloud,
     ImportFeatureResponseType,
     ImportExecutionResponseType,
     CucumberMultipartInfoType
 > extends Client<CredentialsType> {
     /**
-     * The configured Jira client.
-     */
-    protected readonly jiraClient: JiraClientType;
-    /**
      * Construct a new client using the provided credentials.
      *
      * @param apiBaseUrl the base URL for all HTTP requests
      * @param credentials the credentials to use during authentication
-     * @param jiraClient the configured Jira client
      */
-    constructor(apiBaseUrl: string, credentials: CredentialsType, jiraClient: JiraClientType) {
+    constructor(apiBaseUrl: string, credentials: CredentialsType) {
         super(apiBaseUrl, credentials);
-        this.jiraClient = jiraClient;
     }
     /**
      * Uploads test results to the Xray instance.
@@ -160,6 +151,7 @@ export abstract class XrayClient<
      * @param projectKey key of the project where the tests and pre-conditions are going to be created
      * @param projectId id of the project where the tests and pre-conditions are going to be created
      * @param source a name designating the source of the features being imported (e.g. the source project name)
+     * @returns `true` if the import was successful, `false` otherwise
      * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
      * @see https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
      */
@@ -168,7 +160,7 @@ export abstract class XrayClient<
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<void> {
+    ): Promise<boolean> {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader(
                 `${this.apiBaseURL}/authenticate`
@@ -191,6 +183,7 @@ export abstract class XrayClient<
                     }
                 );
                 this.handleResponseImportFeature(response.data);
+                return true;
             } finally {
                 clearInterval(progressInterval);
             }
@@ -198,6 +191,7 @@ export abstract class XrayClient<
             logError(`Failed to import cucumber features: ${error}`);
             writeErrorFile(error, "importFeatureError");
         }
+        return false;
     }
 
     /**
@@ -224,7 +218,8 @@ export abstract class XrayClient<
     /**
      * Uploads Cucumber test results to the Xray instance.
      *
-     * @param results the test results as provided by the `cypress-cucumber-preprocessor`
+     * @param cucumberJson the test results as provided by the `cypress-cucumber-preprocessor`
+     * @param cucumberInfo the test execution information
      * @returns the key of the test execution issue, `null` if the upload was skipped or `undefined`
      * in case of errors
      * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-CucumberJSONresultsMultipart
@@ -239,30 +234,17 @@ export abstract class XrayClient<
                 logWarning("No Cucumber tests were executed. Skipping Cucumber upload.");
                 return null;
             }
-            const formData = new FormData();
-            const resultString = JSON.stringify(cucumberJson);
-            const infoString = JSON.stringify(cucumberInfo);
-            formData.append("results", resultString, {
-                filename: "results.json",
-            });
-            formData.append("info", infoString, {
-                filename: "info.json",
-            });
-            const authenticationHeader = await this.credentials.getAuthenticationHeader(
-                `${this.apiBaseURL}/authenticate`
-            );
             logInfo("Importing execution (Cucumber)...");
+            const request = await this.prepareRequestImportExecutionCucumberMultipart(
+                cucumberJson,
+                cucumberInfo
+            );
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const response: AxiosResponse<ImportExecutionResponseType> = await Requests.post(
-                    this.getUrlImportExecutionCucumberMultipart(),
-                    formData,
-                    {
-                        headers: {
-                            ...authenticationHeader,
-                            ...formData.getHeaders(),
-                        },
-                    }
+                    request.url,
+                    request.data,
+                    request.config
                 );
                 const key = this.handleResponseImportExecutionCucumberMultipart(response.data);
                 logSuccess(`Successfully uploaded Cucumber test execution results to ${key}.`);
@@ -277,11 +259,16 @@ export abstract class XrayClient<
     }
 
     /**
-     * Returns the endpoint to use for importing Cucumber multipart execution results.
+     * Prepares the Cucumber multipart import execution request.
      *
-     * @returns the URL
+     * @param cucumberJson the test results as provided by the `cypress-cucumber-preprocessor`
+     * @param cucumberInfo the test execution information
+     * @returns the import execution request
      */
-    public abstract getUrlImportExecutionCucumberMultipart(): string;
+    public abstract prepareRequestImportExecutionCucumberMultipart(
+        cucumberJson: CucumberMultipartFeature[],
+        cucumberInfo: CucumberMultipartInfoType
+    ): Promise<RequestConfigPost<FormData>>;
 
     /**
      * Returns the test execution key from the Cucumber multipart import execution response.
@@ -292,18 +279,4 @@ export abstract class XrayClient<
     public abstract handleResponseImportExecutionCucumberMultipart(
         response: ImportExecutionResponseType
     ): string;
-
-    /**
-     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
-     * `Generic`.
-     *
-     * @param projectKey key of the project containing the test issues
-     * @param issueKeys the keys of the test issues to retrieve test types for
-     * @returns a promise which will contain the mapping of issues to test types, `null` if the
-     * upload was skipped or `undefined` in case of errors
-     */
-    public abstract getTestTypes(
-        projectKey: string,
-        ...issueKeys: string[]
-    ): Promise<{ [key: string]: string }>;
 }

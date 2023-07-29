@@ -1,3 +1,5 @@
+import { JiraRepositoryServer } from "../../repository/jira/jiraRepositoryServer";
+import { InternalOptions } from "../../types/plugin";
 import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import {
     ConversionParameters,
@@ -5,7 +7,16 @@ import {
 } from "./importExecutionCucumberMultipartConverter";
 
 export class ImportExecutionCucumberMultipartConverterServer extends ImportExecutionCucumberMultipartConverter<CucumberMultipartInfoServer> {
-    protected getMultipartInfo(parameters: ConversionParameters): CucumberMultipartInfoServer {
+    private readonly jiraRepository: JiraRepositoryServer;
+
+    constructor(options: InternalOptions, jiraRepository: JiraRepositoryServer) {
+        super(options);
+        this.jiraRepository = jiraRepository;
+    }
+
+    protected async getMultipartInfo(
+        parameters: ConversionParameters
+    ): Promise<CucumberMultipartInfoServer> {
         const summary =
             this.options.jira.testExecutionIssueSummary ||
             `Execution Results [${new Date(parameters.startedTestsAt).getTime()}]`;
@@ -29,9 +40,10 @@ export class ImportExecutionCucumberMultipartConverterServer extends ImportExecu
             },
         };
         if (this.options.jira.testPlanIssueKey) {
-            info.fields[this.options.jira.testPlanIssueDetails.id] = [
-                this.options.jira.testPlanIssueKey,
-            ];
+            const testPlanFieldId = await this.jiraRepository.getFieldId(
+                this.options.jira.testPlanIssueType
+            );
+            info.fields[testPlanFieldId] = [this.options.jira.testPlanIssueKey];
         }
         return info;
     }

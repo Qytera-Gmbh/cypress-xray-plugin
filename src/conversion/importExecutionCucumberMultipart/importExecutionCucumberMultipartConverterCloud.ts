@@ -5,7 +5,9 @@ import {
 } from "./importExecutionCucumberMultipartConverter";
 
 export class ImportExecutionCucumberMultipartConverterCloud extends ImportExecutionCucumberMultipartConverter<CucumberMultipartInfoCloud> {
-    protected getMultipartInfo(parameters: ConversionParameters): CucumberMultipartInfoCloud {
+    protected async getMultipartInfo(
+        parameters: ConversionParameters
+    ): Promise<CucumberMultipartInfoCloud> {
         const summary =
             this.options.jira.testExecutionIssueSummary ||
             `Execution Results [${new Date(parameters.startedTestsAt).getTime()}]`;

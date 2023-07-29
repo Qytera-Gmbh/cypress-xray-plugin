@@ -1,12 +1,17 @@
 import dedent from "dedent";
+import FormData from "form-data";
 import { JWTCredentials } from "../../authentication/credentials";
-import { Requests } from "../../https/requests";
+import { RequestConfigPost, Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
-import { CucumberMultipartInfoCloud } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { StringMap } from "../../types/util";
+import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
+import {
+    CucumberMultipartInfoCloud,
+    CucumberMultipartInfoServer,
+} from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
-import { JiraClientCloud } from "../jira/jiraClientCloud";
 import { XrayClient } from "./xrayClient";
 
 type GetTestsJiraData = {
@@ -15,7 +20,6 @@ type GetTestsJiraData = {
 
 export class XrayClientCloud extends XrayClient<
     JWTCredentials,
-    JiraClientCloud,
     ImportFeatureResponseCloud,
     ImportExecutionResponseCloud,
     CucumberMultipartInfoCloud
@@ -37,10 +41,9 @@ export class XrayClientCloud extends XrayClient<
      * Construct a new Xray cloud client using the provided credentials.
      *
      * @param credentials the credentials to use during authentication
-     * @param jiraClient the configured Jira client
      */
-    constructor(credentials: JWTCredentials, jiraClient: JiraClientCloud) {
-        super(XrayClientCloud.URL, credentials, jiraClient);
+    constructor(credentials: JWTCredentials) {
+        super(XrayClientCloud.URL, credentials);
     }
 
     public getUrlImportExecution(): string {
@@ -96,10 +99,19 @@ export class XrayClientCloud extends XrayClient<
         }
     }
 
+    /**
+     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
+     * `Generic`.
+     *
+     * @param projectKey key of the project containing the test issues
+     * @param issueKeys the keys of the test issues to retrieve test types for
+     * @returns a promise which will contain the mapping of issues to test types, `null` if the
+     * upload was skipped or `undefined` in case of errors
+     */
     public async getTestTypes(
         projectKey: string,
         ...issueKeys: string[]
-    ): Promise<{ [key: string]: string }> {
+    ): Promise<StringMap<string>> {
         try {
             if (!issueKeys || issueKeys.length === 0) {
                 logWarning("No issue keys provided. Skipping test type retrieval");
@@ -180,8 +192,32 @@ export class XrayClientCloud extends XrayClient<
         }
     }
 
-    public getUrlImportExecutionCucumberMultipart(): string {
-        return `${this.apiBaseURL}/import/execution/cucumber/multipart`;
+    public async prepareRequestImportExecutionCucumberMultipart(
+        cucumberJson: CucumberMultipartFeature[],
+        cucumberInfo: CucumberMultipartInfoServer
+    ): Promise<RequestConfigPost<FormData>> {
+        const formData = new FormData();
+        const resultString = JSON.stringify(cucumberJson);
+        const infoString = JSON.stringify(cucumberInfo);
+        formData.append("results", resultString, {
+            filename: "results.json",
+        });
+        formData.append("info", infoString, {
+            filename: "info.json",
+        });
+        const authenticationHeader = await this.credentials.getAuthenticationHeader(
+            `${this.apiBaseURL}/authenticate`
+        );
+        return {
+            url: `${this.apiBaseURL}/import/execution/cucumber/multipart`,
+            data: formData,
+            config: {
+                headers: {
+                    ...authenticationHeader,
+                    ...formData.getHeaders(),
+                },
+            },
+        };
     }
 
     public handleResponseImportExecutionCucumberMultipart(
