@@ -439,8 +439,8 @@ async function resetSummaries(
                 dedent(`
                     Resetting issue summary of issue: ${issueKey}
 
-                    Old summary  (pre sync): ${oldSummary}
-                    New summary (post sync): ${newSummary}
+                    Summary pre sync:  ${oldSummary}
+                    Summary post sync: ${newSummary}
             `)
             );
             if (!(await jiraClient.editIssue(issueKey, issueUpdate))) {
@@ -448,8 +448,8 @@ async function resetSummaries(
                     dedent(`
                         Failed to reset issue summary of issue to its old summary: ${issueKey}
 
-                        Old summary  (pre sync): ${oldSummary}
-                        New summary (post sync): ${newSummary}
+                        Summary pre sync:  ${oldSummary}
+                        Summary post sync: ${newSummary}
 
                         Make sure to reset it manually if needed
                     `)
