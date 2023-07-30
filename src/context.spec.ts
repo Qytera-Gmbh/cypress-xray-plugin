@@ -78,7 +78,7 @@ describe("the plugin context configuration", () => {
                         expect(options.xray.steps.maxLengthAction).to.eq(8000);
                     });
                     it("update", () => {
-                        expect(options.xray.steps.update).to.eq(true);
+                        expect(options.xray.steps.update).to.eq(false);
                     });
                 });
                 it("uploadResults", () => {
