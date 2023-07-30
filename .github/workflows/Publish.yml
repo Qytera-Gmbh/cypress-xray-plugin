@@ -21,7 +21,7 @@ jobs:
       # Compile Typescript code to vanilla JavaScript + type declarations.
       - run: npm run build
       # Prepare package inside the build directory.
-      - run: npx shx cp package.json README.md LICENSE.md dist/
+      - run: npx shx cp package.json README.md LICENSE.md CHANGELOG.md dist/
       # Publish from inside the build directory.
       - run: npm publish
         working-directory: dist
