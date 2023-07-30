@@ -96,7 +96,7 @@ export interface XrayStepOptions {
     maxLengthAction?: number;
     /**
      * Whether to update a manual test issue's test steps during execution results upload. If set
-     * to true, **all** existing steps will be replaced with the plugin's steps.
+     * to true, all existing steps ***will be replaced*** with the plugin's steps.
      *
      * Note: the plugin currently creates only one step containing the code of the corresponding
      * Cypress test function.
