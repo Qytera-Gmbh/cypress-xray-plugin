@@ -267,6 +267,7 @@ describe("the import execution converters", () => {
                     "CYP-41": "Manual",
                     "CYP-49": "Cucumber",
                 };
+                options.xray.steps.update = true;
                 const json = await converter.convert(result, testIssueData);
                 expect(json.tests).to.have.length(3);
                 expect(json.tests[0].testInfo.steps).to.have.length(1);
@@ -291,7 +292,6 @@ describe("the import execution converters", () => {
                     "CYP-41": "Manual",
                     "CYP-49": "Cucumber",
                 };
-                options.xray.steps.update = false;
                 const json = await converter.convert(result, testIssueData);
                 expect(json.tests).to.have.length(3);
                 expect(json.tests[0].testInfo.steps).to.be.undefined;
@@ -313,6 +313,7 @@ describe("the import execution converters", () => {
                     "CYP-456": "Manual",
                     "CYP-789": "Manual",
                 };
+                options.xray.steps.update = true;
                 const json = await converter.convert(result, testIssueData);
                 expect(json.tests[0].testInfo.steps[0].action).to.eq(`${"x".repeat(7997)}...`);
                 expect(json.tests[1].testInfo.steps[0].action).to.eq(`${"x".repeat(8000)}`);
@@ -323,7 +324,6 @@ describe("the import execution converters", () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultLongBodies.json", "utf-8")
                 );
-                options.xray.steps.maxLengthAction = 5;
                 testIssueData.summaries = {
                     "CYP-123": "1st summary",
                     "CYP-456": "2nd summary",
@@ -334,6 +334,8 @@ describe("the import execution converters", () => {
                     "CYP-456": "Manual",
                     "CYP-789": "Manual",
                 };
+                options.xray.steps.update = true;
+                options.xray.steps.maxLengthAction = 5;
                 const json = await converter.convert(result, testIssueData);
                 expect(json.tests[0].testInfo.steps[0].action).to.eq("xx...");
                 expect(json.tests[1].testInfo.steps[0].action).to.eq("xx...");

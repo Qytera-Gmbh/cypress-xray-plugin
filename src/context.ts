@@ -99,7 +99,7 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
                 update:
                     parse(env, ENV_XRAY_STEPS_UPDATE, asBoolean) ??
                     options.xray?.steps?.update ??
-                    true,
+                    false,
             },
             uploadResults:
                 parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean) ??
