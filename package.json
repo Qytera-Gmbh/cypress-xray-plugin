@@ -2,7 +2,6 @@
     "name": "cypress-xray-plugin",
     "version": "4.0.0",
     "description": "A Cypress plugin for uploading test results to Xray (test management for Jira)",
-    "main": "index.js",
     "types": "index.d.ts",
     "author": "csvtuda",
     "repository": {
@@ -27,14 +26,17 @@
         "*.js",
         "*.ts"
     ],
-    "exports": "./index.js",
+    "exports": {
+        ".": "./index.js",
+        "./register": "./src/register.js"
+    },
     "directories": {
         "lib": "src"
     },
     "scripts": {
         "test": "mocha",
         "coverage": "nyc --reporter=html --exclude=**/*.spec.ts --exclude=test/ mocha",
-        "build": "tsc --project tsconfigBuild.json"
+        "build": "tsc --project tsconfigBuild.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/"
     },
     "dependencies": {
         "@badeball/cypress-cucumber-preprocessor": "^18.0.2",
