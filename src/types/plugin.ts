@@ -1,4 +1,4 @@
-import { resolvePreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
+import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import { JiraClientCloud } from "../client/jira/jiraClientCloud";
 import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../client/xray/xrayClientCloud";
@@ -233,7 +233,7 @@ export type InternalOptions = Options & {
         testExecutionIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
     };
     cucumber?: {
-        preprocessor?: Awaited<ReturnType<typeof resolvePreprocessorConfiguration>>;
+        preprocessor?: IPreprocessorConfiguration;
     };
 };
 
