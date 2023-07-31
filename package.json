@@ -1,6 +1,6 @@
 {
     "name": "cypress-xray-plugin",
-    "version": "3.3.3",
+    "version": "4.0.0",
     "description": "A Cypress plugin for uploading test results to Xray (test management for Jira)",
     "main": "index.js",
     "types": "index.d.ts",
@@ -19,7 +19,8 @@
         "xray",
         "upload",
         "screenshot",
-        "video"
+        "video",
+        "cucumber"
     ],
     "files": [
         "src",
