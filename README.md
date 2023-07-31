@@ -20,8 +20,8 @@ Features include:
   - CI/CD ready
     - no hardcoded credentials
 	- every option customizable in CLI
-  - Cucumber integration (experimental)
-    - synchronization/upload of step definitions with Xray
+  - Cucumber integration
+    - synchronization/upload of step definitions to Xray
 	- results upload as described above
 
 ## Quick Setup
