@@ -120,14 +120,6 @@ export abstract class JiraClient<
     }
 
     /**
-     * Returns the endpoint to use for adding attchments to issues.
-     *
-     * @param issueIdOrKey the ID or key of the issue that attachments are added to
-     * @returns the URL
-     */
-    public abstract getUrlAddAttachment(issueIdOrKey: string): string;
-
-    /**
      * Returns all issue types.
      *
      * @returns the issue types or `undefined` in case of errors
@@ -169,13 +161,6 @@ export abstract class JiraClient<
             writeErrorFile(error, "getIssueTypesError");
         }
     }
-
-    /**
-     * Returns the endpoint to use for retrieving issue types.
-     *
-     * @returns the URL
-     */
-    public abstract getUrlGetIssueTypes(): string;
 
     /**
      * Returns system and custom issue fields according to the following rules:
@@ -225,13 +210,6 @@ export abstract class JiraClient<
     }
 
     /**
-     * Returns the endpoint to use for retrieving fields.
-     *
-     * @returns the URL
-     */
-    public abstract getUrlGetFields(): string;
-
-    /**
      * Searches for issues using JQL. Automatically performs pagination if necessary.
      *
      * @param request the search request
@@ -278,13 +256,6 @@ export abstract class JiraClient<
             writeErrorFile(error, "searchError");
         }
     }
-    /**
-     *
-     * Returns the endpoint to use for searching issues.
-     *
-     * @returns the endpoint
-     */
-    public abstract getUrlPostSearch(): string;
 
     /**
      * Edits an issue. A transition may be applied and issue properties updated as part of the edit.
@@ -324,6 +295,35 @@ export abstract class JiraClient<
             writeErrorFile(error, "editIssue");
         }
     }
+
+    /**
+     * Returns the endpoint to use for adding attchments to issues.
+     *
+     * @param issueIdOrKey the ID or key of the issue that attachments are added to
+     * @returns the URL
+     */
+    public abstract getUrlAddAttachment(issueIdOrKey: string): string;
+
+    /**
+     * Returns the endpoint to use for retrieving issue types.
+     *
+     * @returns the URL
+     */
+    public abstract getUrlGetIssueTypes(): string;
+
+    /**
+     * Returns the endpoint to use for retrieving fields.
+     *
+     * @returns the URL
+     */
+    public abstract getUrlGetFields(): string;
+    /**
+     *
+     * Returns the endpoint to use for searching issues.
+     *
+     * @returns the endpoint
+     */
+    public abstract getUrlPostSearch(): string;
     /**
      *
      * Returns the endpoint to use for editing issues.
