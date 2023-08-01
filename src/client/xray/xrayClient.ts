@@ -34,6 +34,7 @@ export abstract class XrayClient<
     constructor(apiBaseUrl: string, credentials: CredentialsType) {
         super(apiBaseUrl, credentials);
     }
+
     /**
      * Uploads test results to the Xray instance.
      *
@@ -72,78 +73,46 @@ export abstract class XrayClient<
     }
 
     /**
-     * Prepares the export Cucumber request.
+     * Uploads Cucumber test results to the Xray instance.
      *
-     * @param results the test results as provided by Cypress
-     * @returns the import execution request
+     * @param cucumberJson the test results as provided by the `cypress-cucumber-preprocessor`
+     * @param cucumberInfo the test execution information
+     * @returns the key of the test execution issue, `null` if the upload was skipped or `undefined`
+     * in case of errors
+     * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-CucumberJSONresultsMultipart
+     * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
-    protected abstract prepareRequestImportExecution<
-        ExecutionType extends XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud
-    >(execution: ExecutionType): Promise<RequestConfigPost<ExecutionType>>;
-
-    /**
-     * Returns the test execution key from the import execution response.
-     *
-     * @param response the import execution response
-     * @returns the test execution issue key
-     */
-    public abstract handleResponseImportExecution(response: ImportExecutionResponseType): string;
-
-    /**
-     * Downloads feature (file) specifications from corresponding Xray issues.
-     *
-     * @param keys a list of issue keys
-     * @param filter an integer that represents the filter ID
-     * @returns the response of the Xray instance
-     * @see https://docs.getxray.app/display/XRAYCLOUD/Exporting+Cucumber+Tests+-+REST+v2
-     */
-    public async exportCucumber(
-        keys?: string[],
-        filter?: number
-    ): Promise<ExportCucumberTestsResponse> {
+    public async importExecutionCucumberMultipart(
+        cucumberJson: CucumberMultipartFeature[],
+        cucumberInfo: CucumberMultipartInfoType
+    ): Promise<string | null | undefined> {
         try {
-            logInfo("Exporting Cucumber tests...");
+            if (cucumberJson.length === 0) {
+                logWarning("No Cucumber tests were executed. Skipping Cucumber upload.");
+                return null;
+            }
+            logInfo("Importing execution (Cucumber)...");
+            const request = await this.prepareRequestImportExecutionCucumberMultipart(
+                cucumberJson,
+                cucumberInfo
+            );
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
-                const request = await this.prepareRequestExportCucumber(keys, filter);
-                const response = await Requests.get(request.url, request.config);
-                this.handleResponseExportCucumber(response);
+                const response: AxiosResponse<ImportExecutionResponseType> = await Requests.post(
+                    request.url,
+                    request.data,
+                    request.config
+                );
+                const key = this.handleResponseImportExecutionCucumberMultipart(response.data);
+                logSuccess(`Successfully uploaded Cucumber test execution results to ${key}.`);
+                return key;
             } finally {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to export Cucumber tests: ${error}`);
-            writeErrorFile(error, "exportCucumberError");
+            logError(`Failed to import Cucumber execution: ${error}`);
+            writeErrorFile(error, "importExecutionCucumberMultipartError");
         }
-        throw new Error("Method not implemented.");
-    }
-
-    /**
-     * Prepares the export Cucumber request.
-     *
-     * @param keys a list of issue keys
-     * @param filter an integer that represents the filter ID
-     * @returns the export Cucumber request
-     */
-    protected abstract prepareRequestExportCucumber(
-        keys?: string[],
-        filter?: number
-    ): Promise<RequestConfigGet>;
-
-    /**
-     * This method is called when feature files were successfully exported from Xray.
-     *
-     * @param response the export Cucumber response
-     */
-    protected handleResponseExportCucumber(response: AxiosResponse) {
-        // Extract filename from response.
-        const contentDisposition = response.headers["Content-Disposition"];
-        const filenameStart = contentDisposition.indexOf('"');
-        const filenameEnd = contentDisposition.lastIndexOf('"');
-        const filename = contentDisposition.substring(filenameStart, filenameEnd);
-        fs.writeFile(filename, response.data, (error: NodeJS.ErrnoException | null) => {
-            throw new Error(`Failed to export cucumber feature files: "${error}"`);
-        });
     }
 
     /**
@@ -191,6 +160,57 @@ export abstract class XrayClient<
     }
 
     /**
+     * Downloads feature (file) specifications from corresponding Xray issues.
+     *
+     * @param keys a list of issue keys
+     * @param filter an integer that represents the filter ID
+     * @returns the response of the Xray instance
+     * @see https://docs.getxray.app/display/XRAYCLOUD/Exporting+Cucumber+Tests+-+REST+v2
+     */
+    public async exportCucumber(
+        keys?: string[],
+        filter?: number
+    ): Promise<ExportCucumberTestsResponse> {
+        try {
+            logInfo("Exporting Cucumber tests...");
+            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            try {
+                const request = await this.prepareRequestExportCucumber(keys, filter);
+                const response = await Requests.get(request.url, request.config);
+                this.handleResponseExportCucumber(response);
+            } finally {
+                clearInterval(progressInterval);
+            }
+        } catch (error: unknown) {
+            logError(`Failed to export Cucumber tests: ${error}`);
+            writeErrorFile(error, "exportCucumberError");
+        }
+        throw new Error("Method not implemented.");
+    }
+
+    /**
+     * Prepares the export Cucumber request.
+     *
+     * @param results the test results as provided by Cypress
+     * @returns the import execution request
+     */
+    protected abstract prepareRequestImportExecution<
+        ExecutionType extends XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud
+    >(execution: ExecutionType): Promise<RequestConfigPost<ExecutionType>>;
+
+    /**
+     * Prepares the Cucumber multipart import execution request.
+     *
+     * @param cucumberJson the test results as provided by the `cypress-cucumber-preprocessor`
+     * @param cucumberInfo the test execution information
+     * @returns the import execution request
+     */
+    protected abstract prepareRequestImportExecutionCucumberMultipart(
+        cucumberJson: CucumberMultipartFeature[],
+        cucumberInfo: CucumberMultipartInfoType
+    ): Promise<RequestConfigPost<FormData>>;
+
+    /**
      * Prepares the import Cucumber feature request.
      *
      * @param file the (zipped) Cucumber feature file(s)
@@ -207,66 +227,24 @@ export abstract class XrayClient<
     ): Promise<RequestConfigPost<FormData>>;
 
     /**
-     * This method is called when a feature file was successfully imported to Xray.
+     * Prepares the export Cucumber request.
      *
-     * @param response the import feature response
+     * @param keys a list of issue keys
+     * @param filter an integer that represents the filter ID
+     * @returns the export Cucumber request
      */
-    protected abstract handleResponseImportFeature(response: ImportFeatureResponseType): void;
+    protected abstract prepareRequestExportCucumber(
+        keys?: string[],
+        filter?: number
+    ): Promise<RequestConfigGet>;
 
     /**
-     * Uploads Cucumber test results to the Xray instance.
+     * Returns the test execution key from the import execution response.
      *
-     * @param cucumberJson the test results as provided by the `cypress-cucumber-preprocessor`
-     * @param cucumberInfo the test execution information
-     * @returns the key of the test execution issue, `null` if the upload was skipped or `undefined`
-     * in case of errors
-     * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-CucumberJSONresultsMultipart
-     * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
+     * @param response the import execution response
+     * @returns the test execution issue key
      */
-    public async importExecutionCucumberMultipart(
-        cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfoType
-    ): Promise<string | null | undefined> {
-        try {
-            if (cucumberJson.length === 0) {
-                logWarning("No Cucumber tests were executed. Skipping Cucumber upload.");
-                return null;
-            }
-            logInfo("Importing execution (Cucumber)...");
-            const request = await this.prepareRequestImportExecutionCucumberMultipart(
-                cucumberJson,
-                cucumberInfo
-            );
-            const progressInterval = this.startResponseInterval(this.apiBaseURL);
-            try {
-                const response: AxiosResponse<ImportExecutionResponseType> = await Requests.post(
-                    request.url,
-                    request.data,
-                    request.config
-                );
-                const key = this.handleResponseImportExecutionCucumberMultipart(response.data);
-                logSuccess(`Successfully uploaded Cucumber test execution results to ${key}.`);
-                return key;
-            } finally {
-                clearInterval(progressInterval);
-            }
-        } catch (error: unknown) {
-            logError(`Failed to import Cucumber execution: ${error}`);
-            writeErrorFile(error, "importExecutionCucumberMultipartError");
-        }
-    }
-
-    /**
-     * Prepares the Cucumber multipart import execution request.
-     *
-     * @param cucumberJson the test results as provided by the `cypress-cucumber-preprocessor`
-     * @param cucumberInfo the test execution information
-     * @returns the import execution request
-     */
-    protected abstract prepareRequestImportExecutionCucumberMultipart(
-        cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfoType
-    ): Promise<RequestConfigPost<FormData>>;
+    protected abstract handleResponseImportExecution(response: ImportExecutionResponseType): string;
 
     /**
      * Returns the test execution key from the Cucumber multipart import execution response.
@@ -277,4 +255,27 @@ export abstract class XrayClient<
     protected abstract handleResponseImportExecutionCucumberMultipart(
         response: ImportExecutionResponseType
     ): string;
+
+    /**
+     * This method is called when a feature file was successfully imported to Xray.
+     *
+     * @param response the import feature response
+     */
+    protected abstract handleResponseImportFeature(response: ImportFeatureResponseType): void;
+
+    /**
+     * This method is called when feature files were successfully exported from Xray.
+     *
+     * @param response the export Cucumber response
+     */
+    protected handleResponseExportCucumber(response: AxiosResponse) {
+        // Extract filename from response.
+        const contentDisposition = response.headers["Content-Disposition"];
+        const filenameStart = contentDisposition.indexOf('"');
+        const filenameEnd = contentDisposition.lastIndexOf('"');
+        const filename = contentDisposition.substring(filenameStart, filenameEnd);
+        fs.writeFile(filename, response.data, (error: NodeJS.ErrnoException | null) => {
+            throw new Error(`Failed to export cucumber feature files: "${error}"`);
+        });
+    }
 }
