@@ -15,6 +15,26 @@ describe("the xray cloud client", () => {
     const client: XrayClientCloud = new XrayClientCloud(RESOLVED_JWT_CREDENTIALS);
 
     describe("import execution", () => {
+        it("calls the correct url", async () => {
+            const { stubbedPost } = stubRequests();
+            stubLogging();
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    id: "12345",
+                    key: "CYP-123",
+                    self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                },
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            await client.importExecution({ tests: [null] });
+            expect(stubbedPost.getCall(0).args[0]).to.eq(
+                "https://xray.cloud.getxray.app/api/v2/import/execution"
+            );
+        });
+
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
             const { stubbedInfo, stubbedSuccess } = stubLogging();
@@ -106,6 +126,39 @@ describe("the xray cloud client", () => {
     });
 
     describe("import execution cucumber multipart", () => {
+        it("calls the correct url", async () => {
+            const { stubbedPost } = stubRequests();
+            stubLogging();
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    id: "12345",
+                    key: "CYP-123",
+                    self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                },
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            await client.importExecutionCucumberMultipart(
+                JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
+                        "utf-8"
+                    )
+                ),
+                JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
+                        "utf-8"
+                    )
+                )
+            );
+            expect(stubbedPost.getCall(0).args[0]).to.eq(
+                "https://xray.cloud.getxray.app/api/v2/import/execution/cucumber/multipart"
+            );
+        });
+
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
             const { stubbedInfo, stubbedSuccess } = stubLogging();
@@ -177,6 +230,34 @@ describe("the xray cloud client", () => {
             const expectedPath = resolveTestDirPath("importExecutionCucumberMultipartError.json");
             expect(stubbedError).to.have.been.calledWithExactly(
                 `Complete error logs have been written to: ${expectedPath}`
+            );
+        });
+    });
+
+    describe("import feature", () => {
+        it("calls the correct url", async () => {
+            const { stubbedPost } = stubRequests();
+            stubLogging();
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    updatedOrCreatedTests: [
+                        {
+                            id: "12345",
+                            key: "CYP-123",
+                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                        },
+                    ],
+                    updatedOrCreatedPreconditions: [],
+                    errors: [],
+                },
+                headers: null,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: null,
+            });
+            await client.importFeature("./test/resources/features/german.feature", "CYP");
+            expect(stubbedPost.getCall(0).args[0]).to.eq(
+                "https://xray.cloud.getxray.app/api/v2/import/feature?projectKey=CYP"
             );
         });
     });
@@ -346,41 +427,6 @@ describe("the xray cloud client", () => {
             expect(response).to.be.null;
             expect(stubbedWarning).to.have.been.calledWithExactly(
                 "No issue keys provided. Skipping test type retrieval"
-            );
-        });
-    });
-
-    describe("the urls", () => {
-        describe("export cucumber", () => {
-            it("keys", () => {
-                expect(client.getUrlExportCucumber(["CYP-123", "CYP-456"])).to.eq(
-                    "https://xray.cloud.getxray.app/api/v2/export/cucumber?keys=CYP-123;CYP-456"
-                );
-            });
-            it("filter", () => {
-                expect(client.getUrlExportCucumber(undefined, 56)).to.eq(
-                    "https://xray.cloud.getxray.app/api/v2/export/cucumber?filter=56"
-                );
-            });
-            it("keys and filter", () => {
-                expect(client.getUrlExportCucumber(["CYP-123", "CYP-456"], 56)).to.eq(
-                    "https://xray.cloud.getxray.app/api/v2/export/cucumber?keys=CYP-123;CYP-456&filter=56"
-                );
-            });
-            it("neither keys nor filter", () => {
-                expect(() => client.getUrlExportCucumber()).to.throw(
-                    "One of issueKeys or filter must be provided to export feature files"
-                );
-            });
-        });
-        it("import execution", () => {
-            expect(client.getUrlImportExecution()).to.eq(
-                "https://xray.cloud.getxray.app/api/v2/import/execution"
-            );
-        });
-        it("import feature", () => {
-            expect(client.getUrlImportFeature("CYP")).to.eq(
-                "https://xray.cloud.getxray.app/api/v2/import/feature?projectKey=CYP"
             );
         });
     });

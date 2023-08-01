@@ -1,33 +1,15 @@
 import { expect } from "chai";
 import { DummyJiraClient, RESOLVED_JWT_CREDENTIALS, stubLogging } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
-import { initOptions } from "../../context";
-import { InternalOptions } from "../../types/plugin";
 import { XrayClientCloud } from "./xrayClientCloud";
 import { XrayClientServer } from "./xrayClientServer";
 
 describe("the xray clients", () => {
-    let options: InternalOptions;
     let client: XrayClientServer | XrayClientCloud;
 
     ["server", "cloud"].forEach((clientType: string) => {
         describe(clientType, () => {
             beforeEach(() => {
-                options = initOptions(
-                    {},
-                    {
-                        jira: {
-                            projectKey: "CYP",
-                            url: "https://example.org",
-                        },
-                        xray: {
-                            uploadResults: true,
-                        },
-                        cucumber: {
-                            featureFileExtension: ".feature",
-                        },
-                    }
-                );
                 client =
                     clientType === "server"
                         ? new XrayClientServer(

@@ -5,6 +5,11 @@ import { logDebug, writeFile } from "../logging/logging";
 import { InternalOptions } from "../types/plugin";
 import { normalizedFilename } from "../util/files";
 
+export type RequestConfigGet<D = unknown> = {
+    url: string;
+    config?: RawAxiosRequestConfig<D>;
+};
+
 export type RequestConfigPost<D = unknown> = {
     url: string;
     data?: D;
@@ -130,9 +135,9 @@ export class Requests {
         return readFileSync(path);
     }
 
-    public static async get(
+    public static async get<T = unknown>(
         url: string,
-        config?: RawAxiosRequestConfig<undefined>
+        config?: RawAxiosRequestConfig<T>
     ): Promise<AxiosResponse> {
         return Requests.axios().get(url, {
             ...config,

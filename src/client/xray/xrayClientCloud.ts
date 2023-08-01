@@ -1,7 +1,8 @@
 import dedent from "dedent";
 import FormData from "form-data";
+import fs from "fs";
 import { JWTCredentials } from "../../authentication/credentials";
-import { RequestConfigPost, Requests } from "../../https/requests";
+import { RequestConfigGet, RequestConfigPost, Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
@@ -46,18 +47,34 @@ export class XrayClientCloud extends XrayClient<
         super(XrayClientCloud.URL, credentials);
     }
 
-    public getUrlImportExecution(): string {
-        return `${this.apiBaseURL}/import/execution`;
+    protected async prepareRequestImportExecution<XrayTestExecutionResultsCloud>(
+        execution: XrayTestExecutionResultsCloud
+    ): Promise<RequestConfigPost<XrayTestExecutionResultsCloud>> {
+        const authenticationHeader = await this.credentials.getAuthenticationHeader(
+            `${this.apiBaseURL}/authenticate`
+        );
+        return {
+            url: `${this.apiBaseURL}/import/execution`,
+            data: execution,
+            config: {
+                headers: {
+                    ...authenticationHeader,
+                },
+            },
+        };
     }
 
     public handleResponseImportExecution(response: ImportExecutionResponseCloud): string {
         return response.key;
     }
 
-    public getUrlExportCucumber(issueKeys?: string[], filter?: number): string {
+    protected async prepareRequestExportCucumber(
+        keys?: string[],
+        filter?: number
+    ): Promise<RequestConfigGet> {
         const query: string[] = [];
-        if (issueKeys) {
-            query.push(`keys=${issueKeys.join(";")}`);
+        if (keys) {
+            query.push(`keys=${keys.join(";")}`);
         }
         if (filter) {
             query.push(`filter=${filter}`);
@@ -65,10 +82,26 @@ export class XrayClientCloud extends XrayClient<
         if (query.length === 0) {
             throw new Error("One of issueKeys or filter must be provided to export feature files");
         }
-        return `${this.apiBaseURL}/export/cucumber?${query.join("&")}`;
+        const url = `${this.apiBaseURL}/export/cucumber?${query.join("&")}`;
+        const authenticationHeader = await this.credentials.getAuthenticationHeader(
+            `${this.apiBaseURL}/authenticate`
+        );
+        return {
+            url: url,
+            config: {
+                headers: {
+                    ...authenticationHeader,
+                },
+            },
+        };
     }
 
-    public getUrlImportFeature(projectKey?: string, projectId?: string): string {
+    protected async prepareRequestImportFeature(
+        file: string,
+        projectKey?: string,
+        projectId?: string,
+        source?: string
+    ): Promise<RequestConfigPost<FormData>> {
         const query: string[] = [];
         if (projectKey) {
             query.push(`projectKey=${projectKey}`);
@@ -76,10 +109,26 @@ export class XrayClientCloud extends XrayClient<
         if (projectId) {
             query.push(`projectId=${projectId}`);
         }
-        return `${this.apiBaseURL}/import/feature?${query.join("&")}`;
+        const url = `${this.apiBaseURL}/import/feature?${query.join("&")}`;
+        const fileContent = fs.createReadStream(file);
+        const form = new FormData();
+        form.append("file", fileContent);
+        const authenticationHeader = await this.credentials.getAuthenticationHeader(
+            `${this.apiBaseURL}/authenticate`
+        );
+        return {
+            url: url,
+            data: form,
+            config: {
+                headers: {
+                    ...authenticationHeader,
+                    ...form.getHeaders(),
+                },
+            },
+        };
     }
 
-    public handleResponseImportFeature(response: ImportFeatureResponseCloud): void {
+    protected handleResponseImportFeature(response: ImportFeatureResponseCloud): void {
         if (response.errors.length > 0) {
             logError("Encountered some errors during import:", ...response.errors);
         }

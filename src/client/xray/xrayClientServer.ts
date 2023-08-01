@@ -1,6 +1,7 @@
 import FormData from "form-data";
+import fs from "fs";
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
-import { RequestConfigPost } from "../../https/requests";
+import { RequestConfigGet, RequestConfigPost } from "../../https/requests";
 import { logError, logSuccess } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
@@ -39,18 +40,32 @@ export class XrayClientServer extends XrayClient<
         this.jiraClient = jiraClient;
     }
 
-    public getUrlImportExecution(): string {
-        return `${this.apiBaseURL}/rest/raven/latest/import/execution`;
+    protected async prepareRequestImportExecution<XrayTestExecutionResultsServer>(
+        execution: XrayTestExecutionResultsServer
+    ): Promise<RequestConfigPost<XrayTestExecutionResultsServer>> {
+        const authenticationHeader = await this.credentials.getAuthenticationHeader();
+        return {
+            url: `${this.apiBaseURL}/rest/raven/latest/import/execution`,
+            data: execution,
+            config: {
+                headers: {
+                    ...authenticationHeader,
+                },
+            },
+        };
     }
 
     public handleResponseImportExecution(response: ImportExecutionResponseServer): string {
         return response.testExecIssue.key;
     }
 
-    public getUrlExportCucumber(issueKeys?: string[], filter?: number): string {
+    protected async prepareRequestExportCucumber(
+        keys?: string[],
+        filter?: number
+    ): Promise<RequestConfigGet> {
         const query: string[] = [];
-        if (issueKeys) {
-            query.push(`keys=${issueKeys.join(";")}`);
+        if (keys) {
+            query.push(`keys=${keys.join(";")}`);
         }
         if (filter) {
             query.push(`filter=${filter}`);
@@ -60,11 +75,39 @@ export class XrayClientServer extends XrayClient<
         }
         // Always zip feature files, even single ones.
         query.push("fz=true");
-        return `${this.apiBaseURL}/rest/raven/latest/export/test?${query.join("&")}`;
+        const url = `${this.apiBaseURL}/rest/raven/latest/export/test?${query.join("&")}`;
+        const authenticationHeader = await this.credentials.getAuthenticationHeader();
+        return {
+            url: url,
+            config: {
+                headers: {
+                    ...authenticationHeader,
+                },
+            },
+        };
     }
 
-    public getUrlImportFeature(projectKey: string): string {
-        return `${this.apiBaseURL}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
+    protected async prepareRequestImportFeature(
+        file: string,
+        projectKey?: string,
+        projectId?: string,
+        source?: string
+    ): Promise<RequestConfigPost<FormData>> {
+        const url = `${this.apiBaseURL}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
+        const fileContent = fs.createReadStream(file);
+        const form = new FormData();
+        form.append("file", fileContent);
+        const authenticationHeader = await this.credentials.getAuthenticationHeader();
+        return {
+            url: url,
+            data: form,
+            config: {
+                headers: {
+                    ...authenticationHeader,
+                    ...form.getHeaders(),
+                },
+            },
+        };
     }
 
     public handleResponseImportFeature(response: ImportFeatureResponseServer): void {

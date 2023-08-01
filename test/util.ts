@@ -8,9 +8,13 @@ import sinonChai from "sinon-chai";
 import { JWTCredentials } from "../src/authentication/credentials";
 import { JiraClient } from "../src/client/jira/jiraClient";
 import { XrayClient } from "../src/client/xray/xrayClient";
-import { RequestConfigPost, Requests } from "../src/https/requests";
+import { RequestConfigGet, RequestConfigPost, Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
+import {
+    XrayTestExecutionResultsCloud,
+    XrayTestExecutionResultsServer,
+} from "../src/types/xray/importTestExecutionResults";
 
 chai.use(sinonChai);
 
@@ -70,25 +74,24 @@ export class DummyXrayClient extends XrayClient<null, null, null, null> {
     constructor() {
         super("https://example.org", null);
     }
-    public getUrlImportExecution(): string {
+    protected prepareRequestImportExecution<
+        ExecutionType extends XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud
+    >(): Promise<RequestConfigPost<ExecutionType>> {
+        throw new Error("Method not implemented.");
+    }
+    protected prepareRequestExportCucumber(): Promise<RequestConfigGet> {
+        throw new Error("Method not implemented.");
+    }
+    protected prepareRequestImportFeature(): Promise<RequestConfigPost<FormData>> {
+        throw new Error("Method not implemented.");
+    }
+    public prepareRequestImportExecutionCucumberMultipart(): Promise<RequestConfigPost<FormData>> {
         throw new Error("Method not implemented.");
     }
     public handleResponseImportExecution(): string {
         throw new Error("Method not implemented.");
     }
-    public getUrlExportCucumber(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlImportFeature(): string {
-        throw new Error("Method not implemented.");
-    }
     public handleResponseImportFeature(): void {
-        throw new Error("Method not implemented.");
-    }
-    public getTestTypes(): Promise<{ [key: string]: string }> {
-        throw new Error("Method not implemented.");
-    }
-    public prepareRequestImportExecutionCucumberMultipart(): Promise<RequestConfigPost<FormData>> {
         throw new Error("Method not implemented.");
     }
     public handleResponseImportExecutionCucumberMultipart(): string {
