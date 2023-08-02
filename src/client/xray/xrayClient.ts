@@ -1,4 +1,4 @@
-import { AxiosResponse } from "axios";
+import { AxiosResponse, RawAxiosRequestConfig } from "axios";
 import FormData from "form-data";
 import fs from "fs";
 import {
@@ -6,7 +6,7 @@ import {
     JWTCredentials,
     PATCredentials,
 } from "../../authentication/credentials";
-import { RequestConfigGet, RequestConfigPost, Requests } from "../../https/requests";
+import { Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
 import {
     XrayTestExecutionResultsCloud,
@@ -15,6 +15,17 @@ import {
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import { Client } from "../client";
+
+export type RequestConfigGet<D = unknown> = {
+    url: string;
+    config?: RawAxiosRequestConfig<D>;
+};
+
+export type RequestConfigPost<D = unknown> = {
+    url: string;
+    data?: D;
+    config?: RawAxiosRequestConfig<D>;
+};
 
 /**
  * An abstract Xray client class for communicating with Xray instances.

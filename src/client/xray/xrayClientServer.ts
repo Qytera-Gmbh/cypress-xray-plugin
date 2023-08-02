@@ -1,7 +1,6 @@
 import FormData from "form-data";
 import fs from "fs";
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
-import { RequestConfigGet, RequestConfigPost } from "../../https/requests";
 import { logError, logSuccess } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
@@ -11,7 +10,7 @@ import {
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
 import { JiraClientServer } from "../jira/jiraClientServer";
-import { XrayClient } from "./xrayClient";
+import { RequestConfigGet, RequestConfigPost, XrayClient } from "./xrayClient";
 
 export class XrayClientServer extends XrayClient<
     BasicAuthCredentials | PATCredentials,

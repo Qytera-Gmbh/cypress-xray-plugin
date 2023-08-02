@@ -5,17 +5,6 @@ import { logDebug, writeFile } from "../logging/logging";
 import { InternalOptions } from "../types/plugin";
 import { normalizedFilename } from "../util/files";
 
-export type RequestConfigGet<D = unknown> = {
-    url: string;
-    config?: RawAxiosRequestConfig<D>;
-};
-
-export type RequestConfigPost<D = unknown> = {
-    url: string;
-    data?: D;
-    config?: RawAxiosRequestConfig<D>;
-};
-
 export class Requests {
     private static AGENT: Agent = undefined;
     private static AXIOS: Axios = undefined;
