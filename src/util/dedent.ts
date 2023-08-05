@@ -8,7 +8,6 @@
  * @param string the string
  * @returns the dedented string
  */
-
 export function dedent(string: string): string {
     // Trim newline whitespace in the front and all whitespace in the back.
     const lines = string
