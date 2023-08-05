@@ -1,17 +1,16 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import dedent from "dedent";
 import { stub } from "sinon";
-import { stubLogging } from "../../../../test/util";
 import { BasicAuthCredentials } from "../../../authentication/credentials";
 import { JiraClientServer } from "../../../client/jira/jiraClientServer";
 import { initOptions } from "../../../context";
 import { InternalOptions } from "../../../types/plugin";
+import { dedent } from "../../../util/dedent";
 import { JiraFieldRepository } from "./jiraFieldRepository";
 
 chai.use(chaiAsPromised);
 
-describe.only("the jira field repository", () => {
+describe("the jira field repository", () => {
     let options: InternalOptions;
     let jiraClient: JiraClientServer;
     let repository: JiraFieldRepository;
@@ -33,10 +32,10 @@ describe.only("the jira field repository", () => {
         repository = new JiraFieldRepository(jiraClient, options);
     });
 
-    it("fetches field IDs", async () => {
-        const stubbedGetFields = stub(jiraClient, "getFields").resolves([
+    it("fetches fields case-insensitively", async () => {
+        stub(jiraClient, "getFields").resolves([
             {
-                id: "summary",
+                id: "customfield_12345",
                 name: "summary",
                 custom: false,
                 orderable: true,
@@ -49,9 +48,8 @@ describe.only("the jira field repository", () => {
                 },
             },
         ]);
-        const id = await repository.getFieldId("Summary");
-        expect(id).to.eq("summary");
-        expect(stubbedGetFields).to.have.been.calledOnce;
+        const id = await repository.getFieldId("SuMmArY");
+        expect(id).to.eq("customfield_12345");
     });
 
     it("fetches field IDs only for unknown fields", async () => {
@@ -189,81 +187,8 @@ describe.only("the jira field repository", () => {
 
     it("handles get field failures gracefully", async () => {
         stub(jiraClient, "getFields").resolves(undefined);
-        const stubbedSearch = stub(jiraClient, "search");
-        const { stubbedError } = stubLogging();
-        const summaries = await repository.getFieldId("CYP-123");
-        expect(stubbedSearch).to.not.have.been.called;
-        expect(stubbedError).to.have.been.calledOnceWithExactly(
-            dedent(`
-                    Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: summary
-                    Make sure the field actually exists
-                `)
+        await expect(repository.getFieldId("summary")).to.eventually.be.rejectedWith(
+            `Failed to fetch Jira field ID for field with name: summary`
         );
-        expect(summaries).to.deep.eq({});
-    });
-
-    it("handles unparseable field failures gracefully", async () => {
-        stub(jiraClient, "getFields").resolves([
-            {
-                id: "summary",
-                name: "summary",
-                custom: false,
-                orderable: true,
-                navigable: true,
-                searchable: true,
-                clauseNames: ["summary"],
-                schema: {
-                    type: "string",
-                    system: "summary",
-                },
-            },
-        ]);
-        const stubbedSearch = stub(jiraClient, "search");
-        stubbedSearch.resolves([
-            {
-                expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                id: "1000",
-                self: "https://example.org/rest/api/2/issue/1000",
-                key: "CYP-123",
-                fields: {
-                    summary: ["Good Morning", "Summary 2"],
-                },
-            },
-            {
-                expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                id: "1001",
-                self: "https://example.org/rest/api/2/issue/1001",
-                key: "CYP-456",
-                fields: {
-                    summary: {
-                        Something: 5,
-                    },
-                },
-            },
-            {
-                expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                id: "1002",
-                self: "https://example.org/rest/api/2/issue/1002",
-                key: "CYP-789",
-                fields: {
-                    summary: "Bonjour",
-                },
-            },
-        ]);
-        const { stubbedError } = stubLogging();
-        const summaries = await repository.getFieldId("CYP-123");
-        expect(stubbedError).to.have.been.calledOnceWithExactly(
-            dedent(`
-                    Failed to fetch issue summaries
-                    Failed to parse the following Jira field of some issues: summary
-                    Expected the field to be: a string
-                    Make sure the correct field is present on the following issues:
-
-                    CYP-123: ["Good Morning","Summary 2"]
-                    CYP-456: {"Something":5}
-                `)
-        );
-        expect(summaries).to.deep.eq({});
     });
 });

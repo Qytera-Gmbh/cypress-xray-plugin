@@ -1,13 +1,15 @@
 import { JiraClientCloud } from "../../../client/jira/jiraClientCloud";
 import { JiraClientServer } from "../../../client/jira/jiraClientServer";
 import { Options } from "../../../types/plugin";
-import { StringMap, dedent } from "../../../types/util";
+import { StringMap } from "../../../types/util";
+import { dedent } from "../../../util/dedent";
 
 export class JiraFieldRepository {
     protected readonly jiraClient: JiraClientServer | JiraClientCloud;
     protected readonly options: Options;
 
-    private readonly fieldIds: StringMap<string> = {};
+    private readonly names: StringMap<string> = {};
+    private readonly ids: StringMap<string> = {};
 
     constructor(jiraClient: JiraClientServer | JiraClientCloud, options: Options) {
         this.jiraClient = jiraClient;
@@ -18,34 +20,14 @@ export class JiraFieldRepository {
         // Lowercase everything to work around case sensitivities.
         // Jira sometimes returns field names capitalized, sometimes it doesn't (?).
         const lowerCasedName = fieldName.toLowerCase();
-        if (!(lowerCasedName in this.fieldIds)) {
+        if (!(lowerCasedName in this.ids)) {
             const jiraFields = await this.jiraClient.getFields();
             if (jiraFields) {
                 const matches = jiraFields.filter((field) => {
                     const lowerCasedField = field.name.toLowerCase();
                     return lowerCasedField === lowerCasedName;
                 });
-                if (matches.length === 0) {
-                    throw new Error(
-                        dedent(`
-                            Failed to fetch Jira field ID for field with name: ${fieldName}
-                            Make sure to check if your Jira language settings modified the field's name
-
-                            Available fields:
-                              ${jiraFields
-                                  .map((field) => `name: ${field.name}, id: ${field.id}`)
-                                  .join("\n")}
-
-                            You can provide field translations in the options:
-
-                              jira.fields = {
-                                "${fieldName}": {
-                                  name: // translation of ${fieldName}
-                                }
-                              }
-                        `)
-                    );
-                } else if (matches.length > 1) {
+                if (matches.length > 1) {
                     throw new Error(
                         dedent(`
                             Failed to fetch Jira field ID for field with name: ${fieldName}
@@ -71,10 +53,37 @@ export class JiraFieldRepository {
                     );
                 }
                 jiraFields.forEach((jiraField) => {
-                    this.fieldIds[jiraField.name.toLowerCase()] = jiraField.id;
+                    this.ids[jiraField.name.toLowerCase()] = jiraField.id;
+                    this.names[jiraField.name.toLowerCase()] = jiraField.name;
                 });
             }
         }
-        return this.fieldIds[lowerCasedName];
+        if (!(lowerCasedName in this.ids)) {
+            const availableFields = Object.entries(this.ids).map(
+                ([name, id]) => `name: ${this.names[name]}, id: ${id}`
+            );
+            if (availableFields.length === 0) {
+                throw new Error(`Failed to fetch Jira field ID for field with name: ${fieldName}`);
+            } else {
+                throw new Error(
+                    dedent(`
+                        Failed to fetch Jira field ID for field with name: ${fieldName}
+                        Make sure to check if your Jira language settings modified the field's name
+
+                        Available fields:
+                          ${availableFields.join("\n")}
+
+                        You can provide field translations in the options:
+
+                          jira.fields = {
+                            "${fieldName}": {
+                              name: // translation of ${fieldName}
+                            }
+                          }
+                    `)
+                );
+            }
+        }
+        return this.ids[lowerCasedName];
     }
 }
