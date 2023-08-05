@@ -1,5 +1,4 @@
 import { resolvePreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
-import dedent from "dedent";
 import fs from "fs";
 import path from "path";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
@@ -26,7 +25,7 @@ import {
 } from "./types/jira/responses/issueTypeDetails";
 import { IssueUpdateCloud, IssueUpdateServer } from "./types/jira/responses/issueUpdate";
 import { ClientCombination, InternalOptions } from "./types/plugin";
-import { StringMap } from "./types/util";
+import { StringMap, dedent } from "./types/util";
 import {
     XrayTestExecutionResultsCloud,
     XrayTestExecutionResultsServer,
@@ -398,7 +397,7 @@ export async function synchronizeFile(
                 logDebug(
                     dedent(`
                         Creating issue summary backups for issues:
-                        ${testIssueKeys.join("\n")}
+                          ${testIssueKeys.join("\n")}
                     `)
                 );
                 const testSummaries = await clients.jiraRepository.getSummaries(...testIssueKeys);
@@ -443,17 +442,17 @@ async function resetSummaries(
                 dedent(`
                     Resetting issue summary of issue: ${issueKey}
 
-                    Summary pre sync:  ${oldSummary}
-                    Summary post sync: ${newSummary}
-            `)
+                      Summary pre sync:  ${oldSummary}
+                      Summary post sync: ${newSummary}
+                `)
             );
             if (!(await jiraClient.editIssue(issueKey, issueUpdate))) {
                 logError(
                     dedent(`
                         Failed to reset issue summary of issue to its old summary: ${issueKey}
 
-                        Summary pre sync:  ${oldSummary}
-                        Summary post sync: ${newSummary}
+                          Summary pre sync:  ${oldSummary}
+                          Summary post sync: ${newSummary}
 
                         Make sure to reset it manually if needed
                     `)

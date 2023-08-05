@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import dedent from "dedent";
 import { stub } from "sinon";
 import { RESOLVED_JWT_CREDENTIALS, stubLogging } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
@@ -7,6 +6,7 @@ import { JiraClientCloud } from "../../client/jira/jiraClientCloud";
 import { XrayClientCloud } from "../../client/xray/xrayClientCloud";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
+import { dedent } from "../../types/util";
 import { JiraRepositoryCloud } from "./jiraRepositoryCloud";
 
 describe("the cloud issue repository", () => {
@@ -191,8 +191,8 @@ describe("the cloud issue repository", () => {
                     Failed to fetch issue summaries
                     Make sure these issues exist:
 
-                    CYP-456
-                    CYP-789
+                      CYP-456
+                      CYP-789
                 `)
             );
             expect(summaries).to.deep.eq({
@@ -289,8 +289,8 @@ describe("the cloud issue repository", () => {
                     Expected the field to be: a string
                     Make sure the correct field is present on the following issues:
 
-                    CYP-123: ["Good Morning","Summary 2"]
-                    CYP-456: {"Something":5}
+                      CYP-123: ["Good Morning","Summary 2"]
+                      CYP-456: {"Something":5}
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -455,8 +455,8 @@ describe("the cloud issue repository", () => {
                     Failed to fetch issue descriptions
                     Make sure these issues exist:
 
-                    CYP-456
-                    CYP-789
+                      CYP-456
+                      CYP-789
                 `)
             );
             expect(descriptions).to.deep.eq({
@@ -561,8 +561,8 @@ describe("the cloud issue repository", () => {
                     Expected the field to be: a string
                     Make sure the correct field is present on the following issues:
 
-                    CYP-123: ["This is a somewhat unexpected","description"]
-                    CYP-456: {"Something":5}
+                      CYP-123: ["This is a somewhat unexpected","description"]
+                      CYP-456: {"Something":5}
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -624,8 +624,8 @@ describe("the cloud issue repository", () => {
                     Failed to fetch issue test types
                     Make sure these issues exist and are test issues:
 
-                    CYP-456
-                    CYP-789
+                      CYP-456
+                      CYP-789
                 `)
             );
             expect(testTypes).to.deep.eq({ "CYP-123": "Cucumber" });
@@ -640,9 +640,9 @@ describe("the cloud issue repository", () => {
                     Failed to fetch issue test types
                     Make sure these issues exist and are test issues:
 
-                    CYP-123
-                    CYP-456
-                    CYP-789
+                      CYP-123
+                      CYP-456
+                      CYP-789
                 `)
             );
             expect(testTypes).to.deep.eq({});

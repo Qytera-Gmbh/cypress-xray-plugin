@@ -1,9 +1,8 @@
-import dedent from "dedent";
 import FormData from "form-data";
 import { JWTCredentials } from "../../authentication/credentials";
 import { RequestConfigPost, Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
-import { StringMap } from "../../types/util";
+import { StringMap, dedent } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import {
     CucumberMultipartInfoCloud,
@@ -175,7 +174,7 @@ export class XrayClientCloud extends XrayClient<
                         dedent(`
                             Failed to retrieve test types for issues:
 
-                            ${missingTypes.join("\n")}
+                              ${missingTypes.join("\n")}
 
                             Make sure these issues exist and are actually test issues
                         `)

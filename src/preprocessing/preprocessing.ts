@@ -7,10 +7,10 @@ import {
     Scenario,
     Tag,
 } from "@cucumber/messages";
-import dedent from "dedent";
 import fs from "fs";
 import { logWarning } from "../logging/logging";
 import { InternalOptions, Options } from "../types/plugin";
+import { dedent } from "../types/util";
 
 // ============================================================================================== //
 // CYPRESS NATIVE                                                                                 //
@@ -76,7 +76,7 @@ export function getNativeTestIssueKey(title: string, projectKey: string): string
                 You can target existing test issues by adding a corresponding issue key:
 
                 it("${projectKey}-123 ${title}", () => {
-                    // ...
+                  // ...
                 });
 
                 For more information, visit:
@@ -100,7 +100,7 @@ export function getNativeTestIssueKey(title: string, projectKey: string): string
 
                 it("${title}", () => {
                     ${indicatorLine}
-                    // ...
+                  // ...
                 });
 
                 For more information, visit:
@@ -215,26 +215,25 @@ export function getCucumberIssueData(
                     `)
                 );
             } else if (preconditionKeys.length > 1) {
-                const lines = [
-                    `Multiple precondition issue keys found in comments of background: ${child.background.name}`,
-                    "The plugin cannot decide for you which one to use:",
-                    "",
-                    reconstructMultipleTagsBackground(
-                        child.background,
-                        preconditionKeys,
-                        document.comments
-                    ),
-                    "",
-                    "For more information, visit:",
-                    `- ${getHelpUrl(isCloudClient)}`,
-                    "- https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/",
-                ];
-                throw new Error(lines.join("\n"));
+                throw new Error(
+                    dedent(`
+                        Multiple precondition issue keys found in comments of background: ${
+                            child.background.name
+                        }
+                        The plugin cannot decide for you which one to use:
+
+                        ${reconstructMultipleTagsBackground(
+                            child.background,
+                            preconditionKeys,
+                            document.comments
+                        )}
+
+                        For more information, visit:
+                        - ${getHelpUrl(isCloudClient)}
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                    `)
+                );
             }
-            featureFileIssueKeys.preconditions.push({
-                key: preconditionKeys[0],
-                summary: child.background.name ? child.background.name : "<empty>",
-            });
         }
     }
     return featureFileIssueKeys;

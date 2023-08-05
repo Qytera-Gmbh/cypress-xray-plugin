@@ -1,10 +1,10 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
-import dedent from "dedent";
 import fs from "fs";
 import { expectToExist, resolveTestDirPath, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { SearchResultsServer } from "../../types/jira/responses/searchResults";
+import { dedent } from "../../types/util";
 import { JiraClientCloud } from "./jiraClientCloud";
 import { JiraClientServer } from "./jiraClientServer";
 
@@ -76,7 +76,7 @@ describe("the jira clients", () => {
                         expect(stubbedSuccess).to.have.been.calledOnceWith(
                             dedent(`
                                 Successfully attached files to issue: CYP-123
-                                turtle.png
+                                  turtle.png
                             `)
                         );
                     });
@@ -133,8 +133,8 @@ describe("the jira clients", () => {
                         expect(stubbedSuccess).to.have.been.calledOnceWith(
                             dedent(`
                                 Successfully attached files to issue: CYP-123
-                                turtle.png
-                                greetings.txt
+                                  turtle.png
+                                  greetings.txt
                             `)
                         );
                     });

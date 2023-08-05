@@ -1,6 +1,5 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
-import dedent from "dedent";
 import fs from "fs";
 import {
     RESOLVED_JWT_CREDENTIALS,
@@ -8,6 +7,7 @@ import {
     stubLogging,
     stubRequests,
 } from "../../../test/util";
+import { dedent } from "../../types/util";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { XrayClientCloud } from "./xrayClientCloud";
 
@@ -305,8 +305,8 @@ describe("the xray cloud client", () => {
                 dedent(`
                     Failed to get test types: Error: Failed to retrieve test types for issues:
 
-                    CYP-331
-                    CYP-332
+                      CYP-331
+                      CYP-332
 
                     Make sure these issues exist and are actually test issues
                 `)
@@ -331,8 +331,7 @@ describe("the xray cloud client", () => {
             expect(response).to.be.undefined;
             expect(stubbedError).to.have.been.calledTwice;
             expect(stubbedError).to.have.been.calledWith(
-                dedent(`
-                    Failed to get test types: AxiosError: Request failed with status code 400`)
+                "Failed to get test types: AxiosError: Request failed with status code 400"
             );
             const expectedPath = resolveTestDirPath("getTestTypes.json");
             expect(stubbedError).to.have.been.calledWithExactly(
