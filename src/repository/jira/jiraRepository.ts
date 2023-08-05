@@ -57,14 +57,38 @@ export abstract class JiraRepository<
         if (!(lowerCasedName in this.fieldIds)) {
             const jiraFields = await this.jiraClient.getFields();
             if (jiraFields) {
+                const matches = jiraFields.filter((field) => {
+                    const lowerCasedField = field.name.toLowerCase();
+                    return lowerCasedField === lowerCasedName;
+                });
+                if (matches.length === 0) {
+                    throw new Error(
+                        dedent(`
+                            Failed to fetch Jira field ID for field with name: ${lowerCasedName}
+                            Make sure the field actually exists
+                        `)
+                    );
+                } else if (matches.length > 1) {
+                    throw new Error(
+                        dedent(`
+                            Failed to fetch Jira field ID for field with name: ${lowerCasedName}
+                            There are multiple fields with this name:
+
+                            ${matches.map((field) => JSON.stringify(field)).join("\n")}
+
+                            Make sure to set option jira.fields["${fieldName}"] to the ID of the field you want:
+
+                            jira.fields = {
+                                "${fieldName}": {
+                                    id: // ${matches.map((field) => `"${field.id}"`).join(" or ")}
+                                }
+                            }
+                        `)
+                    );
+                }
                 jiraFields.forEach((jiraField) => {
                     this.fieldIds[jiraField.name.toLowerCase()] = jiraField.id;
                 });
-            }
-            if (!(lowerCasedName in this.fieldIds)) {
-                throw new Error(
-                    `Failed to fetch Jira field ID for field with name: ${lowerCasedName}\nMake sure the field actually exists`
-                );
             }
         }
         return this.fieldIds[lowerCasedName];
@@ -86,10 +110,9 @@ export abstract class JiraRepository<
             }
         } catch (error: unknown) {
             logError(
-                dedent(`
-                    Failed to fetch issue summaries
-                    ${error instanceof Error ? error.message : JSON.stringify(error)}
-                `)
+                `Failed to fetch issue summaries\n${
+                    error instanceof Error ? error.message : JSON.stringify(error)
+                }`
             );
         }
         return result;
@@ -152,29 +175,34 @@ export abstract class JiraRepository<
     }
 
     protected async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
+        let fieldId = this.options.jira.fields?.summary?.id;
+        if (!fieldId) {
+            const fieldName = this.options.jira.fields?.summary?.name;
+            fieldId = await this.getFieldId(fieldName);
+        }
         // Field property example:
         // summary: "Bug 12345"
-        return await this.getJiraField("summary", JiraRepository.STRING_EXTRACTOR, ...issueKeys);
+        return await this.getJiraField(fieldId, JiraRepository.STRING_EXTRACTOR, ...issueKeys);
     }
 
     protected async fetchDescriptions(...issueKeys: string[]): Promise<StringMap<string>> {
+        let fieldId = this.options.jira.fields?.description?.id;
+        if (!fieldId) {
+            const fieldName = this.options.jira.fields?.description?.name ?? "description";
+            fieldId = await this.getFieldId(fieldName);
+        }
         // Field property example:
         // description: "This is a description"
-        return await this.getJiraField(
-            "description",
-            JiraRepository.STRING_EXTRACTOR,
-            ...issueKeys
-        );
+        return await this.getJiraField(fieldId, JiraRepository.STRING_EXTRACTOR, ...issueKeys);
     }
 
     protected abstract fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;
 
     protected async getJiraField<T>(
-        fieldName: string,
+        fieldId: string,
         extractor: FieldExtractor<T>,
         ...issueKeys: string[]
     ): Promise<StringMap<T>> {
-        const fieldId = await this.getFieldId(fieldName);
         const issues: IssueServer[] | IssueCloud[] = await this.jiraClient.search({
             jql: `project = ${this.options.jira.projectKey} AND issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
@@ -194,7 +222,7 @@ export abstract class JiraRepository<
         if (issuesWithUnparseableField.length > 0) {
             throw new Error(
                 dedent(`
-                    Failed to parse the following Jira field of some issues: ${fieldName}
+                    Failed to parse the following Jira field of some issues: ${fieldId}
                     Expected the field to be: ${extractor.expectedType}
                     Make sure the correct field is present on the following issues:
 

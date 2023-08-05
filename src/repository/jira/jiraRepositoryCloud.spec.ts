@@ -216,6 +216,51 @@ describe("the cloud issue repository", () => {
             expect(summaries).to.deep.eq({});
         });
 
+        it("displays an error when there are multiple summary fields", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "summary",
+                    key: "summary",
+                    name: "summary",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["summary"],
+                    schema: {
+                        type: "string",
+                        system: "summary",
+                    },
+                },
+                {
+                    id: "customfield_12345",
+                    key: "customfield_12345",
+                    name: "Summary",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["summary (custom)"],
+                    schema: {
+                        type: "string",
+                        customId: 5125,
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getSummaries("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue summaries
+                    Failed to fetch Jira field ID for field with name: summary
+                    Make sure the field actually exists
+                `)
+            );
+            expect(summaries).to.deep.eq({});
+        });
+
         it("handles get field failures gracefully", async () => {
             stub(jiraClient, "getFields").resolves(undefined);
             const stubbedSearch = stub(jiraClient, "search");

@@ -896,7 +896,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue test types
-                    Failed to parse the following Jira field of some issues: test type
+                    Failed to parse the following Jira field of some issues: customfield_12100
                     Expected the field to be: an object with a value property
                     Make sure the correct field is present on the following issues:
 
