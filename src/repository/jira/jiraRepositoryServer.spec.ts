@@ -6,7 +6,7 @@ import { JiraClientServer } from "../../client/jira/jiraClientServer";
 import { XrayClientServer } from "../../client/xray/xrayClientServer";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
-import { dedent } from "../../types/util";
+import { dedent } from "../../util/dedent";
 import { JiraRepositoryServer } from "./jiraRepositoryServer";
 
 describe("the server issue repository", () => {

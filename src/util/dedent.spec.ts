@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { dedent } from "./util";
+import { dedent } from "./dedent";
 
 describe("dedent", () => {
     it("strips leading whitespace", () => {

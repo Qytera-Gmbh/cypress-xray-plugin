@@ -7,7 +7,7 @@ import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
 import { initClients, initOptions, verifyOptions } from "./context";
 import { InternalOptions } from "./types/plugin";
-import { dedent } from "./types/util";
+import { dedent } from "./util/dedent";
 
 describe("the plugin context configuration", () => {
     describe("the option initialization", () => {

@@ -40,7 +40,7 @@ import { logInfo } from "./logging/logging";
 import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
 import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
 import { ClientCombination, InternalOptions, Options, XrayStepOptions } from "./types/plugin";
-import { dedent } from "./types/util";
+import { dedent } from "./util/dedent";
 import { asBoolean, asInt, asString, parse } from "./util/parsing";
 
 export function initOptions(env: Cypress.ObjectLike, options: Options): InternalOptions {

@@ -7,8 +7,8 @@ import {
     stubLogging,
     stubRequests,
 } from "../../../test/util";
-import { dedent } from "../../types/util";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
+import { dedent } from "../../util/dedent";
 import { XrayClientCloud } from "./xrayClientCloud";
 
 describe("the xray cloud client", () => {

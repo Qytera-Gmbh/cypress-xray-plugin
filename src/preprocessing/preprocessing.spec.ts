@@ -3,7 +3,7 @@ import fs from "fs";
 import { stubLogging } from "../../test/util";
 import { initOptions } from "../context";
 import { InternalOptions } from "../types/plugin";
-import { dedent } from "../types/util";
+import { dedent } from "../util/dedent";
 import {
     containsCucumberTest,
     containsNativeTest,

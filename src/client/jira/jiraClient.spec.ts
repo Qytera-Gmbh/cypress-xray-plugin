@@ -4,7 +4,7 @@ import fs from "fs";
 import { expectToExist, resolveTestDirPath, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { SearchResultsServer } from "../../types/jira/responses/searchResults";
-import { dedent } from "../../types/util";
+import { dedent } from "../../util/dedent";
 import { JiraClientCloud } from "./jiraClientCloud";
 import { JiraClientServer } from "./jiraClientServer";
 

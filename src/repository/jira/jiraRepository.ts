@@ -5,7 +5,8 @@ import { XrayClientServer } from "../../client/xray/xrayClientServer";
 import { logError } from "../../logging/logging";
 import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
 import { Options } from "../../types/plugin";
-import { StringMap, dedent } from "../../types/util";
+import { StringMap } from "../../types/util";
+import { dedent } from "../../util/dedent";
 
 export type FieldExtractor<T> = {
     extractorFunction: (value: unknown) => T | undefined;

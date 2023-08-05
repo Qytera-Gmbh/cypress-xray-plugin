@@ -22,7 +22,7 @@ import {
 import { IssueUpdateCloud, IssueUpdateServer } from "../../types/jira/responses/issueUpdate";
 import { JsonTypeCloud, JsonTypeServer } from "../../types/jira/responses/jsonType";
 import { SearchResults } from "../../types/jira/responses/searchResults";
-import { dedent } from "../../types/util";
+import { dedent } from "../../util/dedent";
 import { Client } from "../client";
 
 /**

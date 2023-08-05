@@ -6,7 +6,7 @@ import { JiraClientCloud } from "../../client/jira/jiraClientCloud";
 import { XrayClientCloud } from "../../client/xray/xrayClientCloud";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
-import { dedent } from "../../types/util";
+import { dedent } from "../../util/dedent";
 import { JiraRepositoryCloud } from "./jiraRepositoryCloud";
 
 describe("the cloud issue repository", () => {

@@ -25,7 +25,7 @@ import {
 } from "./types/jira/responses/issueTypeDetails";
 import { IssueUpdateCloud, IssueUpdateServer } from "./types/jira/responses/issueUpdate";
 import { ClientCombination, InternalOptions } from "./types/plugin";
-import { StringMap, dedent } from "./types/util";
+import { StringMap } from "./types/util";
 import {
     XrayTestExecutionResultsCloud,
     XrayTestExecutionResultsServer,
@@ -35,6 +35,7 @@ import {
     CucumberMultipartFeature,
     CucumberMultipartServer,
 } from "./types/xray/requests/importExecutionCucumberMultipart";
+import { dedent } from "./util/dedent";
 
 export async function beforeRunHook(
     runDetails: Cypress.BeforeRunDetails,

@@ -2,7 +2,7 @@ import FormData from "form-data";
 import { JWTCredentials } from "../../authentication/credentials";
 import { RequestConfigPost, Requests } from "../../https/requests";
 import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
-import { StringMap, dedent } from "../../types/util";
+import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import {
     CucumberMultipartInfoCloud,
@@ -11,6 +11,7 @@ import {
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
+import { dedent } from "../../util/dedent";
 import { XrayClient } from "./xrayClient";
 
 type GetTestsJiraData = {
