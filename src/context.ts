@@ -10,6 +10,14 @@ import {
     ENV_CUCUMBER_UPLOAD_FEATURES,
     ENV_JIRA_API_TOKEN,
     ENV_JIRA_ATTACH_VIDEOS,
+    ENV_JIRA_FIELDS_DESCRIPTION_ID,
+    ENV_JIRA_FIELDS_DESCRIPTION_NAME,
+    ENV_JIRA_FIELDS_LABELS_ID,
+    ENV_JIRA_FIELDS_LABELS_NAME,
+    ENV_JIRA_FIELDS_SUMMARY_ID,
+    ENV_JIRA_FIELDS_SUMMARY_NAME,
+    ENV_JIRA_FIELDS_TEST_TYPE_ID,
+    ENV_JIRA_FIELDS_TEST_TYPE_NAME,
     ENV_JIRA_PASSWORD,
     ENV_JIRA_PROJECT_KEY,
     ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION,
@@ -48,6 +56,44 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
         jira: {
             attachVideos:
                 parse(env, ENV_JIRA_ATTACH_VIDEOS, asBoolean) ?? options.jira.attachVideos ?? false,
+            fields: {
+                summary: {
+                    id:
+                        parse(env, ENV_JIRA_FIELDS_SUMMARY_ID, asString) ??
+                        options.jira.fields?.summary?.id,
+                    name:
+                        parse(env, ENV_JIRA_FIELDS_SUMMARY_NAME, asString) ??
+                        options.jira.fields?.summary?.name ??
+                        "summary",
+                },
+                description: {
+                    id:
+                        parse(env, ENV_JIRA_FIELDS_DESCRIPTION_ID, asString) ??
+                        options.jira.fields?.description?.id,
+                    name:
+                        parse(env, ENV_JIRA_FIELDS_DESCRIPTION_NAME, asString) ??
+                        options.jira.fields?.description?.name ??
+                        "description",
+                },
+                labels: {
+                    id:
+                        parse(env, ENV_JIRA_FIELDS_LABELS_ID, asString) ??
+                        options.jira.fields?.labels?.id,
+                    name:
+                        parse(env, ENV_JIRA_FIELDS_LABELS_NAME, asString) ??
+                        options.jira.fields?.labels?.name ??
+                        "labels",
+                },
+                testType: {
+                    id:
+                        parse(env, ENV_JIRA_FIELDS_TEST_TYPE_ID, asString) ??
+                        options.jira.fields?.testType?.id,
+                    name:
+                        parse(env, ENV_JIRA_FIELDS_TEST_TYPE_NAME, asString) ??
+                        options.jira.fields?.testType?.name ??
+                        "test type",
+                },
+            },
             projectKey: parse(env, ENV_JIRA_PROJECT_KEY, asString) ?? options.jira.projectKey,
             testExecutionIssueDescription:
                 parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION, asString) ??
