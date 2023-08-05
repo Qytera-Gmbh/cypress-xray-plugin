@@ -1,9 +1,9 @@
 import { expect } from "chai";
-import dedent from "dedent";
 import fs from "fs";
 import { stubLogging } from "../../test/util";
 import { initOptions } from "../context";
 import { InternalOptions } from "../types/plugin";
+import { dedent } from "../util/dedent";
 import {
     containsCucumberTest,
     containsNativeTest,
@@ -57,7 +57,7 @@ describe("cypress preprocessing", () => {
                     You can target existing test issues by adding a corresponding issue key:
 
                     it("CYP-123 should look for paragraph elements", () => {
-                        // ...
+                      // ...
                     });
 
                     For more information, visit:
@@ -72,7 +72,7 @@ describe("cypress preprocessing", () => {
                     You can target existing test issues by adding a corresponding issue key:
 
                     it("CYP-123 should look for the anchor element", () => {
-                        // ...
+                      // ...
                     });
 
                     For more information, visit:
@@ -87,7 +87,7 @@ describe("cypress preprocessing", () => {
                     You can target existing test issues by adding a corresponding issue key:
 
                     it("CYP-123 should fail", () => {
-                        // ...
+                      // ...
                     });
 
                     For more information, visit:
@@ -147,7 +147,7 @@ describe("cypress preprocessing", () => {
                     You can target existing test issues by adding a corresponding issue key:
 
                     it("CYP-123 this is a test", () => {
-                        // ...
+                      // ...
                     });
 
                     For more information, visit:
@@ -166,7 +166,7 @@ describe("cypress preprocessing", () => {
 
                     it("CYP-123 this is a CYP-456 test CYP-789", () => {
                         ^^^^^^^           ^^^^^^^      ^^^^^^^
-                        // ...
+                      // ...
                     });
 
                     For more information, visit:

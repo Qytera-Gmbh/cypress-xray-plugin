@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import dedent from "dedent";
 import { stub } from "sinon";
 import { stubLogging } from "../../../test/util";
 import { PATCredentials } from "../../authentication/credentials";
@@ -7,6 +6,7 @@ import { JiraClientServer } from "../../client/jira/jiraClientServer";
 import { XrayClientServer } from "../../client/xray/xrayClientServer";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
+import { dedent } from "../../util/dedent";
 import { JiraRepositoryServer } from "./jiraRepositoryServer";
 
 describe("the server issue repository", () => {
@@ -192,8 +192,8 @@ describe("the server issue repository", () => {
                     Failed to fetch issue summaries
                     Make sure these issues exist:
 
-                    CYP-456
-                    CYP-789
+                      CYP-456
+                      CYP-789
                 `)
             );
             expect(summaries).to.deep.eq({
@@ -298,8 +298,8 @@ describe("the server issue repository", () => {
                     Expected the field to be: a string
                     Make sure the correct field is present on the following issues:
 
-                    CYP-123: ["Good Morning","Summary 2"]
-                    CYP-456: {"Something":5}
+                      CYP-123: ["Good Morning","Summary 2"]
+                      CYP-456: {"Something":5}
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -464,8 +464,8 @@ describe("the server issue repository", () => {
                     Failed to fetch issue descriptions
                     Make sure these issues exist:
 
-                    CYP-456
-                    CYP-789
+                      CYP-456
+                      CYP-789
                 `)
             );
             expect(descriptions).to.deep.eq({
@@ -570,8 +570,8 @@ describe("the server issue repository", () => {
                     Expected the field to be: a string
                     Make sure the correct field is present on the following issues:
 
-                    CYP-123: ["This is a somewhat unexpected","description"]
-                    CYP-456: {"Something":5}
+                      CYP-123: ["This is a somewhat unexpected","description"]
+                      CYP-456: {"Something":5}
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -774,8 +774,8 @@ describe("the server issue repository", () => {
                     Failed to fetch issue test types
                     Make sure these issues exist and are test issues:
 
-                    CYP-456
-                    CYP-789
+                      CYP-456
+                      CYP-789
                 `)
             );
             expect(testTypes).to.deep.eq({
@@ -900,9 +900,9 @@ describe("the server issue repository", () => {
                     Expected the field to be: an object with a value property
                     Make sure the correct field is present on the following issues:
 
-                    CYP-123: ["This is a somewhat unexpected","description"]
-                    CYP-456: {"Something":5}
-                    CYP-420: null
+                      CYP-123: ["This is a somewhat unexpected","description"]
+                      CYP-456: {"Something":5}
+                      CYP-420: null
                 `)
             );
             expect(testTypes).to.deep.eq({});
