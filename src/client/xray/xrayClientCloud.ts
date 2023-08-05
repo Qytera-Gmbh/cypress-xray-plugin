@@ -1,4 +1,3 @@
-import dedent from "dedent";
 import FormData from "form-data";
 import { JWTCredentials } from "../../authentication/credentials";
 import { RequestConfigPost, Requests } from "../../https/requests";
@@ -12,6 +11,7 @@ import {
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
+import { dedent } from "../../util/dedent";
 import { XrayClient } from "./xrayClient";
 
 type GetTestsJiraData = {
@@ -175,7 +175,7 @@ export class XrayClientCloud extends XrayClient<
                         dedent(`
                             Failed to retrieve test types for issues:
 
-                            ${missingTypes.join("\n")}
+                              ${missingTypes.join("\n")}
 
                             Make sure these issues exist and are actually test issues
                         `)

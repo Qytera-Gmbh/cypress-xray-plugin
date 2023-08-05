@@ -1,4 +1,3 @@
-import dedent from "dedent";
 import { JiraClientCloud } from "../../client/jira/jiraClientCloud";
 import { JiraClientServer } from "../../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../../client/xray/xrayClientCloud";
@@ -7,6 +6,7 @@ import { logError } from "../../logging/logging";
 import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
 import { Options } from "../../types/plugin";
 import { StringMap } from "../../types/util";
+import { dedent } from "../../util/dedent";
 
 export type FieldExtractor<T> = {
     extractorFunction: (value: unknown) => T | undefined;
@@ -106,7 +106,13 @@ export abstract class JiraRepository<
                 (key: string) => !(key in this.summaries)
             );
             if (missingSummaries.length > 0) {
-                throw new Error(`Make sure these issues exist:\n\n${missingSummaries.join("\n")}`);
+                throw new Error(
+                    dedent(`
+                        Make sure these issues exist:
+
+                          ${missingSummaries.join("\n")}
+                    `)
+                );
             }
         } catch (error: unknown) {
             logError(
@@ -131,7 +137,11 @@ export abstract class JiraRepository<
             );
             if (missingDescriptions.length > 0) {
                 throw new Error(
-                    `Make sure these issues exist:\n\n${missingDescriptions.join("\n")}`
+                    dedent(`
+                        Make sure these issues exist:
+
+                          ${missingDescriptions.join("\n")}
+                    `)
                 );
             }
         } catch (error: unknown) {
@@ -158,9 +168,11 @@ export abstract class JiraRepository<
             );
             if (missingTestTypes.length > 0) {
                 throw new Error(
-                    `Make sure these issues exist and are test issues:\n\n${missingTestTypes.join(
-                        "\n"
-                    )}`
+                    dedent(`
+                        Make sure these issues exist and are test issues:
+
+                          ${missingTestTypes.join("\n")}
+                    `)
                 );
             }
         } catch (error: unknown) {
@@ -226,7 +238,7 @@ export abstract class JiraRepository<
                     Expected the field to be: ${extractor.expectedType}
                     Make sure the correct field is present on the following issues:
 
-                    ${issuesWithUnparseableField.join("\n")}
+                      ${issuesWithUnparseableField.join("\n")}
                 `)
             );
         }
