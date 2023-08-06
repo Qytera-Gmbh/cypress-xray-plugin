@@ -255,32 +255,34 @@ export abstract class JiraRepository<
         extractor: FieldExtractor<T>,
         ...issueKeys: string[]
     ): Promise<StringMap<T>> {
+        const results: StringMap<T> = {};
         const issues: IssueServer[] | IssueCloud[] = await this.jiraClient.search({
             jql: `project = ${this.options.jira.projectKey} AND issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
         });
-        const results: StringMap<T> = {};
-        const issuesWithUnparseableField: string[] = [];
-        issues.forEach((issue: IssueServer | IssueCloud) => {
-            const value = extractor.extractorFunction(issue.fields[fieldId]);
-            if (value !== undefined) {
-                results[issue.key] = value;
-            } else {
-                issuesWithUnparseableField.push(
-                    `${issue.key}: ${JSON.stringify(issue.fields[fieldId])}`
+        if (issues) {
+            const issuesWithUnparseableField: string[] = [];
+            issues.forEach((issue: IssueServer | IssueCloud) => {
+                const value = extractor.extractorFunction(issue.fields[fieldId]);
+                if (value !== undefined) {
+                    results[issue.key] = value;
+                } else {
+                    issuesWithUnparseableField.push(
+                        `${issue.key}: ${JSON.stringify(issue.fields[fieldId])}`
+                    );
+                }
+            });
+            if (issuesWithUnparseableField.length > 0) {
+                throw new Error(
+                    dedent(`
+                        Failed to parse the following Jira field of some issues: ${fieldId}
+                        Expected the field to be: ${extractor.expectedType}
+                        Make sure the correct field is present on the following issues:
+
+                          ${issuesWithUnparseableField.join("\n")}
+                    `)
                 );
             }
-        });
-        if (issuesWithUnparseableField.length > 0) {
-            throw new Error(
-                dedent(`
-                    Failed to parse the following Jira field of some issues: ${fieldId}
-                    Expected the field to be: ${extractor.expectedType}
-                    Make sure the correct field is present on the following issues:
-
-                      ${issuesWithUnparseableField.join("\n")}
-                `)
-            );
         }
         return results;
     }
