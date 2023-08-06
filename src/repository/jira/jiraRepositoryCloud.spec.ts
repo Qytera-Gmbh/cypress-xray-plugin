@@ -209,20 +209,10 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: summary
+                    Failed to fetch Jira field ID for field with name: Summary
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
-                    You can provide field translations in the options:
-
-                      jira: {
-                        fields = {
-                          summary: {
-                            name: // translation
-                          }
-                        }
-                      }
-
-                    Alternatively, you can provide the ID directly without relying on language settings:
+                    You can provide field IDs directly without relying on language settings:
 
                       jira: {
                         fields = {
@@ -274,24 +264,14 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: summary
+                    Failed to fetch Jira field ID for field with name: Summary
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     Available fields:
                       name: Résumé, id: summary_french
                       name: Zusammenfassung, id: summary_german
 
-                    You can provide field translations in the options:
-
-                      jira: {
-                        fields = {
-                          summary: {
-                            name: // translation
-                          }
-                        }
-                      }
-
-                    Alternatively, you can provide the ID directly without relying on language settings:
+                    You can provide field IDs directly without relying on language settings:
 
                       jira: {
                         fields = {
@@ -343,7 +323,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: summary
+                    Failed to fetch Jira field ID for field with name: Summary
                     There are multiple fields with this name
 
                     Duplicates:
@@ -373,7 +353,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: summary
+                    Failed to fetch Jira field ID for field with name: Summary
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -432,7 +412,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to parse the following Jira field of some issues: summary
+                    Failed to parse Jira field with ID: summary
                     Expected the field to be: a string
                     Make sure the correct field is present on the following issues:
 
@@ -620,20 +600,10 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: description
+                    Failed to fetch Jira field ID for field with name: Description
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
-                    You can provide field translations in the options:
-
-                      jira: {
-                        fields = {
-                          description: {
-                            name: // translation
-                          }
-                        }
-                      }
-
-                    Alternatively, you can provide the ID directly without relying on language settings:
+                    You can provide field IDs directly without relying on language settings:
 
                       jira: {
                         fields = {
@@ -685,24 +655,14 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: description
+                    Failed to fetch Jira field ID for field with name: Description
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     Available fields:
                       name: descrizione, id: description_italian
                       name: Beschreibung, id: description_german
 
-                    You can provide field translations in the options:
-
-                      jira: {
-                        fields = {
-                          description: {
-                            name: // translation
-                          }
-                        }
-                      }
-
-                    Alternatively, you can provide the ID directly without relying on language settings:
+                    You can provide field IDs directly without relying on language settings:
 
                       jira: {
                         fields = {
@@ -754,7 +714,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: description
+                    Failed to fetch Jira field ID for field with name: Description
                     There are multiple fields with this name
 
                     Duplicates:
@@ -792,7 +752,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: description
+                    Failed to fetch Jira field ID for field with name: Description
                 `)
             );
             expect(descriptions).to.deep.eq({});
@@ -851,7 +811,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to parse the following Jira field of some issues: description
+                    Failed to parse Jira field with ID: description
                     Expected the field to be: a string
                     Make sure the correct field is present on the following issues:
 

@@ -16,48 +16,33 @@ export interface Options {
     openSSL?: OpenSSLOptions;
 }
 
-export type JiraField = {
+export type JiraFieldIds = {
     /**
-     * The Jira field ID.
-     *
-     * @example "customfield_12345"
+     * The Jira issue description field ID.
      */
-    id?: string;
+    description?: string;
     /**
-     * The Jira field name.
-     *
-     * @example "Zusammenfassung" // summary (German)
+     * The Jira issue labels field ID.
      */
-    name?: string;
-};
-
-export type JiraFields = {
+    labels?: string;
     /**
-     * The issues' description field.
+     * The Jira issue summary field ID (i.e. the title of the issues).
      */
-    description?: JiraField;
+    summary?: string;
     /**
-     * The issues' labels field.
-     */
-    labels?: JiraField;
-    /**
-     * The summary field, i.e. the title of the issues.
-     */
-    summary?: JiraField;
-    /**
-     * The test plan field of test (execution) issues.
+     * The test plan field ID of Xray test (execution) issues.
      *
      * *Note: This setting is required for server instances only. Xray cloud provides ways to
      * retrieve test plan field information independently of Jira.*
      */
-    testPlan?: JiraField;
+    testPlan?: string;
     /**
-     * The test type field of test issues.
+     * The test type field ID of Xray test issues.
      *
      * *Note: This setting is required for server instances only. Xray cloud provides ways to
      * retrieve test type field information independently of Jira.*
      */
-    testType?: JiraField;
+    testType?: string;
 };
 
 export interface JiraOptions {
@@ -73,35 +58,28 @@ export interface JiraOptions {
      */
     attachVideos?: boolean;
     /**
-     * Additional field hints to make all fields required during the upload process uniquely
-     * identifiable. This can make sense in the following scenarios:
+     * Jira Field IDs to make all fields required during the upload process uniquely identifiable.
+     * By default, the plugin accesses field information using the fields' names. Therefore,
+     * providing the field's IDs here can make sense in the following scenarios:
      * - Your Jira language setting is a language other than English
-     *   - In this case, specifying the field's `name` property usually suffices:
-     *
-     *     ```ts
-     *     {
-     *       summary: {
-     *         name: "Zusammenfassung" // German
-     *       }
-     *     }
-     *     ```
-     *
+     *   - Example: When the summary is required and the Jira language is set to French, the plugin
+     *     will look for a field called `Summary`, but Jira will return a field called `Résumé`
+     *     instead.
      * - Your Jira project contains several fields with identical names
-     *   - In this case, you need to specify the `id` of the correct field:
-     *
-     *     ```ts
-     *     {
-     *       description: {
-     *         id: "customfield_12345"
-     *       }
-     *     }
-     *     ```
      *
      * *Note: In case you don't know these properties or if you are unsure whether they are really
-     * needed, the plugin will provide lists of field candidates in case any errors occur. You can
-     * then extract all required information from these candidates.*
+     * needed, the plugin will try to provide lists of field candidates in case any errors occur.
+     * You can then extract all required information from these candidates.*
+     *
+     * *Please consult the official documentation for more information about field IDs: https://confluence.atlassian.com/jirakb/how-to-find-id-for-custom-field-s-744522503.html*
+     *
+     * @example
+     *   fields: {
+     *     description: "description",
+     *     testPlan: "customfield_12643"
+     *   }
      */
-    fields?: JiraFields;
+    fields?: JiraFieldIds;
     /**
      * The description of the test execution issue, which will be used both for new test execution
      * issues as well as for updating existing issues (if provided through

@@ -5,7 +5,7 @@ import { XrayClientServer } from "../../client/xray/xrayClientServer";
 import { logError } from "../../logging/logging";
 import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
 import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
-import { JiraFields, Options } from "../../types/plugin";
+import { JiraFieldIds, Options } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
 import { JiraFieldRepository } from "./fields/jiraFieldRepository";
@@ -14,6 +14,8 @@ export type FieldExtractor<T> = {
     extractorFunction: (value: unknown) => T | undefined;
     expectedType: string;
 };
+
+export type FieldName = "Description" | "Summary" | "Labels" | "Test Plan" | "Test Type";
 
 export abstract class JiraRepository<
     JiraClientType extends JiraClientServer | JiraClientCloud,
@@ -53,7 +55,7 @@ export abstract class JiraRepository<
         this.options = options;
     }
 
-    public async getFieldId(fieldName: string, optionName: keyof JiraFields): Promise<string> {
+    public async getFieldId(fieldName: FieldName, optionName: keyof JiraFieldIds): Promise<string> {
         return await this.jiraFieldRepository.getFieldId(fieldName, {
             onFetchError: () => {
                 throw new Error(`Failed to fetch Jira field ID for field with name: ${fieldName}`);
@@ -97,17 +99,7 @@ export abstract class JiraRepository<
                             Failed to fetch Jira field ID for field with name: ${fieldName}
                             Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
-                            You can provide field translations in the options:
-
-                              jira: {
-                                fields = {
-                                  ${optionName}: {
-                                    name: // translation
-                                  }
-                                }
-                              }
-
-                            Alternatively, you can provide the ID directly without relying on language settings:
+                            You can provide field IDs directly without relying on language settings:
 
                               jira: {
                                 fields = {
@@ -127,17 +119,7 @@ export abstract class JiraRepository<
                             Available fields:
                               ${availableFields.join("\n")}
 
-                            You can provide field translations in the options:
-
-                              jira: {
-                                fields = {
-                                  ${optionName}: {
-                                    name: // translation
-                                  }
-                                }
-                              }
-
-                            Alternatively, you can provide the ID directly without relying on language settings:
+                            You can provide field IDs directly without relying on language settings:
 
                               jira: {
                                 fields = {
@@ -247,10 +229,9 @@ export abstract class JiraRepository<
     }
 
     protected async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
-        let fieldId = this.options.jira.fields.summary.id;
+        let fieldId = this.options.jira.fields.summary;
         if (!fieldId) {
-            const fieldName = this.options.jira.fields.summary.name;
-            fieldId = await this.getFieldId(fieldName, "summary");
+            fieldId = await this.getFieldId("Summary", "summary");
         }
         // Field property example:
         // summary: "Bug 12345"
@@ -258,10 +239,9 @@ export abstract class JiraRepository<
     }
 
     protected async fetchDescriptions(...issueKeys: string[]): Promise<StringMap<string>> {
-        let fieldId = this.options.jira.fields.description.id;
+        let fieldId = this.options.jira.fields.description;
         if (!fieldId) {
-            const fieldName = this.options.jira.fields.description.name;
-            fieldId = await this.getFieldId(fieldName, "description");
+            fieldId = await this.getFieldId("Description", "description");
         }
         // Field property example:
         // description: "This is a description"
@@ -295,7 +275,7 @@ export abstract class JiraRepository<
             if (issuesWithUnparseableField.length > 0) {
                 throw new Error(
                     dedent(`
-                        Failed to parse the following Jira field of some issues: ${fieldId}
+                        Failed to parse Jira field with ID: ${fieldId}
                         Expected the field to be: ${extractor.expectedType}
                         Make sure the correct field is present on the following issues:
 
