@@ -10,6 +10,7 @@ import {
     CucumberMultipartInfoCloud,
     CucumberMultipartInfoServer,
 } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { dedent } from "../../util/dedent";
 import { Converter } from "../converter";
 
 /**
@@ -57,7 +58,11 @@ export abstract class ImportExecutionCucumberMultipartConverter<
                         reason = error.message;
                     }
                     logWarning(
-                        `Skipping result upload for ${element.type}: ${element.name}\n\n${reason}`
+                        dedent(`
+                            Skipping result upload for ${element.type}: ${element.name}
+
+                              ${reason}
+                        `)
                     );
                 }
             });
@@ -66,11 +71,29 @@ export abstract class ImportExecutionCucumberMultipartConverter<
                 tests.push(test);
             }
         });
-        const info: CucumberMultipartInfoType = await this.getMultipartInfo(parameters);
-        return {
-            features: tests,
-            info: info,
-        };
+        try {
+            const info: CucumberMultipartInfoType = await this.getMultipartInfo(parameters);
+            return {
+                features: tests,
+                info: info,
+            };
+        } catch (error: unknown) {
+            let reason = error;
+            if (error instanceof Error) {
+                reason = error.message;
+            }
+            logWarning(
+                dedent(`
+                    Skipping result upload for: ${tests.map((test) => test.name).join(", ")}
+
+                      ${reason}
+                `)
+            );
+            return {
+                features: [],
+                info: null,
+            };
+        }
     }
 
     /**
