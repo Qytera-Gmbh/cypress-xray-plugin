@@ -44,7 +44,7 @@ describe("the import execution cucumber multipart server converter", () => {
     });
 
     it("should be able to add test plan issue keys", async () => {
-        stub(jiraRepository, "getFieldId").withArgs("Test Plan").resolves("customfield_12126");
+        stub(jiraRepository, "getFieldId").withArgs("test plan").resolves("customfield_12126");
         options.jira.testPlanIssueKey = "CYP-123";
         const multipart = await converter.convert([result[0]], parameters);
         expect(multipart.info.fields["customfield_12126"]).to.deep.eq(["CYP-123"]);

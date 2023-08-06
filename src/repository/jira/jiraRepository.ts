@@ -3,10 +3,12 @@ import { JiraClientServer } from "../../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../../client/xray/xrayClientServer";
 import { logError } from "../../logging/logging";
+import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
 import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
-import { Options } from "../../types/plugin";
+import { JiraFields, Options } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
+import { JiraFieldRepository } from "./fields/jiraFieldRepository";
 
 export type FieldExtractor<T> = {
     extractorFunction: (value: unknown) => T | undefined;
@@ -17,6 +19,7 @@ export abstract class JiraRepository<
     JiraClientType extends JiraClientServer | JiraClientCloud,
     XrayClientType extends XrayClientServer | XrayClientCloud
 > {
+    protected readonly jiraFieldRepository: JiraFieldRepository;
     protected readonly jiraClient: JiraClientType;
     protected readonly xrayClient: XrayClientType;
     protected readonly options: Options;
@@ -39,59 +42,95 @@ export abstract class JiraRepository<
         expectedType: "an object with a value property",
     };
 
-    private readonly fieldIds: StringMap<string> = {};
     private readonly summaries: StringMap<string> = {};
     private readonly descriptions: StringMap<string> = {};
     private readonly testTypes: StringMap<string> = {};
 
     constructor(jiraClient: JiraClientType, xrayClient: XrayClientType, options: Options) {
+        this.jiraFieldRepository = new JiraFieldRepository(jiraClient, options);
         this.jiraClient = jiraClient;
         this.xrayClient = xrayClient;
         this.options = options;
     }
 
-    public async getFieldId(fieldName: string): Promise<string> {
-        // Lowercase everything to work around case sensitivities.
-        // Jira sometimes returns field names capitalized, sometimes it doesn't.
-        const lowerCasedName = fieldName.toLowerCase();
-        if (!(lowerCasedName in this.fieldIds)) {
-            const jiraFields = await this.jiraClient.getFields();
-            if (jiraFields) {
-                const matches = jiraFields.filter((field) => {
-                    const lowerCasedField = field.name.toLowerCase();
-                    return lowerCasedField === lowerCasedName;
-                });
-                if (matches.length === 0) {
+    public async getFieldId(fieldName: string, optionName: keyof JiraFields): Promise<string> {
+        return await this.jiraFieldRepository.getFieldId(fieldName, {
+            onFetchError: () => {
+                throw new Error(`Failed to fetch Jira field ID for field with name: ${fieldName}`);
+            },
+            onMultipleFieldsError: (duplicates: FieldDetailServer[] | FieldDetailCloud[]) => {
+                throw new Error(
+                    dedent(`
+                        Failed to fetch Jira field ID for field with name: ${fieldName}
+                        There are multiple fields with this name
+
+                        Duplicates:
+                          ${duplicates
+                              .map((field: FieldDetailServer | FieldDetailCloud) =>
+                                  Object.entries(field)
+                                      .map(([key, value]) => `${key}: ${value}`)
+                                      .join(", ")
+                              )
+                              .join("\n")}
+
+                        You can provide field IDs in the options:
+
+                          jira: {
+                            fields = {
+                              "${optionName}": {
+                                id: // ${duplicates
+                                    .map(
+                                        (field: FieldDetailServer | FieldDetailCloud) =>
+                                            `"${field.id}"`
+                                    )
+                                    .join(" or ")}
+                              }
+                            }
+                          }
+                    `)
+                );
+            },
+            onMissingFieldError: (availableFields: string[]) => {
+                if (availableFields.length === 0) {
                     throw new Error(
                         dedent(`
-                            Failed to fetch Jira field ID for field with name: ${lowerCasedName}
-                            Make sure the field actually exists
+                            Failed to fetch Jira field ID for field with name: ${fieldName}
+                            Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                            You can provide field translations in the options:
+
+                              jira: {
+                                fields = {
+                                  "${optionName}": {
+                                    name: // translation of ${fieldName}
+                                  }
+                                }
+                              }
                         `)
                     );
-                } else if (matches.length > 1) {
+                } else {
                     throw new Error(
                         dedent(`
-                            Failed to fetch Jira field ID for field with name: ${lowerCasedName}
-                            There are multiple fields with this name:
+                            Failed to fetch Jira field ID for field with name: ${fieldName}
+                            Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
-                            ${matches.map((field) => JSON.stringify(field)).join("\n")}
+                            Available fields:
+                              ${availableFields.join("\n")}
 
-                            Make sure to set option jira.fields["${fieldName}"] to the ID of the field you want:
+                            You can provide field translations in the options:
 
-                            jira.fields = {
-                                "${fieldName}": {
-                                    id: // ${matches.map((field) => `"${field.id}"`).join(" or ")}
+                              jira: {
+                                fields = {
+                                  "${optionName}": {
+                                    name: // translation of ${fieldName}
+                                  }
                                 }
-                            }
+                              }
                         `)
                     );
                 }
-                jiraFields.forEach((jiraField) => {
-                    this.fieldIds[jiraField.name.toLowerCase()] = jiraField.id;
-                });
-            }
-        }
-        return this.fieldIds[lowerCasedName];
+            },
+        });
     }
 
     public async getSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
@@ -116,9 +155,10 @@ export abstract class JiraRepository<
             }
         } catch (error: unknown) {
             logError(
-                `Failed to fetch issue summaries\n${
-                    error instanceof Error ? error.message : JSON.stringify(error)
-                }`
+                dedent(`
+                    Failed to fetch issue summaries
+                    ${error instanceof Error ? error.message : JSON.stringify(error)}
+                `)
             );
         }
         return result;
@@ -187,30 +227,30 @@ export abstract class JiraRepository<
     }
 
     protected async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
-        let fieldId = this.options.jira.fields?.summary?.id;
+        let fieldId = this.options.jira.fields.summary.id;
         if (!fieldId) {
-            const fieldName = this.options.jira.fields?.summary?.name;
-            fieldId = await this.getFieldId(fieldName);
+            const fieldName = this.options.jira.fields.summary.name;
+            fieldId = await this.getFieldId(fieldName, "summary");
         }
         // Field property example:
         // summary: "Bug 12345"
-        return await this.getJiraField(fieldId, JiraRepository.STRING_EXTRACTOR, ...issueKeys);
+        return await this.extractJiraField(fieldId, JiraRepository.STRING_EXTRACTOR, ...issueKeys);
     }
 
     protected async fetchDescriptions(...issueKeys: string[]): Promise<StringMap<string>> {
-        let fieldId = this.options.jira.fields?.description?.id;
+        let fieldId = this.options.jira.fields.description.id;
         if (!fieldId) {
-            const fieldName = this.options.jira.fields?.description?.name ?? "description";
-            fieldId = await this.getFieldId(fieldName);
+            const fieldName = this.options.jira.fields.description.name;
+            fieldId = await this.getFieldId(fieldName, "description");
         }
         // Field property example:
         // description: "This is a description"
-        return await this.getJiraField(fieldId, JiraRepository.STRING_EXTRACTOR, ...issueKeys);
+        return await this.extractJiraField(fieldId, JiraRepository.STRING_EXTRACTOR, ...issueKeys);
     }
 
     protected abstract fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;
 
-    protected async getJiraField<T>(
+    protected async extractJiraField<T>(
         fieldId: string,
         extractor: FieldExtractor<T>,
         ...issueKeys: string[]

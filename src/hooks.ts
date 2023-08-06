@@ -437,7 +437,7 @@ async function resetSummaries(
             const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {
                 fields: {},
             };
-            const summaryFieldId = await jiraRepository.getFieldId("Summary");
+            const summaryFieldId = await jiraRepository.getFieldId("Summary", "summary");
             issueUpdate.fields[summaryFieldId] = oldSummary;
             logDebug(
                 dedent(`

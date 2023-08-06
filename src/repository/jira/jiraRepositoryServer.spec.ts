@@ -211,7 +211,17 @@ describe("the server issue repository", () => {
                 dedent(`
                     Failed to fetch issue summaries
                     Failed to fetch Jira field ID for field with name: summary
-                    Make sure the field actually exists
+                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                    You can provide field translations in the options:
+
+                      jira: {
+                        fields = {
+                          "summary": {
+                            name: // translation of summary
+                          }
+                        }
+                      }
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -235,7 +245,6 @@ describe("the server issue repository", () => {
                 dedent(`
                     Failed to fetch issue summaries
                     Failed to fetch Jira field ID for field with name: summary
-                    Make sure the field actually exists
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -483,7 +492,17 @@ describe("the server issue repository", () => {
                 dedent(`
                     Failed to fetch issue descriptions
                     Failed to fetch Jira field ID for field with name: description
-                    Make sure the field actually exists
+                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                    You can provide field translations in the options:
+
+                      jira: {
+                        fields = {
+                          "description": {
+                            name: // translation of description
+                          }
+                        }
+                      }
                 `)
             );
             expect(descriptions).to.deep.eq({});
@@ -507,7 +526,6 @@ describe("the server issue repository", () => {
                 dedent(`
                     Failed to fetch issue descriptions
                     Failed to fetch Jira field ID for field with name: description
-                    Make sure the field actually exists
                 `)
             );
             expect(descriptions).to.deep.eq({});
@@ -783,7 +801,7 @@ describe("the server issue repository", () => {
             });
         });
 
-        it("displays an error when the description field does not exist", async () => {
+        it("displays an error when the test type field does not exist", async () => {
             stub(jiraClient, "getFields").resolves([]);
             const stubbedSearch = stub(jiraClient, "search");
             const { stubbedError } = stubLogging();
@@ -793,7 +811,17 @@ describe("the server issue repository", () => {
                 dedent(`
                     Failed to fetch issue test types
                     Failed to fetch Jira field ID for field with name: test type
-                    Make sure the field actually exists
+                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                    You can provide field translations in the options:
+
+                      jira: {
+                        fields = {
+                          "testType": {
+                            name: // translation of test type
+                          }
+                        }
+                      }
                 `)
             );
             expect(testTypes).to.deep.eq({});
@@ -817,7 +845,6 @@ describe("the server issue repository", () => {
                 dedent(`
                     Failed to fetch issue test types
                     Failed to fetch Jira field ID for field with name: test type
-                    Make sure the field actually exists
                 `)
             );
             expect(testTypes).to.deep.eq({});
