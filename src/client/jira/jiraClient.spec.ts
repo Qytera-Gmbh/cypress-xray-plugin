@@ -4,7 +4,6 @@ import fs from "fs";
 import { expectToExist, resolveTestDirPath, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { SearchResultsServer } from "../../types/jira/responses/searchResults";
-import { dedent } from "../../util/dedent";
 import { JiraClientCloud } from "./jiraClientCloud";
 import { JiraClientServer } from "./jiraClientServer";
 
@@ -53,33 +52,6 @@ describe("the jira clients", () => {
                 });
 
                 describe("single file attachment", () => {
-                    it("logs correct messages", async () => {
-                        const { stubbedInfo, stubbedSuccess } = stubLogging();
-                        const { stubbedPost } = stubRequests();
-                        stubbedPost.resolves({
-                            status: HttpStatusCode.Ok,
-                            data: JSON.parse(
-                                fs.readFileSync(
-                                    "./test/resources/fixtures/jira/responses/singleAttachment.json",
-                                    "utf-8"
-                                )
-                            ),
-                            headers: null,
-                            statusText: HttpStatusCode[HttpStatusCode.Ok],
-                            config: null,
-                        });
-                        await client.addAttachment("CYP-123", "./test/resources/turtle.png");
-                        expect(stubbedInfo).to.have.been.calledWithExactly(
-                            "Attaching files:",
-                            "./test/resources/turtle.png"
-                        );
-                        expect(stubbedSuccess).to.have.been.calledOnceWith(
-                            dedent(`
-                                Successfully attached files to issue: CYP-123
-                                  turtle.png
-                            `)
-                        );
-                    });
                     it("returns the correct values", async () => {
                         stubLogging();
                         const { stubbedPost } = stubRequests();
@@ -105,39 +77,6 @@ describe("the jira clients", () => {
                 });
 
                 describe("multiple file attachment", () => {
-                    it("logs correct messages", async () => {
-                        const { stubbedInfo, stubbedSuccess } = stubLogging();
-                        const { stubbedPost } = stubRequests();
-                        stubbedPost.resolves({
-                            status: HttpStatusCode.Ok,
-                            data: JSON.parse(
-                                fs.readFileSync(
-                                    "./test/resources/fixtures/jira/responses/multipleAttachments.json",
-                                    "utf-8"
-                                )
-                            ),
-                            headers: null,
-                            statusText: HttpStatusCode[HttpStatusCode.Ok],
-                            config: null,
-                        });
-                        await client.addAttachment(
-                            "CYP-123",
-                            "./test/resources/turtle.png",
-                            "./test/resources/greetings.txt"
-                        );
-                        expect(stubbedInfo).to.have.been.calledWithExactly(
-                            "Attaching files:",
-                            "./test/resources/turtle.png",
-                            "./test/resources/greetings.txt"
-                        );
-                        expect(stubbedSuccess).to.have.been.calledOnceWith(
-                            dedent(`
-                                Successfully attached files to issue: CYP-123
-                                  turtle.png
-                                  greetings.txt
-                            `)
-                        );
-                    });
                     it("returns the correct values", async () => {
                         stubLogging();
                         const { stubbedPost } = stubRequests();
@@ -276,27 +215,6 @@ describe("the jira clients", () => {
             });
 
             describe("get fields", () => {
-                it("logs correct messages", async () => {
-                    const { stubbedInfo, stubbedSuccess } = stubLogging();
-                    const { stubbedGet } = stubRequests();
-                    stubbedGet.onFirstCall().resolves({
-                        status: HttpStatusCode.Ok,
-                        data: JSON.parse(
-                            fs.readFileSync(
-                                "./test/resources/fixtures/jira/responses/getFields.json",
-                                "utf-8"
-                            )
-                        ),
-                        headers: null,
-                        statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        config: null,
-                    });
-                    await client.getFields();
-                    expect(stubbedInfo).to.have.been.calledWithExactly("Getting fields...");
-                    expect(stubbedSuccess).to.have.been.calledOnceWith(
-                        "Successfully retrieved data for 141 fields"
-                    );
-                });
                 it("returns the correct values", async () => {
                     stubLogging();
                     const { stubbedGet } = stubRequests();
@@ -351,28 +269,6 @@ describe("the jira clients", () => {
             });
 
             describe("search", () => {
-                it("logs correct messages", async () => {
-                    const { stubbedInfo, stubbedSuccess } = stubLogging();
-                    const { stubbedPost } = stubRequests();
-                    stubbedPost.onFirstCall().resolves({
-                        status: HttpStatusCode.Ok,
-                        data: JSON.parse(
-                            fs.readFileSync(
-                                "./test/resources/fixtures/jira/responses/search.json",
-                                "utf-8"
-                            )
-                        ),
-                        headers: null,
-                        statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        config: null,
-                    });
-                    await client.search({
-                        jql: "project = CYP AND issue in (CYP-268,CYP-237,CYP-332,CYP-333,CYP-338)",
-                        fields: ["customfield_12100"],
-                    });
-                    expect(stubbedInfo).to.have.been.calledOnceWithExactly("Searching issues...");
-                    expect(stubbedSuccess).to.have.been.calledOnceWithExactly("Found 5 issues");
-                });
                 it("should return all issues without pagination", async () => {
                     stubLogging();
                     const { stubbedPost } = stubRequests();
@@ -495,25 +391,6 @@ describe("the jira clients", () => {
             });
 
             describe("editIssue", () => {
-                it("logs correct messages", async () => {
-                    const { stubbedInfo, stubbedSuccess } = stubLogging();
-                    const { stubbedPut } = stubRequests();
-                    stubbedPut.onFirstCall().resolves({
-                        status: HttpStatusCode.NoContent,
-                        data: null,
-                        headers: null,
-                        statusText: HttpStatusCode[HttpStatusCode.NoContent],
-                        config: null,
-                    });
-                    await client.editIssue("CYP-123", {
-                        fields: { summary: "Hello" },
-                    });
-                    expect(stubbedInfo).to.have.been.calledOnceWithExactly("Editing issue...");
-                    expect(stubbedSuccess).to.have.been.calledOnceWithExactly(
-                        "Successfully edited issue: CYP-123"
-                    );
-                });
-
                 it("should handle bad responses", async () => {
                     const { stubbedError } = stubLogging();
                     const { stubbedPut } = stubRequests();

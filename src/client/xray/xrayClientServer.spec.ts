@@ -1,7 +1,7 @@
 import { HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
-import { stubLogging, stubRequests } from "../../../test/util";
+import { stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { JiraClientServer } from "../jira/jiraClientServer";
 import { XrayClientServer } from "./xrayClientServer";
@@ -16,7 +16,6 @@ describe("the xray server client", () => {
     describe("import execution", () => {
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
             stubbedPost.resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -58,17 +57,12 @@ describe("the xray server client", () => {
                 ],
             });
             expect(response).to.eq("CYP-123");
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully uploaded test execution results to CYP-123."
-            );
         });
     });
 
     describe("import execution cucumber multipart", () => {
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
             stubbedPost.resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -97,10 +91,6 @@ describe("the xray server client", () => {
                 )
             );
             expect(response).to.eq("CYP-123");
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution (Cucumber)...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully uploaded Cucumber test execution results to CYP-123."
-            );
         });
     });
 

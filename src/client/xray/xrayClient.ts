@@ -7,7 +7,7 @@ import {
     PATCredentials,
 } from "../../authentication/credentials";
 import { RequestConfigPost, Requests } from "../../https/requests";
-import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
+import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { OneOf } from "../../types/util";
 import {
     XrayTestExecutionResultsCloud,
@@ -54,7 +54,7 @@ export abstract class XrayClient<
             const authenticationHeader = await this.credentials.getAuthenticationHeader(
                 `${this.apiBaseURL}/authenticate`
             );
-            logInfo("Importing execution...");
+            logDebug("Importing execution...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const response: AxiosResponse<ImportExecutionResponseType> = await Requests.post(
@@ -67,7 +67,7 @@ export abstract class XrayClient<
                     }
                 );
                 const key = this.handleResponseImportExecution(response.data);
-                logSuccess(`Successfully uploaded test execution results to ${key}.`);
+                logDebug(`Successfully uploaded test execution results to ${key}.`);
                 return key;
             } finally {
                 clearInterval(progressInterval);
@@ -109,7 +109,7 @@ export abstract class XrayClient<
             const authenticationHeader = await this.credentials.getAuthenticationHeader(
                 `${this.apiBaseURL}/authenticate`
             );
-            logInfo("Exporting Cucumber tests...");
+            logDebug("Exporting Cucumber tests...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const response = await Requests.get(this.getUrlExportCucumber(keys, filter), {
@@ -165,7 +165,7 @@ export abstract class XrayClient<
             const authenticationHeader = await this.credentials.getAuthenticationHeader(
                 `${this.apiBaseURL}/authenticate`
             );
-            logInfo("Importing Cucumber features...");
+            logDebug("Importing Cucumber features...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const fileContent = fs.createReadStream(file);
@@ -234,7 +234,7 @@ export abstract class XrayClient<
                 logWarning("No Cucumber tests were executed. Skipping Cucumber upload.");
                 return null;
             }
-            logInfo("Importing execution (Cucumber)...");
+            logDebug("Importing execution (Cucumber)...");
             const request = await this.prepareRequestImportExecutionCucumberMultipart(
                 cucumberJson,
                 cucumberInfo
@@ -247,7 +247,7 @@ export abstract class XrayClient<
                     request.config
                 );
                 const key = this.handleResponseImportExecutionCucumberMultipart(response.data);
-                logSuccess(`Successfully uploaded Cucumber test execution results to ${key}.`);
+                logDebug(`Successfully uploaded Cucumber test execution results to ${key}.`);
                 return key;
             } finally {
                 clearInterval(progressInterval);

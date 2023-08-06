@@ -1,7 +1,7 @@
 import FormData from "form-data";
 import { JWTCredentials } from "../../authentication/credentials";
 import { RequestConfigPost, Requests } from "../../https/requests";
-import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
+import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import {
@@ -84,13 +84,13 @@ export class XrayClientCloud extends XrayClient<
             logError("Encountered some errors during import:", ...response.errors);
         }
         if (response.updatedOrCreatedTests.length > 0) {
-            logSuccess(
+            logDebug(
                 "Successfully updated or created test issues:",
                 response.updatedOrCreatedTests.map((issue: IssueDetails) => issue.key).join(", ")
             );
         }
         if (response.updatedOrCreatedPreconditions.length > 0) {
-            logSuccess(
+            logDebug(
                 "Successfully updated or created precondition issues:",
                 response.updatedOrCreatedPreconditions
                     .map((issue: IssueDetails) => issue.key)
@@ -120,7 +120,7 @@ export class XrayClientCloud extends XrayClient<
             const authenticationHeader = await this.credentials.getAuthenticationHeader(
                 `${this.apiBaseURL}/authenticate`
             );
-            logInfo("Retrieving test types...");
+            logDebug("Retrieving test types...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const types = {};
@@ -181,7 +181,7 @@ export class XrayClientCloud extends XrayClient<
                         `)
                     );
                 }
-                logSuccess(`Successfully retrieved test types for ${issueKeys.length} issues`);
+                logDebug(`Successfully retrieved test types for ${issueKeys.length} issues`);
                 return types;
             } finally {
                 clearInterval(progressInterval);
