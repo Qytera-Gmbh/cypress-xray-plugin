@@ -354,7 +354,7 @@ describe("the cloud issue repository", () => {
 
                       jira: {
                         fields = {
-                          "summary": {
+                          summary: {
                             id: // "summary" or "customfield_12345"
                           }
                         }
@@ -708,6 +708,65 @@ describe("the cloud issue repository", () => {
                         fields = {
                           description: {
                             id: // corresponding field ID
+                          }
+                        }
+                      }
+                `)
+            );
+            expect(summaries).to.deep.eq({});
+        });
+
+        it("displays an error when there are multiple description fields", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "description",
+                    key: "description",
+                    name: "description",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["description"],
+                    schema: {
+                        type: "string",
+                        system: "description",
+                    },
+                },
+                {
+                    id: "customfield_12345",
+                    key: "customfield_12345",
+                    name: "Description",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["description (custom)"],
+                    schema: {
+                        type: "string",
+                        customId: 5125,
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getDescriptions("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue descriptions
+                    Failed to fetch Jira field ID for field with name: description
+                    There are multiple fields with this name
+
+                    Duplicates:
+                      id: description, key: description, name: description, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: description, schema: [object Object]
+                      id: customfield_12345, key: customfield_12345, name: Description, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: description (custom), schema: [object Object]
+
+                    You can provide field IDs in the options:
+
+                      jira: {
+                        fields = {
+                          description: {
+                            id: // "description" or "customfield_12345"
                           }
                         }
                       }

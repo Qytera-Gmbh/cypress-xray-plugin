@@ -77,7 +77,7 @@ export abstract class JiraRepository<
 
                           jira: {
                             fields = {
-                              "${optionName}": {
+                              ${optionName}: {
                                 id: // ${duplicates
                                     .map(
                                         (field: FieldDetailServer | FieldDetailCloud) =>

@@ -304,6 +304,63 @@ describe("the server issue repository", () => {
             expect(summaries).to.deep.eq({});
         });
 
+        it("displays an error when there are multiple summary fields", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "summary",
+                    name: "summary",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["summary"],
+                    schema: {
+                        type: "string",
+                        system: "summary",
+                    },
+                },
+                {
+                    id: "customfield_12345",
+                    name: "Summary",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["summary (custom)"],
+                    schema: {
+                        type: "string",
+                        customId: 5125,
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getSummaries("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue summaries
+                    Failed to fetch Jira field ID for field with name: summary
+                    There are multiple fields with this name
+
+                    Duplicates:
+                      id: summary, name: summary, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: summary, schema: [object Object]
+                      id: customfield_12345, name: Summary, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: summary (custom), schema: [object Object]
+
+                    You can provide field IDs in the options:
+
+                      jira: {
+                        fields = {
+                          summary: {
+                            id: // "summary" or "customfield_12345"
+                          }
+                        }
+                      }
+                `)
+            );
+            expect(summaries).to.deep.eq({});
+        });
+
         it("handles get field failures gracefully", async () => {
             stub(jiraClient, "getFields").resolves(undefined);
             const stubbedSearch = stub(jiraClient, "search");
@@ -662,6 +719,63 @@ describe("the server issue repository", () => {
             expect(summaries).to.deep.eq({});
         });
 
+        it("displays an error when there are multiple description fields", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "description",
+                    name: "description",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["description"],
+                    schema: {
+                        type: "string",
+                        system: "description",
+                    },
+                },
+                {
+                    id: "customfield_12345",
+                    name: "Description",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["description (custom)"],
+                    schema: {
+                        type: "string",
+                        customId: 5125,
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getDescriptions("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue descriptions
+                    Failed to fetch Jira field ID for field with name: description
+                    There are multiple fields with this name
+
+                    Duplicates:
+                      id: description, name: description, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: description, schema: [object Object]
+                      id: customfield_12345, name: Description, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: description (custom), schema: [object Object]
+
+                    You can provide field IDs in the options:
+
+                      jira: {
+                        fields = {
+                          description: {
+                            id: // "description" or "customfield_12345"
+                          }
+                        }
+                      }
+                `)
+            );
+            expect(summaries).to.deep.eq({});
+        });
+
         it("handles get field failures gracefully", async () => {
             stub(jiraClient, "getFields").resolves(undefined);
             const stubbedSearch = stub(jiraClient, "search");
@@ -953,6 +1067,63 @@ describe("the server issue repository", () => {
             expect(testTypes).to.deep.eq({
                 "CYP-123": "Custom",
             });
+        });
+
+        it("displays an error when there are multiple description fields", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "test_type",
+                    name: "Test Type",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["test type"],
+                    schema: {
+                        type: "string",
+                        system: "test type",
+                    },
+                },
+                {
+                    id: "customfield_12345",
+                    name: "test type",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["test type (custom)"],
+                    schema: {
+                        type: "string",
+                        customId: 5125,
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getTestTypes("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue test types
+                    Failed to fetch Jira field ID for field with name: test type
+                    There are multiple fields with this name
+
+                    Duplicates:
+                      id: test_type, name: Test Type, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: test type, schema: [object Object]
+                      id: customfield_12345, name: test type, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: test type (custom), schema: [object Object]
+
+                    You can provide field IDs in the options:
+
+                      jira: {
+                        fields = {
+                          testType: {
+                            id: // "test_type" or "customfield_12345"
+                          }
+                        }
+                      }
+                `)
+            );
+            expect(summaries).to.deep.eq({});
         });
 
         it("displays an error when the test type field does not exist", async () => {
