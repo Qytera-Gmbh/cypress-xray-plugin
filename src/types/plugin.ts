@@ -22,20 +22,16 @@ export type JiraField = {
      *
      * @example "customfield_12345"
      */
-    id: string;
+    id?: string;
     /**
      * The Jira field name.
      *
      * @example "Zusammenfassung" // summary (German)
      */
-    name: string;
+    name?: string;
 };
 
 export type JiraFields = {
-    /**
-     * The summary field, i.e. the title of the issues.
-     */
-    summary?: JiraField;
     /**
      * The issues' description field.
      */
@@ -45,10 +41,21 @@ export type JiraFields = {
      */
     labels?: JiraField;
     /**
+     * The summary field, i.e. the title of the issues.
+     */
+    summary?: JiraField;
+    /**
+     * The test plan field of test (execution) issues.
+     *
+     * *Note: This setting is required for server instances only. Xray cloud provides ways to
+     * retrieve test plan field information independently of Jira.*
+     */
+    testPlan?: JiraField;
+    /**
      * The test type field of test issues.
      *
      * *Note: This setting is required for server instances only. Xray cloud provides ways to
-     * retrieve test type information independently of Jira.*
+     * retrieve test type field information independently of Jira.*
      */
     testType?: JiraField;
 };

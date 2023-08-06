@@ -15,6 +15,8 @@ import {
     ENV_JIRA_FIELDS_LABELS_NAME,
     ENV_JIRA_FIELDS_SUMMARY_ID,
     ENV_JIRA_FIELDS_SUMMARY_NAME,
+    ENV_JIRA_FIELDS_TEST_PLAN_ID,
+    ENV_JIRA_FIELDS_TEST_PLAN_NAME,
     ENV_JIRA_FIELDS_TEST_TYPE_ID,
     ENV_JIRA_FIELDS_TEST_TYPE_NAME,
     ENV_JIRA_PASSWORD,
@@ -57,15 +59,6 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
             attachVideos:
                 parse(env, ENV_JIRA_ATTACH_VIDEOS, asBoolean) ?? options.jira.attachVideos ?? false,
             fields: {
-                summary: {
-                    id:
-                        parse(env, ENV_JIRA_FIELDS_SUMMARY_ID, asString) ??
-                        options.jira.fields?.summary?.id,
-                    name:
-                        parse(env, ENV_JIRA_FIELDS_SUMMARY_NAME, asString) ??
-                        options.jira.fields?.summary?.name ??
-                        "summary",
-                },
                 description: {
                     id:
                         parse(env, ENV_JIRA_FIELDS_DESCRIPTION_ID, asString) ??
@@ -83,6 +76,24 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
                         parse(env, ENV_JIRA_FIELDS_LABELS_NAME, asString) ??
                         options.jira.fields?.labels?.name ??
                         "labels",
+                },
+                summary: {
+                    id:
+                        parse(env, ENV_JIRA_FIELDS_SUMMARY_ID, asString) ??
+                        options.jira.fields?.summary?.id,
+                    name:
+                        parse(env, ENV_JIRA_FIELDS_SUMMARY_NAME, asString) ??
+                        options.jira.fields?.summary?.name ??
+                        "summary",
+                },
+                testPlan: {
+                    id:
+                        parse(env, ENV_JIRA_FIELDS_TEST_PLAN_ID, asString) ??
+                        options.jira.fields?.testPlan?.id,
+                    name:
+                        parse(env, ENV_JIRA_FIELDS_TEST_PLAN_NAME, asString) ??
+                        options.jira.fields?.testPlan?.name ??
+                        "test plan",
                 },
                 testType: {
                     id:

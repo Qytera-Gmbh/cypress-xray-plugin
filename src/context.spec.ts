@@ -25,6 +25,48 @@ describe("the plugin context configuration", () => {
                 it("attachVideos", () => {
                     expect(options.jira.attachVideos).to.eq(false);
                 });
+                describe("fields", () => {
+                    describe("description", () => {
+                        it("id", () => {
+                            expect(options.jira.fields.description.id).to.eq(undefined);
+                        });
+                        it("name", () => {
+                            expect(options.jira.fields.description.name).to.eq("description");
+                        });
+                    });
+                    describe("labels", () => {
+                        it("id", () => {
+                            expect(options.jira.fields.labels.id).to.eq(undefined);
+                        });
+                        it("name", () => {
+                            expect(options.jira.fields.labels.name).to.eq("labels");
+                        });
+                    });
+                    describe("summary", () => {
+                        it("id", () => {
+                            expect(options.jira.fields.summary.id).to.eq(undefined);
+                        });
+                        it("name", () => {
+                            expect(options.jira.fields.summary.name).to.eq("summary");
+                        });
+                    });
+                    describe("testPlan", () => {
+                        it("id", () => {
+                            expect(options.jira.fields.testPlan.id).to.eq(undefined);
+                        });
+                        it("name", () => {
+                            expect(options.jira.fields.testPlan.name).to.eq("test plan");
+                        });
+                    });
+                    describe("testType", () => {
+                        it("id", () => {
+                            expect(options.jira.fields.testType.id).to.eq(undefined);
+                        });
+                        it("name", () => {
+                            expect(options.jira.fields.testType.name).to.eq("test type");
+                        });
+                    });
+                });
                 it("testExecutionIssueDescription", () => {
                     expect(options.jira.testExecutionIssueDescription).to.eq(undefined);
                 });
@@ -121,6 +163,103 @@ describe("the plugin context configuration", () => {
                         }
                     );
                     expect(options.jira.attachVideos).to.eq(true);
+                });
+                describe("fields", () => {
+                    describe("description", () => {
+                        it("name", () => {
+                            const options = initOptions(
+                                {},
+                                {
+                                    jira: {
+                                        projectKey: "PRJ",
+                                        url: "https://example.org",
+                                        fields: {
+                                            description: {
+                                                name: "Beschreibung",
+                                            },
+                                        },
+                                    },
+                                }
+                            );
+                            expect(options.jira.fields.description.name).to.eq("Beschreibung");
+                        });
+                    });
+                    describe("labels", () => {
+                        it("name", () => {
+                            const options = initOptions(
+                                {},
+                                {
+                                    jira: {
+                                        projectKey: "PRJ",
+                                        url: "https://example.org",
+                                        fields: {
+                                            labels: {
+                                                name: "Stichworte",
+                                            },
+                                        },
+                                    },
+                                }
+                            );
+                            expect(options.jira.fields.labels.name).to.eq("Stichworte");
+                        });
+                    });
+                    describe("summary", () => {
+                        it("name", () => {
+                            const options = initOptions(
+                                {},
+                                {
+                                    jira: {
+                                        projectKey: "PRJ",
+                                        url: "https://example.org",
+                                        fields: {
+                                            summary: {
+                                                name: "Résumé",
+                                            },
+                                        },
+                                    },
+                                }
+                            );
+                            expect(options.jira.fields.summary.name).to.eq("Résumé");
+                        });
+                    });
+                    describe("testPlan", () => {
+                        it("name", () => {
+                            const options = initOptions(
+                                {},
+                                {
+                                    jira: {
+                                        projectKey: "PRJ",
+                                        url: "https://example.org",
+                                        fields: {
+                                            testPlan: {
+                                                name: "Plan de Test",
+                                            },
+                                        },
+                                    },
+                                }
+                            );
+                            expect(options.jira.fields.testPlan.name).to.eq("Plan de Test");
+                        });
+                    });
+                    describe("testType", () => {
+                        it("name", () => {
+                            const options = initOptions(
+                                {},
+                                {
+                                    jira: {
+                                        projectKey: "PRJ",
+                                        url: "https://example.org",
+                                        fields: {
+                                            testType: {
+                                                name: "Xray Test Type",
+                                            },
+                                        },
+                                    },
+                                }
+                            );
+                            expect(options.jira.fields.testType.name).to.eq("Xray Test Type");
+                        });
+                    });
                 });
                 it("testExecutionIssueDescription", () => {
                     const options = initOptions(
@@ -504,6 +643,188 @@ describe("the plugin context configuration", () => {
                     expect(options.jira.attachVideos).to.be.true;
                 });
 
+                describe("fields", () => {
+                    describe("description", () => {
+                        it("JIRA_FIELDS_DESCRIPTION_ID", () => {
+                            const env = {
+                                JIRA_FIELDS_DESCRIPTION_ID: "customfield_98765",
+                            };
+                            const options = initOptions(env, {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                    fields: {
+                                        description: {
+                                            id: "customfield_12345",
+                                        },
+                                    },
+                                },
+                            });
+                            expect(options.jira.fields.description.id).to.eq("customfield_98765");
+                        });
+                        it("JIRA_FIELDS_DESCRIPTION_NAME", () => {
+                            const env = {
+                                JIRA_FIELDS_DESCRIPTION_NAME: "Beschreibung",
+                            };
+                            const options = initOptions(env, {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                    fields: {
+                                        description: {
+                                            name: "Issue Description",
+                                        },
+                                    },
+                                },
+                            });
+                            expect(options.jira.fields.description.name).to.eq("Beschreibung");
+                        });
+                    });
+                    describe("labels", () => {
+                        it("JIRA_FIELDS_LABELS_ID", () => {
+                            const env = {
+                                JIRA_FIELDS_LABELS_ID: "customfield_98765",
+                            };
+                            const options = initOptions(env, {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                    fields: {
+                                        labels: {
+                                            id: "customfield_12345",
+                                        },
+                                    },
+                                },
+                            });
+                            expect(options.jira.fields.labels.id).to.eq("customfield_98765");
+                        });
+                        it("JIRA_FIELDS_LABELS_NAME", () => {
+                            const env = {
+                                JIRA_FIELDS_LABELS_NAME: "Stichworte",
+                            };
+                            const options = initOptions(env, {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                    fields: {
+                                        labels: {
+                                            name: "Issue Labels",
+                                        },
+                                    },
+                                },
+                            });
+                            expect(options.jira.fields.labels.name).to.eq("Stichworte");
+                        });
+                    });
+                    describe("summary", () => {
+                        it("JIRA_FIELDS_SUMMARY_ID", () => {
+                            const env = {
+                                JIRA_FIELDS_SUMMARY_ID: "customfield_98765",
+                            };
+                            const options = initOptions(env, {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                    fields: {
+                                        summary: {
+                                            id: "customfield_12345",
+                                        },
+                                    },
+                                },
+                            });
+                            expect(options.jira.fields.summary.id).to.eq("customfield_98765");
+                        });
+                        it("JIRA_FIELDS_SUMMARY_NAME", () => {
+                            const env = {
+                                JIRA_FIELDS_SUMMARY_NAME: "Résumé",
+                            };
+                            const options = initOptions(env, {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                    fields: {
+                                        summary: {
+                                            name: "Issue Summary",
+                                        },
+                                    },
+                                },
+                            });
+                            expect(options.jira.fields.summary.name).to.eq("Résumé");
+                        });
+                    });
+                    describe("testPlan", () => {
+                        it("JIRA_FIELDS_TEST_PLAN_ID", () => {
+                            const env = {
+                                JIRA_FIELDS_TEST_PLAN_ID: "customfield_98765",
+                            };
+                            const options = initOptions(env, {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                    fields: {
+                                        testPlan: {
+                                            id: "customfield_12345",
+                                        },
+                                    },
+                                },
+                            });
+                            expect(options.jira.fields.testPlan.id).to.eq("customfield_98765");
+                        });
+                        it("JIRA_FIELDS_TEST_PLAN_NAME", () => {
+                            const env = {
+                                JIRA_FIELDS_TEST_PLAN_NAME: "Plan de Test",
+                            };
+                            const options = initOptions(env, {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                    fields: {
+                                        testPlan: {
+                                            name: "Issue Test Plan",
+                                        },
+                                    },
+                                },
+                            });
+                            expect(options.jira.fields.testPlan.name).to.eq("Plan de Test");
+                        });
+                    });
+                    describe("testType", () => {
+                        it("JIRA_FIELDS_TEST_TYPE_ID", () => {
+                            const env = {
+                                JIRA_FIELDS_TEST_TYPE_ID: "customfield_98765",
+                            };
+                            const options = initOptions(env, {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                    fields: {
+                                        testType: {
+                                            id: "customfield_12345",
+                                        },
+                                    },
+                                },
+                            });
+                            expect(options.jira.fields.testType.id).to.eq("customfield_98765");
+                        });
+                        it("JIRA_FIELDS_TEST_TYPE_NAME", () => {
+                            const env = {
+                                JIRA_FIELDS_TEST_TYPE_NAME: "Xray Test Type",
+                            };
+                            const options = initOptions(env, {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                    fields: {
+                                        testType: {
+                                            name: "Issue Test Type",
+                                        },
+                                    },
+                                },
+                            });
+                            expect(options.jira.fields.testType.name).to.eq("Xray Test Type");
+                        });
+                    });
+                });
                 it("JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION", () => {
                     const env = {
                         JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION: "Good morning",
@@ -969,8 +1290,6 @@ describe("the plugin context configuration", () => {
                     },
                 }
             );
-            // Make Jira client instantiation mandatory.
-            options.jira.attachVideos = true;
         });
 
         it("should detect cloud credentials", () => {
