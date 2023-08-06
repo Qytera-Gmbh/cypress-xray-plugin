@@ -12,6 +12,7 @@ import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/im
 import { logDebug, logError, logInfo, logSuccess, logWarning } from "./logging/logging";
 import {
     FeatureFileIssueData,
+    FeatureFileIssueDataTest,
     containsCucumberTest,
     containsNativeTest,
     getCucumberIssueData,
@@ -413,6 +414,7 @@ export async function synchronizeFile(
                 );
                 logInfo("Importing feature file to Xray...");
                 const testSummaries = await clients.jiraRepository.getSummaries(...issueKeys);
+                const testLabels = await clients.jiraRepository.getLabels(...issueKeys);
                 const wasImportSuccessful = await clients.xrayClient.importFeature(
                     file.filePath,
                     options.jira.projectKey
@@ -421,6 +423,12 @@ export async function synchronizeFile(
                     await resetSummaries(
                         issueData,
                         testSummaries,
+                        clients.jiraClient,
+                        clients.jiraRepository
+                    );
+                    await resetLabels(
+                        issueData.tests,
+                        testLabels,
                         clients.jiraClient,
                         clients.jiraRepository
                     );
@@ -473,6 +481,50 @@ async function resetSummaries(
         } else {
             logDebug(
                 `Issue summary is identical to scenario (outline) name already: ${issueKey} (${oldSummary})`
+            );
+        }
+    }
+}
+
+async function resetLabels(
+    issueData: FeatureFileIssueDataTest[],
+    testLabels: StringMap<string[]>,
+    jiraClient: JiraClientServer | JiraClientCloud,
+    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
+) {
+    for (let i = 0; i < issueData.length; i++) {
+        const issueKey = issueData[i].key;
+        const oldLabels = testLabels[issueKey];
+        const newLabels = issueData[i].tags;
+        if (!newLabels.every((label) => oldLabels.includes(label))) {
+            const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {
+                fields: {},
+            };
+            const labelFieldId = await jiraRepository.getFieldId("Labels", "labels");
+            issueUpdate.fields[labelFieldId] = oldLabels;
+            logDebug(
+                dedent(`
+                    Resetting issue labels of issue: ${issueKey}
+
+                      Labels pre sync:  ${oldLabels}
+                      Labels post sync: ${newLabels}
+                `)
+            );
+            if (!(await jiraClient.editIssue(issueKey, issueUpdate))) {
+                logError(
+                    dedent(`
+                        Failed to reset issue summary of issue to its old summary: ${issueKey}
+
+                          Labels pre sync:  ${oldLabels}
+                          Labels post sync: ${newLabels}
+
+                        Make sure to reset them manually if needed
+                    `)
+                );
+            }
+        } else {
+            logDebug(
+                `Issue labels are identical to scenario (outline) labels already: ${issueKey} (${oldLabels})`
             );
         }
     }
