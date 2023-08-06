@@ -17,7 +17,6 @@ describe("the xray cloud client", () => {
     describe("import execution", () => {
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
             stubbedPost.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -57,14 +56,10 @@ describe("the xray cloud client", () => {
                 ],
             });
             expect(response).to.eq("CYP-123");
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully uploaded test execution results to CYP-123."
-            );
         });
         it("should handle bad responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedError } = stubLogging();
+            const { stubbedError } = stubLogging();
             stubbedPost.onFirstCall().rejects(
                 new AxiosError("Request failed with status code 400", "400", null, null, {
                     status: 400,
@@ -93,7 +88,6 @@ describe("the xray cloud client", () => {
                 ],
             });
             expect(response).to.be.undefined;
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution...");
             expect(stubbedError).to.have.been.calledTwice;
             expect(stubbedError).to.have.been.calledWithExactly(
                 "Failed to import execution: AxiosError: Request failed with status code 400"
@@ -108,7 +102,6 @@ describe("the xray cloud client", () => {
     describe("import execution cucumber multipart", () => {
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
             stubbedPost.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -135,15 +128,11 @@ describe("the xray cloud client", () => {
                 )
             );
             expect(response).to.eq("CYP-123");
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution (Cucumber)...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully uploaded Cucumber test execution results to CYP-123."
-            );
         });
 
         it("should handle bad responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedError } = stubLogging();
+            const { stubbedError } = stubLogging();
             stubbedPost.onFirstCall().rejects(
                 new AxiosError("Request failed with status code 400", "400", null, null, {
                     status: 400,
@@ -170,7 +159,6 @@ describe("the xray cloud client", () => {
                 )
             );
             expect(response).to.be.undefined;
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution (Cucumber)...");
             expect(stubbedError).to.have.been.calledWithExactly(
                 "Failed to import Cucumber execution: AxiosError: Request failed with status code 400"
             );
@@ -184,7 +172,6 @@ describe("the xray cloud client", () => {
     describe("get test types", () => {
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
             stubbedPost.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: JSON.parse(
@@ -203,15 +190,10 @@ describe("the xray cloud client", () => {
                 "CYP-331": "Cucumber",
                 "CYP-332": "Manual",
             });
-            expect(stubbedInfo).to.have.been.calledWithExactly("Retrieving test types...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully retrieved test types for 3 issues"
-            );
         });
 
         it("should paginate big requests", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
             const mockedData: GetTestsResponse<unknown> = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/responses/getTestsTypes.json",
@@ -268,10 +250,6 @@ describe("the xray cloud client", () => {
                 "CYP-331": "Cucumber",
                 "CYP-332": "Manual",
             });
-            expect(stubbedInfo).to.have.been.calledWithExactly("Retrieving test types...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully retrieved test types for 3 issues"
-            );
         });
 
         it("should throw for missing test types", async () => {

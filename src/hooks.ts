@@ -9,7 +9,7 @@ import { ImportExecutionConverterCloud } from "./conversion/importExecution/impo
 import { ImportExecutionConverterServer } from "./conversion/importExecution/importExecutionConverterServer";
 import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterCloud";
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
-import { logDebug, logError, logInfo, logWarning } from "./logging/logging";
+import { logDebug, logError, logInfo, logSuccess, logWarning } from "./logging/logging";
 import {
     FeatureFileIssueData,
     containsCucumberTest,
@@ -224,6 +224,7 @@ export async function afterRunHook(
     }
     let issueKey: string = null;
     if (containsNativeTest(runResult, options)) {
+        logInfo("Uploading native Cypress test results...");
         issueKey = await uploadCypressResults(
             runResult,
             options,
@@ -248,6 +249,7 @@ export async function afterRunHook(
         }
     }
     if (containsCucumberTest(runResult, options)) {
+        logInfo("Uploading Cucumber test results...");
         const cucumberIssueKey = await uploadCucumberResults(runResult, options, clients);
         if (
             options.jira.testExecutionIssueKey &&
@@ -286,6 +288,9 @@ export async function afterRunHook(
         logWarning("Execution results import was skipped. Skipping remaining tasks");
         return;
     }
+    logSuccess(
+        `Uploaded test results to issue: ${issueKey} (${options.jira.url}/browse/${issueKey})`
+    );
     if (options.jira.attachVideos) {
         await attachVideos(runResult, issueKey, clients.jiraClient);
     }
@@ -406,6 +411,7 @@ export async function synchronizeFile(
                           ${issueKeys.join("\n")}
                     `)
                 );
+                logInfo("Importing feature file to Xray...");
                 const testSummaries = await clients.jiraRepository.getSummaries(...issueKeys);
                 const wasImportSuccessful = await clients.xrayClient.importFeature(
                     file.filePath,
