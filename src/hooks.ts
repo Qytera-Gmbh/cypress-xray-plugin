@@ -452,7 +452,11 @@ async function resetSummaries(
         const issueKey = allIssues[i].key;
         const oldSummary = testSummaries[issueKey];
         const newSummary = allIssues[i].summary;
-        if (oldSummary !== newSummary) {
+        if (!newSummary) {
+            logDebug(
+                `Feature child does not have a name, issue summary will not be overwritten: ${issueKey}`
+            );
+        } else if (oldSummary !== newSummary) {
             const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {
                 fields: {},
             };
@@ -480,7 +484,11 @@ async function resetSummaries(
             }
         } else {
             logDebug(
-                `Issue summary is identical to scenario (outline) name already: ${issueKey} (${oldSummary})`
+                dedent(`
+                    Issue summary is identical to scenario (outline) or background name already: ${issueKey}
+
+                      Summary: ${oldSummary}
+                `)
             );
         }
     }
@@ -524,7 +532,12 @@ async function resetLabels(
             }
         } else {
             logDebug(
-                `Issue labels are identical to scenario (outline) labels already: ${issueKey} (${oldLabels})`
+                dedent(`
+                    Issue labels contain all scenario (outline) labels already: ${issueKey}
+
+                    Issue labels:              [${oldLabels.join(" ")}]
+                    Scenario (outline) labels: [${newLabels.join(" ")}]
+                `)
             );
         }
     }

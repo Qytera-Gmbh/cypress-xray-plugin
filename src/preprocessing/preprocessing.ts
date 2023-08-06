@@ -133,13 +133,13 @@ export interface FeatureFileIssueData {
 
 export interface FeatureFileIssueDataTest {
     key: string;
-    summary: string;
+    summary?: string;
     tags: string[];
 }
 
 export interface FeatureFileIssueDataPrecondition {
     key: string;
-    summary: string;
+    summary?: string;
 }
 
 export function getCucumberIssueData(
@@ -191,10 +191,16 @@ export function getCucumberIssueData(
                     `)
                 );
             }
+            // Xray omits the scenario's issue tag, no need to consider it further.
+            const tags = child.scenario.tags
+                .filter(
+                    (tag) => !scenarioRegex(options.jira.projectKey, isCloudClient).test(tag.name)
+                )
+                .map((tag) => tag.name.replace("@", ""));
             featureFileIssueKeys.tests.push({
                 key: issueKeys[0],
-                summary: child.scenario.name ? child.scenario.name : "<empty>",
-                tags: child.scenario.tags.map((tag) => tag.name.replace("@", "")),
+                summary: child.scenario.name ? child.scenario.name : undefined,
+                tags: tags,
             });
         } else if (child.background) {
             const preconditionKeys = getCucumberPreconditionIssueTags(
@@ -242,7 +248,7 @@ export function getCucumberIssueData(
             }
             featureFileIssueKeys.preconditions.push({
                 key: preconditionKeys[0],
-                summary: child.background.name ? child.background.name : "<empty>",
+                summary: child.background.name ? child.background.name : undefined,
             });
         }
     }
