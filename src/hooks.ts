@@ -262,7 +262,12 @@ export async function afterRunHook(
                 `)
             );
         }
-        if (options.jira.testExecutionIssueKey && issueKey && cucumberIssueKey !== issueKey) {
+        if (
+            options.jira.testExecutionIssueKey &&
+            issueKey &&
+            cucumberIssueKey &&
+            cucumberIssueKey !== issueKey
+        ) {
             logWarning(
                 dedent(`
                     Cucumber execution results were imported to a different test execution issue than the Cypress execution results.
@@ -391,17 +396,17 @@ export async function synchronizeFile(
                 // summary once the import is done.
                 // See: https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                 // See: https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                const testIssueKeys = [
+                const issueKeys = [
                     ...issueData.tests.map((data) => data.key),
                     ...issueData.preconditions.map((data) => data.key),
                 ];
                 logDebug(
                     dedent(`
                         Creating issue summary backups for issues:
-                          ${testIssueKeys.join("\n")}
+                          ${issueKeys.join("\n")}
                     `)
                 );
-                const testSummaries = await clients.jiraRepository.getSummaries(...testIssueKeys);
+                const testSummaries = await clients.jiraRepository.getSummaries(...issueKeys);
                 const wasImportSuccessful = await clients.xrayClient.importFeature(
                     file.filePath,
                     options.jira.projectKey
