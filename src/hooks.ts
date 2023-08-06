@@ -513,7 +513,7 @@ async function resetLabels(
             if (!(await jiraClient.editIssue(issueKey, issueUpdate))) {
                 logError(
                     dedent(`
-                        Failed to reset issue summary of issue to its old summary: ${issueKey}
+                        Failed to reset issue labels of issue to its old labels: ${issueKey}
 
                           Labels pre sync:  ${oldLabels}
                           Labels post sync: ${newLabels}
