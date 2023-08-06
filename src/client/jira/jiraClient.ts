@@ -1,17 +1,9 @@
 import { AxiosResponse } from "axios";
-import dedent from "dedent";
 import FormData from "form-data";
 import fs from "fs";
 import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
-import {
-    logDebug,
-    logError,
-    logInfo,
-    logSuccess,
-    logWarning,
-    writeErrorFile,
-} from "../../logging/logging";
+import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { SearchRequestCloud, SearchRequestServer } from "../../types/jira/requests/search";
 import { AttachmentCloud, AttachmentServer } from "../../types/jira/responses/attachment";
 import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
@@ -23,6 +15,7 @@ import {
 import { IssueUpdateCloud, IssueUpdateServer } from "../../types/jira/responses/issueUpdate";
 import { JsonTypeCloud, JsonTypeServer } from "../../types/jira/responses/jsonType";
 import { SearchResults } from "../../types/jira/responses/searchResults";
+import { dedent } from "../../util/dedent";
 import { Client } from "../client";
 
 /**
@@ -86,7 +79,7 @@ export abstract class JiraClient<
             return await this.credentials
                 .getAuthenticationHeader()
                 .then(async (header: HTTPHeader) => {
-                    logInfo("Attaching files:", ...files);
+                    logDebug("Attaching files:", ...files);
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
                         const response: AxiosResponse<AttachmentType[]> = await Requests.post(
@@ -100,12 +93,12 @@ export abstract class JiraClient<
                                 },
                             }
                         );
-                        logSuccess(
+                        logDebug(
                             dedent(`
                                 Successfully attached files to issue: ${issueIdOrKey}
-                                ${response.data
-                                    .map((attachment: AttachmentType) => attachment.filename)
-                                    .join("\n")}
+                                  ${response.data
+                                      .map((attachment: AttachmentType) => attachment.filename)
+                                      .join("\n")}
                             `)
                         );
                         return response.data;
@@ -129,7 +122,7 @@ export abstract class JiraClient<
     public async getIssueTypes(): Promise<IssueTypeDetailsResponse[] | undefined> {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
-            logInfo("Getting issue types...");
+            logDebug("Getting issue types...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const response: AxiosResponse<IssueTypeDetailsResponse[]> = await Requests.get(
@@ -140,7 +133,7 @@ export abstract class JiraClient<
                         },
                     }
                 );
-                logSuccess(`Successfully retrieved data for ${response.data.length} issue types.`);
+                logDebug(`Successfully retrieved data for ${response.data.length} issue types.`);
                 logDebug(
                     dedent(`
                         Received data for issue types:
@@ -179,7 +172,7 @@ export abstract class JiraClient<
     public async getFields(): Promise<FieldDetailType[] | undefined> {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
-            logInfo("Getting fields...");
+            logDebug("Getting fields...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const response: AxiosResponse<FieldDetailType[]> = await Requests.get(
@@ -190,7 +183,7 @@ export abstract class JiraClient<
                         },
                     }
                 );
-                logSuccess(`Successfully retrieved data for ${response.data.length} fields`);
+                logDebug(`Successfully retrieved data for ${response.data.length} fields`);
                 logDebug(
                     dedent(`
                         Received data for fields:
@@ -222,7 +215,7 @@ export abstract class JiraClient<
             return await this.credentials
                 .getAuthenticationHeader()
                 .then(async (header: HTTPHeader) => {
-                    logInfo("Searching issues...");
+                    logDebug("Searching issues...");
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
                         let total = 0;
@@ -245,7 +238,7 @@ export abstract class JiraClient<
                             total = response.data.total;
                             startAt = response.data.startAt + response.data.issues.length;
                         } while (startAt && startAt < total);
-                        logSuccess(`Found ${total} issues`);
+                        logDebug(`Found ${total} issues`);
                         return results;
                     } finally {
                         clearInterval(progressInterval);
@@ -276,7 +269,7 @@ export abstract class JiraClient<
     ): Promise<string | undefined> {
         try {
             await this.credentials.getAuthenticationHeader().then(async (header: HTTPHeader) => {
-                logInfo("Editing issue...");
+                logDebug("Editing issue...");
                 const progressInterval = this.startResponseInterval(this.apiBaseURL);
                 try {
                     await Requests.put(this.getUrlEditIssue(issueIdOrKey), issueUpdateData, {
@@ -284,7 +277,7 @@ export abstract class JiraClient<
                             ...header,
                         },
                     });
-                    logSuccess(`Successfully edited issue: ${issueIdOrKey}`);
+                    logDebug(`Successfully edited issue: ${issueIdOrKey}`);
                 } finally {
                     clearInterval(progressInterval);
                 }

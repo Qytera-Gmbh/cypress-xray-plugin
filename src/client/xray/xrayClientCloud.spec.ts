@@ -1,6 +1,5 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
-import dedent from "dedent";
 import fs from "fs";
 import {
     RESOLVED_JWT_CREDENTIALS,
@@ -9,6 +8,7 @@ import {
     stubRequests,
 } from "../../../test/util";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
+import { dedent } from "../../util/dedent";
 import { XrayClientCloud } from "./xrayClientCloud";
 
 describe("the xray cloud client", () => {
@@ -37,7 +37,6 @@ describe("the xray cloud client", () => {
 
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
             stubbedPost.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -77,14 +76,10 @@ describe("the xray cloud client", () => {
                 ],
             });
             expect(response).to.eq("CYP-123");
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully uploaded test execution results to CYP-123."
-            );
         });
         it("should handle bad responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedError } = stubLogging();
+            const { stubbedError } = stubLogging();
             stubbedPost.onFirstCall().rejects(
                 new AxiosError("Request failed with status code 400", "400", null, null, {
                     status: 400,
@@ -113,7 +108,6 @@ describe("the xray cloud client", () => {
                 ],
             });
             expect(response).to.be.undefined;
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution...");
             expect(stubbedError).to.have.been.calledTwice;
             expect(stubbedError).to.have.been.calledWithExactly(
                 "Failed to import execution: AxiosError: Request failed with status code 400"
@@ -161,7 +155,6 @@ describe("the xray cloud client", () => {
 
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
             stubbedPost.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -188,15 +181,11 @@ describe("the xray cloud client", () => {
                 )
             );
             expect(response).to.eq("CYP-123");
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution (Cucumber)...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully uploaded Cucumber test execution results to CYP-123."
-            );
         });
 
         it("should handle bad responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedError } = stubLogging();
+            const { stubbedError } = stubLogging();
             stubbedPost.onFirstCall().rejects(
                 new AxiosError("Request failed with status code 400", "400", null, null, {
                     status: 400,
@@ -223,7 +212,6 @@ describe("the xray cloud client", () => {
                 )
             );
             expect(response).to.be.undefined;
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution (Cucumber)...");
             expect(stubbedError).to.have.been.calledWithExactly(
                 "Failed to import Cucumber execution: AxiosError: Request failed with status code 400"
             );
@@ -265,7 +253,6 @@ describe("the xray cloud client", () => {
     describe("get test types", () => {
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
             stubbedPost.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: JSON.parse(
@@ -284,15 +271,10 @@ describe("the xray cloud client", () => {
                 "CYP-331": "Cucumber",
                 "CYP-332": "Manual",
             });
-            expect(stubbedInfo).to.have.been.calledWithExactly("Retrieving test types...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully retrieved test types for 3 issues"
-            );
         });
 
         it("should paginate big requests", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
             const mockedData: GetTestsResponse<unknown> = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/responses/getTestsTypes.json",
@@ -349,10 +331,6 @@ describe("the xray cloud client", () => {
                 "CYP-331": "Cucumber",
                 "CYP-332": "Manual",
             });
-            expect(stubbedInfo).to.have.been.calledWithExactly("Retrieving test types...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully retrieved test types for 3 issues"
-            );
         });
 
         it("should throw for missing test types", async () => {
@@ -386,8 +364,8 @@ describe("the xray cloud client", () => {
                 dedent(`
                     Failed to get test types: Error: Failed to retrieve test types for issues:
 
-                    CYP-331
-                    CYP-332
+                      CYP-331
+                      CYP-332
 
                     Make sure these issues exist and are actually test issues
                 `)
@@ -412,8 +390,7 @@ describe("the xray cloud client", () => {
             expect(response).to.be.undefined;
             expect(stubbedError).to.have.been.calledTwice;
             expect(stubbedError).to.have.been.calledWith(
-                dedent(`
-                    Failed to get test types: AxiosError: Request failed with status code 400`)
+                "Failed to get test types: AxiosError: Request failed with status code 400"
             );
             const expectedPath = resolveTestDirPath("getTestTypes.json");
             expect(stubbedError).to.have.been.calledWithExactly(

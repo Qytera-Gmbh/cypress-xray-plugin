@@ -35,7 +35,6 @@ describe("the xray server client", () => {
         });
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
             stubbedPost.resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -77,10 +76,6 @@ describe("the xray server client", () => {
                 ],
             });
             expect(response).to.eq("CYP-123");
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully uploaded test execution results to CYP-123."
-            );
         });
     });
 
@@ -119,7 +114,6 @@ describe("the xray server client", () => {
         });
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedInfo, stubbedSuccess } = stubLogging();
             stubbedPost.resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -148,10 +142,6 @@ describe("the xray server client", () => {
                 )
             );
             expect(response).to.eq("CYP-123");
-            expect(stubbedInfo).to.have.been.calledWithExactly("Importing execution (Cucumber)...");
-            expect(stubbedSuccess).to.have.been.calledWithExactly(
-                "Successfully uploaded Cucumber test execution results to CYP-123."
-            );
         });
     });
 

@@ -1,7 +1,7 @@
 import FormData from "form-data";
 import fs from "fs";
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
-import { logError, logSuccess } from "../../logging/logging";
+import { logDebug, logError } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
@@ -116,19 +116,19 @@ export class XrayClientServer extends XrayClient<
                 logError("Encountered an error during import:", response.message);
             }
             if (response.testIssues.length > 0) {
-                logSuccess(
+                logDebug(
                     "Successfully updated or created test issues:",
                     response.testIssues.map((issue: IssueDetails) => issue.key).join(", ")
                 );
             }
             if (response.preconditionIssues.length > 0) {
-                logSuccess(
+                logDebug(
                     "Successfully updated or created precondition issues:",
                     response.preconditionIssues.map((issue: IssueDetails) => issue.key).join(", ")
                 );
             }
         } else if (Array.isArray(response)) {
-            logSuccess(
+            logDebug(
                 "Successfully updated or created issues:",
                 response.map((issue: IssueDetails) => issue.key).join(", ")
             );

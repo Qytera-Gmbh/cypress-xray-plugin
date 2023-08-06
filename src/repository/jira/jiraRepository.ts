@@ -1,22 +1,27 @@
-import dedent from "dedent";
 import { JiraClientCloud } from "../../client/jira/jiraClientCloud";
 import { JiraClientServer } from "../../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../../client/xray/xrayClientServer";
 import { logError } from "../../logging/logging";
+import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
 import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
-import { Options } from "../../types/plugin";
+import { JiraFieldIds, Options } from "../../types/plugin";
 import { StringMap } from "../../types/util";
+import { dedent } from "../../util/dedent";
+import { JiraFieldRepository } from "./fields/jiraFieldRepository";
 
 export type FieldExtractor<T> = {
     extractorFunction: (value: unknown) => T | undefined;
     expectedType: string;
 };
 
+export type FieldName = "Description" | "Summary" | "Labels" | "Test Plan" | "Test Type";
+
 export abstract class JiraRepository<
     JiraClientType extends JiraClientServer | JiraClientCloud,
     XrayClientType extends XrayClientServer | XrayClientCloud
 > {
+    protected readonly jiraFieldRepository: JiraFieldRepository;
     protected readonly jiraClient: JiraClientType;
     protected readonly xrayClient: XrayClientType;
     protected readonly options: Options;
@@ -30,6 +35,15 @@ export abstract class JiraRepository<
         expectedType: "a string",
     };
 
+    protected static readonly ARRAY_STRING_EXTRACTOR: FieldExtractor<string[]> = {
+        extractorFunction: (value: unknown): string[] | undefined => {
+            if (Array.isArray(value) && value.every((element) => typeof element === "string")) {
+                return value;
+            }
+        },
+        expectedType: "an array of strings",
+    };
+
     protected static readonly OBJECT_VALUE_EXTRACTOR: FieldExtractor<string> = {
         extractorFunction: (data: unknown): string | undefined => {
             if (typeof data === "object" && data !== null) {
@@ -39,35 +53,96 @@ export abstract class JiraRepository<
         expectedType: "an object with a value property",
     };
 
-    private readonly fieldIds: StringMap<string> = {};
     private readonly summaries: StringMap<string> = {};
     private readonly descriptions: StringMap<string> = {};
     private readonly testTypes: StringMap<string> = {};
+    private readonly labels: StringMap<string[]> = {};
 
     constructor(jiraClient: JiraClientType, xrayClient: XrayClientType, options: Options) {
+        this.jiraFieldRepository = new JiraFieldRepository(jiraClient, options);
         this.jiraClient = jiraClient;
         this.xrayClient = xrayClient;
         this.options = options;
     }
 
-    public async getFieldId(fieldName: string): Promise<string> {
-        // Lowercase everything to work around case sensitivities.
-        // Jira sometimes returns field names capitalized, sometimes it doesn't.
-        const lowerCasedName = fieldName.toLowerCase();
-        if (!(lowerCasedName in this.fieldIds)) {
-            const jiraFields = await this.jiraClient.getFields();
-            if (jiraFields) {
-                jiraFields.forEach((jiraField) => {
-                    this.fieldIds[jiraField.name.toLowerCase()] = jiraField.id;
-                });
-            }
-            if (!(lowerCasedName in this.fieldIds)) {
+    public async getFieldId(fieldName: FieldName, optionName: keyof JiraFieldIds): Promise<string> {
+        return await this.jiraFieldRepository.getFieldId(fieldName, {
+            onFetchError: () => {
+                throw new Error(`Failed to fetch Jira field ID for field with name: ${fieldName}`);
+            },
+            onMultipleFieldsError: (duplicates: FieldDetailServer[] | FieldDetailCloud[]) => {
                 throw new Error(
-                    `Failed to fetch Jira field ID for field with name: ${lowerCasedName}\nMake sure the field actually exists`
+                    dedent(`
+                        Failed to fetch Jira field ID for field with name: ${fieldName}
+                        There are multiple fields with this name
+
+                        Duplicates:
+                          ${duplicates
+                              .map((field: FieldDetailServer | FieldDetailCloud) =>
+                                  Object.entries(field)
+                                      .map(([key, value]) => `${key}: ${value}`)
+                                      .join(", ")
+                              )
+                              .join("\n")}
+
+                        You can provide field IDs in the options:
+
+                          jira: {
+                            fields = {
+                              ${optionName}: {
+                                id: // ${duplicates
+                                    .map(
+                                        (field: FieldDetailServer | FieldDetailCloud) =>
+                                            `"${field.id}"`
+                                    )
+                                    .join(" or ")}
+                              }
+                            }
+                          }
+                    `)
                 );
-            }
-        }
-        return this.fieldIds[lowerCasedName];
+            },
+            onMissingFieldError: (availableFields: string[]) => {
+                if (availableFields.length === 0) {
+                    throw new Error(
+                        dedent(`
+                            Failed to fetch Jira field ID for field with name: ${fieldName}
+                            Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                            You can provide field IDs directly without relying on language settings:
+
+                              jira: {
+                                fields = {
+                                  ${optionName}: {
+                                    id: // corresponding field ID
+                                  }
+                                }
+                              }
+                        `)
+                    );
+                } else {
+                    throw new Error(
+                        dedent(`
+                            Failed to fetch Jira field ID for field with name: ${fieldName}
+                            Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                            Available fields:
+                              ${availableFields.join("\n")}
+
+                            You can provide field IDs directly without relying on language settings:
+
+                              jira: {
+                                fields = {
+                                  ${optionName}: {
+                                    id: // corresponding field ID
+                                  }
+                                }
+                              }
+                        `)
+                    );
+                }
+            },
+        });
     }
 
     public async getSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
@@ -82,7 +157,13 @@ export abstract class JiraRepository<
                 (key: string) => !(key in this.summaries)
             );
             if (missingSummaries.length > 0) {
-                throw new Error(`Make sure these issues exist:\n\n${missingSummaries.join("\n")}`);
+                throw new Error(
+                    dedent(`
+                        Make sure these issues exist:
+
+                          ${missingSummaries.join("\n")}
+                    `)
+                );
             }
         } catch (error: unknown) {
             logError(
@@ -108,7 +189,11 @@ export abstract class JiraRepository<
             );
             if (missingDescriptions.length > 0) {
                 throw new Error(
-                    `Make sure these issues exist:\n\n${missingDescriptions.join("\n")}`
+                    dedent(`
+                        Make sure these issues exist:
+
+                          ${missingDescriptions.join("\n")}
+                    `)
                 );
             }
         } catch (error: unknown) {
@@ -135,9 +220,11 @@ export abstract class JiraRepository<
             );
             if (missingTestTypes.length > 0) {
                 throw new Error(
-                    `Make sure these issues exist and are test issues:\n\n${missingTestTypes.join(
-                        "\n"
-                    )}`
+                    dedent(`
+                        Make sure these issues exist and are test issues:
+
+                          ${missingTestTypes.join("\n")}
+                    `)
                 );
             }
         } catch (error: unknown) {
@@ -151,56 +238,102 @@ export abstract class JiraRepository<
         return result;
     }
 
+    public async getLabels(...issueKeys: string[]): Promise<StringMap<string[]>> {
+        let result: StringMap<string[]> = {};
+        try {
+            result = await this.fetchFields(this.labels, this.fetchLabels.bind(this), ...issueKeys);
+            const missingLabels: string[] = issueKeys.filter(
+                (key: string) => !(key in this.labels)
+            );
+            if (missingLabels.length > 0) {
+                throw new Error(
+                    dedent(`
+                        Make sure these issues exist:
+
+                          ${missingLabels.join("\n")}
+                    `)
+                );
+            }
+        } catch (error: unknown) {
+            logError(
+                dedent(`
+                    Failed to fetch issue labels
+                    ${error instanceof Error ? error.message : JSON.stringify(error)}
+                `)
+            );
+        }
+        return result;
+    }
+
     protected async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
+        let fieldId = this.options.jira.fields.summary;
+        if (!fieldId) {
+            fieldId = await this.getFieldId("Summary", "summary");
+        }
         // Field property example:
         // summary: "Bug 12345"
-        return await this.getJiraField("summary", JiraRepository.STRING_EXTRACTOR, ...issueKeys);
+        return await this.extractJiraField(fieldId, JiraRepository.STRING_EXTRACTOR, ...issueKeys);
     }
 
     protected async fetchDescriptions(...issueKeys: string[]): Promise<StringMap<string>> {
+        let fieldId = this.options.jira.fields.description;
+        if (!fieldId) {
+            fieldId = await this.getFieldId("Description", "description");
+        }
         // Field property example:
         // description: "This is a description"
-        return await this.getJiraField(
-            "description",
-            JiraRepository.STRING_EXTRACTOR,
-            ...issueKeys
-        );
+        return await this.extractJiraField(fieldId, JiraRepository.STRING_EXTRACTOR, ...issueKeys);
     }
 
     protected abstract fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;
 
-    protected async getJiraField<T>(
-        fieldName: string,
+    protected async fetchLabels(...issueKeys: string[]): Promise<StringMap<string[]>> {
+        let fieldId = this.options.jira.fields.labels;
+        if (!fieldId) {
+            fieldId = await this.getFieldId("Labels", "labels");
+        }
+        // Field property example:
+        // labels: ["regression", "quality"]
+        return await this.extractJiraField(
+            fieldId,
+            JiraRepository.ARRAY_STRING_EXTRACTOR,
+            ...issueKeys
+        );
+    }
+
+    protected async extractJiraField<T>(
+        fieldId: string,
         extractor: FieldExtractor<T>,
         ...issueKeys: string[]
     ): Promise<StringMap<T>> {
-        const fieldId = await this.getFieldId(fieldName);
+        const results: StringMap<T> = {};
         const issues: IssueServer[] | IssueCloud[] = await this.jiraClient.search({
             jql: `project = ${this.options.jira.projectKey} AND issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
         });
-        const results: StringMap<T> = {};
-        const issuesWithUnparseableField: string[] = [];
-        issues.forEach((issue: IssueServer | IssueCloud) => {
-            const value = extractor.extractorFunction(issue.fields[fieldId]);
-            if (value !== undefined) {
-                results[issue.key] = value;
-            } else {
-                issuesWithUnparseableField.push(
-                    `${issue.key}: ${JSON.stringify(issue.fields[fieldId])}`
+        if (issues) {
+            const issuesWithUnparseableField: string[] = [];
+            issues.forEach((issue: IssueServer | IssueCloud) => {
+                const value = extractor.extractorFunction(issue.fields[fieldId]);
+                if (value !== undefined) {
+                    results[issue.key] = value;
+                } else {
+                    issuesWithUnparseableField.push(
+                        `${issue.key}: ${JSON.stringify(issue.fields[fieldId])}`
+                    );
+                }
+            });
+            if (issuesWithUnparseableField.length > 0) {
+                throw new Error(
+                    dedent(`
+                        Failed to parse Jira field with ID: ${fieldId}
+                        Expected the field to be: ${extractor.expectedType}
+                        Make sure the correct field is present on the following issues:
+
+                          ${issuesWithUnparseableField.join("\n")}
+                    `)
                 );
             }
-        });
-        if (issuesWithUnparseableField.length > 0) {
-            throw new Error(
-                dedent(`
-                    Failed to parse the following Jira field of some issues: ${fieldName}
-                    Expected the field to be: ${extractor.expectedType}
-                    Make sure the correct field is present on the following issues:
-
-                    ${issuesWithUnparseableField.join("\n")}
-                `)
-            );
         }
         return results;
     }

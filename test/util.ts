@@ -7,8 +7,8 @@ import Sinon, { stub } from "sinon";
 import sinonChai from "sinon-chai";
 import { JWTCredentials } from "../src/authentication/credentials";
 import { JiraClient } from "../src/client/jira/jiraClient";
-import { XrayClient } from "../src/client/xray/xrayClient";
-import { RequestConfigGet, RequestConfigPost, Requests } from "../src/https/requests";
+import { RequestConfigGet, RequestConfigPost, XrayClient } from "../src/client/xray/xrayClient";
+import { Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
 import {

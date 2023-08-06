@@ -7,7 +7,7 @@ import {
     PATCredentials,
 } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
-import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
+import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import {
     XrayTestExecutionResultsCloud,
     XrayTestExecutionResultsServer,
@@ -62,7 +62,7 @@ export abstract class XrayClient<
                 logWarning("No native Cypress tests were executed. Skipping native upload.");
                 return null;
             }
-            logInfo("Importing execution...");
+            logDebug("Importing execution...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const request = await this.prepareRequestImportExecution(execution);
@@ -72,7 +72,7 @@ export abstract class XrayClient<
                     request.config
                 );
                 const key = this.handleResponseImportExecution(response.data);
-                logSuccess(`Successfully uploaded test execution results to ${key}.`);
+                logDebug(`Successfully uploaded test execution results to ${key}.`);
                 return key;
             } finally {
                 clearInterval(progressInterval);
@@ -102,20 +102,20 @@ export abstract class XrayClient<
                 logWarning("No Cucumber tests were executed. Skipping Cucumber upload.");
                 return null;
             }
-            logInfo("Importing execution (Cucumber)...");
-            const request = await this.prepareRequestImportExecutionCucumberMultipart(
-                cucumberJson,
-                cucumberInfo
-            );
+            logDebug("Importing execution (Cucumber)...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
+                const request = await this.prepareRequestImportExecutionCucumberMultipart(
+                    cucumberJson,
+                    cucumberInfo
+                );
                 const response: AxiosResponse<ImportExecutionResponseType> = await Requests.post(
                     request.url,
                     request.data,
                     request.config
                 );
                 const key = this.handleResponseImportExecutionCucumberMultipart(response.data);
-                logSuccess(`Successfully uploaded Cucumber test execution results to ${key}.`);
+                logDebug(`Successfully uploaded Cucumber test execution results to ${key}.`);
                 return key;
             } finally {
                 clearInterval(progressInterval);
@@ -144,7 +144,7 @@ export abstract class XrayClient<
         source?: string
     ): Promise<boolean> {
         try {
-            logInfo("Importing Cucumber features...");
+            logDebug("Importing Cucumber features...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const request = await this.prepareRequestImportFeature(
@@ -183,7 +183,7 @@ export abstract class XrayClient<
         filter?: number
     ): Promise<ExportCucumberTestsResponse> {
         try {
-            logInfo("Exporting Cucumber tests...");
+            logDebug("Exporting Cucumber tests...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const request = await this.prepareRequestExportCucumber(keys, filter);

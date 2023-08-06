@@ -1,5 +1,4 @@
 import { resolvePreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
-import dedent from "dedent";
 import fs from "fs";
 import path from "path";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
@@ -10,9 +9,10 @@ import { ImportExecutionConverterCloud } from "./conversion/importExecution/impo
 import { ImportExecutionConverterServer } from "./conversion/importExecution/importExecutionConverterServer";
 import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterCloud";
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
-import { logDebug, logError, logInfo, logWarning } from "./logging/logging";
+import { logDebug, logError, logInfo, logSuccess, logWarning } from "./logging/logging";
 import {
     FeatureFileIssueData,
+    FeatureFileIssueDataTest,
     containsCucumberTest,
     containsNativeTest,
     getCucumberIssueData,
@@ -36,6 +36,7 @@ import {
     CucumberMultipartFeature,
     CucumberMultipartServer,
 } from "./types/xray/requests/importExecutionCucumberMultipart";
+import { dedent } from "./util/dedent";
 
 export async function beforeRunHook(
     runDetails: Cypress.BeforeRunDetails,
@@ -224,6 +225,7 @@ export async function afterRunHook(
     }
     let issueKey: string = null;
     if (containsNativeTest(runResult, options)) {
+        logInfo("Uploading native Cypress test results...");
         issueKey = await uploadCypressResults(
             runResult,
             options,
@@ -248,6 +250,7 @@ export async function afterRunHook(
         }
     }
     if (containsCucumberTest(runResult, options)) {
+        logInfo("Uploading Cucumber test results...");
         const cucumberIssueKey = await uploadCucumberResults(runResult, options, clients);
         if (
             options.jira.testExecutionIssueKey &&
@@ -262,7 +265,12 @@ export async function afterRunHook(
                 `)
             );
         }
-        if (options.jira.testExecutionIssueKey && issueKey && cucumberIssueKey !== issueKey) {
+        if (
+            options.jira.testExecutionIssueKey &&
+            issueKey &&
+            cucumberIssueKey &&
+            cucumberIssueKey !== issueKey
+        ) {
             logWarning(
                 dedent(`
                     Cucumber execution results were imported to a different test execution issue than the Cypress execution results.
@@ -281,6 +289,9 @@ export async function afterRunHook(
         logWarning("Execution results import was skipped. Skipping remaining tasks");
         return;
     }
+    logSuccess(
+        `Uploaded test results to issue: ${issueKey} (${options.jira.url}/browse/${issueKey})`
+    );
     if (options.jira.attachVideos) {
         await attachVideos(runResult, issueKey, clients.jiraClient);
     }
@@ -391,17 +402,19 @@ export async function synchronizeFile(
                 // summary once the import is done.
                 // See: https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                 // See: https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                const testIssueKeys = [
+                const issueKeys = [
                     ...issueData.tests.map((data) => data.key),
                     ...issueData.preconditions.map((data) => data.key),
                 ];
                 logDebug(
                     dedent(`
                         Creating issue summary backups for issues:
-                        ${testIssueKeys.join("\n")}
+                          ${issueKeys.join("\n")}
                     `)
                 );
-                const testSummaries = await clients.jiraRepository.getSummaries(...testIssueKeys);
+                logInfo("Importing feature file to Xray...");
+                const testSummaries = await clients.jiraRepository.getSummaries(...issueKeys);
+                const testLabels = await clients.jiraRepository.getLabels(...issueKeys);
                 const wasImportSuccessful = await clients.xrayClient.importFeature(
                     file.filePath,
                     options.jira.projectKey
@@ -410,6 +423,12 @@ export async function synchronizeFile(
                     await resetSummaries(
                         issueData,
                         testSummaries,
+                        clients.jiraClient,
+                        clients.jiraRepository
+                    );
+                    await resetLabels(
+                        issueData.tests,
+                        testLabels,
                         clients.jiraClient,
                         clients.jiraRepository
                     );
@@ -437,23 +456,23 @@ async function resetSummaries(
             const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {
                 fields: {},
             };
-            const summaryFieldId = await jiraRepository.getFieldId("Summary");
+            const summaryFieldId = await jiraRepository.getFieldId("Summary", "summary");
             issueUpdate.fields[summaryFieldId] = oldSummary;
             logDebug(
                 dedent(`
                     Resetting issue summary of issue: ${issueKey}
 
-                    Summary pre sync:  ${oldSummary}
-                    Summary post sync: ${newSummary}
-            `)
+                      Summary pre sync:  ${oldSummary}
+                      Summary post sync: ${newSummary}
+                `)
             );
             if (!(await jiraClient.editIssue(issueKey, issueUpdate))) {
                 logError(
                     dedent(`
                         Failed to reset issue summary of issue to its old summary: ${issueKey}
 
-                        Summary pre sync:  ${oldSummary}
-                        Summary post sync: ${newSummary}
+                          Summary pre sync:  ${oldSummary}
+                          Summary post sync: ${newSummary}
 
                         Make sure to reset it manually if needed
                     `)
@@ -462,6 +481,50 @@ async function resetSummaries(
         } else {
             logDebug(
                 `Issue summary is identical to scenario (outline) name already: ${issueKey} (${oldSummary})`
+            );
+        }
+    }
+}
+
+async function resetLabels(
+    issueData: FeatureFileIssueDataTest[],
+    testLabels: StringMap<string[]>,
+    jiraClient: JiraClientServer | JiraClientCloud,
+    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
+) {
+    for (let i = 0; i < issueData.length; i++) {
+        const issueKey = issueData[i].key;
+        const oldLabels = testLabels[issueKey];
+        const newLabels = issueData[i].tags;
+        if (!newLabels.every((label) => oldLabels.includes(label))) {
+            const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {
+                fields: {},
+            };
+            const labelFieldId = await jiraRepository.getFieldId("Labels", "labels");
+            issueUpdate.fields[labelFieldId] = oldLabels;
+            logDebug(
+                dedent(`
+                    Resetting issue labels of issue: ${issueKey}
+
+                      Labels pre sync:  ${oldLabels}
+                      Labels post sync: ${newLabels}
+                `)
+            );
+            if (!(await jiraClient.editIssue(issueKey, issueUpdate))) {
+                logError(
+                    dedent(`
+                        Failed to reset issue labels of issue to its old labels: ${issueKey}
+
+                          Labels pre sync:  ${oldLabels}
+                          Labels post sync: ${newLabels}
+
+                        Make sure to reset them manually if needed
+                    `)
+                );
+            }
+        } else {
+            logDebug(
+                `Issue labels are identical to scenario (outline) labels already: ${issueKey} (${oldLabels})`
             );
         }
     }

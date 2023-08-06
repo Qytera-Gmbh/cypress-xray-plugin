@@ -1,9 +1,9 @@
 import { expect } from "chai";
-import dedent from "dedent";
 import { readFileSync } from "fs";
 import { stubLogging } from "../../../test/util";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
+import { dedent } from "../../util/dedent";
 import { TestIssueData } from "./importExecutionConverter";
 import { ImportExecutionConverterCloud } from "./importExecutionConverterCloud";
 import { ImportExecutionConverterServer } from "./importExecutionConverterServer";

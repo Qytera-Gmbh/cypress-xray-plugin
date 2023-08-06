@@ -1,9 +1,8 @@
-import dedent from "dedent";
 import FormData from "form-data";
 import fs from "fs";
 import { JWTCredentials } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
-import { logError, logInfo, logSuccess, logWarning, writeErrorFile } from "../../logging/logging";
+import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import {
@@ -13,6 +12,7 @@ import {
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
+import { dedent } from "../../util/dedent";
 import { RequestConfigGet, RequestConfigPost, XrayClient } from "./xrayClient";
 
 type GetTestsJiraData = {
@@ -133,13 +133,13 @@ export class XrayClientCloud extends XrayClient<
             logError("Encountered some errors during import:", ...response.errors);
         }
         if (response.updatedOrCreatedTests.length > 0) {
-            logSuccess(
+            logDebug(
                 "Successfully updated or created test issues:",
                 response.updatedOrCreatedTests.map((issue: IssueDetails) => issue.key).join(", ")
             );
         }
         if (response.updatedOrCreatedPreconditions.length > 0) {
-            logSuccess(
+            logDebug(
                 "Successfully updated or created precondition issues:",
                 response.updatedOrCreatedPreconditions
                     .map((issue: IssueDetails) => issue.key)
@@ -169,7 +169,7 @@ export class XrayClientCloud extends XrayClient<
             const authenticationHeader = await this.credentials.getAuthenticationHeader(
                 `${this.apiBaseURL}/authenticate`
             );
-            logInfo("Retrieving test types...");
+            logDebug("Retrieving test types...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
                 const types = {};
@@ -224,13 +224,13 @@ export class XrayClientCloud extends XrayClient<
                         dedent(`
                             Failed to retrieve test types for issues:
 
-                            ${missingTypes.join("\n")}
+                              ${missingTypes.join("\n")}
 
                             Make sure these issues exist and are actually test issues
                         `)
                     );
                 }
-                logSuccess(`Successfully retrieved test types for ${issueKeys.length} issues`);
+                logDebug(`Successfully retrieved test types for ${issueKeys.length} issues`);
                 return types;
             } finally {
                 clearInterval(progressInterval);

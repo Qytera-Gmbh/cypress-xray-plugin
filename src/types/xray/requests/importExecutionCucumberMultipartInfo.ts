@@ -12,6 +12,7 @@ type CucumberMultipartInfo<IssueTypeDetails, IssueUpdateType> = IssueUpdateType 
         summary: string;
         description?: string;
         issuetype: IssueTypeDetails;
+        labels?: string[];
     };
 };
 export type CucumberMultipartInfoServer = CucumberMultipartInfo<
