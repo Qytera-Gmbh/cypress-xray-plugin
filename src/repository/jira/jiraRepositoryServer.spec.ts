@@ -218,7 +218,7 @@ describe("the server issue repository", () => {
                       jira: {
                         fields = {
                           "summary": {
-                            name: // translation of summary
+                            name: // translation
                           }
                         }
                       }
@@ -499,7 +499,7 @@ describe("the server issue repository", () => {
                       jira: {
                         fields = {
                           "description": {
-                            name: // translation of description
+                            name: // translation
                           }
                         }
                       }
@@ -818,7 +818,7 @@ describe("the server issue repository", () => {
                       jira: {
                         fields = {
                           "testType": {
-                            name: // translation of test type
+                            name: // translation
                           }
                         }
                       }

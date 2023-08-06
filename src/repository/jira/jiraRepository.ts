@@ -102,7 +102,7 @@ export abstract class JiraRepository<
                               jira: {
                                 fields = {
                                   "${optionName}": {
-                                    name: // translation of ${fieldName}
+                                    name: // translation
                                   }
                                 }
                               }
@@ -122,7 +122,7 @@ export abstract class JiraRepository<
                               jira: {
                                 fields = {
                                   "${optionName}": {
-                                    name: // translation of ${fieldName}
+                                    name: // translation
                                   }
                                 }
                               }
