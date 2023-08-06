@@ -32,14 +32,14 @@ export type JiraFieldIds = {
     /**
      * The test plan field ID of Xray test (execution) issues.
      *
-     * *Note: This setting is required for server instances only. Xray cloud provides ways to
+     * *Note: This option is required for server instances only. Xray cloud provides ways to
      * retrieve test plan field information independently of Jira.*
      */
     testPlan?: string;
     /**
      * The test type field ID of Xray test issues.
      *
-     * *Note: This setting is required for server instances only. Xray cloud provides ways to
+     * *Note: This option is required for server instances only. Xray cloud provides ways to
      * retrieve test type field information independently of Jira.*
      */
     testType?: string;
