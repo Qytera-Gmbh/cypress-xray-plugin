@@ -210,8 +210,132 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: summary
-                    Make sure the field actually exists
+                    Failed to fetch Jira field ID for field with name: Summary
+                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                    You can provide field IDs directly without relying on language settings:
+
+                      jira: {
+                        fields = {
+                          summary: {
+                            id: // corresponding field ID
+                          }
+                        }
+                      }
+                `)
+            );
+            expect(summaries).to.deep.eq({});
+        });
+
+        it("displays an error containing field hints when the summary field does not exist", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "summary_french",
+                    name: "Résumé",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["summary"],
+                    schema: {
+                        type: "string",
+                        system: "summary",
+                    },
+                },
+                {
+                    id: "summary_german",
+                    name: "Zusammenfassung",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["summary"],
+                    schema: {
+                        type: "string",
+                        system: "summary",
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getSummaries("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue summaries
+                    Failed to fetch Jira field ID for field with name: Summary
+                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                    Available fields:
+                      name: Résumé, id: summary_french
+                      name: Zusammenfassung, id: summary_german
+
+                    You can provide field IDs directly without relying on language settings:
+
+                      jira: {
+                        fields = {
+                          summary: {
+                            id: // corresponding field ID
+                          }
+                        }
+                      }
+                `)
+            );
+            expect(summaries).to.deep.eq({});
+        });
+
+        it("displays an error when there are multiple summary fields", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "summary",
+                    name: "summary",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["summary"],
+                    schema: {
+                        type: "string",
+                        system: "summary",
+                    },
+                },
+                {
+                    id: "customfield_12345",
+                    name: "Summary",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["summary (custom)"],
+                    schema: {
+                        type: "string",
+                        customId: 5125,
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getSummaries("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue summaries
+                    Failed to fetch Jira field ID for field with name: Summary
+                    There are multiple fields with this name
+
+                    Duplicates:
+                      id: summary, name: summary, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: summary, schema: [object Object]
+                      id: customfield_12345, name: Summary, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: summary (custom), schema: [object Object]
+
+                    You can provide field IDs in the options:
+
+                      jira: {
+                        fields = {
+                          summary: {
+                            id: // "summary" or "customfield_12345"
+                          }
+                        }
+                      }
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -234,8 +358,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: summary
-                    Make sure the field actually exists
+                    Failed to fetch Jira field ID for field with name: Summary
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -294,7 +417,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to parse the following Jira field of some issues: summary
+                    Failed to parse Jira field with ID: summary
                     Expected the field to be: a string
                     Make sure the correct field is present on the following issues:
 
@@ -482,11 +605,135 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: description
-                    Make sure the field actually exists
+                    Failed to fetch Jira field ID for field with name: Description
+                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                    You can provide field IDs directly without relying on language settings:
+
+                      jira: {
+                        fields = {
+                          description: {
+                            id: // corresponding field ID
+                          }
+                        }
+                      }
                 `)
             );
             expect(descriptions).to.deep.eq({});
+        });
+
+        it("displays an error containing field hints when the description field does not exist", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "description_italian",
+                    name: "descrizione",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["description"],
+                    schema: {
+                        type: "string",
+                        system: "description",
+                    },
+                },
+                {
+                    id: "description_german",
+                    name: "Beschreibung",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["description"],
+                    schema: {
+                        type: "string",
+                        system: "description",
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getDescriptions("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue descriptions
+                    Failed to fetch Jira field ID for field with name: Description
+                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                    Available fields:
+                      name: descrizione, id: description_italian
+                      name: Beschreibung, id: description_german
+
+                    You can provide field IDs directly without relying on language settings:
+
+                      jira: {
+                        fields = {
+                          description: {
+                            id: // corresponding field ID
+                          }
+                        }
+                      }
+                `)
+            );
+            expect(summaries).to.deep.eq({});
+        });
+
+        it("displays an error when there are multiple description fields", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "description",
+                    name: "description",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["description"],
+                    schema: {
+                        type: "string",
+                        system: "description",
+                    },
+                },
+                {
+                    id: "customfield_12345",
+                    name: "Description",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["description (custom)"],
+                    schema: {
+                        type: "string",
+                        customId: 5125,
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getDescriptions("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue descriptions
+                    Failed to fetch Jira field ID for field with name: Description
+                    There are multiple fields with this name
+
+                    Duplicates:
+                      id: description, name: description, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: description, schema: [object Object]
+                      id: customfield_12345, name: Description, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: description (custom), schema: [object Object]
+
+                    You can provide field IDs in the options:
+
+                      jira: {
+                        fields = {
+                          description: {
+                            id: // "description" or "customfield_12345"
+                          }
+                        }
+                      }
+                `)
+            );
+            expect(summaries).to.deep.eq({});
         });
 
         it("handles get field failures gracefully", async () => {
@@ -506,8 +753,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: description
-                    Make sure the field actually exists
+                    Failed to fetch Jira field ID for field with name: Description
                 `)
             );
             expect(descriptions).to.deep.eq({});
@@ -566,7 +812,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to parse the following Jira field of some issues: description
+                    Failed to parse Jira field with ID: description
                     Expected the field to be: a string
                     Make sure the correct field is present on the following issues:
 
@@ -783,7 +1029,64 @@ describe("the server issue repository", () => {
             });
         });
 
-        it("displays an error when the description field does not exist", async () => {
+        it("displays an error when there are multiple description fields", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "test_type",
+                    name: "Test Type",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["test type"],
+                    schema: {
+                        type: "string",
+                        system: "test type",
+                    },
+                },
+                {
+                    id: "customfield_12345",
+                    name: "test type",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["test type (custom)"],
+                    schema: {
+                        type: "string",
+                        customId: 5125,
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getTestTypes("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue test types
+                    Failed to fetch Jira field ID for field with name: Test Type
+                    There are multiple fields with this name
+
+                    Duplicates:
+                      id: test_type, name: Test Type, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: test type, schema: [object Object]
+                      id: customfield_12345, name: test type, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: test type (custom), schema: [object Object]
+
+                    You can provide field IDs in the options:
+
+                      jira: {
+                        fields = {
+                          testType: {
+                            id: // "test_type" or "customfield_12345"
+                          }
+                        }
+                      }
+                `)
+            );
+            expect(summaries).to.deep.eq({});
+        });
+
+        it("displays an error when the test type field does not exist", async () => {
             stub(jiraClient, "getFields").resolves([]);
             const stubbedSearch = stub(jiraClient, "search");
             const { stubbedError } = stubLogging();
@@ -792,11 +1095,78 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue test types
-                    Failed to fetch Jira field ID for field with name: test type
-                    Make sure the field actually exists
+                    Failed to fetch Jira field ID for field with name: Test Type
+                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                    You can provide field IDs directly without relying on language settings:
+
+                      jira: {
+                        fields = {
+                          testType: {
+                            id: // corresponding field ID
+                          }
+                        }
+                      }
                 `)
             );
             expect(testTypes).to.deep.eq({});
+        });
+
+        it("displays an error containing field hints when the test type field does not exist", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "test_type_french",
+                    name: "Type de Test",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["description"],
+                    schema: {
+                        type: "string",
+                        system: "description",
+                    },
+                },
+                {
+                    id: "test_type_german",
+                    name: "Testtyp",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["description"],
+                    schema: {
+                        type: "string",
+                        system: "description",
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getTestTypes("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue test types
+                    Failed to fetch Jira field ID for field with name: Test Type
+                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                    Available fields:
+                      name: Type de Test, id: test_type_french
+                      name: Testtyp, id: test_type_german
+
+                    You can provide field IDs directly without relying on language settings:
+
+                      jira: {
+                        fields = {
+                          testType: {
+                            id: // corresponding field ID
+                          }
+                        }
+                      }
+                `)
+            );
+            expect(summaries).to.deep.eq({});
         });
 
         it("handles get field failures gracefully", async () => {
@@ -816,8 +1186,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue test types
-                    Failed to fetch Jira field ID for field with name: test type
-                    Make sure the field actually exists
+                    Failed to fetch Jira field ID for field with name: Test Type
                 `)
             );
             expect(testTypes).to.deep.eq({});
@@ -896,7 +1265,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue test types
-                    Failed to parse the following Jira field of some issues: test type
+                    Failed to parse Jira field with ID: customfield_12100
                     Expected the field to be: an object with a value property
                     Make sure the correct field is present on the following issues:
 

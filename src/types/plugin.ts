@@ -16,6 +16,35 @@ export interface Options {
     openSSL?: OpenSSLOptions;
 }
 
+export type JiraFieldIds = {
+    /**
+     * The Jira issue description field ID.
+     */
+    description?: string;
+    /**
+     * The Jira issue labels field ID.
+     */
+    labels?: string;
+    /**
+     * The Jira issue summary field ID (i.e. the title of the issues).
+     */
+    summary?: string;
+    /**
+     * The test plan field ID of Xray test (execution) issues.
+     *
+     * *Note: This option is required for server instances only. Xray cloud provides ways to
+     * retrieve test plan field information independently of Jira.*
+     */
+    testPlan?: string;
+    /**
+     * The test type field ID of Xray test issues.
+     *
+     * *Note: This option is required for server instances only. Xray cloud provides ways to
+     * retrieve test type field information independently of Jira.*
+     */
+    testType?: string;
+};
+
 export interface JiraOptions {
     /**
      * The Jira project key.
@@ -28,6 +57,29 @@ export interface JiraOptions {
      * execution issue on results upload.
      */
     attachVideos?: boolean;
+    /**
+     * Jira Field IDs to make all fields required during the upload process uniquely identifiable.
+     * By default, the plugin accesses field information using the fields' names. Therefore,
+     * providing the field's IDs here can make sense in the following scenarios:
+     * - Your Jira language setting is a language other than English
+     *   - Example: When the summary is required and the Jira language is set to French, the plugin
+     *     will look for a field called `Summary`, but Jira will return a field called `Résumé`
+     *     instead.
+     * - Your Jira project contains several fields with identical names
+     *
+     * *Note: In case you don't know these properties or if you are unsure whether they are really
+     * needed, the plugin will try to provide lists of field candidates in case any errors occur.
+     * You can then extract all required information from these candidates.*
+     *
+     * *Please consult the official documentation for more information about field IDs: https://confluence.atlassian.com/jirakb/how-to-find-id-for-custom-field-s-744522503.html*
+     *
+     * @example
+     *   fields: {
+     *     description: "description",
+     *     testPlan: "customfield_12643"
+     *   }
+     */
+    fields?: JiraFieldIds;
     /**
      * The description of the test execution issue, which will be used both for new test execution
      * issues as well as for updating existing issues (if provided through
@@ -43,7 +95,7 @@ export interface JiraOptions {
      * An execution issue key to attach run results to. If omitted, Jira will always create a new
      * test execution issue with each upload.
      *
-     * Note: it must be prefixed with the project key.
+     * *Note: it must be prefixed with the project key.*
      *
      * @example "CYP-123"
      */
@@ -68,7 +120,7 @@ export interface JiraOptions {
     /**
      * A test plan issue key to attach the execution to.
      *
-     * Note: it must be prefixed with the project key.
+     * *Note: it must be prefixed with the project key.*
      *
      * @example "CYP-567"
      */
@@ -98,8 +150,8 @@ export interface XrayStepOptions {
      * Whether to update a manual test issue's test steps during execution results upload. If set
      * to true, all existing steps ***will be replaced*** with the plugin's steps.
      *
-     * Note: the plugin currently creates only one step containing the code of the corresponding
-     * Cypress test function.
+     * *Note: the plugin currently creates only one step containing the code of the corresponding
+     * Cypress test function.*
      */
     update?: boolean;
 }
@@ -160,16 +212,16 @@ export interface CucumberOptions {
     /**
      * Set it to true to automatically download feature files from Xray for Cypress to execute.
      *
-     * Note: Enable this option if the source of truth for test cases are step definitions in Xray
-     * and Cypress is only used for running tests.
+     * *Note: Enable this option if the source of truth for test cases are step definitions in Xray
+     * and Cypress is only used for running tests.*
      */
     downloadFeatures?: boolean;
     /**
      * Set it to true to automatically create or update existing Xray issues (summary, steps),
      * based on the feature file executed by Cypress.
      *
-     * Note: Enable this option if the source of truth for test cases are local feature files in
-     * Cypress and Xray is only used for tracking execution status/history.
+     * *Note: Enable this option if the source of truth for test cases are local feature files in
+     * Cypress and Xray is only used for tracking execution status/history.*
      */
     uploadFeatures?: boolean;
 }
@@ -208,7 +260,7 @@ export interface OpenSSLOptions {
      * {@link https://nodejs.org/api/https.html#class-httpsagent https.Agent} used for sending
      * requests to your Xray instance.
      *
-     * Note: Compute their bitwise OR if you need to set more than one option.
+     * *Note: Compute their bitwise OR if you need to set more than one option.*
      *
      * @example
      * import { constants } from "crypto";

@@ -5,14 +5,18 @@ import { JiraRepository } from "./jiraRepository";
 
 export class JiraRepositoryServer extends JiraRepository<JiraClientServer, XrayClientServer> {
     protected async fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>> {
+        let fieldId = this.options.jira.fields.testType;
+        if (!fieldId) {
+            fieldId = await this.getFieldId("Test Type", "testType");
+        }
         // Field property example:
         // customfield_12100: {
         //   value: "Cucumber",
         //   id: "12702",
         //   disabled: false
         // }
-        return await this.getJiraField(
-            "test type",
+        return await this.extractJiraField(
+            fieldId,
             JiraRepository.OBJECT_VALUE_EXTRACTOR,
             ...issueKeys
         );
