@@ -35,6 +35,15 @@ export abstract class JiraRepository<
         expectedType: "a string",
     };
 
+    protected static readonly ARRAY_STRING_EXTRACTOR: FieldExtractor<string[]> = {
+        extractorFunction: (value: unknown): string[] | undefined => {
+            if (Array.isArray(value) && value.every((element) => typeof element === "string")) {
+                return value;
+            }
+        },
+        expectedType: "an array of strings",
+    };
+
     protected static readonly OBJECT_VALUE_EXTRACTOR: FieldExtractor<string> = {
         extractorFunction: (data: unknown): string | undefined => {
             if (typeof data === "object" && data !== null) {
@@ -47,6 +56,7 @@ export abstract class JiraRepository<
     private readonly summaries: StringMap<string> = {};
     private readonly descriptions: StringMap<string> = {};
     private readonly testTypes: StringMap<string> = {};
+    private readonly labels: StringMap<string[]> = {};
 
     constructor(jiraClient: JiraClientType, xrayClient: XrayClientType, options: Options) {
         this.jiraFieldRepository = new JiraFieldRepository(jiraClient, options);
@@ -228,6 +238,33 @@ export abstract class JiraRepository<
         return result;
     }
 
+    public async getLabels(...issueKeys: string[]): Promise<StringMap<string[]>> {
+        let result: StringMap<string[]> = {};
+        try {
+            result = await this.fetchFields(this.labels, this.fetchLabels.bind(this), ...issueKeys);
+            const missingLabels: string[] = issueKeys.filter(
+                (key: string) => !(key in this.labels)
+            );
+            if (missingLabels.length > 0) {
+                throw new Error(
+                    dedent(`
+                        Make sure these issues exist:
+
+                          ${missingLabels.join("\n")}
+                    `)
+                );
+            }
+        } catch (error: unknown) {
+            logError(
+                dedent(`
+                    Failed to fetch issue labels
+                    ${error instanceof Error ? error.message : JSON.stringify(error)}
+                `)
+            );
+        }
+        return result;
+    }
+
     protected async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
         let fieldId = this.options.jira.fields.summary;
         if (!fieldId) {
@@ -249,6 +286,20 @@ export abstract class JiraRepository<
     }
 
     protected abstract fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;
+
+    protected async fetchLabels(...issueKeys: string[]): Promise<StringMap<string[]>> {
+        let fieldId = this.options.jira.fields.labels;
+        if (!fieldId) {
+            fieldId = await this.getFieldId("Labels", "labels");
+        }
+        // Field property example:
+        // labels: ["regression", "quality"]
+        return await this.extractJiraField(
+            fieldId,
+            JiraRepository.ARRAY_STRING_EXTRACTOR,
+            ...issueKeys
+        );
+    }
 
     protected async extractJiraField<T>(
         fieldId: string,
