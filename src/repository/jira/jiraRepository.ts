@@ -101,8 +101,18 @@ export abstract class JiraRepository<
 
                               jira: {
                                 fields = {
-                                  "${optionName}": {
+                                  ${optionName}: {
                                     name: // translation
+                                  }
+                                }
+                              }
+
+                            Alternatively, you can provide the ID directly without relying on language settings:
+
+                              jira: {
+                                fields = {
+                                  ${optionName}: {
+                                    id: // corresponding field ID
                                   }
                                 }
                               }
@@ -121,8 +131,18 @@ export abstract class JiraRepository<
 
                               jira: {
                                 fields = {
-                                  "${optionName}": {
+                                  ${optionName}: {
                                     name: // translation
+                                  }
+                                }
+                              }
+
+                            Alternatively, you can provide the ID directly without relying on language settings:
+
+                              jira: {
+                                fields = {
+                                  ${optionName}: {
+                                    id: // corresponding field ID
                                   }
                                 }
                               }

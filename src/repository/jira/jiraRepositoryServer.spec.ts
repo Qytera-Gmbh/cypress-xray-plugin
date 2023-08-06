@@ -217,8 +217,18 @@ describe("the server issue repository", () => {
 
                       jira: {
                         fields = {
-                          "summary": {
+                          summary: {
                             name: // translation
+                          }
+                        }
+                      }
+
+                    Alternatively, you can provide the ID directly without relying on language settings:
+
+                      jira: {
+                        fields = {
+                          summary: {
+                            id: // corresponding field ID
                           }
                         }
                       }
@@ -498,8 +508,18 @@ describe("the server issue repository", () => {
 
                       jira: {
                         fields = {
-                          "description": {
+                          description: {
                             name: // translation
+                          }
+                        }
+                      }
+
+                    Alternatively, you can provide the ID directly without relying on language settings:
+
+                      jira: {
+                        fields = {
+                          description: {
+                            id: // corresponding field ID
                           }
                         }
                       }
@@ -817,8 +837,18 @@ describe("the server issue repository", () => {
 
                       jira: {
                         fields = {
-                          "testType": {
+                          testType: {
                             name: // translation
+                          }
+                        }
+                      }
+
+                    Alternatively, you can provide the ID directly without relying on language settings:
+
+                      jira: {
+                        fields = {
+                          testType: {
+                            id: // corresponding field ID
                           }
                         }
                       }
