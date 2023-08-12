@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { dedent } from "./dedent";
-import { setCoverage } from "./setCoverage";
+import { setCoverage } from "./sets";
 
 describe("the set coverage", () => {
     it("throws when no subsets are provided", () => {

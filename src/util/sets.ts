@@ -71,7 +71,14 @@ function toArray<T>(set: Set<T>): T[] {
     return [...set];
 }
 
-function intersect<T>(a: Set<T>, b: Set<T>): Set<T> {
+/**
+ * Computes the intersection of two sets.
+ *
+ * @param a the first set
+ * @param b the second set
+ * @returns the intersection of `a` and `b`
+ */
+export function intersect<T>(a: Set<T>, b: Set<T>): Set<T> {
     const intersection: Set<T> = new Set<T>();
     for (const value of a.values()) {
         if (b.has(value)) {
