@@ -7,72 +7,76 @@ import { dedent } from "./dedent";
  * sets included in the result will be disjoint, meaning that each element will be covered exactly
  * once.
  *
- * Note: This method requires singleton subsets (sets containing just on element) to exist for each
- * element in the source set.
+ * Note: This method assumes that the given subsets can freely be subdivided further as required.
  *
  * @param set the source set
  * @param subsets the subsets to combine into the source set
  * @returns the subset combinations
  */
 export function setCoverage<T>(set: T[], ...subsets: T[][]): T[][] {
-    assertAllSingletonSubsetsExist(set, ...subsets);
-    const sortedSubsets: Set<T>[] = subsets
-        .sort((a, b) => b.length - a.length)
-        .map((subset) => {
-            const set: Set<T> = new Set<T>();
-            subset.forEach((element) => set.add(element));
-            return set;
-        });
-    const remainingElements: Set<T> = new Set<T>();
-    set.forEach((element) => remainingElements.add(element));
-    const bestSubsets: Set<T>[] = [];
-    while (remainingElements.size > 0) {
-        sortedSubsets.forEach((subset: Set<T>) => {
-            // Don't cover (possibly already covered) elements unnecessarily.
-            if (subset.size > remainingElements.size) {
-                return;
-            }
-            if (containsAll(remainingElements, subset)) {
-                bestSubsets.push(subset);
-                subset.forEach((element: T) => remainingElements.delete(element));
-            }
-        });
+    if (set.length === 0) {
+        throw new Error("Cannot cover empty set");
     }
-    return bestSubsets.map((set) => [...set]);
-}
-
-function assertAllSingletonSubsetsExist<T>(set: T[], ...sets: T[][]) {
-    const problematicElements = elementsWithoutSingletonSets(set, ...sets);
-    if (problematicElements.length > 0) {
+    if (subsets.length === 0) {
         throw new Error(
             dedent(`
-                Cannot build set coverage for: ${`[${set.join(", ")}]`}
-                There are elements without singleton subsets: ${`[${problematicElements.join(
-                    ", "
-                )}]`}
-
-                Subsets:
-                  ${sets.map((array) => `[${array.join(", ")}]`).join("\n")}
+                Cannot cover set: [${set.join(", ")}]
+                No subsets were provided
             `)
         );
     }
+    const sortedSubsets: Set<T>[] = subsets
+        .sort((a: T[], b: T[]) => b.length - a.length)
+        .map(toSet);
+    const remainingElements: Set<T> = toSet(set);
+    const covers: Set<T>[] = [];
+    while (remainingElements.size > 0) {
+        let bestSubsetIndex = 0;
+        let bestIntersection: Set<T> = null;
+        for (let i = 0; i < sortedSubsets.length; i++) {
+            const intersection = intersect(remainingElements, sortedSubsets[i]);
+            if (!bestIntersection || bestIntersection.size < intersection.size) {
+                bestIntersection = intersection;
+                bestSubsetIndex = i;
+            }
+        }
+        if (!bestIntersection) {
+            throw new Error(
+                dedent(`
+                    Cannot cover set: [${set.join(", ")}]
+                    Some elements are missing from all subsets
+
+                    Subsets:
+                      ${subsets.map((subset) => `[${subset.join(", ")}]`).join("\n")}
+
+                    Uncoverable elements:
+                      [${[...remainingElements].join(", ")}]
+                `)
+            );
+        }
+        sortedSubsets.splice(bestSubsetIndex, 1);
+        covers.push(bestIntersection);
+        bestIntersection.forEach((element: T) => remainingElements.delete(element));
+    }
+    return covers.map(toArray);
 }
 
-function elementsWithoutSingletonSets<T>(set: T[], ...sets: T[][]): T[] {
-    return set.filter((value) => !containsSingletonSet(value, ...sets));
+function toSet<T>(array: T[]): Set<T> {
+    const set: Set<T> = new Set<T>();
+    array.forEach((element: T) => set.add(element));
+    return set;
 }
 
-function containsSingletonSet<T>(value: T, ...sets: T[][]) {
-    return sets.some((subset) => {
-        return subset.length === 1 && subset.includes(value);
-    });
+function toArray<T>(set: Set<T>): T[] {
+    return [...set];
 }
 
-function containsAll<T>(set: Set<T>, subset: Set<T>) {
-    for (const value of subset.values()) {
-        if (!set.has(value)) {
-            return false;
+function intersect<T>(a: Set<T>, b: Set<T>): Set<T> {
+    const intersection: Set<T> = new Set<T>();
+    for (const value of a.values()) {
+        if (b.has(value)) {
+            intersection.add(value);
         }
     }
-    return true;
+    return intersection;
 }
