@@ -1,4 +1,3 @@
-import { resolvePreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import fs from "fs";
 import path from "path";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
@@ -9,6 +8,7 @@ import { ImportExecutionConverterCloud } from "./conversion/importExecution/impo
 import { ImportExecutionConverterServer } from "./conversion/importExecution/importExecutionConverterServer";
 import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterCloud";
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
+import { CucumberPreprocessorExports, importOptionalDependency } from "./dependencies";
 import { logDebug, logError, logInfo, logSuccess, logWarning } from "./logging/logging";
 import {
     FeatureFileIssueData,
@@ -84,10 +84,16 @@ export async function beforeRunHook(
             options.xray.uploadResults
         ) {
             if (!options.cucumber.preprocessor) {
-                options.cucumber.preprocessor = await resolvePreprocessorConfiguration(
+                const preprocessor = await importOptionalDependency<CucumberPreprocessorExports>(
+                    "@badeball/cypress-cucumber-preprocessor"
+                );
+                options.cucumber.preprocessor = await preprocessor.resolvePreprocessorConfiguration(
                     config,
                     config.env,
                     "/"
+                );
+                logDebug(
+                    `Successfully resolved configuration of @badeball/cypress-cucumber-preprocessor package`
                 );
             }
             if (!options.cucumber.preprocessor.json.enabled) {
