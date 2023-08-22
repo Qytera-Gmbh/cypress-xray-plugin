@@ -12,7 +12,7 @@ import {
     ENV_JIRA_FIELDS_DESCRIPTION,
     ENV_JIRA_FIELDS_LABELS,
     ENV_JIRA_FIELDS_SUMMARY,
-    ENV_JIRA_FIELDS_TEST_PLAN,
+    ENV_JIRA_FIELDS_TEST_PLANS,
     ENV_JIRA_FIELDS_TEST_TYPE,
     ENV_JIRA_PASSWORD,
     ENV_JIRA_PROJECT_KEY,
@@ -60,9 +60,9 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
                 labels: parse(env, ENV_JIRA_FIELDS_LABELS, asString) ?? options.jira.fields?.labels,
                 summary:
                     parse(env, ENV_JIRA_FIELDS_SUMMARY, asString) ?? options.jira.fields?.summary,
-                testPlan:
-                    parse(env, ENV_JIRA_FIELDS_TEST_PLAN, asString) ??
-                    options.jira.fields?.testPlan,
+                testPlans:
+                    parse(env, ENV_JIRA_FIELDS_TEST_PLANS, asString) ??
+                    options.jira.fields?.testPlans,
                 testType:
                     parse(env, ENV_JIRA_FIELDS_TEST_TYPE, asString) ??
                     options.jira.fields?.testType,

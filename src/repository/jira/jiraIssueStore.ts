@@ -15,6 +15,28 @@ interface Coverage {
     covers: FieldName[][];
 }
 
+type FieldReturnTypes = {
+    description: string;
+    labels: string[];
+    summary: string;
+    testPlans: string[];
+    testType: string;
+};
+
+type FieldReturns = {
+    [K in keyof JiraFieldIds]: {
+        kind: K;
+        data: FieldReturnTypes[K];
+    };
+};
+
+type FieldData = FieldReturns[keyof FieldReturns];
+
+type IssueResponse = {
+    issueKey: string;
+    fields: FieldData[];
+};
+
 export abstract class JiraIssueStore {
     /**
      * Combinations of fields which can be retrieved from a single API endpoint.
@@ -35,8 +57,10 @@ export abstract class JiraIssueStore {
                 this.mergeOrders(issueKey, fieldCombination, bulkOrders);
             }
         });
-        await Promise.all(bulkOrders.map(async (order: Order) => await this.checkoutIssues(order)));
         this.nextOrder = {};
+        const issueResponses = await Promise.all(
+            bulkOrders.map(async (order: Order) => await this.checkoutIssues(order))
+        );
     }
 
     public enqueue(issueKey: string, fields: FieldName[]): void {
@@ -50,7 +74,7 @@ export abstract class JiraIssueStore {
         }
     }
 
-    protected abstract checkoutIssues(order: Order): Promise<void>;
+    protected abstract checkoutIssues(order: Order): Promise<IssueResponse[]>;
 
     private getCombinations(fields: FieldName[]): FieldName[][] {
         for (const cachedCoverage of this.cachedCoverages) {

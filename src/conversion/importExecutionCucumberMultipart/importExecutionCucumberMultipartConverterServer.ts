@@ -40,9 +40,9 @@ export class ImportExecutionCucumberMultipartConverterServer extends ImportExecu
             },
         };
         if (this.options.jira.testPlanIssueKey) {
-            let fieldId = this.options.jira.fields.testPlan;
+            let fieldId = this.options.jira.fields.testPlans;
             if (!fieldId) {
-                fieldId = await this.jiraRepository.getFieldId("Test Plan", "testPlan");
+                fieldId = await this.jiraRepository.getFieldId("Test Plan", "testPlans");
             }
             info.fields[fieldId] = [this.options.jira.testPlanIssueKey];
         }

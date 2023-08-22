@@ -9,7 +9,7 @@ export class JiraIssueStoreCloud extends JiraIssueStore {
         "labels",
         "summary",
     ];
-    private static readonly XRAY_API_FIELDS: (keyof JiraFieldIds)[] = ["testPlan", "testType"];
+    private static readonly XRAY_API_FIELDS: (keyof JiraFieldIds)[] = ["testPlans", "testType"];
     private readonly options: Options;
     private readonly jiraClient: JiraClientCloud;
     private readonly xrayClient: XrayClientCloud;

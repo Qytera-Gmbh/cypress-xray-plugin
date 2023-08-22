@@ -36,7 +36,7 @@ describe("the plugin context configuration", () => {
                         expect(options.jira.fields.summary).to.eq(undefined);
                     });
                     it("testPlan", () => {
-                        expect(options.jira.fields.testPlan).to.eq(undefined);
+                        expect(options.jira.fields.testPlans).to.eq(undefined);
                     });
                     it("testType", () => {
                         expect(options.jira.fields.testType).to.eq(undefined);
@@ -185,7 +185,7 @@ describe("the plugin context configuration", () => {
                         );
                         expect(options.jira.fields.summary).to.eq("Résumé");
                     });
-                    it("testPlan", () => {
+                    it("testPlans", () => {
                         const options = initOptions(
                             {},
                             {
@@ -193,12 +193,12 @@ describe("the plugin context configuration", () => {
                                     projectKey: "PRJ",
                                     url: "https://example.org",
                                     fields: {
-                                        testPlan: "Plan de Test",
+                                        testPlans: "Plan de Test",
                                     },
                                 },
                             }
                         );
-                        expect(options.jira.fields.testPlan).to.eq("Plan de Test");
+                        expect(options.jira.fields.testPlans).to.eq("Plan de Test");
                     });
                     it("testType", () => {
                         const options = initOptions(
@@ -644,20 +644,20 @@ describe("the plugin context configuration", () => {
                         });
                         expect(options.jira.fields.summary).to.eq("customfield_98765");
                     });
-                    it("JIRA_FIELDS_TEST_PLAN", () => {
+                    it("JIRA_FIELDS_TEST_PLANS", () => {
                         const env = {
-                            JIRA_FIELDS_TEST_PLAN: "customfield_98765",
+                            JIRA_FIELDS_TEST_PLANS: "customfield_98765",
                         };
                         const options = initOptions(env, {
                             jira: {
                                 projectKey: "PRJ",
                                 url: "https://example.org",
                                 fields: {
-                                    testPlan: "customfield_12345",
+                                    testPlans: "customfield_12345",
                                 },
                             },
                         });
-                        expect(options.jira.fields.testPlan).to.eq("customfield_98765");
+                        expect(options.jira.fields.testPlans).to.eq("customfield_98765");
                     });
                     it("JIRA_FIELDS_TEST_TYPE", () => {
                         const env = {
