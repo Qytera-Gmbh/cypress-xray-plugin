@@ -84,17 +84,33 @@ export async function beforeRunHook(
             options.xray.uploadResults
         ) {
             if (!options.cucumber.preprocessor) {
-                const preprocessor = await importOptionalDependency<CucumberPreprocessorExports>(
-                    "@badeball/cypress-cucumber-preprocessor"
-                );
-                options.cucumber.preprocessor = await preprocessor.resolvePreprocessorConfiguration(
-                    config,
-                    config.env,
-                    "/"
-                );
-                logDebug(
-                    `Successfully resolved configuration of @badeball/cypress-cucumber-preprocessor package`
-                );
+                try {
+                    const preprocessor =
+                        await importOptionalDependency<CucumberPreprocessorExports>(
+                            "@badeball/cypress-cucumber-preprocessor"
+                        );
+                    options.cucumber.preprocessor =
+                        await preprocessor.resolvePreprocessorConfiguration(
+                            config,
+                            config.env,
+                            "/"
+                        );
+                    logDebug(
+                        `Successfully resolved configuration of @badeball/cypress-cucumber-preprocessor package`
+                    );
+                } catch (error: unknown) {
+                    throw new Error(
+                        dedent(`
+                            Plugin dependency misconfigured: @badeball/cypress-cucumber-preprocessor
+
+                            ${error}
+
+                            The plugin depends on the package and should automatically download it during installation, but might have failed to do so because of conflicting Node versions
+
+                            Make sure to install the package manually using: npm install @badeball/cypress-cucumber-preprocessor --save-dev
+                        `)
+                    );
+                }
             }
             if (!options.cucumber.preprocessor.json.enabled) {
                 throw new Error(

@@ -1,6 +1,5 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import { logDebug } from "./logging/logging";
-import { dedent } from "./util/dedent";
 
 export interface CucumberPreprocessorExports {
     resolvePreprocessorConfiguration: (
@@ -11,23 +10,9 @@ export interface CucumberPreprocessorExports {
 }
 
 export async function importOptionalDependency<T>(packageName: string): Promise<T> {
-    try {
-        const dependency: T = await importPackage(packageName);
-        logDebug(`Successfully imported optional dependency: ${packageName}`);
-        return dependency;
-    } catch (error: unknown) {
-        throw new Error(
-            dedent(`
-                Plugin dependency misconfigured: ${packageName}
-
-                Reason: ${error}
-
-                The plugin depends on the package and should automatically download it during installation, but might have failed to do so because of conflicting Node versions
-
-                Make sure to install the package manually using: npm install ${packageName} --save-dev
-            `)
-        );
-    }
+    const dependency: T = await importModule(packageName);
+    logDebug(`Successfully imported optional dependency: ${packageName}`);
+    return dependency;
 }
 
 /**
@@ -40,6 +25,6 @@ export async function importOptionalDependency<T>(packageName: string): Promise<
  * @param packageName the name of the package to import
  * @returns the package
  */
-export async function importPackage<T>(packageName: string): Promise<T> {
+export const importModule = async <T>(packageName: string): Promise<T> => {
     return await import(packageName);
-}
+};
