@@ -38,14 +38,19 @@
         "coverage": "nyc --reporter=html --exclude=**/*.spec.ts --exclude=test/ mocha",
         "build": "tsc --project tsconfigBuild.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/"
     },
+    "engines": {
+        "node": ">=16.0.0"
+    },
     "dependencies": {
-        "@badeball/cypress-cucumber-preprocessor": "^18.0.4",
         "@cucumber/gherkin": "^26.0.3",
         "@cucumber/messages": "^22.0.0",
         "axios": "^1.3.4",
         "chalk": "^4.1.2",
         "decompress": "^4.2.1",
         "form-data": "^4.0.0"
+    },
+    "optionalDependencies": {
+        "@badeball/cypress-cucumber-preprocessor": "^18.0.4"
     },
     "devDependencies": {
         "@types/chai": "^4.3.4",
