@@ -1,5 +1,24 @@
 # Changelog
 
+# `4.0.2`
+
+## Notable changes
+
+- Reset issue labels after feature file import (fixes [#100](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/100))
+
+- Use dynamic `@badeball/cypress-cucumber-preprocessor` import (fixes [#152](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/152))
+
+## Dependency updates
+
+- Bump @badeball/cypress-cucumber-preprocessor from 18.0.2 to 18.0.3
+
+- Bump @badeball/cypress-cucumber-preprocessor from 18.0.3 to 18.0.4
+
+- Bump eslint from 8.46.0 to 8.47.0
+
+- Bump tough-cookie and @cypress/request
+
+
 # `4.0.1`
 
 ## Notable changes
