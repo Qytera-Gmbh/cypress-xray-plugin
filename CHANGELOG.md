@@ -1,5 +1,11 @@
 # Changelog
 
+# `4.0.3`
+
+## Notable changes
+
+-  Prevent missing scenario tags from throwing errors (fixes [#100](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/100#issuecomment-1691347675))
+
 # `4.0.2`
 
 ## Notable changes
@@ -17,7 +23,6 @@
 - Bump eslint from 8.46.0 to 8.47.0
 
 - Bump tough-cookie and @cypress/request
-
 
 # `4.0.1`
 
