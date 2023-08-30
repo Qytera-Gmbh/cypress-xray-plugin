@@ -11,13 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: install Node.js 18.x
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 18.x
           cache: "npm"
-      - name: run tests
+      - name: Run tests
         run: npm ci && npm test
         # build plugin to check if it can still be built
-      - name: build plugin
+      - name: Verify plugin build
         run: npm run build
