@@ -123,7 +123,7 @@ export abstract class ImportExecutionConverter<
         issueSummary: string,
         issueTestType: string,
         testResult: CypressCommandLine.TestResult
-    ): XrayTestInfoType;
+    ): XrayTestInfoType | undefined;
 
     /**
      * Remove milliseconds from ISO time string. Some Jira Xray instances cannot handle milliseconds in the string.
