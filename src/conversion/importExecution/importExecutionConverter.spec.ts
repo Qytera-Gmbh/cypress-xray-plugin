@@ -294,9 +294,10 @@ describe("the import execution converters", () => {
                 };
                 const json = await converter.convert(result, testIssueData);
                 expect(json.tests).to.have.length(3);
-                expect(json.tests[0].testInfo.steps).to.be.undefined;
-                expect(json.tests[1].testInfo.steps).to.be.undefined;
-                expect(json.tests[2].testInfo.steps).to.be.undefined;
+                // No step updates? No test info.
+                expect(json.tests[0].testInfo).to.be.undefined;
+                expect(json.tests[1].testInfo).to.be.undefined;
+                expect(json.tests[2].testInfo).to.be.undefined;
             });
 
             it("truncates step actions to 8000 characters by default", async () => {
@@ -342,7 +343,7 @@ describe("the import execution converters", () => {
                 expect(json.tests[2].testInfo.steps[0].action).to.eq("xx...");
             });
 
-            it("includes issue summaries", async () => {
+            it("includes issue summaries if step updates are enabled", async () => {
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 );
@@ -356,6 +357,7 @@ describe("the import execution converters", () => {
                     "CYP-41": "Manual",
                     "CYP-49": "Cucumber",
                 };
+                options.xray.steps.update = true;
                 const json = await converter.convert(result, testIssueData);
                 expect(json.tests).to.have.length(3);
                 expect(json.tests[0].testInfo.summary).to.eq("This is");
