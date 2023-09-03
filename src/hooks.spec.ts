@@ -7,6 +7,7 @@ import { stubLogging } from "../test/util";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
 import { initOptions } from "./context";
+import * as dependencies from "./dependencies";
 import { afterRunHook, beforeRunHook, synchronizeFile } from "./hooks";
 import { ClientCombination, InternalOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
@@ -134,6 +135,26 @@ describe("the hooks", () => {
                     Plugin misconfigured: Cucumber preprocessor JSON report path was not set
 
                     Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                `)
+            );
+        });
+
+        it("throws if the cucumber preprocessor is not installed", async () => {
+            beforeRunDetails = JSON.parse(
+                readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
+            );
+            stub(dependencies, "importModule").rejects(new Error("Failed to import package"));
+            await expect(
+                beforeRunHook(beforeRunDetails, config, options, clients)
+            ).to.eventually.be.rejectedWith(
+                dedent(`
+                    Plugin dependency misconfigured: @badeball/cypress-cucumber-preprocessor
+
+                    Error: Failed to import package
+
+                    The plugin depends on the package and should automatically download it during installation, but might have failed to do so because of conflicting Node versions
+
+                    Make sure to install the package manually using: npm install @badeball/cypress-cucumber-preprocessor --save-dev
                 `)
             );
         });

@@ -106,4 +106,23 @@ describe("the import execution results converter (server)", () => {
         expect(json.tests[0].status).to.eq("FAIL");
         expect(json.tests[1].status).to.eq("FAIL");
     });
+
+    it("includes test types if step updates are enabled", async () => {
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResultSkipped.json", "utf-8")
+        );
+        testIssueData.summaries = {
+            "CYP-123": "Summary #0",
+            "CYP-456": "Summary #1",
+        };
+        testIssueData.testTypes = {
+            "CYP-123": "Generic",
+            "CYP-456": "Cucumber",
+        };
+        const converter = new ImportExecutionConverterServer(options);
+        options.xray.steps.update = true;
+        const json = await converter.convert(result, testIssueData);
+        expect(json.tests[0].testInfo.testType).to.eq("Generic");
+        expect(json.tests[1].testInfo.testType).to.eq("Cucumber");
+    });
 });

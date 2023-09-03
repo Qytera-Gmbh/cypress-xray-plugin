@@ -90,6 +90,15 @@ describe("the import execution cucumber multipart converters", () => {
                 expect(multipart.features[1].tags[0]).to.deep.eq({ name: "@CYP-456" });
             });
 
+            it("uses the configured test execution issue key even if no tags are present", async () => {
+                options.jira.testExecutionIssueKey = "CYP-456";
+                delete result[0].tags;
+                delete result[1].tags;
+                const multipart = await converter.convert([result[0], result[0]], parameters);
+                expect(multipart.features[0].tags[0]).to.deep.eq({ name: "@CYP-456" });
+                expect(multipart.features[1].tags[0]).to.deep.eq({ name: "@CYP-456" });
+            });
+
             it("should use the configured test execution issue details", async () => {
                 options.jira.testExecutionIssueDetails = {
                     name: options.jira.testExecutionIssueType,

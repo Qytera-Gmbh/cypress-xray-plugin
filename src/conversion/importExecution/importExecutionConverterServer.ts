@@ -76,15 +76,16 @@ export class ImportExecutionConverterServer extends ImportExecutionConverter<
         issueSummary: string,
         issueTestType: string,
         testResult: CypressCommandLine.TestResult
-    ): XrayTestInfoServer {
-        const testInfo: XrayTestInfoServer = {
-            projectKey: this.options.jira.projectKey,
-            summary: issueSummary,
-            testType: issueTestType,
-        };
+    ): XrayTestInfoServer | undefined {
         if (this.options.xray.steps.update) {
+            const testInfo: XrayTestInfoServer = {
+                projectKey: this.options.jira.projectKey,
+                summary: issueSummary,
+                testType: issueTestType,
+            };
             testInfo.steps = [{ action: this.truncateStepAction(testResult.body) }];
+            return testInfo;
         }
-        return testInfo;
+        return undefined;
     }
 }

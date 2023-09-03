@@ -76,15 +76,16 @@ export class ImportExecutionConverterCloud extends ImportExecutionConverter<
         issueSummary: string,
         issueTestType: string,
         testResult: CypressCommandLine.TestResult
-    ): XrayTestInfoCloud {
-        const testInfo: XrayTestInfoCloud = {
-            projectKey: this.options.jira.projectKey,
-            summary: issueSummary,
-            type: issueTestType,
-        };
+    ): XrayTestInfoCloud | undefined {
         if (this.options.xray.steps.update) {
+            const testInfo: XrayTestInfoCloud = {
+                projectKey: this.options.jira.projectKey,
+                summary: issueSummary,
+                type: issueTestType,
+            };
             testInfo.steps = [{ action: this.truncateStepAction(testResult.body) }];
+            return testInfo;
         }
-        return testInfo;
+        return undefined;
     }
 }

@@ -1,5 +1,33 @@
 # Changelog
 
+# `4.0.4`
+
+## Notable changes
+
+-  Prevent manual test steps from being overwritten although `xray.steps.update` is `false` (fixes [#164](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/164))
+
+## Dependency updates
+
+- Bump axios from 1.4.0 to 1.5.0
+
+# `4.0.3`
+
+## Notable changes
+
+-  Prevent missing scenario tags from throwing errors (fixes [#100](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/100#issuecomment-1691347675))
+
+# `4.0.2`
+
+## Notable changes
+
+- Reset issue labels after feature file import (fixes [#100](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/100))
+
+- Use dynamic `@badeball/cypress-cucumber-preprocessor` import (fixes [#152](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/152))
+
+## Dependency updates
+
+- Bump @badeball/cypress-cucumber-preprocessor from 18.0.2 to 18.0.4
+
 # `4.0.1`
 
 ## Notable changes
@@ -7,8 +35,6 @@
 - Fix `cypress-xray-plugin/register` export (fixes [#133](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/133))
 
 ## Dependency updates
-
-- Bump eslint from 8.45.0 to 8.46.0
 
 - Bump @badeball/cypress-cucumber-preprocessor from 18.0.1 to 18.0.2
 
@@ -131,19 +157,7 @@ Some of the plugin's core functionality has been rewritten entirely to keep thin
 
 ## Dependency updates
 
-- Bump cypress-xray-plugin from 3.3.3 to 4.0.0
-
-- Bump semver from 6.3.0 to 6.3.1
-
 - Bump semver and @cucumber/cucumber
-
-- Bump eslint from 8.44.0 to 8.45.0
-
-- Bump @typescript-eslint/eslint-plugin from 5.60.1 to 5.61.0
-
-- Bump @typescript-eslint/parser from 5.60.1 to 5.61.0
-
-- Bump @typescript-eslint/parser from 5.61.0 to 5.62.0
 
 # `3.3.3` and before
 For versions `3.3.3` and before, please check the [GitHub releases page](https://github.com/Qytera-Gmbh/cypress-xray-plugin/releases).

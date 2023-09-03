@@ -42,7 +42,11 @@ export abstract class ImportExecutionCucumberMultipartConverter<
                     name: `@${this.options.jira.testExecutionIssueKey}`,
                 };
                 // Xray uses the first encountered issue tag for deducing the test execution issue.
-                test.tags = [testExecutionIssueTag, ...result.tags];
+                if (result.tags) {
+                    test.tags = [testExecutionIssueTag, ...result.tags];
+                } else {
+                    test.tags = [testExecutionIssueTag];
+                }
             }
             const elements: CucumberMultipartElement[] = [];
             result.elements.forEach((element: CucumberMultipartElement) => {

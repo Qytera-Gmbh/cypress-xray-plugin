@@ -1,4 +1,3 @@
-import { resolvePreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import fs from "fs";
 import path from "path";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
@@ -9,6 +8,7 @@ import { ImportExecutionConverterCloud } from "./conversion/importExecution/impo
 import { ImportExecutionConverterServer } from "./conversion/importExecution/importExecutionConverterServer";
 import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterCloud";
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
+import { CucumberPreprocessorExports, importOptionalDependency } from "./dependencies";
 import { logDebug, logError, logInfo, logSuccess, logWarning } from "./logging/logging";
 import {
     FeatureFileIssueData,
@@ -84,11 +84,33 @@ export async function beforeRunHook(
             options.xray.uploadResults
         ) {
             if (!options.cucumber.preprocessor) {
-                options.cucumber.preprocessor = await resolvePreprocessorConfiguration(
-                    config,
-                    config.env,
-                    "/"
-                );
+                try {
+                    const preprocessor =
+                        await importOptionalDependency<CucumberPreprocessorExports>(
+                            "@badeball/cypress-cucumber-preprocessor"
+                        );
+                    options.cucumber.preprocessor =
+                        await preprocessor.resolvePreprocessorConfiguration(
+                            config,
+                            config.env,
+                            "/"
+                        );
+                    logDebug(
+                        `Successfully resolved configuration of @badeball/cypress-cucumber-preprocessor package`
+                    );
+                } catch (error: unknown) {
+                    throw new Error(
+                        dedent(`
+                            Plugin dependency misconfigured: @badeball/cypress-cucumber-preprocessor
+
+                            ${error}
+
+                            The plugin depends on the package and should automatically download it during installation, but might have failed to do so because of conflicting Node versions
+
+                            Make sure to install the package manually using: npm install @badeball/cypress-cucumber-preprocessor --save-dev
+                        `)
+                    );
+                }
             }
             if (!options.cucumber.preprocessor.json.enabled) {
                 throw new Error(
