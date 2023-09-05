@@ -50,7 +50,7 @@
         "form-data": "^4.0.0"
     },
     "optionalDependencies": {
-        "@badeball/cypress-cucumber-preprocessor": "^18.0.4"
+        "@badeball/cypress-cucumber-preprocessor": "^18.0.5"
     },
     "devDependencies": {
         "@types/chai": "^4.3.4",
