@@ -1,6 +1,7 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
+import Sinon from "sinon";
 import { expectToExist, resolveTestDirPath, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { SearchResultsServer } from "../../types/jira/responses/searchResults";
@@ -39,9 +40,11 @@ describe("the jira clients", () => {
                                 "utf-8"
                             )
                         ),
-                        headers: null,
+                        headers: {},
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        config: null,
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
                     });
                     await client.addAttachment("CYP-123", "./test/resources/turtle.png");
                     const headers = stubbedPost.getCalls()[0].args[2]?.headers;
@@ -64,9 +67,11 @@ describe("the jira clients", () => {
                         stubbedPost.resolves({
                             status: HttpStatusCode.Ok,
                             data: mockedData,
-                            headers: null,
+                            headers: {},
                             statusText: HttpStatusCode[HttpStatusCode.Ok],
-                            config: null,
+                            config: {
+                                headers: new AxiosHeaders(),
+                            },
                         });
                         const response = await client.addAttachment(
                             "CYP-123",
@@ -89,9 +94,11 @@ describe("the jira clients", () => {
                         stubbedPost.resolves({
                             status: HttpStatusCode.Ok,
                             data: mockedData,
-                            headers: null,
+                            headers: {},
                             statusText: HttpStatusCode[HttpStatusCode.Ok],
-                            config: null,
+                            config: {
+                                headers: new AxiosHeaders(),
+                            },
                         });
                         const response = await client.addAttachment(
                             "CYP-123",
@@ -114,9 +121,11 @@ describe("the jira clients", () => {
                     stubbedPost.resolves({
                         status: HttpStatusCode.Ok,
                         data: mockedData,
-                        headers: null,
+                        headers: {},
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        config: null,
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
                     });
                     const response = await client.addAttachment(
                         "CYP-123",
@@ -143,9 +152,11 @@ describe("the jira clients", () => {
                     stubbedPost.resolves({
                         status: HttpStatusCode.Ok,
                         data: mockedData,
-                        headers: null,
+                        headers: {},
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        config: null,
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
                     });
                     const response = await client.addAttachment(
                         "CYP-123",
@@ -227,9 +238,11 @@ describe("the jira clients", () => {
                     stubbedGet.onFirstCall().resolves({
                         status: HttpStatusCode.Ok,
                         data: mockedData,
-                        headers: null,
+                        headers: {},
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        config: null,
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
                     });
                     const fields = await client.getFields();
                     expect(fields).to.eq(mockedData);
@@ -280,9 +293,11 @@ describe("the jira clients", () => {
                                 "utf-8"
                             )
                         ),
-                        headers: null,
+                        headers: {},
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        config: null,
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
                     });
                     const response = await client.search({
                         jql: "project = CYP AND issue in (CYP-268,CYP-237,CYP-332,CYP-333,CYP-338)",
@@ -290,6 +305,7 @@ describe("the jira clients", () => {
                     });
                     expect(stubbedPost).to.have.been.calledOnce;
                     expect(response).to.be.an("array").with.length(5);
+                    expectToExist(response);
                     expect(response[0].key).to.eq("CYP-333");
                     expect(response[1].key).to.eq("CYP-338");
                     expect(response[2].key).to.eq("CYP-332");
@@ -311,11 +327,13 @@ describe("the jira clients", () => {
                             ...mockedData,
                             startAt: 0,
                             maxResults: 2,
-                            issues: mockedData.issues.slice(0, 2),
+                            issues: mockedData.issues?.slice(0, 2),
                         },
-                        headers: null,
+                        headers: {},
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        config: null,
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
                     });
                     stubbedPost.onSecondCall().resolves({
                         status: HttpStatusCode.Ok,
@@ -323,11 +341,13 @@ describe("the jira clients", () => {
                             ...mockedData,
                             startAt: 2,
                             maxResults: 2,
-                            issues: mockedData.issues.slice(2, 4),
+                            issues: mockedData.issues?.slice(2, 4),
                         },
-                        headers: null,
+                        headers: {},
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        config: null,
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
                     });
                     stubbedPost.onThirdCall().resolves({
                         status: HttpStatusCode.Ok,
@@ -335,21 +355,30 @@ describe("the jira clients", () => {
                             ...mockedData,
                             startAt: 4,
                             maxResults: 2,
-                            issues: mockedData.issues.slice(4, 5),
+                            issues: mockedData.issues?.slice(4, 5),
                         },
-                        headers: null,
+                        headers: {},
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        config: null,
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
                     });
                     const response = await client.search({
                         jql: "project = CYP AND issue in (CYP-268,CYP-237,CYP-332,CYP-333,CYP-338)",
                         fields: ["customfield_12100"],
                     });
                     expect(stubbedPost).to.have.been.calledThrice;
-                    expect(stubbedPost.getCall(0).args[1]["startAt"]).to.be.undefined;
-                    expect(stubbedPost.getCall(1).args[1]["startAt"]).to.eq(2);
-                    expect(stubbedPost.getCall(2).args[1]["startAt"]).to.eq(4);
+                    expect(stubbedPost.getCall(0)).to.have.been.calledWithMatch(Sinon.match.any, {
+                        startAt: undefined,
+                    });
+                    expect(stubbedPost.getCall(0)).to.have.been.calledWithMatch(Sinon.match.any, {
+                        startAt: 2,
+                    });
+                    expect(stubbedPost.getCall(0)).to.have.been.calledWithMatch(Sinon.match.any, {
+                        startAt: 4,
+                    });
                     expect(response).to.be.an("array").with.length(5);
+                    expectToExist(response);
                     expect(response[0].key).to.eq("CYP-333");
                     expect(response[1].key).to.eq("CYP-338");
                     expect(response[2].key).to.eq("CYP-332");

@@ -33,3 +33,12 @@ export function getEnumKeyByEnumValue<K extends string, V extends string | numbe
 export type StringMap<T> = {
     [key: string]: T;
 };
+
+/**
+ * Type which recursively remaps properties to type `To`. Primitives are also remapped.
+ */
+export type Remap<T, To> = T extends Record<string | number | symbol, unknown>
+    ? {
+          [K in keyof T]: Remap<NonNullable<T[K]>, To>;
+      }
+    : To;

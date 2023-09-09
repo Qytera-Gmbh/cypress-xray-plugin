@@ -63,14 +63,12 @@ export abstract class JiraIssueStore {
         );
     }
 
-    public enqueue(issueKey: string, fields: FieldName[]): void {
+    public enqueue(issueKey: string, field: FieldName): void {
         if (!(issueKey in this.nextOrder)) {
             this.nextOrder[issueKey] = [];
         }
-        for (const field of fields) {
-            if (!this.nextOrder[issueKey].includes(field)) {
-                this.nextOrder[issueKey].push(field);
-            }
+        if (!this.nextOrder[issueKey].includes(field)) {
+            this.nextOrder[issueKey].push(field);
         }
     }
 

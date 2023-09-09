@@ -11,7 +11,7 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
         cypress: config,
         internal: initOptions(config.env, options),
     };
-    if (!context.internal.plugin.enabled) {
+    if (!context.internal.plugin?.enabled) {
         logInfo("Plugin disabled. Skipping configuration verification.");
         return;
     }

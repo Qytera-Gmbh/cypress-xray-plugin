@@ -40,7 +40,10 @@ export abstract class ImportExecutionConverter<
     ): Promise<XrayTestExecutionResultsType> {
         const runs: CypressCommandLine.RunResult[] = results.runs.filter(
             (run: CypressCommandLine.RunResult) => {
-                return !run.spec.absolute.endsWith(this.options.cucumber.featureFileExtension);
+                if (this.options.cucumber?.featureFileExtension) {
+                    return !run.spec.absolute.endsWith(this.options.cucumber.featureFileExtension);
+                }
+                return true;
             }
         );
         const json = this.initResult();

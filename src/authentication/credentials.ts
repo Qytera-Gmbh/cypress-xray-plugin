@@ -26,14 +26,12 @@ export class BasicAuthCredentials extends APICredentials<never> {
         this.password = password;
     }
 
-    public getAuthenticationHeader(): Promise<HTTPHeader> {
+    public async getAuthenticationHeader(): Promise<HTTPHeader> {
         // See: https://developer.atlassian.com/server/jira/platform/basic-authentication/#construct-the-authorization-header
         const encodedString = encode(`${this.username}:${this.password}`);
-        return new Promise((resolve: (value: HTTPHeader) => void) =>
-            resolve({
-                Authorization: `Basic ${encodedString}`,
-            })
-        );
+        return {
+            Authorization: `Basic ${encodedString}`,
+        };
     }
 }
 
@@ -45,12 +43,10 @@ export class PATCredentials extends APICredentials<never> {
         this.token = token;
     }
 
-    public getAuthenticationHeader(): Promise<HTTPHeader> {
-        return new Promise((resolve: (value: HTTPHeader) => void) =>
-            resolve({
-                Authorization: `Bearer ${this.token}`,
-            })
-        );
+    public async getAuthenticationHeader(): Promise<HTTPHeader> {
+        return {
+            Authorization: `Bearer ${this.token}`,
+        };
     }
 }
 export interface JWTCredentialsOptions {
@@ -73,14 +69,12 @@ export class JWTCredentials extends APICredentials<string> {
     private async getToken(authenticationURL: string): Promise<string> {
         if (!this.token) {
             logInfo(`Authenticating to: ${authenticationURL}...`);
-            return Requests.post(authenticationURL, {
+            const response: AxiosResponse<string> = await Requests.post(authenticationURL, {
                 client_id: this.clientId,
                 client_secret: this.clientSecret,
-            }).then((response: AxiosResponse) => {
-                logSuccess("Authentication successful.");
-                this.token = response.data;
-                return this.token;
             });
+            logSuccess("Authentication successful.");
+            this.token = response.data;
         }
         return this.token;
     }

@@ -1,4 +1,4 @@
-import { HttpStatusCode } from "axios";
+import { AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
 import { stubLogging, stubRequests } from "../../../test/util";
@@ -24,11 +24,13 @@ describe("the xray server client", () => {
                     key: "CYP-123",
                     self: "http://www.example.org/jira/rest/api/2/issue/12345",
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: {
+                    headers: new AxiosHeaders(),
+                },
             });
-            await client.importExecution({ tests: [null] });
+            await client.importExecution({ tests: [{ status: "GOOD" }] });
             expect(stubbedPost.getCall(0).args[0]).to.eq(
                 "https://example.org/rest/raven/latest/import/execution"
             );
@@ -44,9 +46,11 @@ describe("the xray server client", () => {
                         self: "http://www.example.org/jira/rest/api/2/issue/12345",
                     },
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: {
+                    headers: new AxiosHeaders(),
+                },
             });
             const response = await client.importExecution({
                 testExecutionKey: "CYP-42",
@@ -90,9 +94,11 @@ describe("the xray server client", () => {
                     key: "CYP-123",
                     self: "http://www.example.org/jira/rest/api/2/issue/12345",
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: {
+                    headers: new AxiosHeaders(),
+                },
             });
             await client.importExecutionCucumberMultipart(
                 JSON.parse(
@@ -123,9 +129,11 @@ describe("the xray server client", () => {
                         self: "http://www.example.org/jira/rest/api/2/issue/12345",
                     },
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: {
+                    headers: new AxiosHeaders(),
+                },
             });
             const response = await client.importExecutionCucumberMultipart(
                 JSON.parse(
@@ -162,9 +170,11 @@ describe("the xray server client", () => {
                     updatedOrCreatedPreconditions: [],
                     errors: [],
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: {
+                    headers: new AxiosHeaders(),
+                },
             });
             await client.importFeature("./test/resources/features/german.feature", "CYP");
             expect(stubbedPost.getCall(0).args[0]).to.eq(

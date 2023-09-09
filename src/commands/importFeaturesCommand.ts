@@ -75,14 +75,18 @@ export class ImportFeaturesCommand extends Command {
                     `Feature child does not have a name, issue summary will not be overwritten: ${issueKey}`
                 );
             } else if (oldSummary !== newSummary) {
-                const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {
-                    fields: {},
-                };
+                const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {};
                 const summaryFieldId = await this.clients.jiraRepository.getFieldId(
                     "Summary",
                     "summary"
                 );
-                issueUpdate.fields[summaryFieldId] = oldSummary;
+                if (issueUpdate.fields) {
+                    issueUpdate.fields[summaryFieldId] = oldSummary;
+                } else {
+                    issueUpdate.fields = {
+                        summaryFieldId: oldSummary,
+                    };
+                }
                 logDebug(
                     dedent(`
                         Resetting issue summary of issue: ${issueKey}
@@ -124,14 +128,18 @@ export class ImportFeaturesCommand extends Command {
             const oldLabels = testLabels[issueKey];
             const newLabels = issueData[i].tags;
             if (!newLabels.every((label) => oldLabels.includes(label))) {
-                const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {
-                    fields: {},
-                };
+                const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {};
                 const labelFieldId = await this.clients.jiraRepository.getFieldId(
                     "Labels",
                     "labels"
                 );
-                issueUpdate.fields[labelFieldId] = oldLabels;
+                if (issueUpdate.fields) {
+                    issueUpdate.fields[labelFieldId] = oldLabels;
+                } else {
+                    issueUpdate.fields = {
+                        labelFieldId: oldLabels,
+                    };
+                }
                 logDebug(
                     dedent(`
                         Resetting issue labels of issue: ${issueKey}

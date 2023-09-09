@@ -31,10 +31,10 @@ export class ImportExecutionConverterCloud extends ImportExecutionConverter<
             status: this.getXrayStatus(this.getStatus(attempt)),
         };
         const evidence: XrayEvidenceItem[] = [];
-        if (this.options.xray.uploadScreenshots) {
+        if (this.options.xray?.uploadScreenshots) {
             attempt.screenshots.forEach((screenshot: CypressCommandLine.ScreenshotInformation) => {
                 let filename = basename(screenshot.path);
-                if (this.options.plugin.normalizeScreenshotNames) {
+                if (this.options.plugin?.normalizeScreenshotNames) {
                     filename = normalizedFilename(filename);
                 }
                 evidence.push({
@@ -60,13 +60,13 @@ export class ImportExecutionConverterCloud extends ImportExecutionConverter<
     protected getXrayStatus(status: Status): string {
         switch (status) {
             case Status.PASSED:
-                return this.options.xray.statusPassed ?? "PASSED";
+                return this.options.xray?.statusPassed ?? "PASSED";
             case Status.FAILED:
-                return this.options.xray.statusFailed ?? "FAILED";
+                return this.options.xray?.statusFailed ?? "FAILED";
             case Status.PENDING:
-                return this.options.xray.statusPending ?? "TODO";
+                return this.options.xray?.statusPending ?? "TODO";
             case Status.SKIPPED:
-                return this.options.xray.statusSkipped ?? "FAILED";
+                return this.options.xray?.statusSkipped ?? "FAILED";
             default:
                 throw new Error(`Unknown status: ${status}`);
         }
@@ -77,7 +77,7 @@ export class ImportExecutionConverterCloud extends ImportExecutionConverter<
         issueTestType: string,
         testResult: CypressCommandLine.TestResult
     ): XrayTestInfoCloud | undefined {
-        if (this.options.xray.steps.update) {
+        if (this.options.xray?.steps?.update) {
             const testInfo: XrayTestInfoCloud = {
                 projectKey: this.options.jira.projectKey,
                 summary: issueSummary,
