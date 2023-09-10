@@ -24,10 +24,17 @@ export class ImportExecutionConverterCloud extends ImportExecutionConverter<
         };
     }
 
-    protected getTest(attempt: CypressCommandLine.AttemptResult): XrayTestCloud {
+    protected getTest(
+        attempt: CypressCommandLine.AttemptResult,
+        cypressVersion: string
+    ): XrayTestCloud {
         const json: XrayTestCloud = {
-            start: this.truncateISOTime(this.getAttemptStartDate(attempt).toISOString()),
-            finish: this.truncateISOTime(this.getAttemptEndDate(attempt).toISOString()),
+            start: this.truncateISOTime(
+                this.getAttemptStartDate(attempt, cypressVersion).toISOString()
+            ),
+            finish: this.truncateISOTime(
+                this.getAttemptEndDate(attempt, cypressVersion).toISOString()
+            ),
             status: this.getXrayStatus(this.getStatus(attempt)),
         };
         const evidence: XrayEvidenceItem[] = [];

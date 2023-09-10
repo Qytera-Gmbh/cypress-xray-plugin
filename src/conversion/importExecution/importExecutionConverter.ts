@@ -54,7 +54,7 @@ export abstract class ImportExecutionConverter<
             try {
                 const attempts = attemptsByTitle.get(title);
                 // TODO: Support multiple iterations.
-                test = this.getTest(attempts[attempts.length - 1]);
+                test = this.getTest(attempts[attempts.length - 1], results.cypressVersion);
                 const issueKey = getNativeTestIssueKey(title, this.options.jira.projectKey);
                 test.testKey = issueKey;
                 if (!issueData.summaries[issueKey]) {
@@ -90,10 +90,17 @@ export abstract class ImportExecutionConverter<
     /**
      * Builds a test entity for an executed test.
      *
+     * The Cypress version is required because different Cypress versions use different attempt
+     * result interfaces.
+     *
      * @param testResult the Cypress test result
+     * @param cypressVersion the Cypress version
      * @return the test entity
      */
-    protected abstract getTest(attempt: CypressCommandLine.AttemptResult): XrayTestType;
+    protected abstract getTest(
+        attempt: CypressCommandLine.AttemptResult,
+        cypressVersion: string
+    ): XrayTestType;
 
     /**
      * Adds a test entity to the list of test execution results.
@@ -141,13 +148,20 @@ export abstract class ImportExecutionConverter<
     /**
      * Retrieve the overall start date of multiple Cypress test results.
      *
+     * The Cypress version is provided because different Cypress versions use different attempt
+     * result interfaces.
+     *
      * @param attempts the Cypress test results
+     * @param cypressVersion the Cypress version
      * @returns the tests' start date
      */
-    protected getAttemptsStartDate(attempts: CypressCommandLine.AttemptResult[]): Date | null {
+    protected getAttemptsStartDate(
+        attempts: CypressCommandLine.AttemptResult[],
+        cypressVersion: string
+    ): Date | null {
         let start: Date = null;
         attempts.forEach((attempt: CypressCommandLine.AttemptResult) => {
-            const attemptDate = this.getAttemptStartDate(attempt);
+            const attemptDate = this.getAttemptStartDate(attempt, cypressVersion);
             if (!start || attemptDate < start) {
                 start = attemptDate;
             }
@@ -158,23 +172,37 @@ export abstract class ImportExecutionConverter<
     /**
      * Retrieve the start date of a single Cypress test result.
      *
+     * The Cypress version is provided because different Cypress versions use different attempt
+     * result interfaces.
+     *
      * @param attempt the Cypress test result
+     * @param cypressVersion the Cypress version
      * @returns the test's start date
      */
-    protected getAttemptStartDate(attempt: CypressCommandLine.AttemptResult): Date {
+    protected getAttemptStartDate(
+        attempt: CypressCommandLine.AttemptResult,
+        cypressVersion: string
+    ): Date {
         return new Date(attempt.startedAt);
     }
 
     /**
      * Retrieve the end date of multiple Cypress test results.
      *
+     * The Cypress version is provided because different Cypress versions use different attempt
+     * result interfaces.
+     *
      * @param attempts the Cypress test results
+     * @param cypressVersion the Cypress version
      * @returns the tests' end date
      */
-    protected getAttemptsEndDate(attempts: CypressCommandLine.AttemptResult[]): Date | null {
+    protected getAttemptsEndDate(
+        attempts: CypressCommandLine.AttemptResult[],
+        cypressVersion: string
+    ): Date | null {
         let end: Date = null;
         attempts.forEach((attempt: CypressCommandLine.AttemptResult) => {
-            const attemptEndDate = this.getAttemptEndDate(attempt);
+            const attemptEndDate = this.getAttemptEndDate(attempt, cypressVersion);
             if (!end || attemptEndDate > end) {
                 end = attemptEndDate;
             }
@@ -185,11 +213,18 @@ export abstract class ImportExecutionConverter<
     /**
      * Retrieve the end date of a single Cypress test result.
      *
+     * The Cypress version is provided because different Cypress versions use different attempt
+     * result interfaces.
+     *
      * @param attempt the Cypress test result
+     * @param cypressVersion the Cypress version
      * @returns the test's end date
      */
-    protected getAttemptEndDate(attempt: CypressCommandLine.AttemptResult): Date {
-        const date = this.getAttemptStartDate(attempt);
+    protected getAttemptEndDate(
+        attempt: CypressCommandLine.AttemptResult,
+        cypressVersion: string
+    ): Date {
+        const date = this.getAttemptStartDate(attempt, cypressVersion);
         date.setMilliseconds(date.getMilliseconds() + attempt.duration);
         return date;
     }
