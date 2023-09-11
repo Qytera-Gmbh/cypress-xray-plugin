@@ -53,7 +53,7 @@
         "@badeball/cypress-cucumber-preprocessor": "^18.0.5"
     },
     "devDependencies": {
-        "@types/chai": "^4.3.4",
+        "@types/chai": "^4.3.6",
         "@types/chai-as-promised": "^7.1.5",
         "@types/decompress": "^4.2.4",
         "@types/mocha": "^10.0.1",
