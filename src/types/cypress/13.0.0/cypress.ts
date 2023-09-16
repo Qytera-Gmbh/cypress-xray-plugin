@@ -107,6 +107,15 @@ interface Browser {
     minSupportedVersion?: number;
     unsupportedVersion?: boolean;
 }
+export interface PublicBrowser {
+    channel: BrowserChannel;
+    displayName: string;
+    family: string;
+    majorVersion?: string | number | null;
+    name: BrowserName;
+    path: string;
+    version: string;
+}
 interface Ensure {
     isType(subject: unknown, type: PrevSubject[], commandName: string, cy: Chainable): void;
     isElement(subject: unknown, commandName: string, cy: Chainable): void;
@@ -184,7 +193,17 @@ interface Cypress {
     minimatch: typeof Minimatch.minimatch;
     Promise: Bluebird.BluebirdStatic;
     sinon: sinon.SinonStatic;
-    ensure: Ensure;
+    ensure: Ensure /**
+       * Cypress version string. i.e. "1.1.2"
+       * @see https:
+       * @example
+        ```
+        expect(Cypress.version).to.be.a('string')
+        if (Cypress.version === '1.2.0') {
+
+        }
+        ```
+       */;
     version: string;
     platform: string;
     arch: string;
@@ -199,10 +218,46 @@ interface Cypress {
     session: Session;
     testingType: TestingType;
     automation(eventName: string, ...args: unknown[]): Bluebird.Promise<unknown>;
-    backend: Backend;
+    backend: Backend /**
+       * Returns all configuration objects.
+       * @see https:
+       * @example
+      ```
+      Cypress.config()
+
+      ```
+       */;
     config(): Config;
+    /**
+       * Returns one configuration value.
+       * @see https:
+       * @example
+      ```
+      Cypress.config('pageLoadTimeout')
+
+      ```
+       */
     config<K extends keyof Config>(key: K): Config[K];
+    /**
+       * Sets one configuration value.
+       * @see https:
+       * @example
+      ```
+      Cypress.config('viewportWidth', 800)
+      ```
+       */
     config<K extends keyof TestConfigOverrides>(key: K, value: TestConfigOverrides[K]): void;
+    /**
+       * Sets multiple configuration values at once.
+       * @see https:
+       * @example
+      ```
+      Cypress.config({
+        defaultCommandTimeout: 10000,
+        viewportHeight: 900
+      })
+      ```
+       */
     config(Object: TestConfigOverrides): void;
     env(): ObjectLike;
     env(key: string): unknown;
@@ -235,17 +290,20 @@ interface Cypress {
             options: CommandOptions & { prevSubject: S[] },
             fn: CommandFnWithSubject<T, PrevSubjectMap<void>[S]>
         ): void;
-        addAll(fns: CommandFns): void;
-        addAll(options: CommandOptions & { prevSubject: false }, fns: CommandFns): void;
-        addAll<S = unknown>(
+        addAll<T extends keyof Chainable>(fns: CommandFns): void;
+        addAll<T extends keyof Chainable>(
+            options: CommandOptions & { prevSubject: false },
+            fns: CommandFns
+        ): void;
+        addAll<T extends keyof Chainable, S = unknown>(
             options: CommandOptions & { prevSubject: true },
             fns: CommandFnsWithSubject<S>
         ): void;
-        addAll<S extends PrevSubject>(
+        addAll<T extends keyof Chainable, S extends PrevSubject>(
             options: CommandOptions & { prevSubject: S | ["optional"] },
             fns: CommandFnsWithSubject<PrevSubjectMap[S]>
         ): void;
-        addAll<S extends PrevSubject>(
+        addAll<T extends keyof Chainable, S extends PrevSubject>(
             options: CommandOptions & { prevSubject: S[] },
             fns: CommandFnsWithSubject<PrevSubjectMap<void>[S]>
         ): void;
@@ -363,13 +421,86 @@ interface Chainable<Subject = unknown> {
     getAllLocalStorage(options?: Partial<Loggable>): Chainable<StorageByOrigin>;
     clearAllLocalStorage(options?: Partial<Loggable>): Chainable<null>;
     getAllSessionStorage(options?: Partial<Loggable>): Chainable<StorageByOrigin>;
-    clearAllSessionStorage(options?: Partial<Loggable>): Chainable<null>;
+    clearAllSessionStorage(options?: Partial<Loggable>): Chainable<null> /**
+       * Clear data in local storage for the current origin.
+       *
+       * Cypress automatically clears all local storage _before_ each test to
+       * prevent state from being shared across tests when test isolation
+       * is enabled. You shouldn't need to use this command unless you're using it
+       * to clear localStorage inside a single test or test isolation is disabled.
+       *
+       * @see https:
+       * @param {string} [key] - name of a particular item to remove (optional).
+       * @example
+        ```
+
+        cy.clearLocalStorage()
+          .should(ls => {
+            expect(ls.getItem('prop1')).to.be.null
+          })
+
+        cy.clearLocalStorage("todos")
+        ```
+       */;
     clearLocalStorage(key?: string): Chainable<Storage>;
+    /**
+       * Clear keys in local storage that match given regular expression.
+       *
+       * @see https:
+       * @param {RegExp} re - regular expression to match.
+       * @example
+      ```
+
+      cy.clearLocalStorage(/app-/)
+      ```
+       */
     clearLocalStorage(re: RegExp): Chainable<Storage>;
+    /**
+        * Clear data in local storage.
+        * Cypress automatically runs this command before each test to prevent state from being
+        * shared across tests. You shouldn't need to use this command unless you're using it
+        * to clear localStorage inside a single test. Yields `localStorage` object.
+        *
+        * @see https:
+        * @param {options} [object] - options object
+        * @example
+         ```
+
+         cy.clearLocalStorage({ log: false })
+         ```
+        */
     clearLocalStorage(options: Partial<Loggable>): Chainable<Storage>;
+    /**
+        * Clear data in local storage.
+        * Cypress automatically runs this command before each test to prevent state from being
+        * shared across tests. You shouldn't need to use this command unless you're using it
+        * to clear localStorage inside a single test. Yields `localStorage` object.
+        *
+        * @see https:
+        * @param {string} [key] - name of a particular item to remove (optional).
+        * @param {options} [object] - options object
+        * @example
+         ```
+
+         cy.clearLocalStorage("todos", { log: false })
+         ```
+        */
     clearLocalStorage(key: string, options: Partial<Loggable>): Chainable<Storage>;
     click(options?: Partial<ClickOptions>): Chainable<Subject>;
     click(position: PositionType, options?: Partial<ClickOptions>): Chainable<Subject>;
+    /**
+       * Click a DOM element at specific coordinates
+       *
+       * @param {number} x The distance in pixels from the element's left to issue the click.
+       * @param {number} y The distance in pixels from the element's top to issue the click.
+       * @see https:
+       * @example
+      ```
+
+
+      cy.get('button').click(15, 40)
+      ```
+       */
     click(x: number, y: number, options?: Partial<ClickOptions>): Chainable<Subject>;
     clock(): Chainable<Clock>;
     clock(now: number | Date, options?: Loggable): Chainable<Clock>;
@@ -404,9 +535,35 @@ interface Chainable<Subject = unknown> {
     ): Chainable<JQuery<E>>;
     dblclick(options?: Partial<ClickOptions>): Chainable<Subject>;
     dblclick(position: PositionType, options?: Partial<ClickOptions>): Chainable<Subject>;
+    /**
+       * Double-click a DOM element at specific coordinates
+       *
+       * @param {number} x The distance in pixels from the element's left to issue the click.
+       * @param {number} y The distance in pixels from the element's top to issue the click.
+       * @see https:
+       * @example
+      ```
+
+
+      cy.get('button').dblclick(15, 40)
+      ```
+       */
     dblclick(x: number, y: number, options?: Partial<ClickOptions>): Chainable<Subject>;
     rightclick(options?: Partial<ClickOptions>): Chainable<Subject>;
     rightclick(position: PositionType, options?: Partial<ClickOptions>): Chainable<Subject>;
+    /**
+       * Right-click a DOM element at specific coordinates
+       *
+       * @param {number} x The distance in pixels from the element's left to issue the click.
+       * @param {number} y The distance in pixels from the element's top to issue the click.
+       * @see https:
+       * @example
+      ```
+
+
+      cy.get('button').rightclick(15, 40)
+      ```
+       */
     rightclick(x: number, y: number, options?: Partial<ClickOptions>): Chainable<Subject>;
     debug(options?: Partial<Loggable>): Chainable<Subject>;
     session(id: string | object, setup: () => void, options?: SessionOptions): Chainable<null>;
@@ -487,8 +644,10 @@ interface Chainable<Subject = unknown> {
         functionName: K,
         ...args: unknown[]
     ): Chainable<R>;
-    invoke<T extends (...args: unknown[]) => unknown>(index: number): Chainable<ReturnType<T>>;
-    invoke<T extends (...args: unknown[]) => unknown>(
+    invoke<T extends (...args: unknown[]) => unknown, Subject extends T[]>(
+        index: number
+    ): Chainable<ReturnType<T>>;
+    invoke<T extends (...args: unknown[]) => unknown, Subject extends T[]>(
         options: Partial<Loggable & Timeoutable>,
         index: number
     ): Chainable<ReturnType<T>>;
@@ -498,7 +657,10 @@ interface Chainable<Subject = unknown> {
         options?: Partial<Loggable & Timeoutable>
     ): Chainable<Subject[K]>;
     its(propertyPath: string, options?: Partial<Loggable & Timeoutable>): Chainable;
-    its<T>(index: number, options?: Partial<Loggable & Timeoutable>): Chainable<T>;
+    its<T, Subject extends T[]>(
+        index: number,
+        options?: Partial<Loggable & Timeoutable>
+    ): Chainable<T>;
     last<E extends Node = HTMLElement>(
         options?: Partial<Loggable & Timeoutable>
     ): Chainable<JQuery<E>>;
@@ -646,19 +808,19 @@ interface Chainable<Subject = unknown> {
     reload(options: Partial<Loggable & Timeoutable>): Chainable<AUTWindow>;
     reload(forceReload: boolean): Chainable<AUTWindow>;
     reload(forceReload: boolean, options: Partial<Loggable & Timeoutable>): Chainable<AUTWindow>;
-    request<T = unknown>(url: string, body?: RequestBody): Chainable<CypressResponse<T>>;
+    request<T = unknown>(url: string, body?: RequestBody): Chainable<Response<T>>;
     request<T = unknown>(
         method: HttpMethod,
         url: string,
         body?: RequestBody
-    ): Chainable<CypressResponse<T>>;
-    request<T = unknown>(options: Partial<RequestOptions>): Chainable<CypressResponse<T>>;
+    ): Chainable<Response<T>>;
+    request<T = unknown>(options: Partial<RequestOptions>): Chainable<Response<T>>;
     root<E extends Node = HTMLHtmlElement>(options?: Partial<Loggable>): Chainable<JQuery<E>>;
-    screenshot(options?: Partial<Loggable & Timeoutable & ScreenshotOptions>): Chainable<null>;
+    screenshot(options?: Partial<Loggable & Timeoutable & ScreenshotOptions>): Chainable<Subject>;
     screenshot(
         fileName: string,
         options?: Partial<Loggable & Timeoutable & ScreenshotOptions>
-    ): Chainable<null>;
+    ): Chainable<Subject>;
     scrollIntoView(options?: Partial<ScrollIntoViewOptions>): Chainable<Subject>;
     scrollTo(position: PositionType, options?: Partial<ScrollToOptions>): Chainable<Subject>;
     scrollTo(
@@ -791,25 +953,119 @@ interface Chainable<Subject = unknown> {
     viewport(width: number, height: number, options?: Partial<Loggable>): Chainable<null>;
     visit(url: string, options?: Partial<VisitOptions>): Chainable<AUTWindow>;
     visit(options: Partial<VisitOptions> & { url: string }): Chainable<AUTWindow>;
-    wait(ms: number, options?: Partial<Loggable & Timeoutable>): Chainable<Subject>;
-    window(options?: Partial<Loggable & Timeoutable>): Chainable<AUTWindow>;
+    wait(ms: number, options?: Partial<Loggable & Timeoutable>): Chainable<Subject> /**
+       * Get the window object of the page that is currently active.
+       *
+       * @see https:
+       * @example
+      ```
+      cy.visit('http:
+      cy.window().then(function(win){
+
+
+      })
+      ```
+       */;
+    window(options?: Partial<Loggable & Timeoutable>): Chainable<AUTWindow> /**
+       * Scopes all subsequent cy commands to within this element.
+       * Useful when working within a particular group of elements such as a `<form>`.
+       * @see https:
+       * @example
+      ```
+      cy.get('form').within(($form) => {
+
+
+        cy.get('input[name="username"]').type('john')
+        cy.get('input[name="password"]').type('password')
+        cy.root().submit()
+      })
+      ```
+       */;
     within(fn: (currentSubject: Subject) => void): Chainable<Subject>;
-    within(options: Partial<Loggable>, fn: (currentSubject: Subject) => void): Chainable<Subject>;
+    within(
+        options: Partial<Loggable>,
+        fn: (currentSubject: Subject) => void
+    ): Chainable<Subject> /**
+       * Yield the element passed into `.wrap()`.
+       *
+       * @see https:
+       * @example
+      ```
+
+      cy.get('form').within(($form) => {
+
+        cy.wrap($form).should('have.class', 'form-container')
+      })
+      ```
+       */;
     wrap<E extends Node = HTMLElement>(
         element: E | JQuery<E>,
         options?: Partial<Loggable & Timeoutable>
     ): Chainable<JQuery<E>>;
+    /**
+       * Yield the element passed into `.wrap()` to the next command in the Cypress chain.
+       *
+       * @see https:
+       * @example
+      ```
+      cy.wrap(new Promise((resolve, reject) => {
+        setTimeout(resolve, 1000);
+      }).then(result => {})
+      ```
+       */
     wrap<F extends Promise<S>, S>(
         promise: F,
         options?: Partial<Loggable & Timeoutable>
     ): Chainable<S>;
-    wrap<S>(object: S, options?: Partial<Loggable & Timeoutable>): Chainable<S>;
+    /**
+       * Yields whatever is passed into `.wrap()` to the next command in the Cypress chain.
+       *
+       * @see https:
+       * @example
+      ```
+
+      cy.wrap({ amount: 10 })
+        .should('have.property', 'amount')
+        .and('eq', 10)
+      ```
+       */
+    wrap<S>(object: S, options?: Partial<Loggable & Timeoutable>): Chainable<S> /**
+       * Write to a file with the specified contents.
+       *
+       * @see https:
+      ```
+      cy.writeFile('path/to/message.txt', 'Hello World')
+      ```
+       */;
     writeFile(filePath: string, contents: FileContents, encoding: Encodings): Chainable<null>;
+    /**
+       * Write to a file with the specified encoding and contents.
+       *
+       * @see https:
+      ```
+      cy.writeFile('path/to/ascii.txt', 'Hello World', {
+        flag: 'a+',
+        encoding: 'ascii'
+      })
+      ```
+       */
     writeFile(
         filePath: string,
         contents: FileContents,
         options?: Partial<WriteFileOptions & Timeoutable>
     ): Chainable<null>;
+    /**
+       * Write to a file with the specified encoding and contents.
+       *
+       * An `encoding` option in `options` will override the `encoding` argument.
+       *
+       * @see https:
+      ```
+      cy.writeFile('path/to/ascii.txt', 'Hello World', 'utf8', {
+        flag: 'a+',
+      })
+      ```
+       */
     writeFile(
         filePath: string,
         contents: FileContents,
@@ -930,7 +1186,6 @@ export interface ResolvedConfigOptions<ComponentDevServerOpts = unknown> {
     fileServerFolder: string;
     fixturesFolder: string | false;
     downloadsFolder: string;
-    nodeVersion: "system" | "bundled";
     redirectionLimit: number;
     resolvedNodePath: string;
     resolvedNodeVersion: string;
@@ -942,7 +1197,6 @@ export interface ResolvedConfigOptions<ComponentDevServerOpts = unknown> {
     trashAssetsBeforeRuns: boolean;
     videoCompression: number | boolean;
     video: boolean;
-    videoUploadOnPasses: boolean;
     chromeWebSecurity: boolean;
     viewportHeight: number;
     viewportWidth: number;
@@ -995,6 +1249,7 @@ interface RuntimeConfigOptions extends Partial<RuntimeServerConfigOptions> {
 }
 interface RuntimeServerConfigOptions {
     browser: Browser;
+
     autoOpen: boolean;
     browserUrl: string;
     clientRoute: string;
@@ -1015,6 +1270,9 @@ interface RuntimeServerConfigOptions {
     socketIoRoute: string;
     spec: Cypress["spec"] | null;
     specs: Array<Cypress["spec"]>;
+    protocolEnabled: boolean;
+    hideCommandLog: boolean;
+    hideRunnerUi: boolean;
 }
 interface SuiteConfigOverrides
     extends Partial<
@@ -1139,9 +1397,12 @@ type DevServerConfigOptions =
     | {
           bundler: "vite";
           framework: "react" | "vue" | "svelte";
-          viteConfig?: ConfigHandler<
-              Omit<Exclude<PickConfigOpt<"viteConfig">, undefined>, "base" | "root">
-          >;
+          // Commented out because:
+          // Type 'string' does not satisfy the constraint 'never'.
+          // Type 'string' is not assignable to type 'never'.
+          //   viteConfig?: ConfigHandler<
+          //       Omit<Exclude<PickConfigOpt<"viteConfig">, undefined>, "base" | "root">
+          //   >;
       }
     | {
           bundler: "webpack";
@@ -1326,7 +1587,7 @@ interface TriggerOptions extends Loggable, Timeoutable, ActionableOptions {
 }
 interface UrlOptions extends Loggable, Timeoutable {
     decode: boolean;
-}
+} /** Options to change the default behavior of .writeFile */
 interface WriteFileOptions extends Loggable {
     flag: string;
     encoding: Encodings;
@@ -1905,10 +2166,47 @@ interface CypressError extends Error {
     codeFrame?: CodeFrame;
 }
 interface Actions {
+    /**
+       * Fires when an uncaught exception or unhandled rejection occurs in your application. If it's an unhandled rejection, the rejected promise will be the 3rd argument.
+       * Cypress will fail the test when this fires.
+       * Return `false` from this event and Cypress will not fail the test. Also useful for debugging purposes because the actual `error` instance is provided to you.
+       * @see https:
+       * @example
+      ```
+
+
+                Cypress.on('uncaught:exception', (err, runnable) => {
+
+
+          return false
+        })
+
+        it('shows alert', () => {
+          const stub = cy.stub()
+          cy.on('window:alert', stub)
+
+          .then(() => {
+            expect(stub).to.have.been.calledOnce
+          })
+        })
+      ```
+       */
     (
         action: "uncaught:exception",
         fn: (error: Error, runnable: Mocha.Runnable, promise?: Promise<unknown>) => false | void
     ): Cypress;
+    /**
+       * Fires when your app calls the global `window.confirm()` method.
+       * Cypress will auto accept confirmations. Return `false` from this event and the confirmation will be canceled.
+       * @see https:
+       * @example
+      ```
+      cy.on('window:confirm', (str) => {
+        console.log(str)
+        return false
+      })
+      ```
+       */
     (
         action: "window:confirm",
         fn:
@@ -1916,6 +2214,22 @@ interface Actions {
             | SinonSpyAgent<sinon.SinonSpy>
             | SinonSpyAgent<sinon.SinonStub>
     ): Cypress;
+    /**
+       * Fires when your app calls the global `window.alert()` method.
+       * Cypress will auto accept alerts. You cannot change this behavior.
+       * @example
+      ```
+      const stub = cy.stub()
+      cy.on('window:alert', stub)
+
+      cy.get('.my-button')
+        .click()
+        .then(() => {
+          expect(stub).to.have.been.calledOnce
+        })
+      ```
+       * @see https:
+       */
     (
         action: "window:alert",
         fn:
@@ -1994,8 +2308,22 @@ interface Exec {
     stdout: string;
     stderr: string;
 }
-type FileReference = string | BufferType | FileReferenceObject;
+type TypedArray =
+    | Int8Array
+    | Uint8Array
+    | Uint8ClampedArray
+    | Int16Array
+    | Uint16Array
+    | Int32Array
+    | Uint32Array
+    | Float32Array
+    | Float64Array;
+type FileReference = string | BufferType | FileReferenceObject | TypedArray;
 interface FileReferenceObject {
+    /*
+     * Buffers will be used as-is, while strings will be interpreted as an alias or a file path.
+     * All other types will have `Buffer.from(JSON.stringify())` applied.
+     */
     contents: unknown;
     fileName?: string;
     mimeType?: string;
@@ -2016,17 +2344,26 @@ interface Log {
     snapshot(name?: string, options?: { at?: number; next: string }): Log;
 }
 interface LogConfig extends Timeoutable {
+    /** Unique id for the log, in the form of '<origin>-<number>' */
     id: string;
+    /** The JQuery element for the command. This will highlight the command in the main window when debugging */
     $el: JQuery;
+    /** The scope of the log entry. If child, will appear nested below parents, prefixed with '-' */
     type: "parent" | "child";
+    /** Allows the name of the command to be overwritten */
     name: string;
+    /** Override *name* for display purposes only */
     displayName: string;
+    /** additional information to include in the log */
     message: unknown;
+    /** Set to false if you want to control the finishing of the command in the log yourself */
     autoEnd: boolean;
+    /** Set to true to immediately finish the log  */
     end: boolean;
+    /** Return an object that will be printed in the dev tools console */
     consoleProps(): ObjectLike;
 }
-interface CypressResponse<T> {
+interface Response<T> {
     allRequestResponses: unknown[];
     body: T;
     duration: number;
@@ -2095,3 +2432,4 @@ interface Offset {
 type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & {
     [x: string]: never;
 })[T];
+type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;

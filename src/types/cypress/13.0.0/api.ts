@@ -1,11 +1,5 @@
-import { ConfigOptions, ResolvedConfigOptions, TestingType } from "./cypress";
+import { ConfigOptions, PublicBrowser, TestingType } from "./cypress";
 
-type HookName = "before" | "beforeEach" | "afterEach" | "after";
-interface TestError {
-    name: string;
-    message: string;
-    stack: string;
-}
 interface CypressRunOptions extends CypressCommonOptions {
     browser: string;
     ciBuildId: string;
@@ -20,9 +14,10 @@ interface CypressRunOptions extends CypressCommonOptions {
     quiet: boolean;
     record: boolean;
     reporter: string;
-    reporterOptions: unknown;
+    reporterOptions: any;
     spec: string;
     autoCancelAfterFailures: number | false;
+    runnerUi: boolean;
 }
 interface CypressOpenOptions extends CypressCommonOptions {
     browser: string;
@@ -41,24 +36,14 @@ type dateTimeISO = string;
 type ms = number;
 type pixels = number;
 interface TestResult {
+    duration: number;
     title: string[];
     state: string;
-    body: string;
     displayError: string | null;
     attempts: AttemptResult[];
 }
 interface AttemptResult {
     state: string;
-    error: TestError | null;
-    startedAt: dateTimeISO;
-    duration: ms;
-    videoTimestamp: ms;
-    screenshots: ScreenshotInformation[];
-}
-interface HookInformation {
-    hookName: HookName;
-    title: string[];
-    body: string;
 }
 interface ScreenshotInformation {
     name: string;
@@ -67,54 +52,84 @@ interface ScreenshotInformation {
     height: pixels;
     width: pixels;
 }
+interface SpecResult {
+    absolute: string;
+    fileExtension: string;
+    fileName: string;
+    name: string;
+    relative: string;
+}
 interface RunResult {
+    error: string | null;
+    reporter: string;
+    reporterStats: object;
+    screenshots: ScreenshotInformation[];
     stats: {
-        suites: number;
-        tests: number;
+        duration?: ms;
+        endedAt: dateTimeISO;
+        failures: number;
         passes: number;
         pending: number;
         skipped: number;
-        failures: number;
         startedAt: dateTimeISO;
-        endedAt: dateTimeISO;
-        duration: ms;
-        wallClockDuration?: number;
+        suites: number;
+        tests: number;
     };
-    reporter: string;
-    reporterStats: object;
-    hooks: HookInformation[];
+    spec: SpecResult;
     tests: TestResult[];
-    error: string | null;
     video: string | null;
-    spec: {
-        name: string;
-        relative: string;
-        absolute: string;
-        relativeToCommonRoot: string;
-    };
-    shouldUploadVideo: boolean;
-    skippedSpec: boolean;
 }
+type PublicConfig = Omit<
+    Cypress.ResolvedConfigOptions,
+    | "additionalIgnorePattern"
+    | "autoOpen"
+    | "browser"
+    | "browsers"
+    | "browserUrl"
+    | "clientRoute"
+    | "cypressEnv"
+    | "devServerPublicPathRoute"
+    | "morgan"
+    | "namespace"
+    | "proxyServer"
+    | "proxyUrl"
+    | "rawJson"
+    | "remote"
+    | "repoRoot"
+    | "report"
+    | "reporterRoute"
+    | "reporterUrl"
+    | "resolved"
+    | "setupNodeEvents"
+    | "socketId"
+    | "socketIoCookie"
+    | "socketIoRoute"
+    | "specs"
+    | "state"
+    | "supportFolder"
+> & {
+    browsers: PublicBrowser[];
+    cypressInternalEnv: string;
+};
 export interface CypressRunResult {
-    status: "finished";
-    startedTestsAt: dateTimeISO;
+    browserName: string;
+    browserPath: string;
+    browserVersion: string;
+    config: PublicConfig;
+    cypressVersion: string;
     endedTestsAt: dateTimeISO;
-    totalDuration: ms;
-    totalSuites: number;
-    totalTests: number;
+    osName: string;
+    osVersion: string;
+    runs: RunResult[];
+    runUrl?: string;
+    startedTestsAt: dateTimeISO;
+    totalDuration: number;
     totalFailed: number;
     totalPassed: number;
     totalPending: number;
     totalSkipped: number;
-    runUrl?: string;
-    runs: RunResult[];
-    browserPath: string;
-    browserName: string;
-    browserVersion: string;
-    osName: string;
-    osVersion: string;
-    cypressVersion: string;
-    config: ResolvedConfigOptions;
+    totalSuites: number;
+    totalTests: number;
 }
 interface CypressFailedRunResult {
     status: "failed";
