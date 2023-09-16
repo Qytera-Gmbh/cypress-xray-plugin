@@ -40,14 +40,14 @@ interface CypressCommonOptions {
 type dateTimeISO = string;
 type ms = number;
 type pixels = number;
-interface TestResult {
+export interface TestResult {
     title: string[];
     state: string;
     body: string;
     displayError: string | null;
     attempts: AttemptResult[];
 }
-interface AttemptResult {
+export interface AttemptResult {
     state: string;
     error: TestError | null;
     startedAt: dateTimeISO;
@@ -60,14 +60,14 @@ interface HookInformation {
     title: string[];
     body: string;
 }
-interface ScreenshotInformation {
+export interface ScreenshotInformation {
     name: string;
     takenAt: dateTimeISO;
     path: string;
     height: pixels;
     width: pixels;
 }
-interface RunResult {
+export interface RunResult {
     stats: {
         suites: number;
         tests: number;

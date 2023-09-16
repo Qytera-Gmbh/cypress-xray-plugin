@@ -66,6 +66,14 @@ export function getNativeTestIssueKeys(
     return issueKeys;
 }
 
+/**
+ * Extracts a Jira issue key from a native Cypress test title, based on the provided project key.
+ *
+ * @param title the test title
+ * @param projectKey the Jira projectk key
+ * @returns the Jira issue key
+ * @throws if the title contains zero or more than one issue key
+ */
 export function getNativeTestIssueKey(title: string, projectKey: string): string | null {
     const regex = new RegExp(`(${projectKey}-\\d+)`, "g");
     const matches = title.match(regex);

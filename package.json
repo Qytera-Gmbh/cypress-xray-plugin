@@ -47,7 +47,8 @@
         "axios": "^1.5.0",
         "chalk": "^4.1.2",
         "decompress": "^4.2.1",
-        "form-data": "^4.0.0"
+        "form-data": "^4.0.0",
+        "semver": "^7.5.4"
     },
     "optionalDependencies": {
         "@badeball/cypress-cucumber-preprocessor": "^18.0.5"

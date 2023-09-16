@@ -1,328 +1,103 @@
-import { logWarning } from "../../logging/logging";
-import { getNativeTestIssueKey } from "../../preprocessing/preprocessing";
-import { Status } from "../../types/testStatus";
-import { DateTimeISO, OneOf, StringMap, getEnumKeyByEnumValue } from "../../types/util";
+import {
+    CypressRunResult as CypressRunResult_V_12,
+    RunResult as RunResult_V_12,
+} from "../../types/cypress/12.16.0/api";
+import {
+    CypressRunResult as CypressRunResult_V_13,
+    RunResult as RunResult_V_13,
+} from "../../types/cypress/13.0.0/api";
+import { InternalOptions } from "../../types/plugin";
+import { StringMap } from "../../types/util";
 import {
     XrayTestCloud,
-    XrayTestExecutionInfo,
-    XrayTestExecutionResultsCloud,
-    XrayTestExecutionResultsServer,
-    XrayTestInfoCloud,
-    XrayTestInfoServer,
+    XrayTestExecutionResults,
     XrayTestServer,
 } from "../../types/xray/importTestExecutionResults";
+import { dedent } from "../../util/dedent";
+import { truncateISOTime } from "../../util/time";
 import { Converter } from "../converter";
+import { TestConverter } from "./testConverter";
+import { TestConverterCloud } from "./testConverterCloud";
+import { TestConverterServer } from "./testConverterServer";
 
 export type TestIssueData = {
     summaries: StringMap<string>;
     testTypes: StringMap<string>;
 };
 
-/**
- * @template XrayTestType - the Xray test type
- * @template XrayTestInfoType - the Xray test information type
- * @template XrayTestExecutionResultsType - the Xray JSON format type
- */
-export abstract class ImportExecutionConverter<
-    XrayTestType extends OneOf<[XrayTestServer, XrayTestCloud]>,
-    XrayTestInfoType extends OneOf<[XrayTestInfoServer, XrayTestInfoCloud]>,
-    XrayTestExecutionResultsType extends OneOf<
-        [XrayTestExecutionResultsServer, XrayTestExecutionResultsCloud]
-    >
-> extends Converter<
-    CypressCommandLine.CypressRunResult,
-    XrayTestExecutionResultsType,
+type CypressRunResultType = CypressRunResult_V_12 | CypressRunResult_V_13;
+type RunResultType = RunResult_V_12 | RunResult_V_13;
+type XrayTestType = XrayTestServer | XrayTestCloud;
+
+export class ImportExecutionConverter extends Converter<
+    CypressRunResultType,
+    XrayTestExecutionResults<XrayTestType>,
     TestIssueData
 > {
+    /**
+     * Whether the converter is a cloud converter. Useful for automatically deducing which test
+     * converters to use.
+     */
+    private readonly isCloudConverter: boolean;
+
+    /**
+     * Construct a new converter with access to the provided options. The cloud converter flag is
+     * used to deduce which sub-converters to create, if necessary (for example for converting test
+     * results). When set to `true`, Xray cloud JSONs will be created, if set to `false`, the format
+     * will be Xray server JSON.
+     *
+     * @param options the options
+     */
+    constructor(options: InternalOptions, isCloudConverter: boolean) {
+        super(options);
+        this.isCloudConverter = isCloudConverter;
+    }
+
     public async convert(
-        results: CypressCommandLine.CypressRunResult,
+        results: CypressRunResultType,
         issueData: TestIssueData
-    ): Promise<XrayTestExecutionResultsType> {
-        const runs: CypressCommandLine.RunResult[] = results.runs.filter(
-            (run: CypressCommandLine.RunResult) => {
-                return !run.spec.absolute.endsWith(this.options.cucumber.featureFileExtension);
-            }
-        );
-        const json = this.initResult();
-        json.info = this.getTestExecutionInfo(results);
-        const testsByTitle = this.mapTestsToTitles(runs);
-        const attemptsByTitle = this.mapAttemptsToTitles(testsByTitle);
-        testsByTitle.forEach((testResults: CypressCommandLine.TestResult[], title: string) => {
-            let test: XrayTestType;
-            // TODO: Support multiple iterations.
-            const testResult = testResults[testResults.length - 1];
-            try {
-                const attempts = attemptsByTitle.get(title);
-                // TODO: Support multiple iterations.
-                test = this.getTest(attempts[attempts.length - 1], results.cypressVersion);
-                const issueKey = getNativeTestIssueKey(title, this.options.jira.projectKey);
-                test.testKey = issueKey;
-                if (!issueData.summaries[issueKey]) {
-                    throw new Error(`Summary of corresponding issue is missing: ${issueKey}`);
-                }
-                if (!issueData.testTypes[issueKey]) {
-                    throw new Error(`Test type of corresponding issue is missing: ${issueKey}`);
-                }
-                test.testInfo = this.getTestInfo(
-                    issueData.summaries[issueKey],
-                    issueData.testTypes[issueKey],
-                    testResult
-                );
-                this.addTest(json, test);
-            } catch (error: unknown) {
-                let reason = error;
-                if (error instanceof Error) {
-                    reason = error.message;
-                }
-                logWarning(`Skipping result upload for test: ${title}\n\n${reason}`);
-            }
-        });
-        return json;
-    }
-
-    /**
-     * Build the initial results object.
-     *
-     * @return the result object for further modifications
-     */
-    protected abstract initResult(): XrayTestExecutionResultsType;
-
-    /**
-     * Builds a test entity for an executed test.
-     *
-     * The Cypress version is required because different Cypress versions use different attempt
-     * result interfaces.
-     *
-     * @param testResult the Cypress test result
-     * @param cypressVersion the Cypress version
-     * @return the test entity
-     */
-    protected abstract getTest(
-        attempt: CypressCommandLine.AttemptResult,
-        cypressVersion: string
-    ): XrayTestType;
-
-    /**
-     * Adds a test entity to the list of test execution results.
-     *
-     * @param testResult the test entity
-     */
-    protected abstract addTest(results: XrayTestExecutionResultsType, test: XrayTestType): void;
-
-    /**
-     * Extract the Xray status from a {@link Status} value.
-     *
-     * @param attempt the status value
-     * @returns the corresponding Xray test status
-     */
-    protected abstract getXrayStatus(status: Status): string;
-
-    /**
-     * Constructs an {@link XrayTestInfoType} object based on a single
-     * {@link CypressCommandLine.TestResult}.
-     *
-     * @param issueSummary the test issue summary
-     * @param issueTestType the test issue test type
-     * @param testResult the Cypress test result
-     * @returns the test information
-     */
-    protected abstract getTestInfo(
-        issueSummary: string,
-        issueTestType: string,
-        testResult: CypressCommandLine.TestResult
-    ): XrayTestInfoType | undefined;
-
-    /**
-     * Remove milliseconds from ISO time string. Some Jira Xray instances cannot handle milliseconds in the string.
-     *
-     * @param time a date time string in ISO format
-     * @returns the truncated date time string
-     * @example
-     *   const time = truncateISOTime("2022-12-01T02:30:44.744Z")
-     *   console.log(time); // "2022-12-01T02:30:44Z"
-     */
-    protected truncateISOTime(time: DateTimeISO): string {
-        return time.split(".")[0] + "Z";
-    }
-
-    /**
-     * Retrieve the overall start date of multiple Cypress test results.
-     *
-     * The Cypress version is provided because different Cypress versions use different attempt
-     * result interfaces.
-     *
-     * @param attempts the Cypress test results
-     * @param cypressVersion the Cypress version
-     * @returns the tests' start date
-     */
-    protected getAttemptsStartDate(
-        attempts: CypressCommandLine.AttemptResult[],
-        cypressVersion: string
-    ): Date | null {
-        let start: Date = null;
-        attempts.forEach((attempt: CypressCommandLine.AttemptResult) => {
-            const attemptDate = this.getAttemptStartDate(attempt, cypressVersion);
-            if (!start || attemptDate < start) {
-                start = attemptDate;
-            }
-        });
-        return start;
-    }
-
-    /**
-     * Retrieve the start date of a single Cypress test result.
-     *
-     * The Cypress version is provided because different Cypress versions use different attempt
-     * result interfaces.
-     *
-     * @param attempt the Cypress test result
-     * @param cypressVersion the Cypress version
-     * @returns the test's start date
-     */
-    protected getAttemptStartDate(
-        attempt: CypressCommandLine.AttemptResult,
-        cypressVersion: string
-    ): Date {
-        return new Date(attempt.startedAt);
-    }
-
-    /**
-     * Retrieve the end date of multiple Cypress test results.
-     *
-     * The Cypress version is provided because different Cypress versions use different attempt
-     * result interfaces.
-     *
-     * @param attempts the Cypress test results
-     * @param cypressVersion the Cypress version
-     * @returns the tests' end date
-     */
-    protected getAttemptsEndDate(
-        attempts: CypressCommandLine.AttemptResult[],
-        cypressVersion: string
-    ): Date | null {
-        let end: Date = null;
-        attempts.forEach((attempt: CypressCommandLine.AttemptResult) => {
-            const attemptEndDate = this.getAttemptEndDate(attempt, cypressVersion);
-            if (!end || attemptEndDate > end) {
-                end = attemptEndDate;
-            }
-        });
-        return end;
-    }
-
-    /**
-     * Retrieve the end date of a single Cypress test result.
-     *
-     * The Cypress version is provided because different Cypress versions use different attempt
-     * result interfaces.
-     *
-     * @param attempt the Cypress test result
-     * @param cypressVersion the Cypress version
-     * @returns the test's end date
-     */
-    protected getAttemptEndDate(
-        attempt: CypressCommandLine.AttemptResult,
-        cypressVersion: string
-    ): Date {
-        const date = this.getAttemptStartDate(attempt, cypressVersion);
-        date.setMilliseconds(date.getMilliseconds() + attempt.duration);
-        return date;
-    }
-
-    /**
-     * Returns a {@link Status} enum value for a single Cypress test result.
-     *
-     * @param attempt the Cypress test result
-     * @returns a corresponding status
-     */
-    protected getStatus(attempt: CypressCommandLine.AttemptResult): Status {
-        const status: Status = Status[getEnumKeyByEnumValue(Status, attempt.state)];
-        if (!status) {
-            throw new Error(`Unknown Cypress test status: ${attempt.state}`);
+    ): Promise<XrayTestExecutionResults<XrayTestType>> {
+        if (
+            results.runs.every((run: RunResultType) => {
+                return run.spec.relative.endsWith(this.options.cucumber.featureFileExtension);
+            })
+        ) {
+            throw new Error("Failed to convert execution results: No Cypress tests were executed");
         }
-        return status;
-    }
-
-    /**
-     * Returns a step action description truncated to the maximum length Xray
-     * allows.
-     *
-     * @param action the step's action description
-     * @returns the truncated or unmodified description if it's short enough
-     */
-    protected truncateStepAction(action: string): string {
-        if (action.length <= this.options.xray.steps.maxLengthAction) {
-            return action;
+        let testConverter: TestConverter<XrayTestType>;
+        if (this.isCloudConverter) {
+            testConverter = new TestConverterCloud(this.options);
+        } else {
+            testConverter = new TestConverterServer(this.options);
         }
-        // Subtract 3 for the dots.
-        const truncated = action.substring(0, this.options.xray.steps.maxLengthAction - 3);
-        return `${truncated}...`;
-    }
-
-    private mapTestsToTitles(
-        runs: CypressCommandLine.RunResult[]
-    ): Map<string, CypressCommandLine.TestResult[]> {
-        const map = new Map<string, CypressCommandLine.TestResult[]>();
-        runs.forEach((run: CypressCommandLine.RunResult) => {
-            run.tests.forEach((test: CypressCommandLine.TestResult) => {
-                const title = test.title.join(" ");
-                if (map.has(title)) {
-                    map.get(title).push(test);
-                } else {
-                    map.set(title, [test]);
-                }
-            });
-        });
-        return map;
-    }
-
-    private mapAttemptsToTitles(
-        testsByTitle: Map<string, CypressCommandLine.TestResult[]>
-    ): Map<string, CypressCommandLine.AttemptResult[]> {
-        const map = new Map<string, CypressCommandLine.AttemptResult[]>();
-        testsByTitle.forEach((testResults: CypressCommandLine.TestResult[], title: string) => {
-            const attempts = testResults.flatMap(
-                (testResult: CypressCommandLine.TestResult) => testResult.attempts
-            );
-            if (map.has(title)) {
-                map.set(title, map.get(title).concat(attempts));
-            } else {
-                map.set(title, attempts);
-            }
-        });
-        return map;
-    }
-
-    private getTestExecutionInfo(
-        results: CypressCommandLine.CypressRunResult
-    ): XrayTestExecutionInfo {
         return {
-            project: this.options.jira.projectKey,
-            startDate: this.truncateISOTime(results.startedTestsAt),
-            finishDate: this.truncateISOTime(results.endedTestsAt),
-            description: this.getDescription(results),
-            summary: this.getTextExecutionResultSummary(results),
-            testPlanKey: this.options.jira.testPlanIssueKey,
+            testExecutionKey: this.options.jira.testExecutionIssueKey,
+            info: {
+                project: this.options.jira.projectKey,
+                startDate: truncateISOTime(results.startedTestsAt),
+                finishDate: truncateISOTime(results.endedTestsAt),
+                description: this.getDescription(results),
+                summary: this.getTextExecutionResultSummary(results),
+                testPlanKey: this.options.jira.testPlanIssueKey,
+            },
+            tests: await testConverter.convert(results, issueData),
         };
     }
 
-    private getTextExecutionResultSummary(results: CypressCommandLine.CypressRunResult): string {
+    private getTextExecutionResultSummary(results: CypressRunResultType): string {
         return (
-            this.options.jira.testExecutionIssueSummary ||
+            this.options.jira.testExecutionIssueSummary ??
             `Execution Results [${new Date(results.startedTestsAt).getTime()}]`
         );
     }
 
-    private getDescription(results: CypressCommandLine.CypressRunResult): string {
+    private getDescription(results: CypressRunResultType): string {
         return (
-            this.options.jira.testExecutionIssueDescription ||
-            "Cypress version: " +
-                results.cypressVersion +
-                " Browser: " +
-                results.browserName +
-                " (" +
-                results.browserVersion +
-                ")"
+            this.options.jira.testExecutionIssueDescription ??
+            dedent(`
+                Cypress version: ${results.cypressVersion}
+                Browser: ${results.browserName} (${results.browserVersion})
+            `)
         );
     }
 }

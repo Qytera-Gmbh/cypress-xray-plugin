@@ -1,4 +1,4 @@
-import { ConfigOptions, PublicBrowser, TestingType } from "./cypress";
+import { ConfigOptions, PublicBrowser, ResolvedConfigOptions, TestingType } from "./cypress";
 
 interface CypressRunOptions extends CypressCommonOptions {
     browser: string;
@@ -35,17 +35,17 @@ interface CypressCommonOptions {
 type dateTimeISO = string;
 type ms = number;
 type pixels = number;
-interface TestResult {
+export interface TestResult {
     duration: number;
     title: string[];
     state: string;
     displayError: string | null;
     attempts: AttemptResult[];
 }
-interface AttemptResult {
+export interface AttemptResult {
     state: string;
 }
-interface ScreenshotInformation {
+export interface ScreenshotInformation {
     name: string;
     takenAt: dateTimeISO;
     path: string;
@@ -59,7 +59,7 @@ interface SpecResult {
     name: string;
     relative: string;
 }
-interface RunResult {
+export interface RunResult {
     error: string | null;
     reporter: string;
     reporterStats: object;
@@ -80,7 +80,7 @@ interface RunResult {
     video: string | null;
 }
 type PublicConfig = Omit<
-    Cypress.ResolvedConfigOptions,
+    ResolvedConfigOptions,
     | "additionalIgnorePattern"
     | "autoOpen"
     | "browser"

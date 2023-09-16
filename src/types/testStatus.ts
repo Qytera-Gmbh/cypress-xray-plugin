@@ -1,3 +1,6 @@
+/**
+ * All test statuses Cypress assigns to test attempts.
+ */
 export enum Status {
     /**
      * A test marked as passed.
