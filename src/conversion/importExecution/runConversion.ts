@@ -12,19 +12,69 @@ import {
 import { Status } from "../../types/testStatus";
 import { toCypressStatus } from "./statusConversion";
 
+/**
+ * Test data extracted from Cypress tests, ready to be converted into an Xray JSON test.
+ */
 export interface ITestRunData {
+    /**
+     * The duration of the test in milliseconds.
+     */
     duration: number;
+    /**
+     * Screenshots linked to the test.
+     */
     screenshots: {
+        /**
+         * The screenshot's file path.
+         */
         filepath: string;
     }[];
+    /**
+     * Information about the spec the test was run in.
+     */
     spec: {
+        /**
+         * The spec's file path.
+         */
         filepath: string;
     };
+    /**
+     * When the test was started.
+     */
     startedAt: Date;
+    /**
+     * The test's status.
+     */
     status: Status;
+    /**
+     * The test's title.
+     */
     title: string;
 }
 
+/**
+ * Converts a Cypress v12 (or before) run result into several {@link ITestRunData} objects.
+ *
+ * The function returns an array of promises because the conversion of the test results contained
+ * within the run can fail for individual tests. This makes sure that a single failing conversion
+ * does not affect or cancel the conversion of the other test results.
+ *
+ * To retrieve the results, you should use the following approach:
+ *
+ * ```ts
+ *   const testData = await Promise.allSettled(getTestRunData_V12(runResult));
+ *   testData.forEach((promise) => {
+ *     if (promise.status === "fulfilled") {
+ *       // use test data
+ *     } else {
+ *       // handle failed test conversion
+ *     }
+ *   });
+ * ```
+ *
+ * @param runResult the run result
+ * @returns an array of test data promises
+ */
 export function getTestRunData_V12(runResult: RunResult_V12): Promise<ITestRunData>[] {
     const testRuns: Promise<ITestRunData>[] = [];
     runResult.tests.forEach((test: TestResult_V12) => {
@@ -50,6 +100,31 @@ export function getTestRunData_V12(runResult: RunResult_V12): Promise<ITestRunDa
     return testRuns;
 }
 
+/**
+ * Converts a Cypress v13 (and above) run result into several {@link ITestRunData} objects. The
+ * project key is required for mapping screenshots to test cases.
+ *
+ * The function returns an array of promises because the conversion of the test results contained
+ * within the run can fail for individual tests. This makes sure that a single failing conversion
+ * does not affect or cancel the conversion of the other test results.
+ *
+ * To retrieve the results, you should use the following approach:
+ *
+ * ```ts
+ *   const testData = await Promise.allSettled(getTestRunData_V13(runResult, projectKey));
+ *   testData.forEach((promise) => {
+ *     if (promise.status === "fulfilled") {
+ *       // use test data
+ *     } else {
+ *       // handle failed test conversion
+ *     }
+ *   });
+ * ```
+ *
+ * @param runResult the run result
+ * @param projectKey the project key
+ * @returns an array of test data promises
+ */
 export function getTestRunData_V13(
     runResult: RunResult_V13,
     projectKey: string
