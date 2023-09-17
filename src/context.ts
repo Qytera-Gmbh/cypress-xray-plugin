@@ -102,14 +102,16 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
                 false,
         },
         xray: {
-            statusFailed:
-                parse(env, ENV_XRAY_STATUS_FAILED, asString) ?? options.xray?.statusFailed,
-            statusPassed:
-                parse(env, ENV_XRAY_STATUS_PASSED, asString) ?? options.xray?.statusPassed,
-            statusPending:
-                parse(env, ENV_XRAY_STATUS_PENDING, asString) ?? options.xray?.statusPending,
-            statusSkipped:
-                parse(env, ENV_XRAY_STATUS_SKIPPED, asString) ?? options.xray?.statusSkipped,
+            status: {
+                failed:
+                    parse(env, ENV_XRAY_STATUS_FAILED, asString) ?? options.xray?.status?.failed,
+                passed:
+                    parse(env, ENV_XRAY_STATUS_PASSED, asString) ?? options.xray?.status?.passed,
+                pending:
+                    parse(env, ENV_XRAY_STATUS_PENDING, asString) ?? options.xray?.status?.pending,
+                skipped:
+                    parse(env, ENV_XRAY_STATUS_SKIPPED, asString) ?? options.xray?.status?.skipped,
+            },
             steps: {
                 maxLengthAction:
                     parse(env, ENV_XRAY_STEPS_MAX_LENGTH_ACTION, asInt) ??

@@ -158,33 +158,38 @@ export interface XrayStepOptions {
 
 export interface XrayOptions {
     /**
-     * The Xray status name of a test marked as failed by Cypress. Should be used when custom status
-     * names have been setup in Xray.
-     *
-     * @example "FEHLGESCHLAGEN" // german
+     * A mapping of Cypress statuses to corresponding Xray statuses.
      */
-    statusFailed?: string;
-    /**
-     * The Xray status name of a test marked as passed by Cypress. Should be used when custom status
-     * names have been setup in Xray.
-     *
-     * @example "BESTANDEN" // german
-     */
-    statusPassed?: string;
-    /**
-     * The Xray status name of a test marked as pending by Cypress. Should be used when custom
-     * status names have been setup in Xray.
-     *
-     * @example "EN_ATTENTE" // french
-     */
-    statusPending?: string;
-    /**
-     * The Xray status name of a test marked as skipped by Cypress. Should be used when custom
-     * status names have been setup in Xray.
-     *
-     * @example "OMIT" // french
-     */
-    statusSkipped?: string;
+    status?: {
+        /**
+         * The Xray status name of a test marked as failed by Cypress. Should be used when custom
+         * status names have been setup in Xray.
+         *
+         * @example "FEHLGESCHLAGEN" // german
+         */
+        failed?: string;
+        /**
+         * The Xray status name of a test marked as passed by Cypress. Should be used when custom
+         * status names have been setup in Xray.
+         *
+         * @example "BESTANDEN" // german
+         */
+        passed?: string;
+        /**
+         * The Xray status name of a test marked as pending by Cypress. Should be used when custom
+         * status names have been setup in Xray.
+         *
+         * @example "EN_ATTENTE" // french
+         */
+        pending?: string;
+        /**
+         * The Xray status name of a test marked as skipped by Cypress. Should be used when custom
+         * status names have been setup in Xray.
+         *
+         * @example "OMIT" // french
+         */
+        skipped?: string;
+    };
     /**
      * All options related to manual test issue steps.
      */

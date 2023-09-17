@@ -11,6 +11,7 @@ import {
     CucumberMultipartInfoServer,
 } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { dedent } from "../../util/dedent";
+import { errorMessage } from "../../util/error";
 import { Converter } from "../converter";
 
 /**
@@ -57,15 +58,11 @@ export abstract class ImportExecutionCucumberMultipartConverter<
                     };
                     elements.push(modifiedElement);
                 } catch (error: unknown) {
-                    let reason = error;
-                    if (error instanceof Error) {
-                        reason = error.message;
-                    }
                     logWarning(
                         dedent(`
                             Skipping result upload for ${element.type}: ${element.name}
 
-                              ${reason}
+                              ${errorMessage(error)}
                         `)
                     );
                 }
@@ -82,15 +79,11 @@ export abstract class ImportExecutionCucumberMultipartConverter<
                 info: info,
             };
         } catch (error: unknown) {
-            let reason = error;
-            if (error instanceof Error) {
-                reason = error.message;
-            }
             logWarning(
                 dedent(`
                     Skipping result upload for: ${tests.map((test) => test.name).join(", ")}
 
-                      ${reason}
+                      ${errorMessage(error)}
                 `)
             );
             return {

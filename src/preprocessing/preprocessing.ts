@@ -11,6 +11,7 @@ import fs from "fs";
 import { logWarning } from "../logging/logging";
 import { InternalOptions, Options } from "../types/plugin";
 import { dedent } from "../util/dedent";
+import { errorMessage } from "../util/error";
 
 // ============================================================================================== //
 // CYPRESS NATIVE                                                                                 //
@@ -54,11 +55,7 @@ export function getNativeTestIssueKeys(
                 keyedTests.push(testResult);
                 issueKeys.push(issueKey);
             } catch (error: unknown) {
-                let reason = error;
-                if (error instanceof Error) {
-                    reason = error.message;
-                }
-                logWarning(`Skipping test: ${title}\n\n${reason}`);
+                logWarning(`Skipping test: ${title}\n\n${errorMessage(error)}`);
             }
         }
         runResult.tests = keyedTests;
@@ -66,6 +63,14 @@ export function getNativeTestIssueKeys(
     return issueKeys;
 }
 
+/**
+ * Extracts a Jira issue key from a native Cypress test title, based on the provided project key.
+ *
+ * @param title the test title
+ * @param projectKey the Jira projectk key
+ * @returns the Jira issue key
+ * @throws if the title contains zero or more than one issue key
+ */
 export function getNativeTestIssueKey(title: string, projectKey: string): string | null {
     const regex = new RegExp(`(${projectKey}-\\d+)`, "g");
     const matches = title.match(regex);

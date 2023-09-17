@@ -78,17 +78,19 @@ describe("the plugin context configuration", () => {
             });
 
             describe("xray", () => {
-                it("statusFailed", () => {
-                    expect(options.xray.statusFailed).to.eq(undefined);
-                });
-                it("statusPassed", () => {
-                    expect(options.xray.statusPassed).to.eq(undefined);
-                });
-                it("statusPending", () => {
-                    expect(options.xray.statusPending).to.eq(undefined);
-                });
-                it("statusSkipped", () => {
-                    expect(options.xray.statusSkipped).to.eq(undefined);
+                describe("status", () => {
+                    it("failed", () => {
+                        expect(options.xray.status.failed).to.eq(undefined);
+                    });
+                    it("passed", () => {
+                        expect(options.xray.status.passed).to.eq(undefined);
+                    });
+                    it("pending", () => {
+                        expect(options.xray.status.pending).to.eq(undefined);
+                    });
+                    it("skipped", () => {
+                        expect(options.xray.status.skipped).to.eq(undefined);
+                    });
                 });
                 describe("steps", () => {
                     it("maxLengthAction", () => {
@@ -372,65 +374,75 @@ describe("the plugin context configuration", () => {
             });
 
             describe("xray", () => {
-                it("statusFailed", () => {
-                    const options = initOptions(
-                        {},
-                        {
-                            jira: {
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            },
-                            xray: {
-                                statusFailed: "BAD",
-                            },
-                        }
-                    );
-                    expect(options.xray.statusFailed).to.eq("BAD");
-                });
-                it("statusPassed", () => {
-                    const options = initOptions(
-                        {},
-                        {
-                            jira: {
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            },
-                            xray: {
-                                statusPassed: "GOOD",
-                            },
-                        }
-                    );
-                    expect(options.xray.statusPassed).to.eq("GOOD");
-                });
-                it("statusPending", () => {
-                    const options = initOptions(
-                        {},
-                        {
-                            jira: {
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            },
-                            xray: {
-                                statusPending: "PENDULUM",
-                            },
-                        }
-                    );
-                    expect(options.xray.statusPending).to.eq("PENDULUM");
-                });
-                it("statusSkipped", () => {
-                    const options = initOptions(
-                        {},
-                        {
-                            jira: {
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            },
-                            xray: {
-                                statusSkipped: "SKIPPING STONE",
-                            },
-                        }
-                    );
-                    expect(options.xray.statusSkipped).to.eq("SKIPPING STONE");
+                describe("status", () => {
+                    it("fFailed", () => {
+                        const options = initOptions(
+                            {},
+                            {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                },
+                                xray: {
+                                    status: {
+                                        failed: "BAD",
+                                    },
+                                },
+                            }
+                        );
+                        expect(options.xray.status.failed).to.eq("BAD");
+                    });
+                    it("passed", () => {
+                        const options = initOptions(
+                            {},
+                            {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                },
+                                xray: {
+                                    status: {
+                                        passed: "GOOD",
+                                    },
+                                },
+                            }
+                        );
+                        expect(options.xray.status.passed).to.eq("GOOD");
+                    });
+                    it("pending", () => {
+                        const options = initOptions(
+                            {},
+                            {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                },
+                                xray: {
+                                    status: {
+                                        pending: "PENDULUM",
+                                    },
+                                },
+                            }
+                        );
+                        expect(options.xray.status.pending).to.eq("PENDULUM");
+                    });
+                    it("skipped", () => {
+                        const options = initOptions(
+                            {},
+                            {
+                                jira: {
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
+                                },
+                                xray: {
+                                    status: {
+                                        skipped: "SKIPPING STONE",
+                                    },
+                                },
+                            }
+                        );
+                        expect(options.xray.status.skipped).to.eq("SKIPPING STONE");
+                    });
                 });
 
                 describe("steps", () => {
@@ -783,10 +795,12 @@ describe("the plugin context configuration", () => {
                             url: "https://example.org",
                         },
                         xray: {
-                            statusFailed: "ERROR",
+                            status: {
+                                failed: "ERROR",
+                            },
                         },
                     });
-                    expect(options.xray?.statusFailed).to.eq("no");
+                    expect(options.xray?.status.failed).to.eq("no");
                 });
 
                 it("XRAY_STATUS_PASSED", () => {
@@ -799,10 +813,12 @@ describe("the plugin context configuration", () => {
                             url: "https://example.org",
                         },
                         xray: {
-                            statusPassed: "FLYBY",
+                            status: {
+                                passed: "FLYBY",
+                            },
                         },
                     });
-                    expect(options.xray?.statusPassed).to.eq("ok");
+                    expect(options.xray?.status.passed).to.eq("ok");
                 });
 
                 it("XRAY_STATUS_PENDING", () => {
@@ -815,10 +831,12 @@ describe("the plugin context configuration", () => {
                             url: "https://example.org",
                         },
                         xray: {
-                            statusPending: "PENCIL",
+                            status: {
+                                pending: "PENCIL",
+                            },
                         },
                     });
-                    expect(options.xray?.statusPending).to.eq("pendulum");
+                    expect(options.xray?.status.pending).to.eq("pendulum");
                 });
 
                 it("XRAY_STATUS_SKIPPED", () => {
@@ -831,10 +849,12 @@ describe("the plugin context configuration", () => {
                             url: "https://example.org",
                         },
                         xray: {
-                            statusSkipped: "HOP",
+                            status: {
+                                skipped: "HOP",
+                            },
                         },
                     });
-                    expect(options.xray?.statusSkipped).to.eq("ski-ba-bop-ba-dop-bop");
+                    expect(options.xray?.status.skipped).to.eq("ski-ba-bop-ba-dop-bop");
                 });
 
                 it("XRAY_STEPS_MAX_LENGTH_ACTION", () => {

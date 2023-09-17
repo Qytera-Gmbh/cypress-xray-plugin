@@ -3,7 +3,7 @@ import { InternalOptions } from "../types/plugin";
 /**
  * A basic class for converting data from an input type to a target type.
  *
- * @template ConversionInputType the conversion innput type
+ * @template ConversionInputType the conversion input type
  * @template ConversionTargetType the conversion target type
  * @template ConversionParametersType the conversion parameters type
  */
@@ -17,6 +17,11 @@ export abstract class Converter<
      */
     protected readonly options: InternalOptions;
 
+    /**
+     * Construct a new converter with access to the provided options.
+     *
+     * @param options the options
+     */
     constructor(options: InternalOptions) {
         this.options = options;
     }

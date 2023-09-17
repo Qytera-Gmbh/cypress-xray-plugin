@@ -4,8 +4,7 @@ import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
-import { ImportExecutionConverterCloud } from "./conversion/importExecution/importExecutionConverterCloud";
-import { ImportExecutionConverterServer } from "./conversion/importExecution/importExecutionConverterServer";
+import { ImportExecutionConverter } from "./conversion/importExecution/importExecutionConverter";
 import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterCloud";
 import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
 import { CucumberPreprocessorExports, importOptionalDependency } from "./dependencies";
@@ -28,8 +27,9 @@ import { IssueUpdateCloud, IssueUpdateServer } from "./types/jira/responses/issu
 import { ClientCombination, InternalOptions } from "./types/plugin";
 import { StringMap } from "./types/util";
 import {
-    XrayTestExecutionResultsCloud,
-    XrayTestExecutionResultsServer,
+    XrayTestCloud,
+    XrayTestExecutionResults,
+    XrayTestServer,
 } from "./types/xray/importTestExecutionResults";
 import {
     CucumberMultipartCloud,
@@ -212,12 +212,13 @@ export async function afterRunHook(
         logInfo("Skipping after:run hook: Plugin disabled");
         return;
     }
-    if (results.status === "failed") {
+    if (results["status"] === "failed") {
+        const failedResult = results as CypressCommandLine.CypressFailedRunResult;
         logError(
             dedent(`
-                Skipping after:run hook: Failed to run ${results.failures} tests
+                Skipping after:run hook: Failed to run ${failedResult.failures} tests
 
-                ${results.message}
+                ${failedResult.message}
             `)
         );
         return;
@@ -328,14 +329,14 @@ async function uploadCypressResults(
     const issueKeys = getNativeTestIssueKeys(runResult, options);
     const issueSummaries = await jiraRepository.getSummaries(...issueKeys);
     const issueTestTypes = await jiraRepository.getTestTypes(...issueKeys);
-    let cypressExecution: XrayTestExecutionResultsServer | XrayTestExecutionResultsCloud;
+    let cypressExecution: XrayTestExecutionResults<XrayTestServer | XrayTestCloud>;
     if (xrayClient instanceof XrayClientServer) {
-        cypressExecution = await new ImportExecutionConverterServer(options).convert(runResult, {
+        cypressExecution = await new ImportExecutionConverter(options, false).convert(runResult, {
             summaries: issueSummaries,
             testTypes: issueTestTypes,
         });
     } else {
-        cypressExecution = await new ImportExecutionConverterCloud(options).convert(runResult, {
+        cypressExecution = await new ImportExecutionConverter(options, true).convert(runResult, {
             summaries: issueSummaries,
             testTypes: issueTestTypes,
         });
