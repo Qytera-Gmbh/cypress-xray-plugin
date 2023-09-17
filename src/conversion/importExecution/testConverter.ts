@@ -1,4 +1,4 @@
-import { basename } from "path";
+import Path, { basename } from "path";
 import { gte, lt } from "semver";
 import { logWarning } from "../../logging/logging";
 import { getNativeTestIssueKey } from "../../preprocessing/preprocessing";
@@ -142,7 +142,7 @@ export abstract class TestConverter<
                 for (const run of runResults.runs as RunResult_V13[]) {
                     for (const screenshot of run.screenshots) {
                         if (!this.willBeUploaded(screenshot, testRunData)) {
-                            const name = basename(screenshot.path);
+                            const path = Path.parse(screenshot.path);
                             logWarning(
                                 dedent(`
                                     Screenshot will not be uploaded: ${screenshot.path}
@@ -150,7 +150,7 @@ export abstract class TestConverter<
                                     Its filename does not contain a test issue key.
                                     To upload screenshots, include a test issue key anywhere in their names:
 
-                                    cy.screenshot("${this.options.jira.projectKey}-123 ${name}")
+                                    cy.screenshot("${this.options.jira.projectKey}-123 ${path.name}")
                                 `)
                             );
                         }
