@@ -137,15 +137,16 @@ export function getTestRunData_V13(
     );
     runResult.tests.forEach((test: TestResult_V13) => {
         const title = test.title.join(" ");
+        const screenshots = testScreenshots.has(title)
+            ? testScreenshots.get(title).map((screenshot: ScreenshotInformation_V13) => {
+                  return { filepath: screenshot.path };
+              })
+            : [];
         testRuns.push(
             new Promise((resolve) => {
                 resolve({
                     duration: test.duration,
-                    screenshots: testScreenshots
-                        .get(title)
-                        .map((screenshot: ScreenshotInformation_V13) => {
-                            return { filepath: screenshot.path };
-                        }),
+                    screenshots: screenshots,
                     spec: {
                         filepath: runResult.spec.absolute,
                     },
@@ -183,11 +184,12 @@ function screenshotsByTest(
     for (const screenshot of run.screenshots) {
         for (const test of run.tests) {
             const title = test.title.join(" ");
-            if (!map.has(title)) {
-                map.set(title, []);
-            }
             if (screenshotNameMatchesTestTitle(screenshot, projectKey, test.title)) {
-                map.get(title).push(screenshot);
+                if (!map.has(title)) {
+                    map.set(title, [screenshot]);
+                } else {
+                    map.get(title).push(screenshot);
+                }
             }
         }
     }
