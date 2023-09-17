@@ -22,7 +22,7 @@ import { errorMessage } from "../../util/error";
 import { normalizedFilename } from "../../util/files";
 import { Converter } from "../converter";
 import { TestIssueData } from "./importExecutionConverter";
-import { ITestRunData, getTestRunData_V12, getTestRunData_V13 } from "./testConversion";
+import { ITestRunData, getTestRunData_V12, getTestRunData_V13 } from "./runConversion";
 
 export abstract class TestConverter<
     XrayTestType extends XrayTestServer | XrayTestCloud

@@ -1,7 +1,7 @@
 import { XrayEvidenceItem, XrayTestCloud } from "../../types/xray/importTestExecutionResults";
 import { truncateISOTime } from "../../util/time";
+import { ITestRunData } from "./runConversion";
 import { getXrayStatus } from "./statusConversion";
-import { ITestRunData } from "./testConversion";
 import { TestConverter } from "./testConverter";
 
 export class TestConverterCloud extends TestConverter<XrayTestCloud> {
