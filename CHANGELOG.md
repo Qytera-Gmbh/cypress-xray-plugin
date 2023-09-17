@@ -67,7 +67,7 @@ The changes included a removal of the test function code, which previously was u
   > **Note**
   > Their environment variables have *not* changed.
 
-- With Node V16 being past its end of life date, the plugin now requires Node V18 (LTS) to be installed
+- With Node V16 being past its [end of life date](https://nodejs.dev/en/about/releases/), the plugin now requires Node V18 (LTS) to be installed
 
 ## Dependency updates
 
