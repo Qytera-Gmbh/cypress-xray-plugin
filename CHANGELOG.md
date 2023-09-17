@@ -7,7 +7,7 @@
 > **Note**
 > Previous versions of Cypress will still work just fine, the plugin is backwards compatible regarding Cypress versions.
 
-The changes included a removal of the test function code, which previously was used to update the test steps in Xray. Because the step updates were furthermore quite problematic/lackluster anyways ([#50](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/50), [#169](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/169)), step updates have been removed from the plugin entirely.
+The changes included a removal of the test function code, which previously was used to update the test steps in Xray. Because the step updates were furthermore quite problematic/lackluster anyways ([#50](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/50), [#164](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/164), [#169](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/169)), step updates have been removed from the plugin entirely.
 
 > **Note**
 > Cucumber feature file synchronization was not affected by this change, which means that upload of feature files can still change Cucumber steps in Xray.
