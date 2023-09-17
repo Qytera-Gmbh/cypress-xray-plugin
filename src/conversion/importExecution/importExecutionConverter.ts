@@ -1,4 +1,4 @@
-import { CypressRunResult as CypressRunResult_V_12 } from "../../types/cypress/12.16.0/api";
+import { CypressRunResult as CypressRunResult_V_12 } from "../../types/cypress/12.0.0/api";
 import { CypressRunResult as CypressRunResult_V_13 } from "../../types/cypress/13.0.0/api";
 import { InternalOptions } from "../../types/plugin";
 import { StringMap } from "../../types/util";

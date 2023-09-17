@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
 import { initOptions } from "../../context";
-import { CypressRunResult } from "../../types/cypress/12.16.0/api";
+import { CypressRunResult } from "../../types/cypress/12.0.0/api";
 import { InternalOptions } from "../../types/plugin";
 import { TestIssueData } from "./importExecutionConverter";
 import { TestConverterCloud } from "./testConverterCloud";

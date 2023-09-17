@@ -3,7 +3,7 @@ import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { stubLogging } from "../../../test/util";
 import { initOptions } from "../../context";
-import { CypressRunResult } from "../../types/cypress/12.16.0/api";
+import { CypressRunResult } from "../../types/cypress/12.0.0/api";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
 import { TestIssueData } from "./importExecutionConverter";

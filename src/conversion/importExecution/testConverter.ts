@@ -5,7 +5,7 @@ import { getNativeTestIssueKey } from "../../preprocessing/preprocessing";
 import {
     CypressRunResult as CypressRunResult_V12,
     RunResult as RunResult_V12,
-} from "../../types/cypress/12.16.0/api";
+} from "../../types/cypress/12.0.0/api";
 import {
     CypressRunResult as CypressRunResult_V13,
     RunResult as RunResult_V13,
