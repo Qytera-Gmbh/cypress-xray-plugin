@@ -212,12 +212,13 @@ export async function afterRunHook(
         logInfo("Skipping after:run hook: Plugin disabled");
         return;
     }
-    if (results.status === "failed") {
+    if (results["status"] === "failed") {
+        const failedResult = results as CypressCommandLine.CypressFailedRunResult;
         logError(
             dedent(`
-                Skipping after:run hook: Failed to run ${results.failures} tests
+                Skipping after:run hook: Failed to run ${failedResult.failures} tests
 
-                ${results.message}
+                ${failedResult.message}
             `)
         );
         return;
