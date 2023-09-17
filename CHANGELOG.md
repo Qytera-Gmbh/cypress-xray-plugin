@@ -12,7 +12,6 @@ The changes included a removal of the test function code, which previously was u
 > **Note**
 > Cucumber feature file synchronization was not affected by this change, which means that upload of feature files can still change Cucumber steps in Xray.
 
-
 ## Breaking changes
 
 - The plugin will now _never_ alter existing Xray test steps of tests with test type *Manual*
