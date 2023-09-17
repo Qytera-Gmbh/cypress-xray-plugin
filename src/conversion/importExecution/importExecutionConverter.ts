@@ -1,11 +1,5 @@
-import {
-    CypressRunResult as CypressRunResult_V_12,
-    RunResult as RunResult_V_12,
-} from "../../types/cypress/12.16.0/api";
-import {
-    CypressRunResult as CypressRunResult_V_13,
-    RunResult as RunResult_V_13,
-} from "../../types/cypress/13.0.0/api";
+import { CypressRunResult as CypressRunResult_V_12 } from "../../types/cypress/12.16.0/api";
+import { CypressRunResult as CypressRunResult_V_13 } from "../../types/cypress/13.0.0/api";
 import { InternalOptions } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import {
@@ -26,7 +20,6 @@ export type TestIssueData = {
 };
 
 type CypressRunResultType = CypressRunResult_V_12 | CypressRunResult_V_13;
-type RunResultType = RunResult_V_12 | RunResult_V_13;
 type XrayTestType = XrayTestServer | XrayTestCloud;
 
 export class ImportExecutionConverter extends Converter<
@@ -47,6 +40,7 @@ export class ImportExecutionConverter extends Converter<
      * will be Xray server JSON.
      *
      * @param options the options
+     * @param isCloudConverter whether Xray cloud JSONs should be created
      */
     constructor(options: InternalOptions, isCloudConverter: boolean) {
         super(options);
@@ -57,13 +51,6 @@ export class ImportExecutionConverter extends Converter<
         results: CypressRunResultType,
         issueData: TestIssueData
     ): Promise<XrayTestExecutionResults<XrayTestType>> {
-        if (
-            results.runs.every((run: RunResultType) => {
-                return run.spec.relative.endsWith(this.options.cucumber.featureFileExtension);
-            })
-        ) {
-            throw new Error("Failed to convert execution results: No Cypress tests were executed");
-        }
         let testConverter: TestConverter<XrayTestType>;
         if (this.isCloudConverter) {
             testConverter = new TestConverterCloud(this.options);

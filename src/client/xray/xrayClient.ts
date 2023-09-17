@@ -8,10 +8,10 @@ import {
 } from "../../authentication/credentials";
 import { RequestConfigPost, Requests } from "../../https/requests";
 import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
-import { OneOf } from "../../types/util";
 import {
-    XrayTestExecutionResultsCloud,
-    XrayTestExecutionResultsServer,
+    XrayTestCloud,
+    XrayTestExecutionResults,
+    XrayTestServer,
 } from "../../types/xray/importTestExecutionResults";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
@@ -44,7 +44,7 @@ export abstract class XrayClient<
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
     public async importExecution<
-        R extends OneOf<[XrayTestExecutionResultsServer, XrayTestExecutionResultsCloud]>
+        R extends XrayTestExecutionResults<XrayTestServer | XrayTestCloud>
     >(execution: R): Promise<string | null | undefined> {
         try {
             if (!execution.tests || execution.tests.length === 0) {

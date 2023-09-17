@@ -1,5 +1,5 @@
 import { basename } from "path";
-import { lt } from "semver";
+import { gte, lt } from "semver";
 import { logWarning } from "../../logging/logging";
 import { getNativeTestIssueKey } from "../../preprocessing/preprocessing";
 import {
@@ -18,6 +18,7 @@ import {
 } from "../../types/xray/importTestExecutionResults";
 import { encodeFile } from "../../util/base64";
 import { dedent } from "../../util/dedent";
+import { errorMessage } from "../../util/error";
 import { normalizedFilename } from "../../util/files";
 import { Converter } from "../converter";
 import { TestIssueData } from "./importExecutionConverter";
@@ -31,32 +32,10 @@ export abstract class TestConverter<
     TestIssueData
 > {
     public async convert(
-        run: CypressRunResult_V12 | CypressRunResult_V13,
+        runResults: CypressRunResult_V12 | CypressRunResult_V13,
         issueData?: TestIssueData
     ): Promise<[XrayTestType, ...XrayTestType[]]> {
-        let testRunData: ITestRunData[];
-        if (lt(run.cypressVersion, "13.0.0")) {
-            testRunData = getTestRunData_V12(run.runs as RunResult_V12[]);
-        } else {
-            const runResults = run.runs as RunResult_V13[];
-            testRunData = getTestRunData_V13(runResults, this.options.jira.projectKey);
-            for (const runResult of runResults) {
-                for (const screenshot of runResult.screenshots) {
-                    if (!this.willBeUploaded(screenshot, testRunData)) {
-                        logWarning(
-                            dedent(`
-                                Screenshot will not be uploaded: ${screenshot.path}
-
-                                Its filename neither contains the title of any test, nor a test issue key.
-                                To consistently upload manually taken screenshots, include a test issue key anywhere in their name:
-
-                                cy.screenshot("${this.options.jira.projectKey}-123 after login")
-                            `)
-                        );
-                    }
-                }
-            }
-        }
+        const testRunData = await this.getTestRunData(runResults);
         let xrayTests: [XrayTestType, ...XrayTestType[]];
         testRunData.forEach((testData: ITestRunData) => {
             try {
@@ -64,10 +43,19 @@ export abstract class TestConverter<
                     testData.title,
                     this.options.jira.projectKey
                 );
+                if (!issueData?.summaries[issueKey]) {
+                    throw new Error(`Summary of corresponding issue is unknown: ${issueKey}`);
+                }
+                if (!issueData?.testTypes[issueKey]) {
+                    throw new Error(`Test type of corresponding issue is unknown: ${issueKey}`);
+                }
                 const test: XrayTestType = this.getTest(
                     testData,
                     issueKey,
-                    issueData,
+                    {
+                        summary: issueData.summaries[issueKey],
+                        testType: issueData.testTypes[issueKey],
+                    },
                     this.getXrayEvidence(testData)
                 );
                 if (!xrayTests) {
@@ -76,15 +64,11 @@ export abstract class TestConverter<
                     xrayTests.push(test);
                 }
             } catch (error: unknown) {
-                let reason = error;
-                if (error instanceof Error) {
-                    reason = error.message;
-                }
                 logWarning(
                     dedent(`
                         Skipping result upload for test: ${testData.title}
 
-                        ${reason}
+                        ${errorMessage(error)}
                     `)
                 );
             }
@@ -95,9 +79,87 @@ export abstract class TestConverter<
     protected abstract getTest(
         test: ITestRunData,
         issueKey: string,
-        issueData?: TestIssueData,
-        evidence?: XrayEvidenceItem[]
+        issueData: {
+            summary: string;
+            testType: string;
+        },
+        evidence: XrayEvidenceItem[]
     ): XrayTestType;
+
+    private async getTestRunData(
+        runResults: CypressRunResult_V12 | CypressRunResult_V13
+    ): Promise<ITestRunData[]> {
+        const testRunData: ITestRunData[] = [];
+        const conversionPromises: [string, Promise<ITestRunData>][] = [];
+        if (lt(runResults.cypressVersion, "13.0.0")) {
+            const runs = runResults.runs as RunResult_V12[];
+            if (
+                runs.every((run: RunResult_V12) => {
+                    return run.spec.relative.endsWith(this.options.cucumber.featureFileExtension);
+                })
+            ) {
+                throw new Error("Failed to extract test run data: No Cypress tests were executed");
+            }
+            for (const run of runs) {
+                getTestRunData_V12(run).forEach((promise, index) =>
+                    conversionPromises.push([run.tests[index].title.join(" "), promise])
+                );
+            }
+        } else {
+            const runs = runResults.runs as RunResult_V13[];
+            if (
+                runs.every((run: RunResult_V13) => {
+                    return run.spec.relative.endsWith(this.options.cucumber.featureFileExtension);
+                })
+            ) {
+                throw new Error("Failed to extract test run data: No Cypress tests were executed");
+            }
+            for (const run of runs) {
+                getTestRunData_V13(run, this.options.jira.projectKey).forEach((promise, index) =>
+                    conversionPromises.push([run.tests[index].title.join(" "), promise])
+                );
+            }
+        }
+
+        const convertedTests = await Promise.allSettled(
+            conversionPromises.map((tuple) => tuple[1])
+        );
+        convertedTests.forEach((promise, index) => {
+            if (promise.status === "fulfilled") {
+                testRunData.push(promise.value);
+            } else {
+                logWarning(
+                    dedent(`
+                        Skipping result upload for test: ${conversionPromises[index][0]}
+
+                        ${errorMessage(promise.reason)}
+                    `)
+                );
+            }
+        });
+        if (this.options.xray.uploadScreenshots) {
+            if (gte(runResults.cypressVersion, "13.0.0")) {
+                for (const run of runResults.runs as RunResult_V13[]) {
+                    for (const screenshot of run.screenshots) {
+                        if (!this.willBeUploaded(screenshot, testRunData)) {
+                            const name = basename(screenshot.path);
+                            logWarning(
+                                dedent(`
+                                    Screenshot will not be uploaded: ${screenshot.path}
+
+                                    Its filename does not contain a test issue key.
+                                    To upload screenshots, include a test issue key anywhere in their names:
+
+                                    cy.screenshot("${this.options.jira.projectKey}-123 ${name}")
+                                `)
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        return testRunData;
+    }
 
     private getXrayEvidence(testRunData: ITestRunData): XrayEvidenceItem[] {
         const evidence: XrayEvidenceItem[] = [];

@@ -135,11 +135,11 @@
             },
             "screenshots": [
                 {
-                    "height": 660,
+                    "height": 8,
                     "name": null,
-                    "path": "~/Repositories/cypress/85/cypress/screenshots/cypress.spec.cy.ts/something -- CYP-452 happens.png",
+                    "path": "./test/resources/small CYP-237.png",
                     "takenAt": "2023-09-09T10:59:31.366Z",
-                    "width": 1000
+                    "width": 8
                 }
             ],
             "spec": {
@@ -172,28 +172,28 @@
                     "displayError": null,
                     "duration": 28,
                     "state": "passed",
-                    "title": ["something", "SQA-268 happens"]
+                    "title": ["something", "CYP-268 happens"]
                 },
                 {
-                    "attempts": [{ "state": "passed" }],
+                    "attempts": [{ "state": "failed" }],
                     "displayError": null,
                     "duration": 25,
-                    "state": "passed",
-                    "title": ["something", "SQA-237 happens"]
+                    "state": "failed",
+                    "title": ["something", "CYP-237 happens"]
                 },
                 {
-                    "attempts": [{ "state": "passed" }],
+                    "attempts": [{ "state": "skipped" }],
                     "displayError": null,
                     "duration": 25,
-                    "state": "passed",
-                    "title": ["something", "SQA-332 happens"]
+                    "state": "skipped",
+                    "title": ["something", "CYP-332 happens"]
                 },
                 {
-                    "attempts": [{ "state": "passed" }],
+                    "attempts": [{ "state": "pending" }],
                     "displayError": null,
                     "duration": 28,
-                    "state": "passed",
-                    "title": ["something", "SQA-333 happens"]
+                    "state": "pending",
+                    "title": ["something", "CYP-333 happens"]
                 }
             ],
             "video": null

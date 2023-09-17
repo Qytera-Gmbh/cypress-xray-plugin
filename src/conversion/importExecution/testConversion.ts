@@ -25,56 +25,61 @@ export interface ITestRunData {
     title: string;
 }
 
-export function getTestRunData_V12(runs: RunResult_V12[]): ITestRunData[] {
-    const testRuns: ITestRunData[] = [];
-    runs.forEach((run: RunResult_V12) => {
-        run.tests.forEach((test: TestResult_V12) => {
-            const runData: ITestRunData = {
-                duration: test.attempts[test.attempts.length - 1].duration,
-                screenshots: test.attempts[test.attempts.length - 1].screenshots.map(
-                    (screenshot: ScreenshotInformation_V12) => {
-                        return { filepath: screenshot.path };
-                    }
-                ),
-                spec: {
-                    filepath: run.spec.absolute,
-                },
-                startedAt: new Date(test.attempts[test.attempts.length - 1].startedAt),
-                status: toCypressStatus(test.attempts[test.attempts.length - 1].state),
-                title: test.title.join(" "),
-            };
-            testRuns.push(runData);
-        });
+export function getTestRunData_V12(runResult: RunResult_V12): Promise<ITestRunData>[] {
+    const testRuns: Promise<ITestRunData>[] = [];
+    runResult.tests.forEach((test: TestResult_V12) => {
+        testRuns.push(
+            new Promise((resolve) => {
+                resolve({
+                    duration: test.attempts[test.attempts.length - 1].duration,
+                    screenshots: test.attempts[test.attempts.length - 1].screenshots.map(
+                        (screenshot: ScreenshotInformation_V12) => {
+                            return { filepath: screenshot.path };
+                        }
+                    ),
+                    spec: {
+                        filepath: runResult.spec.absolute,
+                    },
+                    startedAt: new Date(test.attempts[test.attempts.length - 1].startedAt),
+                    status: toCypressStatus(test.attempts[test.attempts.length - 1].state),
+                    title: test.title.join(" "),
+                });
+            })
+        );
     });
     return testRuns;
 }
 
-export function getTestRunData_V13(runs: RunResult_V13[], projectKey: string): ITestRunData[] {
-    const testRuns: ITestRunData[] = [];
-    runs.forEach((run: RunResult_V13) => {
-        const testStarts: Map<string, Date> = startTimesByTest(run);
-        const testScreenshots: Map<string, ScreenshotInformation_V13[]> = screenshotsByTest(
-            run,
-            projectKey
+export function getTestRunData_V13(
+    runResult: RunResult_V13,
+    projectKey: string
+): Promise<ITestRunData>[] {
+    const testRuns: Promise<ITestRunData>[] = [];
+    const testStarts: Map<string, Date> = startTimesByTest(runResult);
+    const testScreenshots: Map<string, ScreenshotInformation_V13[]> = screenshotsByTest(
+        runResult,
+        projectKey
+    );
+    runResult.tests.forEach((test: TestResult_V13) => {
+        const title = test.title.join(" ");
+        testRuns.push(
+            new Promise((resolve) => {
+                resolve({
+                    duration: test.duration,
+                    screenshots: testScreenshots
+                        .get(title)
+                        .map((screenshot: ScreenshotInformation_V13) => {
+                            return { filepath: screenshot.path };
+                        }),
+                    spec: {
+                        filepath: runResult.spec.absolute,
+                    },
+                    startedAt: testStarts.get(title),
+                    status: toCypressStatus(test.state),
+                    title: title,
+                });
+            })
         );
-        run.tests.forEach((test: TestResult_V13) => {
-            const title = test.title.join(" ");
-            const runData: ITestRunData = {
-                duration: test.duration,
-                screenshots: testScreenshots
-                    .get(title)
-                    .map((screenshot: ScreenshotInformation_V13) => {
-                        return { filepath: screenshot.path };
-                    }),
-                spec: {
-                    filepath: run.spec.absolute,
-                },
-                startedAt: testStarts.get(title),
-                status: toCypressStatus(test.attempts[test.attempts.length - 1].state),
-                title: title,
-            };
-            testRuns.push(runData);
-        });
     });
     return testRuns;
 }
@@ -87,7 +92,7 @@ function startTimesByTest(run: RunResult_V13): Map<string, Date> {
         if (i === 0) {
             date = new Date(run.stats.startedAt);
         } else {
-            date = new Date(testStarts[i - 1].getMilliseconds() + run.tests[i - 1].duration);
+            date = new Date(testStarts[i - 1].getTime() + run.tests[i - 1].duration);
         }
         testStarts.push(date);
         map.set(run.tests[i].title.join(" "), date);
@@ -119,13 +124,9 @@ function screenshotNameMatchesTestTitle(
     projectKey: string,
     testTitle: string[]
 ): boolean {
-    if (screenshot.path.includes(testTitle[testTitle.length - 1])) {
-        return true;
-    }
     try {
         const testTitleKey = getNativeTestIssueKey(testTitle[testTitle.length - 1], projectKey);
-        const screenshotKey = getNativeTestIssueKey(screenshot.path, projectKey);
-        if (testTitleKey === screenshotKey) {
+        if (screenshot.path.includes(testTitleKey)) {
             return true;
         }
     } catch (error: unknown) {

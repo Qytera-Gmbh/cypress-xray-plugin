@@ -1,6 +1,5 @@
 import { XrayEvidenceItem, XrayTestServer } from "../../types/xray/importTestExecutionResults";
 import { truncateISOTime } from "../../util/time";
-import { TestIssueData } from "./importExecutionConverter";
 import { getXrayStatus } from "./statusConversion";
 import { ITestRunData } from "./testConversion";
 import { TestConverter } from "./testConverter";
@@ -9,29 +8,29 @@ export class TestConverterServer extends TestConverter<XrayTestServer> {
     protected getTest(
         test: ITestRunData,
         issueKey: string,
-        issueData?: TestIssueData,
-        evidence?: XrayEvidenceItem[]
+        issueData: {
+            summary: string;
+            testType: string;
+        },
+        evidence: XrayEvidenceItem[]
     ): XrayTestServer {
-        if (!issueData?.summaries[issueKey]) {
-            throw new Error(`Summary of corresponding issue is missing: ${issueKey}`);
-        }
-        if (!issueData?.testTypes[issueKey]) {
-            throw new Error(`Test type of corresponding issue is missing: ${issueKey}`);
-        }
         // TODO: Support multiple iterations.
-        return {
+        const xrayTest: XrayTestServer = {
             testKey: issueKey,
             testInfo: {
                 projectKey: this.options.jira.projectKey,
-                summary: issueData.summaries[issueKey],
-                testType: issueData.testTypes[issueKey],
+                summary: issueData.summary,
+                testType: issueData.testType,
             },
             start: truncateISOTime(test.startedAt.toISOString()),
             finish: truncateISOTime(
-                new Date(test.startedAt.getMilliseconds() + test.duration).toISOString()
+                new Date(test.startedAt.getTime() + test.duration).toISOString()
             ),
-            status: getXrayStatus(test.status, true, this.options.xray.status),
-            evidence: evidence,
+            status: getXrayStatus(test.status, false, this.options.xray.status),
         };
+        if (evidence.length > 0) {
+            xrayTest.evidence = evidence;
+        }
+        return xrayTest;
     }
 }

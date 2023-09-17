@@ -8,6 +8,7 @@ import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
 import { JiraFieldIds, Options } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
+import { errorMessage } from "../../util/error";
 import { JiraFieldRepository } from "./fields/jiraFieldRepository";
 
 export type FieldExtractor<T> = {
@@ -169,7 +170,7 @@ export abstract class JiraRepository<
             logError(
                 dedent(`
                     Failed to fetch issue summaries
-                    ${error instanceof Error ? error.message : JSON.stringify(error)}
+                    ${errorMessage(error)}
                 `)
             );
         }
@@ -200,7 +201,7 @@ export abstract class JiraRepository<
             logError(
                 dedent(`
                     Failed to fetch issue descriptions
-                    ${error instanceof Error ? error.message : JSON.stringify(error)}
+                    ${errorMessage(error)}
                 `)
             );
         }
@@ -231,7 +232,7 @@ export abstract class JiraRepository<
             logError(
                 dedent(`
                     Failed to fetch issue test types
-                    ${error instanceof Error ? error.message : JSON.stringify(error)}
+                    ${errorMessage(error)}
                 `)
             );
         }
@@ -258,7 +259,7 @@ export abstract class JiraRepository<
             logError(
                 dedent(`
                     Failed to fetch issue labels
-                    ${error instanceof Error ? error.message : JSON.stringify(error)}
+                    ${errorMessage(error)}
                 `)
             );
         }

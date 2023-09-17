@@ -12,7 +12,7 @@ import { getEnumKeyByEnumValue } from "../../types/util";
 export function toCypressStatus(statusText: string): Status {
     const status: Status = Status[getEnumKeyByEnumValue(Status, statusText)];
     if (!status) {
-        throw new Error(`Unknown Cypress attempt status: ${statusText}`);
+        throw new Error(`Unknown Cypress test status: ${statusText}`);
     }
     return status;
 }
@@ -39,13 +39,13 @@ export function getXrayStatus(
 ): string {
     switch (status) {
         case Status.PASSED:
-            return statusOptions.passed ?? (useCloudStatus ? "PASSED" : "PASS");
+            return statusOptions?.passed ?? (useCloudStatus ? "PASSED" : "PASS");
         case Status.FAILED:
-            return statusOptions.failed ?? (useCloudStatus ? "FAILED" : "FAIL");
+            return statusOptions?.failed ?? (useCloudStatus ? "FAILED" : "FAIL");
         case Status.PENDING:
-            return statusOptions.pending ?? "TODO";
+            return statusOptions?.pending ?? "TODO";
         case Status.SKIPPED:
-            return statusOptions.skipped ?? (useCloudStatus ? "FAILED" : "FAIL");
+            return statusOptions?.skipped ?? (useCloudStatus ? "FAILED" : "FAIL");
         default:
             throw new Error(`Unknown status: ${status}`);
     }

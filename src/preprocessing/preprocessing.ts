@@ -11,6 +11,7 @@ import fs from "fs";
 import { logWarning } from "../logging/logging";
 import { InternalOptions, Options } from "../types/plugin";
 import { dedent } from "../util/dedent";
+import { errorMessage } from "../util/error";
 
 // ============================================================================================== //
 // CYPRESS NATIVE                                                                                 //
@@ -54,11 +55,7 @@ export function getNativeTestIssueKeys(
                 keyedTests.push(testResult);
                 issueKeys.push(issueKey);
             } catch (error: unknown) {
-                let reason = error;
-                if (error instanceof Error) {
-                    reason = error.message;
-                }
-                logWarning(`Skipping test: ${title}\n\n${reason}`);
+                logWarning(`Skipping test: ${title}\n\n${errorMessage(error)}`);
             }
         }
         runResult.tests = keyedTests;
