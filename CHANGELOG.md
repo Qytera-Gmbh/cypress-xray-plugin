@@ -1,5 +1,77 @@
 # Changelog
 
+# `5.0.0`
+
+[Cypress version 13](https://docs.cypress.io/guides/references/changelog#13-0-0) was recently released and changed the module API, which this plugin heavily relies on to upload test results to Xray. A few core feature of the plugin had to be rewritten to adapt to these changes.
+
+> **Note**
+> Previous versions of Cypress will still work just fine, the plugin is backwards compatible regarding Cypress versions.
+
+The changes included a removal of the test function code, which previously was used to update the test steps in Xray. Because the step updates were furthermore quite problematic/lackluster anyways ([#50](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/50), [#164](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/164), [#169](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/169)), step updates have been removed from the plugin entirely.
+
+> **Note**
+> Cucumber feature file synchronization was not affected by this change, which means that upload of feature files can still change Cucumber steps in Xray.
+
+## Breaking changes
+
+- The plugin will now _never_ alter existing Xray test steps of tests with test type *Manual*
+
+  - Removed `xray.steps.update` option
+
+  - Removed `xray.steps.maxLengthAction` option
+
+- The `xray.status` options have been refactored a little bit for maintainability reasons:
+
+  <table>
+  <thead>
+  <tr>
+  <th>
+  <pre>4.0.4</pre>
+  </th>
+  <th>
+  <pre>5.0.0</pre>
+  </th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+  <td>
+
+  ```ts
+  xray: {
+    statusPassed: "OK",
+    statusFailed: "NO",
+    statusPending: "TBD",
+    statusSkipped: "OMIT",
+  }
+  ```
+  </td>
+  <td>
+
+  ```ts
+  xray: {
+    status: {
+      passed: "OK",
+      failed: "NO",
+      pending: "TBD",
+      skipped: "OMIT",
+    }
+  }
+  ```
+  </td>
+  </tr>
+  </tbody>
+  </table>
+
+  > **Note**
+  > Their environment variables have *not* changed.
+
+- With Node V16 being past its [end of life date](https://nodejs.dev/en/about/releases/), the plugin now requires Node V18 (LTS) to be installed
+
+## Dependency updates
+
+- Bump @badeball/cypress-cucumber-preprocessor from 18.0.4 to 18.0.5
+
 # `4.0.4`
 
 ## Notable changes
