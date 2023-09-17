@@ -39,7 +39,7 @@
         "build": "tsc --project tsconfigBuild.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/"
     },
     "engines": {
-        "node": ">=16.0.0"
+        "node": ">=18.0.0"
     },
     "dependencies": {
         "@cucumber/gherkin": "^26.0.3",
