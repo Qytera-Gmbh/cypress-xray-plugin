@@ -92,14 +92,6 @@ describe("the plugin context configuration", () => {
                         expect(options.xray.status.skipped).to.eq(undefined);
                     });
                 });
-                describe("steps", () => {
-                    it("maxLengthAction", () => {
-                        expect(options.xray.steps.maxLengthAction).to.eq(8000);
-                    });
-                    it("update", () => {
-                        expect(options.xray.steps.update).to.eq(false);
-                    });
-                });
                 it("uploadResults", () => {
                     expect(options.xray.uploadResults).to.eq(true);
                 });
@@ -445,42 +437,6 @@ describe("the plugin context configuration", () => {
                     });
                 });
 
-                describe("steps", () => {
-                    it("maxLengthAction", () => {
-                        const options = initOptions(
-                            {},
-                            {
-                                jira: {
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
-                                },
-                                xray: {
-                                    steps: {
-                                        maxLengthAction: 42,
-                                    },
-                                },
-                            }
-                        );
-                        expect(options.xray.steps.maxLengthAction).to.eq(42);
-                    });
-                    it("update", () => {
-                        const options = initOptions(
-                            {},
-                            {
-                                jira: {
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
-                                },
-                                xray: {
-                                    steps: {
-                                        update: false,
-                                    },
-                                },
-                            }
-                        );
-                        expect(options.xray.steps.update).to.eq(false);
-                    });
-                });
                 it("uploadResults", () => {
                     const options = initOptions(
                         {},
@@ -857,42 +813,6 @@ describe("the plugin context configuration", () => {
                     expect(options.xray?.status.skipped).to.eq("ski-ba-bop-ba-dop-bop");
                 });
 
-                it("XRAY_STEPS_MAX_LENGTH_ACTION", () => {
-                    const env = {
-                        XRAY_STEPS_MAX_LENGTH_ACTION: "12345",
-                    };
-                    const options = initOptions(env, {
-                        jira: {
-                            projectKey: "CYP",
-                            url: "https://example.org",
-                        },
-                        xray: {
-                            steps: {
-                                maxLengthAction: 500,
-                            },
-                        },
-                    });
-                    expect(options.xray?.steps?.maxLengthAction).to.eq(12345);
-                });
-
-                it("XRAY_STEPS_UPDATE", () => {
-                    const env = {
-                        XRAY_STEPS_UPDATE: "false",
-                    };
-                    const options = initOptions(env, {
-                        jira: {
-                            projectKey: "CYP",
-                            url: "https://example.org",
-                        },
-                        xray: {
-                            steps: {
-                                update: true,
-                            },
-                        },
-                    });
-                    expect(options.xray?.steps?.update).to.be.false;
-                });
-
                 it("XRAY_UPLOAD_RESULTS", () => {
                     const env = {
                         XRAY_UPLOAD_RESULTS: "false",
@@ -1111,40 +1031,6 @@ describe("the plugin context configuration", () => {
                 })
             ).to.throw(
                 "Plugin misconfiguration: test plan issue key ABC-456 does not belong to project CYP"
-            );
-        });
-        it("should not allow step lengths of length zero", async () => {
-            expect(() =>
-                verifyOptions({
-                    jira: {
-                        projectKey: "CYP",
-                        url: "https://example.org",
-                    },
-                    xray: {
-                        steps: {
-                            maxLengthAction: 0,
-                        },
-                    },
-                })
-            ).to.throw(
-                "Plugin misconfiguration: max length of step actions must be a positive number: 0"
-            );
-        });
-        it("should not allow negative step action lengths", async () => {
-            expect(() =>
-                verifyOptions({
-                    jira: {
-                        projectKey: "CYP",
-                        url: "https://example.org",
-                    },
-                    xray: {
-                        steps: {
-                            maxLengthAction: -5,
-                        },
-                    },
-                })
-            ).to.throw(
-                "Plugin misconfiguration: max length of step actions must be a positive number: -5"
             );
         });
     });

@@ -318,7 +318,6 @@ describe("the import execution converter", () => {
             "CYP-40": "Manual",
             "CYP-41": "Manual",
         };
-        options.xray.steps.update = false;
         const { stubbedWarning } = stubLogging();
         const json = await converter.convert(result, testIssueData);
         expect(json.tests).to.be.an("array").with.length(2);
@@ -344,7 +343,6 @@ describe("the import execution converter", () => {
             "CYP-41": "Manual",
             "CYP-49": "Cucumber",
         };
-        options.xray.steps.update = false;
         const { stubbedWarning } = stubLogging();
         const json = await converter.convert(result, testIssueData);
         expect(json.tests).to.be.an("array").with.length(2);

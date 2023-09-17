@@ -36,15 +36,13 @@ import {
     ENV_XRAY_STATUS_PASSED,
     ENV_XRAY_STATUS_PENDING,
     ENV_XRAY_STATUS_SKIPPED,
-    ENV_XRAY_STEPS_MAX_LENGTH_ACTION,
-    ENV_XRAY_STEPS_UPDATE,
     ENV_XRAY_UPLOAD_RESULTS,
     ENV_XRAY_UPLOAD_SCREENSHOTS,
 } from "./constants";
 import { logInfo } from "./logging/logging";
 import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
 import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
-import { ClientCombination, InternalOptions, Options, XrayStepOptions } from "./types/plugin";
+import { ClientCombination, InternalOptions, Options } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { asBoolean, asInt, asString, parse } from "./util/parsing";
 
@@ -112,16 +110,6 @@ export function initOptions(env: Cypress.ObjectLike, options: Options): Internal
                 skipped:
                     parse(env, ENV_XRAY_STATUS_SKIPPED, asString) ?? options.xray?.status?.skipped,
             },
-            steps: {
-                maxLengthAction:
-                    parse(env, ENV_XRAY_STEPS_MAX_LENGTH_ACTION, asInt) ??
-                    options.xray?.steps?.maxLengthAction ??
-                    8000,
-                update:
-                    parse(env, ENV_XRAY_STEPS_UPDATE, asBoolean) ??
-                    options.xray?.steps?.update ??
-                    false,
-            },
             uploadResults:
                 parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean) ??
                 options.xray?.uploadResults ??
@@ -157,7 +145,6 @@ export function verifyOptions(options: InternalOptions) {
     verifyJiraProjectKey(options.jira.projectKey);
     verifyJiraTestExecutionIssueKey(options.jira.projectKey, options.jira.testExecutionIssueKey);
     verifyJiraTestPlanIssueKey(options.jira.projectKey, options.jira.testPlanIssueKey);
-    verifyXraySteps(options.xray.steps);
 }
 
 function verifyJiraProjectKey(projectKey?: string) {
@@ -178,14 +165,6 @@ function verifyJiraTestPlanIssueKey(projectKey: string, testPlanIssueKey?: strin
     if (testPlanIssueKey && !testPlanIssueKey.startsWith(projectKey)) {
         throw new Error(
             `Plugin misconfiguration: test plan issue key ${testPlanIssueKey} does not belong to project ${projectKey}`
-        );
-    }
-}
-
-function verifyXraySteps(steps: XrayStepOptions) {
-    if (steps.maxLengthAction <= 0) {
-        throw new Error(
-            `Plugin misconfiguration: max length of step actions must be a positive number: ${steps.maxLengthAction}`
         );
     }
 }
