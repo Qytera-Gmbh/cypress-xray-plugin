@@ -509,4 +509,26 @@ describe("the import execution converter", () => {
             `)
         );
     });
+
+    it("uses a cloud converted if specified", async () => {
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+        );
+        testIssueData.summaries = {
+            "CYP-40": "This is",
+            "CYP-41": "a distributed",
+            "CYP-49": "summary",
+        };
+        testIssueData.testTypes = {
+            "CYP-40": "Generic",
+            "CYP-41": "Manual",
+            "CYP-49": "Cucumber",
+        };
+        converter = new ImportExecutionConverter(options, true);
+        const json = await converter.convert(result, testIssueData);
+        expect(json.tests).to.have.length(3);
+        expect(json.tests[0].status).to.eq("PASSED");
+        expect(json.tests[1].status).to.eq("PASSED");
+        expect(json.tests[2].status).to.eq("FAILED");
+    });
 });
