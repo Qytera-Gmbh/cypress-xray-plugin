@@ -51,7 +51,7 @@
         "semver": "^7.5.4"
     },
     "optionalDependencies": {
-        "@badeball/cypress-cucumber-preprocessor": "^18.0.5"
+        "@badeball/cypress-cucumber-preprocessor": "^18.0.6"
     },
     "devDependencies": {
         "@types/chai": "^4.3.6",
