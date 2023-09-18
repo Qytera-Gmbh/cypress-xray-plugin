@@ -42,7 +42,7 @@
         "node": ">=18.0.0"
     },
     "dependencies": {
-        "@cucumber/gherkin": "^26.0.3",
+        "@cucumber/gherkin": "^27.0.0",
         "@cucumber/messages": "^22.0.0",
         "axios": "^1.5.0",
         "chalk": "^4.1.2",
