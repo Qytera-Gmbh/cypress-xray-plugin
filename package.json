@@ -50,6 +50,9 @@
         "form-data": "^4.0.0",
         "semver": "^7.5.4"
     },
+    "peerDependencies": {
+        "cypress": ">=10.0.0 < 14"
+    },
     "optionalDependencies": {
         "@badeball/cypress-cucumber-preprocessor": "^18.0.6"
     },
@@ -63,7 +66,6 @@
         "@typescript-eslint/parser": "^6.7.2",
         "chai": "^4.3.8",
         "chai-as-promised": "^7.1.1",
-        "cypress": "^13.2.0",
         "eslint": "^8.50.0",
         "mocha": "^10.2.0",
         "nyc": "^15.1.0",
