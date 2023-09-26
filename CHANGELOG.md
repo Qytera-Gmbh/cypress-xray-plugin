@@ -4,7 +4,7 @@
 
 ## Notable changes
 
--  Moved `cypress` to the plugin's peer dependencies to impose supported Cypress version ranges
+- Moved `cypress` to the plugin's peer dependencies to impose supported Cypress version ranges
 
 - Prevent existing test execution issue data (summaries, descriptions) from being overwritten unnecessarily (fixes [#191](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/191))
 
