@@ -466,7 +466,7 @@ describe("the import execution converter", () => {
         expect(json.info.summary).to.eq("Execution Results [1669657272234]");
     });
 
-    it("uses does not add the default test execution summary if omitted and a key is given", async () => {
+    it("does not add the default test execution summary if omitted and a key is given", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
@@ -527,7 +527,7 @@ describe("the import execution converter", () => {
         );
     });
 
-    it("uses does not add the default test execution description if omitted and a key is given", async () => {
+    it("does not add the default test execution description if omitted and a key is given", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
