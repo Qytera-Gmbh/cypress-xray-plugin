@@ -71,14 +71,28 @@ export class ImportExecutionConverter extends Converter<
         };
     }
 
-    private getTextExecutionResultSummary(results: CypressRunResultType): string {
+    private getTextExecutionResultSummary(results: CypressRunResultType): string | undefined {
+        // Don't replace existing execution summaries with the default one.
+        if (
+            this.options.jira.testExecutionIssueKey &&
+            !this.options.jira.testExecutionIssueSummary
+        ) {
+            return undefined;
+        }
         return (
             this.options.jira.testExecutionIssueSummary ??
             `Execution Results [${new Date(results.startedTestsAt).getTime()}]`
         );
     }
 
-    private getDescription(results: CypressRunResultType): string {
+    private getDescription(results: CypressRunResultType): string | undefined {
+        // Don't replace existing execution descriptions with the default one.
+        if (
+            this.options.jira.testExecutionIssueKey &&
+            !this.options.jira.testExecutionIssueDescription
+        ) {
+            return undefined;
+        }
         return (
             this.options.jira.testExecutionIssueDescription ??
             dedent(`

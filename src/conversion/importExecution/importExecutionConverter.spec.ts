@@ -466,6 +466,25 @@ describe("the import execution converter", () => {
         expect(json.info.summary).to.eq("Execution Results [1669657272234]");
     });
 
+    it("uses does not add the default test execution summary if omitted and a key is given", async () => {
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+        );
+        testIssueData.summaries = {
+            "CYP-40": "This is",
+            "CYP-41": "a distributed",
+            "CYP-49": "summary",
+        };
+        testIssueData.testTypes = {
+            "CYP-40": "Generic",
+            "CYP-41": "Manual",
+            "CYP-49": "Cucumber",
+        };
+        options.jira.testExecutionIssueKey = "CYP-100";
+        const json = await converter.convert(result, testIssueData);
+        expect(json.info.summary).to.be.undefined;
+    });
+
     it("includes a custom test execution description if provided", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
@@ -506,6 +525,25 @@ describe("the import execution converter", () => {
                 Browser: electron (106.0.5249.51)
             `)
         );
+    });
+
+    it("uses does not add the default test execution description if omitted and a key is given", async () => {
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+        );
+        testIssueData.summaries = {
+            "CYP-40": "This is",
+            "CYP-41": "a distributed",
+            "CYP-49": "summary",
+        };
+        testIssueData.testTypes = {
+            "CYP-40": "Generic",
+            "CYP-41": "Manual",
+            "CYP-49": "Cucumber",
+        };
+        options.jira.testExecutionIssueKey = "CYP-100";
+        const json = await converter.convert(result, testIssueData);
+        expect(json.info.description).to.be.undefined;
     });
 
     it("uses a cloud converted if specified", async () => {
