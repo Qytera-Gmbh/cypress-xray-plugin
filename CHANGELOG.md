@@ -1,5 +1,19 @@
 # Changelog
 
+# `5.1.0`
+
+## Notable changes
+
+-  Moved `cypress` to the plugin's peer dependencies to impose supported Cypress version ranges
+
+- Prevent existing test execution issue data (summaries, descriptions) from being overwritten unnecessarily (fixes [#191](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/191))
+
+## Dependency updates
+
+- Bump @badeball/cypress-cucumber-preprocessor from 18.0.5 to 18.0.6
+
+- Bump @cucumber/gherkin from 26.2.0 to 27.0.0
+
 # `5.0.0`
 
 [Cypress version 13](https://docs.cypress.io/guides/references/changelog#13-0-0) was recently released and changed the module API, which this plugin heavily relies on to upload test results to Xray. A few core feature of the plugin had to be rewritten to adapt to these changes.
