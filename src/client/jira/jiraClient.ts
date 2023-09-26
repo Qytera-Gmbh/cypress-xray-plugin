@@ -256,9 +256,13 @@ export abstract class JiraClient<
                                         ...header,
                                     },
                                 });
-                            results.push(...response.data.issues);
-                            total = response.data.total;
-                            startAt = response.data.startAt + response.data.issues.length;
+                            total = response.data.total ?? total;
+                            if (response.data.issues) {
+                                results.push(...response.data.issues);
+                                if (response.data.startAt) {
+                                    startAt = response.data.startAt + response.data.issues.length;
+                                }
+                            }
                         } while (startAt && startAt < total);
                         logDebug(`Found ${total} issues`);
                         return results;

@@ -88,7 +88,7 @@ export abstract class ImportExecutionCucumberMultipartConverter<
             );
             return {
                 features: [],
-                info: null,
+                info: {},
             };
         }
     }

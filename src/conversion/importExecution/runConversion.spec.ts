@@ -11,7 +11,7 @@ describe("the run conversion", () => {
     describe("v12", () => {
         const passedResult: RunResult_V12 = {
             hooks: [],
-            reporter: null,
+            reporter: "repotert",
             reporterStats: {},
             stats: {
                 suites: 1,
@@ -55,7 +55,7 @@ describe("the run conversion", () => {
         };
         const failedResult: RunResult_V12 = {
             hooks: [],
-            reporter: null,
+            reporter: "reporter",
             reporterStats: {},
             stats: {
                 suites: 1,
@@ -91,14 +91,14 @@ describe("the run conversion", () => {
                             startedAt: "2022-11-28T17:41:15.526Z",
                             screenshots: [
                                 {
-                                    name: null,
+                                    name: "",
                                     takenAt: "2022-11-28T17:41:19.702Z",
                                     path: "./test/resources/turtle.png",
                                     height: 720,
                                     width: 1280,
                                 },
                                 {
-                                    name: null,
+                                    name: "",
                                     takenAt: "2022-11-28T17:43:87.626Z",
                                     path: "./test/resources/turtle.png",
                                     height: 720,
@@ -120,7 +120,7 @@ describe("the run conversion", () => {
         };
         const invalidResult: RunResult_V12 = {
             hooks: [],
-            reporter: null,
+            reporter: "reporter",
             reporterStats: {},
             stats: {
                 suites: 1,
@@ -156,7 +156,7 @@ describe("the run conversion", () => {
                             startedAt: "2022-11-28T17:41:15.526Z",
                             screenshots: [
                                 {
-                                    name: null,
+                                    name: "",
                                     takenAt: "2022-11-28T17:41:19.702Z",
                                     path: "./test/resources/turtle.png",
                                     height: 720,
@@ -282,21 +282,21 @@ describe("the run conversion", () => {
             screenshots: [
                 {
                     height: 8,
-                    name: null,
+                    name: "",
                     path: "./test/resources/small CYP-237.png",
                     takenAt: "2023-09-09T10:59:31.366Z",
                     width: 8,
                 },
                 {
                     height: 16,
-                    name: null,
+                    name: "",
                     path: "./test/resources/manual CYP-237 screenshot.png",
                     takenAt: "2023-09-09T10:59:31.366Z",
                     width: 16,
                 },
                 {
                     height: 8,
-                    name: null,
+                    name: "",
                     path: "./test/resources/small.png",
                     takenAt: "2023-09-09T10:59:31.366Z",
                     width: 8,
@@ -347,7 +347,7 @@ describe("the run conversion", () => {
             screenshots: [
                 {
                     height: 8,
-                    name: null,
+                    name: "",
                     path: "./test/resources/small CYP-237.png",
                     takenAt: "2023-09-09T10:59:31.366Z",
                     width: 8,

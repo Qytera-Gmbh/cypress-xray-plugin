@@ -10,6 +10,7 @@
         "moduleResolution": "Node",
         "lib": ["ESNext", "DOM"],
         "types": ["cypress", "node"],
-        "allowJs": true
+        "allowJs": true,
+        "strict": true
     }
 }

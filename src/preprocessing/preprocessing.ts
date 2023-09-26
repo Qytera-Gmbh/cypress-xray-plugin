@@ -71,7 +71,7 @@ export function getNativeTestIssueKeys(
  * @returns the Jira issue key
  * @throws if the title contains zero or more than one issue key
  */
-export function getNativeTestIssueKey(title: string, projectKey: string): string | null {
+export function getNativeTestIssueKey(title: string, projectKey: string): string {
     const regex = new RegExp(`(${projectKey}-\\d+)`, "g");
     const matches = title.match(regex);
     if (!matches) {

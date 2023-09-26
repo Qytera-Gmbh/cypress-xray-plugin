@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { stubLogging } from "../../../test/util";
+import { expectToExist, stubLogging } from "../../../test/util";
 import { initOptions } from "../../context";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
@@ -105,9 +105,11 @@ describe("the import execution converter", () => {
             "CYP-49": "Cucumber",
         };
         const json = await converter.convert(result, testIssueData);
+        expectToExist(json.tests);
         expect(json.tests[0].evidence).to.be.undefined;
         expect(json.tests[1].evidence).to.be.undefined;
         expect(json.tests[2].evidence).to.be.an("array").with.length(1);
+        expectToExist(json.tests[2].evidence);
         expect(json.tests[2].evidence[0].filename).to.eq("small.png");
     });
 
@@ -127,6 +129,7 @@ describe("the import execution converter", () => {
         };
         options.xray.uploadScreenshots = false;
         const json = await converter.convert(result, testIssueData);
+        expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].evidence).to.be.undefined;
         expect(json.tests[1].evidence).to.be.undefined;
@@ -145,6 +148,8 @@ describe("the import execution converter", () => {
         };
         options.plugin.normalizeScreenshotNames = true;
         const json = await converter.convert(result, testIssueData);
+        expectToExist(json.tests);
+        expectToExist(json.tests[0].evidence);
         expect(json.tests[0].evidence[0].filename).to.eq("t_rtle_with_problem_tic_name.png");
     });
 
@@ -159,6 +164,8 @@ describe("the import execution converter", () => {
             "CYP-123": "Generic",
         };
         const json = await converter.convert(result, testIssueData);
+        expectToExist(json.tests);
+        expectToExist(json.tests[0].evidence);
         expect(json.tests[0].evidence[0].filename).to.eq("tûrtle with problemätic name.png");
     });
 
@@ -176,8 +183,9 @@ describe("the import execution converter", () => {
             "CYP-41": "Manual",
             "CYP-49": "Cucumber",
         };
-        options.xray.status.passed = "it worked";
+        options.xray.status = { passed: "it worked" };
         const json = await converter.convert(result, testIssueData);
+        expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("it worked");
         expect(json.tests[1].status).to.eq("it worked");
     });
@@ -196,8 +204,9 @@ describe("the import execution converter", () => {
             "CYP-41": "Manual",
             "CYP-49": "Cucumber",
         };
-        options.xray.status.failed = "it did not work";
+        options.xray.status = { failed: "it did not work" };
         const json = await converter.convert(result, testIssueData);
+        expectToExist(json.tests);
         expect(json.tests[2].status).to.eq("it did not work");
     });
 
@@ -217,8 +226,9 @@ describe("the import execution converter", () => {
             "CYP-789": "Cucumber",
             "CYP-987": "No idea",
         };
-        options.xray.status.pending = "still pending";
+        options.xray.status = { pending: "still pending" };
         const json = await converter.convert(result, testIssueData);
+        expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("still pending");
         expect(json.tests[1].status).to.eq("still pending");
         expect(json.tests[2].status).to.eq("still pending");
@@ -237,8 +247,9 @@ describe("the import execution converter", () => {
             "CYP-123": "Generic",
             "CYP-456": "Manual",
         };
-        options.xray.status.skipped = "omit";
+        options.xray.status = { skipped: "omit" };
         const json = await converter.convert(result, testIssueData);
+        expectToExist(json.tests);
         expect(json.tests[1].status).to.eq("omit");
     });
 
@@ -257,10 +268,11 @@ describe("the import execution converter", () => {
             "CYP-49": "Cucumber",
         };
         const json = await converter.convert(result, testIssueData);
+        expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
-        expect(json.tests[0].testInfo.steps).to.be.undefined;
-        expect(json.tests[1].testInfo.steps).to.be.undefined;
-        expect(json.tests[2].testInfo.steps).to.be.undefined;
+        expect(json.tests[0].testInfo?.steps).to.be.undefined;
+        expect(json.tests[1].testInfo?.steps).to.be.undefined;
+        expect(json.tests[2].testInfo?.steps).to.be.undefined;
     });
 
     it("includes issue summaries", async () => {
@@ -279,9 +291,10 @@ describe("the import execution converter", () => {
         };
         const json = await converter.convert(result, testIssueData);
         expect(json.tests).to.have.length(3);
-        expect(json.tests[0].testInfo.summary).to.eq("This is");
-        expect(json.tests[1].testInfo.summary).to.eq("a distributed");
-        expect(json.tests[2].testInfo.summary).to.eq("summary");
+        expectToExist(json.tests);
+        expect(json.tests[0].testInfo?.summary).to.eq("This is");
+        expect(json.tests[1].testInfo?.summary).to.eq("a distributed");
+        expect(json.tests[2].testInfo?.summary).to.eq("summary");
     });
 
     it("includes test issue keys", async () => {
@@ -300,6 +313,7 @@ describe("the import execution converter", () => {
         };
         const json = await converter.convert(result, testIssueData);
         expect(json.tests).to.have.length(3);
+        expectToExist(json.tests);
         expect(json.tests[0].testKey).to.eq("CYP-40");
         expect(json.tests[1].testKey).to.eq("CYP-41");
         expect(json.tests[2].testKey).to.eq("CYP-49");
@@ -390,7 +404,7 @@ describe("the import execution converter", () => {
         };
         options.jira.testPlanIssueKey = "CYP-123";
         const json = await converter.convert(result, testIssueData);
-        expect(json.info.testPlanKey).to.eq("CYP-123");
+        expect(json?.info?.testPlanKey).to.eq("CYP-123");
     });
 
     it("does not add test execution issue keys on its own", async () => {
@@ -426,7 +440,7 @@ describe("the import execution converter", () => {
             "CYP-49": "Cucumber",
         };
         const json = await converter.convert(result, testIssueData);
-        expect(json.info.testPlanKey).to.be.undefined;
+        expect(json?.info?.testPlanKey).to.be.undefined;
     });
 
     it("includes a custom test execution summary if provided", async () => {
@@ -445,7 +459,7 @@ describe("the import execution converter", () => {
         };
         options.jira.testExecutionIssueSummary = "Jeffrey's Test";
         const json = await converter.convert(result, testIssueData);
-        expect(json.info.summary).to.eq("Jeffrey's Test");
+        expect(json?.info?.summary).to.eq("Jeffrey's Test");
     });
 
     it("uses a timestamp as test execution summary by default", async () => {
@@ -463,7 +477,7 @@ describe("the import execution converter", () => {
             "CYP-49": "Cucumber",
         };
         const json = await converter.convert(result, testIssueData);
-        expect(json.info.summary).to.eq("Execution Results [1669657272234]");
+        expect(json?.info?.summary).to.eq("Execution Results [1669657272234]");
     });
 
     it("does not add the default test execution summary if omitted and a key is given", async () => {
@@ -482,7 +496,7 @@ describe("the import execution converter", () => {
         };
         options.jira.testExecutionIssueKey = "CYP-100";
         const json = await converter.convert(result, testIssueData);
-        expect(json.info.summary).to.be.undefined;
+        expect(json?.info?.summary).to.be.undefined;
     });
 
     it("includes a custom test execution description if provided", async () => {
@@ -501,7 +515,7 @@ describe("the import execution converter", () => {
         };
         options.jira.testExecutionIssueDescription = "Very Useful Text";
         const json = await converter.convert(result, testIssueData);
-        expect(json.info.description).to.eq("Very Useful Text");
+        expect(json?.info?.description).to.eq("Very Useful Text");
     });
 
     it("uses versions as test execution description by default", async () => {
@@ -519,7 +533,7 @@ describe("the import execution converter", () => {
             "CYP-49": "Cucumber",
         };
         const json = await converter.convert(result, testIssueData);
-        expect(json.info.description).to.eq(
+        expect(json?.info?.description).to.eq(
             dedent(`
                 Cypress version: 11.1.0
                 Browser: electron (106.0.5249.51)
@@ -543,7 +557,7 @@ describe("the import execution converter", () => {
         };
         options.jira.testExecutionIssueKey = "CYP-100";
         const json = await converter.convert(result, testIssueData);
-        expect(json.info.description).to.be.undefined;
+        expect(json?.info?.description).to.be.undefined;
     });
 
     it("uses a cloud converted if specified", async () => {
@@ -562,6 +576,7 @@ describe("the import execution converter", () => {
         };
         converter = new ImportExecutionConverter(options, true);
         const json = await converter.convert(result, testIssueData);
+        expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].status).to.eq("PASSED");
         expect(json.tests[1].status).to.eq("PASSED");

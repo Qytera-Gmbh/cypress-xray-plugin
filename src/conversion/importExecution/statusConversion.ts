@@ -1,6 +1,5 @@
 import { XrayOptions } from "../../types/plugin";
 import { Status } from "../../types/testStatus";
-import { getEnumKeyByEnumValue } from "../../types/util";
 
 /**
  * Converts the given status text string to a valid Cypress attempt status.
@@ -10,11 +9,18 @@ import { getEnumKeyByEnumValue } from "../../types/util";
  * @throws if the status text cannot be mapped to a valid Cypress attempt status
  */
 export function toCypressStatus(statusText: string): Status {
-    const status: Status = Status[getEnumKeyByEnumValue(Status, statusText)];
-    if (!status) {
-        throw new Error(`Unknown Cypress test status: ${statusText}`);
+    switch (statusText) {
+        case "passed":
+            return Status.PASSED;
+        case "failed":
+            return Status.FAILED;
+        case "pending":
+            return Status.PENDING;
+        case "skipped":
+            return Status.SKIPPED;
+        default:
+            throw new Error(`Unknown Cypress test status: ${statusText}`);
     }
-    return status;
 }
 
 /**

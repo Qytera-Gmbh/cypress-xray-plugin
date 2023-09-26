@@ -24,9 +24,9 @@ describe("the xray cloud client", () => {
                     key: "CYP-123",
                     self: "http://www.example.org/jira/rest/api/2/issue/12345",
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: { headers: new AxiosHeaders() },
             });
             const response = await client.importExecution({
                 testExecutionKey: "CYP-42",
@@ -61,15 +61,21 @@ describe("the xray cloud client", () => {
             const { stubbedPost } = stubRequests();
             const { stubbedError } = stubLogging();
             stubbedPost.onFirstCall().rejects(
-                new AxiosError("Request failed with status code 400", "400", null, null, {
-                    status: 400,
-                    statusText: "Bad Request",
-                    config: { headers: new AxiosHeaders() },
-                    headers: {},
-                    data: {
-                        error: "Must provide a project key",
-                    },
-                })
+                new AxiosError(
+                    "Request failed with status code 400",
+                    "400",
+                    { headers: new AxiosHeaders() },
+                    null,
+                    {
+                        status: 400,
+                        statusText: "Bad Request",
+                        config: { headers: new AxiosHeaders() },
+                        headers: {},
+                        data: {
+                            error: "Must provide a project key",
+                        },
+                    }
+                )
             );
             const response = await client.importExecution({
                 testExecutionKey: "CYP-42",
@@ -109,9 +115,9 @@ describe("the xray cloud client", () => {
                     key: "CYP-123",
                     self: "http://www.example.org/jira/rest/api/2/issue/12345",
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: { headers: new AxiosHeaders() },
             });
             const response = await client.importExecutionCucumberMultipart(
                 JSON.parse(
@@ -134,15 +140,21 @@ describe("the xray cloud client", () => {
             const { stubbedPost } = stubRequests();
             const { stubbedError } = stubLogging();
             stubbedPost.onFirstCall().rejects(
-                new AxiosError("Request failed with status code 400", "400", null, null, {
-                    status: 400,
-                    statusText: "Bad Request",
-                    config: { headers: new AxiosHeaders() },
-                    headers: {},
-                    data: {
-                        error: "There are no valid tests imported", // sic
-                    },
-                })
+                new AxiosError(
+                    "Request failed with status code 400",
+                    "400",
+                    { headers: new AxiosHeaders() },
+                    null,
+                    {
+                        status: 400,
+                        statusText: "Bad Request",
+                        config: { headers: new AxiosHeaders() },
+                        headers: {},
+                        data: {
+                            error: "There are no valid tests imported", // sic
+                        },
+                    }
+                )
             );
             const response = await client.importExecutionCucumberMultipart(
                 JSON.parse(
@@ -180,9 +192,9 @@ describe("the xray cloud client", () => {
                         "utf-8"
                     )
                 ),
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: { headers: new AxiosHeaders() },
             });
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
             expect(response).to.deep.eq({
@@ -206,13 +218,13 @@ describe("the xray cloud client", () => {
                     data: {
                         getTests: {
                             ...mockedData.data.getTests,
-                            results: mockedData.data.getTests.results.slice(0, 1),
+                            results: mockedData.data.getTests.results?.slice(0, 1),
                         },
                     },
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: { headers: new AxiosHeaders() },
             });
             stubbedPost.onSecondCall().resolves({
                 status: HttpStatusCode.Ok,
@@ -221,13 +233,13 @@ describe("the xray cloud client", () => {
                         getTests: {
                             ...mockedData.data.getTests,
                             start: 1,
-                            results: mockedData.data.getTests.results.slice(1, 2),
+                            results: mockedData.data.getTests.results?.slice(1, 2),
                         },
                     },
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: { headers: new AxiosHeaders() },
             });
             stubbedPost.onThirdCall().resolves({
                 status: HttpStatusCode.Ok,
@@ -236,13 +248,13 @@ describe("the xray cloud client", () => {
                         getTests: {
                             ...mockedData.data.getTests,
                             start: 2,
-                            results: mockedData.data.getTests.results.slice(2, 3),
+                            results: mockedData.data.getTests.results?.slice(2, 3),
                         },
                     },
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: { headers: new AxiosHeaders() },
             });
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
             expect(response).to.deep.eq({
@@ -268,13 +280,13 @@ describe("the xray cloud client", () => {
                         getTests: {
                             ...mockedData.data.getTests,
                             total: 1,
-                            results: mockedData.data.getTests.results.slice(1, 2),
+                            results: mockedData.data.getTests.results?.slice(1, 2),
                         },
                     },
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: { headers: new AxiosHeaders() },
             });
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
             expect(response).to.be.undefined;
@@ -295,15 +307,21 @@ describe("the xray cloud client", () => {
             const { stubbedPost } = stubRequests();
             const { stubbedError } = stubLogging();
             stubbedPost.onFirstCall().rejects(
-                new AxiosError("Request failed with status code 400", "400", null, null, {
-                    status: 400,
-                    statusText: "Bad Request",
-                    config: { headers: new AxiosHeaders() },
-                    headers: {},
-                    data: {
-                        error: "Must provide a project key",
-                    },
-                })
+                new AxiosError(
+                    "Request failed with status code 400",
+                    "400",
+                    { headers: new AxiosHeaders() },
+                    null,
+                    {
+                        status: 400,
+                        statusText: "Bad Request",
+                        config: { headers: new AxiosHeaders() },
+                        headers: {},
+                        data: {
+                            error: "Must provide a project key",
+                        },
+                    }
+                )
             );
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
             expect(response).to.be.undefined;

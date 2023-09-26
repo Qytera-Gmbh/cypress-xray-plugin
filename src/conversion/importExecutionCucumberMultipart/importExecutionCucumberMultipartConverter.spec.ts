@@ -2,7 +2,12 @@
 
 import { expect } from "chai";
 import { readFileSync } from "fs";
+import { expectToExist } from "../../../test/util";
+import { PATCredentials } from "../../authentication/credentials";
+import { JiraClientServer } from "../../client/jira/jiraClientServer";
+import { XrayClientServer } from "../../client/xray/xrayClientServer";
 import { initOptions } from "../../context";
+import { JiraRepositoryServer } from "../../repository/jira/jiraRepositoryServer";
 import { InternalOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ConversionParameters } from "./importExecutionCucumberMultipartConverter";
@@ -37,9 +42,24 @@ describe("the import execution cucumber multipart converters", () => {
                         },
                     }
                 );
+                const jiraClient = new JiraClientServer(
+                    "https://example.org",
+                    new PATCredentials("token")
+                );
                 converter =
                     converterType === "server"
-                        ? new ImportExecutionCucumberMultipartConverterServer(options, null)
+                        ? new ImportExecutionCucumberMultipartConverterServer(
+                              options,
+                              new JiraRepositoryServer(
+                                  jiraClient,
+                                  new XrayClientServer(
+                                      "https://example.org",
+                                      new PATCredentials("token"),
+                                      jiraClient
+                                  ),
+                                  options
+                              )
+                          )
                         : new ImportExecutionCucumberMultipartConverterCloud(options);
                 result =
                     converterType === "server"
@@ -86,8 +106,9 @@ describe("the import execution cucumber multipart converters", () => {
             it("should use the configured test execution issue key", async () => {
                 options.jira.testExecutionIssueKey = "CYP-456";
                 const multipart = await converter.convert([result[0], result[0]], parameters);
-                expect(multipart.features[0].tags[0]).to.deep.eq({ name: "@CYP-456" });
-                expect(multipart.features[1].tags[0]).to.deep.eq({ name: "@CYP-456" });
+                expectToExist(multipart.features);
+                expect(multipart.features[0].tags).to.deep.eq([{ name: "@CYP-456" }]);
+                expect(multipart.features[1].tags).to.deep.eq([{ name: "@CYP-456" }]);
             });
 
             it("uses the configured test execution issue key even if no tags are present", async () => {
@@ -95,8 +116,9 @@ describe("the import execution cucumber multipart converters", () => {
                 delete result[0].tags;
                 delete result[1].tags;
                 const multipart = await converter.convert([result[0], result[0]], parameters);
-                expect(multipart.features[0].tags[0]).to.deep.eq({ name: "@CYP-456" });
-                expect(multipart.features[1].tags[0]).to.deep.eq({ name: "@CYP-456" });
+                expectToExist(multipart.features);
+                expect(multipart.features[0].tags).to.deep.eq([{ name: "@CYP-456" }]);
+                expect(multipart.features[1].tags).to.deep.eq([{ name: "@CYP-456" }]);
             });
 
             it("should use the configured test execution issue details", async () => {
@@ -113,6 +135,11 @@ describe("the import execution cucumber multipart converters", () => {
 
             it("should include screenshots by default", async () => {
                 const multipart = await converter.convert([result[0]], parameters);
+                expectToExist(multipart.features);
+                expectToExist(multipart.features[0].elements);
+                expectToExist(multipart.features[0].elements[2]);
+                expectToExist(multipart.features[0].elements[2].steps[1]);
+                expectToExist(multipart.features[0].elements[2].steps[1].embeddings);
                 expect(multipart.features[0].elements[2].steps[1].embeddings).to.have.length(1);
                 expect(multipart.features[0].elements[2].steps[1].embeddings[0].data).to.be.a(
                     "string"

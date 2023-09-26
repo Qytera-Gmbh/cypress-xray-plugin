@@ -1,16 +1,23 @@
-import { HttpStatusCode } from "axios";
+import { AxiosHeaders, HttpStatusCode } from "axios";
 import chai from "chai";
 import FormData from "form-data";
 import fs from "fs";
 import path from "path";
 import Sinon, { stub } from "sinon";
 import sinonChai from "sinon-chai";
-import { JWTCredentials } from "../src/authentication/credentials";
+import { JWTCredentials, PATCredentials } from "../src/authentication/credentials";
 import { JiraClient } from "../src/client/jira/jiraClient";
 import { XrayClient } from "../src/client/xray/xrayClient";
 import { RequestConfigPost, Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
+import { SearchRequestServer } from "../src/types/jira/requests/search";
+import { AttachmentServer } from "../src/types/jira/responses/attachment";
+import { FieldDetailServer } from "../src/types/jira/responses/fieldDetail";
+import { IssueServer } from "../src/types/jira/responses/issue";
+import { IssueTypeDetailsServer } from "../src/types/jira/responses/issueTypeDetails";
+import { IssueUpdateServer } from "../src/types/jira/responses/issueUpdate";
+import { JsonTypeServer } from "../src/types/jira/responses/jsonType";
 
 chai.use(sinonChai);
 
@@ -47,9 +54,11 @@ before(() => {
     stubbedPost.onFirstCall().resolves({
         status: HttpStatusCode.Ok,
         data: "ey12345Token",
-        headers: null,
+        headers: {},
         statusText: HttpStatusCode[HttpStatusCode.Ok],
-        config: null,
+        config: {
+            headers: new AxiosHeaders(),
+        },
     });
     RESOLVED_JWT_CREDENTIALS.getAuthenticationHeader("https://example.org");
 });
@@ -66,9 +75,9 @@ after(async () => {
     }
 });
 
-export class DummyXrayClient extends XrayClient<null, null, null, null> {
+export class DummyXrayClient extends XrayClient<PATCredentials, null, null, null> {
     constructor() {
-        super("https://example.org", null);
+        super("https://example.org", new PATCredentials("token"));
     }
     public getUrlImportExecution(): string {
         throw new Error("Method not implemented.");
@@ -96,9 +105,18 @@ export class DummyXrayClient extends XrayClient<null, null, null, null> {
     }
 }
 
-export class DummyJiraClient extends JiraClient<null, null, null, null, null, null, null, null> {
+export class DummyJiraClient extends JiraClient<
+    PATCredentials,
+    AttachmentServer,
+    FieldDetailServer,
+    JsonTypeServer,
+    IssueServer,
+    IssueTypeDetailsServer,
+    SearchRequestServer,
+    IssueUpdateServer
+> {
     constructor() {
-        super("https://example.org", null);
+        super("https://example.org", new PATCredentials("token"));
     }
     public getUrlAddAttachment(): string {
         throw new Error("Method not implemented.");

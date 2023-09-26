@@ -261,14 +261,14 @@ export interface OpenSSLOptions {
 /**
  * Options only intended for internal plugin use.
  */
-export type InternalOptions = Options & {
+export type InternalOptions = Required<Options> & {
     jira: {
         /**
          * The details of the test execution issue type.
          */
         testExecutionIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
     };
-    cucumber?: {
+    cucumber: {
         preprocessor?: IPreprocessorConfiguration;
     };
 };

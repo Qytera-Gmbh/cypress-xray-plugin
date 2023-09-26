@@ -36,7 +36,7 @@ export abstract class TestConverter<
         issueData?: TestIssueData
     ): Promise<[XrayTestType, ...XrayTestType[]]> {
         const testRunData = await this.getTestRunData(runResults);
-        let xrayTests: [XrayTestType, ...XrayTestType[]];
+        const xrayTests: XrayTestType[] = [];
         testRunData.forEach((testData: ITestRunData) => {
             try {
                 const issueKey = getNativeTestIssueKey(
@@ -58,11 +58,7 @@ export abstract class TestConverter<
                     },
                     this.getXrayEvidence(testData)
                 );
-                if (!xrayTests) {
-                    xrayTests = [test];
-                } else {
-                    xrayTests.push(test);
-                }
+                xrayTests.push(test);
             } catch (error: unknown) {
                 logWarning(
                     dedent(`
@@ -73,7 +69,12 @@ export abstract class TestConverter<
                 );
             }
         });
-        return xrayTests;
+        if (xrayTests.length === 0) {
+            throw new Error(
+                "Failed to convert Cypress tests into Xray tests: No Cypress tests were executed"
+            );
+        }
+        return [xrayTests[0], ...xrayTests.slice(1)];
     }
 
     protected abstract getTest(
