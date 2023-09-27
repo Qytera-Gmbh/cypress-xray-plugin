@@ -1,5 +1,6 @@
 <h1 align="center">
-	<img width="100%" src="logo.svg" alt="Cypress Xray Plugin">
+  <a href="https://qytera-gmbh.github.io/projects/cypress-xray-plugin">
+  <img width="100%" src="logo.svg" alt="Cypress Xray Plugin">
 </h1>
 
 [![npm version](https://img.shields.io/npm/v/cypress-xray-plugin?style=flat-square)](https://www.npmjs.com/package/cypress-xray-plugin)
@@ -29,7 +30,7 @@ Features include:
 Run the following command to add the plugin to your project:
 
 ```sh
-npm i -D cypress-xray-plugin
+npm install --save-dev cypress-xray-plugin
 ```
 
 > **Note**
