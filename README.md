@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a target="_blank" href="https://qytera-gmbh.github.io/projects/cypress-xray-plugin">
+  <a href="https://qytera-gmbh.github.io/projects/cypress-xray-plugin">
   <img width="100%" src="logo.svg" alt="Cypress Xray Plugin">
 </h1>
 
