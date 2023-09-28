@@ -19,9 +19,8 @@ import {
     IssueTypeDetailsCloud,
     IssueTypeDetailsServer,
 } from "./types/jira/responses/issueTypeDetails";
-import { IssueUpdateCloud, IssueUpdateServer } from "./types/jira/responses/issueUpdate";
 import { ClientCombination, InternalOptions } from "./types/plugin";
-import { StringMap } from "./types/util";
+import { StringMap, nonNull } from "./types/util";
 import { CucumberMultipartFeature } from "./types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "./util/dedent";
 
@@ -304,9 +303,11 @@ async function attachVideos(
     issueKey: string,
     jiraClient: JiraClientServer | JiraClientCloud
 ): Promise<void> {
-    const videos: string[] = runResult.runs.map((result: CypressCommandLine.RunResult) => {
-        return result.video;
-    });
+    const videos: string[] = runResult.runs
+        .map((result: CypressCommandLine.RunResult) => {
+            return result.video;
+        })
+        .filter(nonNull);
     if (videos.length === 0) {
         logWarning("No videos were uploaded: No videos have been captured");
     } else {
@@ -328,23 +329,23 @@ export async function synchronizeFile(
                 Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
             `)
         );
-        return;
+        return file.filePath;
     }
     if (!options.plugin.enabled) {
         logInfo(
             `Plugin disabled. Skipping feature file synchronization triggered by: ${file.filePath}`
         );
-        return;
+        return file.filePath;
     }
-    if (file.filePath.endsWith(options.cucumber.featureFileExtension)) {
+    if (options.cucumber && file.filePath.endsWith(options.cucumber.featureFileExtension)) {
         try {
             const relativePath = path.relative(projectRoot, file.filePath);
             logInfo(`Preprocessing feature file ${relativePath}...`);
-            if (options.cucumber.downloadFeatures) {
+            if (options.cucumber?.downloadFeatures) {
                 // TODO: download feature file from Xray.
                 throw new Error("feature not yet implemented");
             }
-            if (options.cucumber.uploadFeatures) {
+            if (options.cucumber?.uploadFeatures) {
                 const issueData = getCucumberIssueData(
                     file.filePath,
                     options,
@@ -406,26 +407,24 @@ async function resetSummaries(
         const oldSummary = testSummaries[issueKey];
         const newSummary = allIssues[i].summary;
         if (oldSummary !== newSummary) {
-            const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {
-                fields: {},
-            };
             const summaryFieldId = await jiraRepository.getFieldId("Summary", "summary");
-            issueUpdate.fields[summaryFieldId] = oldSummary;
+            const fields: StringMap<string> = {};
+            fields[summaryFieldId] = oldSummary;
             logDebug(
                 dedent(`
                     Resetting issue summary of issue: ${issueKey}
 
-                      Summary pre sync:  ${oldSummary}
-                      Summary post sync: ${newSummary}
+                    Summary pre sync:  ${oldSummary}
+                    Summary post sync: ${newSummary}
                 `)
             );
-            if (!(await jiraClient.editIssue(issueKey, issueUpdate))) {
+            if (!(await jiraClient.editIssue(issueKey, { fields: fields }))) {
                 logError(
                     dedent(`
                         Failed to reset issue summary of issue to its old summary: ${issueKey}
 
-                          Summary pre sync:  ${oldSummary}
-                          Summary post sync: ${newSummary}
+                        Summary pre sync:  ${oldSummary}
+                        Summary post sync: ${newSummary}
 
                         Make sure to reset it manually if needed
                     `)
@@ -450,26 +449,24 @@ async function resetLabels(
         const oldLabels = testLabels[issueKey];
         const newLabels = issueData[i].tags;
         if (!newLabels.every((label) => oldLabels.includes(label))) {
-            const issueUpdate: IssueUpdateServer | IssueUpdateCloud = {
-                fields: {},
-            };
             const labelFieldId = await jiraRepository.getFieldId("Labels", "labels");
-            issueUpdate.fields[labelFieldId] = oldLabels;
+            const fields: StringMap<string[]> = {};
+            fields[labelFieldId] = oldLabels;
             logDebug(
                 dedent(`
                     Resetting issue labels of issue: ${issueKey}
 
-                      Labels pre sync:  ${oldLabels}
-                      Labels post sync: ${newLabels}
+                    Labels pre sync:  ${oldLabels}
+                    Labels post sync: ${newLabels}
                 `)
             );
-            if (!(await jiraClient.editIssue(issueKey, issueUpdate))) {
+            if (!(await jiraClient.editIssue(issueKey, { fields: fields }))) {
                 logError(
                     dedent(`
                         Failed to reset issue labels of issue to its old labels: ${issueKey}
 
-                          Labels pre sync:  ${oldLabels}
-                          Labels post sync: ${newLabels}
+                        Labels pre sync:  ${oldLabels}
+                        Labels post sync: ${newLabels}
 
                         Make sure to reset them manually if needed
                     `)

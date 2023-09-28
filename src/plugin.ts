@@ -41,7 +41,7 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
 
 export async function addXrayResultUpload(on: Cypress.PluginEvents) {
     on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
-        await beforeRunHook(runDetails, context.cypress, context.internal, context.clients);
+        await beforeRunHook(runDetails, context.internal, context.clients);
     });
     on(
         "after:run",
