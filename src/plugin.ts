@@ -1,22 +1,37 @@
-import { initClients, initOptions, verifyOptions } from "./context";
+import {
+    initClients,
+    initCucumberOptions,
+    initJiraOptions,
+    initOpenSSLOptions,
+    initPluginOptions,
+    initXrayOptions,
+    verifyOptions,
+} from "./context";
 import { afterRunHook, beforeRunHook, synchronizeFile } from "./hooks";
 import { Requests } from "./https/requests";
 import { initLogging, logInfo } from "./logging/logging";
-import { Options, PluginContext } from "./types/plugin";
+import { InternalOptions, Options, PluginContext } from "./types/plugin";
 
 let context: PluginContext;
 
 export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, options: Options) {
-    context = {
-        cypress: config,
-        internal: initOptions(config.env, options),
+    const internalOptions: InternalOptions = {
+        jira: initJiraOptions(config.env, options),
+        plugin: initPluginOptions(config.env, options),
+        xray: initXrayOptions(config.env, options),
+        cucumber: await initCucumberOptions(config, options),
+        openSSL: initOpenSSLOptions(config.env, options),
     };
-    if (!context.internal.plugin.enabled) {
+    if (!internalOptions.plugin.enabled) {
         logInfo("Plugin disabled. Skipping configuration verification.");
         return;
     }
-    verifyOptions(context.internal);
-    context.clients = initClients(context.internal, config.env);
+    verifyOptions(internalOptions);
+    context = {
+        cypress: config,
+        internal: internalOptions,
+        clients: initClients(internalOptions, config.env),
+    };
     Requests.init(context.internal);
     initLogging({
         debug: context.internal.plugin.debug,

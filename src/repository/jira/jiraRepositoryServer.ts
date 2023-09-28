@@ -5,7 +5,7 @@ import { JiraRepository } from "./jiraRepository";
 
 export class JiraRepositoryServer extends JiraRepository<JiraClientServer, XrayClientServer> {
     protected async fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>> {
-        let fieldId = this.options.jira.fields.testType;
+        let fieldId = this.options.jira.fields?.testType;
         if (!fieldId) {
             fieldId = await this.getFieldId("Test Type", "testType");
         }

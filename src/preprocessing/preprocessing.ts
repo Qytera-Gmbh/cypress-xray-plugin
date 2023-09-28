@@ -157,6 +157,9 @@ export function getCucumberIssueData(
         preconditions: [],
     };
     const document = parseFeatureFile(filePath);
+    if (!document.feature?.children) {
+        return featureFileIssueKeys;
+    }
     for (const child of document.feature.children) {
         if (child.scenario) {
             const issueKeys = getCucumberScenarioIssueTags(

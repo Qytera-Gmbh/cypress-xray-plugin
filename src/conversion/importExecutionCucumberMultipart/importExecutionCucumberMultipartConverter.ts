@@ -1,18 +1,22 @@
-import { logWarning } from "../../logging/logging";
+import { JiraRepositoryCloud } from "../../repository/jira/jiraRepositoryCloud";
+import { JiraRepositoryServer } from "../../repository/jira/jiraRepositoryServer";
+import { InternalOptions } from "../../types/plugin";
 import {
     CucumberMultipart,
-    CucumberMultipartElement,
     CucumberMultipartFeature,
-    CucumberMultipartStep,
-    CucumberMultipartTag,
 } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import {
     CucumberMultipartInfoCloud,
     CucumberMultipartInfoServer,
 } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
-import { dedent } from "../../util/dedent";
-import { errorMessage } from "../../util/error";
 import { Converter } from "../converter";
+import { getMultipartFeatures } from "./multipartFeatureConversion";
+import {
+    TestExecutionIssueData,
+    TestExecutionIssueDataServer,
+    getMultipartInfoCloud,
+    getMultipartInfoServer,
+} from "./multipartInfoConversion";
 
 /**
  * This type provides lots of information which the converters require for results conversion. The
@@ -21,96 +25,79 @@ import { Converter } from "../converter";
  */
 export type ConversionParameters = Omit<CypressCommandLine.CypressRunResult, "runs" | "config">;
 
-export abstract class ImportExecutionCucumberMultipartConverter<
-    CucumberMultipartInfoType extends CucumberMultipartInfoServer & CucumberMultipartInfoCloud
-> extends Converter<
+type CucumberMultipartInfoType = CucumberMultipartInfoServer | CucumberMultipartInfoCloud;
+
+export class ImportExecutionCucumberMultipartConverter extends Converter<
     CucumberMultipartFeature[],
     CucumberMultipart<CucumberMultipartInfoType>,
     ConversionParameters
 > {
+    /**
+     * Whether the converter is a cloud converter. Useful for automatically deducing which test
+     * converters to use.
+     */
+    private readonly isCloudConverter: boolean;
+    private readonly jiraRepository: JiraRepositoryServer | JiraRepositoryCloud;
+
+    /**
+     * Construct a new converter with access to the provided options. The cloud converter flag is
+     * used to deduce the output format. When set to `true`, Xray cloud JSONs will be created, if
+     * set to `false`, the format will be Xray server JSON.
+     *
+     * @param options the options
+     * @param isCloudConverter whether Xray cloud JSONs should be created
+     * @param jiraRepository the Jira repository for fetching issue data
+     */
+    constructor(
+        options: InternalOptions,
+        isCloudConverter: boolean,
+        jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
+    ) {
+        super(options);
+        this.isCloudConverter = isCloudConverter;
+        this.jiraRepository = jiraRepository;
+    }
+
     public async convert(
         input: CucumberMultipartFeature[],
         parameters: ConversionParameters
     ): Promise<CucumberMultipart<CucumberMultipartInfoType>> {
-        const tests: CucumberMultipartFeature[] = [];
-        input.forEach((result: CucumberMultipartFeature) => {
-            const test: CucumberMultipartFeature = {
-                ...result,
-            };
-            if (this.options.jira.testExecutionIssueKey) {
-                // For feature tags, there's no Cloud/Server distinction for some reason.
-                const testExecutionIssueTag: CucumberMultipartTag = {
-                    name: `@${this.options.jira.testExecutionIssueKey}`,
-                };
-                // Xray uses the first encountered issue tag for deducing the test execution issue.
-                if (result.tags) {
-                    test.tags = [testExecutionIssueTag, ...result.tags];
-                } else {
-                    test.tags = [testExecutionIssueTag];
-                }
-            }
-            const elements: CucumberMultipartElement[] = [];
-            result.elements.forEach((element: CucumberMultipartElement) => {
-                try {
-                    const modifiedElement: CucumberMultipartElement = {
-                        ...element,
-                        steps: this.getSteps(element),
-                    };
-                    elements.push(modifiedElement);
-                } catch (error: unknown) {
-                    logWarning(
-                        dedent(`
-                            Skipping result upload for ${element.type}: ${element.name}
-
-                              ${errorMessage(error)}
-                        `)
-                    );
-                }
-            });
-            if (elements.length > 0) {
-                test.elements = elements;
-                tests.push(test);
-            }
+        const features = getMultipartFeatures(input, {
+            testExecutionIssueKey: this.options.jira.testExecutionIssueKey,
+            includeScreenshots: this.options.xray.uploadScreenshots,
         });
-        try {
-            const info: CucumberMultipartInfoType = await this.getMultipartInfo(parameters);
-            return {
-                features: tests,
-                info: info,
+        if (this.isCloudConverter) {
+            const testExecutionIssueData: TestExecutionIssueData = {
+                projectKey: this.options.jira.projectKey,
+                summary: this.options.jira.testExecutionIssueSummary,
+                description: this.options.jira.testExecutionIssueDescription,
+                issuetype: this.options.jira.testExecutionIssueDetails,
             };
-        } catch (error: unknown) {
-            logWarning(
-                dedent(`
-                    Skipping result upload for: ${tests.map((test) => test.name).join(", ")}
-
-                      ${errorMessage(error)}
-                `)
-            );
+            if (this.options.jira.testPlanIssueKey) {
+                testExecutionIssueData.testPlan = {
+                    issueKey: this.options.jira.testPlanIssueKey,
+                };
+            }
             return {
-                features: [],
-                info: {},
+                features: features,
+                info: getMultipartInfoCloud(parameters, testExecutionIssueData),
             };
         }
-    }
-
-    /**
-     * Build the test execution info object for this multipart conversion.
-     *
-     * @param parameters the conversion parameters
-     * @returns the multipart information
-     */
-    protected abstract getMultipartInfo(
-        parameters: ConversionParameters
-    ): Promise<CucumberMultipartInfoType>;
-
-    private getSteps(element: CucumberMultipartElement): CucumberMultipartStep[] {
-        const steps: CucumberMultipartStep[] = [];
-        element.steps.forEach((step: CucumberMultipartStep) => {
-            steps.push({
-                ...step,
-                embeddings: this.options.xray.uploadScreenshots ? step.embeddings : [],
-            });
-        });
-        return steps;
+        const testExecutionIssueData: TestExecutionIssueDataServer = {
+            projectKey: this.options.jira.projectKey,
+            summary: this.options.jira.testExecutionIssueSummary,
+            description: this.options.jira.testExecutionIssueDescription,
+            issuetype: this.options.jira.testExecutionIssueDetails,
+        };
+        if (this.options.jira.testPlanIssueKey) {
+            testExecutionIssueData.testPlan = {
+                issueKey: this.options.jira.testPlanIssueKey,
+                testPlanFieldId: await this.jiraRepository.getFieldId("Test Plan", "testPlan"),
+            };
+        }
+        return {
+            features: features,
+            info: getMultipartInfoServer(parameters, testExecutionIssueData),
+        };
     }
 }

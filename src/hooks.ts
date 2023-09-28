@@ -2,12 +2,8 @@ import fs from "fs";
 import path from "path";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
-import { XrayClientCloud } from "./client/xray/xrayClientCloud";
-import { XrayClientServer } from "./client/xray/xrayClientServer";
 import { ImportExecutionConverter } from "./conversion/importExecution/importExecutionConverter";
-import { ImportExecutionCucumberMultipartConverterCloud } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterCloud";
-import { ImportExecutionCucumberMultipartConverterServer } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverterServer";
-import { CucumberPreprocessorExports, importOptionalDependency } from "./dependencies";
+import { ImportExecutionCucumberMultipartConverter } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverter";
 import { logDebug, logError, logInfo, logSuccess, logWarning } from "./logging/logging";
 import {
     FeatureFileIssueData,
@@ -26,23 +22,13 @@ import {
 import { IssueUpdateCloud, IssueUpdateServer } from "./types/jira/responses/issueUpdate";
 import { ClientCombination, InternalOptions } from "./types/plugin";
 import { StringMap } from "./types/util";
-import {
-    XrayTestCloud,
-    XrayTestExecutionResults,
-    XrayTestServer,
-} from "./types/xray/importTestExecutionResults";
-import {
-    CucumberMultipartCloud,
-    CucumberMultipartFeature,
-    CucumberMultipartServer,
-} from "./types/xray/requests/importExecutionCucumberMultipart";
+import { CucumberMultipartFeature } from "./types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "./util/dedent";
 
 export async function beforeRunHook(
     runDetails: Cypress.BeforeRunDetails,
-    config?: Cypress.PluginConfigOptions,
-    options?: InternalOptions,
-    clients?: ClientCombination
+    options: InternalOptions,
+    clients: ClientCombination
 ) {
     if (!options) {
         // Don't throw here in case someone simply doesn't want the plugin to run but forgot to
@@ -78,89 +64,46 @@ export async function beforeRunHook(
             `)
         );
     }
-    for (const spec of runDetails.specs) {
-        if (
-            spec.absolute.endsWith(options.cucumber.featureFileExtension) &&
-            options.xray.uploadResults
-        ) {
-            if (!options.cucumber.preprocessor) {
-                try {
-                    const preprocessor =
-                        await importOptionalDependency<CucumberPreprocessorExports>(
-                            "@badeball/cypress-cucumber-preprocessor"
-                        );
-                    options.cucumber.preprocessor =
-                        await preprocessor.resolvePreprocessorConfiguration(
-                            config,
-                            config.env,
-                            "/"
-                        );
-                    logDebug(
-                        `Successfully resolved configuration of @badeball/cypress-cucumber-preprocessor package`
-                    );
-                } catch (error: unknown) {
-                    throw new Error(
-                        dedent(`
-                            Plugin dependency misconfigured: @badeball/cypress-cucumber-preprocessor
+    if (!runDetails.specs) {
+        logWarning("No specs about to be executed. Skipping before:run hook");
+        return;
+    }
+    // Cucumber upload requires additional test execution issue information.
+    if (
+        runDetails.specs.some(
+            (spec: Cypress.Spec) =>
+                options.cucumber &&
+                options.xray.uploadResults &&
+                spec.absolute.endsWith(options.cucumber.featureFileExtension)
+        )
+    ) {
+        logInfo(
+            "Fetching necessary Jira issue type information in preparation for Cucumber result uploads..."
+        );
+        const issueDetails = await clients.jiraClient.getIssueTypes();
+        if (!issueDetails) {
+            throw new Error(
+                dedent(`
+                    Jira issue type information could not be fetched.
 
-                            ${error}
+                    Please make sure project ${options.jira.projectKey} exists at ${options.jira.url}
 
-                            The plugin depends on the package and should automatically download it during installation, but might have failed to do so because of conflicting Node versions
-
-                            Make sure to install the package manually using: npm install @badeball/cypress-cucumber-preprocessor --save-dev
-                        `)
-                    );
-                }
-            }
-            if (!options.cucumber.preprocessor.json.enabled) {
-                throw new Error(
-                    dedent(`
-                        Plugin misconfigured: Cucumber preprocessor JSON report disabled
-
-                        Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
-                    `)
-                );
-            } else if (!options.cucumber.preprocessor.json.output) {
-                throw new Error(
-                    dedent(`
-                        Plugin misconfigured: Cucumber preprocessor JSON report path was not set
-
-                        Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
-                    `)
-                );
-            }
-            if (!options.jira.testExecutionIssueDetails) {
-                logInfo(
-                    "Fetching necessary Jira issue type information in preparation for Cucumber result uploads..."
-                );
-                const issueDetails = await clients.jiraClient.getIssueTypes();
-                if (!issueDetails) {
-                    throw new Error(
-                        dedent(`
-                            Jira issue type information could not be fetched.
-
-                            Please make sure project ${options.jira.projectKey} exists at ${options.jira.url}
-
-                            For more information, visit:
-                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#projectkey
-                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
-                        `)
-                    );
-                }
-                if (!options.jira.testExecutionIssueDetails) {
-                    options.jira.testExecutionIssueDetails = retrieveIssueTypeInformation(
-                        options.jira.testExecutionIssueType,
-                        issueDetails,
-                        options.jira.projectKey
-                    );
-                }
-            }
+                    For more information, visit:
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#projectkey
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
+                `)
+            );
         }
+        options.jira.testExecutionIssueDetails = retrieveIssueTypeInformation(
+            options.jira.testExecutionIssueType,
+            issueDetails,
+            options.jira.projectKey
+        );
     }
 }
 
 function retrieveIssueTypeInformation<
-    IssueTypeDetails extends IssueTypeDetailsServer & IssueTypeDetailsCloud
+    IssueTypeDetails extends IssueTypeDetailsServer | IssueTypeDetailsCloud
 >(type: string, issueDetails: IssueTypeDetails[], projectKey: string): IssueTypeDetails {
     const details = issueDetails.filter((details) => details.name === type);
     if (details.length === 0) {
@@ -193,8 +136,8 @@ function retrieveIssueTypeInformation<
 
 export async function afterRunHook(
     results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult,
-    options?: InternalOptions,
-    clients?: ClientCombination
+    options: InternalOptions,
+    clients: ClientCombination
 ) {
     if (!options) {
         // Don't throw here in case someone simply doesn't want the plugin to run but forgot to
@@ -212,7 +155,7 @@ export async function afterRunHook(
         logInfo("Skipping after:run hook: Plugin disabled");
         return;
     }
-    if (results["status"] === "failed") {
+    if ("status" in results && results["status"] === "failed") {
         const failedResult = results as CypressCommandLine.CypressFailedRunResult;
         logError(
             dedent(`
@@ -228,7 +171,7 @@ export async function afterRunHook(
         logInfo("Skipping results upload: Plugin is configured to not upload test results");
         return;
     }
-    if (!clients?.xrayClient) {
+    if (!clients.xrayClient) {
         throw new Error(
             dedent(`
                 Plugin misconfigured: Xray client not configured
@@ -237,7 +180,7 @@ export async function afterRunHook(
             `)
         );
     }
-    if (!clients?.jiraClient) {
+    if (!clients.jiraClient) {
         throw new Error(
             dedent(`
                 Plugin misconfigured: Jira client not configured
@@ -246,15 +189,10 @@ export async function afterRunHook(
             `)
         );
     }
-    let issueKey: string = null;
+    let issueKey: string | null | undefined = null;
     if (containsNativeTest(runResult, options)) {
         logInfo("Uploading native Cypress test results...");
-        issueKey = await uploadCypressResults(
-            runResult,
-            options,
-            clients.xrayClient,
-            clients.jiraRepository
-        );
+        issueKey = await uploadCypressResults(runResult, options, clients);
         if (
             options.jira.testExecutionIssueKey &&
             issueKey &&
@@ -323,25 +261,17 @@ export async function afterRunHook(
 async function uploadCypressResults(
     runResult: CypressCommandLine.CypressRunResult,
     options: InternalOptions,
-    xrayClient: XrayClientServer | XrayClientCloud,
-    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
+    clients: ClientCombination
 ) {
     const issueKeys = getNativeTestIssueKeys(runResult, options);
-    const issueSummaries = await jiraRepository.getSummaries(...issueKeys);
-    const issueTestTypes = await jiraRepository.getTestTypes(...issueKeys);
-    let cypressExecution: XrayTestExecutionResults<XrayTestServer | XrayTestCloud>;
-    if (xrayClient instanceof XrayClientServer) {
-        cypressExecution = await new ImportExecutionConverter(options, false).convert(runResult, {
-            summaries: issueSummaries,
-            testTypes: issueTestTypes,
-        });
-    } else {
-        cypressExecution = await new ImportExecutionConverter(options, true).convert(runResult, {
-            summaries: issueSummaries,
-            testTypes: issueTestTypes,
-        });
-    }
-    return await xrayClient.importExecution(cypressExecution);
+    const issueSummaries = await clients.jiraRepository.getSummaries(...issueKeys);
+    const issueTestTypes = await clients.jiraRepository.getTestTypes(...issueKeys);
+    const converter = new ImportExecutionConverter(options, clients.kind === "cloud");
+    const cypressExecution = await converter.convert(runResult, {
+        summaries: issueSummaries,
+        testTypes: issueTestTypes,
+    });
+    return await clients.xrayClient.importExecution(cypressExecution);
 }
 
 async function uploadCucumberResults(
@@ -349,20 +279,20 @@ async function uploadCucumberResults(
     options: InternalOptions,
     clients: ClientCombination
 ) {
+    if (!options.cucumber?.preprocessor?.json.output) {
+        throw new Error(
+            "Failed to upload Cucumber results: Cucumber preprocessor JSON report path not configured"
+        );
+    }
     const results: CucumberMultipartFeature[] = JSON.parse(
         fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
     );
-    let cucumberMultipart: CucumberMultipartServer | CucumberMultipartCloud;
-    if (clients.kind === "server") {
-        cucumberMultipart = await new ImportExecutionCucumberMultipartConverterServer(
-            options,
-            clients.jiraRepository
-        ).convert(results, runResult);
-    } else {
-        cucumberMultipart = await new ImportExecutionCucumberMultipartConverterCloud(
-            options
-        ).convert(results, runResult);
-    }
+    const converter = new ImportExecutionCucumberMultipartConverter(
+        options,
+        clients.kind === "cloud",
+        clients.jiraRepository
+    );
+    const cucumberMultipart = await converter.convert(results, runResult);
     return await clients.xrayClient.importExecutionCucumberMultipart(
         cucumberMultipart.features,
         cucumberMultipart.info
@@ -372,7 +302,7 @@ async function uploadCucumberResults(
 async function attachVideos(
     runResult: CypressCommandLine.CypressRunResult,
     issueKey: string,
-    jiraClient?: JiraClientServer | JiraClientCloud
+    jiraClient: JiraClientServer | JiraClientCloud
 ): Promise<void> {
     const videos: string[] = runResult.runs.map((result: CypressCommandLine.RunResult) => {
         return result.video;

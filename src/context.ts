@@ -1,3 +1,4 @@
+import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import { BasicAuthCredentials, JWTCredentials, PATCredentials } from "./authentication/credentials";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
@@ -39,105 +40,201 @@ import {
     ENV_XRAY_UPLOAD_RESULTS,
     ENV_XRAY_UPLOAD_SCREENSHOTS,
 } from "./constants";
-import { logInfo } from "./logging/logging";
+import { CucumberPreprocessorExports, importOptionalDependency } from "./dependencies";
+import { logDebug, logInfo } from "./logging/logging";
 import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
 import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
-import { ClientCombination, InternalOptions, Options } from "./types/plugin";
+import {
+    ClientCombination,
+    InternalCucumberOptions,
+    InternalJiraOptions,
+    InternalOpenSSLOptions,
+    InternalOptions,
+    InternalPluginOptions,
+    InternalXrayOptions,
+    Options,
+} from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { asBoolean, asInt, asString, parse } from "./util/parsing";
 
-export function initOptions(env: Cypress.ObjectLike, options: Options): InternalOptions {
+/**
+ * Returns an {@link InternalJiraOptions `InternalJiraOptions`} instance based on parsed environment
+ * variables and a provided options object. Environment variables will take precedence over the
+ * options set in the object.
+ *
+ * @param env an object containing environment variables as properties
+ * @param options an options object
+ * @returns the constructed internal Jira options
+ */
+export function initJiraOptions(env: Cypress.ObjectLike, options: Options): InternalJiraOptions {
     return {
-        jira: {
-            attachVideos:
-                parse(env, ENV_JIRA_ATTACH_VIDEOS, asBoolean) ?? options.jira.attachVideos ?? false,
-            fields: {
-                description:
-                    parse(env, ENV_JIRA_FIELDS_DESCRIPTION, asString) ??
-                    options.jira.fields?.description,
-                labels: parse(env, ENV_JIRA_FIELDS_LABELS, asString) ?? options.jira.fields?.labels,
-                summary:
-                    parse(env, ENV_JIRA_FIELDS_SUMMARY, asString) ?? options.jira.fields?.summary,
-                testPlan:
-                    parse(env, ENV_JIRA_FIELDS_TEST_PLAN, asString) ??
-                    options.jira.fields?.testPlan,
-                testType:
-                    parse(env, ENV_JIRA_FIELDS_TEST_TYPE, asString) ??
-                    options.jira.fields?.testType,
-            },
-            projectKey: parse(env, ENV_JIRA_PROJECT_KEY, asString) ?? options.jira.projectKey,
-            testExecutionIssueDescription:
-                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION, asString) ??
-                options.jira.testExecutionIssueDescription,
-            testExecutionIssueKey:
-                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_KEY, asString) ??
-                options.jira.testExecutionIssueKey,
-            testExecutionIssueSummary:
-                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY, asString) ??
-                options.jira.testExecutionIssueSummary,
-            testExecutionIssueType:
-                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_TYPE, asString) ??
-                options.jira.testExecutionIssueType ??
-                "Test Execution",
-            testPlanIssueKey:
-                parse(env, ENV_JIRA_TEST_PLAN_ISSUE_KEY, asString) ?? options.jira.testPlanIssueKey,
-            testPlanIssueType:
-                parse(env, ENV_JIRA_TEST_PLAN_ISSUE_TYPE, asString) ??
-                options.jira.testPlanIssueType ??
-                "Test Plan",
-            url: parse(env, ENV_JIRA_URL, asString) ?? options.jira.url,
+        attachVideos:
+            parse(env, ENV_JIRA_ATTACH_VIDEOS, asBoolean) ?? options.jira.attachVideos ?? false,
+        fields: {
+            description:
+                parse(env, ENV_JIRA_FIELDS_DESCRIPTION, asString) ??
+                options.jira.fields?.description,
+            labels: parse(env, ENV_JIRA_FIELDS_LABELS, asString) ?? options.jira.fields?.labels,
+            summary: parse(env, ENV_JIRA_FIELDS_SUMMARY, asString) ?? options.jira.fields?.summary,
+            testPlan:
+                parse(env, ENV_JIRA_FIELDS_TEST_PLAN, asString) ?? options.jira.fields?.testPlan,
+            testType:
+                parse(env, ENV_JIRA_FIELDS_TEST_TYPE, asString) ?? options.jira.fields?.testType,
         },
-        plugin: {
-            debug: parse(env, ENV_PLUGIN_DEBUG, asBoolean) ?? options.plugin?.debug ?? false,
-            enabled: parse(env, ENV_PLUGIN_ENABLED, asBoolean) ?? options.plugin?.enabled ?? true,
-            logDirectory:
-                parse(env, ENV_PLUGIN_LOG_DIRECTORY, asString) ??
-                options.plugin?.logDirectory ??
-                "logs",
-            normalizeScreenshotNames:
-                parse(env, ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES, asBoolean) ??
-                options.plugin?.normalizeScreenshotNames ??
-                false,
+        projectKey: parse(env, ENV_JIRA_PROJECT_KEY, asString) ?? options.jira.projectKey,
+        testExecutionIssueDescription:
+            parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION, asString) ??
+            options.jira.testExecutionIssueDescription,
+        testExecutionIssueKey:
+            parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_KEY, asString) ??
+            options.jira.testExecutionIssueKey,
+        testExecutionIssueSummary:
+            parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY, asString) ??
+            options.jira.testExecutionIssueSummary,
+        testExecutionIssueType:
+            parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_TYPE, asString) ??
+            options.jira.testExecutionIssueType ??
+            "Test Execution",
+        testPlanIssueKey:
+            parse(env, ENV_JIRA_TEST_PLAN_ISSUE_KEY, asString) ?? options.jira.testPlanIssueKey,
+        testPlanIssueType:
+            parse(env, ENV_JIRA_TEST_PLAN_ISSUE_TYPE, asString) ??
+            options.jira.testPlanIssueType ??
+            "Test Plan",
+        url: parse(env, ENV_JIRA_URL, asString) ?? options.jira.url,
+    };
+}
+
+/**
+ * Returns an {@link InternalPluginOptions `InternalPluginOptions`} instance based on parsed
+ * environment variables and a provided options object. Environment variables will take precedence
+ * over the options set in the object.
+ *
+ * @param env an object containing environment variables as properties
+ * @param options an options object
+ * @returns the constructed internal plugin options
+ */
+export function initPluginOptions(
+    env: Cypress.ObjectLike,
+    options: Options
+): InternalPluginOptions {
+    return {
+        debug: parse(env, ENV_PLUGIN_DEBUG, asBoolean) ?? options.plugin?.debug ?? false,
+        enabled: parse(env, ENV_PLUGIN_ENABLED, asBoolean) ?? options.plugin?.enabled ?? true,
+        logDirectory:
+            parse(env, ENV_PLUGIN_LOG_DIRECTORY, asString) ??
+            options.plugin?.logDirectory ??
+            "logs",
+        normalizeScreenshotNames:
+            parse(env, ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES, asBoolean) ??
+            options.plugin?.normalizeScreenshotNames ??
+            false,
+    };
+}
+
+/**
+ * Returns an {@link InternalXrayOptions `InternalXrayOptions`} instance based on parsed environment
+ * variables and a provided options object. Environment variables will take precedence over the
+ * options set in the object.
+ *
+ * @param env an object containing environment variables as properties
+ * @param options an options object
+ * @returns the constructed internal Xray options
+ */
+export function initXrayOptions(env: Cypress.ObjectLike, options: Options): InternalXrayOptions {
+    return {
+        status: {
+            failed: parse(env, ENV_XRAY_STATUS_FAILED, asString) ?? options.xray?.status?.failed,
+            passed: parse(env, ENV_XRAY_STATUS_PASSED, asString) ?? options.xray?.status?.passed,
+            pending: parse(env, ENV_XRAY_STATUS_PENDING, asString) ?? options.xray?.status?.pending,
+            skipped: parse(env, ENV_XRAY_STATUS_SKIPPED, asString) ?? options.xray?.status?.skipped,
         },
-        xray: {
-            status: {
-                failed:
-                    parse(env, ENV_XRAY_STATUS_FAILED, asString) ?? options.xray?.status?.failed,
-                passed:
-                    parse(env, ENV_XRAY_STATUS_PASSED, asString) ?? options.xray?.status?.passed,
-                pending:
-                    parse(env, ENV_XRAY_STATUS_PENDING, asString) ?? options.xray?.status?.pending,
-                skipped:
-                    parse(env, ENV_XRAY_STATUS_SKIPPED, asString) ?? options.xray?.status?.skipped,
-            },
-            uploadResults:
-                parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean) ??
-                options.xray?.uploadResults ??
-                true,
-            uploadScreenshots:
-                parse(env, ENV_XRAY_UPLOAD_SCREENSHOTS, asBoolean) ??
-                options.xray?.uploadScreenshots ??
-                true,
-        },
-        cucumber: {
-            featureFileExtension:
-                parse(env, ENV_CUCUMBER_FEATURE_FILE_EXTENSION, asString) ??
-                options.cucumber?.featureFileExtension,
-            downloadFeatures:
-                parse(env, ENV_CUCUMBER_DOWNLOAD_FEATURES, asBoolean) ??
-                options.cucumber?.downloadFeatures ??
-                false,
-            uploadFeatures:
-                parse(env, ENV_CUCUMBER_UPLOAD_FEATURES, asBoolean) ??
-                options.cucumber?.uploadFeatures ??
-                false,
-        },
-        openSSL: {
-            rootCAPath:
-                parse(env, ENV_OPENSSL_ROOT_CA_PATH, asString) ?? options.openSSL?.rootCAPath,
-            secureOptions:
-                parse(env, ENV_OPENSSL_SECURE_OPTIONS, asInt) ?? options.openSSL?.secureOptions,
-        },
+        uploadResults:
+            parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean) ?? options.xray?.uploadResults ?? true,
+        uploadScreenshots:
+            parse(env, ENV_XRAY_UPLOAD_SCREENSHOTS, asBoolean) ??
+            options.xray?.uploadScreenshots ??
+            true,
+    };
+}
+
+/**
+ * Returns an {@link InternalCucumberOptions `InternalCucumberOptions`} instance based on parsed
+ * environment variables and a provided options object. Environment variables will take precedence
+ * over the options set in the object.
+ *
+ * @param env an object containing environment variables as properties
+ * @param options an options object
+ * @returns the constructed internal Cucumber options
+ */
+export async function initCucumberOptions(
+    config: Cypress.PluginConfigOptions,
+    options: Options
+): Promise<InternalCucumberOptions | undefined> {
+    // Check if the user has chosen to upload Cucumber results, too.
+    const featureFileExtension =
+        parse(config.env, ENV_CUCUMBER_FEATURE_FILE_EXTENSION, asString) ??
+        options.cucumber?.featureFileExtension;
+    // If the user has chosen to do so, we need to make sure they configured the Cucumber
+    // preprocessor JSON report as well. Otherwise, results upload will not work.
+    if (featureFileExtension) {
+        try {
+            const preprocessor = await importOptionalDependency<CucumberPreprocessorExports>(
+                "@badeball/cypress-cucumber-preprocessor"
+            );
+            logDebug(
+                `Successfully resolved configuration of @badeball/cypress-cucumber-preprocessor package`
+            );
+            return {
+                downloadFeatures:
+                    parse(config.env, ENV_CUCUMBER_DOWNLOAD_FEATURES, asBoolean) ??
+                    options.cucumber?.downloadFeatures ??
+                    false,
+                featureFileExtension: featureFileExtension,
+                preprocessor: await preprocessor.resolvePreprocessorConfiguration(
+                    config,
+                    config.env,
+                    "/"
+                ),
+                uploadFeatures:
+                    parse(config.env, ENV_CUCUMBER_UPLOAD_FEATURES, asBoolean) ??
+                    options.cucumber?.uploadFeatures ??
+                    false,
+            };
+        } catch (error: unknown) {
+            throw new Error(
+                dedent(`
+                    Plugin dependency misconfigured: @badeball/cypress-cucumber-preprocessor
+
+                    ${error}
+
+                    The plugin depends on the package and should automatically download it during installation, but might have failed to do so because of conflicting Node versions
+
+                    Make sure to install the package manually using: npm install @badeball/cypress-cucumber-preprocessor --save-dev
+                `)
+            );
+        }
+    }
+    return undefined;
+}
+
+/**
+ * Returns an {@link InternalOpenSSLOptions `InternalOpenSSLOptions`} instance based on parsed
+ * environment variables and a provided options object. Environment variables will take precedence
+ * over the options set in the object.
+ *
+ * @param env an object containing environment variables as properties
+ * @param options an options object
+ * @returns the constructed internal OpenSSL options
+ */
+export function initOpenSSLOptions(
+    env: Cypress.ObjectLike,
+    options: Options
+): InternalOpenSSLOptions {
+    return {
+        rootCAPath: parse(env, ENV_OPENSSL_ROOT_CA_PATH, asString) ?? options.openSSL?.rootCAPath,
+        secureOptions:
+            parse(env, ENV_OPENSSL_SECURE_OPTIONS, asInt) ?? options.openSSL?.secureOptions,
     };
 }
 
@@ -145,6 +242,7 @@ export function verifyOptions(options: InternalOptions) {
     verifyJiraProjectKey(options.jira.projectKey);
     verifyJiraTestExecutionIssueKey(options.jira.projectKey, options.jira.testExecutionIssueKey);
     verifyJiraTestPlanIssueKey(options.jira.projectKey, options.jira.testPlanIssueKey);
+    verifyCucumberPreprocessor(options.cucumber?.preprocessor);
 }
 
 function verifyJiraProjectKey(projectKey?: string) {
@@ -165,6 +263,30 @@ function verifyJiraTestPlanIssueKey(projectKey: string, testPlanIssueKey?: strin
     if (testPlanIssueKey && !testPlanIssueKey.startsWith(projectKey)) {
         throw new Error(
             `Plugin misconfiguration: test plan issue key ${testPlanIssueKey} does not belong to project ${projectKey}`
+        );
+    }
+}
+
+function verifyCucumberPreprocessor(preprocessor?: IPreprocessorConfiguration) {
+    if (!preprocessor) {
+        return;
+    }
+    if (!preprocessor.json.enabled) {
+        throw new Error(
+            dedent(`
+                Plugin misconfiguration: Cucumber preprocessor JSON report disabled
+
+                Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+            `)
+        );
+    }
+    if (!preprocessor.json.output) {
+        throw new Error(
+            dedent(`
+                Plugin misconfiguration: Cucumber preprocessor JSON report path was not set
+
+                Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+            `)
         );
     }
 }

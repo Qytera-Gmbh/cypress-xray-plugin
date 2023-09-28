@@ -47,7 +47,12 @@ export abstract class JiraRepository<
 
     protected static readonly OBJECT_VALUE_EXTRACTOR: FieldExtractor<string> = {
         extractorFunction: (data: unknown): string | undefined => {
-            if (typeof data === "object" && data !== null) {
+            if (
+                typeof data === "object" &&
+                data !== null &&
+                "value" in data &&
+                typeof data["value"] === "string"
+            ) {
                 return data["value"];
             }
         },
@@ -67,9 +72,12 @@ export abstract class JiraRepository<
     }
 
     public async getFieldId(fieldName: FieldName, optionName: keyof JiraFieldIds): Promise<string> {
-        return await this.jiraFieldRepository.getFieldId(fieldName, {
+        const onFetchError = new Error(
+            `Failed to fetch Jira field ID for field with name: ${fieldName}`
+        );
+        const fieldId = await this.jiraFieldRepository.getFieldId(fieldName, {
             onFetchError: () => {
-                throw new Error(`Failed to fetch Jira field ID for field with name: ${fieldName}`);
+                throw onFetchError;
             },
             onMultipleFieldsError: (duplicates: FieldDetailServer[] | FieldDetailCloud[]) => {
                 throw new Error(
@@ -144,6 +152,10 @@ export abstract class JiraRepository<
                 }
             },
         });
+        if (!fieldId) {
+            throw onFetchError;
+        }
+        return fieldId;
     }
 
     public async getSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
@@ -267,7 +279,7 @@ export abstract class JiraRepository<
     }
 
     protected async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
-        let fieldId = this.options.jira.fields.summary;
+        let fieldId = this.options.jira.fields?.summary;
         if (!fieldId) {
             fieldId = await this.getFieldId("Summary", "summary");
         }
@@ -277,7 +289,7 @@ export abstract class JiraRepository<
     }
 
     protected async fetchDescriptions(...issueKeys: string[]): Promise<StringMap<string>> {
-        let fieldId = this.options.jira.fields.description;
+        let fieldId = this.options.jira.fields?.description;
         if (!fieldId) {
             fieldId = await this.getFieldId("Description", "description");
         }
@@ -289,7 +301,7 @@ export abstract class JiraRepository<
     protected abstract fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;
 
     protected async fetchLabels(...issueKeys: string[]): Promise<StringMap<string[]>> {
-        let fieldId = this.options.jira.fields.labels;
+        let fieldId = this.options.jira.fields?.labels;
         if (!fieldId) {
             fieldId = await this.getFieldId("Labels", "labels");
         }
@@ -308,20 +320,22 @@ export abstract class JiraRepository<
         ...issueKeys: string[]
     ): Promise<StringMap<T>> {
         const results: StringMap<T> = {};
-        const issues: IssueServer[] | IssueCloud[] = await this.jiraClient.search({
+        const issues: IssueServer[] | IssueCloud[] | undefined = await this.jiraClient.search({
             jql: `project = ${this.options.jira.projectKey} AND issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
         });
         if (issues) {
             const issuesWithUnparseableField: string[] = [];
             issues.forEach((issue: IssueServer | IssueCloud) => {
-                const value = extractor.extractorFunction(issue.fields[fieldId]);
-                if (value !== undefined) {
-                    results[issue.key] = value;
-                } else {
-                    issuesWithUnparseableField.push(
-                        `${issue.key}: ${JSON.stringify(issue.fields[fieldId])}`
-                    );
+                if (issue.key && issue.fields && fieldId in issue.fields) {
+                    const value = extractor.extractorFunction(issue.fields[fieldId]);
+                    if (value !== undefined) {
+                        results[issue.key] = value;
+                    } else {
+                        issuesWithUnparseableField.push(
+                            `${issue.key}: ${JSON.stringify(issue.fields[fieldId])}`
+                        );
+                    }
                 }
             });
             if (issuesWithUnparseableField.length > 0) {

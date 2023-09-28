@@ -71,7 +71,7 @@ export abstract class TestConverter<
         });
         if (xrayTests.length === 0) {
             throw new Error(
-                "Failed to convert Cypress tests into Xray tests: No Cypress tests were executed"
+                "Failed to convert Cypress tests into Xray tests: No Cypress tests to upload"
             );
         }
         return [xrayTests[0], ...xrayTests.slice(1)];

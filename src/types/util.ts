@@ -10,22 +10,7 @@ export type OneOf<T extends NonNullable<unknown>[]> = {
 // small utility types to better express meaning of other types
 export type DateTimeISO = string;
 
-/**
- * Return an enum key based on its value, i.e. performs a reverse lookup of enum values to enum
- * keys.
- *
- * @param enumType the enum
- * @param enumValue the enum value
- * @returns the corresponding enum key or null if there are zero or more than one matching keys
- * @see https://stackoverflow.com/a/54297863
- */
-export function getEnumKeyByEnumValue<K extends string, V extends string | number>(
-    enumType: { [key in K]: V },
-    enumValue: V
-): string | null {
-    const keys = Object.keys(enumType).filter((x: string) => enumType[x] === enumValue);
-    return keys.length === 1 ? keys[0] : null;
-}
+export type WithRequired<T extends object, K extends keyof T> = T & Required<Pick<T, K>>;
 
 /**
  * Type describing mappings of string keys to arbitrary values.
