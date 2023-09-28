@@ -189,7 +189,7 @@ export async function afterRunHook(
         );
     }
     let issueKey: string | null | undefined = null;
-    if (containsNativeTest(runResult, options)) {
+    if (containsNativeTest(runResult, options.cucumber?.featureFileExtension)) {
         logInfo("Uploading native Cypress test results...");
         issueKey = await uploadCypressResults(runResult, options, clients);
         if (
@@ -209,7 +209,7 @@ export async function afterRunHook(
             options.jira.testExecutionIssueKey = issueKey;
         }
     }
-    if (containsCucumberTest(runResult, options)) {
+    if (containsCucumberTest(runResult, options.cucumber?.featureFileExtension)) {
         logInfo("Uploading Cucumber test results...");
         const cucumberIssueKey = await uploadCucumberResults(runResult, options, clients);
         if (
@@ -262,7 +262,11 @@ async function uploadCypressResults(
     options: InternalOptions,
     clients: ClientCombination
 ) {
-    const issueKeys = getNativeTestIssueKeys(runResult, options);
+    const issueKeys = getNativeTestIssueKeys(
+        runResult,
+        options.jira.projectKey,
+        options.cucumber?.featureFileExtension
+    );
     const issueSummaries = await clients.jiraRepository.getSummaries(...issueKeys);
     const issueTestTypes = await clients.jiraRepository.getTestTypes(...issueKeys);
     const converter = new ImportExecutionConverter(options, clients.kind === "cloud");
@@ -348,7 +352,7 @@ export async function synchronizeFile(
             if (options.cucumber?.uploadFeatures) {
                 const issueData = getCucumberIssueData(
                     file.filePath,
-                    options,
+                    options.jira.projectKey,
                     clients.kind === "cloud"
                 );
                 // Xray currently (almost) always overwrites issue summaries when importing feature

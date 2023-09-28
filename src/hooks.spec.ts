@@ -4,11 +4,13 @@ import { readFileSync } from "fs";
 import path from "path";
 import { stub } from "sinon";
 import { stubLogging } from "../test/util";
+import { PATCredentials } from "./authentication/credentials";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
-import { initOptions } from "./context";
+import { initJiraOptions, initOpenSSLOptions, initPluginOptions, initXrayOptions } from "./context";
 import * as dependencies from "./dependencies";
 import { afterRunHook, beforeRunHook, synchronizeFile } from "./hooks";
+import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
 import { ClientCombination, InternalOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
 
@@ -20,23 +22,34 @@ describe("the hooks", () => {
     let clients: ClientCombination;
 
     beforeEach(() => {
-        options = initOptions(
-            {},
-            {
-                jira: {
+        options = {
+            jira: initJiraOptions(
+                {},
+                {
                     projectKey: "CYP",
                     url: "https://example.org",
-                },
-                cucumber: {
-                    featureFileExtension: ".feature",
-                },
-            }
+                }
+            ),
+            xray: initXrayOptions(
+                {},
+                {
+                    uploadResults: true,
+                }
+            ),
+            plugin: initPluginOptions({}, {}),
+            openSSL: initOpenSSLOptions({}, {}),
+        };
+        const jiraClient = new JiraClientServer("https://example.org", new PATCredentials("token"));
+        const xrayClient = new XrayClientServer(
+            "https://example.org",
+            new PATCredentials("token"),
+            jiraClient
         );
         clients = {
             kind: "server",
-            jiraClient: new JiraClientServer("https://example.org", null),
-            xrayClient: new XrayClientServer("https://example.org", null, null),
-            jiraRepository: null,
+            jiraClient: jiraClient,
+            xrayClient: xrayClient,
+            jiraRepository: new JiraRepositoryServer(jiraClient, xrayClient, options.jira),
         };
     });
 
@@ -53,7 +66,7 @@ describe("the hooks", () => {
 
         it("should throw if the plugin was not configured", async () => {
             const { stubbedError } = stubLogging();
-            await beforeRunHook(beforeRunDetails, config);
+            await beforeRunHook(beforeRunDetails, options, clients);
             expect(stubbedError).to.have.been.calledOnceWith(
                 dedent(`
                     Plugin misconfigured: configureXrayPlugin() was not called. Skipping before:run hook
@@ -66,16 +79,16 @@ describe("the hooks", () => {
         it("should not do anything if disabled", async () => {
             const { stubbedInfo } = stubLogging();
             options.plugin.enabled = false;
-            await beforeRunHook(beforeRunDetails, config, options);
+            await beforeRunHook(beforeRunDetails, options, clients);
             expect(stubbedInfo).to.have.been.calledOnceWith(
                 "Plugin disabled. Skipping before:run hook"
             );
         });
 
         it("should throw if the xray client was not configured", async () => {
-            clients.xrayClient = undefined;
+            clients.xrayClient = undefined as unknown as XrayClientServer;
             await expect(
-                beforeRunHook(beforeRunDetails, config, options, clients)
+                beforeRunHook(beforeRunDetails, options, clients)
             ).to.eventually.be.rejectedWith(
                 dedent(`
                     Plugin misconfigured: Xray client was not configured
@@ -86,9 +99,9 @@ describe("the hooks", () => {
         });
 
         it("should throw if the jira client was not configured", async () => {
-            clients.jiraClient = undefined;
+            clients.jiraClient = undefined as unknown as JiraClientServer;
             await expect(
-                beforeRunHook(beforeRunDetails, config, options, clients)
+                beforeRunHook(beforeRunDetails, options, clients)
             ).to.eventually.be.rejectedWith(
                 dedent(`
                     Plugin misconfigured: Jira client was not configured
@@ -98,22 +111,13 @@ describe("the hooks", () => {
             );
         });
 
-        it("should ignore the run details if the results upload is disabled", async () => {
-            beforeRunDetails = JSON.parse(
-                readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-            );
-            options.xray.uploadResults = false;
-            await beforeRunHook(beforeRunDetails, config, options, clients);
-            expect(options.cucumber.preprocessor).to.be.undefined;
-        });
-
         it("should throw if the cucumber preprocessor json report is not enabled", async () => {
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             );
             config.env["jsonEnabled"] = false;
             await expect(
-                beforeRunHook(beforeRunDetails, config, options, clients)
+                beforeRunHook(beforeRunDetails, options, clients)
             ).to.eventually.be.rejectedWith(
                 dedent(`
                     Plugin misconfigured: Cucumber preprocessor JSON report disabled
@@ -129,7 +133,7 @@ describe("the hooks", () => {
             );
             config.env["jsonOutput"] = "";
             await expect(
-                beforeRunHook(beforeRunDetails, config, options, clients)
+                beforeRunHook(beforeRunDetails, options, clients)
             ).to.eventually.be.rejectedWith(
                 dedent(`
                     Plugin misconfigured: Cucumber preprocessor JSON report path was not set
@@ -145,7 +149,7 @@ describe("the hooks", () => {
             );
             stub(dependencies, "importModule").rejects(new Error("Failed to import package"));
             await expect(
-                beforeRunHook(beforeRunDetails, config, options, clients)
+                beforeRunHook(beforeRunDetails, options, clients)
             ).to.eventually.be.rejectedWith(
                 dedent(`
                     Plugin dependency misconfigured: @badeball/cypress-cucumber-preprocessor
@@ -172,7 +176,7 @@ describe("the hooks", () => {
                     subtask: false,
                 },
             ]);
-            await beforeRunHook(beforeRunDetails, config, options, clients);
+            await beforeRunHook(beforeRunDetails, options, clients);
             expect(stubbedInfo).to.have.been.calledWith(
                 "Fetching necessary Jira issue type information in preparation for Cucumber result uploads..."
             );
@@ -186,7 +190,7 @@ describe("the hooks", () => {
         it("should not fetch xray issue type information for native results upload", async () => {
             const { stubbedInfo } = stubLogging();
             beforeRunDetails = JSON.parse(readFileSync("./test/resources/beforeRun.json", "utf-8"));
-            await beforeRunHook(beforeRunDetails, config, options, clients);
+            await beforeRunHook(beforeRunDetails, options, clients);
             expect(stubbedInfo).to.not.have.been.called;
         });
 
@@ -204,7 +208,7 @@ describe("the hooks", () => {
                 },
             ]);
             await expect(
-                beforeRunHook(beforeRunDetails, config, options, clients)
+                beforeRunHook(beforeRunDetails, options, clients)
             ).to.eventually.be.rejectedWith(
                 dedent(`
                     Failed to retrieve issue type information for issue type: Execution Issue
@@ -237,7 +241,7 @@ describe("the hooks", () => {
                 },
             ]);
             await expect(
-                beforeRunHook(beforeRunDetails, config, options, clients)
+                beforeRunHook(beforeRunDetails, options, clients)
             ).to.eventually.be.rejectedWith(
                 dedent(`
                     Found multiple issue types named: Execution Issue
@@ -258,7 +262,7 @@ describe("the hooks", () => {
             );
             stub(clients.jiraClient, "getIssueTypes").resolves(undefined);
             await expect(
-                beforeRunHook(beforeRunDetails, config, options, clients)
+                beforeRunHook(beforeRunDetails, options, clients)
             ).to.eventually.be.rejectedWith(
                 dedent(`
                     Jira issue type information could not be fetched.
@@ -284,7 +288,7 @@ describe("the hooks", () => {
 
         it("should display errors if the plugin was not configured", async () => {
             const { stubbedError } = stubLogging();
-            await afterRunHook(results);
+            await afterRunHook(results, options, clients);
             expect(stubbedError).to.have.been.calledOnce;
             expect(stubbedError).to.have.been.calledWith(
                 dedent(`
@@ -296,8 +300,8 @@ describe("the hooks", () => {
         });
 
         it("should throw an error for missing xray clients", async () => {
-            clients.xrayClient = undefined;
-            await expect(afterRunHook(results, options)).to.eventually.be.rejectedWith(
+            clients.xrayClient = undefined as unknown as XrayClientServer;
+            await expect(afterRunHook(results, options, clients)).to.eventually.be.rejectedWith(
                 dedent(`
                     Plugin misconfigured: Xray client not configured
 
@@ -309,13 +313,13 @@ describe("the hooks", () => {
         it("should not display an error for missing xray clients if disabled", async () => {
             const { stubbedInfo } = stubLogging();
             options.plugin.enabled = false;
-            await afterRunHook(results, options);
+            await afterRunHook(results, options, clients);
             expect(stubbedInfo).to.have.been.calledOnce;
             expect(stubbedInfo).to.have.been.calledWith("Skipping after:run hook: Plugin disabled");
         });
 
         it("should throw an error for missing jira clients", async () => {
-            clients.jiraClient = undefined;
+            clients.jiraClient = undefined as unknown as JiraClientServer;
             await expect(afterRunHook(results, options, clients)).to.eventually.be.rejectedWith(
                 dedent(`
                     Plugin misconfigured: Jira client not configured
@@ -340,7 +344,7 @@ describe("the hooks", () => {
                 failures: 47,
                 message: "Pretty messed up",
             };
-            await afterRunHook(failedResults, options);
+            await afterRunHook(failedResults, options, clients);
             expect(stubbedError).to.have.been.calledOnce;
             expect(stubbedError).to.have.been.calledWith(
                 dedent(`
@@ -359,7 +363,7 @@ describe("the hooks", () => {
                 message: "Pretty messed up",
             };
             options.plugin.enabled = false;
-            await afterRunHook(failedResults, options);
+            await afterRunHook(failedResults, options, clients);
             expect(stubbedInfo).to.have.been.calledOnce;
             expect(stubbedInfo).to.have.been.calledWith("Skipping after:run hook: Plugin disabled");
         });
@@ -376,30 +380,18 @@ describe("the hooks", () => {
     });
 
     describe("the synchronize file hook", () => {
+        // Weird workaround.
+        const emitter = {} as Cypress.FileObject;
         const file: Cypress.FileObject = {
+            ...emitter,
             filePath: "./test/resources/features/taggedCloud.feature",
-            outputPath: null,
+            outputPath: "",
             shouldWatch: false,
-            addListener: null,
-            on: null,
-            once: null,
-            removeListener: null,
-            off: null,
-            removeAllListeners: null,
-            setMaxListeners: null,
-            getMaxListeners: null,
-            listeners: null,
-            rawListeners: null,
-            emit: null,
-            listenerCount: null,
-            prependListener: null,
-            prependOnceListener: null,
-            eventNames: null,
         };
 
         it("should display errors if the plugin was not configured", async () => {
             const { stubbedError } = stubLogging();
-            await synchronizeFile(file, ".", null, null);
+            await synchronizeFile(file, ".", undefined as unknown as InternalOptions, clients);
             expect(stubbedError).to.have.been.calledOnce;
             expect(stubbedError).to.have.been.calledWith(
                 dedent(`
@@ -413,8 +405,8 @@ describe("the hooks", () => {
         it("should not do anything if disabled", async () => {
             file.filePath = "./test/resources/features/taggedCloud.feature";
             const { stubbedInfo } = stubLogging();
-            options.plugin = { enabled: false };
-            await synchronizeFile(file, ".", options, null);
+            options.plugin = { ...options.plugin, enabled: false };
+            await synchronizeFile(file, ".", options, clients);
             expect(stubbedInfo).to.have.been.calledOnce;
             expect(stubbedInfo).to.have.been.calledWith(
                 "Plugin disabled. Skipping feature file synchronization triggered by: ./test/resources/features/taggedCloud.feature"
@@ -424,7 +416,11 @@ describe("the hooks", () => {
         it("should display errors for invalid feature files", async () => {
             file.filePath = "./test/resources/features/invalid.feature";
             const { stubbedInfo, stubbedError } = stubLogging();
-            options.cucumber.uploadFeatures = true;
+            options.cucumber = {
+                featureFileExtension: ".feature",
+                downloadFeatures: false,
+                uploadFeatures: true,
+            };
             await synchronizeFile(file, ".", options, clients);
             expect(stubbedError).to.have.been.calledOnce;
             expect(stubbedError).to.have.been.calledWith(
@@ -445,7 +441,7 @@ describe("the hooks", () => {
         it("should not try to parse mismatched feature files", async () => {
             file.filePath = "./test/resources/greetings.txt";
             const { stubbedError } = stubLogging();
-            await synchronizeFile(file, ".", options, null);
+            await synchronizeFile(file, ".", options, clients);
             expect(stubbedError).to.not.have.been.called;
         });
     });

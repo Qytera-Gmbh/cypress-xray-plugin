@@ -1,11 +1,16 @@
-import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
+import {
+    IPreprocessorConfiguration,
+    resolvePreprocessorConfiguration,
+} from "@badeball/cypress-cucumber-preprocessor";
 import { logDebug } from "./logging/logging";
+
+export type CucumberPreprocessorArgs = Parameters<typeof resolvePreprocessorConfiguration>;
 
 export interface CucumberPreprocessorExports {
     resolvePreprocessorConfiguration: (
-        cypressConfig: Cypress.PluginConfigOptions,
-        environment: Record<string, unknown>,
-        implicitIntegrationFolder: string
+        cypressConfig: CucumberPreprocessorArgs[0],
+        environment: CucumberPreprocessorArgs[1],
+        implicitIntegrationFolder: CucumberPreprocessorArgs[2]
     ) => Promise<IPreprocessorConfiguration>;
 }
 

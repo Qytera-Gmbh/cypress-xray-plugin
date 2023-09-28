@@ -96,7 +96,10 @@ export abstract class TestConverter<
             const runs = runResults.runs as RunResult_V12[];
             if (
                 runs.every((run: RunResult_V12) => {
-                    return run.spec.relative.endsWith(this.options.cucumber.featureFileExtension);
+                    return (
+                        this.options.cucumber &&
+                        run.spec.relative.endsWith(this.options.cucumber.featureFileExtension)
+                    );
                 })
             ) {
                 throw new Error("Failed to extract test run data: No Cypress tests were executed");
@@ -110,7 +113,10 @@ export abstract class TestConverter<
             const runs = runResults.runs as RunResult_V13[];
             if (
                 runs.every((run: RunResult_V13) => {
-                    return run.spec.relative.endsWith(this.options.cucumber.featureFileExtension);
+                    return (
+                        this.options.cucumber &&
+                        run.spec.relative.endsWith(this.options.cucumber.featureFileExtension)
+                    );
                 })
             ) {
                 throw new Error("Failed to extract test run data: No Cypress tests were executed");

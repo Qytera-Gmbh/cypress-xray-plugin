@@ -1,7 +1,12 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
 import { expectToExist, stubLogging } from "../../../test/util";
-import { initOptions } from "../../context";
+import {
+    initJiraOptions,
+    initOpenSSLOptions,
+    initPluginOptions,
+    initXrayOptions,
+} from "../../context";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
 import { ImportExecutionConverter, TestIssueData } from "./importExecutionConverter";
@@ -11,21 +16,23 @@ describe("the import execution converter", () => {
     let converter: ImportExecutionConverter;
     let testIssueData: TestIssueData;
     beforeEach(() => {
-        options = initOptions(
-            {},
-            {
-                jira: {
+        options = {
+            jira: initJiraOptions(
+                {},
+                {
                     projectKey: "CYP",
                     url: "https://example.org",
-                },
-                xray: {
+                }
+            ),
+            xray: initXrayOptions(
+                {},
+                {
                     uploadResults: true,
-                },
-                cucumber: {
-                    featureFileExtension: ".feature",
-                },
-            }
-        );
+                }
+            ),
+            plugin: initPluginOptions({}, {}),
+            openSSL: initOpenSSLOptions({}, {}),
+        };
         converter = new ImportExecutionConverter(options, false);
         testIssueData = { summaries: {}, testTypes: {} };
     });

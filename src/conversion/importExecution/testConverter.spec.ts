@@ -2,7 +2,12 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { stubLogging } from "../../../test/util";
-import { initOptions } from "../../context";
+import {
+    initJiraOptions,
+    initOpenSSLOptions,
+    initPluginOptions,
+    initXrayOptions,
+} from "../../context";
 import { CypressRunResult } from "../../types/cypress/12.0.0/api";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
@@ -15,21 +20,23 @@ describe("the test converter", () => {
     let options: InternalOptions;
     let testIssueData: TestIssueData;
     beforeEach(() => {
-        options = initOptions(
-            {},
-            {
-                jira: {
+        options = {
+            jira: initJiraOptions(
+                {},
+                {
                     projectKey: "CYP",
                     url: "https://example.org",
-                },
-                xray: {
+                }
+            ),
+            xray: initXrayOptions(
+                {},
+                {
                     uploadResults: true,
-                },
-                cucumber: {
-                    featureFileExtension: ".feature",
-                },
-            }
-        );
+                }
+            ),
+            plugin: initPluginOptions({}, {}),
+            openSSL: initOpenSSLOptions({}, {}),
+        };
         testIssueData = { summaries: {}, testTypes: {} };
     });
 

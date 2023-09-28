@@ -5,7 +5,6 @@ import {
     initOpenSSLOptions,
     initPluginOptions,
     initXrayOptions,
-    verifyOptions,
 } from "./context";
 import { afterRunHook, beforeRunHook, synchronizeFile } from "./hooks";
 import { Requests } from "./https/requests";
@@ -16,21 +15,20 @@ let context: PluginContext;
 
 export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, options: Options) {
     const internalOptions: InternalOptions = {
-        jira: initJiraOptions(config.env, options),
-        plugin: initPluginOptions(config.env, options),
-        xray: initXrayOptions(config.env, options),
-        cucumber: await initCucumberOptions(config, options),
-        openSSL: initOpenSSLOptions(config.env, options),
+        jira: initJiraOptions(config.env, options.jira),
+        plugin: initPluginOptions(config.env, options.plugin),
+        xray: initXrayOptions(config.env, options.xray),
+        cucumber: await initCucumberOptions(config, options.cucumber),
+        openSSL: initOpenSSLOptions(config.env, options.openSSL),
     };
     if (!internalOptions.plugin.enabled) {
         logInfo("Plugin disabled. Skipping configuration verification.");
         return;
     }
-    verifyOptions(internalOptions);
     context = {
         cypress: config,
         internal: internalOptions,
-        clients: initClients(internalOptions, config.env),
+        clients: initClients(internalOptions.jira, config.env),
     };
     Requests.init(context.internal);
     initLogging({

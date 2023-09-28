@@ -4,25 +4,23 @@ import { RESOLVED_JWT_CREDENTIALS, stubLogging } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { JiraClientCloud } from "../../client/jira/jiraClientCloud";
 import { XrayClientCloud } from "../../client/xray/xrayClientCloud";
-import { initOptions } from "../../context";
-import { InternalOptions } from "../../types/plugin";
+import { initJiraOptions } from "../../context";
+import { InternalJiraOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
 import { JiraRepositoryCloud } from "./jiraRepositoryCloud";
 
 describe("the cloud issue repository", () => {
-    let options: InternalOptions;
+    let jiraOptions: InternalJiraOptions;
     let xrayClient: XrayClientCloud;
     let jiraClient: JiraClientCloud;
     let repository: JiraRepositoryCloud;
 
     beforeEach(() => {
-        options = initOptions(
+        jiraOptions = initJiraOptions(
             {},
             {
-                jira: {
-                    projectKey: "CYP",
-                    url: "https://example.org",
-                },
+                projectKey: "CYP",
+                url: "https://example.org",
             }
         );
         jiraClient = new JiraClientCloud(
@@ -30,7 +28,7 @@ describe("the cloud issue repository", () => {
             new BasicAuthCredentials("user", "xyz")
         );
         xrayClient = new XrayClientCloud(RESOLVED_JWT_CREDENTIALS);
-        repository = new JiraRepositoryCloud(jiraClient, xrayClient, options);
+        repository = new JiraRepositoryCloud(jiraClient, xrayClient, jiraOptions);
     });
 
     describe("getSummaries", () => {

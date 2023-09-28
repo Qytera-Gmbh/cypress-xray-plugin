@@ -1,19 +1,19 @@
 import { JiraClientCloud } from "../../../client/jira/jiraClientCloud";
 import { JiraClientServer } from "../../../client/jira/jiraClientServer";
 import { FieldDetailCloud, FieldDetailServer } from "../../../types/jira/responses/fieldDetail";
-import { Options } from "../../../types/plugin";
+import { InternalJiraOptions } from "../../../types/plugin";
 import { StringMap } from "../../../types/util";
 
 export class JiraFieldRepository {
     protected readonly jiraClient: JiraClientServer | JiraClientCloud;
-    protected readonly options: Options;
+    protected readonly jiraOptions: InternalJiraOptions;
 
     private readonly names: StringMap<string> = {};
     private readonly ids: StringMap<string> = {};
 
-    constructor(jiraClient: JiraClientServer | JiraClientCloud, options: Options) {
+    constructor(jiraClient: JiraClientServer | JiraClientCloud, jiraOptions: InternalJiraOptions) {
         this.jiraClient = jiraClient;
-        this.options = options;
+        this.jiraOptions = jiraOptions;
     }
 
     public async getFieldId(

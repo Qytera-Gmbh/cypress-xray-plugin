@@ -6,7 +6,7 @@ import { JiraRepository } from "./jiraRepository";
 export class JiraRepositoryCloud extends JiraRepository<JiraClientCloud, XrayClientCloud> {
     protected async fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>> {
         const testTypes = await this.xrayClient.getTestTypes(
-            this.options.jira.projectKey,
+            this.jiraOptions.projectKey,
             ...issueKeys
         );
         return testTypes ? testTypes : {};

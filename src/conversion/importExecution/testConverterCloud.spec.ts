@@ -1,6 +1,11 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { initOptions } from "../../context";
+import {
+    initJiraOptions,
+    initOpenSSLOptions,
+    initPluginOptions,
+    initXrayOptions,
+} from "../../context";
 import { CypressRunResult } from "../../types/cypress/12.0.0/api";
 import { InternalOptions } from "../../types/plugin";
 import { TestIssueData } from "./importExecutionConverter";
@@ -10,21 +15,23 @@ describe("the test converter cloud", () => {
     let options: InternalOptions;
     let testIssueData: TestIssueData;
     beforeEach(() => {
-        options = initOptions(
-            {},
-            {
-                jira: {
+        options = {
+            jira: initJiraOptions(
+                {},
+                {
                     projectKey: "CYP",
                     url: "https://example.org",
-                },
-                xray: {
+                }
+            ),
+            xray: initXrayOptions(
+                {},
+                {
                     uploadResults: true,
-                },
-                cucumber: {
-                    featureFileExtension: ".feature",
-                },
-            }
-        );
+                }
+            ),
+            plugin: initPluginOptions({}, {}),
+            openSSL: initOpenSSLOptions({}, {}),
+        };
         testIssueData = { summaries: {}, testTypes: {} };
     });
 
