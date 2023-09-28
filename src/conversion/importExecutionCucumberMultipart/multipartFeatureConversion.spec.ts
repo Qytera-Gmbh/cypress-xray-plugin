@@ -42,14 +42,14 @@ describe("getMultipartFeatures", () => {
         expect(features[1].tags).to.deep.eq([{ name: "@CYP-456" }]);
     });
 
-    it("includes screenshots by default", async () => {
+    it("includes screenshots if enabled", async () => {
         const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
             readFileSync(
                 "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                 "utf-8"
             )
         );
-        const features = getMultipartFeatures(cucumberReport);
+        const features = getMultipartFeatures(cucumberReport, { includeScreenshots: true });
         expectToExist(features[0].elements[2].steps[1].embeddings);
         expect(features[0].elements[2].steps[1].embeddings).to.have.length(1);
         expect(features[0].elements[2].steps[1].embeddings[0].data).to.be.a("string");
