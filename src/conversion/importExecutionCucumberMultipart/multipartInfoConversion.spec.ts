@@ -24,7 +24,7 @@ describe("getMultipartInfoCloud", () => {
                 project: {
                     key: "CYP",
                 },
-                summary: "Execution Results [123]",
+                summary: "Execution Results [1695916296000]",
                 description: dedent(`
                     Cypress version: 13.2.0
                     Browser: Chromium (1.2.3)
@@ -121,7 +121,7 @@ describe("getMultipartInfoServer", () => {
                 project: {
                     key: "CYP",
                 },
-                summary: "Execution Results [123]",
+                summary: "Execution Results [1695916296000]",
                 description: dedent(`
                     Cypress version: 13.2.0
                     Browser: Chromium (1.2.3)
@@ -129,9 +129,6 @@ describe("getMultipartInfoServer", () => {
                 issuetype: {
                     subtask: false,
                 },
-            },
-            xrayFields: {
-                testPlanKey: undefined,
             },
         });
     });
