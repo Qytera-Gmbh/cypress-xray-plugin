@@ -25,51 +25,13 @@ import { CucumberMultipartFeature } from "./types/xray/requests/importExecutionC
 import { dedent } from "./util/dedent";
 
 export async function beforeRunHook(
-    runDetails: Cypress.BeforeRunDetails,
+    specs: Cypress.Spec[],
     options: InternalOptions,
     clients: ClientCombination
 ) {
-    if (!options) {
-        // Don't throw here in case someone simply doesn't want the plugin to run but forgot to
-        // remove the hook.
-        logError(
-            dedent(`
-                Plugin misconfigured: configureXrayPlugin() was not called. Skipping before:run hook
-
-                Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
-            `)
-        );
-        return;
-    }
-    if (!options.plugin.enabled) {
-        logInfo("Plugin disabled. Skipping before:run hook");
-        return;
-    }
-    if (!clients.xrayClient) {
-        throw new Error(
-            dedent(`
-                Plugin misconfigured: Xray client was not configured
-
-                Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
-            `)
-        );
-    }
-    if (!clients.jiraClient) {
-        throw new Error(
-            dedent(`
-                Plugin misconfigured: Jira client was not configured
-
-                Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
-            `)
-        );
-    }
-    if (!runDetails.specs) {
-        logWarning("No specs about to be executed. Skipping before:run hook");
-        return;
-    }
     // Cucumber upload requires additional test execution issue information.
     if (
-        runDetails.specs.some(
+        specs.some(
             (spec: Cypress.Spec) =>
                 options.cucumber &&
                 options.xray.uploadResults &&
@@ -134,60 +96,11 @@ function retrieveIssueTypeInformation<
 }
 
 export async function afterRunHook(
-    results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult,
+    results: CypressCommandLine.CypressRunResult,
     options: InternalOptions,
     clients: ClientCombination
 ) {
-    if (!options) {
-        // Don't throw here in case someone simply doesn't want the plugin to run but forgot to
-        // remove the hook.
-        logError(
-            dedent(`
-                Skipping after:run hook: Plugin misconfigured: configureXrayPlugin() was not called
-
-                Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
-            `)
-        );
-        return;
-    }
-    if (!options.plugin.enabled) {
-        logInfo("Skipping after:run hook: Plugin disabled");
-        return;
-    }
-    if ("status" in results && results["status"] === "failed") {
-        const failedResult = results as CypressCommandLine.CypressFailedRunResult;
-        logError(
-            dedent(`
-                Skipping after:run hook: Failed to run ${failedResult.failures} tests
-
-                ${failedResult.message}
-            `)
-        );
-        return;
-    }
     const runResult = results as CypressCommandLine.CypressRunResult;
-    if (!options.xray.uploadResults) {
-        logInfo("Skipping results upload: Plugin is configured to not upload test results");
-        return;
-    }
-    if (!clients.xrayClient) {
-        throw new Error(
-            dedent(`
-                Plugin misconfigured: Xray client not configured
-
-                Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
-            `)
-        );
-    }
-    if (!clients.jiraClient) {
-        throw new Error(
-            dedent(`
-                Plugin misconfigured: Jira client not configured
-
-                Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
-            `)
-        );
-    }
     let issueKey: string | null | undefined = null;
     if (containsNativeTest(runResult, options.cucumber?.featureFileExtension)) {
         logInfo("Uploading native Cypress test results...");
@@ -325,22 +238,6 @@ export async function synchronizeFile(
     options: InternalOptions,
     clients: ClientCombination
 ): Promise<string> {
-    if (!options) {
-        logError(
-            dedent(`
-                Plugin misconfigured (no configuration was provided). Skipping feature file synchronization triggered by: ${file.filePath}
-
-                Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
-            `)
-        );
-        return file.filePath;
-    }
-    if (!options.plugin.enabled) {
-        logInfo(
-            `Plugin disabled. Skipping feature file synchronization triggered by: ${file.filePath}`
-        );
-        return file.filePath;
-    }
     if (options.cucumber && file.filePath.endsWith(options.cucumber.featureFileExtension)) {
         try {
             const relativePath = path.relative(projectRoot, file.filePath);

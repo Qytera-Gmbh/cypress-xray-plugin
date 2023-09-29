@@ -1,4 +1,6 @@
-import { expect } from "chai";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
+import { stub } from "sinon";
 import { stubLogging } from "../test/util";
 import { BasicAuthCredentials, JWTCredentials, PATCredentials } from "./authentication/credentials";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
@@ -13,6 +15,7 @@ import {
     initPluginOptions,
     initXrayOptions,
 } from "./context";
+import * as dependencies from "./dependencies";
 import {
     InternalCucumberOptions,
     InternalJiraOptions,
@@ -21,6 +24,8 @@ import {
     InternalXrayOptions,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
+
+chai.use(chaiAsPromised);
 
 describe("the plugin context configuration", () => {
     describe("the option initialization", () => {
@@ -418,7 +423,7 @@ describe("the plugin context configuration", () => {
                             reporter: "",
                             specPattern: "",
                             excludeSpecPattern: "",
-                            env: {},
+                            env: { jsonEnabled: true, jsonOutput: "hello" },
                         },
                         {
                             featureFileExtension: ".feature",
@@ -435,7 +440,7 @@ describe("the plugin context configuration", () => {
                             reporter: "",
                             specPattern: "",
                             excludeSpecPattern: "",
-                            env: {},
+                            env: { jsonEnabled: true, jsonOutput: "hello" },
                         },
                         {
                             featureFileExtension: ".feature",
@@ -722,6 +727,8 @@ describe("the plugin context configuration", () => {
                             excludeSpecPattern: "",
                             env: {
                                 CUCUMBER_FEATURE_FILE_EXTENSION: ".feature.file",
+                                jsonEnabled: true,
+                                jsonOutput: "hello",
                             },
                         },
                         {
@@ -741,6 +748,8 @@ describe("the plugin context configuration", () => {
                             excludeSpecPattern: "",
                             env: {
                                 CUCUMBER_DOWNLOAD_FEATURES: "true",
+                                jsonEnabled: true,
+                                jsonOutput: "hello",
                             },
                         },
                         {
@@ -759,7 +768,11 @@ describe("the plugin context configuration", () => {
                             reporter: "",
                             specPattern: "",
                             excludeSpecPattern: "",
-                            env: { CUCUMBER_UPLOAD_FEATURES: "true" },
+                            env: {
+                                CUCUMBER_UPLOAD_FEATURES: "true",
+                                jsonEnabled: true,
+                                jsonOutput: "hello",
+                            },
                         },
                         {
                             featureFileExtension: ".feature",
@@ -832,7 +845,7 @@ describe("the plugin context configuration", () => {
                 });
             });
         });
-        describe("should detect invalid configurations", () => {
+        describe("detects invalid configurations", () => {
             it("detects unset project keys", async () => {
                 expect(() =>
                     initJiraOptions(
@@ -844,7 +857,7 @@ describe("the plugin context configuration", () => {
                     )
                 ).to.throw("Plugin misconfiguration: Jira project key was not set");
             });
-            it("detect mismatched test execution issue keys", async () => {
+            it("detect mismatched test execution issue keys", () => {
                 expect(() =>
                     initJiraOptions(
                         {},
@@ -858,7 +871,7 @@ describe("the plugin context configuration", () => {
                     "Plugin misconfiguration: test execution issue key ABC-123 does not belong to project CYP"
                 );
             });
-            it("detects mismatched test plan issue keys", async () => {
+            it("detects mismatched test plan issue keys", () => {
                 expect(() =>
                     initJiraOptions(
                         {},
@@ -870,6 +883,80 @@ describe("the plugin context configuration", () => {
                     )
                 ).to.throw(
                     "Plugin misconfiguration: test plan issue key ABC-456 does not belong to project CYP"
+                );
+            });
+            it("throws if the cucumber preprocessor is not installed", async () => {
+                stub(dependencies, "importModule").rejects(new Error("Failed to import package"));
+                await expect(
+                    initCucumberOptions(
+                        {
+                            testingType: "e2e",
+                            projectRoot: "",
+                            reporter: "",
+                            specPattern: "",
+                            excludeSpecPattern: "",
+                            env: {},
+                        },
+                        {
+                            featureFileExtension: ".feature",
+                        }
+                    )
+                ).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Plugin dependency misconfigured: @badeball/cypress-cucumber-preprocessor
+
+                        Error: Failed to import package
+
+                        The plugin depends on the package and should automatically download it during installation, but might have failed to do so because of conflicting Node versions
+
+                        Make sure to install the package manually using: npm install @badeball/cypress-cucumber-preprocessor --save-dev
+                    `)
+                );
+            });
+            it("detects if the cucumber preprocessor json report is not enabled", async () => {
+                await expect(
+                    initCucumberOptions(
+                        {
+                            testingType: "e2e",
+                            projectRoot: "",
+                            reporter: "",
+                            specPattern: "",
+                            excludeSpecPattern: "",
+                            env: { jsonEnabled: false },
+                        },
+                        {
+                            featureFileExtension: ".feature",
+                        }
+                    )
+                ).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Plugin misconfiguration: Cucumber preprocessor JSON report disabled
+
+                        Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                    `)
+                );
+            });
+            it("detects if the cucumber preprocessor json report path was not set", async () => {
+                await expect(
+                    initCucumberOptions(
+                        {
+                            testingType: "e2e",
+                            projectRoot: "",
+                            reporter: "",
+                            specPattern: "",
+                            excludeSpecPattern: "",
+                            env: { jsonEnabled: true, jsonOutput: "" },
+                        },
+                        {
+                            featureFileExtension: ".feature",
+                        }
+                    )
+                ).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Plugin misconfiguration: Cucumber preprocessor JSON report path was not set
+
+                        Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                    `)
                 );
             });
         });

@@ -55,9 +55,25 @@ import {
     InternalPluginOptions,
     InternalXrayOptions,
     Options,
+    PluginContext,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { asBoolean, asInt, asString, parse } from "./util/parsing";
+
+let context: PluginContext | undefined = undefined;
+
+export function getPluginContext(): PluginContext | undefined {
+    return context;
+}
+
+export function setPluginContext(newContext: PluginContext): PluginContext {
+    context = newContext;
+    return newContext;
+}
+
+export function clearContext(): void {
+    context = undefined;
+}
 
 /**
  * Returns an {@link InternalJiraOptions `InternalJiraOptions`} instance based on parsed environment
@@ -197,48 +213,11 @@ export async function initCucumberOptions(
     // If the user has chosen to do so, we need to make sure they configured the Cucumber
     // preprocessor JSON report as well. Otherwise, results upload will not work.
     if (featureFileExtension) {
+        let preprocessor: CucumberPreprocessorExports;
         try {
-            const preprocessor = await importOptionalDependency<CucumberPreprocessorExports>(
+            preprocessor = await importOptionalDependency<CucumberPreprocessorExports>(
                 "@badeball/cypress-cucumber-preprocessor"
             );
-            logDebug(
-                `Successfully resolved configuration of @badeball/cypress-cucumber-preprocessor package`
-            );
-            const preprocessorConfiguration = await preprocessor.resolvePreprocessorConfiguration(
-                config,
-                config.env,
-                "/"
-            );
-            if (!preprocessorConfiguration.json.enabled) {
-                throw new Error(
-                    dedent(`
-                        Plugin misconfiguration: Cucumber preprocessor JSON report disabled
-
-                        Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
-                    `)
-                );
-            }
-            if (!preprocessorConfiguration.json.output) {
-                throw new Error(
-                    dedent(`
-                        Plugin misconfiguration: Cucumber preprocessor JSON report path was not set
-
-                        Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
-                    `)
-                );
-            }
-            return {
-                downloadFeatures:
-                    parse(config.env, ENV_CUCUMBER_DOWNLOAD_FEATURES, asBoolean) ??
-                    options?.downloadFeatures ??
-                    false,
-                featureFileExtension: featureFileExtension,
-                preprocessor: preprocessorConfiguration,
-                uploadFeatures:
-                    parse(config.env, ENV_CUCUMBER_UPLOAD_FEATURES, asBoolean) ??
-                    options?.uploadFeatures ??
-                    false,
-            };
         } catch (error: unknown) {
             throw new Error(
                 dedent(`
@@ -252,6 +231,44 @@ export async function initCucumberOptions(
                 `)
             );
         }
+        logDebug(
+            `Successfully resolved configuration of @badeball/cypress-cucumber-preprocessor package`
+        );
+        const preprocessorConfiguration = await preprocessor.resolvePreprocessorConfiguration(
+            config,
+            config.env,
+            "/"
+        );
+        if (!preprocessorConfiguration.json.enabled) {
+            throw new Error(
+                dedent(`
+                        Plugin misconfiguration: Cucumber preprocessor JSON report disabled
+
+                        Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                    `)
+            );
+        }
+        if (!preprocessorConfiguration.json.output) {
+            throw new Error(
+                dedent(`
+                        Plugin misconfiguration: Cucumber preprocessor JSON report path was not set
+
+                        Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                    `)
+            );
+        }
+        return {
+            downloadFeatures:
+                parse(config.env, ENV_CUCUMBER_DOWNLOAD_FEATURES, asBoolean) ??
+                options?.downloadFeatures ??
+                false,
+            featureFileExtension: featureFileExtension,
+            preprocessor: preprocessorConfiguration,
+            uploadFeatures:
+                parse(config.env, ENV_CUCUMBER_UPLOAD_FEATURES, asBoolean) ??
+                options?.uploadFeatures ??
+                false,
+        };
     }
     return undefined;
 }
