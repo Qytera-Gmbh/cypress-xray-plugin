@@ -312,6 +312,17 @@ async function resetSummaries(
         const issueKey = allIssues[i].key;
         const oldSummary = testSummaries[issueKey];
         const newSummary = allIssues[i].summary;
+        if (!oldSummary) {
+            logError(
+                dedent(`
+                    Failed to reset issue summary of issue to its old summary: ${issueKey}
+                    The issue's old summary could not be fetched, make sure to restore it manually if needed
+
+                    Summary post sync: ${newSummary}
+                `)
+            );
+            continue;
+        }
         if (oldSummary !== newSummary) {
             const summaryFieldId = await jiraRepository.getFieldId("Summary", "summary");
             const fields: StringMap<string> = {};
@@ -354,6 +365,17 @@ async function resetLabels(
         const issueKey = issueData[i].key;
         const oldLabels = testLabels[issueKey];
         const newLabels = issueData[i].tags;
+        if (!oldLabels) {
+            logError(
+                dedent(`
+                    Failed to reset issue labels of issue to its old labels: ${issueKey}
+                    The issue's old labels could not be fetched, make sure to restore them manually if needed
+
+                    Labels post sync: ${newLabels}
+                `)
+            );
+            continue;
+        }
         if (!newLabels.every((label) => oldLabels.includes(label))) {
             const labelFieldId = await jiraRepository.getFieldId("Labels", "labels");
             const fields: StringMap<string[]> = {};
