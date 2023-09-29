@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import fs from "fs";
+import { stub } from "sinon";
 import { mockedCypressEventEmitter, stubLogging } from "../test/util";
 import { PATCredentials } from "./authentication/credentials";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
@@ -12,6 +13,7 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
+import * as hooks from "./hooks";
 import { addXrayResultUpload, syncFeatureFile } from "./plugin";
 import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
 import { PluginContext } from "./types/plugin";
@@ -56,18 +58,16 @@ describe("the plugin", () => {
     });
 
     describe("addXrayResultUpload", () => {
-        it("before:run", () => {
-            const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
-                fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-            );
-
+        describe("on before:run", () => {
             it("displays errors if the plugin was not configured", async () => {
+                const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
+                    fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
+                );
                 const { stubbedError } = stubLogging();
                 clearContext();
                 await addXrayResultUpload(
                     mockedCypressEventEmitter("before:run", beforeRunDetails)
                 );
-                expect(stubbedError).to.have.been.calledOnce;
                 expect(stubbedError).to.have.been.calledWith(
                     dedent(`
                         Skipping before:run hook: Plugin misconfigured: configureXrayPlugin() was not called
@@ -78,30 +78,57 @@ describe("the plugin", () => {
             });
 
             it("does nothing if disabled", async () => {
+                const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
+                    fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
+                );
                 const { stubbedInfo } = stubLogging();
                 pluginContext.internal.plugin.enabled = false;
                 setPluginContext(pluginContext);
                 await addXrayResultUpload(
                     mockedCypressEventEmitter("before:run", beforeRunDetails)
                 );
-                expect(stubbedInfo).to.have.been.calledOnce;
                 expect(stubbedInfo).to.have.been.calledOnceWith(
                     "Plugin disabled. Skipping before:run hook"
+                );
+            });
+
+            it("warns about empty specs", async () => {
+                const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
+                    fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
+                );
+                const { stubbedWarning } = stubLogging();
+                setPluginContext(pluginContext);
+                beforeRunDetails.specs = undefined;
+                await addXrayResultUpload(
+                    mockedCypressEventEmitter("before:run", beforeRunDetails)
+                );
+                expect(stubbedWarning).to.have.been.calledOnceWithExactly(
+                    "No specs about to be executed. Skipping before:run hook"
+                );
+            });
+
+            it("calls the beforeRun hook", async () => {
+                const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
+                    fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
+                );
+                const stubbedHook = stub(hooks, "beforeRunHook");
+                setPluginContext(pluginContext);
+                await addXrayResultUpload(
+                    mockedCypressEventEmitter("before:run", beforeRunDetails)
+                );
+                expect(stubbedHook).to.have.been.calledOnceWithExactly(
+                    beforeRunDetails.specs,
+                    pluginContext.internal,
+                    pluginContext.clients
                 );
             });
         });
 
         describe("on after:run", () => {
-            const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
-                fs.readFileSync("./test/resources/runResult.json", "utf-8")
-            );
-            const failedResults: CypressCommandLine.CypressFailedRunResult = {
-                status: "failed",
-                failures: 47,
-                message: "Pretty messed up",
-            };
-
             it("displays errors if the plugin was not configured", async () => {
+                const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
+                    fs.readFileSync("./test/resources/runResult.json", "utf-8")
+                );
                 const { stubbedError } = stubLogging();
                 clearContext();
                 await addXrayResultUpload(mockedCypressEventEmitter("after:run", afterRunResult));
@@ -116,6 +143,11 @@ describe("the plugin", () => {
             });
 
             it("does not display an error for failed runs if disabled", async () => {
+                const failedResults: CypressCommandLine.CypressFailedRunResult = {
+                    status: "failed",
+                    failures: 47,
+                    message: "Pretty messed up",
+                };
                 const { stubbedInfo } = stubLogging();
                 pluginContext.internal.plugin.enabled = false;
                 setPluginContext(pluginContext);
@@ -127,6 +159,9 @@ describe("the plugin", () => {
             });
 
             it("should skip the results upload if disabled", async () => {
+                const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
+                    fs.readFileSync("./test/resources/runResult.json", "utf-8")
+                );
                 const { stubbedInfo } = stubLogging();
                 pluginContext.internal.xray.uploadResults = false;
                 setPluginContext(pluginContext);
@@ -138,6 +173,11 @@ describe("the plugin", () => {
             });
 
             it("displays an error for failed runs", async () => {
+                const failedResults: CypressCommandLine.CypressFailedRunResult = {
+                    status: "failed",
+                    failures: 47,
+                    message: "Pretty messed up",
+                };
                 const { stubbedError } = stubLogging();
                 setPluginContext(pluginContext);
                 await addXrayResultUpload(mockedCypressEventEmitter("after:run", failedResults));
@@ -150,18 +190,35 @@ describe("the plugin", () => {
                 `)
                 );
             });
+
+            it("calls the afterRun hook", async () => {
+                const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
+                    fs.readFileSync("./test/resources/runResult.json", "utf-8")
+                );
+                const stubbedHook = stub(hooks, "afterRunHook");
+                setPluginContext(pluginContext);
+                await addXrayResultUpload(mockedCypressEventEmitter("after:run", afterRunResult));
+                expect(stubbedHook).to.have.been.calledOnceWithExactly(
+                    afterRunResult,
+                    pluginContext.internal,
+                    pluginContext.clients
+                );
+            });
         });
     });
 
-    describe("on file:preprocessor", () => {
-        // Weird workaround.
-        const emitter = {} as Cypress.FileObject;
-        const file: Cypress.FileObject = {
-            ...emitter,
-            filePath: "./test/resources/features/taggedCloud.feature",
-            outputPath: "",
-            shouldWatch: false,
-        };
+    describe("syncFeatureFile", () => {
+        let file: Cypress.FileObject;
+        beforeEach(() => {
+            // Weird workaround.
+            const emitter = {} as Cypress.FileObject;
+            file = {
+                ...emitter,
+                filePath: "./test/resources/features/taggedCloud.feature",
+                outputPath: "",
+                shouldWatch: false,
+            };
+        });
 
         it("displays errors if the plugin was not configured", async () => {
             const { stubbedError } = stubLogging();
@@ -186,6 +243,18 @@ describe("the plugin", () => {
             expect(stubbedInfo).to.have.been.calledOnce;
             expect(stubbedInfo).to.have.been.calledWith(
                 "Plugin disabled. Skipping feature file synchronization triggered by: ./test/resources/features/taggedCloud.feature"
+            );
+        });
+
+        it("calls the synchronizeFile hook", async () => {
+            const stubbedHook = stub(hooks, "synchronizeFile");
+            setPluginContext(pluginContext);
+            await syncFeatureFile(file);
+            expect(stubbedHook).to.have.been.calledOnceWithExactly(
+                file,
+                pluginContext.cypress.projectRoot,
+                pluginContext.internal,
+                pluginContext.clients
             );
         });
     });

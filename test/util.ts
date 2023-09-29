@@ -224,8 +224,6 @@ export function mockedCypressEventEmitter<A extends Action>(
                 f(...parameters);
                 break;
             }
-            case "file:preprocessor":
-                break;
             default:
         }
     };
