@@ -72,32 +72,29 @@ export abstract class JiraRepository<
                 throw new Error(`Failed to fetch Jira field ID for field with name: ${fieldName}`);
             },
             onMultipleFieldsError: (duplicates: FieldDetailServer[] | FieldDetailCloud[]) => {
+                const nameDuplicates = duplicates
+                    .map((field: FieldDetailServer | FieldDetailCloud) =>
+                        Object.entries(field)
+                            .map(([key, value]) => `${key}: ${value}`)
+                            .join(", ")
+                    )
+                    .join("\n");
+                const idSuggestions = duplicates
+                    .map((field: FieldDetailServer | FieldDetailCloud) => `"${field.id}"`)
+                    .join(" or ");
                 throw new Error(
                     dedent(`
                         Failed to fetch Jira field ID for field with name: ${fieldName}
                         There are multiple fields with this name
 
                         Duplicates:
-                          ${duplicates
-                              .map((field: FieldDetailServer | FieldDetailCloud) =>
-                                  Object.entries(field)
-                                      .map(([key, value]) => `${key}: ${value}`)
-                                      .join(", ")
-                              )
-                              .join("\n")}
+                          ${nameDuplicates}
 
                         You can provide field IDs in the options:
 
                           jira: {
-                            fields = {
-                              ${optionName}: {
-                                id: // ${duplicates
-                                    .map(
-                                        (field: FieldDetailServer | FieldDetailCloud) =>
-                                            `"${field.id}"`
-                                    )
-                                    .join(" or ")}
-                              }
+                            fields: {
+                              ${optionName}: <id> // ${idSuggestions}
                             }
                           }
                     `)
@@ -113,10 +110,8 @@ export abstract class JiraRepository<
                             You can provide field IDs directly without relying on language settings:
 
                               jira: {
-                                fields = {
-                                  ${optionName}: {
-                                    id: // corresponding field ID
-                                  }
+                                fields: {
+                                  ${optionName}: <id> // corresponding field ID
                                 }
                               }
                         `)
@@ -133,10 +128,8 @@ export abstract class JiraRepository<
                             You can provide field IDs directly without relying on language settings:
 
                               jira: {
-                                fields = {
-                                  ${optionName}: {
-                                    id: // corresponding field ID
-                                  }
+                                fields: {
+                                  ${optionName}: <id> // corresponding field ID
                                 }
                               }
                         `)

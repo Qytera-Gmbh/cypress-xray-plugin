@@ -216,10 +216,8 @@ describe("the server issue repository", () => {
                     You can provide field IDs directly without relying on language settings:
 
                       jira: {
-                        fields = {
-                          summary: {
-                            id: // corresponding field ID
-                          }
+                        fields: {
+                          summary: <id> // corresponding field ID
                         }
                       }
                 `)
@@ -273,10 +271,8 @@ describe("the server issue repository", () => {
                     You can provide field IDs directly without relying on language settings:
 
                       jira: {
-                        fields = {
-                          summary: {
-                            id: // corresponding field ID
-                          }
+                        fields: {
+                          summary: <id> // corresponding field ID
                         }
                       }
                 `)
@@ -330,10 +326,8 @@ describe("the server issue repository", () => {
                     You can provide field IDs in the options:
 
                       jira: {
-                        fields = {
-                          summary: {
-                            id: // "summary" or "customfield_12345"
-                          }
+                        fields: {
+                          summary: <id> // "summary" or "customfield_12345"
                         }
                       }
                 `)
@@ -611,10 +605,8 @@ describe("the server issue repository", () => {
                     You can provide field IDs directly without relying on language settings:
 
                       jira: {
-                        fields = {
-                          description: {
-                            id: // corresponding field ID
-                          }
+                        fields: {
+                          description: <id> // corresponding field ID
                         }
                       }
                 `)
@@ -668,10 +660,8 @@ describe("the server issue repository", () => {
                     You can provide field IDs directly without relying on language settings:
 
                       jira: {
-                        fields = {
-                          description: {
-                            id: // corresponding field ID
-                          }
+                        fields: {
+                          description: <id> // corresponding field ID
                         }
                       }
                 `)
@@ -725,10 +715,8 @@ describe("the server issue repository", () => {
                     You can provide field IDs in the options:
 
                       jira: {
-                        fields = {
-                          description: {
-                            id: // "description" or "customfield_12345"
-                          }
+                        fields: {
+                          description: <id> // "description" or "customfield_12345"
                         }
                       }
                 `)
@@ -1075,10 +1063,8 @@ describe("the server issue repository", () => {
                     You can provide field IDs in the options:
 
                       jira: {
-                        fields = {
-                          testType: {
-                            id: // "test_type" or "customfield_12345"
-                          }
+                        fields: {
+                          testType: <id> // "test_type" or "customfield_12345"
                         }
                       }
                 `)
@@ -1101,10 +1087,8 @@ describe("the server issue repository", () => {
                     You can provide field IDs directly without relying on language settings:
 
                       jira: {
-                        fields = {
-                          testType: {
-                            id: // corresponding field ID
-                          }
+                        fields: {
+                          testType: <id> // corresponding field ID
                         }
                       }
                 `)
@@ -1158,10 +1142,8 @@ describe("the server issue repository", () => {
                     You can provide field IDs directly without relying on language settings:
 
                       jira: {
-                        fields = {
-                          testType: {
-                            id: // corresponding field ID
-                          }
+                        fields: {
+                          testType: <id> // corresponding field ID
                         }
                       }
                 `)
