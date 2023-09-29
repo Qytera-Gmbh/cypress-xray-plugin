@@ -6,7 +6,7 @@ describe("getMultipartInfoCloud", () => {
     it("adds default information", async () => {
         const info = getMultipartInfoCloud(
             {
-                startedTestsAt: "2023-09-28 17:51:36",
+                startedTestsAt: "2023-09-28T15:51:36.000Z",
                 browserName: "Chromium",
                 browserVersion: "1.2.3",
                 cypressVersion: "13.2.0",
@@ -104,7 +104,7 @@ describe("getMultipartInfoServer", () => {
     it("adds default information", async () => {
         const info = getMultipartInfoServer(
             {
-                startedTestsAt: "2023-09-28 17:51:36",
+                startedTestsAt: "2023-09-28T15:51:36.000Z",
                 browserName: "Chromium",
                 browserVersion: "1.2.3",
                 cypressVersion: "13.2.0",
