@@ -367,7 +367,7 @@ describe("the jira clients", () => {
                         fields: ["customfield_12100"],
                     });
                     expect(stubbedPost).to.have.been.calledThrice;
-                    expect(stubbedPost.getCall(0).args[1]).to.have.property("startAt", undefined);
+                    expect(stubbedPost.getCall(0).args[1]).to.have.property("startAt", 0);
                     expect(stubbedPost.getCall(1).args[1]).to.have.property("startAt", 2);
                     expect(stubbedPost.getCall(2).args[1]).to.have.property("startAt", 4);
                     expectToExist(response);

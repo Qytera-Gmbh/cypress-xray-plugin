@@ -241,15 +241,13 @@ export abstract class JiraClient<
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
                         let total = 0;
-                        let startAt = request.startAt;
+                        let startAt = request.startAt ?? 0;
                         const results: IssueType[] = [];
                         do {
                             const paginatedRequest = {
                                 ...request,
+                                startAt: startAt,
                             };
-                            if (startAt !== undefined) {
-                                paginatedRequest.startAt = startAt;
-                            }
                             const response: AxiosResponse<SearchResults<IssueType, JsonType>> =
                                 await Requests.post(this.getUrlPostSearch(), paginatedRequest, {
                                     headers: {
@@ -259,7 +257,8 @@ export abstract class JiraClient<
                             total = response.data.total ?? total;
                             if (response.data.issues) {
                                 results.push(...response.data.issues);
-                                if (response.data.startAt) {
+                                // Explicit check because it could also be 0.
+                                if (typeof response.data.startAt === "number") {
                                     startAt = response.data.startAt + response.data.issues.length;
                                 }
                             }

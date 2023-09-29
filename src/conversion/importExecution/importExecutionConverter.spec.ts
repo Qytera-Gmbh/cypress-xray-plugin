@@ -1,4 +1,5 @@
-import { expect } from "chai";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { expectToExist, stubLogging } from "../../../test/util";
 import {
@@ -10,6 +11,8 @@ import {
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
 import { ImportExecutionConverter, TestIssueData } from "./importExecutionConverter";
+
+chai.use(chaiAsPromised);
 
 describe("the import execution converter", () => {
     let options: InternalOptions;
@@ -60,7 +63,9 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
         );
         const { stubbedWarning } = stubLogging();
-        const json = await converter.convert(result, testIssueData);
+        await expect(converter.convert(result, testIssueData)).to.eventually.be.rejectedWith(
+            "Failed to convert Cypress tests into Xray tests: No Cypress tests to upload"
+        );
         expect(stubbedWarning.firstCall).to.have.been.calledWith(
             dedent(`
                 Skipping result upload for test: TodoMVC hides footer initially
@@ -75,7 +80,6 @@ describe("the import execution converter", () => {
                 Unknown Cypress test status: california
             `)
         );
-        expect(json.tests).to.be.undefined;
     });
 
     it("erases milliseconds from timestamps", async () => {

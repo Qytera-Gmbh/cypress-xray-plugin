@@ -159,7 +159,7 @@ export class XrayClientCloud extends XrayClient<
                     ).data;
                     total = response.data.getTests.total ?? total;
                     if (response.data.getTests.results) {
-                        if (response.data.getTests.start) {
+                        if (typeof response.data.getTests.start === "number") {
                             start =
                                 response.data.getTests.start +
                                 response.data.getTests.results.length;

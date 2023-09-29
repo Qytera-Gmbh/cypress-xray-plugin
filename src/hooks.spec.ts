@@ -7,7 +7,13 @@ import { stubLogging } from "../test/util";
 import { PATCredentials } from "./authentication/credentials";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
-import { initJiraOptions, initOpenSSLOptions, initPluginOptions, initXrayOptions } from "./context";
+import {
+    initCucumberOptions,
+    initJiraOptions,
+    initOpenSSLOptions,
+    initPluginOptions,
+    initXrayOptions,
+} from "./context";
 import { beforeRunHook, synchronizeFile } from "./hooks";
 import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
 import { ClientCombination, InternalOptions } from "./types/plugin";
@@ -69,6 +75,19 @@ describe("the hooks", () => {
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             );
             options.jira.testPlanIssueKey = "CYP-456";
+            options.cucumber = await initCucumberOptions(
+                {
+                    testingType: "e2e",
+                    projectRoot: "",
+                    reporter: "",
+                    specPattern: "",
+                    excludeSpecPattern: "",
+                    env: { jsonEnabled: true, jsonOutput: "somewhere" },
+                },
+                {
+                    featureFileExtension: ".feature",
+                }
+            );
             stub(clients.jiraClient, "getIssueTypes").resolves([
                 {
                     name: "Test Execution",
@@ -107,6 +126,17 @@ describe("the hooks", () => {
                     subtask: false,
                 },
             ]);
+            options.cucumber = await initCucumberOptions(
+                {
+                    testingType: "e2e",
+                    projectRoot: "",
+                    reporter: "",
+                    specPattern: "",
+                    excludeSpecPattern: "",
+                    env: { jsonEnabled: true, jsonOutput: "anywhere" },
+                },
+                { featureFileExtension: ".feature" }
+            );
             await expect(
                 beforeRunHook(beforeRunDetails.specs, options, clients)
             ).to.eventually.be.rejectedWith(
@@ -126,6 +156,17 @@ describe("the hooks", () => {
             stubLogging();
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
+            );
+            options.cucumber = await initCucumberOptions(
+                {
+                    testingType: "e2e",
+                    projectRoot: "",
+                    reporter: "",
+                    specPattern: "",
+                    excludeSpecPattern: "",
+                    env: { jsonEnabled: true, jsonOutput: "anywhere" },
+                },
+                { featureFileExtension: ".feature" }
             );
             options.jira.testExecutionIssueType = "Execution Issue";
             stub(clients.jiraClient, "getIssueTypes").resolves([
@@ -161,6 +202,17 @@ describe("the hooks", () => {
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             );
             stub(clients.jiraClient, "getIssueTypes").resolves(undefined);
+            options.cucumber = await initCucumberOptions(
+                {
+                    testingType: "e2e",
+                    projectRoot: "",
+                    reporter: "",
+                    specPattern: "",
+                    excludeSpecPattern: "",
+                    env: { jsonEnabled: true, jsonOutput: "anywhere" },
+                },
+                { featureFileExtension: ".feature" }
+            );
             await expect(
                 beforeRunHook(beforeRunDetails.specs, options, clients)
             ).to.eventually.be.rejectedWith(

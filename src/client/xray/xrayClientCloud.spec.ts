@@ -289,7 +289,7 @@ describe("the xray cloud client", () => {
                 config: { headers: new AxiosHeaders() },
             });
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
-            expect(response).to.be.undefined;
+            expect(response).to.deep.eq({});
             expect(stubbedError).to.have.been.calledTwice;
             expect(stubbedError).to.have.been.calledWith(
                 dedent(`
@@ -324,7 +324,7 @@ describe("the xray cloud client", () => {
                 )
             );
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
-            expect(response).to.be.undefined;
+            expect(response).to.deep.eq({});
             expect(stubbedError).to.have.been.calledTwice;
             expect(stubbedError).to.have.been.calledWith(
                 "Failed to get test types: AxiosError: Request failed with status code 400"
@@ -338,7 +338,7 @@ describe("the xray cloud client", () => {
         it("should skip empty issues", async () => {
             const { stubbedWarning } = stubLogging();
             const response = await client.getTestTypes("CYP");
-            expect(response).to.be.null;
+            expect(response).to.deep.eq({});
             expect(stubbedWarning).to.have.been.calledWithExactly(
                 "No issue keys provided. Skipping test type retrieval"
             );

@@ -884,7 +884,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("handles failed test type requests gracefully", async () => {
-            stub(xrayClient, "getTestTypes").resolves(undefined);
+            stub(xrayClient, "getTestTypes").resolves({});
             const { stubbedError } = stubLogging();
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(

@@ -23,6 +23,7 @@ import { ClientCombination, InternalOptions } from "./types/plugin";
 import { StringMap, nonNull } from "./types/util";
 import { CucumberMultipartFeature } from "./types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "./util/dedent";
+import { errorMessage } from "./util/error";
 
 export async function beforeRunHook(
     specs: Cypress.Spec[],
@@ -183,11 +184,15 @@ async function uploadCypressResults(
     const issueSummaries = await clients.jiraRepository.getSummaries(...issueKeys);
     const issueTestTypes = await clients.jiraRepository.getTestTypes(...issueKeys);
     const converter = new ImportExecutionConverter(options, clients.kind === "cloud");
-    const cypressExecution = await converter.convert(runResult, {
-        summaries: issueSummaries,
-        testTypes: issueTestTypes,
-    });
-    return await clients.xrayClient.importExecution(cypressExecution);
+    try {
+        const cypressExecution = await converter.convert(runResult, {
+            summaries: issueSummaries,
+            testTypes: issueTestTypes,
+        });
+        return await clients.xrayClient.importExecution(cypressExecution);
+    } catch (error: unknown) {
+        logError(errorMessage(error));
+    }
 }
 
 async function uploadCucumberResults(
