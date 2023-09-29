@@ -102,7 +102,9 @@ export abstract class TestConverter<
                     );
                 })
             ) {
-                throw new Error("Failed to extract test run data: No Cypress tests were executed");
+                throw new Error(
+                    "Failed to extract test run data: Only Cucumber tests were executed"
+                );
             }
             for (const run of runs) {
                 getTestRunData_V12(run).forEach((promise, index) =>
@@ -119,7 +121,9 @@ export abstract class TestConverter<
                     );
                 })
             ) {
-                throw new Error("Failed to extract test run data: No Cypress tests were executed");
+                throw new Error(
+                    "Failed to extract test run data: Only Cucumber tests were executed"
+                );
             }
             for (const run of runs) {
                 getTestRunData_V13(run, this.options.jira.projectKey).forEach((promise, index) =>
@@ -127,7 +131,6 @@ export abstract class TestConverter<
                 );
             }
         }
-
         const convertedTests = await Promise.allSettled(
             conversionPromises.map((tuple) => tuple[1])
         );

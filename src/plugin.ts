@@ -11,31 +11,35 @@ import {
 import { afterRunHook, beforeRunHook, synchronizeFile } from "./hooks";
 import { Requests } from "./https/requests";
 import { initLogging, logError, logInfo, logWarning } from "./logging/logging";
-import { InternalOptions, Options } from "./types/plugin";
+import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
 import { dedent } from "./util/dedent";
 
 export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, options: Options) {
+    // Resolve these before all other options for correct enabledness.
+    const pluginOptions: InternalPluginOptions = initPluginOptions(config.env, options.plugin);
+    if (!pluginOptions.enabled) {
+        logInfo("Plugin disabled. Skipping further configuration");
+        return;
+    }
+    // Init logging before all other configurations because they might require an initialized
+    // logging module.
+    initLogging({
+        debug: pluginOptions.debug,
+        logDirectory: pluginOptions.logDirectory,
+    });
     const internalOptions: InternalOptions = {
         jira: initJiraOptions(config.env, options.jira),
-        plugin: initPluginOptions(config.env, options.plugin),
+        plugin: pluginOptions,
         xray: initXrayOptions(config.env, options.xray),
         cucumber: await initCucumberOptions(config, options.cucumber),
         openSSL: initOpenSSLOptions(config.env, options.openSSL),
     };
-    if (!internalOptions.plugin.enabled) {
-        logInfo("Plugin disabled. Skipping further configuration.");
-        return;
-    }
     const context = setPluginContext({
         cypress: config,
         internal: internalOptions,
         clients: initClients(internalOptions.jira, config.env),
     });
     Requests.init(context.internal);
-    initLogging({
-        debug: context.internal.plugin.debug,
-        logDirectory: context.internal.plugin.logDirectory,
-    });
 }
 
 export async function addXrayResultUpload(on: Cypress.PluginEvents) {

@@ -28,6 +28,7 @@ export const stubLogging = () => {
         stubbedSuccess: stub(logging, "logSuccess"),
         stubbedWarning: stub(logging, "logWarning"),
         stubbedDebug: stub(logging, "logDebug"),
+        stubbedInit: stub(logging, "initLogging"),
     };
 };
 
@@ -36,6 +37,7 @@ export const stubRequests = () => {
         stubbedGet: stub(Requests, "get"),
         stubbedPost: stub(Requests, "post"),
         stubbedPut: stub(Requests, "put"),
+        stubbedInit: stub(Requests, "init"),
     };
 };
 

@@ -71,7 +71,7 @@ export function setPluginContext(newContext: PluginContext): PluginContext {
     return newContext;
 }
 
-export function clearContext(): void {
+export function clearPluginContext(): void {
     context = undefined;
 }
 

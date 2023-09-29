@@ -3,12 +3,14 @@ import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { stubLogging } from "../../../test/util";
 import {
+    initCucumberOptions,
     initJiraOptions,
     initOpenSSLOptions,
     initPluginOptions,
     initXrayOptions,
 } from "../../context";
-import { CypressRunResult } from "../../types/cypress/12.0.0/api";
+import { CypressRunResult as CypressRunResult_V12 } from "../../types/cypress/12.0.0/api";
+import { CypressRunResult as CypressRunResult_V13 } from "../../types/cypress/13.0.0/api";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
 import { TestIssueData } from "./importExecutionConverter";
@@ -41,7 +43,7 @@ describe("the test converter", () => {
     });
 
     it("warns about skipped screenshots", async () => {
-        const result: CypressRunResult = JSON.parse(
+        const result: CypressRunResult_V13 = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0_manualScreenshot.json", "utf-8")
         );
         testIssueData.summaries = {
@@ -78,52 +80,45 @@ describe("the test converter", () => {
         expect(json[4].evidence).to.be.undefined;
     });
 
-    it("throws if therun results do not contain native Cypress tests <13.0.0", async () => {
-        const result: CypressRunResult = JSON.parse(
+    it("throws if the run results only contain Cucumber tests <13.0.0", async () => {
+        const result: CypressRunResult_V12 = JSON.parse(
             readFileSync("./test/resources/runResultCucumber.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-452": "This is",
-            "CYP-268": "a distributed",
-            "CYP-237": "summary",
-            "CYP-332": "part 4",
-            "CYP-333": "part 5",
-        };
-        testIssueData.testTypes = {
-            "CYP-452": "Generic",
-            "CYP-268": "Manual",
-            "CYP-237": "Cucumber",
-            "CYP-332": "Manual",
-            "CYP-333": "Manual",
-        };
+        options.cucumber = await initCucumberOptions(
+            {
+                testingType: "e2e",
+                projectRoot: "",
+                reporter: "",
+                specPattern: "",
+                excludeSpecPattern: "",
+                env: { jsonEnabled: true, jsonOutput: "somewhere" },
+            },
+            { featureFileExtension: ".feature" }
+        );
         const converter = new TestConverterCloud(options);
-        expect(converter.convert(result, testIssueData)).to.eventually.be.rejectedWith(
-            "Failed to extract test run data: No Cypress tests were executed"
+        await expect(converter.convert(result, testIssueData)).to.eventually.be.rejectedWith(
+            "Failed to extract test run data: Only Cucumber tests were executed"
         );
     });
 
-    it("throws if therun results do not contain native Cypress tests =13.0.0", async () => {
-        const result: CypressRunResult = JSON.parse(
+    it("throws if the run results only contain Cucumber tests =13.0.0", async () => {
+        const result: CypressRunResult_V13 = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
         );
-        result.runs = [];
-        testIssueData.summaries = {
-            "CYP-452": "This is",
-            "CYP-268": "a distributed",
-            "CYP-237": "summary",
-            "CYP-332": "part 4",
-            "CYP-333": "part 5",
-        };
-        testIssueData.testTypes = {
-            "CYP-452": "Generic",
-            "CYP-268": "Manual",
-            "CYP-237": "Cucumber",
-            "CYP-332": "Manual",
-            "CYP-333": "Manual",
-        };
+        options.cucumber = await initCucumberOptions(
+            {
+                testingType: "e2e",
+                projectRoot: "",
+                reporter: "",
+                specPattern: "",
+                excludeSpecPattern: "",
+                env: { jsonEnabled: true, jsonOutput: "somewhere" },
+            },
+            { featureFileExtension: ".ts" }
+        );
         const converter = new TestConverterCloud(options);
-        expect(converter.convert(result, testIssueData)).to.eventually.be.rejectedWith(
-            "Failed to extract test run data: No Cypress tests were executed"
+        await expect(converter.convert(result, testIssueData)).to.eventually.be.rejectedWith(
+            "Failed to extract test run data: Only Cucumber tests were executed"
         );
     });
 });
