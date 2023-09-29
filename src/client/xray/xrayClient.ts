@@ -35,6 +35,7 @@ export abstract class XrayClient<
     constructor(apiBaseUrl: string, credentials: CredentialsType) {
         super(apiBaseUrl, credentials);
     }
+
     /**
      * Uploads test results to the Xray instance.
      *
