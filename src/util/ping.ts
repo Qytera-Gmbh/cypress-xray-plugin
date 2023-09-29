@@ -41,7 +41,9 @@ export async function pingJiraServer(
             return true;
         } else {
             throw new Error(
-                "The Jira instance could be accessed, but it did not return a valid response"
+                dedent(`
+                    The Jira instance could be accessed, but it did not return a valid response: JSON containing user data was expected, but not received
+                `)
             );
         }
     } catch (error: unknown) {
@@ -57,7 +59,7 @@ export async function pingJiraServer(
             `)
         );
         if (userResponse) {
-            writeErrorFile(userResponse.data, "jiraServerPing");
+            writeErrorFile(userResponse.data, "jiraServerPingResponse");
         }
         return false;
     } finally {
