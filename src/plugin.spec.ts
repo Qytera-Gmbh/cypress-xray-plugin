@@ -124,45 +124,42 @@ describe("the plugin", () => {
             };
             await configureXrayPlugin(config, options);
             expect(stubbedContext.firstCall.args[0].cypress).to.eq(config);
-            expect(stubbedContext.firstCall.args[0].internal).to.deep.eq({
-                jira: {
-                    ...options.jira,
-                    testExecutionIssueDetails: {
-                        subtask: false,
-                    },
+            expect(stubbedContext.firstCall.args[0].internal.jira).to.deep.eq({
+                attachVideos: true,
+                fields: {
+                    summary: "bonjour",
+                    description: "somewhere",
+                    labels: "out",
+                    testPlan: "there",
+                    testType: "!",
                 },
-                plugin: options.plugin,
-                xray: options.xray,
-                cucumber: {
-                    ...options.cucumber,
-                    preprocessor: {
-                        filterSpecs: false,
-                        html: {
-                            enabled: false,
-                            output: "cucumber-report.html",
-                        },
-                        implicitIntegrationFolder: "/",
-                        json: {
-                            enabled: true,
-                            output: "somewhere",
-                        },
-                        messages: {
-                            enabled: true,
-                            output: "cucumber-messages.ndjson",
-                        },
-                        omitFiltered: false,
-                        pretty: {
-                            enabled: false,
-                        },
-                        stepDefinitions: [
-                            "..\\..\\..\\..\\..\\..\\../[filepath]/**/*.{js,mjs,ts,tsx}",
-                            "..\\..\\..\\..\\..\\..\\../[filepath].{js,mjs,ts,tsx}",
-                            "cypress/support/step_definitions/**/*.{js,mjs,ts,tsx}",
-                        ],
-                    },
+                projectKey: "ABC",
+                testExecutionIssueDescription: "description",
+                testExecutionIssueDetails: {
+                    subtask: false,
                 },
-                openSSL: options.openSSL,
+                testExecutionIssueKey: "ABC-2",
+                testExecutionIssueSummary: "summary",
+                testExecutionIssueType: "QA-1",
+                testPlanIssueKey: "ABC-3",
+                testPlanIssueType: "QA-2",
+                url: "https://example.org",
             });
+            expect(stubbedContext.firstCall.args[0].internal.plugin).to.deep.eq(options.plugin);
+            expect(stubbedContext.firstCall.args[0].internal.xray).to.deep.eq(options.xray);
+            expect(stubbedContext.firstCall.args[0].internal.cucumber?.featureFileExtension).to.eq(
+                ".cucumber"
+            );
+            expect(stubbedContext.firstCall.args[0].internal.cucumber?.downloadFeatures).to.be
+                .false;
+            expect(stubbedContext.firstCall.args[0].internal.cucumber?.uploadFeatures).to.be.false;
+            expect(
+                stubbedContext.firstCall.args[0].internal.cucumber?.preprocessor?.json
+            ).to.deep.eq({
+                enabled: true,
+                output: "somewhere",
+            });
+            expect(stubbedContext.firstCall.args[0].internal.openSSL).to.deep.eq(options.openSSL);
             expect(stubbedContext.firstCall.args[0].clients).to.eq(pluginContext.clients);
         });
 
