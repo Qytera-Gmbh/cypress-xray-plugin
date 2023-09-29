@@ -23,7 +23,7 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
         openSSL: initOpenSSLOptions(config.env, options.openSSL),
     };
     if (!internalOptions.plugin.enabled) {
-        logInfo("Plugin disabled. Skipping configuration verification.");
+        logInfo("Plugin disabled. Skipping further configuration.");
         return;
     }
     const context = setPluginContext({
