@@ -34,12 +34,15 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
         cucumber: await initCucumberOptions(config, options.cucumber),
         openSSL: initOpenSSLOptions(config.env, options.openSSL),
     };
-    const context = setPluginContext({
+    setPluginContext({
         cypress: config,
         internal: internalOptions,
         clients: initClients(internalOptions.jira, config.env),
     });
-    Requests.init(context.internal);
+    Requests.init({
+        debug: internalOptions.plugin.debug,
+        openSSL: internalOptions.openSSL,
+    });
 }
 
 export async function addXrayResultUpload(on: Cypress.PluginEvents) {
