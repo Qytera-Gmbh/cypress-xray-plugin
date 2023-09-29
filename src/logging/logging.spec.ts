@@ -76,15 +76,23 @@ describe("the logging module", () => {
             });
             const { stubbedError } = stubLogging();
             writeErrorFile(
-                new AxiosError("Request failed with status code 400", "400", null, null, {
-                    status: 400,
-                    statusText: "Bad Request",
-                    config: { headers: new AxiosHeaders({ Authorization: "Bearer 123456790" }) },
-                    headers: {},
-                    data: {
-                        error: "Must provide a project key",
-                    },
-                }),
+                new AxiosError(
+                    "Request failed with status code 400",
+                    "400",
+                    { headers: new AxiosHeaders() },
+                    null,
+                    {
+                        status: 400,
+                        statusText: "Bad Request",
+                        config: {
+                            headers: new AxiosHeaders({ Authorization: "Bearer 123456790" }),
+                        },
+                        headers: {},
+                        data: {
+                            error: "Must provide a project key",
+                        },
+                    }
+                ),
                 "writeErrorFileAxios"
             );
             const expectedPath = resolveTestDirPath(

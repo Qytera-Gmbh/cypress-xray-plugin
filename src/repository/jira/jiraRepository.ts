@@ -5,7 +5,7 @@ import { XrayClientServer } from "../../client/xray/xrayClientServer";
 import { logError } from "../../logging/logging";
 import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
 import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
-import { JiraFieldIds, Options } from "../../types/plugin";
+import { InternalJiraOptions, JiraFieldIds } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/error";
@@ -25,7 +25,7 @@ export abstract class JiraRepository<
     protected readonly jiraFieldRepository: JiraFieldRepository;
     protected readonly jiraClient: JiraClientType;
     protected readonly xrayClient: XrayClientType;
-    protected readonly options: Options;
+    protected readonly jiraOptions: InternalJiraOptions;
 
     protected static readonly STRING_EXTRACTOR: FieldExtractor<string> = {
         extractorFunction: (value: unknown): string | undefined => {
@@ -47,7 +47,12 @@ export abstract class JiraRepository<
 
     protected static readonly OBJECT_VALUE_EXTRACTOR: FieldExtractor<string> = {
         extractorFunction: (data: unknown): string | undefined => {
-            if (typeof data === "object" && data !== null) {
+            if (
+                typeof data === "object" &&
+                data !== null &&
+                "value" in data &&
+                typeof data["value"] === "string"
+            ) {
                 return data["value"];
             }
         },
@@ -59,17 +64,24 @@ export abstract class JiraRepository<
     private readonly testTypes: StringMap<string> = {};
     private readonly labels: StringMap<string[]> = {};
 
-    constructor(jiraClient: JiraClientType, xrayClient: XrayClientType, options: Options) {
-        this.jiraFieldRepository = new JiraFieldRepository(jiraClient, options);
+    constructor(
+        jiraClient: JiraClientType,
+        xrayClient: XrayClientType,
+        jiraOptions: InternalJiraOptions
+    ) {
+        this.jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
         this.jiraClient = jiraClient;
         this.xrayClient = xrayClient;
-        this.options = options;
+        this.jiraOptions = jiraOptions;
     }
 
     public async getFieldId(fieldName: FieldName, optionName: keyof JiraFieldIds): Promise<string> {
-        return await this.jiraFieldRepository.getFieldId(fieldName, {
+        const onFetchError = new Error(
+            `Failed to fetch Jira field ID for field with name: ${fieldName}`
+        );
+        const fieldId = await this.jiraFieldRepository.getFieldId(fieldName, {
             onFetchError: () => {
-                throw new Error(`Failed to fetch Jira field ID for field with name: ${fieldName}`);
+                throw onFetchError;
             },
             onMultipleFieldsError: (duplicates: FieldDetailServer[] | FieldDetailCloud[]) => {
                 const nameDuplicates = duplicates
@@ -137,6 +149,10 @@ export abstract class JiraRepository<
                 }
             },
         });
+        if (!fieldId) {
+            throw onFetchError;
+        }
+        return fieldId;
     }
 
     public async getSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
@@ -260,7 +276,7 @@ export abstract class JiraRepository<
     }
 
     protected async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
-        let fieldId = this.options.jira.fields.summary;
+        let fieldId = this.jiraOptions.fields?.summary;
         if (!fieldId) {
             fieldId = await this.getFieldId("Summary", "summary");
         }
@@ -270,7 +286,7 @@ export abstract class JiraRepository<
     }
 
     protected async fetchDescriptions(...issueKeys: string[]): Promise<StringMap<string>> {
-        let fieldId = this.options.jira.fields.description;
+        let fieldId = this.jiraOptions.fields?.description;
         if (!fieldId) {
             fieldId = await this.getFieldId("Description", "description");
         }
@@ -282,7 +298,7 @@ export abstract class JiraRepository<
     protected abstract fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;
 
     protected async fetchLabels(...issueKeys: string[]): Promise<StringMap<string[]>> {
-        let fieldId = this.options.jira.fields.labels;
+        let fieldId = this.jiraOptions.fields?.labels;
         if (!fieldId) {
             fieldId = await this.getFieldId("Labels", "labels");
         }
@@ -301,20 +317,22 @@ export abstract class JiraRepository<
         ...issueKeys: string[]
     ): Promise<StringMap<T>> {
         const results: StringMap<T> = {};
-        const issues: IssueServer[] | IssueCloud[] = await this.jiraClient.search({
-            jql: `project = ${this.options.jira.projectKey} AND issue in (${issueKeys.join(",")})`,
+        const issues: IssueServer[] | IssueCloud[] | undefined = await this.jiraClient.search({
+            jql: `project = ${this.jiraOptions.projectKey} AND issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
         });
         if (issues) {
             const issuesWithUnparseableField: string[] = [];
             issues.forEach((issue: IssueServer | IssueCloud) => {
-                const value = extractor.extractorFunction(issue.fields[fieldId]);
-                if (value !== undefined) {
-                    results[issue.key] = value;
-                } else {
-                    issuesWithUnparseableField.push(
-                        `${issue.key}: ${JSON.stringify(issue.fields[fieldId])}`
-                    );
+                if (issue.key && issue.fields && fieldId in issue.fields) {
+                    const value = extractor.extractorFunction(issue.fields[fieldId]);
+                    if (value !== undefined) {
+                        results[issue.key] = value;
+                    } else {
+                        issuesWithUnparseableField.push(
+                            `${issue.key}: ${JSON.stringify(issue.fields[fieldId])}`
+                        );
+                    }
                 }
             });
             if (issuesWithUnparseableField.length > 0) {

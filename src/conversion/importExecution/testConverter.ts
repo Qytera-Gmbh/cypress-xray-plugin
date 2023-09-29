@@ -36,7 +36,7 @@ export abstract class TestConverter<
         issueData?: TestIssueData
     ): Promise<[XrayTestType, ...XrayTestType[]]> {
         const testRunData = await this.getTestRunData(runResults);
-        let xrayTests: [XrayTestType, ...XrayTestType[]];
+        const xrayTests: XrayTestType[] = [];
         testRunData.forEach((testData: ITestRunData) => {
             try {
                 const issueKey = getNativeTestIssueKey(
@@ -58,11 +58,7 @@ export abstract class TestConverter<
                     },
                     this.getXrayEvidence(testData)
                 );
-                if (!xrayTests) {
-                    xrayTests = [test];
-                } else {
-                    xrayTests.push(test);
-                }
+                xrayTests.push(test);
             } catch (error: unknown) {
                 logWarning(
                     dedent(`
@@ -73,7 +69,12 @@ export abstract class TestConverter<
                 );
             }
         });
-        return xrayTests;
+        if (xrayTests.length === 0) {
+            throw new Error(
+                "Failed to convert Cypress tests into Xray tests: No Cypress tests to upload"
+            );
+        }
+        return [xrayTests[0], ...xrayTests.slice(1)];
     }
 
     protected abstract getTest(
@@ -95,10 +96,15 @@ export abstract class TestConverter<
             const runs = runResults.runs as RunResult_V12[];
             if (
                 runs.every((run: RunResult_V12) => {
-                    return run.spec.relative.endsWith(this.options.cucumber.featureFileExtension);
+                    return (
+                        this.options.cucumber &&
+                        run.spec.relative.endsWith(this.options.cucumber.featureFileExtension)
+                    );
                 })
             ) {
-                throw new Error("Failed to extract test run data: No Cypress tests were executed");
+                throw new Error(
+                    "Failed to extract test run data: Only Cucumber tests were executed"
+                );
             }
             for (const run of runs) {
                 getTestRunData_V12(run).forEach((promise, index) =>
@@ -109,10 +115,15 @@ export abstract class TestConverter<
             const runs = runResults.runs as RunResult_V13[];
             if (
                 runs.every((run: RunResult_V13) => {
-                    return run.spec.relative.endsWith(this.options.cucumber.featureFileExtension);
+                    return (
+                        this.options.cucumber &&
+                        run.spec.relative.endsWith(this.options.cucumber.featureFileExtension)
+                    );
                 })
             ) {
-                throw new Error("Failed to extract test run data: No Cypress tests were executed");
+                throw new Error(
+                    "Failed to extract test run data: Only Cucumber tests were executed"
+                );
             }
             for (const run of runs) {
                 getTestRunData_V13(run, this.options.jira.projectKey).forEach((promise, index) =>
@@ -120,7 +131,6 @@ export abstract class TestConverter<
                 );
             }
         }
-
         const convertedTests = await Promise.allSettled(
             conversionPromises.map((tuple) => tuple[1])
         );

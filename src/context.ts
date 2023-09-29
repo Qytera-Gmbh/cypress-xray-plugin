@@ -39,138 +39,264 @@ import {
     ENV_XRAY_UPLOAD_RESULTS,
     ENV_XRAY_UPLOAD_SCREENSHOTS,
 } from "./constants";
-import { logInfo } from "./logging/logging";
+import {
+    CucumberPreprocessorArgs,
+    CucumberPreprocessorExports,
+    importOptionalDependency,
+} from "./dependencies";
+import { logDebug, logInfo } from "./logging/logging";
 import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
 import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
-import { ClientCombination, InternalOptions, Options } from "./types/plugin";
+import {
+    ClientCombination,
+    InternalCucumberOptions,
+    InternalJiraOptions,
+    InternalOpenSSLOptions,
+    InternalPluginOptions,
+    InternalXrayOptions,
+    Options,
+    PluginContext,
+} from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { asBoolean, asInt, asString, parse } from "./util/parsing";
 
-export function initOptions(env: Cypress.ObjectLike, options: Options): InternalOptions {
-    return {
-        jira: {
-            attachVideos:
-                parse(env, ENV_JIRA_ATTACH_VIDEOS, asBoolean) ?? options.jira.attachVideos ?? false,
-            fields: {
-                description:
-                    parse(env, ENV_JIRA_FIELDS_DESCRIPTION, asString) ??
-                    options.jira.fields?.description,
-                labels: parse(env, ENV_JIRA_FIELDS_LABELS, asString) ?? options.jira.fields?.labels,
-                summary:
-                    parse(env, ENV_JIRA_FIELDS_SUMMARY, asString) ?? options.jira.fields?.summary,
-                testPlan:
-                    parse(env, ENV_JIRA_FIELDS_TEST_PLAN, asString) ??
-                    options.jira.fields?.testPlan,
-                testType:
-                    parse(env, ENV_JIRA_FIELDS_TEST_TYPE, asString) ??
-                    options.jira.fields?.testType,
-            },
-            projectKey: parse(env, ENV_JIRA_PROJECT_KEY, asString) ?? options.jira.projectKey,
-            testExecutionIssueDescription:
-                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION, asString) ??
-                options.jira.testExecutionIssueDescription,
-            testExecutionIssueKey:
-                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_KEY, asString) ??
-                options.jira.testExecutionIssueKey,
-            testExecutionIssueSummary:
-                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY, asString) ??
-                options.jira.testExecutionIssueSummary,
-            testExecutionIssueType:
-                parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_TYPE, asString) ??
-                options.jira.testExecutionIssueType ??
-                "Test Execution",
-            testPlanIssueKey:
-                parse(env, ENV_JIRA_TEST_PLAN_ISSUE_KEY, asString) ?? options.jira.testPlanIssueKey,
-            testPlanIssueType:
-                parse(env, ENV_JIRA_TEST_PLAN_ISSUE_TYPE, asString) ??
-                options.jira.testPlanIssueType ??
-                "Test Plan",
-            url: parse(env, ENV_JIRA_URL, asString) ?? options.jira.url,
-        },
-        plugin: {
-            debug: parse(env, ENV_PLUGIN_DEBUG, asBoolean) ?? options.plugin?.debug ?? false,
-            enabled: parse(env, ENV_PLUGIN_ENABLED, asBoolean) ?? options.plugin?.enabled ?? true,
-            logDirectory:
-                parse(env, ENV_PLUGIN_LOG_DIRECTORY, asString) ??
-                options.plugin?.logDirectory ??
-                "logs",
-            normalizeScreenshotNames:
-                parse(env, ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES, asBoolean) ??
-                options.plugin?.normalizeScreenshotNames ??
-                false,
-        },
-        xray: {
-            status: {
-                failed:
-                    parse(env, ENV_XRAY_STATUS_FAILED, asString) ?? options.xray?.status?.failed,
-                passed:
-                    parse(env, ENV_XRAY_STATUS_PASSED, asString) ?? options.xray?.status?.passed,
-                pending:
-                    parse(env, ENV_XRAY_STATUS_PENDING, asString) ?? options.xray?.status?.pending,
-                skipped:
-                    parse(env, ENV_XRAY_STATUS_SKIPPED, asString) ?? options.xray?.status?.skipped,
-            },
-            uploadResults:
-                parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean) ??
-                options.xray?.uploadResults ??
-                true,
-            uploadScreenshots:
-                parse(env, ENV_XRAY_UPLOAD_SCREENSHOTS, asBoolean) ??
-                options.xray?.uploadScreenshots ??
-                true,
-        },
-        cucumber: {
-            featureFileExtension:
-                parse(env, ENV_CUCUMBER_FEATURE_FILE_EXTENSION, asString) ??
-                options.cucumber?.featureFileExtension,
-            downloadFeatures:
-                parse(env, ENV_CUCUMBER_DOWNLOAD_FEATURES, asBoolean) ??
-                options.cucumber?.downloadFeatures ??
-                false,
-            uploadFeatures:
-                parse(env, ENV_CUCUMBER_UPLOAD_FEATURES, asBoolean) ??
-                options.cucumber?.uploadFeatures ??
-                false,
-        },
-        openSSL: {
-            rootCAPath:
-                parse(env, ENV_OPENSSL_ROOT_CA_PATH, asString) ?? options.openSSL?.rootCAPath,
-            secureOptions:
-                parse(env, ENV_OPENSSL_SECURE_OPTIONS, asInt) ?? options.openSSL?.secureOptions,
-        },
-    };
+let context: PluginContext | undefined = undefined;
+
+export function getPluginContext(): PluginContext | undefined {
+    return context;
 }
 
-export function verifyOptions(options: InternalOptions) {
-    verifyJiraProjectKey(options.jira.projectKey);
-    verifyJiraTestExecutionIssueKey(options.jira.projectKey, options.jira.testExecutionIssueKey);
-    verifyJiraTestPlanIssueKey(options.jira.projectKey, options.jira.testPlanIssueKey);
+export function setPluginContext(newContext: PluginContext): PluginContext {
+    context = newContext;
+    return newContext;
 }
 
-function verifyJiraProjectKey(projectKey?: string) {
+export function clearPluginContext(): void {
+    context = undefined;
+}
+
+/**
+ * Returns an {@link InternalJiraOptions `InternalJiraOptions`} instance based on parsed environment
+ * variables and a provided options object. Environment variables will take precedence over the
+ * options set in the object.
+ *
+ * @param env an object containing environment variables as properties
+ * @param options an options object containing Jira options
+ * @returns the constructed internal Jira options
+ */
+export function initJiraOptions(
+    env: Cypress.ObjectLike,
+    options: Options["jira"]
+): InternalJiraOptions {
+    const projectKey = parse(env, ENV_JIRA_PROJECT_KEY, asString) ?? options.projectKey;
     if (!projectKey) {
         throw new Error("Plugin misconfiguration: Jira project key was not set");
     }
-}
-
-function verifyJiraTestExecutionIssueKey(projectKey: string, testExecutionIssueKey?: string) {
+    const testExecutionIssueKey =
+        parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_KEY, asString) ?? options.testExecutionIssueKey;
     if (testExecutionIssueKey && !testExecutionIssueKey.startsWith(projectKey)) {
         throw new Error(
             `Plugin misconfiguration: test execution issue key ${testExecutionIssueKey} does not belong to project ${projectKey}`
         );
     }
-}
-
-function verifyJiraTestPlanIssueKey(projectKey: string, testPlanIssueKey?: string) {
+    const testPlanIssueKey =
+        parse(env, ENV_JIRA_TEST_PLAN_ISSUE_KEY, asString) ?? options.testPlanIssueKey;
     if (testPlanIssueKey && !testPlanIssueKey.startsWith(projectKey)) {
         throw new Error(
             `Plugin misconfiguration: test plan issue key ${testPlanIssueKey} does not belong to project ${projectKey}`
         );
     }
+    return {
+        attachVideos:
+            parse(env, ENV_JIRA_ATTACH_VIDEOS, asBoolean) ?? options.attachVideos ?? false,
+        fields: {
+            description:
+                parse(env, ENV_JIRA_FIELDS_DESCRIPTION, asString) ?? options.fields?.description,
+            labels: parse(env, ENV_JIRA_FIELDS_LABELS, asString) ?? options.fields?.labels,
+            summary: parse(env, ENV_JIRA_FIELDS_SUMMARY, asString) ?? options.fields?.summary,
+            testPlan: parse(env, ENV_JIRA_FIELDS_TEST_PLAN, asString) ?? options.fields?.testPlan,
+            testType: parse(env, ENV_JIRA_FIELDS_TEST_TYPE, asString) ?? options.fields?.testType,
+        },
+        projectKey: projectKey,
+        testExecutionIssueDescription:
+            parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION, asString) ??
+            options.testExecutionIssueDescription,
+        testExecutionIssueDetails: { subtask: false },
+        testExecutionIssueKey: testExecutionIssueKey,
+        testExecutionIssueSummary:
+            parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_SUMMARY, asString) ??
+            options.testExecutionIssueSummary,
+        testExecutionIssueType:
+            parse(env, ENV_JIRA_TEST_EXECUTION_ISSUE_TYPE, asString) ??
+            options.testExecutionIssueType ??
+            "Test Execution",
+        testPlanIssueKey: testPlanIssueKey,
+        testPlanIssueType:
+            parse(env, ENV_JIRA_TEST_PLAN_ISSUE_TYPE, asString) ??
+            options.testPlanIssueType ??
+            "Test Plan",
+        url: parse(env, ENV_JIRA_URL, asString) ?? options.url,
+    };
 }
 
-export function initClients(options: InternalOptions, env: Cypress.ObjectLike): ClientCombination {
-    if (!options.jira.url) {
+/**
+ * Returns an {@link InternalPluginOptions `InternalPluginOptions`} instance based on parsed
+ * environment variables and a provided options object. Environment variables will take precedence
+ * over the options set in the object.
+ *
+ * @param env an object containing environment variables as properties
+ * @param options an options object containing plugin options
+ * @returns the constructed internal plugin options
+ */
+export function initPluginOptions(
+    env: Cypress.ObjectLike,
+    options: Options["plugin"]
+): InternalPluginOptions {
+    return {
+        debug: parse(env, ENV_PLUGIN_DEBUG, asBoolean) ?? options?.debug ?? false,
+        enabled: parse(env, ENV_PLUGIN_ENABLED, asBoolean) ?? options?.enabled ?? true,
+        logDirectory:
+            parse(env, ENV_PLUGIN_LOG_DIRECTORY, asString) ?? options?.logDirectory ?? "logs",
+        normalizeScreenshotNames:
+            parse(env, ENV_PLUGIN_NORMALIZE_SCREENSHOT_NAMES, asBoolean) ??
+            options?.normalizeScreenshotNames ??
+            false,
+    };
+}
+
+/**
+ * Returns an {@link InternalXrayOptions `InternalXrayOptions`} instance based on parsed environment
+ * variables and a provided options object. Environment variables will take precedence over the
+ * options set in the object.
+ *
+ * @param env an object containing environment variables as properties
+ * @param options an options object containing Xray options
+ * @returns the constructed internal Xray options
+ */
+export function initXrayOptions(
+    env: Cypress.ObjectLike,
+    options: Options["xray"]
+): InternalXrayOptions {
+    return {
+        status: {
+            failed: parse(env, ENV_XRAY_STATUS_FAILED, asString) ?? options?.status?.failed,
+            passed: parse(env, ENV_XRAY_STATUS_PASSED, asString) ?? options?.status?.passed,
+            pending: parse(env, ENV_XRAY_STATUS_PENDING, asString) ?? options?.status?.pending,
+            skipped: parse(env, ENV_XRAY_STATUS_SKIPPED, asString) ?? options?.status?.skipped,
+        },
+        uploadResults:
+            parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean) ?? options?.uploadResults ?? true,
+        uploadScreenshots:
+            parse(env, ENV_XRAY_UPLOAD_SCREENSHOTS, asBoolean) ??
+            options?.uploadScreenshots ??
+            true,
+    };
+}
+
+/**
+ * Returns an {@link InternalCucumberOptions `InternalCucumberOptions`} instance based on parsed
+ * environment variables and a provided options object. Environment variables will take precedence
+ * over the options set in the object.
+ *
+ * @param env an object containing environment variables as properties
+ * @param options an options object containing Cucumber options
+ * @returns the constructed internal Cucumber options
+ */
+export async function initCucumberOptions(
+    config: CucumberPreprocessorArgs[0],
+    options: Options["cucumber"]
+): Promise<InternalCucumberOptions | undefined> {
+    // Check if the user has chosen to upload Cucumber results, too.
+    const featureFileExtension =
+        parse(config.env, ENV_CUCUMBER_FEATURE_FILE_EXTENSION, asString) ??
+        options?.featureFileExtension;
+    // If the user has chosen to do so, we need to make sure they configured the Cucumber
+    // preprocessor JSON report as well. Otherwise, results upload will not work.
+    if (featureFileExtension) {
+        let preprocessor: CucumberPreprocessorExports;
+        try {
+            preprocessor = await importOptionalDependency<CucumberPreprocessorExports>(
+                "@badeball/cypress-cucumber-preprocessor"
+            );
+        } catch (error: unknown) {
+            throw new Error(
+                dedent(`
+                    Plugin dependency misconfigured: @badeball/cypress-cucumber-preprocessor
+
+                    ${error}
+
+                    The plugin depends on the package and should automatically download it during installation, but might have failed to do so because of conflicting Node versions
+
+                    Make sure to install the package manually using: npm install @badeball/cypress-cucumber-preprocessor --save-dev
+                `)
+            );
+        }
+        logDebug(
+            `Successfully resolved configuration of @badeball/cypress-cucumber-preprocessor package`
+        );
+        const preprocessorConfiguration = await preprocessor.resolvePreprocessorConfiguration(
+            config,
+            config.env,
+            "/"
+        );
+        if (!preprocessorConfiguration.json.enabled) {
+            throw new Error(
+                dedent(`
+                        Plugin misconfiguration: Cucumber preprocessor JSON report disabled
+
+                        Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                    `)
+            );
+        }
+        if (!preprocessorConfiguration.json.output) {
+            throw new Error(
+                dedent(`
+                        Plugin misconfiguration: Cucumber preprocessor JSON report path was not set
+
+                        Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                    `)
+            );
+        }
+        return {
+            downloadFeatures:
+                parse(config.env, ENV_CUCUMBER_DOWNLOAD_FEATURES, asBoolean) ??
+                options?.downloadFeatures ??
+                false,
+            featureFileExtension: featureFileExtension,
+            preprocessor: preprocessorConfiguration,
+            uploadFeatures:
+                parse(config.env, ENV_CUCUMBER_UPLOAD_FEATURES, asBoolean) ??
+                options?.uploadFeatures ??
+                false,
+        };
+    }
+    return undefined;
+}
+
+/**
+ * Returns an {@link InternalOpenSSLOptions `InternalOpenSSLOptions`} instance based on parsed
+ * environment variables and a provided options object. Environment variables will take precedence
+ * over the options set in the object.
+ *
+ * @param env an object containing environment variables as properties
+ * @param options an options object containing OpenSSL options
+ * @returns the constructed internal OpenSSL options
+ */
+export function initOpenSSLOptions(
+    env: Cypress.ObjectLike,
+    options: Options["openSSL"]
+): InternalOpenSSLOptions {
+    return {
+        rootCAPath: parse(env, ENV_OPENSSL_ROOT_CA_PATH, asString) ?? options?.rootCAPath,
+        secureOptions: parse(env, ENV_OPENSSL_SECURE_OPTIONS, asInt) ?? options?.secureOptions,
+    };
+}
+
+export function initClients(
+    jiraOptions: InternalJiraOptions,
+    env: Cypress.ObjectLike
+): ClientCombination {
+    if (!jiraOptions.url) {
         throw new Error(
             dedent(`
                 Failed to configure Jira client: no Jira URL was provided
@@ -182,7 +308,7 @@ export function initClients(options: InternalOptions, env: Cypress.ObjectLike): 
         // Jira cloud authentication: username (Email) and token.
         logInfo("Jira username and API token found. Setting up Jira cloud basic auth credentials");
         const jiraClient = new JiraClientCloud(
-            options.jira.url,
+            jiraOptions.url,
             new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_API_TOKEN])
         );
         if (ENV_XRAY_CLIENT_ID in env && ENV_XRAY_CLIENT_SECRET in env) {
@@ -197,7 +323,7 @@ export function initClients(options: InternalOptions, env: Cypress.ObjectLike): 
                 kind: "cloud",
                 jiraClient: jiraClient,
                 xrayClient: xrayClient,
-                jiraRepository: new JiraRepositoryCloud(jiraClient, xrayClient, options),
+                jiraRepository: new JiraRepositoryCloud(jiraClient, xrayClient, jiraOptions),
             };
         } else {
             throw new Error(
@@ -207,17 +333,17 @@ export function initClients(options: InternalOptions, env: Cypress.ObjectLike): 
                 `)
             );
         }
-    } else if (ENV_JIRA_API_TOKEN in env && options.jira.url) {
+    } else if (ENV_JIRA_API_TOKEN in env && jiraOptions.url) {
         // Jira server authentication: no username, only token.
         logInfo("Jira PAT found. Setting up Jira server PAT credentials");
         const jiraClient = new JiraClientServer(
-            options.jira.url,
+            jiraOptions.url,
             new PATCredentials(env[ENV_JIRA_API_TOKEN])
         );
         // Xray server authentication: no username, only token.
         logInfo("Jira PAT found. Setting up Xray server PAT credentials");
         const xrayClient = new XrayClientServer(
-            options.jira.url,
+            jiraOptions.url,
             new PATCredentials(env[ENV_JIRA_API_TOKEN]),
             jiraClient
         );
@@ -225,17 +351,17 @@ export function initClients(options: InternalOptions, env: Cypress.ObjectLike): 
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new JiraRepositoryServer(jiraClient, xrayClient, options),
+            jiraRepository: new JiraRepositoryServer(jiraClient, xrayClient, jiraOptions),
         };
-    } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && options.jira.url) {
+    } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && jiraOptions.url) {
         logInfo("Jira username and password found. Setting up Jira server basic auth credentials");
         const jiraClient = new JiraClientServer(
-            options.jira.url,
+            jiraOptions.url,
             new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD])
         );
         logInfo("Jira username and password found. Setting up Xray server basic auth credentials");
         const xrayClient = new XrayClientServer(
-            options.jira.url,
+            jiraOptions.url,
             new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD]),
             jiraClient
         );
@@ -243,7 +369,7 @@ export function initClients(options: InternalOptions, env: Cypress.ObjectLike): 
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new JiraRepositoryServer(jiraClient, xrayClient, options),
+            jiraRepository: new JiraRepositoryServer(jiraClient, xrayClient, jiraOptions),
         };
     } else {
         throw new Error(
@@ -256,11 +382,11 @@ export function initClients(options: InternalOptions, env: Cypress.ObjectLike): 
 }
 export function initJiraRepository(
     clients: ClientCombination,
-    options: Options
+    jiraOptions: InternalJiraOptions
 ): JiraRepositoryServer | JiraRepositoryCloud {
     if (clients.kind === "cloud") {
-        return new JiraRepositoryCloud(clients.jiraClient, clients.xrayClient, options);
+        return new JiraRepositoryCloud(clients.jiraClient, clients.xrayClient, jiraOptions);
     } else {
-        return new JiraRepositoryServer(clients.jiraClient, clients.xrayClient, options);
+        return new JiraRepositoryServer(clients.jiraClient, clients.xrayClient, jiraOptions);
     }
 }

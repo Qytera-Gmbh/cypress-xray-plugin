@@ -10,6 +10,7 @@ import {
     TestResult as TestResult_V13,
 } from "../../types/cypress/13.0.0/api";
 import { Status } from "../../types/testStatus";
+import { StringMap } from "../../types/util";
 import { toCypressStatus } from "./statusConversion";
 
 /**
@@ -131,26 +132,24 @@ export function getTestRunData_V13(
 ): Promise<ITestRunData>[] {
     const testRuns: Promise<ITestRunData>[] = [];
     const testStarts: Map<string, Date> = startTimesByTest(runResult);
-    const testScreenshots: Map<string, ScreenshotInformation_V13[]> = screenshotsByTest(
+    const testScreenshots: StringMap<ScreenshotInformation_V13[]> = screenshotsByTest(
         runResult,
         projectKey
     );
     runResult.tests.forEach((test: TestResult_V13) => {
         const title = test.title.join(" ");
-        const screenshots = testScreenshots.has(title)
-            ? testScreenshots.get(title).map((screenshot: ScreenshotInformation_V13) => {
-                  return { filepath: screenshot.path };
-              })
-            : [];
+        const screenshots = testScreenshots[title] ?? [];
         testRuns.push(
             new Promise((resolve) => {
                 resolve({
                     duration: test.duration,
-                    screenshots: screenshots,
+                    screenshots: screenshots.map((screenshot: ScreenshotInformation_V13) => {
+                        return { filepath: screenshot.path };
+                    }),
                     spec: {
                         filepath: runResult.spec.absolute,
                     },
-                    startedAt: testStarts.get(title),
+                    startedAt: testStarts.get(title) ?? new Date(),
                     status: toCypressStatus(test.state),
                     title: title,
                 });
@@ -179,16 +178,16 @@ function startTimesByTest(run: RunResult_V13): Map<string, Date> {
 function screenshotsByTest(
     run: RunResult_V13,
     projectKey: string
-): Map<string, ScreenshotInformation_V13[]> {
-    const map = new Map<string, ScreenshotInformation_V13[]>();
+): StringMap<ScreenshotInformation_V13[]> {
+    const map: StringMap<ScreenshotInformation_V13[]> = {};
     for (const screenshot of run.screenshots) {
         for (const test of run.tests) {
             const title = test.title.join(" ");
             if (screenshotNameMatchesTestTitle(screenshot, projectKey, test.title)) {
-                if (!map.has(title)) {
-                    map.set(title, [screenshot]);
+                if (title in map) {
+                    map[title].push(screenshot);
                 } else {
-                    map.get(title).push(screenshot);
+                    map[title] = [screenshot];
                 }
             }
         }
@@ -203,7 +202,7 @@ function screenshotNameMatchesTestTitle(
 ): boolean {
     try {
         const testTitleKey = getNativeTestIssueKey(testTitle[testTitle.length - 1], projectKey);
-        if (screenshot.path.includes(testTitleKey)) {
+        if (testTitleKey && screenshot.path.includes(testTitleKey)) {
             return true;
         }
     } catch (error: unknown) {

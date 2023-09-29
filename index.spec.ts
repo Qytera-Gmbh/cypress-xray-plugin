@@ -23,12 +23,6 @@ describe("the plugin exports should work", () => {
     });
 
     describe("CypressXrayPluginOptions", () => {
-        it("default", () => {
-            const options: CypressXrayPluginOptions = {
-                jira: undefined,
-            };
-            expect(options).to.exist;
-        });
         it("jira", () => {
             const options: CypressXrayPluginOptions = {
                 jira: {
@@ -36,37 +30,49 @@ describe("the plugin exports should work", () => {
                     url: "https://example.org",
                 },
             };
-            expect(options).to.exist;
+            expect(options.jira).to.exist;
         });
         it("xray", () => {
             const options: CypressXrayPluginOptions = {
-                jira: undefined,
+                jira: {
+                    projectKey: "CYP-123",
+                    url: "https://example.org",
+                },
                 xray: {},
             };
-            expect(options).to.exist;
+            expect(options.xray).to.exist;
         });
         it("cucumber", () => {
             const options: CypressXrayPluginOptions = {
-                jira: undefined,
+                jira: {
+                    projectKey: "CYP-123",
+                    url: "https://example.org",
+                },
                 cucumber: {
                     featureFileExtension: ".feature",
                 },
             };
-            expect(options).to.exist;
+            expect(options.cucumber).to.exist;
         });
         it("plugin", () => {
             const options: CypressXrayPluginOptions = {
-                jira: undefined,
+                jira: {
+                    projectKey: "CYP-123",
+                    url: "https://example.org",
+                },
                 plugin: {},
             };
-            expect(options).to.exist;
+            expect(options.plugin).to.exist;
         });
         it("openSSL", () => {
             const options: CypressXrayPluginOptions = {
-                jira: undefined,
+                jira: {
+                    projectKey: "CYP-123",
+                    url: "https://example.org",
+                },
                 openSSL: {},
             };
-            expect(options).to.exist;
+            expect(options.openSSL).to.exist;
         });
     });
 });

@@ -5,7 +5,7 @@
  * @returns the earliest date
  */
 export function getEarliestDate(...dates: Date[]): Date | null {
-    let start: Date = null;
+    let start: Date | null = null;
     dates.forEach((date: Date) => {
         if (!start || date < start) {
             start = date;
@@ -21,7 +21,7 @@ export function getEarliestDate(...dates: Date[]): Date | null {
  * @returns the latest date
  */
 export function getLatestDate(...dates: Date[]): Date | null {
-    let end: Date = null;
+    let end: Date | null = null;
     dates.forEach((date: Date) => {
         if (!end || date > end) {
             end = date;

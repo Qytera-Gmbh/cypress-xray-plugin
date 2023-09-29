@@ -6,7 +6,6 @@ import { XrayClientServer } from "../client/xray/xrayClientServer";
 import { JiraRepositoryCloud } from "../repository/jira/jiraRepositoryCloud";
 import { JiraRepositoryServer } from "../repository/jira/jiraRepositoryServer";
 import { IssueTypeDetailsCloud, IssueTypeDetailsServer } from "./jira/responses/issueTypeDetails";
-import { OneOf } from "./util";
 
 export interface Options {
     jira: JiraOptions;
@@ -139,6 +138,28 @@ export interface JiraOptions {
     url: string;
 }
 
+/**
+ * A more specific Jira options type with optional properties converted to required ones if
+ * default/fallback values are used by the plugin.
+ */
+export type InternalJiraOptions = JiraOptions &
+    Required<
+        Pick<
+            JiraOptions,
+            | "attachVideos"
+            | "fields"
+            | "projectKey"
+            | "testExecutionIssueType"
+            | "testPlanIssueType"
+            | "url"
+        >
+    > & {
+        /**
+         * The details of the test execution issue type.
+         */
+        testExecutionIssueDetails: IssueTypeDetailsServer | IssueTypeDetailsCloud;
+    };
+
 export interface XrayOptions {
     /**
      * A mapping of Cypress statuses to corresponding Xray statuses.
@@ -184,6 +205,13 @@ export interface XrayOptions {
     uploadScreenshots?: boolean;
 }
 
+/**
+ * A more specific Xray options type with optional properties converted to required ones if
+ * default/fallback values are used by the plugin.
+ */
+export type InternalXrayOptions = XrayOptions &
+    Required<Pick<XrayOptions, "status" | "uploadResults" | "uploadScreenshots">>;
+
 export interface CucumberOptions {
     /**
      * The file extension of feature files you want to run in Cypress. The plugin will use this to
@@ -210,6 +238,20 @@ export interface CucumberOptions {
     uploadFeatures?: boolean;
 }
 
+/**
+ * A more specific Cucumber options type with optional properties converted to required ones if
+ * default/fallback values are used by the plugin.
+ */
+export type InternalCucumberOptions = CucumberOptions &
+    Required<
+        Pick<CucumberOptions, "featureFileExtension" | "downloadFeatures" | "uploadFeatures">
+    > & {
+        /**
+         * The Cucumber preprocessor configuration.
+         */
+        preprocessor?: IPreprocessorConfiguration;
+    };
+
 export interface PluginOptions {
     /**
      * Enables or disables the entire plugin. Setting this option to `false` disables all plugin
@@ -231,6 +273,15 @@ export interface PluginOptions {
      */
     normalizeScreenshotNames?: boolean;
 }
+
+/**
+ * A more specific Cucumber options type with optional properties converted to required ones if
+ * default/fallback values are used by the plugin.
+ */
+export type InternalPluginOptions = PluginOptions &
+    Required<
+        Pick<PluginOptions, "debug" | "enabled" | "logDirectory" | "normalizeScreenshotNames">
+    >;
 
 export interface OpenSSLOptions {
     /**
@@ -259,18 +310,20 @@ export interface OpenSSLOptions {
 }
 
 /**
+ * A more specific OpenSSL options type with optional properties converted to required ones if
+ * default/fallback values are used by the plugin.
+ */
+export type InternalOpenSSLOptions = OpenSSLOptions;
+
+/**
  * Options only intended for internal plugin use.
  */
-export type InternalOptions = Options & {
-    jira: {
-        /**
-         * The details of the test execution issue type.
-         */
-        testExecutionIssueDetails?: OneOf<[IssueTypeDetailsServer, IssueTypeDetailsCloud]>;
-    };
-    cucumber?: {
-        preprocessor?: IPreprocessorConfiguration;
-    };
+export type InternalOptions = {
+    jira: InternalJiraOptions;
+    plugin: InternalPluginOptions;
+    xray: InternalXrayOptions;
+    cucumber?: InternalCucumberOptions;
+    openSSL: InternalOpenSSLOptions;
 };
 
 /**
@@ -293,5 +346,5 @@ export type ClientCombination =
 export interface PluginContext {
     cypress: Cypress.PluginConfigOptions;
     internal: InternalOptions;
-    clients?: ClientCombination;
+    clients: ClientCombination;
 }

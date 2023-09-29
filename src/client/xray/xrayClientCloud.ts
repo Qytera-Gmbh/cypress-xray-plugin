@@ -105,8 +105,7 @@ export class XrayClientCloud extends XrayClient<
      *
      * @param projectKey key of the project containing the test issues
      * @param issueKeys the keys of the test issues to retrieve test types for
-     * @returns a promise which will contain the mapping of issues to test types, `null` if the
-     * upload was skipped or `undefined` in case of errors
+     * @returns a promise which will contain the mapping of issues to test types
      */
     public async getTestTypes(
         projectKey: string,
@@ -115,7 +114,7 @@ export class XrayClientCloud extends XrayClient<
         try {
             if (!issueKeys || issueKeys.length === 0) {
                 logWarning("No issue keys provided. Skipping test type retrieval");
-                return null;
+                return {};
             }
             const authenticationHeader = await this.credentials.getAuthenticationHeader(
                 `${this.apiBaseURL}/authenticate`
@@ -123,7 +122,7 @@ export class XrayClientCloud extends XrayClient<
             logDebug("Retrieving test types...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
-                const types = {};
+                const types: StringMap<string> = {};
                 let total = 0;
                 let start = 0;
                 const jql = `project = '${projectKey}' AND issue in (${issueKeys.join(",")})`;
@@ -158,10 +157,18 @@ export class XrayClientCloud extends XrayClient<
                             },
                         })
                     ).data;
-                    total = response.data.getTests.total;
-                    start = response.data.getTests.start + response.data.getTests.results.length;
-                    for (const test of response.data.getTests.results) {
-                        types[test.jira.key] = test.testType.name;
+                    total = response.data.getTests.total ?? total;
+                    if (response.data.getTests.results) {
+                        if (typeof response.data.getTests.start === "number") {
+                            start =
+                                response.data.getTests.start +
+                                response.data.getTests.results.length;
+                        }
+                        for (const test of response.data.getTests.results) {
+                            if (test?.jira.key && test.testType?.name) {
+                                types[test.jira.key] = test.testType.name;
+                            }
+                        }
                     }
                 } while (start && start < total);
                 const missingTypes: string[] = [];
@@ -190,6 +197,7 @@ export class XrayClientCloud extends XrayClient<
             logError(`Failed to get test types: ${error}`);
             writeErrorFile(error, "getTestTypes");
         }
+        return {};
     }
 
     public async prepareRequestImportExecutionCucumberMultipart(

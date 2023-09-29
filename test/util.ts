@@ -1,16 +1,23 @@
-import { HttpStatusCode } from "axios";
+import { AxiosHeaders, HttpStatusCode } from "axios";
 import chai from "chai";
 import FormData from "form-data";
 import fs from "fs";
 import path from "path";
 import Sinon, { stub } from "sinon";
 import sinonChai from "sinon-chai";
-import { JWTCredentials } from "../src/authentication/credentials";
+import { JWTCredentials, PATCredentials } from "../src/authentication/credentials";
 import { JiraClient } from "../src/client/jira/jiraClient";
 import { XrayClient } from "../src/client/xray/xrayClient";
 import { RequestConfigPost, Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
+import { SearchRequestServer } from "../src/types/jira/requests/search";
+import { AttachmentServer } from "../src/types/jira/responses/attachment";
+import { FieldDetailServer } from "../src/types/jira/responses/fieldDetail";
+import { IssueServer } from "../src/types/jira/responses/issue";
+import { IssueTypeDetailsServer } from "../src/types/jira/responses/issueTypeDetails";
+import { IssueUpdateServer } from "../src/types/jira/responses/issueUpdate";
+import { JsonTypeServer } from "../src/types/jira/responses/jsonType";
 
 chai.use(sinonChai);
 
@@ -21,6 +28,7 @@ export const stubLogging = () => {
         stubbedSuccess: stub(logging, "logSuccess"),
         stubbedWarning: stub(logging, "logWarning"),
         stubbedDebug: stub(logging, "logDebug"),
+        stubbedInit: stub(logging, "initLogging"),
     };
 };
 
@@ -29,6 +37,7 @@ export const stubRequests = () => {
         stubbedGet: stub(Requests, "get"),
         stubbedPost: stub(Requests, "post"),
         stubbedPut: stub(Requests, "put"),
+        stubbedInit: stub(Requests, "init"),
     };
 };
 
@@ -47,9 +56,11 @@ before(() => {
     stubbedPost.onFirstCall().resolves({
         status: HttpStatusCode.Ok,
         data: "ey12345Token",
-        headers: null,
+        headers: {},
         statusText: HttpStatusCode[HttpStatusCode.Ok],
-        config: null,
+        config: {
+            headers: new AxiosHeaders(),
+        },
     });
     RESOLVED_JWT_CREDENTIALS.getAuthenticationHeader("https://example.org");
 });
@@ -66,9 +77,9 @@ after(async () => {
     }
 });
 
-export class DummyXrayClient extends XrayClient<null, null, null, null> {
+export class DummyXrayClient extends XrayClient<PATCredentials, null, null, null> {
     constructor() {
-        super("https://example.org", null);
+        super("https://example.org", new PATCredentials("token"));
     }
     public getUrlImportExecution(): string {
         throw new Error("Method not implemented.");
@@ -96,9 +107,18 @@ export class DummyXrayClient extends XrayClient<null, null, null, null> {
     }
 }
 
-export class DummyJiraClient extends JiraClient<null, null, null, null, null, null, null, null> {
+export class DummyJiraClient extends JiraClient<
+    PATCredentials,
+    AttachmentServer,
+    FieldDetailServer,
+    JsonTypeServer,
+    IssueServer,
+    IssueTypeDetailsServer,
+    SearchRequestServer,
+    IssueUpdateServer
+> {
     constructor() {
-        super("https://example.org", null);
+        super("https://example.org", new PATCredentials("token"));
     }
     public getUrlAddAttachment(): string {
         throw new Error("Method not implemented.");
@@ -144,4 +164,70 @@ export function env(key: string): string {
         throw new Error(`Expected environment variable ${key} to not be undefined, which it was`);
     }
     return value as string;
+}
+
+// ============================================================================================== //
+// Huge hack around Cypress's event handling. It somewhat works, don't question it :(             //
+// ============================================================================================== //
+type Action =
+    | "after:run"
+    | "after:screenshot"
+    | "after:spec"
+    | "before:run"
+    | "before:spec"
+    | "before:browser:launch"
+    | "file:preprocessor"
+    | "dev-server:start"
+    | "task";
+
+type ActionCallbacks = {
+    "after:run": (
+        results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
+    ) => void | Promise<void>;
+    "after:screenshot": (
+        details: Cypress.ScreenshotDetails
+    ) => void | Cypress.AfterScreenshotReturnObject | Promise<Cypress.AfterScreenshotReturnObject>;
+    "after:spec": (
+        spec: Cypress.Spec,
+        results: CypressCommandLine.RunResult
+    ) => void | Promise<void>;
+    "before:run": (runDetails: Cypress.BeforeRunDetails) => void | Promise<void>;
+    "before:spec": (spec: Cypress.Spec) => void | Promise<void>;
+    "before:browser:launch": (
+        browser: Cypress.Browser,
+        browserLaunchOptions: Cypress.BrowserLaunchOptions
+    ) => void | Cypress.BrowserLaunchOptions | Promise<Cypress.BrowserLaunchOptions>;
+    "file:preprocessor": (file: Cypress.FileObject) => string | Promise<string>;
+    "dev-server:start": (file: Cypress.DevServerConfig) => Promise<Cypress.ResolvedDevServerConfig>;
+    task: (tasks: Cypress.Tasks) => void;
+};
+
+export function mockedCypressEventEmitter<A extends Action>(
+    expectedAction: A,
+    ...args: Parameters<ActionCallbacks[A]>
+): Cypress.PluginEvents {
+    const events: Cypress.PluginEvents = (
+        action: Action,
+        fn: ((...args: never[]) => unknown) | Cypress.Tasks
+    ): void => {
+        if (action !== expectedAction) {
+            return;
+        }
+        switch (action) {
+            case "after:run": {
+                const f = fn as ActionCallbacks["after:run"];
+                const parameters = args as Parameters<ActionCallbacks["after:run"]>;
+                f(...parameters);
+                break;
+            }
+            case "before:run": {
+                const f = fn as ActionCallbacks["before:run"];
+                const parameters = args as Parameters<ActionCallbacks["before:run"]>;
+                f(...parameters);
+                break;
+            }
+            default:
+        }
+    };
+    return events;
 }

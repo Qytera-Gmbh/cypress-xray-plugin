@@ -1,4 +1,4 @@
-import { HttpStatusCode } from "axios";
+import { AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
 import { stubRequests } from "../../../test/util";
@@ -25,9 +25,9 @@ describe("the xray server client", () => {
                         self: "http://www.example.org/jira/rest/api/2/issue/12345",
                     },
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: { headers: new AxiosHeaders() },
             });
             const response = await client.importExecution({
                 testExecutionKey: "CYP-42",
@@ -72,9 +72,9 @@ describe("the xray server client", () => {
                         self: "http://www.example.org/jira/rest/api/2/issue/12345",
                     },
                 },
-                headers: null,
+                headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: null,
+                config: { headers: new AxiosHeaders() },
             });
             const response = await client.importExecutionCucumberMultipart(
                 JSON.parse(

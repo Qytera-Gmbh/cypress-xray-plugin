@@ -4,25 +4,23 @@ import { stubLogging } from "../../../test/util";
 import { PATCredentials } from "../../authentication/credentials";
 import { JiraClientServer } from "../../client/jira/jiraClientServer";
 import { XrayClientServer } from "../../client/xray/xrayClientServer";
-import { initOptions } from "../../context";
-import { InternalOptions } from "../../types/plugin";
+import { initJiraOptions } from "../../context";
+import { InternalJiraOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
 import { JiraRepositoryServer } from "./jiraRepositoryServer";
 
 describe("the server issue repository", () => {
-    let options: InternalOptions;
+    let jiraOptions: InternalJiraOptions;
     let xrayClient: XrayClientServer;
     let jiraClient: JiraClientServer;
     let repository: JiraRepositoryServer;
 
     beforeEach(() => {
-        options = initOptions(
+        jiraOptions = initJiraOptions(
             {},
             {
-                jira: {
-                    projectKey: "CYP",
-                    url: "https://example.org",
-                },
+                projectKey: "CYP",
+                url: "https://example.org",
             }
         );
         jiraClient = new JiraClientServer("https://example.org", new PATCredentials("token"));
@@ -31,7 +29,7 @@ describe("the server issue repository", () => {
             new PATCredentials("token"),
             jiraClient
         );
-        repository = new JiraRepositoryServer(jiraClient, xrayClient, options);
+        repository = new JiraRepositoryServer(jiraClient, xrayClient, jiraOptions);
     });
 
     describe("getSummaries", () => {

@@ -11,20 +11,13 @@ export type OneOf<T extends NonNullable<unknown>[]> = {
 export type DateTimeISO = string;
 
 /**
- * Return an enum key based on its value, i.e. performs a reverse lookup of enum values to enum
- * keys.
+ * Utility function which asserts that a value is neither `null` nor `undefined`.
  *
- * @param enumType the enum
- * @param enumValue the enum value
- * @returns the corresponding enum key or null if there are zero or more than one matching keys
- * @see https://stackoverflow.com/a/54297863
+ * @param value the value
+ * @returns `true` if it is neither `null` nor `undefined`, otherwise `false`
  */
-export function getEnumKeyByEnumValue<K extends string, V extends string | number>(
-    enumType: { [key in K]: V },
-    enumValue: V
-): string | null {
-    const keys = Object.keys(enumType).filter((x: string) => enumType[x] === enumValue);
-    return keys.length === 1 ? keys[0] : null;
+export function nonNull<T>(value: T | null | undefined): value is T {
+    return value !== null && value !== undefined;
 }
 
 /**

@@ -73,13 +73,13 @@ export class XrayClientServer extends XrayClient<
             if (response.message) {
                 logError("Encountered an error during import:", response.message);
             }
-            if (response.testIssues.length > 0) {
+            if (response.testIssues && response.testIssues.length > 0) {
                 logDebug(
                     "Successfully updated or created test issues:",
                     response.testIssues.map((issue: IssueDetails) => issue.key).join(", ")
                 );
             }
-            if (response.preconditionIssues.length > 0) {
+            if (response.preconditionIssues && response.preconditionIssues.length > 0) {
                 logDebug(
                     "Successfully updated or created precondition issues:",
                     response.preconditionIssues.map((issue: IssueDetails) => issue.key).join(", ")

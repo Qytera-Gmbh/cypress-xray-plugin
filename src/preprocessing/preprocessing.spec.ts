@@ -1,8 +1,7 @@
+import { Background, Scenario } from "@cucumber/messages";
 import { expect } from "chai";
 import fs from "fs";
 import { stubLogging } from "../../test/util";
-import { initOptions } from "../context";
-import { InternalOptions } from "../types/plugin";
 import { dedent } from "../util/dedent";
 import {
     containsCucumberTest,
@@ -17,21 +16,8 @@ import {
 
 describe("cypress preprocessing", () => {
     let result: CypressCommandLine.CypressRunResult;
-    let options: InternalOptions;
 
     beforeEach(() => {
-        options = initOptions(
-            {},
-            {
-                jira: {
-                    projectKey: "CYP",
-                    url: "https://example.org",
-                },
-                cucumber: {
-                    featureFileExtension: ".feature",
-                },
-            }
-        );
         result = JSON.parse(
             fs.readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
@@ -39,14 +25,14 @@ describe("cypress preprocessing", () => {
 
     describe("getNativeTestIssueKeys", () => {
         it("returns valid issue keys", () => {
-            const issueKeys = getNativeTestIssueKeys(result, options);
+            const issueKeys = getNativeTestIssueKeys(result, "CYP");
             expect(issueKeys).to.deep.eq(["CYP-40", "CYP-41", "CYP-49"]);
         });
 
         it("skips invalid or missing issue keys", () => {
             result = JSON.parse(fs.readFileSync("./test/resources/runResult.json", "utf-8"));
             const { stubbedWarning } = stubLogging();
-            const issueKeys = getNativeTestIssueKeys(result, options);
+            const issueKeys = getNativeTestIssueKeys(result, "CYP");
             expect(issueKeys).to.deep.eq([]);
             expect(stubbedWarning).to.have.been.called.with.callCount(3);
             expect(stubbedWarning.getCall(0)).to.have.been.calledWithExactly(
@@ -101,37 +87,36 @@ describe("cypress preprocessing", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
             );
-            const issueKeys = getNativeTestIssueKeys(result, options);
+            const issueKeys = getNativeTestIssueKeys(result, "CYP", ".feature");
             expect(issueKeys).to.deep.eq(["CYP-330", "CYP-268", "CYP-237", "CYP-332", "CYP-333"]);
             expect(stubbedWarning).to.not.have.been.called;
         });
     });
 
     describe("containsNativeTest", () => {
-        it("returns true", () => {
-            expect(containsNativeTest(result, options)).to.be.true;
+        it("returns true for native runs", () => {
+            expect(containsNativeTest(result)).to.be.true;
         });
 
         it("returns true for mixed runs", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
             );
-            expect(containsNativeTest(result, options)).to.be.true;
+            expect(containsNativeTest(result, ".feature")).to.be.true;
         });
 
         it("returns false for cucumber runs", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
             );
-            expect(containsNativeTest(result, options)).to.be.false;
+            expect(containsNativeTest(result, ".feature")).to.be.false;
         });
 
         it("regards cucumber runs as native if cucumber was not configured", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
             );
-            options.cucumber = undefined;
-            expect(containsNativeTest(result, options)).to.be.true;
+            expect(containsNativeTest(result)).to.be.true;
         });
     });
 
@@ -178,30 +163,12 @@ describe("cypress preprocessing", () => {
 });
 
 describe("cucumber preprocessing", () => {
-    let options: InternalOptions;
-
-    beforeEach(() => {
-        options = initOptions(
-            {},
-            {
-                jira: {
-                    projectKey: "CYP",
-                    url: "https://example.org",
-                },
-                cucumber: {
-                    featureFileExtension: ".feature",
-                    uploadFeatures: true,
-                },
-            }
-        );
-    });
-
     describe("server", () => {
         it("throws for missing scenario tags", () => {
             expect(() =>
                 getCucumberIssueData(
                     "./test/resources/features/taggedServerMissingScenario.feature",
-                    options,
+                    "CYP",
                     false
                 )
             ).to.throw(
@@ -224,7 +191,7 @@ describe("cucumber preprocessing", () => {
             expect(() =>
                 getCucumberIssueData(
                     "./test/resources/features/taggedServerMultipleScenario.feature",
-                    options,
+                    "CYP",
                     false
                 )
             ).to.throw(
@@ -248,7 +215,7 @@ describe("cucumber preprocessing", () => {
             expect(() =>
                 getCucumberIssueData(
                     "./test/resources/features/taggedServerMissingBackground.feature",
-                    options,
+                    "CYP",
                     false
                 )
             ).to.throw(
@@ -271,7 +238,7 @@ describe("cucumber preprocessing", () => {
             expect(() =>
                 getCucumberIssueData(
                     "./test/resources/features/taggedServerMultipleBackground.feature",
-                    options,
+                    "CYP",
                     false
                 )
             ).to.throw(
@@ -298,8 +265,10 @@ describe("cucumber preprocessing", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedServerMultipleBackground.feature"
             );
+            // Cast because we know for certain it exists.
+            const background: Background = document.feature?.children[0].background as Background;
             const tag = getCucumberPreconditionIssueTags(
-                document.feature.children[0].background,
+                background,
                 "CYP",
                 false,
                 document.comments
@@ -311,9 +280,12 @@ describe("cucumber preprocessing", () => {
             const feature = parseFeatureFile(
                 "./test/resources/features/taggedServerMultipleScenario.feature"
             ).feature;
-            expect(
-                getCucumberScenarioIssueTags(feature.children[1].scenario, "CYP", false)
-            ).to.deep.eq(["CYP-123", "CYP-456"]);
+            // Cast because we know for certain it exists.
+            const scenario: Scenario = feature?.children[1].scenario as Scenario;
+            expect(getCucumberScenarioIssueTags(scenario, "CYP", false)).to.deep.eq([
+                "CYP-123",
+                "CYP-456",
+            ]);
         });
     });
 
@@ -322,7 +294,7 @@ describe("cucumber preprocessing", () => {
             expect(() =>
                 getCucumberIssueData(
                     "./test/resources/features/taggedCloudMissingScenario.feature",
-                    options,
+                    "CYP",
                     true
                 )
             ).to.throw(
@@ -345,7 +317,7 @@ describe("cucumber preprocessing", () => {
             expect(() =>
                 getCucumberIssueData(
                     "./test/resources/features/taggedCloudMultipleScenario.feature",
-                    options,
+                    "CYP",
                     true
                 )
             ).to.throw(
@@ -369,7 +341,7 @@ describe("cucumber preprocessing", () => {
             expect(() =>
                 getCucumberIssueData(
                     "./test/resources/features/taggedCloudMissingBackground.feature",
-                    options,
+                    "CYP",
                     true
                 )
             ).to.throw(
@@ -392,7 +364,7 @@ describe("cucumber preprocessing", () => {
             expect(() =>
                 getCucumberIssueData(
                     "./test/resources/features/taggedCloudMultipleBackground.feature",
-                    options,
+                    "CYP",
                     true
                 )
             ).to.throw(
@@ -419,8 +391,10 @@ describe("cucumber preprocessing", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedCloudMultipleBackground.feature"
             );
+            // Cast because we know for certain it exists.
+            const background: Background = document.feature?.children[0].background as Background;
             const tag = getCucumberPreconditionIssueTags(
-                document.feature.children[0].background,
+                background,
                 "CYP",
                 true,
                 document.comments
@@ -432,38 +406,40 @@ describe("cucumber preprocessing", () => {
             const feature = parseFeatureFile(
                 "./test/resources/features/taggedCloudMultipleScenario.feature"
             ).feature;
-            expect(
-                getCucumberScenarioIssueTags(feature.children[1].scenario, "CYP", true)
-            ).to.deep.eq(["CYP-123", "CYP-456"]);
+            // Cast because we know for certain it exists.
+            const scenario: Scenario = feature?.children[1].scenario as Scenario;
+            expect(getCucumberScenarioIssueTags(scenario, "CYP", true)).to.deep.eq([
+                "CYP-123",
+                "CYP-456",
+            ]);
         });
     });
 
     describe("containsCucumberTest", () => {
-        it("returns true", () => {
+        it("returns true for Cucumber runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
             );
-            expect(containsCucumberTest(result, options)).to.be.true;
+            expect(containsCucumberTest(result, ".feature")).to.be.true;
         });
 
         it("returns true for mixed runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
             );
-            expect(containsCucumberTest(result, options)).to.be.true;
+            expect(containsCucumberTest(result, ".feature")).to.be.true;
         });
 
         it("returns false for native runs", () => {
             const result = JSON.parse(fs.readFileSync("./test/resources/runResult.json", "utf-8"));
-            expect(containsCucumberTest(result, options)).to.be.false;
+            expect(containsCucumberTest(result, ".feature")).to.be.false;
         });
 
         it("regards cucumber runs as native if cucumber was not configured", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
             );
-            options.cucumber = undefined;
-            expect(containsCucumberTest(result, options)).to.be.false;
+            expect(containsCucumberTest(result)).to.be.false;
         });
     });
 });

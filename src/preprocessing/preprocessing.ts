@@ -9,7 +9,6 @@ import {
 } from "@cucumber/messages";
 import fs from "fs";
 import { logWarning } from "../logging/logging";
-import { InternalOptions, Options } from "../types/plugin";
 import { dedent } from "../util/dedent";
 import { errorMessage } from "../util/error";
 
@@ -19,10 +18,10 @@ import { errorMessage } from "../util/error";
 
 export function containsNativeTest(
     runResult: CypressCommandLine.CypressRunResult,
-    options: Options
+    featureFileExtension?: string
 ): boolean {
     return runResult.runs.some((run: CypressCommandLine.RunResult) => {
-        if (options.cucumber && run.spec.absolute.endsWith(options.cucumber.featureFileExtension)) {
+        if (featureFileExtension && run.spec.absolute.endsWith(featureFileExtension)) {
             return false;
         }
         return true;
@@ -31,16 +30,14 @@ export function containsNativeTest(
 
 export function getNativeTestIssueKeys(
     results: CypressCommandLine.CypressRunResult,
-    options: InternalOptions
+    projectKey: string,
+    featureFileExtension?: string
 ): string[] {
     const issueKeys: string[] = [];
     for (const runResult of results.runs) {
         const keyedTests: CypressCommandLine.TestResult[] = [];
         // Cucumber tests aren't handled here. Let's skip them.
-        if (
-            options.cucumber &&
-            runResult.spec.absolute.endsWith(options.cucumber.featureFileExtension)
-        ) {
+        if (featureFileExtension && runResult.spec.absolute.endsWith(featureFileExtension)) {
             continue;
         }
         for (const testResult of runResult.tests) {
@@ -50,7 +47,7 @@ export function getNativeTestIssueKeys(
                 // The ones before are test suite titles (describe, context, ...).
                 const issueKey = getNativeTestIssueKey(
                     testResult.title[testResult.title.length - 1],
-                    options.jira.projectKey
+                    projectKey
                 );
                 keyedTests.push(testResult);
                 issueKeys.push(issueKey);
@@ -71,7 +68,7 @@ export function getNativeTestIssueKeys(
  * @returns the Jira issue key
  * @throws if the title contains zero or more than one issue key
  */
-export function getNativeTestIssueKey(title: string, projectKey: string): string | null {
+export function getNativeTestIssueKey(title: string, projectKey: string): string {
     const regex = new RegExp(`(${projectKey}-\\d+)`, "g");
     const matches = title.match(regex);
     if (!matches) {
@@ -121,10 +118,10 @@ export function getNativeTestIssueKey(title: string, projectKey: string): string
 
 export function containsCucumberTest(
     runResult: CypressCommandLine.CypressRunResult,
-    options: Options
+    featureFileExtension?: string
 ): boolean {
     return runResult.runs.some((run: CypressCommandLine.RunResult) => {
-        if (options.cucumber && run.spec.absolute.endsWith(options.cucumber.featureFileExtension)) {
+        if (featureFileExtension && run.spec.absolute.endsWith(featureFileExtension)) {
             return true;
         }
         return false;
@@ -149,7 +146,7 @@ export interface FeatureFileIssueDataPrecondition {
 
 export function getCucumberIssueData(
     filePath: string,
-    options: InternalOptions,
+    projectKey: string,
     isCloudClient: boolean
 ): FeatureFileIssueData {
     const featureFileIssueKeys: FeatureFileIssueData = {
@@ -157,11 +154,14 @@ export function getCucumberIssueData(
         preconditions: [],
     };
     const document = parseFeatureFile(filePath);
+    if (!document.feature?.children) {
+        return featureFileIssueKeys;
+    }
     for (const child of document.feature.children) {
         if (child.scenario) {
             const issueKeys = getCucumberScenarioIssueTags(
                 child.scenario,
-                options.jira.projectKey,
+                projectKey,
                 isCloudClient
             );
             if (issueKeys.length === 0) {
@@ -170,7 +170,7 @@ export function getCucumberIssueData(
                         No test issue keys found in tags of scenario: ${child.scenario.name}
                         You can target existing test issues by adding a corresponding tag:
 
-                        ${getScenarioTag(options.jira.projectKey, isCloudClient)}
+                        ${getScenarioTag(projectKey, isCloudClient)}
                         ${getScenarioLine(child.scenario)}
                           # steps ...
 
@@ -204,7 +204,7 @@ export function getCucumberIssueData(
         } else if (child.background) {
             const preconditionKeys = getCucumberPreconditionIssueTags(
                 child.background,
-                options.jira.projectKey,
+                projectKey,
                 isCloudClient,
                 document.comments
             );
@@ -217,7 +217,7 @@ export function getCucumberIssueData(
                         You can target existing precondition issues by adding a corresponding comment:
 
                         ${getBackgroundLine(child.background)}
-                          ${getBackgroundTag(options.jira.projectKey, isCloudClient)}
+                          ${getBackgroundTag(projectKey, isCloudClient)}
                           # steps ...
 
                         For more information, visit:

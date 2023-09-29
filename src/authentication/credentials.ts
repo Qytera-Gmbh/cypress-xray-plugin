@@ -73,14 +73,13 @@ export class JWTCredentials extends APICredentials<string> {
     private async getToken(authenticationURL: string): Promise<string> {
         if (!this.token) {
             logInfo(`Authenticating to: ${authenticationURL}...`);
-            return Requests.post(authenticationURL, {
+            const response: AxiosResponse<string> = await Requests.post(authenticationURL, {
                 client_id: this.clientId,
                 client_secret: this.clientSecret,
-            }).then((response: AxiosResponse) => {
-                logSuccess("Authentication successful.");
-                this.token = response.data;
-                return this.token;
             });
+            logSuccess("Authentication successful.");
+            this.token = response.data;
+            return this.token;
         }
         return this.token;
     }

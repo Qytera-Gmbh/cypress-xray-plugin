@@ -3,33 +3,31 @@ import chaiAsPromised from "chai-as-promised";
 import { stub } from "sinon";
 import { BasicAuthCredentials } from "../../../authentication/credentials";
 import { JiraClientServer } from "../../../client/jira/jiraClientServer";
-import { initOptions } from "../../../context";
+import { initJiraOptions } from "../../../context";
 import { FieldDetailCloud, FieldDetailServer } from "../../../types/jira/responses/fieldDetail";
-import { InternalOptions } from "../../../types/plugin";
+import { InternalJiraOptions } from "../../../types/plugin";
 import { JiraFieldRepository } from "./jiraFieldRepository";
 
 chai.use(chaiAsPromised);
 
 describe("the jira field repository", () => {
-    let options: InternalOptions;
+    let jiraOptions: InternalJiraOptions;
     let jiraClient: JiraClientServer;
     let repository: JiraFieldRepository;
 
     beforeEach(() => {
-        options = initOptions(
+        jiraOptions = initJiraOptions(
             {},
             {
-                jira: {
-                    projectKey: "CYP",
-                    url: "https://example.org",
-                },
+                projectKey: "CYP",
+                url: "https://example.org",
             }
         );
         jiraClient = new JiraClientServer(
             "https://example.org",
             new BasicAuthCredentials("user", "xyz")
         );
-        repository = new JiraFieldRepository(jiraClient, options);
+        repository = new JiraFieldRepository(jiraClient, jiraOptions);
     });
 
     it("fetches fields case-insensitively", async () => {

@@ -12,10 +12,10 @@ export type RequestConfigPost<D = unknown> = {
 };
 
 export class Requests {
-    private static AGENT: Agent = undefined;
-    private static AXIOS: Axios = undefined;
+    private static AGENT: Agent | undefined = undefined;
+    private static AXIOS: Axios | undefined = undefined;
 
-    private static options: InternalOptions = undefined;
+    private static options: InternalOptions | undefined = undefined;
 
     public static init(options: InternalOptions): void {
         Requests.options = options;
@@ -24,8 +24,8 @@ export class Requests {
     private static agent(): Agent {
         if (!Requests.AGENT) {
             Requests.AGENT = new Agent({
-                ca: Requests.readCertificate(Requests.options.openSSL.rootCAPath),
-                secureOptions: Requests.options.openSSL.secureOptions,
+                ca: Requests.readCertificate(Requests.options?.openSSL.rootCAPath),
+                secureOptions: Requests.options?.openSSL.secureOptions,
             });
         }
         return Requests.AGENT;
@@ -40,7 +40,7 @@ export class Requests {
             if (Requests.options.plugin.debug) {
                 Requests.AXIOS.interceptors.request.use(
                     (request) => {
-                        const method = request.method.toUpperCase();
+                        const method = request.method?.toUpperCase();
                         const url = request.url;
                         const timestamp = Date.now();
                         const filename = normalizedFilename(
@@ -63,8 +63,8 @@ export class Requests {
                         let filename: string;
                         let data: unknown;
                         if (isAxiosError(error)) {
-                            const method = error.config.method.toUpperCase();
-                            const url = error.config.url;
+                            const method = error.config?.method?.toUpperCase();
+                            const url = error.config?.url;
                             filename = normalizedFilename(
                                 `${timestamp}_${method}_${url}_request.json`
                             );
@@ -103,8 +103,8 @@ export class Requests {
                         let filename: string;
                         let data: unknown;
                         if (isAxiosError(error)) {
-                            const method = error.config.method.toUpperCase();
-                            const url = error.config.url;
+                            const method = error.config?.method?.toUpperCase();
+                            const url = error.config?.url;
                             filename = normalizedFilename(
                                 `${timestamp}_${method}_${url}_response.json`
                             );
@@ -123,7 +123,7 @@ export class Requests {
         return Requests.AXIOS;
     }
 
-    private static readCertificate(path?: string): Buffer {
+    private static readCertificate(path?: string): Buffer | undefined {
         if (!path) {
             return undefined;
         }
