@@ -3,7 +3,7 @@ import chai from "chai";
 import FormData from "form-data";
 import fs from "fs";
 import path from "path";
-import Sinon, { stub } from "sinon";
+import Sinon, { spy, stub } from "sinon";
 import sinonChai from "sinon-chai";
 import { JWTCredentials, PATCredentials } from "../src/authentication/credentials";
 import { JiraClient } from "../src/client/jira/jiraClient";
@@ -21,14 +21,47 @@ import { JsonTypeServer } from "../src/types/jira/responses/jsonType";
 
 chai.use(sinonChai);
 
-export const stubLogging = () => {
+/**
+ * Stubs the logging module members. An optional list of spies can be provided, which will result
+ * in the corresponding members being spied on instead of stubbing them completely.
+ *
+ * @param spies the array of members to spy on only
+ * @returns an object containing the logging module's stubs or spies
+ */
+export const stubLogging = (...spies: (keyof typeof logging)[]) => {
     return {
-        stubbedInfo: stub(logging, "logInfo"),
-        stubbedError: stub(logging, "logError"),
-        stubbedSuccess: stub(logging, "logSuccess"),
-        stubbedWarning: stub(logging, "logWarning"),
-        stubbedDebug: stub(logging, "logDebug"),
-        stubbedInit: stub(logging, "initLogging"),
+        stubbedInit:
+            spies.length > 0 && spies.includes("initLogging")
+                ? spy(logging, "initLogging")
+                : stub(logging, "initLogging"),
+        stubbedWrite:
+            spies.length > 0 && spies.includes("writeFile")
+                ? spy(logging, "writeFile")
+                : stub(logging, "writeFile"),
+        stubbedWriteErrorFile:
+            spies.length > 0 && spies.includes("writeErrorFile")
+                ? spy(logging, "writeErrorFile")
+                : stub(logging, "writeErrorFile"),
+        stubbedInfo:
+            spies.length > 0 && spies.includes("logInfo")
+                ? spy(logging, "logInfo")
+                : stub(logging, "logInfo"),
+        stubbedError:
+            spies.length > 0 && spies.includes("logError")
+                ? spy(logging, "logError")
+                : stub(logging, "logError"),
+        stubbedSuccess:
+            spies.length > 0 && spies.includes("logSuccess")
+                ? spy(logging, "logSuccess")
+                : stub(logging, "logSuccess"),
+        stubbedWarning:
+            spies.length > 0 && spies.includes("logWarning")
+                ? spy(logging, "logWarning")
+                : stub(logging, "logWarning"),
+        stubbedDebug:
+            spies.length > 0 && spies.includes("logDebug")
+                ? spy(logging, "logDebug")
+                : stub(logging, "logDebug"),
     };
 };
 
@@ -55,7 +88,7 @@ export const RESOLVED_JWT_CREDENTIALS: JWTCredentials = new JWTCredentials(
 
 before(() => {
     // Resolve credentials so that they don't have to dispatch POST requests again.
-    stubLogging();
+    stubLogging("initLogging");
     const { stubbedPost } = stubRequests();
     stubbedPost.onFirstCall().resolves({
         status: HttpStatusCode.Ok,
