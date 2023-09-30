@@ -1,34 +1,35 @@
 import { AxiosResponse } from "axios";
-import { HTTPHeader } from "../authentication/credentials";
+import { BasicAuthCredentials, PATCredentials } from "../authentication/credentials";
 import { Requests } from "../https/requests";
 import { logDebug, logError, logInfo, writeErrorFile } from "../logging/logging";
-import { UserServer } from "../types/jira/responses/user";
+import { UserCloud, UserServer } from "../types/jira/responses/user";
 import { dedent } from "./dedent";
 import { errorMessage } from "./error";
 import { startInterval } from "./timer";
 
 /**
- * Pings a Jira server instance and verifies that:
- * - the URL is the base URL of a Jira server instance
+ * Pings a Jira instance and verifies that:
+ * - the URL is the base URL of a Jira instance
  * - the credentials belong to a valid user
  *
  * @returns `true` if the instance can be pinged, `false` otherwise
  * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-rest-api-3-myself-get
  * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.11.0/#api/2/myself
  */
-export async function pingJiraServer(
+export async function pingJiraInstance(
     url: string,
-    authenticationHeader: HTTPHeader
+    credentials: BasicAuthCredentials | PATCredentials
 ): Promise<boolean> {
-    logDebug("Pinging Jira server instance...");
+    logDebug("Pinging Jira instance...");
     const progressInterval = startInterval((totalTime: number) => {
         logInfo(`Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
     });
-    let userResponse: AxiosResponse<UserServer> | undefined = undefined;
+    let userResponse: AxiosResponse<UserServer | UserCloud> | undefined = undefined;
     try {
-        userResponse = await Requests.get(`${url}/rest/api/2/myself`, {
+        const header = await credentials.getAuthenticationHeader();
+        userResponse = await Requests.get(`${url}/rest/api/latest/myself`, {
             headers: {
-                ...authenticationHeader,
+                ...header,
             },
         });
         if (userResponse.data.displayName) {
@@ -55,11 +56,11 @@ export async function pingJiraServer(
 
                 Make sure you have set up Jira correctly:
                 - Base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
-                - Authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira-server
+                - Authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
             `)
         );
         if (userResponse) {
-            writeErrorFile(userResponse.data, "jiraServerPingResponse");
+            writeErrorFile(userResponse.data, "jiraPingResponse");
         }
         return false;
     } finally {
