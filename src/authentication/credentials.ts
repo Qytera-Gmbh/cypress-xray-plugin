@@ -74,6 +74,15 @@ export class JWTCredentials extends APICredentials {
         this.token = undefined;
     }
 
+    /**
+     * Return the URL to authenticate to.
+     *
+     * @returns the URL
+     */
+    public getAuthenticationUrl(): string {
+        return this.authenticationUrl;
+    }
+
     private async getToken(): Promise<string> {
         if (!this.token) {
             try {
