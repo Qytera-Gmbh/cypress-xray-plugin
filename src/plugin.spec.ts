@@ -75,7 +75,7 @@ describe("the plugin", () => {
             };
             const stubbedContext = stub(context, "setPluginContext");
             const stubbedClients = stub(context, "initClients");
-            stubbedClients.onFirstCall().returns(pluginContext.clients);
+            stubbedClients.onFirstCall().resolves(pluginContext.clients);
             const options: Options = {
                 jira: {
                     attachVideos: true,
@@ -165,7 +165,7 @@ describe("the plugin", () => {
         it("initializes the requests module", async () => {
             const stubbedClients = stub(context, "initClients");
             const { stubbedInit } = stubRequests();
-            stubbedClients.onFirstCall().returns(pluginContext.clients);
+            stubbedClients.onFirstCall().resolves(pluginContext.clients);
             const options: Options = {
                 jira: {
                     projectKey: "ABC",
@@ -182,7 +182,7 @@ describe("the plugin", () => {
         it("initializes the logging module", async () => {
             const stubbedClients = stub(context, "initClients");
             const { stubbedInit } = stubLogging();
-            stubbedClients.onFirstCall().returns(pluginContext.clients);
+            stubbedClients.onFirstCall().resolves(pluginContext.clients);
             const options: Options = {
                 jira: {
                     projectKey: "ABC",

@@ -37,7 +37,7 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
     setPluginContext({
         cypress: config,
         internal: internalOptions,
-        clients: initClients(internalOptions.jira, config.env),
+        clients: await initClients(internalOptions.jira, config.env),
     });
     Requests.init({
         debug: internalOptions.plugin.debug,

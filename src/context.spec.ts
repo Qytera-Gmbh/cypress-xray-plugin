@@ -24,6 +24,7 @@ import {
     InternalXrayOptions,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
+import * as ping from "./util/ping";
 
 chai.use(chaiAsPromised);
 
@@ -973,7 +974,7 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should detect cloud credentials", () => {
+        it("should detect cloud credentials", async () => {
             const env = {
                 JIRA_USERNAME: "user@somewhere.xyz",
                 JIRA_API_TOKEN: "1337",
@@ -981,7 +982,13 @@ describe("the plugin context configuration", () => {
                 XRAY_CLIENT_SECRET: "xyz",
             };
             const { stubbedInfo } = stubLogging();
-            const { jiraClient, xrayClient } = initClients(jiraOptions, env);
+            const stubbedJiraPing = stub(ping, "pingJiraInstance");
+            const stubbedXrayPing = stub(ping, "pingXrayCloud");
+            stubbedJiraPing.onFirstCall().resolves();
+            stubbedXrayPing.onFirstCall().resolves();
+            const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
+            expect(jiraClient).to.be.an.instanceof(JiraClientCloud);
+            expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
             expect(jiraClient.getCredentials()).to.be.an.instanceof(BasicAuthCredentials);
             expect(xrayClient.getCredentials()).to.be.an.instanceof(JWTCredentials);
             expect(stubbedInfo).to.have.been.calledWith(
@@ -990,15 +997,19 @@ describe("the plugin context configuration", () => {
             expect(stubbedInfo).to.have.been.calledWith(
                 "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
             );
+            expect(stubbedJiraPing).to.have.been.calledOnce;
+            expect(stubbedXrayPing).to.have.been.calledOnce;
         });
 
-        it("should throw for missing xray cloud credentials", () => {
+        it("should throw for missing xray cloud credentials", async () => {
             const env = {
                 JIRA_USERNAME: "user@somewhere.xyz",
                 JIRA_API_TOKEN: "1337",
             };
             const { stubbedInfo } = stubLogging();
-            expect(() => initClients(jiraOptions, env)).to.throw(
+            const stubbedJiraPing = stub(ping, "pingJiraInstance");
+            stubbedJiraPing.onFirstCall().resolves();
+            await expect(initClients(jiraOptions, env)).to.eventually.be.rejectedWith(
                 dedent(`
                     Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials
                     You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
@@ -1009,12 +1020,16 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should detect PAT credentials", () => {
+        it("should detect PAT credentials", async () => {
             const env = {
                 JIRA_API_TOKEN: "1337",
             };
             const { stubbedInfo } = stubLogging();
-            const { jiraClient, xrayClient } = initClients(jiraOptions, env);
+            const stubbedJiraPing = stub(ping, "pingJiraInstance");
+            const stubbedXrayPing = stub(ping, "pingXrayServer");
+            stubbedJiraPing.onFirstCall().resolves();
+            stubbedXrayPing.onFirstCall().resolves();
+            const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
             expect(jiraClient).to.be.an.instanceof(JiraClientServer);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
             expect(jiraClient.getCredentials()).to.be.an.instanceof(PATCredentials);
@@ -1025,15 +1040,21 @@ describe("the plugin context configuration", () => {
             expect(stubbedInfo).to.have.been.calledWith(
                 "Jira PAT found. Setting up Xray server PAT credentials"
             );
+            expect(stubbedJiraPing).to.have.been.calledOnce;
+            expect(stubbedXrayPing).to.have.been.calledOnce;
         });
 
-        it("should detect basic auth credentials", () => {
+        it("should detect basic auth credentials", async () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "1337",
             };
             const { stubbedInfo } = stubLogging();
-            const { jiraClient, xrayClient } = initClients(jiraOptions, env);
+            const stubbedJiraPing = stub(ping, "pingJiraInstance");
+            const stubbedXrayPing = stub(ping, "pingXrayServer");
+            stubbedJiraPing.onFirstCall().resolves();
+            stubbedXrayPing.onFirstCall().resolves();
+            const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
             expect(jiraClient).to.be.an.instanceof(JiraClientServer);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
             expect(jiraClient.getCredentials()).to.be.an.instanceof(BasicAuthCredentials);
@@ -1044,9 +1065,11 @@ describe("the plugin context configuration", () => {
             expect(stubbedInfo).to.have.been.calledWith(
                 "Jira username and password found. Setting up Xray server basic auth credentials"
             );
+            expect(stubbedJiraPing).to.have.been.calledOnce;
+            expect(stubbedXrayPing).to.have.been.calledOnce;
         });
 
-        it("should choose cloud credentials over server credentials", () => {
+        it("should choose cloud credentials over server credentials", async () => {
             const env = {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "xyz",
@@ -1055,15 +1078,19 @@ describe("the plugin context configuration", () => {
                 XRAY_CLIENT_SECRET: "xyz",
             };
             stubLogging();
-            const { jiraClient, xrayClient } = initClients(jiraOptions, env);
+            const stubbedJiraPing = stub(ping, "pingJiraInstance");
+            const stubbedXrayPing = stub(ping, "pingXrayCloud");
+            stubbedJiraPing.onFirstCall().resolves();
+            stubbedXrayPing.onFirstCall().resolves();
+            const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
             expect(jiraClient).to.be.an.instanceof(JiraClientCloud);
             expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
             expect(jiraClient.getCredentials()).to.be.an.instanceof(BasicAuthCredentials);
             expect(xrayClient.getCredentials()).to.be.an.instanceof(JWTCredentials);
         });
-        it("should throw an error for missing jira urls", () => {
+        it("should throw an error for missing jira urls", async () => {
             jiraOptions.url = undefined as unknown as string;
-            expect(() => initClients(jiraOptions, {})).to.throw(
+            await expect(initClients(jiraOptions, {})).to.eventually.be.rejectedWith(
                 dedent(`
                     Failed to configure Jira client: no Jira URL was provided
                     Make sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
@@ -1071,8 +1098,8 @@ describe("the plugin context configuration", () => {
             );
         });
 
-        it("should throw an error for missing credentials", () => {
-            expect(() => initClients(jiraOptions, {})).to.throw(
+        it("should throw an error for missing credentials", async () => {
+            await expect(initClients(jiraOptions, {})).to.eventually.be.rejectedWith(
                 dedent(`
                     Failed to configure Jira client: no viable authentication method was configured
                     You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
