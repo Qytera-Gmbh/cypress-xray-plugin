@@ -34,14 +34,14 @@ export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, o
         cucumber: await initCucumberOptions(config, options.cucumber),
         openSSL: initOpenSSLOptions(config.env, options.openSSL),
     };
+    Requests.init({
+        debug: internalOptions.plugin.debug,
+        openSSL: internalOptions.openSSL,
+    });
     setPluginContext({
         cypress: config,
         internal: internalOptions,
         clients: await initClients(internalOptions.jira, config.env),
-    });
-    Requests.init({
-        debug: internalOptions.plugin.debug,
-        openSSL: internalOptions.openSSL,
     });
 }
 
