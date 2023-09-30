@@ -4,7 +4,7 @@ import { StringMap } from "../types/util";
 import { encode } from "../util/base64";
 import { dedent } from "../util/dedent";
 import { LoggedError, errorMessage } from "../util/error";
-import { startInterval } from "../util/timer";
+import { startInterval } from "../util/time";
 
 /**
  * A basic HTTP header.

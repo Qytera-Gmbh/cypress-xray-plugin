@@ -5,7 +5,7 @@ import {
 } from "../authentication/credentials";
 import { logInfo } from "../logging/logging";
 import { OneOf } from "../types/util";
-import { startInterval } from "../util/timer";
+import { startInterval } from "../util/time";
 
 /**
  * A basic client interface which stores credentials data used for communicating with a server.

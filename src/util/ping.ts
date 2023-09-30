@@ -8,7 +8,7 @@ import { logDebug, logError, logInfo } from "../logging/logging";
 import { UserCloud, UserServer } from "../types/jira/responses/user";
 import { dedent } from "./dedent";
 import { errorMessage } from "./error";
-import { startInterval } from "./timer";
+import { startInterval } from "./time";
 
 /**
  * Pings a Jira instance and verifies that:
