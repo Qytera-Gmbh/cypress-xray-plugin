@@ -59,7 +59,7 @@ before(() => {
     const { stubbedPost } = stubRequests();
     stubbedPost.onFirstCall().resolves({
         status: HttpStatusCode.Ok,
-        data: "ey12345Token",
+        data: "ey.12345.Token",
         headers: {},
         statusText: HttpStatusCode[HttpStatusCode.Ok],
         config: {

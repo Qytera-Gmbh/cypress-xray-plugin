@@ -3,6 +3,7 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import { resolveTestDirPath, stubLogging } from "../../test/util";
+import { LoggedError } from "../util/error";
 import { initLogging, writeErrorFile } from "./logging";
 
 describe("the logging module", () => {
@@ -131,6 +132,22 @@ describe("the logging module", () => {
             expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({
                 good: "morning",
             });
+        });
+
+        it("should not write already logged errors", () => {
+            const timestamp = Date.now();
+            initLogging({
+                logDirectory: resolveTestDirPath("logs", timestamp.toString()),
+            });
+            const { stubbedError } = stubLogging();
+            writeErrorFile(new LoggedError("hello"), "writeErrorFileLogged");
+            const expectedPath = resolveTestDirPath(
+                "logs",
+                timestamp.toString(),
+                "writeErrorFileLogged"
+            );
+            expect(stubbedError).to.not.have.been.called;
+            expect(fs.existsSync(expectedPath)).to.be.false;
         });
     });
 });
