@@ -1,5 +1,6 @@
 import { AxiosHeaders, AxiosResponse, HttpStatusCode } from "axios";
-import { expect } from "chai";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import Sinon from "sinon";
 import { RESOLVED_JWT_CREDENTIALS, stubLogging, stubRequests } from "../../test/util";
 import { JWTCredentials, PATCredentials } from "../authentication/credentials";
@@ -7,6 +8,8 @@ import { UserCloud, UserServer } from "../types/jira/responses/user";
 import { XrayLicenseStatus } from "../types/xray/responses/license";
 import { dedent } from "./dedent";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./ping";
+
+chai.use(chaiAsPromised);
 
 describe("Jira instance ping", () => {
     it("returns true on success", async () => {
@@ -29,13 +32,11 @@ describe("Jira instance ping", () => {
                 headers: { Authorization: "Bearer token" },
             })
             .resolves(response);
-        const pong = await pingJiraInstance("https://example.org", new PATCredentials("token"));
-        expect(pong).to.be.true;
+        await pingJiraInstance("https://example.org", new PATCredentials("token"));
     });
 
     it("returns false if no license data is returned", async () => {
         const { stubbedGet } = stubRequests();
-        const { stubbedError } = stubLogging();
         const response: AxiosResponse<string> = {
             status: HttpStatusCode.Ok,
             data: "<div>Welcome</div>",
@@ -44,9 +45,9 @@ describe("Jira instance ping", () => {
             config: { headers: new AxiosHeaders() },
         };
         stubbedGet.resolves(response);
-        const pong = await pingJiraInstance("https://example.org", new PATCredentials("token"));
-        expect(pong).to.be.false;
-        expect(stubbedError).to.have.been.calledOnceWithExactly(
+        await expect(
+            pingJiraInstance("https://example.org", new PATCredentials("token"))
+        ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Jira: https://example.org
 
@@ -63,7 +64,6 @@ describe("Jira instance ping", () => {
 
     it("returns false if user data is missing", async () => {
         const { stubbedGet } = stubRequests();
-        const { stubbedError } = stubLogging();
         const response: AxiosResponse<UserServer | UserCloud> = {
             status: HttpStatusCode.Ok,
             data: {
@@ -74,9 +74,9 @@ describe("Jira instance ping", () => {
             config: { headers: new AxiosHeaders() },
         };
         stubbedGet.resolves(response);
-        const pong = await pingJiraInstance("https://example.org", new PATCredentials("token"));
-        expect(pong).to.be.false;
-        expect(stubbedError).to.have.been.calledOnceWithExactly(
+        await expect(
+            pingJiraInstance("https://example.org", new PATCredentials("token"))
+        ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Jira: https://example.org
 
@@ -143,13 +143,11 @@ describe("Xray server ping", () => {
                 headers: { Authorization: "Bearer token" },
             })
             .resolves(response);
-        const pong = await pingXrayServer("https://example.org", new PATCredentials("token"));
-        expect(pong).to.be.true;
+        await pingXrayServer("https://example.org", new PATCredentials("token"));
     });
 
     it("returns false if no license data is returned", async () => {
         const { stubbedGet } = stubRequests();
-        const { stubbedError } = stubLogging();
         const response: AxiosResponse<string> = {
             status: HttpStatusCode.Ok,
             data: "<div>Welcome</div>",
@@ -158,9 +156,9 @@ describe("Xray server ping", () => {
             config: { headers: new AxiosHeaders() },
         };
         stubbedGet.resolves(response);
-        const pong = await pingXrayServer("https://example.org", new PATCredentials("token"));
-        expect(pong).to.be.false;
-        expect(stubbedError).to.have.been.calledOnceWithExactly(
+        await expect(
+            pingXrayServer("https://example.org", new PATCredentials("token"))
+        ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Xray: https://example.org
 
@@ -178,7 +176,6 @@ describe("Xray server ping", () => {
 
     it("returns false if the license is not active", async () => {
         const { stubbedGet } = stubRequests();
-        const { stubbedError } = stubLogging();
         const response: AxiosResponse<XrayLicenseStatus> = {
             status: HttpStatusCode.Ok,
             data: {
@@ -190,9 +187,9 @@ describe("Xray server ping", () => {
             config: { headers: new AxiosHeaders() },
         };
         stubbedGet.resolves(response);
-        const pong = await pingXrayServer("https://example.org", new PATCredentials("token"));
-        expect(pong).to.be.false;
-        expect(stubbedError).to.have.been.calledOnceWithExactly(
+        await expect(
+            pingXrayServer("https://example.org", new PATCredentials("token"))
+        ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Xray: https://example.org
 
@@ -258,13 +255,13 @@ describe("Xray cloud ping", () => {
                 client_secret: "token",
             })
             .resolves(response);
-        const pong = await pingXrayCloud(RESOLVED_JWT_CREDENTIALS);
-        expect(pong).to.be.true;
+        await pingXrayCloud(RESOLVED_JWT_CREDENTIALS);
     });
 
     it("returns false on failure", async () => {
-        const { stubbedGet } = stubRequests();
-        const { stubbedError } = stubLogging();
+        const { stubbedPost } = stubRequests();
+        // Checked somewhere else.
+        stubLogging();
         const response: AxiosResponse<string> = {
             status: HttpStatusCode.NotFound,
             data: "<div>Not Found</div>",
@@ -272,10 +269,10 @@ describe("Xray cloud ping", () => {
             statusText: HttpStatusCode[HttpStatusCode.NotFound],
             config: { headers: new AxiosHeaders() },
         };
-        stubbedGet.resolves(response);
-        const pong = await pingXrayCloud(new JWTCredentials("id", "secret", "https://example.org"));
-        expect(pong).to.be.false;
-        expect(stubbedError).to.have.been.calledWithExactly(
+        stubbedPost.resolves(response);
+        await expect(
+            pingXrayCloud(new JWTCredentials("id", "secret", "https://example.org"))
+        ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Xray: https://example.org
 

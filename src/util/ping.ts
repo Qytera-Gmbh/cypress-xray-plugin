@@ -4,7 +4,7 @@ import {
     PATCredentials,
 } from "../authentication/credentials";
 import { Requests } from "../https/requests";
-import { logDebug, logError, logInfo } from "../logging/logging";
+import { logDebug, logInfo } from "../logging/logging";
 import { UserCloud, UserServer } from "../types/jira/responses/user";
 import { dedent } from "./dedent";
 import { errorMessage } from "./error";
@@ -17,14 +17,13 @@ import { startInterval } from "./time";
  *
  * @param url the base URL of the Jira instance
  * @param credentials the credentials of a valid Jira user
- * @returns `true` if the instance can be pinged, `false` otherwise
  * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-rest-api-3-myself-get
  * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.11.0/#api/2/myself
  */
 export async function pingJiraInstance(
     url: string,
     credentials: BasicAuthCredentials | PATCredentials
-): Promise<boolean> {
+): Promise<void> {
     logDebug("Pinging Jira instance...");
     const progressInterval = startInterval((totalTime: number) => {
         logInfo(`Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
@@ -44,7 +43,6 @@ export async function pingJiraInstance(
                     The provided Jira credentials belong to: ${username}
                 `)
             );
-            return true;
         } else {
             throw new Error(
                 dedent(`
@@ -53,7 +51,7 @@ export async function pingJiraInstance(
             );
         }
     } catch (error: unknown) {
-        logError(
+        throw new Error(
             dedent(`
                 Failed to establish communication with Jira: ${url}
 
@@ -66,7 +64,6 @@ export async function pingJiraInstance(
                 For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
             `)
         );
-        return false;
     } finally {
         clearInterval(progressInterval);
     }
@@ -83,13 +80,12 @@ function getUserString(user: UserServer | UserCloud): string | undefined {
  *
  * @param url the base URL of the Xray server instance
  * @param credentials the credentials of a user with a valid Xray license
- * @returns `true` if the instance can be pinged, `false` otherwise
  * @see https://docs.getxray.app/display/XRAY/v2.0#/External%20Apps/get_xraylicense
  */
 export async function pingXrayServer(
     url: string,
     credentials: BasicAuthCredentials | PATCredentials
-): Promise<boolean> {
+): Promise<void> {
     logDebug("Pinging Xray server instance...");
     const progressInterval = startInterval((totalTime: number) => {
         logInfo(`Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
@@ -109,17 +105,18 @@ export async function pingXrayServer(
                         Xray license is active: ${licenseResponse.data.licenseType}
                     `)
                 );
-                return true;
+            } else {
+                throw new Error("The Xray license is not active");
             }
-            throw new Error("The Xray license is not active");
+        } else {
+            throw new Error(
+                dedent(`
+                    Xray did not return a valid response: JSON containing basic Xray license information was expected, but not received
+                `)
+            );
         }
-        throw new Error(
-            dedent(`
-                Xray did not return a valid response: JSON containing basic Xray license information was expected, but not received
-            `)
-        );
     } catch (error: unknown) {
-        logError(
+        throw new Error(
             dedent(`
                 Failed to establish communication with Xray: ${url}
 
@@ -134,7 +131,6 @@ export async function pingXrayServer(
 
             `)
         );
-        return false;
     } finally {
         clearInterval(progressInterval);
     }
@@ -144,10 +140,9 @@ export async function pingXrayServer(
  * Pings Xray cloud and verifies that the credentials belong to a user with a valid Xray license.
  *
  * @param credentials Xray cloud credentials
- * @returns `true` if the credentials are valid, `false` otherwise
  * @see https://docs.getxray.app/display/XRAYCLOUD/Authentication+-+REST+v2
  */
-export async function pingXrayCloud(credentials: JWTCredentials): Promise<boolean> {
+export async function pingXrayCloud(credentials: JWTCredentials): Promise<void> {
     logDebug("Pinging Xray cloud...");
     try {
         await credentials.getAuthenticationHeader();
@@ -157,9 +152,8 @@ export async function pingXrayCloud(credentials: JWTCredentials): Promise<boolea
                 The provided credentials belong to a user with a valid Xray license
             `)
         );
-        return true;
     } catch (error: unknown) {
-        logError(
+        throw new Error(
             dedent(`
                 Failed to establish communication with Xray: ${credentials.getAuthenticationUrl()}
 
@@ -172,6 +166,5 @@ export async function pingXrayCloud(credentials: JWTCredentials): Promise<boolea
                 For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
             `)
         );
-        return false;
     }
 }
