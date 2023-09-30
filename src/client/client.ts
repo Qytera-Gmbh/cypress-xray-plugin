@@ -5,6 +5,7 @@ import {
 } from "../authentication/credentials";
 import { logInfo } from "../logging/logging";
 import { OneOf } from "../types/util";
+import { startInterval } from "../util/time";
 
 /**
  * A basic client interface which stores credentials data used for communicating with a server.
@@ -41,8 +42,6 @@ export abstract class Client<
         return this.credentials;
     }
 
-    private readonly LOG_RESPONSE_INTERVAL_MS = 10000;
-
     /**
      * Starts an informative timer which tells the user for how long they have
      * been waiting for a response already.
@@ -51,11 +50,8 @@ export abstract class Client<
      * @returns the timer's handler
      */
     protected startResponseInterval(url: string): NodeJS.Timer {
-        let sumTime = 0;
-        const callback = () => {
-            sumTime = sumTime + this.LOG_RESPONSE_INTERVAL_MS;
-            logInfo(`Waiting for ${url} to respond... (${sumTime / 1000} seconds)`);
-        };
-        return setInterval(callback, this.LOG_RESPONSE_INTERVAL_MS);
+        return startInterval((totalTime: number) => {
+            logInfo(`Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
+        });
     }
 }

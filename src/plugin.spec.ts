@@ -75,8 +75,7 @@ describe("the plugin", () => {
             };
             const stubbedContext = stub(context, "setPluginContext");
             const stubbedClients = stub(context, "initClients");
-            stubbedContext.onFirstCall().returns(pluginContext);
-            stubbedClients.onFirstCall().returns(pluginContext.clients);
+            stubbedClients.onFirstCall().resolves(pluginContext.clients);
             const options: Options = {
                 jira: {
                     attachVideos: true,
@@ -97,7 +96,7 @@ describe("the plugin", () => {
                     url: "https://example.org",
                 },
                 plugin: {
-                    debug: true,
+                    debug: false,
                     logDirectory: "xyz",
                     normalizeScreenshotNames: true,
                     enabled: true,
@@ -164,11 +163,9 @@ describe("the plugin", () => {
         });
 
         it("initializes the requests module", async () => {
-            const stubbedContext = stub(context, "setPluginContext");
             const stubbedClients = stub(context, "initClients");
             const { stubbedInit } = stubRequests();
-            stubbedContext.onFirstCall().returns(pluginContext);
-            stubbedClients.onFirstCall().returns(pluginContext.clients);
+            stubbedClients.onFirstCall().resolves(pluginContext.clients);
             const options: Options = {
                 jira: {
                     projectKey: "ABC",
@@ -176,15 +173,16 @@ describe("the plugin", () => {
                 },
             };
             await configureXrayPlugin(config, options);
-            expect(stubbedInit).to.have.been.calledOnceWithExactly(pluginContext.internal);
+            expect(stubbedInit).to.have.been.calledOnceWithExactly({
+                debug: false,
+                openSSL: pluginContext.internal.openSSL,
+            });
         });
 
         it("initializes the logging module", async () => {
-            const stubbedContext = stub(context, "setPluginContext");
             const stubbedClients = stub(context, "initClients");
             const { stubbedInit } = stubLogging();
-            stubbedContext.onFirstCall().returns(pluginContext);
-            stubbedClients.onFirstCall().returns(pluginContext.clients);
+            stubbedClients.onFirstCall().resolves(pluginContext.clients);
             const options: Options = {
                 jira: {
                     projectKey: "ABC",

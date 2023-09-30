@@ -2,6 +2,7 @@ import { isAxiosError } from "axios";
 import chalk from "chalk";
 import fs from "fs";
 import path from "path";
+import { isLoggedError } from "../util/error";
 
 const INFO = "INFO";
 const ERROR = "ERROR";
@@ -101,6 +102,9 @@ export function writeFile<T>(data: T, filename: string): string {
 export function writeErrorFile(error: unknown, filename: string): void {
     let errorFileName: string;
     let errorData: string;
+    if (isLoggedError(error)) {
+        return;
+    }
     if (isAxiosError(error)) {
         errorFileName = `${filename}.json`;
         errorData = JSON.stringify({

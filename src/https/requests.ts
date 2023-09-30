@@ -2,7 +2,7 @@ import axios, { Axios, AxiosResponse, RawAxiosRequestConfig, isAxiosError } from
 import { readFileSync } from "fs";
 import { Agent } from "https";
 import { logDebug, writeFile } from "../logging/logging";
-import { InternalOptions } from "../types/plugin";
+import { InternalOpenSSLOptions } from "../types/plugin";
 import { normalizedFilename } from "../util/files";
 
 export type RequestConfigPost<D = unknown> = {
@@ -11,21 +11,35 @@ export type RequestConfigPost<D = unknown> = {
     config?: RawAxiosRequestConfig<D>;
 };
 
+/**
+ * Options which affect the way the requests module works.
+ */
+export interface RequestsOptions {
+    /**
+     * Turns on or off extensive debugging output.
+     */
+    debug?: boolean;
+    /**
+     * Additional OpenSSL options for the underlying HTTP agent.
+     */
+    openSSL?: InternalOpenSSLOptions;
+}
+
 export class Requests {
     private static AGENT: Agent | undefined = undefined;
     private static AXIOS: Axios | undefined = undefined;
 
-    private static options: InternalOptions | undefined = undefined;
+    private static options: RequestsOptions | undefined = undefined;
 
-    public static init(options: InternalOptions): void {
+    public static init(options: RequestsOptions): void {
         Requests.options = options;
     }
 
     private static agent(): Agent {
         if (!Requests.AGENT) {
             Requests.AGENT = new Agent({
-                ca: Requests.readCertificate(Requests.options?.openSSL.rootCAPath),
-                secureOptions: Requests.options?.openSSL.secureOptions,
+                ca: Requests.readCertificate(Requests.options?.openSSL?.rootCAPath),
+                secureOptions: Requests.options?.openSSL?.secureOptions,
             });
         }
         return Requests.AGENT;
@@ -37,7 +51,7 @@ export class Requests {
         }
         if (!Requests.AXIOS) {
             Requests.AXIOS = axios;
-            if (Requests.options.plugin.debug) {
+            if (Requests.options.debug) {
                 Requests.AXIOS.interceptors.request.use(
                     (request) => {
                         const method = request.method?.toUpperCase();

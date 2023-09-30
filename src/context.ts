@@ -59,6 +59,7 @@ import {
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { asBoolean, asInt, asString, parse } from "./util/parsing";
+import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
 
 let context: PluginContext | undefined = undefined;
 
@@ -66,9 +67,8 @@ export function getPluginContext(): PluginContext | undefined {
     return context;
 }
 
-export function setPluginContext(newContext: PluginContext): PluginContext {
+export function setPluginContext(newContext: PluginContext): void {
     context = newContext;
-    return newContext;
 }
 
 export function clearPluginContext(): void {
@@ -292,10 +292,10 @@ export function initOpenSSLOptions(
     };
 }
 
-export function initClients(
+export async function initClients(
     jiraOptions: InternalJiraOptions,
     env: Cypress.ObjectLike
-): ClientCombination {
+): Promise<ClientCombination> {
     if (!jiraOptions.url) {
         throw new Error(
             dedent(`
@@ -307,18 +307,24 @@ export function initClients(
     if (ENV_JIRA_USERNAME in env && ENV_JIRA_API_TOKEN in env) {
         // Jira cloud authentication: username (Email) and token.
         logInfo("Jira username and API token found. Setting up Jira cloud basic auth credentials");
-        const jiraClient = new JiraClientCloud(
-            jiraOptions.url,
-            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_API_TOKEN])
+        const credentials = new BasicAuthCredentials(
+            env[ENV_JIRA_USERNAME],
+            env[ENV_JIRA_API_TOKEN]
         );
+        await pingJiraInstance(jiraOptions.url, credentials);
+        const jiraClient = new JiraClientCloud(jiraOptions.url, credentials);
         if (ENV_XRAY_CLIENT_ID in env && ENV_XRAY_CLIENT_SECRET in env) {
             // Xray cloud authentication: client ID and client secret.
             logInfo(
                 "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
             );
-            const xrayClient = new XrayClientCloud(
-                new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET])
+            const xrayCredentials = new JWTCredentials(
+                env[ENV_XRAY_CLIENT_ID],
+                env[ENV_XRAY_CLIENT_SECRET],
+                `${XrayClientCloud.URL}/authenticate`
             );
+            await pingXrayCloud(xrayCredentials);
+            const xrayClient = new XrayClientCloud(xrayCredentials);
             return {
                 kind: "cloud",
                 jiraClient: jiraClient,
@@ -336,17 +342,13 @@ export function initClients(
     } else if (ENV_JIRA_API_TOKEN in env && jiraOptions.url) {
         // Jira server authentication: no username, only token.
         logInfo("Jira PAT found. Setting up Jira server PAT credentials");
-        const jiraClient = new JiraClientServer(
-            jiraOptions.url,
-            new PATCredentials(env[ENV_JIRA_API_TOKEN])
-        );
+        const credentials = new PATCredentials(env[ENV_JIRA_API_TOKEN]);
+        await pingJiraInstance(jiraOptions.url, credentials);
+        const jiraClient = new JiraClientServer(jiraOptions.url, credentials);
         // Xray server authentication: no username, only token.
         logInfo("Jira PAT found. Setting up Xray server PAT credentials");
-        const xrayClient = new XrayClientServer(
-            jiraOptions.url,
-            new PATCredentials(env[ENV_JIRA_API_TOKEN]),
-            jiraClient
-        );
+        await pingXrayServer(jiraOptions.url, credentials);
+        const xrayClient = new XrayClientServer(jiraOptions.url, credentials, jiraClient);
         return {
             kind: "server",
             jiraClient: jiraClient,
@@ -355,16 +357,15 @@ export function initClients(
         };
     } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && jiraOptions.url) {
         logInfo("Jira username and password found. Setting up Jira server basic auth credentials");
-        const jiraClient = new JiraClientServer(
-            jiraOptions.url,
-            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD])
+        const credentials = new BasicAuthCredentials(
+            env[ENV_JIRA_USERNAME],
+            env[ENV_JIRA_PASSWORD]
         );
+        await pingJiraInstance(jiraOptions.url, credentials);
+        const jiraClient = new JiraClientServer(jiraOptions.url, credentials);
         logInfo("Jira username and password found. Setting up Xray server basic auth credentials");
-        const xrayClient = new XrayClientServer(
-            jiraOptions.url,
-            new BasicAuthCredentials(env[ENV_JIRA_USERNAME], env[ENV_JIRA_PASSWORD]),
-            jiraClient
-        );
+        await pingXrayServer(jiraOptions.url, credentials);
+        const xrayClient = new XrayClientServer(jiraOptions.url, credentials, jiraClient);
         return {
             kind: "server",
             jiraClient: jiraClient,

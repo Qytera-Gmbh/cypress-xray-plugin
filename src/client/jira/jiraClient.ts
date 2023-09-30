@@ -274,8 +274,8 @@ export abstract class JiraClient<
             writeErrorFile(error, "searchError");
         }
     }
+
     /**
-     *
      * Returns the endpoint to use for searching issues.
      *
      * @returns the endpoint
@@ -320,8 +320,8 @@ export abstract class JiraClient<
             writeErrorFile(error, "editIssue");
         }
     }
+
     /**
-     *
      * Returns the endpoint to use for editing issues.
      *
      * @param issueIdOrKey the ID or key of the issue

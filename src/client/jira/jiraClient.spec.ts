@@ -1,7 +1,7 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
-import { expectToExist, resolveTestDirPath, stubLogging, stubRequests } from "../../../test/util";
+import { expectToExist, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { SearchResultsServer } from "../../types/jira/responses/searchResults";
 import { JiraClientCloud } from "./jiraClientCloud";
@@ -190,36 +190,34 @@ describe("the jira clients", () => {
 
                 it("should handle bad responses", async () => {
                     const { stubbedPost } = stubRequests();
-                    const { stubbedError } = stubLogging();
-                    stubbedPost.rejects(
-                        new AxiosError(
-                            "Request failed with status code 413",
-                            HttpStatusCode.BadRequest.toString(),
-                            undefined,
-                            null,
-                            {
-                                status: HttpStatusCode.PayloadTooLarge,
-                                statusText: HttpStatusCode[HttpStatusCode.PayloadTooLarge],
-                                config: { headers: new AxiosHeaders() },
-                                headers: {},
-                                data: {
-                                    errorMessages: ["The file is way too big."],
-                                },
-                            }
-                        )
+                    const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+                    const error = new AxiosError(
+                        "Request failed with status code 413",
+                        HttpStatusCode.BadRequest.toString(),
+                        undefined,
+                        null,
+                        {
+                            status: HttpStatusCode.PayloadTooLarge,
+                            statusText: HttpStatusCode[HttpStatusCode.PayloadTooLarge],
+                            config: { headers: new AxiosHeaders() },
+                            headers: {},
+                            data: {
+                                errorMessages: ["The file is way too big."],
+                            },
+                        }
                     );
+                    stubbedPost.rejects(error);
                     const response = await client.addAttachment(
                         "CYP-123",
                         "./test/resources/greetings.txt"
                     );
                     expect(response).to.be.undefined;
-                    expect(stubbedError).to.have.been.calledTwice;
-                    expect(stubbedError).to.have.been.calledWithExactly(
+                    expect(stubbedError).to.have.been.calledOnceWithExactly(
                         "Failed to attach files: AxiosError: Request failed with status code 413"
                     );
-                    const expectedPath = resolveTestDirPath("addAttachmentError.json");
-                    expect(stubbedError).to.have.been.calledWithExactly(
-                        `Complete error logs have been written to: ${expectedPath}`
+                    expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+                        error,
+                        "addAttachmentError"
                     );
                 });
             });
@@ -249,33 +247,31 @@ describe("the jira clients", () => {
 
                 it("should handle bad responses", async () => {
                     const { stubbedGet } = stubRequests();
-                    const { stubbedError } = stubLogging();
-                    stubbedGet.onFirstCall().rejects(
-                        new AxiosError(
-                            "Request failed with status code 409",
-                            HttpStatusCode.BadRequest.toString(),
-                            undefined,
-                            null,
-                            {
-                                status: HttpStatusCode.Conflict,
-                                statusText: HttpStatusCode[HttpStatusCode.Conflict],
-                                config: { headers: new AxiosHeaders() },
-                                headers: {},
-                                data: {
-                                    errorMessages: ["There is a conflict or something"],
-                                },
-                            }
-                        )
+                    const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+                    const error = new AxiosError(
+                        "Request failed with status code 409",
+                        HttpStatusCode.BadRequest.toString(),
+                        undefined,
+                        null,
+                        {
+                            status: HttpStatusCode.Conflict,
+                            statusText: HttpStatusCode[HttpStatusCode.Conflict],
+                            config: { headers: new AxiosHeaders() },
+                            headers: {},
+                            data: {
+                                errorMessages: ["There is a conflict or something"],
+                            },
+                        }
                     );
+                    stubbedGet.onFirstCall().rejects(error);
                     const response = await client.getFields();
                     expect(response).to.be.undefined;
-                    expect(stubbedError).to.have.been.calledTwice;
-                    expect(stubbedError).to.have.been.calledWithExactly(
+                    expect(stubbedError).to.have.been.calledOnceWithExactly(
                         "Failed to get fields: AxiosError: Request failed with status code 409"
                     );
-                    const expectedPath = resolveTestDirPath("getFieldsError.json");
-                    expect(stubbedError).to.have.been.calledWithExactly(
-                        `Complete error logs have been written to: ${expectedPath}`
+                    expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+                        error,
+                        "getFieldsError"
                     );
                 });
             });
@@ -381,69 +377,65 @@ describe("the jira clients", () => {
 
                 it("should handle bad responses", async () => {
                     const { stubbedPost } = stubRequests();
-                    const { stubbedError } = stubLogging();
-                    stubbedPost.onFirstCall().rejects(
-                        new AxiosError(
-                            "Request failed with status code 401",
-                            HttpStatusCode.BadRequest.toString(),
-                            undefined,
-                            null,
-                            {
-                                status: HttpStatusCode.Unauthorized,
-                                statusText: HttpStatusCode[HttpStatusCode.Unauthorized],
-                                config: { headers: new AxiosHeaders() },
-                                headers: {},
-                                data: {
-                                    errorMessages: ["You're not authenticated"],
-                                },
-                            }
-                        )
+                    const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+                    const error = new AxiosError(
+                        "Request failed with status code 401",
+                        HttpStatusCode.BadRequest.toString(),
+                        undefined,
+                        null,
+                        {
+                            status: HttpStatusCode.Unauthorized,
+                            statusText: HttpStatusCode[HttpStatusCode.Unauthorized],
+                            config: { headers: new AxiosHeaders() },
+                            headers: {},
+                            data: {
+                                errorMessages: ["You're not authenticated"],
+                            },
+                        }
                     );
+                    stubbedPost.onFirstCall().rejects(error);
                     const response = await client.search({});
                     expect(response).to.be.undefined;
-                    expect(stubbedError).to.have.been.calledTwice;
-                    expect(stubbedError).to.have.been.calledWithExactly(
+                    expect(stubbedError).to.have.been.calledOnceWithExactly(
                         "Failed to search issues: AxiosError: Request failed with status code 401"
                     );
-                    const expectedPath = resolveTestDirPath("searchError.json");
-                    expect(stubbedError).to.have.been.calledWithExactly(
-                        `Complete error logs have been written to: ${expectedPath}`
+                    expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+                        error,
+                        "searchError"
                     );
                 });
             });
 
             describe("editIssue", () => {
                 it("should handle bad responses", async () => {
-                    const { stubbedError } = stubLogging();
+                    const { stubbedError, stubbedWriteErrorFile } = stubLogging();
                     const { stubbedPut } = stubRequests();
-                    stubbedPut.onFirstCall().rejects(
-                        new AxiosError(
-                            "Request failed with status code 400",
-                            HttpStatusCode.BadRequest.toString(),
-                            undefined,
-                            null,
-                            {
-                                status: HttpStatusCode.BadRequest,
-                                statusText: HttpStatusCode[HttpStatusCode.BadRequest],
-                                config: { headers: new AxiosHeaders() },
-                                headers: {},
-                                data: {
-                                    errorMessages: ["issue CYP-XYZ does not exist"],
-                                },
-                            }
-                        )
+                    const error = new AxiosError(
+                        "Request failed with status code 400",
+                        HttpStatusCode.BadRequest.toString(),
+                        undefined,
+                        null,
+                        {
+                            status: HttpStatusCode.BadRequest,
+                            statusText: HttpStatusCode[HttpStatusCode.BadRequest],
+                            config: { headers: new AxiosHeaders() },
+                            headers: {},
+                            data: {
+                                errorMessages: ["issue CYP-XYZ does not exist"],
+                            },
+                        }
                     );
+                    stubbedPut.onFirstCall().rejects(error);
                     const response = await client.editIssue("CYP-XYZ", {
                         fields: { summary: "Hi" },
                     });
                     expect(response).to.be.undefined;
-                    expect(stubbedError).to.have.been.calledTwice;
-                    expect(stubbedError).to.have.been.calledWithExactly(
+                    expect(stubbedError).to.have.been.calledOnceWithExactly(
                         "Failed to edit issue: AxiosError: Request failed with status code 400"
                     );
-                    const expectedPath = resolveTestDirPath("editIssue.json");
-                    expect(stubbedError).to.have.been.calledWithExactly(
-                        `Complete error logs have been written to: ${expectedPath}`
+                    expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+                        error,
+                        "editIssue"
                     );
                 });
             });

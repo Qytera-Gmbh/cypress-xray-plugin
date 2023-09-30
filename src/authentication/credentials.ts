@@ -1,8 +1,10 @@
-import { AxiosResponse } from "axios";
 import { Requests } from "../https/requests";
-import { logInfo, logSuccess } from "../logging/logging";
+import { logDebug, logError, logInfo, writeErrorFile } from "../logging/logging";
 import { StringMap } from "../types/util";
 import { encode } from "../util/base64";
+import { dedent } from "../util/dedent";
+import { LoggedError, errorMessage } from "../util/error";
+import { startInterval } from "../util/time";
 
 /**
  * A basic HTTP header.
@@ -12,11 +14,11 @@ import { encode } from "../util/base64";
  */
 export type HTTPHeader = StringMap<string>;
 
-export abstract class APICredentials<O> {
-    public abstract getAuthenticationHeader(options?: O): Promise<HTTPHeader>;
+export abstract class APICredentials {
+    public abstract getAuthenticationHeader(): Promise<HTTPHeader>;
 }
 
-export class BasicAuthCredentials extends APICredentials<never> {
+export class BasicAuthCredentials extends APICredentials {
     private readonly username: string;
     private readonly password: string;
 
@@ -37,7 +39,7 @@ export class BasicAuthCredentials extends APICredentials<never> {
     }
 }
 
-export class PATCredentials extends APICredentials<never> {
+export class PATCredentials extends APICredentials {
     private readonly token: string;
 
     constructor(token: string) {
@@ -57,37 +59,77 @@ export interface JWTCredentialsOptions {
     authenticationURL: string;
 }
 
-export class JWTCredentials extends APICredentials<string> {
+export class JWTCredentials extends APICredentials {
     private readonly clientId: string;
     private readonly clientSecret: string;
+    private readonly authenticationUrl: string;
 
     private token?: string;
 
-    constructor(clientId: string, clientSecret: string) {
+    constructor(clientId: string, clientSecret: string, authenticationUrl: string) {
         super();
         this.clientId = clientId;
         this.clientSecret = clientSecret;
+        this.authenticationUrl = authenticationUrl;
         this.token = undefined;
     }
 
-    private async getToken(authenticationURL: string): Promise<string> {
+    /**
+     * Return the URL to authenticate to.
+     *
+     * @returns the URL
+     */
+    public getAuthenticationUrl(): string {
+        return this.authenticationUrl;
+    }
+
+    private async getToken(): Promise<string> {
         if (!this.token) {
-            logInfo(`Authenticating to: ${authenticationURL}...`);
-            const response: AxiosResponse<string> = await Requests.post(authenticationURL, {
-                client_id: this.clientId,
-                client_secret: this.clientSecret,
-            });
-            logSuccess("Authentication successful.");
-            this.token = response.data;
-            return this.token;
+            try {
+                const progressInterval = startInterval((totalTime: number) => {
+                    logInfo(
+                        `Waiting for ${this.authenticationUrl} to respond... (${
+                            totalTime / 1000
+                        } seconds)`
+                    );
+                });
+                try {
+                    logInfo(`Authenticating to: ${this.authenticationUrl}...`);
+                    const tokenResponse = await Requests.post(this.authenticationUrl, {
+                        client_id: this.clientId,
+                        client_secret: this.clientSecret,
+                    });
+                    // A JWT token is expected: https://stackoverflow.com/a/74325712
+                    const jwtRegex = /^[A-Za-z0-9_-]{2,}(?:\.[A-Za-z0-9_-]{2,}){2}$/;
+                    if (jwtRegex.test(tokenResponse.data)) {
+                        logDebug("Authentication successful.");
+                        this.token = tokenResponse.data;
+                        return tokenResponse.data;
+                    } else {
+                        throw new Error("Expected to receive a JWT token, but did not");
+                    }
+                } finally {
+                    clearInterval(progressInterval);
+                }
+            } catch (error: unknown) {
+                const message = errorMessage(error);
+                logError(
+                    dedent(`
+                        Failed to authenticate to: ${this.authenticationUrl}
+
+                        ${message}
+                    `)
+                );
+                writeErrorFile(error, "authentication");
+                throw new LoggedError("Authentication failed");
+            }
         }
         return this.token;
     }
 
-    public async getAuthenticationHeader(authenticationURL: string): Promise<HTTPHeader> {
-        const token = await this.getToken(authenticationURL);
+    public async getAuthenticationHeader(): Promise<HTTPHeader> {
         return {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${await this.getToken()}`,
         };
     }
 }

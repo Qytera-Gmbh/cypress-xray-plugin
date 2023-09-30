@@ -3,15 +3,16 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import { resolveTestDirPath, stubLogging } from "../../test/util";
+import { LoggedError } from "../util/error";
 import { initLogging, writeErrorFile } from "./logging";
 
 describe("the logging module", () => {
     describe("writeErrorFile", () => {
-        it("should write to relative directories", () => {
+        it("writes to relative directories", () => {
             initLogging({
                 logDirectory: path.relative(".", resolveTestDirPath("logs")),
             });
-            const { stubbedError } = stubLogging();
+            const { stubbedError } = stubLogging("writeErrorFile");
             writeErrorFile(
                 new Error(
                     JSON.stringify({
@@ -26,11 +27,11 @@ describe("the logging module", () => {
             );
         });
 
-        it("should write to absolute directories", () => {
+        it("writes to absolute directories", () => {
             initLogging({
                 logDirectory: resolveTestDirPath("logs"),
             });
-            const { stubbedError } = stubLogging();
+            const { stubbedError } = stubLogging("writeErrorFile");
             writeErrorFile(
                 new Error(
                     JSON.stringify({
@@ -45,12 +46,12 @@ describe("the logging module", () => {
             );
         });
 
-        it("should write to non-existent directories", () => {
+        it("writes to non-existent directories", () => {
             const timestamp = Date.now();
             initLogging({
                 logDirectory: resolveTestDirPath("logs", timestamp.toString()),
             });
-            const { stubbedError } = stubLogging();
+            const { stubbedError } = stubLogging("writeErrorFile");
             writeErrorFile(
                 new Error(
                     JSON.stringify({
@@ -69,12 +70,12 @@ describe("the logging module", () => {
             );
         });
 
-        it("should write axios errors", () => {
+        it("writes axios errors", () => {
             const timestamp = Date.now();
             initLogging({
                 logDirectory: resolveTestDirPath("logs", timestamp.toString()),
             });
-            const { stubbedError } = stubLogging();
+            const { stubbedError } = stubLogging("writeErrorFile");
             writeErrorFile(
                 new AxiosError(
                     "Request failed with status code 400",
@@ -113,12 +114,12 @@ describe("the logging module", () => {
             });
         });
 
-        it("should write generic errors", () => {
+        it("writes generic errors", () => {
             const timestamp = Date.now();
             initLogging({
                 logDirectory: resolveTestDirPath("logs", timestamp.toString()),
             });
-            const { stubbedError } = stubLogging();
+            const { stubbedError } = stubLogging("writeErrorFile");
             writeErrorFile({ good: "morning" }, "writeErrorFileGeneric");
             const expectedPath = resolveTestDirPath(
                 "logs",
@@ -131,6 +132,22 @@ describe("the logging module", () => {
             expect(JSON.parse(fs.readFileSync(expectedPath).toString())).to.deep.eq({
                 good: "morning",
             });
+        });
+
+        it("does not write already logged errors", () => {
+            const timestamp = Date.now();
+            initLogging({
+                logDirectory: resolveTestDirPath("logs", timestamp.toString()),
+            });
+            const { stubbedError } = stubLogging("writeErrorFile");
+            writeErrorFile(new LoggedError("hello"), "writeErrorFileLogged");
+            const expectedPath = resolveTestDirPath(
+                "logs",
+                timestamp.toString(),
+                "writeErrorFileLogged"
+            );
+            expect(stubbedError).to.not.have.been.called;
+            expect(fs.existsSync(expectedPath)).to.be.false;
         });
     });
 });

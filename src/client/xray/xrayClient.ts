@@ -35,6 +35,7 @@ export abstract class XrayClient<
     constructor(apiBaseUrl: string, credentials: CredentialsType) {
         super(apiBaseUrl, credentials);
     }
+
     /**
      * Uploads test results to the Xray instance.
      *
@@ -51,9 +52,7 @@ export abstract class XrayClient<
                 logWarning("No native Cypress tests were executed. Skipping native upload.");
                 return null;
             }
-            const authenticationHeader = await this.credentials.getAuthenticationHeader(
-                `${this.apiBaseURL}/authenticate`
-            );
+            const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logDebug("Importing execution...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
@@ -106,9 +105,7 @@ export abstract class XrayClient<
         filter?: number
     ): Promise<ExportCucumberTestsResponse> {
         try {
-            const authenticationHeader = await this.credentials.getAuthenticationHeader(
-                `${this.apiBaseURL}/authenticate`
-            );
+            const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logDebug("Exporting Cucumber tests...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
@@ -162,9 +159,7 @@ export abstract class XrayClient<
         source?: string
     ): Promise<boolean> {
         try {
-            const authenticationHeader = await this.credentials.getAuthenticationHeader(
-                `${this.apiBaseURL}/authenticate`
-            );
+            const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logDebug("Importing Cucumber features...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
