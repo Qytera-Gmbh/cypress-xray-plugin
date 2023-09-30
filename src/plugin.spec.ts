@@ -96,7 +96,7 @@ describe("the plugin", () => {
                     url: "https://example.org",
                 },
                 plugin: {
-                    debug: true,
+                    debug: false,
                     logDirectory: "xyz",
                     normalizeScreenshotNames: true,
                     enabled: true,

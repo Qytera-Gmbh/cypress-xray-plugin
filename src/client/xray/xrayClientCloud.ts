@@ -116,9 +116,7 @@ export class XrayClientCloud extends XrayClient<
                 logWarning("No issue keys provided. Skipping test type retrieval");
                 return {};
             }
-            const authenticationHeader = await this.credentials.getAuthenticationHeader(
-                `${this.apiBaseURL}/authenticate`
-            );
+            const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logDebug("Retrieving test types...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
@@ -213,9 +211,7 @@ export class XrayClientCloud extends XrayClient<
         formData.append("info", infoString, {
             filename: "info.json",
         });
-        const authenticationHeader = await this.credentials.getAuthenticationHeader(
-            `${this.apiBaseURL}/authenticate`
-        );
+        const authenticationHeader = await this.credentials.getAuthenticationHeader();
         return {
             url: `${this.apiBaseURL}/import/execution/cucumber/multipart`,
             data: formData,

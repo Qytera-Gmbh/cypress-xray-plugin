@@ -316,7 +316,11 @@ export function initClients(
                 "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
             );
             const xrayClient = new XrayClientCloud(
-                new JWTCredentials(env[ENV_XRAY_CLIENT_ID], env[ENV_XRAY_CLIENT_SECRET])
+                new JWTCredentials(
+                    env[ENV_XRAY_CLIENT_ID],
+                    env[ENV_XRAY_CLIENT_SECRET],
+                    `${XrayClientCloud.URL}/authenticate`
+                )
             );
             return {
                 kind: "cloud",

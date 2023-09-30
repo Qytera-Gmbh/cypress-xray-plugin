@@ -47,7 +47,11 @@ export function resolveTestDirPath(...subPaths: string[]): string {
     return path.resolve(TEST_TMP_DIR, ...subPaths);
 }
 
-export const RESOLVED_JWT_CREDENTIALS: JWTCredentials = new JWTCredentials("user", "token");
+export const RESOLVED_JWT_CREDENTIALS: JWTCredentials = new JWTCredentials(
+    "user",
+    "token",
+    "https://example.org"
+);
 
 before(() => {
     // Resolve credentials so that they don't have to dispatch POST requests again.
@@ -62,7 +66,7 @@ before(() => {
             headers: new AxiosHeaders(),
         },
     });
-    RESOLVED_JWT_CREDENTIALS.getAuthenticationHeader("https://example.org");
+    RESOLVED_JWT_CREDENTIALS.getAuthenticationHeader();
 });
 
 beforeEach(() => {
