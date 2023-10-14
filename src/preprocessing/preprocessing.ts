@@ -1,16 +1,16 @@
 import { AstBuilder, GherkinClassicTokenMatcher, Parser } from "@cucumber/gherkin";
-import {
-    Background,
-    Comment,
-    GherkinDocument,
-    IdGenerator,
-    Scenario,
-    Tag,
-} from "@cucumber/messages";
+import { Background, Comment, GherkinDocument, IdGenerator, Scenario } from "@cucumber/messages";
 import fs from "fs";
 import { logWarning } from "../logging/logging";
-import { dedent } from "../util/dedent";
-import { errorMessage } from "../util/errors";
+import {
+    errorMessage,
+    missingPreconditionKeyInCucumberBackgroundError,
+    missingTestKeyInCucumberScenarioError,
+    missingTestKeyInNativeTestTitleError,
+    multiplePreconditionKeysInCucumberBackgroundError,
+    multipleTestKeysInCucumberScenarioError,
+    multipleTestKeysInNativeTestTitleError,
+} from "../util/errors";
 
 // ============================================================================================== //
 // CYPRESS NATIVE                                                                                 //
@@ -72,43 +72,11 @@ export function getNativeTestIssueKey(title: string, projectKey: string): string
     const regex = new RegExp(`(${projectKey}-\\d+)`, "g");
     const matches = title.match(regex);
     if (!matches) {
-        throw new Error(
-            dedent(`
-                No test issue keys found in title of test: ${title}
-                You can target existing test issues by adding a corresponding issue key:
-
-                it("${projectKey}-123 ${title}", () => {
-                  // ...
-                });
-
-                For more information, visit:
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-            `)
-        );
+        throw missingTestKeyInNativeTestTitleError(title, projectKey);
     } else if (matches.length === 1) {
         return matches[0];
     } else {
-        // Remove any circumflexes currently present in the title.
-        let indicatorLine = title.replaceAll("^", " ");
-        matches.forEach((match: string) => {
-            indicatorLine = indicatorLine.replaceAll(match, "^".repeat(match.length));
-        });
-        // Replace everything but circumflexes with space.
-        indicatorLine = indicatorLine.replaceAll(/[^^]/g, " ");
-        throw new Error(
-            dedent(`
-                Multiple test keys found in title of test: ${title}
-                The plugin cannot decide for you which one to use:
-
-                it("${title}", () => {
-                    ${indicatorLine}
-                  // ...
-                });
-
-                For more information, visit:
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-            `)
-        );
+        throw multipleTestKeysInNativeTestTitleError(title, matches);
     }
 }
 
@@ -165,35 +133,16 @@ export function getCucumberIssueData(
                 isCloudClient
             );
             if (issueKeys.length === 0) {
-                throw new Error(
-                    dedent(`
-                        No test issue keys found in tags of scenario: ${child.scenario.name}
-                        You can target existing test issues by adding a corresponding tag:
-
-                        ${getScenarioTag(projectKey, isCloudClient)}
-                        ${getScenarioLine(child.scenario)}
-                          # steps ...
-
-                        For more information, visit:
-                        - ${getHelpUrl(isCloudClient)}
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
+                throw missingTestKeyInCucumberScenarioError(
+                    child.scenario,
+                    projectKey,
+                    isCloudClient
                 );
             } else if (issueKeys.length > 1) {
-                throw new Error(
-                    dedent(`
-                        Multiple test issue keys found in tags of scenario: ${child.scenario.name}
-                        The plugin cannot decide for you which one to use:
-
-                        ${getScenarioMultipleTagsLine(child.scenario)}
-                        ${getScenarioMultipleTagsIndicatorLine(child.scenario, issueKeys)}
-                        ${getScenarioLine(child.scenario)}
-                          # steps ...
-
-                        For more information, visit:
-                        - ${getHelpUrl(isCloudClient)}
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
+                throw multipleTestKeysInCucumberScenarioError(
+                    child.scenario,
+                    issueKeys,
+                    isCloudClient
                 );
             }
             featureFileIssueKeys.tests.push({
@@ -209,40 +158,17 @@ export function getCucumberIssueData(
                 document.comments
             );
             if (preconditionKeys.length === 0) {
-                throw new Error(
-                    dedent(`
-                        No precondition issue keys found in comments of background: ${
-                            child.background.name
-                        }
-                        You can target existing precondition issues by adding a corresponding comment:
-
-                        ${getBackgroundLine(child.background)}
-                          ${getBackgroundTag(projectKey, isCloudClient)}
-                          # steps ...
-
-                        For more information, visit:
-                        - ${getHelpUrl(isCloudClient)}
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
+                throw missingPreconditionKeyInCucumberBackgroundError(
+                    child.background,
+                    projectKey,
+                    isCloudClient
                 );
             } else if (preconditionKeys.length > 1) {
-                throw new Error(
-                    dedent(`
-                        Multiple precondition issue keys found in comments of background: ${
-                            child.background.name
-                        }
-                        The plugin cannot decide for you which one to use:
-
-                        ${reconstructMultipleTagsBackground(
-                            child.background,
-                            preconditionKeys,
-                            document.comments
-                        )}
-
-                        For more information, visit:
-                        - ${getHelpUrl(isCloudClient)}
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
+                throw multiplePreconditionKeysInCucumberBackgroundError(
+                    child.background,
+                    preconditionKeys,
+                    document.comments,
+                    isCloudClient
                 );
             }
             featureFileIssueKeys.preconditions.push({
@@ -254,65 +180,6 @@ export function getCucumberIssueData(
     return featureFileIssueKeys;
 }
 
-function getHelpUrl(isCloudClient: boolean): string {
-    return isCloudClient
-        ? "https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2"
-        : "https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST";
-}
-
-function getScenarioLine(scenario: Scenario): string {
-    return `${scenario.keyword}: ${scenario.name}`;
-}
-
-function getScenarioTag(projectKey: string, isCloudClient: boolean): string {
-    return isCloudClient ? `@TestName:${projectKey}-123` : `@${projectKey}-123`;
-}
-
-function getScenarioMultipleTagsLine(scenario: Scenario): string {
-    return scenario.tags.map((tag: Tag) => tag.name).join(" ");
-}
-
-function getScenarioMultipleTagsIndicatorLine(scenario: Scenario, issueKeys: string[]): string {
-    const indicatorLine = scenario.tags
-        .map((tag: Tag) => {
-            if (issueKeys.some((key) => tag.name.endsWith(key))) {
-                return "^".repeat(tag.name.length);
-            }
-            return " ".repeat(tag.name.length);
-        })
-        .join(" ")
-        .trimEnd();
-    return indicatorLine;
-}
-
-function getBackgroundLine(background: Background): string {
-    return `${background.keyword}: ${background.name}`;
-}
-
-function getBackgroundTag(projectKey: string, isCloudClient: boolean): string {
-    return isCloudClient ? `#@Precondition:${projectKey}-123` : `#@${projectKey}-123`;
-}
-
-function reconstructMultipleTagsBackground(
-    background: Background,
-    preconditionIssueKeys: string[],
-    comments: readonly Comment[]
-): string {
-    const example: string[] = [];
-    const backgroundLine = background.location.line;
-    const firstStepLine = background.steps[0].location.line;
-    example.push(`${background.keyword}: ${background.name}`);
-    for (const comment of comments) {
-        if (comment.location.line > backgroundLine && comment.location.line < firstStepLine) {
-            example.push(`  ${comment.text.trimStart()}`);
-            if (preconditionIssueKeys.some((key: string) => comment.text.endsWith(key))) {
-                example.push(`  ${comment.text.replaceAll(/\S/g, "^").trimStart()}`);
-            }
-        }
-    }
-    example.push("  # steps ...");
-    return example.join("\n");
-}
 /**
  * Parses a Gherkin document (feature file) and returns the information contained within.
  *
