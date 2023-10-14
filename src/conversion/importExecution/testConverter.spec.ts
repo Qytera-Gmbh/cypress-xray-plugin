@@ -13,14 +13,12 @@ import { CypressRunResult as CypressRunResult_V12 } from "../../types/cypress/12
 import { CypressRunResult as CypressRunResult_V13 } from "../../types/cypress/13.0.0/api";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
-import { TestIssueData } from "./importExecutionConverter";
 import { TestConverterCloud } from "./testConverterCloud";
 
 chai.use(chaiAsPromised);
 
 describe("the test converter", () => {
     let options: InternalOptions;
-    let testIssueData: TestIssueData;
     beforeEach(() => {
         options = {
             jira: initJiraOptions(
@@ -39,30 +37,15 @@ describe("the test converter", () => {
             plugin: initPluginOptions({}, {}),
             openSSL: initOpenSSLOptions({}, {}),
         };
-        testIssueData = { summaries: {}, testTypes: {} };
     });
 
     it("warns about skipped screenshots", async () => {
         const result: CypressRunResult_V13 = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0_manualScreenshot.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-452": "This is",
-            "CYP-268": "a distributed",
-            "CYP-237": "summary",
-            "CYP-332": "part 4",
-            "CYP-333": "part 5",
-        };
-        testIssueData.testTypes = {
-            "CYP-452": "Generic",
-            "CYP-268": "Manual",
-            "CYP-237": "Cucumber",
-            "CYP-332": "Manual",
-            "CYP-333": "Manual",
-        };
         const converter = new TestConverterCloud(options);
         const { stubbedWarning } = stubLogging();
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(stubbedWarning).to.have.been.calledOnceWithExactly(
             dedent(`
                 Screenshot will not be uploaded: ./test/resources/small.png
@@ -96,7 +79,7 @@ describe("the test converter", () => {
             { featureFileExtension: ".feature" }
         );
         const converter = new TestConverterCloud(options);
-        await expect(converter.convert(result, testIssueData)).to.eventually.be.rejectedWith(
+        await expect(converter.convert(result)).to.eventually.be.rejectedWith(
             "Failed to extract test run data: Only Cucumber tests were executed"
         );
     });
@@ -117,7 +100,7 @@ describe("the test converter", () => {
             { featureFileExtension: ".ts" }
         );
         const converter = new TestConverterCloud(options);
-        await expect(converter.convert(result, testIssueData)).to.eventually.be.rejectedWith(
+        await expect(converter.convert(result)).to.eventually.be.rejectedWith(
             "Failed to extract test run data: Only Cucumber tests were executed"
         );
     });

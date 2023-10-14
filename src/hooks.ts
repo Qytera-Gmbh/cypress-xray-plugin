@@ -11,7 +11,6 @@ import {
     containsCucumberTest,
     containsNativeTest,
     getCucumberIssueData,
-    getNativeTestIssueKeys,
 } from "./preprocessing/preprocessing";
 import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
 import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
@@ -176,19 +175,9 @@ async function uploadCypressResults(
     options: InternalOptions,
     clients: ClientCombination
 ) {
-    const issueKeys = getNativeTestIssueKeys(
-        runResult,
-        options.jira.projectKey,
-        options.cucumber?.featureFileExtension
-    );
-    const issueSummaries = await clients.jiraRepository.getSummaries(...issueKeys);
-    const issueTestTypes = await clients.jiraRepository.getTestTypes(...issueKeys);
     const converter = new ImportExecutionConverter(options, clients.kind === "cloud");
     try {
-        const cypressExecution = await converter.convert(runResult, {
-            summaries: issueSummaries,
-            testTypes: issueTestTypes,
-        });
+        const cypressExecution = await converter.convert(runResult);
         return await clients.xrayClient.importExecution(cypressExecution);
     } catch (error: unknown) {
         logError(errorMessage(error));

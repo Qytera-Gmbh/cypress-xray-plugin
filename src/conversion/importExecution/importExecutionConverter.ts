@@ -25,7 +25,7 @@ type XrayTestType = XrayTestServer | XrayTestCloud;
 export class ImportExecutionConverter extends Converter<
     CypressRunResultType,
     XrayTestExecutionResults<XrayTestType>,
-    TestIssueData
+    never
 > {
     /**
      * Whether the converter is a cloud converter. Useful for automatically deducing which test
@@ -48,8 +48,7 @@ export class ImportExecutionConverter extends Converter<
     }
 
     public async convert(
-        results: CypressRunResultType,
-        issueData: TestIssueData
+        results: CypressRunResultType
     ): Promise<XrayTestExecutionResults<XrayTestType>> {
         let testConverter: TestConverter<XrayTestType>;
         if (this.isCloudConverter) {
@@ -67,7 +66,7 @@ export class ImportExecutionConverter extends Converter<
                 summary: this.getTextExecutionResultSummary(results),
                 testPlanKey: this.options.jira.testPlanIssueKey,
             },
-            tests: await testConverter.convert(results, issueData),
+            tests: await testConverter.convert(results),
         };
     }
 

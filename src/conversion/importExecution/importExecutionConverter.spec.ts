@@ -10,14 +10,13 @@ import {
 } from "../../context";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
-import { ImportExecutionConverter, TestIssueData } from "./importExecutionConverter";
+import { ImportExecutionConverter } from "./importExecutionConverter";
 
 chai.use(chaiAsPromised);
 
 describe("the import execution converter", () => {
     let options: InternalOptions;
     let converter: ImportExecutionConverter;
-    let testIssueData: TestIssueData;
     beforeEach(() => {
         options = {
             jira: initJiraOptions(
@@ -37,24 +36,13 @@ describe("the import execution converter", () => {
             openSSL: initOpenSSLOptions({}, {}),
         };
         converter = new ImportExecutionConverter(options, false);
-        testIssueData = { summaries: {}, testTypes: {} };
     });
 
     it("converts test results into xray json", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json.tests).to.have.length(3);
     });
 
@@ -63,7 +51,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
         );
         const { stubbedWarning } = stubLogging();
-        await expect(converter.convert(result, testIssueData)).to.eventually.be.rejectedWith(
+        await expect(converter.convert(result)).to.eventually.be.rejectedWith(
             "Failed to convert Cypress tests into Xray tests: No Cypress tests to upload"
         );
         expect(stubbedWarning.firstCall).to.have.been.calledWith(
@@ -86,17 +74,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json.info?.startDate).to.eq("2022-11-28T17:41:12Z");
         expect(json.info?.finishDate).to.eq("2022-11-28T17:41:19Z");
     });
@@ -105,17 +83,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expectToExist(json.tests);
         expect(json.tests[0].evidence).to.be.undefined;
         expect(json.tests[1].evidence).to.be.undefined;
@@ -128,18 +96,8 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
         options.xray.uploadScreenshots = false;
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].evidence).to.be.undefined;
@@ -151,14 +109,8 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-123": "Test issue",
-        };
-        testIssueData.testTypes = {
-            "CYP-123": "Manual",
-        };
         options.plugin.normalizeScreenshotNames = true;
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expectToExist(json.tests);
         expectToExist(json.tests[0].evidence);
         expect(json.tests[0].evidence[0].filename).to.eq("t_rtle_with_problem_tic_name.png");
@@ -168,13 +120,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-123": "Big test",
-        };
-        testIssueData.testTypes = {
-            "CYP-123": "Generic",
-        };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expectToExist(json.tests);
         expectToExist(json.tests[0].evidence);
         expect(json.tests[0].evidence[0].filename).to.eq("tûrtle with problemätic name.png");
@@ -184,18 +130,8 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
         options.xray.status = { passed: "it worked" };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("it worked");
         expect(json.tests[1].status).to.eq("it worked");
@@ -205,18 +141,8 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
         options.xray.status = { failed: "it did not work" };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expectToExist(json.tests);
         expect(json.tests[2].status).to.eq("it did not work");
     });
@@ -225,20 +151,8 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultPending.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-123": "This is",
-            "CYP-456": "a distributed",
-            "CYP-789": "summary",
-            "CYP-987": "!!!",
-        };
-        testIssueData.testTypes = {
-            "CYP-123": "Generic",
-            "CYP-456": "Manual",
-            "CYP-789": "Cucumber",
-            "CYP-987": "No idea",
-        };
         options.xray.status = { pending: "still pending" };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("still pending");
         expect(json.tests[1].status).to.eq("still pending");
@@ -250,79 +164,29 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultSkipped.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-123": "This is",
-            "CYP-456": "a summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-123": "Generic",
-            "CYP-456": "Manual",
-        };
         options.xray.status = { skipped: "omit" };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expectToExist(json.tests);
         expect(json.tests[1].status).to.eq("omit");
     });
 
-    it("does not include step updates", async () => {
+    it("does not modify test information", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
-        const json = await converter.convert(result, testIssueData);
-        expectToExist(json.tests);
-        expect(json.tests).to.have.length(3);
-        expect(json.tests[0].testInfo?.steps).to.be.undefined;
-        expect(json.tests[1].testInfo?.steps).to.be.undefined;
-        expect(json.tests[2].testInfo?.steps).to.be.undefined;
-    });
-
-    it("includes issue summaries", async () => {
-        const result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-        );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json.tests).to.have.length(3);
         expectToExist(json.tests);
-        expect(json.tests[0].testInfo?.summary).to.eq("This is");
-        expect(json.tests[1].testInfo?.summary).to.eq("a distributed");
-        expect(json.tests[2].testInfo?.summary).to.eq("summary");
+        expect(json.tests[0].testInfo).to.be.undefined;
+        expect(json.tests[1].testInfo).to.be.undefined;
+        expect(json.tests[2].testInfo).to.be.undefined;
     });
 
     it("includes test issue keys", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json.tests).to.have.length(3);
         expectToExist(json.tests);
         expect(json.tests[0].testKey).to.eq("CYP-40");
@@ -330,72 +194,12 @@ describe("the import execution converter", () => {
         expect(json.tests[2].testKey).to.eq("CYP-49");
     });
 
-    it("skips tests with missing test type", async () => {
-        const result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-        );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Manual",
-            "CYP-41": "Manual",
-        };
-        const { stubbedWarning } = stubLogging();
-        const json = await converter.convert(result, testIssueData);
-        expect(json.tests).to.be.an("array").with.length(2);
-        expect(stubbedWarning).to.have.been.calledWith(
-            dedent(`
-                Skipping result upload for test: cypress xray plugin CYP-49 failling test case with test issue key
-
-                Test type of corresponding issue is unknown: CYP-49
-            `)
-        );
-    });
-
-    it("skips tests with missing summaries", async () => {
-        const result: CypressCommandLine.CypressRunResult = JSON.parse(
-            readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-        );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Manual",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
-        const { stubbedWarning } = stubLogging();
-        const json = await converter.convert(result, testIssueData);
-        expect(json.tests).to.be.an("array").with.length(2);
-        expect(stubbedWarning).to.have.been.calledWith(
-            dedent(`
-                Skipping result upload for test: cypress xray plugin CYP-49 failling test case with test issue key
-
-                Summary of corresponding issue is unknown: CYP-49
-            `)
-        );
-    });
-
     it("adds test execution issue keys", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
         options.jira.testExecutionIssueKey = "CYP-123";
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json.testExecutionKey).to.eq("CYP-123");
     });
 
@@ -403,18 +207,8 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
         options.jira.testPlanIssueKey = "CYP-123";
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json?.info?.testPlanKey).to.eq("CYP-123");
     });
 
@@ -422,17 +216,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json.testExecutionKey).to.be.undefined;
     });
 
@@ -440,17 +224,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json?.info?.testPlanKey).to.be.undefined;
     });
 
@@ -458,18 +232,8 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
         options.jira.testExecutionIssueSummary = "Jeffrey's Test";
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json?.info?.summary).to.eq("Jeffrey's Test");
     });
 
@@ -477,17 +241,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json?.info?.summary).to.eq("Execution Results [1669657272234]");
     });
 
@@ -495,18 +249,8 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
         options.jira.testExecutionIssueKey = "CYP-100";
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json?.info?.summary).to.be.undefined;
     });
 
@@ -514,18 +258,8 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
         options.jira.testExecutionIssueDescription = "Very Useful Text";
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json?.info?.description).to.eq("Very Useful Text");
     });
 
@@ -533,17 +267,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json?.info?.description).to.eq(
             dedent(`
                 Cypress version: 11.1.0
@@ -556,18 +280,8 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
         options.jira.testExecutionIssueKey = "CYP-100";
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json?.info?.description).to.be.undefined;
     });
 
@@ -575,18 +289,8 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
         converter = new ImportExecutionConverter(options, true);
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].status).to.eq("PASSED");
