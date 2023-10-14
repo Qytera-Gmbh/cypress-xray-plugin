@@ -22,7 +22,7 @@ import { ClientCombination, InternalOptions } from "./types/plugin";
 import { StringMap, nonNull } from "./types/util";
 import { CucumberMultipartFeature } from "./types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "./util/dedent";
-import { errorMessage } from "./util/error";
+import { errorMessage } from "./util/errors";
 
 export async function beforeRunHook(
     specs: Cypress.Spec[],

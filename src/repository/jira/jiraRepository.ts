@@ -8,7 +8,7 @@ import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
 import { InternalJiraOptions, JiraFieldIds } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
-import { errorMessage } from "../../util/error";
+import { errorMessage } from "../../util/errors";
 import { JiraFieldRepository } from "./fields/jiraFieldRepository";
 
 export type FieldExtractor<T> = {

@@ -7,7 +7,7 @@ import { Requests } from "../https/requests";
 import { logDebug, logInfo } from "../logging/logging";
 import { UserCloud, UserServer } from "../types/jira/responses/user";
 import { dedent } from "./dedent";
-import { errorMessage } from "./error";
+import { errorMessage } from "./errors";
 import { startInterval } from "./time";
 
 /**

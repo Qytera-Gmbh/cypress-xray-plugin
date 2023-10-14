@@ -10,7 +10,7 @@ import {
 import fs from "fs";
 import { logWarning } from "../logging/logging";
 import { dedent } from "../util/dedent";
-import { errorMessage } from "../util/error";
+import { errorMessage } from "../util/errors";
 
 // ============================================================================================== //
 // CYPRESS NATIVE                                                                                 //

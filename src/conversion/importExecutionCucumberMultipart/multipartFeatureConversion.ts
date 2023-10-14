@@ -6,7 +6,7 @@ import {
     CucumberMultipartTag,
 } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "../../util/dedent";
-import { errorMessage } from "../../util/error";
+import { errorMessage } from "../../util/errors";
 
 export function getMultipartFeatures(
     input: CucumberMultipartFeature[],
