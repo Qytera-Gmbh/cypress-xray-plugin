@@ -1,10 +1,24 @@
 # Changelog
 
+# `5.1.1`
+
+## Notable changes
+
+- Add Jira and Xray pings during plugin initialization for configuration verification ([#199](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/199))
+
+- Prevent results upload from modifying test issues unnecessarily (fixes [#209](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/209), [#210](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/210))
+
+- Prevent Cucumber results upload of untagged scenarios ([#214](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/214))
+
+## Dependency updates
+
+- Bump axios from 1.5.0 to 1.5.1
+
 # `5.1.0`
 
 ## Notable changes
 
-- Moved `cypress` to the plugin's peer dependencies to impose supported Cypress version ranges
+- Move `cypress` to the plugin's peer dependencies to impose supported Cypress version ranges
 
 - Prevent existing test execution issue data (summaries, descriptions) from being overwritten unnecessarily (fixes [#191](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/191))
 
@@ -229,13 +243,13 @@ Some of the plugin's core functionality has been rewritten entirely to keep thin
 
 ## Notable changes
 
-- Restricted exported plugin members to those defined in `index.ts`
+- Restrict exported plugin members to those defined in `index.ts`
 
-- Added `plugin.logDirectory` option
+- Add `plugin.logDirectory` option
 
-- Added `jira.testExecutionIssueType` option
+- Add `jira.testExecutionIssueType` option
 
-- Added `jira.testPlanIssueType` option
+- Add `jira.testPlanIssueType` option
 
 - Feature file upload/synchronization now automatically resets the summary should the import change it
 
