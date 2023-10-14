@@ -32,8 +32,7 @@ export abstract class TestConverter<
     TestIssueData
 > {
     public async convert(
-        runResults: CypressRunResult_V12 | CypressRunResult_V13,
-        issueData?: TestIssueData
+        runResults: CypressRunResult_V12 | CypressRunResult_V13
     ): Promise<[XrayTestType, ...XrayTestType[]]> {
         const testRunData = await this.getTestRunData(runResults);
         const xrayTests: XrayTestType[] = [];
@@ -43,19 +42,9 @@ export abstract class TestConverter<
                     testData.title,
                     this.options.jira.projectKey
                 );
-                if (!issueData?.summaries[issueKey]) {
-                    throw new Error(`Summary of corresponding issue is unknown: ${issueKey}`);
-                }
-                if (!issueData?.testTypes[issueKey]) {
-                    throw new Error(`Test type of corresponding issue is unknown: ${issueKey}`);
-                }
                 const test: XrayTestType = this.getTest(
                     testData,
                     issueKey,
-                    {
-                        summary: issueData.summaries[issueKey],
-                        testType: issueData.testTypes[issueKey],
-                    },
                     this.getXrayEvidence(testData)
                 );
                 xrayTests.push(test);
@@ -80,10 +69,6 @@ export abstract class TestConverter<
     protected abstract getTest(
         test: ITestRunData,
         issueKey: string,
-        issueData: {
-            summary: string;
-            testType: string;
-        },
         evidence: XrayEvidenceItem[]
     ): XrayTestType;
 

@@ -8,12 +8,10 @@ import {
 } from "../../context";
 import { CypressRunResult } from "../../types/cypress/12.0.0/api";
 import { InternalOptions } from "../../types/plugin";
-import { TestIssueData } from "./importExecutionConverter";
 import { TestConverterServer } from "./testConverterServer";
 
 describe("the test converter server", () => {
     let options: InternalOptions;
-    let testIssueData: TestIssueData;
     beforeEach(() => {
         options = {
             jira: initJiraOptions(
@@ -32,55 +30,29 @@ describe("the test converter server", () => {
             plugin: initPluginOptions({}, {}),
             openSSL: initOpenSSLOptions({}, {}),
         };
-        testIssueData = { summaries: {}, testTypes: {} };
     });
 
     it("converts run results for Cypress <13.0.0", async () => {
         const result: CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-40": "This is",
-            "CYP-41": "a distributed",
-            "CYP-49": "summary",
-        };
-        testIssueData.testTypes = {
-            "CYP-40": "Generic",
-            "CYP-41": "Manual",
-            "CYP-49": "Cucumber",
-        };
         const converter = new TestConverterServer(options);
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json).to.deep.eq([
             {
                 testKey: "CYP-40",
-                testInfo: {
-                    projectKey: "CYP",
-                    summary: "This is",
-                    testType: "Generic",
-                },
                 start: "2022-11-28T17:41:15Z",
                 finish: "2022-11-28T17:41:15Z",
                 status: "PASS",
             },
             {
                 testKey: "CYP-41",
-                testInfo: {
-                    projectKey: "CYP",
-                    summary: "a distributed",
-                    testType: "Manual",
-                },
                 start: "2022-11-28T17:41:15Z",
                 finish: "2022-11-28T17:41:15Z",
                 status: "PASS",
             },
             {
                 testKey: "CYP-49",
-                testInfo: {
-                    projectKey: "CYP",
-                    summary: "summary",
-                    testType: "Cucumber",
-                },
                 start: "2022-11-28T17:41:15Z",
                 finish: "2022-11-28T17:41:19Z",
                 status: "FAIL",
@@ -98,52 +70,23 @@ describe("the test converter server", () => {
         const result: CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
         );
-        testIssueData.summaries = {
-            "CYP-452": "This is",
-            "CYP-268": "a distributed",
-            "CYP-237": "summary",
-            "CYP-332": "part 4",
-            "CYP-333": "part 5",
-        };
-        testIssueData.testTypes = {
-            "CYP-452": "Generic",
-            "CYP-268": "Manual",
-            "CYP-237": "Cucumber",
-            "CYP-332": "Manual",
-            "CYP-333": "Manual",
-        };
         const converter = new TestConverterServer(options);
-        const json = await converter.convert(result, testIssueData);
+        const json = await converter.convert(result);
         expect(json).to.deep.eq([
             {
                 testKey: "CYP-452",
-                testInfo: {
-                    projectKey: "CYP",
-                    summary: "This is",
-                    testType: "Generic",
-                },
                 start: "2023-09-09T10:59:28Z",
                 finish: "2023-09-09T10:59:29Z",
                 status: "PASS",
             },
             {
                 testKey: "CYP-268",
-                testInfo: {
-                    projectKey: "CYP",
-                    summary: "a distributed",
-                    testType: "Manual",
-                },
                 start: "2023-09-09T10:59:29Z",
                 finish: "2023-09-09T10:59:29Z",
                 status: "PASS",
             },
             {
                 testKey: "CYP-237",
-                testInfo: {
-                    projectKey: "CYP",
-                    summary: "summary",
-                    testType: "Cucumber",
-                },
                 start: "2023-09-09T10:59:29Z",
                 finish: "2023-09-09T10:59:29Z",
                 status: "FAIL",
@@ -156,22 +99,12 @@ describe("the test converter server", () => {
             },
             {
                 testKey: "CYP-332",
-                testInfo: {
-                    projectKey: "CYP",
-                    summary: "part 4",
-                    testType: "Manual",
-                },
                 start: "2023-09-09T10:59:29Z",
                 finish: "2023-09-09T10:59:29Z",
                 status: "FAIL",
             },
             {
                 testKey: "CYP-333",
-                testInfo: {
-                    projectKey: "CYP",
-                    summary: "part 5",
-                    testType: "Manual",
-                },
                 start: "2023-09-09T10:59:29Z",
                 finish: "2023-09-09T10:59:29Z",
                 status: "TODO",
