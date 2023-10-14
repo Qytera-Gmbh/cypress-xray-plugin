@@ -44,9 +44,9 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
      * used to deduce the output format. When set to `true`, Xray cloud JSONs will be created, if
      * set to `false`, the format will be Xray server JSON.
      *
-     * @param options the options
-     * @param isCloudConverter whether Xray cloud JSONs should be created
-     * @param jiraRepository the Jira repository for fetching issue data
+     * @param options - the options
+     * @param isCloudConverter - whether Xray cloud JSONs should be created
+     * @param jiraRepository - the Jira repository for fetching issue data
      */
     constructor(
         options: InternalOptions,

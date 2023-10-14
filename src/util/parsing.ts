@@ -1,7 +1,7 @@
 /**
  * Parses and returns a boolean value from a string.
  *
- * @param value a string that can be interpreted as a boolean value
+ * @param value - a string that can be interpreted as a boolean value
  * @returns the corresponding boolean value
  * @see https://www.npmjs.com/package/yn
  */
@@ -22,7 +22,7 @@ export function asBoolean(value: string): boolean {
 /**
  * No-op function for consistency purposes.
  *
- * @param value the string
+ * @param value - the string
  * @returns the string
  */
 export function asString(value: string): string {
@@ -32,7 +32,7 @@ export function asString(value: string): string {
 /**
  * Parses and returns a float value from a string.
  *
- * @param value a string that can be interpreted as a float value
+ * @param value - a string that can be interpreted as a float value
  * @returns the corresponding float value
  */
 export function asFloat(value: string): number {
@@ -42,7 +42,7 @@ export function asFloat(value: string): number {
 /**
  * Parses and returns an integer value from a string.
  *
- * @param value a string that can be interpreted as an integer value
+ * @param value - a string that can be interpreted as an integer value
  * @returns the corresponding integer value
  */
 export function asInt(value: string): number {
@@ -52,9 +52,9 @@ export function asInt(value: string): number {
 /**
  * Parses an environment variable to arbitrary data types.
  *
- * @param env the object holding all environment variables as key-value pairs
- * @param variable the variable name
- * @param parser the parsing function
+ * @param env - the object holding all environment variables as key-value pairs
+ * @param variable - the variable name
+ * @param parser - the parsing function
  * @returns the parsed data or undefined if the variable does not exist
  */
 export function parse<T>(

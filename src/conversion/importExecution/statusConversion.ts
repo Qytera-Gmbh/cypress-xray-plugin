@@ -4,7 +4,7 @@ import { Status } from "../../types/testStatus";
 /**
  * Converts the given status text string to a valid Cypress attempt status.
  *
- * @param statusText the status text
+ * @param statusText - the status text
  * @returns the Cypress attempt status
  * @throws if the status text cannot be mapped to a valid Cypress attempt status
  */
@@ -33,9 +33,9 @@ export function toCypressStatus(statusText: string): Status {
  * - `statusOptions.pending`
  * - `statusOptions.skipped`
  *
- * @param state the status text
- * @param useCloudStatus whether to default to Xray cloud test statuses or Xray server ones
- * @param options optional custom statuses
+ * @param state - the status text
+ * @param useCloudStatus - whether to default to Xray cloud test statuses or Xray server ones
+ * @param options - optional custom statuses
  * @returns the Xray status
  */
 export function getXrayStatus(

@@ -2,10 +2,6 @@ import { InternalOptions } from "../types/plugin";
 
 /**
  * A basic class for converting data from an input type to a target type.
- *
- * @template ConversionInputType the conversion input type
- * @template ConversionTargetType the conversion target type
- * @template ConversionParametersType the conversion parameters type
  */
 export abstract class Converter<
     ConversionInputType,
@@ -20,7 +16,7 @@ export abstract class Converter<
     /**
      * Construct a new converter with access to the provided options.
      *
-     * @param options the options
+     * @param options - the options
      */
     constructor(options: InternalOptions) {
         this.options = options;
@@ -29,8 +25,8 @@ export abstract class Converter<
     /**
      * Convert an input object into a target object.
      *
-     * @param input the input object
-     * @param parameters additional conversion parameters
+     * @param input - the input object
+     * @param parameters - additional conversion parameters
      * @returns the target object
      */
     public abstract convert(

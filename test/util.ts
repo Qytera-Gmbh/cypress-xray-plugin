@@ -25,7 +25,7 @@ chai.use(sinonChai);
  * Stubs the logging module members. An optional list of spies can be provided, which will result
  * in the corresponding members being spied on instead of stubbing them completely.
  *
- * @param spies the array of members to spy on only
+ * @param spies - the array of members to spy on only
  * @returns an object containing the logging module's stubs or spies
  */
 export const stubLogging = (...spies: (keyof typeof logging)[]) => {
@@ -168,7 +168,7 @@ export class DummyJiraClient extends JiraClient<
  * Use in place of `expect(value).to.exist`
  *
  * Work-around for Chai assertions not being recognized by TypeScript's control flow analysis.
- * @param {any} value
+ * @param value - the value
  * @see https://stackoverflow.com/a/65099907
  */
 export function expectToExist<T>(value: T): asserts value is NonNullable<T> {
@@ -181,7 +181,7 @@ export function expectToExist<T>(value: T): asserts value is NonNullable<T> {
  * Utility function returning environment variable values as strings and throwing errors
  * if they are not defined.
  *
- * @param key the key of the environment variable whose value to retrieve
+ * @param key - the key of the environment variable whose value to retrieve
  * @returns the environment variable value
  * @throws if the environment variable is not defined
  */

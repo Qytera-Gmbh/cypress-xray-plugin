@@ -43,7 +43,7 @@ type Attachment<UserType> = {
 };
 /**
  * An attachment response.
- * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/{issueIdOrKey}/attachments-addAttachment
+ * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
  */
 export type AttachmentServer = Attachment<UserServer>;
 /**
