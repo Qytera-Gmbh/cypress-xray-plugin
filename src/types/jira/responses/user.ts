@@ -7,13 +7,13 @@ type User = {
     self?: string;
     /**
      * This property is no longer available and will be removed from the documentation soon. See the
-     * {@link https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/ deprecation notice}
+     * {@link https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/ | deprecation notice}
      * for details.
      */
     key?: string;
     /**
      * This property is no longer available and will be removed from the documentation soon. See the
-     * {@link https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/ deprecation notice}
+     * {@link https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/ | deprecation notice}
      * for details.
      */
     name?: string;

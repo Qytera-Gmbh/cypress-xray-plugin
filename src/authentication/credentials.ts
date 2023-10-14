@@ -9,8 +9,10 @@ import { startInterval } from "../util/time";
 /**
  * A basic HTTP header.
  * @example
+ * ```ts
  *   { "Authorization": "Bearer xyz" }
  *   { "Content-Type": "application/json" }
+ * ```
  */
 export type HTTPHeader = StringMap<string>;
 

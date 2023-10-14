@@ -73,10 +73,12 @@ export interface JiraOptions {
      * *Please consult the official documentation for more information about field IDs: https://confluence.atlassian.com/jirakb/how-to-find-id-for-custom-field-s-744522503.html*
      *
      * @example
+     * ```ts
      *   fields: {
      *     description: "description",
      *     testPlan: "customfield_12643"
      *   }
+     * ```
      */
     fields?: JiraFieldIds;
     /**
@@ -290,14 +292,15 @@ export interface OpenSSLOptions {
      */
     rootCAPath?: string;
     /**
-     * A {@link https://nodejs.org/api/crypto.html#crypto-constants crypto constant} that will be
+     * A {@link https://nodejs.org/api/crypto.html#crypto-constants | crypto constant} that will be
      * used to configure the `securityOptions` of the
-     * {@link https://nodejs.org/api/https.html#class-httpsagent https.Agent} used for sending
+     * {@link https://nodejs.org/api/https.html#class-httpsagent | https.Agent} used for sending
      * requests to your Xray instance.
      *
      * *Note: Compute their bitwise OR if you need to set more than one option.*
      *
      * @example
+     * ```ts
      * import { constants } from "crypto";
      * // ...
      *   openSSL: {
@@ -305,6 +308,7 @@ export interface OpenSSLOptions {
      *                    constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
      *   }
      * // ...
+     * ```
      */
     secureOptions?: number;
 }

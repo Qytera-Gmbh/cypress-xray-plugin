@@ -44,8 +44,8 @@ export interface TestExecutionIssueDataServer extends TestExecutionIssueData {
  * Converts Cypress run data into Cucumber multipart information, which could be used when creating
  * new test executions on import or when updating existing ones.
  *
- * @param runData Cypress run data
- * @param testExecutionIssueData additional information to consider
+ * @param runData - Cypress run data
+ * @param testExecutionIssueData - additional information to consider
  * @returns the Cucumber multipart information data for Xray server
  */
 export function getMultipartInfoServer(
@@ -81,8 +81,8 @@ export function getMultipartInfoServer(
  * Converts Cypress run data into Cucumber multipart information, which could be used when creating
  * new test executions on import or when updating existing ones.
  *
- * @param runData Cypress run data
- * @param testExecutionIssueData additional information to consider
+ * @param runData - Cypress run data
+ * @param testExecutionIssueData - additional information to consider
  * @returns the Cucumber multipart information data for Xray cloud
  */
 export function getMultipartInfoCloud(

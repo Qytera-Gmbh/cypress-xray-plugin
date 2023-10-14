@@ -15,8 +15,8 @@ import { startInterval } from "./time";
  * - the URL is the base URL of a Jira instance
  * - the credentials belong to a valid Jira user
  *
- * @param url the base URL of the Jira instance
- * @param credentials the credentials of a valid Jira user
+ * @param url - the base URL of the Jira instance
+ * @param credentials - the credentials of a valid Jira user
  * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-rest-api-3-myself-get
  * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.11.0/#api/2/myself
  */
@@ -78,8 +78,8 @@ function getUserString(user: UserServer | UserCloud): string | undefined {
  * - the URL is the base URL of an Xray server instance
  * - the credentials belong to a user with a valid Xray license
  *
- * @param url the base URL of the Xray server instance
- * @param credentials the credentials of a user with a valid Xray license
+ * @param url - the base URL of the Xray server instance
+ * @param credentials - the credentials of a user with a valid Xray license
  * @see https://docs.getxray.app/display/XRAY/v2.0#/External%20Apps/get_xraylicense
  */
 export async function pingXrayServer(
@@ -139,7 +139,7 @@ export async function pingXrayServer(
 /**
  * Pings Xray cloud and verifies that the credentials belong to a user with a valid Xray license.
  *
- * @param credentials Xray cloud credentials
+ * @param credentials - Xray cloud credentials
  * @see https://docs.getxray.app/display/XRAYCLOUD/Authentication+-+REST+v2
  */
 export async function pingXrayCloud(credentials: JWTCredentials): Promise<void> {

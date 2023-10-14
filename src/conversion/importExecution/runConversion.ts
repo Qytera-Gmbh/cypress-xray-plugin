@@ -73,7 +73,7 @@ export interface ITestRunData {
  *   });
  * ```
  *
- * @param runResult the run result
+ * @param runResult - the run result
  * @returns an array of test data promises
  */
 export function getTestRunData_V12(runResult: RunResult_V12): Promise<ITestRunData>[] {
@@ -122,8 +122,8 @@ export function getTestRunData_V12(runResult: RunResult_V12): Promise<ITestRunDa
  *   });
  * ```
  *
- * @param runResult the run result
- * @param projectKey the project key
+ * @param runResult - the run result
+ * @param projectKey - the project key
  * @returns an array of test data promises
  */
 export function getTestRunData_V13(
