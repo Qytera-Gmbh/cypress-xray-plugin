@@ -67,12 +67,12 @@ function log(
         if (index === 0) {
             logger(`${prefix} ${colorizer(line)}`);
         } else {
-            logger(`${prefix} ┊ ${colorizer(line)}`);
+            logger(`${prefix}   ${colorizer(line)}`);
         }
         // Pad multiline log messages with an extra new line to cleanly separate them from the
         // following line.
         if (index > 0 && index === lines.length - 1) {
-            logger(`${prefix} ┊`);
+            logger(prefix);
         }
     });
 }
