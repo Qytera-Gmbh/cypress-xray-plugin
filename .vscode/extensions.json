@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "rvest.vs-code-prettier-eslint",
+        "github.vscode-github-actions",
+        "hbenl.vscode-mocha-test-adapte"
+    ]
+}
