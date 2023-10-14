@@ -250,8 +250,12 @@ describe("the hooks", () => {
             await synchronizeFile(file, ".", options, clients);
             expect(stubbedError).to.have.been.calledOnce;
             expect(stubbedError).to.have.been.calledWith(
-                "Feature file invalid, skipping synchronization: Error: Parser errors:\n" +
-                    "(9:3): expected: #EOF, #TableRow, #DocStringSeparator, #StepLine, #TagLine, #ScenarioLine, #RuleLine, #Comment, #Empty, got 'Invalid: Element'"
+                dedent(`
+                    Feature file invalid, skipping synchronization: ./test/resources/features/invalid.feature
+
+                    Parser errors:
+                    (9:3): expected: #EOF, #TableRow, #DocStringSeparator, #StepLine, #TagLine, #ScenarioLine, #RuleLine, #Comment, #Empty, got 'Invalid: Element'
+                `)
             );
             expect(stubbedInfo).to.have.been.calledOnce;
             expect(stubbedInfo).to.have.been.calledWith(

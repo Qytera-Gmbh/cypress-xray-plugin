@@ -284,7 +284,13 @@ export async function synchronizeFile(
                 }
             }
         } catch (error: unknown) {
-            logError(`Feature file invalid, skipping synchronization: ${error}`);
+            logError(
+                dedent(`
+                    Feature file invalid, skipping synchronization: ${file.filePath}
+
+                    ${errorMessage(error)}
+                `)
+            );
         }
     }
     return file.filePath;
