@@ -63,8 +63,8 @@ export function getNativeTestIssueKeys(
 /**
  * Extracts a Jira issue key from a native Cypress test title, based on the provided project key.
  *
- * @param title the test title
- * @param projectKey the Jira projectk key
+ * @param title - the test title
+ * @param projectKey - the Jira projectk key
  * @returns the Jira issue key
  * @throws if the title contains zero or more than one issue key
  */
@@ -183,8 +183,8 @@ export function getCucumberIssueData(
 /**
  * Parses a Gherkin document (feature file) and returns the information contained within.
  *
- * @param file the path to the feature file
- * @param encoding the file's encoding
+ * @param file - the path to the feature file
+ * @param encoding - the file's encoding
  * @returns an object containing the data of the feature file
  * @example
  *   const data = parseFeatureFile("myTetest.feature")

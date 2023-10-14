@@ -26,9 +26,9 @@ export class XrayClientServer extends XrayClient<
     /**
      * Construct a new Xray Server client using the provided credentials.
      *
-     * @param apiBaseUrl the base URL for all HTTP requests
-     * @param credentials the credentials to use during authentication
-     * @param jiraClient the configured Jira client
+     * @param apiBaseUrl - the base URL for all HTTP requests
+     * @param credentials - the credentials to use during authentication
+     * @param jiraClient - the configured Jira client
      */
     constructor(
         apiBaseUrl: string,

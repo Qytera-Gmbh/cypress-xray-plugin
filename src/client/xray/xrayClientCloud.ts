@@ -40,7 +40,7 @@ export class XrayClientCloud extends XrayClient<
     /**
      * Construct a new Xray cloud client using the provided credentials.
      *
-     * @param credentials the credentials to use during authentication
+     * @param credentials - the credentials to use during authentication
      */
     constructor(credentials: JWTCredentials) {
         super(XrayClientCloud.URL, credentials);
@@ -103,8 +103,8 @@ export class XrayClientCloud extends XrayClient<
      * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
      * `Generic`.
      *
-     * @param projectKey key of the project containing the test issues
-     * @param issueKeys the keys of the test issues to retrieve test types for
+     * @param projectKey - key of the project containing the test issues
+     * @param issueKeys - the keys of the test issues to retrieve test types for
      * @returns a promise which will contain the mapping of issues to test types
      */
     public async getTestTypes(

@@ -1,7 +1,7 @@
 /**
  * Retrieve the overall earliest date of multiple dates.
  *
- * @param dates the dates
+ * @param dates - the dates
  * @returns the earliest date
  */
 export function getEarliestDate(...dates: Date[]): Date | null {
@@ -17,7 +17,7 @@ export function getEarliestDate(...dates: Date[]): Date | null {
 /**
  * Retrieve the overall latest date of multiple dates.
  *
- * @param dates the dates
+ * @param dates - the dates
  * @returns the latest date
  */
 export function getLatestDate(...dates: Date[]): Date | null {

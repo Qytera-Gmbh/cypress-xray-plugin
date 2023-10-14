@@ -76,12 +76,12 @@ export function clearPluginContext(): void {
 }
 
 /**
- * Returns an {@link InternalJiraOptions `InternalJiraOptions`} instance based on parsed environment
+ * Returns an {@link InternalJiraOptions | `InternalJiraOptions`} instance based on parsed environment
  * variables and a provided options object. Environment variables will take precedence over the
  * options set in the object.
  *
- * @param env an object containing environment variables as properties
- * @param options an options object containing Jira options
+ * @param env - an object containing environment variables as properties
+ * @param options - an options object containing Jira options
  * @returns the constructed internal Jira options
  */
 export function initJiraOptions(
@@ -140,12 +140,12 @@ export function initJiraOptions(
 }
 
 /**
- * Returns an {@link InternalPluginOptions `InternalPluginOptions`} instance based on parsed
+ * Returns an {@link InternalPluginOptions | `InternalPluginOptions`} instance based on parsed
  * environment variables and a provided options object. Environment variables will take precedence
  * over the options set in the object.
  *
- * @param env an object containing environment variables as properties
- * @param options an options object containing plugin options
+ * @param env - an object containing environment variables as properties
+ * @param options - an options object containing plugin options
  * @returns the constructed internal plugin options
  */
 export function initPluginOptions(
@@ -165,12 +165,12 @@ export function initPluginOptions(
 }
 
 /**
- * Returns an {@link InternalXrayOptions `InternalXrayOptions`} instance based on parsed environment
+ * Returns an {@link InternalXrayOptions | `InternalXrayOptions`} instance based on parsed environment
  * variables and a provided options object. Environment variables will take precedence over the
  * options set in the object.
  *
- * @param env an object containing environment variables as properties
- * @param options an options object containing Xray options
+ * @param env - an object containing environment variables as properties
+ * @param options - an options object containing Xray options
  * @returns the constructed internal Xray options
  */
 export function initXrayOptions(
@@ -194,12 +194,12 @@ export function initXrayOptions(
 }
 
 /**
- * Returns an {@link InternalCucumberOptions `InternalCucumberOptions`} instance based on parsed
+ * Returns an {@link InternalCucumberOptions | `InternalCucumberOptions`} instance based on parsed
  * environment variables and a provided options object. Environment variables will take precedence
  * over the options set in the object.
  *
- * @param env an object containing environment variables as properties
- * @param options an options object containing Cucumber options
+ * @param env - an object containing environment variables as properties
+ * @param options - an options object containing Cucumber options
  * @returns the constructed internal Cucumber options
  */
 export async function initCucumberOptions(
@@ -274,12 +274,12 @@ export async function initCucumberOptions(
 }
 
 /**
- * Returns an {@link InternalOpenSSLOptions `InternalOpenSSLOptions`} instance based on parsed
+ * Returns an {@link InternalOpenSSLOptions | `InternalOpenSSLOptions`} instance based on parsed
  * environment variables and a provided options object. Environment variables will take precedence
  * over the options set in the object.
  *
- * @param env an object containing environment variables as properties
- * @param options an options object containing OpenSSL options
+ * @param env - an object containing environment variables as properties
+ * @param options - an options object containing OpenSSL options
  * @returns the constructed internal OpenSSL options
  */
 export function initOpenSSLOptions(

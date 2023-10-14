@@ -1,7 +1,7 @@
 /**
  * Normalizes a filename by replacing invalid character sequences with `_`.
  *
- * @param filename any filename
+ * @param filename - any filename
  * @returns the normalized filename
  */
 export function normalizedFilename(filename: string): string {

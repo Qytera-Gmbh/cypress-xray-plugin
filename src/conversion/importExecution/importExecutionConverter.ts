@@ -39,8 +39,8 @@ export class ImportExecutionConverter extends Converter<
      * results). When set to `true`, Xray cloud JSONs will be created, if set to `false`, the format
      * will be Xray server JSON.
      *
-     * @param options the options
-     * @param isCloudConverter whether Xray cloud JSONs should be created
+     * @param options - the options
+     * @param isCloudConverter - whether Xray cloud JSONs should be created
      */
     constructor(options: InternalOptions, isCloudConverter: boolean) {
         super(options);

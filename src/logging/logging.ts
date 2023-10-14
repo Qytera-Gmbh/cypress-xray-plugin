@@ -79,10 +79,10 @@ function log(
 
 /**
  * Writes arbitrary data to a file under the log path configured in
- * {@link initLogging `initLogging`}.
+ * {@link initLogging | `initLogging`}.
  *
- * @param data the data to write
- * @param filename the filename to use for the file
+ * @param data - the data to write
+ * @param filename - the filename to use for the file
  */
 export function writeFile<T>(data: T, filename: string): string {
     const logDirectoryPath = path.resolve(loggingOptions.logDirectory);
@@ -94,10 +94,10 @@ export function writeFile<T>(data: T, filename: string): string {
 
 /**
  * Writes an error to a file (e.g. HTTP response errors) under the log path configured in
- * {@link initLogging `initLogging`}.
+ * {@link initLogging | `initLogging`}.
  *
- * @param error the error
- * @param filename the filename to use for the file
+ * @param error - the error
+ * @param filename - the filename to use for the file
  */
 export function writeErrorFile(error: unknown, filename: string): void {
     let errorFileName: string;

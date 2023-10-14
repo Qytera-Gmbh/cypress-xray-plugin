@@ -34,8 +34,8 @@ export abstract class JiraClient<
     /**
      * Construct a new Jira client using the provided credentials.
      *
-     * @param apiBaseURL the Jira base endpoint
-     * @param credentials the credentials to use during authentication
+     * @param apiBaseURL - the Jira base endpoint
+     * @param credentials - the credentials to use during authentication
      */
     constructor(apiBaseURL: string, credentials: CredentialsType) {
         super(apiBaseURL, credentials);
@@ -44,11 +44,11 @@ export abstract class JiraClient<
     /**
      * Adds one or more attachments to an issue. Attachments are posted as multipart/form-data.
      *
-     * @param issueIdOrKey the ID or key of the issue that attachments are added to
-     * @param files the files to attach
+     * @param issueIdOrKey - issueIdOrKey the ID or key of the issue that attachments are added to
+     * @param files - files the files to attach
      * @returns a list of issue attachment responses or `undefined` in case of errors
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
-     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/{issueIdOrKey}/attachments-addAttachment
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
      */
     public async addAttachment(
         issueIdOrKey: string,
@@ -115,7 +115,7 @@ export abstract class JiraClient<
     /**
      * Returns the endpoint to use for adding attchments to issues.
      *
-     * @param issueIdOrKey the ID or key of the issue that attachments are added to
+     * @param issueIdOrKey - the ID or key of the issue that attachments are added to
      * @returns the URL
      */
     public abstract getUrlAddAttachment(issueIdOrKey: string): string;
@@ -227,7 +227,7 @@ export abstract class JiraClient<
     /**
      * Searches for issues using JQL. Automatically performs pagination if necessary.
      *
-     * @param request the search request
+     * @param request - the search request
      * @returns the search results or `undefined` in case of errors
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
@@ -289,8 +289,8 @@ export abstract class JiraClient<
      * The parent field may be set by key or ID. For standard issue types, the parent may be removed
      * by setting `update.parent.set.none` to `true`.
      *
-     * @param issueIdOrKey the ID or key of the issue
-     * @param issueUpdateData the edit data
+     * @param issueIdOrKey - the ID or key of the issue
+     * @param issueUpdateData - the edit data
      * @returns the ID or key of the edited issue or `undefined` in case of errors
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-put
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.10.0/#api/2/issue-editIssue
@@ -324,7 +324,7 @@ export abstract class JiraClient<
     /**
      * Returns the endpoint to use for editing issues.
      *
-     * @param issueIdOrKey the ID or key of the issue
+     * @param issueIdOrKey - the ID or key of the issue
      * @returns the endpoint
      */
     public abstract getUrlEditIssue(issueIdOrKey: string): string;

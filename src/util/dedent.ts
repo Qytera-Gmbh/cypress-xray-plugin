@@ -5,7 +5,7 @@
  *
  * This also applies to expression whitespace.
  *
- * @param string the string
+ * @param string - the string
  * @returns the dedented string
  */
 export function dedent(string: string): string {
