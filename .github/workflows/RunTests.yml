@@ -3,6 +3,15 @@ name: Run Plugin Tests
 on:
   pull_request:
     branches: ["main"]
+    paths:
+      [
+        "**/*.ts",
+        "**/*.spec.ts",
+        "package.json",
+        "package-lock.json",
+        "tsconfig.json",
+        "tsconfigBuid.json",
+      ]
   workflow_dispatch:
     # manually triggered
 
