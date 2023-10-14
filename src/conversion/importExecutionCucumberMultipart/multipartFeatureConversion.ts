@@ -48,13 +48,12 @@ export function getMultipartFeatures(
                         options.projectKey,
                         options.useCloudTags
                     );
+                    const modifiedElement: CucumberMultipartElement = {
+                        ...element,
+                        steps: getSteps(element, options?.includeScreenshots),
+                    };
+                    elements.push(modifiedElement);
                 }
-                // TODO: skip untagged elements
-                const modifiedElement: CucumberMultipartElement = {
-                    ...element,
-                    steps: getSteps(element, options?.includeScreenshots),
-                };
-                elements.push(modifiedElement);
             } catch (error: unknown) {
                 logWarning(
                     dedent(`
