@@ -1,4 +1,5 @@
 import { logWarning } from "../../logging/logging";
+import { getScenarioTagRegex } from "../../preprocessing/preprocessing";
 import {
     CucumberMultipartElement,
     CucumberMultipartFeature,
@@ -6,13 +7,19 @@ import {
     CucumberMultipartTag,
 } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "../../util/dedent";
-import { errorMessage } from "../../util/errors";
+import {
+    errorMessage,
+    missingTestKeyInCucumberScenarioError,
+    multipleTestKeysInCucumberScenarioError,
+} from "../../util/errors";
 
 export function getMultipartFeatures(
     input: CucumberMultipartFeature[],
-    options?: {
+    options: {
         testExecutionIssueKey?: string;
         includeScreenshots?: boolean;
+        projectKey: string;
+        useCloudTags: boolean;
     }
 ) {
     const tests: CucumberMultipartFeature[] = [];
@@ -35,6 +42,14 @@ export function getMultipartFeatures(
         const elements: CucumberMultipartElement[] = [];
         result.elements.forEach((element: CucumberMultipartElement) => {
             try {
+                if (element.type === "scenario") {
+                    assertScenarioContainsIssueKey(
+                        element,
+                        options.projectKey,
+                        options.useCloudTags
+                    );
+                }
+                // TODO: skip untagged elements
                 const modifiedElement: CucumberMultipartElement = {
                     ...element,
                     steps: getSteps(element, options?.includeScreenshots),
@@ -45,7 +60,7 @@ export function getMultipartFeatures(
                     dedent(`
                         Skipping result upload for ${element.type}: ${element.name}
 
-                            ${errorMessage(error)}
+                        ${errorMessage(error)}
                     `)
                 );
             }
@@ -56,6 +71,38 @@ export function getMultipartFeatures(
         }
     });
     return tests;
+}
+
+function assertScenarioContainsIssueKey(
+    element: CucumberMultipartElement,
+    projectKey: string,
+    useCloudTags: boolean
+): void {
+    const issueKeys: string[] = [];
+    if (element.tags) {
+        for (const tag of element.tags) {
+            const matches = tag.name.match(getScenarioTagRegex(projectKey, useCloudTags));
+            if (!matches) {
+                continue;
+            } else if (matches.length === 2) {
+                issueKeys.push(matches[1]);
+            }
+        }
+        if (issueKeys.length > 1) {
+            throw multipleTestKeysInCucumberScenarioError(
+                {
+                    name: element.name,
+                    keyword: element.keyword,
+                },
+                element.tags,
+                issueKeys,
+                useCloudTags
+            );
+        }
+    }
+    if (issueKeys.length === 0) {
+        throw missingTestKeyInCucumberScenarioError(element, projectKey, useCloudTags);
+    }
 }
 
 function getSteps(

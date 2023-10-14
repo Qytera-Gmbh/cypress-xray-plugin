@@ -141,6 +141,7 @@ export function getCucumberIssueData(
             } else if (issueKeys.length > 1) {
                 throw multipleTestKeysInCucumberScenarioError(
                     child.scenario,
+                    child.scenario.tags,
                     issueKeys,
                     isCloudClient
                 );
@@ -209,7 +210,7 @@ export function getCucumberScenarioIssueTags(
 ): string[] {
     const issueKeys: string[] = [];
     for (const tag of scenario.tags) {
-        const matches = tag.name.match(scenarioRegex(projectKey, isCloudClient));
+        const matches = tag.name.match(getScenarioTagRegex(projectKey, isCloudClient));
         if (!matches) {
             continue;
         } else if (matches.length === 2) {
@@ -219,7 +220,7 @@ export function getCucumberScenarioIssueTags(
     return issueKeys;
 }
 
-function scenarioRegex(projectKey: string, isCloudClient: boolean) {
+export function getScenarioTagRegex(projectKey: string, isCloudClient: boolean) {
     if (isCloudClient) {
         // @TestName:CYP-123
         return new RegExp(`@TestName:(${projectKey}-\\d+)`);

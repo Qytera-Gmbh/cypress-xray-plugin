@@ -1,0 +1,63 @@
+[
+    {
+        "description": "",
+        "elements": [
+            {
+                "description": "",
+                "id": "example;doing-stuff",
+                "keyword": "Scenario",
+                "line": 6,
+                "name": "Doing stuff",
+                "steps": [
+                    {
+                        "arguments": [],
+                        "keyword": "When ",
+                        "line": 4,
+                        "name": "I prepare something",
+                        "match": {
+                            "location": "not available:0"
+                        },
+                        "result": {
+                            "status": "passed",
+                            "duration": 25000000
+                        }
+                    },
+                    {
+                        "arguments": [],
+                        "keyword": "When ",
+                        "line": 7,
+                        "name": "I do something",
+                        "match": {
+                            "location": "not available:0"
+                        },
+                        "result": {
+                            "status": "passed",
+                            "duration": 15000000
+                        }
+                    },
+                    {
+                        "arguments": [],
+                        "keyword": "Then ",
+                        "line": 8,
+                        "name": "something happens",
+                        "match": {
+                            "location": "not available:0"
+                        },
+                        "result": {
+                            "status": "passed",
+                            "duration": 15000000
+                        }
+                    }
+                ],
+                "tags": [],
+                "type": "scenario"
+            }
+        ],
+        "id": "example",
+        "line": 1,
+        "keyword": "Feature",
+        "name": "Example",
+        "tags": [],
+        "uri": "cypress\\e2e\\features\\example.feature"
+    }
+]

@@ -1,11 +1,11 @@
-import { Background, Comment, Scenario, Tag } from "@cucumber/messages";
+import { Background, Comment } from "@cucumber/messages";
 import { dedent } from "./dedent";
 import { HELP } from "./help";
 
 /**
  * Returns an error message of any error.
  *
- * @param error the error
+ * @param error - the error
  * @returns the error message
  */
 export function errorMessage(error: unknown): string {
@@ -21,10 +21,10 @@ export function errorMessage(error: unknown): string {
 export class LoggedError extends Error {}
 
 /**
- * Assesses whether the given error is an instance of a {@link LoggedError `LoggedError`}.
+ * Assesses whether the given error is an instance of a {@link LoggedError | `LoggedError`}.
  *
- * @param error the error
- * @returns `true` if the error is a {@link LoggedError `LoggedError`}, otherwise `false`
+ * @param error - the error
+ * @returns `true` if the error is a {@link LoggedError | `LoggedError`}, otherwise `false`
  */
 export function isLoggedError(error: unknown): boolean {
     return error instanceof LoggedError;
@@ -38,8 +38,8 @@ export function isLoggedError(error: unknown): boolean {
  * Returns an error describing that a test issue key is missing in the title of a native Cypress
  * test case.
  *
- * @param title the Cypress test title
- * @param projectKey the project key
+ * @param title - the Cypress test title
+ * @param projectKey - the project key
  * @returns the error
  */
 export function missingTestKeyInNativeTestTitleError(title: string, projectKey: string): Error {
@@ -96,13 +96,16 @@ export function multipleTestKeysInNativeTestTitleError(
 /**
  * Returns an error describing that a test issue key is missing in the tags of a Cucumber scenario.
  *
- * @param scenario the Cucumber scenario
- * @param projectKey the project key
- * @param expectedCloudTags whether Xray cloud tags were expected
+ * @param scenario - the Cucumber scenario
+ * @param projectKey - the project key
+ * @param expectedCloudTags - whether Xray cloud tags were expected
  * @returns the error
  */
 export function missingTestKeyInCucumberScenarioError(
-    scenario: Scenario,
+    scenario: {
+        name: string;
+        keyword: string;
+    },
     projectKey: string,
     expectedCloudTags: boolean
 ): Error {
@@ -130,13 +133,18 @@ export function missingTestKeyInCucumberScenarioError(
  * Returns an error describing that multiple test issue keys are present in the tags of a Cucumber
  * scenario.
  *
- * @param scenario the Cucumber scenario
- * @param issueKeys the issue keys
- * @param expectedCloudTags whether Xray cloud tags were expected
+ * @param scenario - the Cucumber scenario
+ * @param tags - the scenario tags
+ * @param issueKeys - the issue keys
+ * @param expectedCloudTags - whether Xray cloud tags were expected
  * @returns the error
  */
 export function multipleTestKeysInCucumberScenarioError(
-    scenario: Scenario,
+    scenario: {
+        name: string;
+        keyword: string;
+    },
+    tags: readonly { name: string }[],
     issueKeys: string[],
     expectedCloudTags: boolean
 ): Error {
@@ -145,9 +153,9 @@ export function multipleTestKeysInCucumberScenarioError(
             Multiple test issue keys found in tags of scenario: ${scenario.name}
             The plugin cannot decide for you which one to use:
 
-            ${scenario.tags.map((tag: Tag) => tag.name).join(" ")}
-            ${scenario.tags
-                .map((tag: Tag) => {
+            ${tags.map((tag) => tag.name).join(" ")}
+            ${tags
+                .map((tag) => {
                     if (issueKeys.some((key) => tag.name.endsWith(key))) {
                         return "^".repeat(tag.name.length);
                     }
@@ -173,9 +181,9 @@ export function multipleTestKeysInCucumberScenarioError(
  * Returns an error describing that a test issue key is missing in the comments of a Cucumber
  * background.
  *
- * @param background the Cucumber background
- * @param projectKey the project key
- * @param expectedCloudTags whether Xray cloud tags were expected
+ * @param background - the Cucumber background
+ * @param projectKey - the project key
+ * @param expectedCloudTags - whether Xray cloud tags were expected
  * @returns the error
  */
 export function missingPreconditionKeyInCucumberBackgroundError(
@@ -207,10 +215,10 @@ export function missingPreconditionKeyInCucumberBackgroundError(
  * Returns an error describing that multiple test issue keys are present in the comments of a
  * Cucumber background.
  *
- * @param background the Cucumber background
- * @param preconditionKeys the issue keys
- * @param comments the precondition comments
- * @param expectedCloudTags whether Xray cloud tags were expected
+ * @param background - the Cucumber background
+ * @param preconditionKeys - the issue keys
+ * @param comments - the precondition comments
+ * @param expectedCloudTags - whether Xray cloud tags were expected
  * @returns the error
  */
 export function multiplePreconditionKeysInCucumberBackgroundError(
