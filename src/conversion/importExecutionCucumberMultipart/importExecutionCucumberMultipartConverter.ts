@@ -65,6 +65,8 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
         const features = getMultipartFeatures(input, {
             testExecutionIssueKey: this.options.jira.testExecutionIssueKey,
             includeScreenshots: this.options.xray.uploadScreenshots,
+            projectKey: this.options.jira.projectKey,
+            useCloudTags: this.isCloudConverter,
         });
         if (this.isCloudConverter) {
             const testExecutionIssueData: TestExecutionIssueData = {

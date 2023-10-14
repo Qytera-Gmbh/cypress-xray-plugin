@@ -18,7 +18,7 @@ import {
 } from "../../types/xray/importTestExecutionResults";
 import { encodeFile } from "../../util/base64";
 import { dedent } from "../../util/dedent";
-import { errorMessage } from "../../util/error";
+import { errorMessage } from "../../util/errors";
 import { normalizedFilename } from "../../util/files";
 import { Converter } from "../converter";
 import { TestIssueData } from "./importExecutionConverter";

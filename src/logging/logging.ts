@@ -2,7 +2,7 @@ import { isAxiosError } from "axios";
 import chalk from "chalk";
 import fs from "fs";
 import path from "path";
-import { isLoggedError } from "../util/error";
+import { isLoggedError } from "../util/errors";
 
 const INFO = "INFO";
 const ERROR = "ERROR";

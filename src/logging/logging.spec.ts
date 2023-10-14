@@ -3,7 +3,7 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import { resolveTestDirPath, stubLogging } from "../../test/util";
-import { LoggedError } from "../util/error";
+import { LoggedError } from "../util/errors";
 import { initLogging, writeErrorFile } from "./logging";
 
 describe("the logging module", () => {

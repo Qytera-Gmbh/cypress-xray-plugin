@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { LoggedError, errorMessage, isLoggedError } from "./error";
+import { LoggedError, errorMessage, isLoggedError } from "./errors";
 
 describe("errorMessage", () => {
     it("returns error messages", () => {

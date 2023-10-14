@@ -224,6 +224,10 @@
                     {
                         "name": "@ABC-63",
                         "line": 8
+                    },
+                    {
+                        "name": "@TestName:CYP-123",
+                        "line": 67
                     }
                 ],
                 "type": "scenario"
