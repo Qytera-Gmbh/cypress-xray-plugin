@@ -1,5 +1,11 @@
 # Changelog
 
+# `5.2.0`
+
+## Notable changes
+
+- Add test environment support (fixes [#223](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/223))
+
 # `5.1.1`
 
 ## Notable changes
