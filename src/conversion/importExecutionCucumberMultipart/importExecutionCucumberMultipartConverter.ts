@@ -80,6 +80,11 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
                     issueKey: this.options.jira.testPlanIssueKey,
                 };
             }
+            if (this.options.xray.testEnvironments) {
+                testExecutionIssueData.testEnvironments = {
+                    environments: this.options.xray.testEnvironments,
+                };
+            }
             return {
                 features: features,
                 info: getMultipartInfoCloud(parameters, testExecutionIssueData),
