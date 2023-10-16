@@ -207,7 +207,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: Summary
+                    Failed to fetch Jira field ID for field with name: summary
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     You can provide field IDs directly without relying on language settings:
@@ -260,7 +260,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: Summary
+                    Failed to fetch Jira field ID for field with name: summary
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     Available fields:
@@ -317,7 +317,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: Summary
+                    Failed to fetch Jira field ID for field with name: summary
                     There are multiple fields with this name
 
                     Duplicates:
@@ -345,7 +345,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: Summary
+                    Failed to fetch Jira field ID for field with name: summary
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -592,7 +592,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: Description
+                    Failed to fetch Jira field ID for field with name: description
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     You can provide field IDs directly without relying on language settings:
@@ -645,7 +645,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: Description
+                    Failed to fetch Jira field ID for field with name: description
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     Available fields:
@@ -702,7 +702,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: Description
+                    Failed to fetch Jira field ID for field with name: description
                     There are multiple fields with this name
 
                     Duplicates:
@@ -738,7 +738,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: Description
+                    Failed to fetch Jira field ID for field with name: description
                 `)
             );
             expect(descriptions).to.deep.eq({});
@@ -1071,7 +1071,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue labels
-                    Failed to fetch Jira field ID for field with name: Labels
+                    Failed to fetch Jira field ID for field with name: labels
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     You can provide field IDs directly without relying on language settings:
@@ -1124,7 +1124,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue labels
-                    Failed to fetch Jira field ID for field with name: Labels
+                    Failed to fetch Jira field ID for field with name: labels
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     Available fields:
@@ -1181,7 +1181,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue labels
-                    Failed to fetch Jira field ID for field with name: Labels
+                    Failed to fetch Jira field ID for field with name: labels
                     There are multiple fields with this name
 
                     Duplicates:
@@ -1217,7 +1217,7 @@ describe("the cloud issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue labels
-                    Failed to fetch Jira field ID for field with name: Labels
+                    Failed to fetch Jira field ID for field with name: labels
                 `)
             );
             expect(labels).to.deep.eq({});

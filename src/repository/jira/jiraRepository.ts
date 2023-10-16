@@ -17,12 +17,12 @@ export type FieldExtractor<T> = {
 };
 
 export type FieldName =
-    | "Description"
-    | "Summary"
-    | "Labels"
-    | "Test Environments"
-    | "Test Plan"
-    | "Test Type";
+    | "description"
+    | "summary"
+    | "labels"
+    | "test environments"
+    | "test plan"
+    | "test type";
 
 export abstract class JiraRepository<
     JiraClientType extends JiraClientServer | JiraClientCloud,
@@ -284,7 +284,7 @@ export abstract class JiraRepository<
     protected async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
         let fieldId = this.jiraOptions.fields?.summary;
         if (!fieldId) {
-            fieldId = await this.getFieldId("Summary", "summary");
+            fieldId = await this.getFieldId("summary", "summary");
         }
         // Field property example:
         // summary: "Bug 12345"
@@ -294,7 +294,7 @@ export abstract class JiraRepository<
     protected async fetchDescriptions(...issueKeys: string[]): Promise<StringMap<string>> {
         let fieldId = this.jiraOptions.fields?.description;
         if (!fieldId) {
-            fieldId = await this.getFieldId("Description", "description");
+            fieldId = await this.getFieldId("description", "description");
         }
         // Field property example:
         // description: "This is a description"
@@ -306,7 +306,7 @@ export abstract class JiraRepository<
     protected async fetchLabels(...issueKeys: string[]): Promise<StringMap<string[]>> {
         let fieldId = this.jiraOptions.fields?.labels;
         if (!fieldId) {
-            fieldId = await this.getFieldId("Labels", "labels");
+            fieldId = await this.getFieldId("labels", "labels");
         }
         // Field property example:
         // labels: ["regression", "quality"]

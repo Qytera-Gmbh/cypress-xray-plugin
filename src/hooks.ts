@@ -319,7 +319,7 @@ async function resetSummaries(
             continue;
         }
         if (oldSummary !== newSummary) {
-            const summaryFieldId = await jiraRepository.getFieldId("Summary", "summary");
+            const summaryFieldId = await jiraRepository.getFieldId("summary", "summary");
             const fields: StringMap<string> = {};
             fields[summaryFieldId] = oldSummary;
             logDebug(
@@ -372,7 +372,7 @@ async function resetLabels(
             continue;
         }
         if (!newLabels.every((label) => oldLabels.includes(label))) {
-            const labelFieldId = await jiraRepository.getFieldId("Labels", "labels");
+            const labelFieldId = await jiraRepository.getFieldId("labels", "labels");
             const fields: StringMap<string[]> = {};
             fields[labelFieldId] = oldLabels;
             logDebug(

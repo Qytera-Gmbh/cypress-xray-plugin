@@ -29,7 +29,7 @@ export type JiraFieldIds = {
      */
     summary?: string;
     /**
-     * The Xray test environments field ID (i.e. the test environments associated with text
+     * The Xray test environments field ID (i.e. the test environments associated with test
      * execution issues).
      *
      * *Note: This option is required for server instances only. Xray cloud provides ways to
