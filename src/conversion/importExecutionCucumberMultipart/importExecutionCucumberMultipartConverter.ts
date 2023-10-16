@@ -94,7 +94,16 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
         if (this.options.jira.testPlanIssueKey) {
             testExecutionIssueData.testPlan = {
                 issueKey: this.options.jira.testPlanIssueKey,
-                testPlanFieldId: await this.jiraRepository.getFieldId("Test Plan", "testPlan"),
+                fieldId: await this.jiraRepository.getFieldId("Test Plan", "testPlan"),
+            };
+        }
+        if (this.options.xray.testEnvironments) {
+            testExecutionIssueData.testEnvironments = {
+                environments: this.options.xray.testEnvironments,
+                fieldId: await this.jiraRepository.getFieldId(
+                    "Test Environments",
+                    "testEnvironments"
+                ),
             };
         }
         return {

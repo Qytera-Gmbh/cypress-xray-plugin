@@ -29,6 +29,14 @@ export type JiraFieldIds = {
      */
     summary?: string;
     /**
+     * The Xray test environments field ID (i.e. the test environments associated with text
+     * execution issues).
+     *
+     * *Note: This option is required for server instances only. Xray cloud provides ways to
+     * retrieve test environment field information independently of Jira.*
+     */
+    testEnvironments?: string;
+    /**
      * The test plan field ID of Xray test (execution) issues.
      *
      * *Note: This option is required for server instances only. Xray cloud provides ways to
@@ -58,13 +66,14 @@ export interface JiraOptions {
     attachVideos?: boolean;
     /**
      * Jira Field IDs to make all fields required during the upload process uniquely identifiable.
-     * By default, the plugin accesses field information using the fields' names. Therefore,
-     * providing the field's IDs here can make sense in the following scenarios:
-     * - Your Jira language setting is a language other than English
-     *   - Example: When the summary is required and the Jira language is set to French, the plugin
-     *     will look for a field called `Summary`, but Jira will return a field called `Résumé`
-     *     instead.
-     * - Your Jira project contains several fields with identical names
+     *
+     * By default, the plugin accesses field information using the fields' names (`Summary`,
+     * `Description`, ...) just fine. Still, providing the fields' IDs here might become necessary
+     * in the following scenarios:
+     * - Your Jira language setting is a language other than English. For example, when the plugin
+     * tries to access the `Summary` field and the Jira language is set to French, access will fail
+     * because Jira only provides access to a field called `Résumé` instead.
+     * - Your Jira project contains several fields with identical names.
      *
      * *Note: In case you don't know these properties or if you are unsure whether they are really
      * needed, the plugin will try to provide lists of field candidates in case any errors occur.
@@ -196,6 +205,21 @@ export interface XrayOptions {
          */
         skipped?: string;
     };
+    /**
+     * The test environments for test execution issues. These will be used as follows:
+     * - if the plugin creates new test execution issues, they will be associated with the issue
+     * - if the plugin reuses existing test execution issues, they will:
+     *   - replace existing test environments
+     *   - be added if the issue does not yet have any test environments associated
+     *
+     * *Note: Xray's API only allows _replacing_ test environments in the plugin's scope. It is not
+     * possible to completely _remove_ all existing test environments during result upload.
+     * Completely removing all existing environments needs to be done manually.*
+     *
+     * @see {@link https://docs.getxray.app/display/XRAY/Working+with+Test+Environments | Xray server documentation}
+     * @see {@link https://docs.getxray.app/display/XRAYCLOUD/Working+with+Test+Environments | Xray cloud documentation}
+     */
+    testEnvironments?: [string, ...string[]];
     /**
      * Turns execution results upload on or off. Useful when switching upload on or off from the
      * command line (via environment variables).

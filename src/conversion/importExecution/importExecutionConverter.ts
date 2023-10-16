@@ -65,6 +65,7 @@ export class ImportExecutionConverter extends Converter<
                 description: this.getDescription(results),
                 summary: this.getTextExecutionResultSummary(results),
                 testPlanKey: this.options.jira.testPlanIssueKey,
+                testEnvironments: this.options.xray.testEnvironments,
             },
             tests: await testConverter.convert(results),
         };

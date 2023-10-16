@@ -12,6 +12,7 @@ import {
     ENV_JIRA_FIELDS_DESCRIPTION,
     ENV_JIRA_FIELDS_LABELS,
     ENV_JIRA_FIELDS_SUMMARY,
+    ENV_JIRA_FIELDS_TEST_ENVIRONMENTS,
     ENV_JIRA_FIELDS_TEST_PLAN,
     ENV_JIRA_FIELDS_TEST_TYPE,
     ENV_JIRA_PASSWORD,
@@ -36,6 +37,7 @@ import {
     ENV_XRAY_STATUS_PASSED,
     ENV_XRAY_STATUS_PENDING,
     ENV_XRAY_STATUS_SKIPPED,
+    ENV_XRAY_TEST_ENVIRONMENTS,
     ENV_XRAY_UPLOAD_RESULTS,
     ENV_XRAY_UPLOAD_SCREENSHOTS,
 } from "./constants";
@@ -58,7 +60,7 @@ import {
     PluginContext,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
-import { asBoolean, asInt, asString, parse } from "./util/parsing";
+import { asArrayOfStrings, asBoolean, asInt, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
 
 let context: PluginContext | undefined = undefined;
@@ -114,6 +116,9 @@ export function initJiraOptions(
                 parse(env, ENV_JIRA_FIELDS_DESCRIPTION, asString) ?? options.fields?.description,
             labels: parse(env, ENV_JIRA_FIELDS_LABELS, asString) ?? options.fields?.labels,
             summary: parse(env, ENV_JIRA_FIELDS_SUMMARY, asString) ?? options.fields?.summary,
+            testEnvironments:
+                parse(env, ENV_JIRA_FIELDS_TEST_ENVIRONMENTS, asString) ??
+                options.fields?.testEnvironments,
             testPlan: parse(env, ENV_JIRA_FIELDS_TEST_PLAN, asString) ?? options.fields?.testPlan,
             testType: parse(env, ENV_JIRA_FIELDS_TEST_TYPE, asString) ?? options.fields?.testType,
         },
@@ -184,6 +189,8 @@ export function initXrayOptions(
             pending: parse(env, ENV_XRAY_STATUS_PENDING, asString) ?? options?.status?.pending,
             skipped: parse(env, ENV_XRAY_STATUS_SKIPPED, asString) ?? options?.status?.skipped,
         },
+        testEnvironments:
+            parse(env, ENV_XRAY_TEST_ENVIRONMENTS, asArrayOfStrings) ?? options?.testEnvironments,
         uploadResults:
             parse(env, ENV_XRAY_UPLOAD_RESULTS, asBoolean) ?? options?.uploadResults ?? true,
         uploadScreenshots:

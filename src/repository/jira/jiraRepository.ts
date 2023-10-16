@@ -16,7 +16,13 @@ export type FieldExtractor<T> = {
     expectedType: string;
 };
 
-export type FieldName = "Description" | "Summary" | "Labels" | "Test Plan" | "Test Type";
+export type FieldName =
+    | "Description"
+    | "Summary"
+    | "Labels"
+    | "Test Environments"
+    | "Test Plan"
+    | "Test Type";
 
 export abstract class JiraRepository<
     JiraClientType extends JiraClientServer | JiraClientCloud,

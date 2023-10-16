@@ -52,6 +52,9 @@ describe("the plugin context configuration", () => {
                     it("summary", () => {
                         expect(jiraOptions.fields.summary).to.eq(undefined);
                     });
+                    it("testEnvironments", () => {
+                        expect(jiraOptions.fields.testEnvironments).to.eq(undefined);
+                    });
                     it("testPlan", () => {
                         expect(jiraOptions.fields.testPlan).to.eq(undefined);
                     });
@@ -110,6 +113,9 @@ describe("the plugin context configuration", () => {
                     it("skipped", () => {
                         expect(xrayOptions.status.skipped).to.eq(undefined);
                     });
+                });
+                it("testEnvironments", () => {
+                    expect(xrayOptions.testEnvironments).to.eq(undefined);
                 });
                 it("uploadResults", () => {
                     expect(xrayOptions.uploadResults).to.eq(true);
@@ -202,6 +208,19 @@ describe("the plugin context configuration", () => {
                             }
                         );
                         expect(jiraOptions.fields.summary).to.eq("Résumé");
+                    });
+                    it("testEnvironments", () => {
+                        const jiraOptions = initJiraOptions(
+                            {},
+                            {
+                                projectKey: "PRJ",
+                                url: "https://example.org",
+                                fields: {
+                                    testEnvironments: "Testumgebungen",
+                                },
+                            }
+                        );
+                        expect(jiraOptions.fields.testEnvironments).to.eq("Testumgebungen");
                     });
                     it("testPlan", () => {
                         const jiraOptions = initJiraOptions(
@@ -395,6 +414,16 @@ describe("the plugin context configuration", () => {
                     });
                 });
 
+                it("testEnvironments", () => {
+                    const xrayOptions = initXrayOptions(
+                        {},
+                        {
+                            testEnvironments: ["Test", "Prod"],
+                        }
+                    );
+                    expect(xrayOptions.testEnvironments).to.deep.eq(["Test", "Prod"]);
+                });
+
                 it("uploadResults", () => {
                     const xrayOptions = initXrayOptions(
                         {},
@@ -537,6 +566,19 @@ describe("the plugin context configuration", () => {
                             },
                         });
                         expect(jiraOptions.fields.summary).to.eq("customfield_98765");
+                    });
+                    it("JIRA_FIELDS_TEST_ENVIRONMENTS", () => {
+                        const env = {
+                            JIRA_FIELDS_TEST_ENVIRONMENTS: "customfield_98765",
+                        };
+                        const jiraOptions = initJiraOptions(env, {
+                            projectKey: "PRJ",
+                            url: "https://example.org",
+                            fields: {
+                                testEnvironments: "customfield_12345",
+                            },
+                        });
+                        expect(jiraOptions.fields.testEnvironments).to.eq("customfield_98765");
                     });
                     it("JIRA_FIELDS_TEST_PLAN", () => {
                         const env = {
@@ -695,6 +737,16 @@ describe("the plugin context configuration", () => {
                         },
                     });
                     expect(xrayOptions.status.skipped).to.eq("ski-ba-bop-ba-dop-bop");
+                });
+
+                it("XRAY_TEST_ENVIRONMENTS", () => {
+                    const env = {
+                        XRAY_TEST_ENVIRONMENTS: [false, "bonjour", 5],
+                    };
+                    const xrayOptions = initXrayOptions(env, {
+                        testEnvironments: ["A", "B", "C"],
+                    });
+                    expect(xrayOptions.testEnvironments).to.deep.eq(["false", "bonjour", "5"]);
                 });
 
                 it("XRAY_UPLOAD_RESULTS", () => {

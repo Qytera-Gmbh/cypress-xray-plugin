@@ -27,6 +27,9 @@ export interface TestExecutionIssueData {
     testPlan?: {
         issueKey: string;
     };
+    testEnvironments?: {
+        environments: [string, ...string[]];
+    };
     labels?: string[];
 }
 
@@ -36,7 +39,11 @@ export interface TestExecutionIssueData {
 export interface TestExecutionIssueDataServer extends TestExecutionIssueData {
     testPlan?: {
         issueKey: string;
-        testPlanFieldId: string;
+        fieldId: string;
+    };
+    testEnvironments?: {
+        environments: [string, ...string[]];
+        fieldId: string;
     };
 }
 
@@ -71,8 +78,12 @@ export function getMultipartInfoServer(
         },
     };
     if (testExecutionIssueData.testPlan) {
-        multipartInfo.fields[testExecutionIssueData.testPlan.testPlanFieldId] =
+        multipartInfo.fields[testExecutionIssueData.testPlan.fieldId] =
             testExecutionIssueData.testPlan.issueKey;
+    }
+    if (testExecutionIssueData.testEnvironments) {
+        multipartInfo.fields[testExecutionIssueData.testEnvironments.fieldId] =
+            testExecutionIssueData.testEnvironments.environments;
     }
     return multipartInfo;
 }
@@ -108,6 +119,7 @@ export function getMultipartInfoCloud(
         },
         xrayFields: {
             testPlanKey: testExecutionIssueData.testPlan?.issueKey,
+            environments: testExecutionIssueData.testEnvironments?.environments,
         },
     };
 }
