@@ -19,18 +19,91 @@ import { dedent } from "../../util/dedent";
 import { Client } from "../client";
 
 /**
+ * All methods a Jira client needs to implement.
+ */
+export interface IJiraClient {
+    /**
+     * Adds one or more attachments to an issue. Attachments are posted as multipart/form-data.
+     *
+     * @param issueIdOrKey - issueIdOrKey the ID or key of the issue that attachments are added to
+     * @param files - files the files to attach
+     * @returns a list of issue attachment responses or `undefined` in case of errors
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
+     */
+    addAttachment(
+        issueIdOrKey: string,
+        ...files: string[]
+    ): Promise<(AttachmentServer | AttachmentCloud)[] | undefined>;
+    /**
+     * Returns all issue types.
+     *
+     * @returns the issue types or `undefined` in case of errors
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/issuetype-getIssueAllTypes
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-rest-api-3-issuetype-get
+     */
+    getIssueTypes(): Promise<(IssueTypeDetailsServer | IssueTypeDetailsCloud)[] | undefined>;
+    /**
+     * Returns system and custom issue fields according to the following rules:
+     * - Fields that cannot be added to the issue navigator are always returned
+     * - Fields that cannot be placed on an issue screen are always returned
+     * - Fields that depend on global Jira settings are only returned if the setting is enabled
+     *   That is, timetracking fields, subtasks, votes, and watches
+     * - For all other fields, this operation only returns the fields that the user has permission
+     *   to view (that is, the field is used in at least one project that the user has *Browse
+     *   Projects* project permission for)
+     *
+     * @returns the fields or `undefined` in case of errors
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/field-getFields
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
+     */
+    getFields(): Promise<(FieldDetailServer | FieldDetailCloud)[] | undefined>;
+    /**
+     * Searches for issues using JQL. Automatically performs pagination if necessary.
+     *
+     * @param request - the search request
+     * @returns the search results or `undefined` in case of errors
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
+     */
+    search(
+        request: SearchRequestServer | SearchRequestCloud
+    ): Promise<(IssueServer | IssueCloud)[] | undefined>;
+    /**
+     * Edits an issue. A transition may be applied and issue properties updated as part of the edit.
+     * The edits to the issue's fields are defined using `update` and `fields`.
+     *
+     * The parent field may be set by key or ID. For standard issue types, the parent may be removed
+     * by setting `update.parent.set.none` to `true`.
+     *
+     * @param issueIdOrKey - the ID or key of the issue
+     * @param issueUpdateData - the edit data
+     * @returns the ID or key of the edited issue or `undefined` in case of errors
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-put
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.10.0/#api/2/issue-editIssue
+     */
+    editIssue(
+        issueIdOrKey: string,
+        issueUpdateData: IssueUpdateServer | IssueUpdateCloud
+    ): Promise<string | undefined>;
+}
+
+/**
  * A Jira client class for communicating with Jira instances.
  */
 export abstract class JiraClient<
-    CredentialsType extends BasicAuthCredentials | PATCredentials,
-    AttachmentType extends AttachmentServer | AttachmentCloud,
-    FieldDetailType extends FieldDetailServer | FieldDetailCloud,
-    JsonType extends JsonTypeServer | JsonTypeCloud,
-    IssueType extends IssueServer | IssueCloud,
-    IssueTypeDetailsResponse extends IssueTypeDetailsServer | IssueTypeDetailsCloud,
-    SearchRequestType extends SearchRequestServer | SearchRequestCloud,
-    IssueUpdateType extends IssueUpdateServer | IssueUpdateCloud
-> extends Client<CredentialsType> {
+        CredentialsType extends BasicAuthCredentials | PATCredentials,
+        AttachmentType extends AttachmentServer | AttachmentCloud,
+        FieldDetailType extends FieldDetailServer | FieldDetailCloud,
+        JsonType extends JsonTypeServer | JsonTypeCloud,
+        IssueType extends IssueServer | IssueCloud,
+        IssueTypeDetailsResponse extends IssueTypeDetailsServer | IssueTypeDetailsCloud,
+        SearchRequestType extends SearchRequestServer | SearchRequestCloud,
+        IssueUpdateType extends IssueUpdateServer | IssueUpdateCloud
+    >
+    extends Client<CredentialsType>
+    implements IJiraClient
+{
     /**
      * Construct a new Jira client using the provided credentials.
      *
@@ -41,15 +114,6 @@ export abstract class JiraClient<
         super(apiBaseURL, credentials);
     }
 
-    /**
-     * Adds one or more attachments to an issue. Attachments are posted as multipart/form-data.
-     *
-     * @param issueIdOrKey - issueIdOrKey the ID or key of the issue that attachments are added to
-     * @param files - files the files to attach
-     * @returns a list of issue attachment responses or `undefined` in case of errors
-     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
-     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
-     */
     public async addAttachment(
         issueIdOrKey: string,
         ...files: string[]
@@ -120,13 +184,6 @@ export abstract class JiraClient<
      */
     public abstract getUrlAddAttachment(issueIdOrKey: string): string;
 
-    /**
-     * Returns all issue types.
-     *
-     * @returns the issue types or `undefined` in case of errors
-     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/issuetype-getIssueAllTypes
-     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-rest-api-3-issuetype-get
-     */
     public async getIssueTypes(): Promise<IssueTypeDetailsResponse[] | undefined> {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
@@ -170,20 +227,6 @@ export abstract class JiraClient<
      */
     public abstract getUrlGetIssueTypes(): string;
 
-    /**
-     * Returns system and custom issue fields according to the following rules:
-     * - Fields that cannot be added to the issue navigator are always returned
-     * - Fields that cannot be placed on an issue screen are always returned
-     * - Fields that depend on global Jira settings are only returned if the setting is enabled
-     *   That is, timetracking fields, subtasks, votes, and watches
-     * - For all other fields, this operation only returns the fields that the user has permission
-     *   to view (that is, the field is used in at least one project that the user has *Browse
-     *   Projects* project permission for)
-     *
-     * @returns the fields or `undefined` in case of errors
-     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/field-getFields
-     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
-     */
     public async getFields(): Promise<FieldDetailType[] | undefined> {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
@@ -224,14 +267,6 @@ export abstract class JiraClient<
      */
     public abstract getUrlGetFields(): string;
 
-    /**
-     * Searches for issues using JQL. Automatically performs pagination if necessary.
-     *
-     * @param request - the search request
-     * @returns the search results or `undefined` in case of errors
-     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
-     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
-     */
     public async search(request: SearchRequestType): Promise<IssueType[] | undefined> {
         try {
             return await this.credentials
@@ -282,19 +317,6 @@ export abstract class JiraClient<
      */
     public abstract getUrlPostSearch(): string;
 
-    /**
-     * Edits an issue. A transition may be applied and issue properties updated as part of the edit.
-     * The edits to the issue's fields are defined using `update` and `fields`.
-     *
-     * The parent field may be set by key or ID. For standard issue types, the parent may be removed
-     * by setting `update.parent.set.none` to `true`.
-     *
-     * @param issueIdOrKey - the ID or key of the issue
-     * @param issueUpdateData - the edit data
-     * @returns the ID or key of the edited issue or `undefined` in case of errors
-     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-put
-     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.10.0/#api/2/issue-editIssue
-     */
     public async editIssue(
         issueIdOrKey: string,
         issueUpdateData: IssueUpdateType
