@@ -80,6 +80,11 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
                     issueKey: this.options.jira.testPlanIssueKey,
                 };
             }
+            if (this.options.xray.testEnvironments) {
+                testExecutionIssueData.testEnvironments = {
+                    environments: this.options.xray.testEnvironments,
+                };
+            }
             return {
                 features: features,
                 info: getMultipartInfoCloud(parameters, testExecutionIssueData),
@@ -94,7 +99,16 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
         if (this.options.jira.testPlanIssueKey) {
             testExecutionIssueData.testPlan = {
                 issueKey: this.options.jira.testPlanIssueKey,
-                testPlanFieldId: await this.jiraRepository.getFieldId("Test Plan", "testPlan"),
+                fieldId: await this.jiraRepository.getFieldId("test plan", "testPlan"),
+            };
+        }
+        if (this.options.xray.testEnvironments) {
+            testExecutionIssueData.testEnvironments = {
+                environments: this.options.xray.testEnvironments,
+                fieldId: await this.jiraRepository.getFieldId(
+                    "test environments",
+                    "testEnvironments"
+                ),
             };
         }
         return {

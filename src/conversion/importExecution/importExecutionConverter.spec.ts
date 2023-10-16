@@ -297,4 +297,13 @@ describe("the import execution converter", () => {
         expect(json.tests[1].status).to.eq("PASSED");
         expect(json.tests[2].status).to.eq("FAILED");
     });
+
+    it("includes test environments", async () => {
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+        );
+        options.xray.testEnvironments = ["DEV"];
+        const json = await converter.convert(result);
+        expect(json?.info?.testEnvironments).to.deep.eq(["DEV"]);
+    });
 });

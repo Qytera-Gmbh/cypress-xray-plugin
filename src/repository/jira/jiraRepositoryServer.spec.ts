@@ -208,7 +208,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: Summary
+                    Failed to fetch Jira field ID for field with name: summary
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     You can provide field IDs directly without relying on language settings:
@@ -259,7 +259,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: Summary
+                    Failed to fetch Jira field ID for field with name: summary
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     Available fields:
@@ -314,7 +314,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: Summary
+                    Failed to fetch Jira field ID for field with name: summary
                     There are multiple fields with this name
 
                     Duplicates:
@@ -350,7 +350,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue summaries
-                    Failed to fetch Jira field ID for field with name: Summary
+                    Failed to fetch Jira field ID for field with name: summary
                 `)
             );
             expect(summaries).to.deep.eq({});
@@ -597,7 +597,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: Description
+                    Failed to fetch Jira field ID for field with name: description
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     You can provide field IDs directly without relying on language settings:
@@ -648,7 +648,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: Description
+                    Failed to fetch Jira field ID for field with name: description
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     Available fields:
@@ -703,7 +703,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: Description
+                    Failed to fetch Jira field ID for field with name: description
                     There are multiple fields with this name
 
                     Duplicates:
@@ -739,7 +739,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
-                    Failed to fetch Jira field ID for field with name: Description
+                    Failed to fetch Jira field ID for field with name: description
                 `)
             );
             expect(descriptions).to.deep.eq({});
@@ -1051,7 +1051,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue test types
-                    Failed to fetch Jira field ID for field with name: Test Type
+                    Failed to fetch Jira field ID for field with name: test type
                     There are multiple fields with this name
 
                     Duplicates:
@@ -1079,7 +1079,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue test types
-                    Failed to fetch Jira field ID for field with name: Test Type
+                    Failed to fetch Jira field ID for field with name: test type
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     You can provide field IDs directly without relying on language settings:
@@ -1130,7 +1130,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue test types
-                    Failed to fetch Jira field ID for field with name: Test Type
+                    Failed to fetch Jira field ID for field with name: test type
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
                     Available fields:
@@ -1166,7 +1166,7 @@ describe("the server issue repository", () => {
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue test types
-                    Failed to fetch Jira field ID for field with name: Test Type
+                    Failed to fetch Jira field ID for field with name: test type
                 `)
             );
             expect(testTypes).to.deep.eq({});
