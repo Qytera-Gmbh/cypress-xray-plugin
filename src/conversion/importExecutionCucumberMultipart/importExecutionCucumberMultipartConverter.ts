@@ -1,5 +1,5 @@
-import { JiraRepositoryCloud } from "../../repository/jira/jiraRepositoryCloud";
-import { JiraRepositoryServer } from "../../repository/jira/jiraRepositoryServer";
+import { SupportedField } from "../../repository/jira/fields/fetching";
+import { JiraRepository } from "../../repository/jira/jiraRepository";
 import { InternalOptions } from "../../types/plugin";
 import {
     CucumberMultipart,
@@ -37,7 +37,7 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
      * converters to use.
      */
     private readonly isCloudConverter: boolean;
-    private readonly jiraRepository: JiraRepositoryServer | JiraRepositoryCloud;
+    private readonly jiraRepository: JiraRepository;
 
     /**
      * Construct a new converter with access to the provided options. The cloud converter flag is
@@ -51,7 +51,7 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
     constructor(
         options: InternalOptions,
         isCloudConverter: boolean,
-        jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
+        jiraRepository: JiraRepository
     ) {
         super(options);
         this.isCloudConverter = isCloudConverter;
@@ -99,14 +99,14 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
         if (this.options.jira.testPlanIssueKey) {
             testExecutionIssueData.testPlan = {
                 issueKey: this.options.jira.testPlanIssueKey,
-                fieldId: await this.jiraRepository.getFieldId("test plan", "testPlan"),
+                fieldId: await this.jiraRepository.getFieldId(SupportedField.TEST_PLAN, "testPlan"),
             };
         }
         if (this.options.xray.testEnvironments) {
             testExecutionIssueData.testEnvironments = {
                 environments: this.options.xray.testEnvironments,
                 fieldId: await this.jiraRepository.getFieldId(
-                    "test environments",
+                    SupportedField.TEST_ENVIRONMENTS,
                     "testEnvironments"
                 ),
             };

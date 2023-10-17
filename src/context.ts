@@ -47,8 +47,9 @@ import {
     importOptionalDependency,
 } from "./dependencies";
 import { logDebug, logInfo } from "./logging/logging";
-import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
-import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
+import { JiraFieldFetcher, JiraFieldFetcherCloud } from "./repository/jira/fields/jiraFieldFetcher";
+import { JiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
+import { JiraRepository } from "./repository/jira/jiraRepository";
 import {
     ClientCombination,
     InternalCucumberOptions,
@@ -332,11 +333,22 @@ export async function initClients(
             );
             await pingXrayCloud(xrayCredentials);
             const xrayClient = new XrayClientCloud(xrayCredentials);
+            const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
+            const jiraFieldFetcher = new JiraFieldFetcherCloud(
+                jiraClient,
+                jiraFieldRepository,
+                xrayClient,
+                jiraOptions
+            );
             return {
                 kind: "cloud",
                 jiraClient: jiraClient,
                 xrayClient: xrayClient,
-                jiraRepository: new JiraRepositoryCloud(jiraClient, xrayClient, jiraOptions),
+                jiraRepository: new JiraRepository(
+                    jiraFieldRepository,
+                    jiraFieldFetcher,
+                    jiraOptions
+                ),
             };
         } else {
             throw new Error(
@@ -356,11 +368,17 @@ export async function initClients(
         logInfo("Jira PAT found. Setting up Xray server PAT credentials");
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials, jiraClient);
+        const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
+        const jiraFieldFetcher = new JiraFieldFetcher(
+            jiraClient,
+            jiraFieldRepository,
+            jiraOptions.fields
+        );
         return {
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new JiraRepositoryServer(jiraClient, xrayClient, jiraOptions),
+            jiraRepository: new JiraRepository(jiraFieldRepository, jiraFieldFetcher, jiraOptions),
         };
     } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && jiraOptions.url) {
         logInfo("Jira username and password found. Setting up Jira server basic auth credentials");
@@ -373,11 +391,17 @@ export async function initClients(
         logInfo("Jira username and password found. Setting up Xray server basic auth credentials");
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials, jiraClient);
+        const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
+        const jiraFieldFetcher = new JiraFieldFetcher(
+            jiraClient,
+            jiraFieldRepository,
+            jiraOptions.fields
+        );
         return {
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new JiraRepositoryServer(jiraClient, xrayClient, jiraOptions),
+            jiraRepository: new JiraRepository(jiraFieldRepository, jiraFieldFetcher, jiraOptions),
         };
     } else {
         throw new Error(
@@ -386,15 +410,5 @@ export async function initClients(
                 You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
             `)
         );
-    }
-}
-export function initJiraRepository(
-    clients: ClientCombination,
-    jiraOptions: InternalJiraOptions
-): JiraRepositoryServer | JiraRepositoryCloud {
-    if (clients.kind === "cloud") {
-        return new JiraRepositoryCloud(clients.jiraClient, clients.xrayClient, jiraOptions);
-    } else {
-        return new JiraRepositoryServer(clients.jiraClient, clients.xrayClient, jiraOptions);
     }
 }

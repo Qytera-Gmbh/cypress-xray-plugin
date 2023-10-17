@@ -177,6 +177,10 @@ export function env(key: string): string {
     return value as string;
 }
 
+export function arrayEquals(a: unknown[], b: unknown[]) {
+    return a.length === b.length && a.every((val, index) => val === b[index]);
+}
+
 // ============================================================================================== //
 // Huge hack around Cypress's event handling. It somewhat works, don't question it :(             //
 // ============================================================================================== //

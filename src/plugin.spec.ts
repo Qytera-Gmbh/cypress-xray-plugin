@@ -8,7 +8,9 @@ import { XrayClientServer } from "./client/xray/xrayClientServer";
 import * as context from "./context";
 import * as hooks from "./hooks";
 import { addXrayResultUpload, configureXrayPlugin, syncFeatureFile } from "./plugin";
-import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
+import { JiraFieldFetcher } from "./repository/jira/fields/jiraFieldFetcher";
+import { JiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
+import { JiraRepository } from "./repository/jira/jiraRepository";
 import { Options, PluginContext } from "./types/plugin";
 import { dedent } from "./util/dedent";
 
@@ -31,7 +33,17 @@ describe("the plugin", () => {
                 url: "https://example.org",
             }
         );
-        const jiraRepository = new JiraRepositoryServer(jiraClient, xrayClient, jiraOptions);
+        const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
+        const jiraFieldFetcher = new JiraFieldFetcher(
+            jiraClient,
+            jiraFieldRepository,
+            jiraOptions.fields
+        );
+        const jiraRepository = new JiraRepository(
+            jiraFieldRepository,
+            jiraFieldFetcher,
+            jiraOptions
+        );
         pluginContext = {
             cypress: config,
             internal: {

@@ -1,8 +1,6 @@
 import fs from "fs";
 import path from "path";
 import { IJiraClient } from "./client/jira/jiraClient";
-import { JiraClientCloud } from "./client/jira/jiraClientCloud";
-import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { ImportExecutionConverter } from "./conversion/importExecution/importExecutionConverter";
 import { ImportExecutionCucumberMultipartConverter } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverter";
 import { logDebug, logError, logInfo, logSuccess, logWarning } from "./logging/logging";
@@ -13,8 +11,8 @@ import {
     containsNativeTest,
     getCucumberIssueData,
 } from "./preprocessing/preprocessing";
-import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
-import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
+import { SupportedField } from "./repository/jira/fields/fetching";
+import { IJiraRepository, JiraRepository } from "./repository/jira/jiraRepository";
 import { IIssueTypeDetails } from "./types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalOptions } from "./types/plugin";
 import { StringMap, nonNull } from "./types/util";
@@ -300,7 +298,7 @@ async function resetSummaries(
     issueData: FeatureFileIssueData,
     testSummaries: StringMap<string>,
     jiraClient: IJiraClient,
-    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
+    jiraRepository: IJiraRepository
 ) {
     const allIssues = [...issueData.tests, ...issueData.preconditions];
     for (let i = 0; i < allIssues.length; i++) {
@@ -319,7 +317,10 @@ async function resetSummaries(
             continue;
         }
         if (oldSummary !== newSummary) {
-            const summaryFieldId = await jiraRepository.getFieldId("summary", "summary");
+            const summaryFieldId = await jiraRepository.getFieldId(
+                SupportedField.SUMMARY,
+                "summary"
+            );
             const fields: StringMap<string> = {};
             fields[summaryFieldId] = oldSummary;
             logDebug(
@@ -353,8 +354,8 @@ async function resetSummaries(
 async function resetLabels(
     issueData: FeatureFileIssueDataTest[],
     testLabels: StringMap<string[]>,
-    jiraClient: JiraClientServer | JiraClientCloud,
-    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
+    jiraClient: IJiraClient,
+    jiraRepository: JiraRepository
 ) {
     for (let i = 0; i < issueData.length; i++) {
         const issueKey = issueData[i].key;
@@ -372,7 +373,7 @@ async function resetLabels(
             continue;
         }
         if (!newLabels.every((label) => oldLabels.includes(label))) {
-            const labelFieldId = await jiraRepository.getFieldId("labels", "labels");
+            const labelFieldId = await jiraRepository.getFieldId(SupportedField.LABELS, "labels");
             const fields: StringMap<string[]> = {};
             fields[labelFieldId] = oldLabels;
             logDebug(

@@ -1,9 +1,20 @@
 import { IJiraClient } from "../../../client/jira/jiraClient";
-import { FieldDetailCloud, FieldDetailServer } from "../../../types/jira/responses/fieldDetail";
+import { IFieldDetail } from "../../../types/jira/responses/fieldDetail";
 import { InternalJiraOptions } from "../../../types/plugin";
 import { StringMap } from "../../../types/util";
 
-export class JiraFieldRepository {
+export interface IJiraFieldRepository {
+    getFieldId(
+        fieldName: string,
+        callbacks?: {
+            onFetchError?: () => void;
+            onMultipleFieldsError?: (duplicates: IFieldDetail[]) => void;
+            onMissingFieldError?: (availableFields: string[]) => void;
+        }
+    ): Promise<string | undefined>;
+}
+
+export class JiraFieldRepository implements IJiraFieldRepository {
     protected readonly jiraClient: IJiraClient;
     protected readonly jiraOptions: InternalJiraOptions;
 
@@ -19,7 +30,7 @@ export class JiraFieldRepository {
         fieldName: string,
         callbacks?: {
             onFetchError?: () => void;
-            onMultipleFieldsError?: (duplicates: FieldDetailServer[] | FieldDetailCloud[]) => void;
+            onMultipleFieldsError?: (duplicates: IFieldDetail[]) => void;
             onMissingFieldError?: (availableFields: string[]) => void;
         }
     ): Promise<string | undefined> {
@@ -32,6 +43,7 @@ export class JiraFieldRepository {
                 if (callbacks?.onFetchError) {
                     callbacks.onFetchError();
                 }
+                return undefined;
             } else {
                 const matches = jiraFields.filter((field) => {
                     const lowerCasedField = field.name.toLowerCase();

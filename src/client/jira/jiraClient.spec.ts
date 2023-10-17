@@ -3,7 +3,7 @@ import { expect } from "chai";
 import fs from "fs";
 import { expectToExist, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
-import { SearchResultsServer } from "../../types/jira/responses/searchResults";
+import { ISearchResults } from "../../types/jira/responses/searchResults";
 import { IJiraClient } from "./jiraClient";
 import { JiraClientCloud } from "./jiraClientCloud";
 import { JiraClientServer } from "./jiraClientServer";
@@ -311,7 +311,7 @@ describe("the jira clients", () => {
                 it("should return all issues with pagination", async () => {
                     stubLogging();
                     const { stubbedPost } = stubRequests();
-                    const mockedData: SearchResultsServer = JSON.parse(
+                    const mockedData: ISearchResults = JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/search.json",
                             "utf-8"

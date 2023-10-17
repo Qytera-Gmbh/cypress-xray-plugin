@@ -4,7 +4,7 @@ import { stub } from "sinon";
 import { BasicAuthCredentials } from "../../../authentication/credentials";
 import { JiraClientServer } from "../../../client/jira/jiraClientServer";
 import { initJiraOptions } from "../../../context";
-import { FieldDetailCloud, FieldDetailServer } from "../../../types/jira/responses/fieldDetail";
+import { IFieldDetail } from "../../../types/jira/responses/fieldDetail";
 import { InternalJiraOptions } from "../../../types/plugin";
 import { JiraFieldRepository } from "./jiraFieldRepository";
 
@@ -159,7 +159,7 @@ describe("the jira field repository", () => {
         ];
         stub(jiraClient, "getFields").resolves(fields);
         const callbacks = {
-            onMultipleFieldsError: (duplicates: FieldDetailServer[] | FieldDetailCloud[]) => {
+            onMultipleFieldsError: (duplicates: IFieldDetail[]) => {
                 expect(duplicates).to.deep.eq(fields);
             },
         };

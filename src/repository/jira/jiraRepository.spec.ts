@@ -1,19 +1,23 @@
 import { expect } from "chai";
 import { stub } from "sinon";
-import { stubLogging } from "../../../test/util";
-import { PATCredentials } from "../../authentication/credentials";
-import { JiraClientServer } from "../../client/jira/jiraClientServer";
-import { XrayClientServer } from "../../client/xray/xrayClientServer";
+import { arrayEquals, stubLogging } from "../../../test/util";
+import { BasicAuthCredentials } from "../../authentication/credentials";
+import { IJiraClient } from "../../client/jira/jiraClient";
+import { JiraClientCloud } from "../../client/jira/jiraClientCloud";
 import { initJiraOptions } from "../../context";
 import { InternalJiraOptions } from "../../types/plugin";
+import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
-import { JiraRepositoryServer } from "./jiraRepositoryServer";
+import { IJiraFieldFetcher, JiraFieldFetcher } from "./fields/jiraFieldFetcher";
+import { IJiraFieldRepository, JiraFieldRepository } from "./fields/jiraFieldRepository";
+import { IJiraRepository, JiraRepository } from "./jiraRepository";
 
-describe("the server issue repository", () => {
+describe("the cloud issue repository", () => {
     let jiraOptions: InternalJiraOptions;
-    let xrayClient: XrayClientServer;
-    let jiraClient: JiraClientServer;
-    let repository: JiraRepositoryServer;
+    let jiraClient: IJiraClient;
+    let jiraFieldRepository: IJiraFieldRepository;
+    let jiraFieldFetcher: IJiraFieldFetcher;
+    let repository: IJiraRepository;
 
     beforeEach(() => {
         jiraOptions = initJiraOptions(
@@ -23,13 +27,17 @@ describe("the server issue repository", () => {
                 url: "https://example.org",
             }
         );
-        jiraClient = new JiraClientServer("https://example.org", new PATCredentials("token"));
-        xrayClient = new XrayClientServer(
+        jiraClient = new JiraClientCloud(
             "https://example.org",
-            new PATCredentials("token"),
-            jiraClient
+            new BasicAuthCredentials("user", "xyz")
         );
-        repository = new JiraRepositoryServer(jiraClient, xrayClient, jiraOptions);
+        jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
+        jiraFieldFetcher = new JiraFieldFetcher(
+            jiraClient,
+            jiraFieldRepository,
+            jiraOptions.fields
+        );
+        repository = new JiraRepository(jiraFieldRepository, jiraFieldFetcher, jiraOptions);
     });
 
     describe("getSummaries", () => {
@@ -37,7 +45,7 @@ describe("the server issue repository", () => {
             stub(jiraClient, "getFields").resolves([
                 {
                     id: "summary",
-                    name: "Summary",
+                    name: "summary",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -94,7 +102,7 @@ describe("the server issue repository", () => {
             const stubbedGetFields = stub(jiraClient, "getFields").resolves([
                 {
                     id: "summary",
-                    name: "Summary",
+                    name: "summary",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -159,7 +167,7 @@ describe("the server issue repository", () => {
             stub(jiraClient, "getFields").resolves([
                 {
                     id: "summary",
-                    name: "Summary",
+                    name: "summary",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -336,14 +344,6 @@ describe("the server issue repository", () => {
         it("handles get field failures gracefully", async () => {
             stub(jiraClient, "getFields").resolves(undefined);
             const stubbedSearch = stub(jiraClient, "search");
-            stubbedSearch.resolves([
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1000",
-                    self: "https://example.org/rest/api/2/issue/1000",
-                    key: "CYP-123",
-                },
-            ]);
             const { stubbedError } = stubLogging();
             const summaries = await repository.getSummaries("CYP-123");
             expect(stubbedSearch).to.not.have.been.called;
@@ -360,7 +360,7 @@ describe("the server issue repository", () => {
             stub(jiraClient, "getFields").resolves([
                 {
                     id: "summary",
-                    name: "Summary",
+                    name: "summary",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -426,7 +426,7 @@ describe("the server issue repository", () => {
             stub(jiraClient, "getFields").resolves([
                 {
                     id: "description",
-                    name: "Description",
+                    name: "description",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -483,7 +483,7 @@ describe("the server issue repository", () => {
             const stubbedGetFields = stub(jiraClient, "getFields").resolves([
                 {
                     id: "description",
-                    name: "Description",
+                    name: "description",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -548,7 +548,7 @@ describe("the server issue repository", () => {
             stub(jiraClient, "getFields").resolves([
                 {
                     id: "description",
-                    name: "Description",
+                    name: "description",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -643,7 +643,7 @@ describe("the server issue repository", () => {
             ]);
             const stubbedSearch = stub(jiraClient, "search");
             const { stubbedError } = stubLogging();
-            const summaries = await repository.getDescriptions("CYP-123");
+            const descriptions = await repository.getDescriptions("CYP-123");
             expect(stubbedSearch).to.not.have.been.called;
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
@@ -664,7 +664,7 @@ describe("the server issue repository", () => {
                       }
                 `)
             );
-            expect(summaries).to.deep.eq({});
+            expect(descriptions).to.deep.eq({});
         });
 
         it("displays an error when there are multiple description fields", async () => {
@@ -698,7 +698,7 @@ describe("the server issue repository", () => {
             ]);
             const stubbedSearch = stub(jiraClient, "search");
             const { stubbedError } = stubLogging();
-            const summaries = await repository.getDescriptions("CYP-123");
+            const descriptions = await repository.getDescriptions("CYP-123");
             expect(stubbedSearch).to.not.have.been.called;
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
@@ -719,7 +719,7 @@ describe("the server issue repository", () => {
                       }
                 `)
             );
-            expect(summaries).to.deep.eq({});
+            expect(descriptions).to.deep.eq({});
         });
 
         it("handles get field failures gracefully", async () => {
@@ -749,7 +749,7 @@ describe("the server issue repository", () => {
             stub(jiraClient, "getFields").resolves([
                 {
                     id: "description",
-                    name: "Description",
+                    name: "description",
                     custom: false,
                     orderable: true,
                     navigable: true,
@@ -794,7 +794,7 @@ describe("the server issue repository", () => {
                 },
             ]);
             const { stubbedError } = stubLogging();
-            const summaries = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
+            const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to fetch issue descriptions
@@ -806,148 +806,67 @@ describe("the server issue repository", () => {
                       CYP-456: {"Something":5}
                 `)
             );
-            expect(summaries).to.deep.eq({});
+            expect(descriptions).to.deep.eq({});
         });
     });
 
     describe("getTestTypes", () => {
         it("fetches test types", async () => {
-            stub(jiraClient, "getFields").resolves([
-                {
-                    id: "customfield_12100",
-                    name: "Test Type",
-                    custom: true,
-                    orderable: true,
-                    navigable: true,
-                    searchable: true,
-                    clauseNames: ["cf[12100]", "Test Type"],
-                    schema: {
-                        type: "option",
-                        custom: "com.xpandit.plugins.xray:test-type-custom-field",
-                        customId: 12100,
-                    },
+            const mockedFieldFetcher: IJiraFieldFetcher = {
+                fetchDescriptions: function (): Promise<StringMap<string>> {
+                    throw new Error("Mock called unexpectedly");
                 },
-            ]);
-            const searchStub = stub(jiraClient, "search").resolves([
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1000",
-                    self: "https://example.org/rest/api/2/issue/1000",
-                    key: "CYP-123",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12702",
-                            value: "Cucumber",
-                            id: "12702",
-                            disabled: false,
-                        },
-                    },
+                fetchLabels: function (): Promise<StringMap<string[]>> {
+                    throw new Error("Mock called unexpectedly");
                 },
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1001",
-                    self: "https://example.org/rest/api/2/issue/1001",
-                    key: "CYP-456",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12701",
-                            value: "Generic",
-                            id: "12701",
-                            disabled: false,
-                        },
-                    },
+                fetchSummaries: function (): Promise<StringMap<string>> {
+                    throw new Error("Mock called unexpectedly");
                 },
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1002",
-                    self: "https://example.org/rest/api/2/issue/1002",
-                    key: "CYP-789",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12700",
-                            value: "Manual",
-                            id: "12700",
-                            disabled: false,
-                        },
-                    },
+                fetchTestTypes: async function (): Promise<StringMap<string>> {
+                    return {
+                        "CYP-123": "Cucumber",
+                        "CYP-456": "Generic",
+                        "CYP-789": "Manual",
+                    };
                 },
-            ]);
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(testTypes).to.deep.eq({
                 "CYP-123": "Cucumber",
                 "CYP-456": "Generic",
                 "CYP-789": "Manual",
             });
-            expect(searchStub).to.have.been.calledOnceWithExactly({
-                jql: "project = CYP AND issue in (CYP-123,CYP-456,CYP-789)",
-                fields: ["customfield_12100"],
-            });
         });
 
         it("fetches test types only for unknown issues", async () => {
-            const stubbedGetFields = stub(jiraClient, "getFields").resolves([
-                {
-                    id: "customfield_12100",
-                    name: "Test Type",
-                    custom: true,
-                    orderable: true,
-                    navigable: true,
-                    searchable: true,
-                    clauseNames: ["cf[12100]", "Test Type"],
-                    schema: {
-                        type: "option",
-                        custom: "com.xpandit.plugins.xray:test-type-custom-field",
-                        customId: 12100,
-                    },
+            const mockedFieldFetcher: IJiraFieldFetcher = {
+                fetchDescriptions: function (): Promise<StringMap<string>> {
+                    throw new Error("Mock called unexpectedly");
                 },
-            ]);
-            const stubbedSearch = stub(jiraClient, "search");
-            stubbedSearch.onFirstCall().resolves([
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1000",
-                    self: "https://example.org/rest/api/2/issue/1000",
-                    key: "CYP-123",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12702",
-                            value: "Cucumber",
-                            id: "12702",
-                            disabled: false,
-                        },
-                    },
+                fetchLabels: function (): Promise<StringMap<string[]>> {
+                    throw new Error("Mock called unexpectedly");
                 },
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1002",
-                    self: "https://example.org/rest/api/2/issue/1002",
-                    key: "CYP-789",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12700",
-                            value: "Manual",
-                            id: "12700",
-                            disabled: false,
-                        },
-                    },
+                fetchSummaries: function (): Promise<StringMap<string>> {
+                    throw new Error("Mock called unexpectedly");
                 },
-            ]);
-            stubbedSearch.onSecondCall().resolves([
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1001",
-                    self: "https://example.org/rest/api/2/issue/1001",
-                    key: "CYP-456",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12701",
-                            value: "Generic",
-                            id: "12701",
-                            disabled: false,
-                        },
-                    },
+                fetchTestTypes: async function (
+                    ...issueKeys: string[]
+                ): Promise<StringMap<string>> {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
+                        return {
+                            "CYP-123": "Cucumber",
+                            "CYP-789": "Manual",
+                        };
+                    } else if (arrayEquals(issueKeys, ["CYP-456"])) {
+                        return {
+                            "CYP-456": "Generic",
+                        };
+                    }
+                    throw new Error(`Unexpected argument: ${issueKeys}`);
                 },
-            ]);
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
             await repository.getTestTypes("CYP-123", "CYP-789");
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(testTypes).to.deep.eq({
@@ -957,48 +876,31 @@ describe("the server issue repository", () => {
             });
             // Everything's fetched already, should not fetch anything again.
             await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedGetFields).to.have.been.calledOnce;
-            expect(stubbedSearch).to.have.been.calledTwice;
-            expect(stubbedSearch.secondCall).to.have.been.calledWithExactly({
-                jql: "project = CYP AND issue in (CYP-456)",
-                fields: ["customfield_12100"],
-            });
         });
 
         it("displays an error for issues which do not exist", async () => {
-            stub(jiraClient, "getFields").resolves([
-                {
-                    id: "customfield_12100",
-                    name: "Test Type",
-                    custom: true,
-                    orderable: true,
-                    navigable: true,
-                    searchable: true,
-                    clauseNames: ["cf[12100]", "Test Type"],
-                    schema: {
-                        type: "option",
-                        custom: "com.xpandit.plugins.xray:test-type-custom-field",
-                        customId: 12100,
-                    },
+            const mockedFieldFetcher: IJiraFieldFetcher = {
+                fetchDescriptions: function (): Promise<StringMap<string>> {
+                    throw new Error("Mock called unexpectedly");
                 },
-            ]);
-            const stubbedSearch = stub(jiraClient, "search");
-            stubbedSearch.resolves([
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1000",
-                    self: "https://example.org/rest/api/2/issue/1000",
-                    key: "CYP-123",
-                    fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12705",
-                            value: "Custom",
-                            id: "12705",
-                            disabled: false,
-                        },
-                    },
+                fetchLabels: function (): Promise<StringMap<string[]>> {
+                    throw new Error("Mock called unexpectedly");
                 },
-            ]);
+                fetchSummaries: function (): Promise<StringMap<string>> {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: async function (
+                    ...issueKeys: string[]
+                ): Promise<StringMap<string>> {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                        return {
+                            "CYP-123": "Cucumber",
+                        };
+                    }
+                    throw new Error(`Unexpected argument: ${issueKeys}`);
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
             const { stubbedError } = stubLogging();
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
@@ -1010,34 +912,318 @@ describe("the server issue repository", () => {
                       CYP-789
                 `)
             );
-            expect(testTypes).to.deep.eq({
-                "CYP-123": "Custom",
-            });
+            expect(testTypes).to.deep.eq({ "CYP-123": "Cucumber" });
         });
 
-        it("displays an error when there are multiple description fields", async () => {
+        it("handles failed test type requests gracefully", async () => {
+            const mockedFieldFetcher: IJiraFieldFetcher = {
+                fetchDescriptions: function (): Promise<StringMap<string>> {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: function (): Promise<StringMap<string[]>> {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: function (): Promise<StringMap<string>> {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: async function (
+                    ...issueKeys: string[]
+                ): Promise<StringMap<string>> {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                        return {};
+                    }
+                    throw new Error(`Unexpected argument: ${issueKeys}`);
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const { stubbedError } = stubLogging();
+            const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue test types
+                    Make sure these issues exist and are test issues:
+
+                      CYP-123
+                      CYP-456
+                      CYP-789
+                `)
+            );
+            expect(testTypes).to.deep.eq({});
+        });
+    });
+
+    describe("getLabels", () => {
+        it("fetches labels", async () => {
             stub(jiraClient, "getFields").resolves([
                 {
-                    id: "test_type",
-                    name: "Test Type",
+                    id: "labels",
+                    name: "labels",
                     custom: false,
                     orderable: true,
                     navigable: true,
                     searchable: true,
-                    clauseNames: ["test type"],
+                    clauseNames: ["labels"],
+                    schema: {
+                        type: "array",
+                        items: "string",
+                        system: "labels",
+                    },
+                },
+            ]);
+            const searchStub = stub(jiraClient, "search").resolves([
+                {
+                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+                    id: "1000",
+                    self: "https://example.org/rest/api/2/issue/1000",
+                    key: "CYP-123",
+                    fields: {
+                        labels: ["A", "B", "C"],
+                    },
+                },
+                {
+                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+                    id: "1001",
+                    self: "https://example.org/rest/api/2/issue/1001",
+                    key: "CYP-456",
+                    fields: {
+                        labels: [],
+                    },
+                },
+                {
+                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+                    id: "1002",
+                    self: "https://example.org/rest/api/2/issue/1002",
+                    key: "CYP-789",
+                    fields: {
+                        labels: ["D"],
+                    },
+                },
+            ]);
+            const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
+            expect(labels).to.deep.eq({
+                "CYP-123": ["A", "B", "C"],
+                "CYP-456": [],
+                "CYP-789": ["D"],
+            });
+            expect(searchStub).to.have.been.calledOnceWithExactly({
+                jql: "project = CYP AND issue in (CYP-123,CYP-456,CYP-789)",
+                fields: ["labels"],
+            });
+        });
+
+        it("fetches labels only for unknown issues", async () => {
+            const stubbedGetFields = stub(jiraClient, "getFields").resolves([
+                {
+                    id: "labels",
+                    name: "labels",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["labels"],
+                    schema: {
+                        type: "array",
+                        items: "string",
+                        system: "labels",
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            stubbedSearch.onFirstCall().resolves([
+                {
+                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+                    id: "1000",
+                    self: "https://example.org/rest/api/2/issue/1000",
+                    key: "CYP-123",
+                    fields: {
+                        labels: ["A", "B", "C"],
+                    },
+                },
+                {
+                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+                    id: "1002",
+                    self: "https://example.org/rest/api/2/issue/1002",
+                    key: "CYP-789",
+                    fields: {
+                        labels: ["E"],
+                    },
+                },
+            ]);
+            stubbedSearch.onSecondCall().resolves([
+                {
+                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+                    id: "1001",
+                    self: "https://example.org/rest/api/2/issue/1001",
+                    key: "CYP-456",
+                    fields: {
+                        labels: ["D"],
+                    },
+                },
+            ]);
+            await repository.getLabels("CYP-123", "CYP-789");
+            const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
+            expect(labels).to.deep.eq({
+                "CYP-123": ["A", "B", "C"],
+                "CYP-456": ["D"],
+                "CYP-789": ["E"],
+            });
+            // Everything's fetched already, should not fetch anything again.
+            await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
+            expect(stubbedGetFields).to.have.been.calledOnce;
+            expect(stubbedSearch).to.have.been.calledTwice;
+            expect(stubbedSearch.secondCall).to.have.been.calledWithExactly({
+                jql: "project = CYP AND issue in (CYP-456)",
+                fields: ["labels"],
+            });
+        });
+
+        it("displays an error for issues which do not exist", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "labels",
+                    name: "labels",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["labels"],
+                    schema: {
+                        type: "array",
+                        items: "string",
+                        system: "labels",
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            stubbedSearch.resolves([
+                {
+                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+                    id: "1000",
+                    self: "https://example.org/rest/api/2/issue/1000",
+                    key: "CYP-123",
+                    fields: {
+                        labels: ["X"],
+                    },
+                },
+            ]);
+            const { stubbedError } = stubLogging();
+            const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue labels
+                    Make sure these issues exist:
+
+                      CYP-456
+                      CYP-789
+                `)
+            );
+            expect(labels).to.deep.eq({
+                "CYP-123": ["X"],
+            });
+        });
+
+        it("displays an error when the labels field does not exist", async () => {
+            stub(jiraClient, "getFields").resolves([]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const labels = await repository.getLabels("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue labels
+                    Failed to fetch Jira field ID for field with name: labels
+                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                    You can provide field IDs directly without relying on language settings:
+
+                      jira: {
+                        fields: {
+                          labels: <id> // corresponding field ID
+                        }
+                      }
+                `)
+            );
+            expect(labels).to.deep.eq({});
+        });
+
+        it("displays an error containing field hints when the labels field does not exist", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "labels_french",
+                    name: "Étiquettes",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["labels"],
                     schema: {
                         type: "string",
-                        system: "test type",
+                        system: "labels",
+                    },
+                },
+                {
+                    id: "labels_german",
+                    name: "Stichwort",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["labels"],
+                    schema: {
+                        type: "string",
+                        system: "labels",
+                    },
+                },
+            ]);
+            const stubbedSearch = stub(jiraClient, "search");
+            const { stubbedError } = stubLogging();
+            const labels = await repository.getLabels("CYP-123");
+            expect(stubbedSearch).to.not.have.been.called;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue labels
+                    Failed to fetch Jira field ID for field with name: labels
+                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                    Available fields:
+                      name: Étiquettes, id: labels_french
+                      name: Stichwort, id: labels_german
+
+                    You can provide field IDs directly without relying on language settings:
+
+                      jira: {
+                        fields: {
+                          labels: <id> // corresponding field ID
+                        }
+                      }
+                `)
+            );
+            expect(labels).to.deep.eq({});
+        });
+
+        it("displays an error when there are multiple label fields", async () => {
+            stub(jiraClient, "getFields").resolves([
+                {
+                    id: "labels",
+                    name: "Labels",
+                    custom: false,
+                    orderable: true,
+                    navigable: true,
+                    searchable: true,
+                    clauseNames: ["labels"],
+                    schema: {
+                        type: "string",
+                        system: "labels",
                     },
                 },
                 {
                     id: "customfield_12345",
-                    name: "test type",
+                    name: "Labels",
                     custom: false,
                     orderable: true,
                     navigable: true,
                     searchable: true,
-                    clauseNames: ["test type (custom)"],
+                    clauseNames: ["labels (custom)"],
                     schema: {
                         type: "string",
                         customId: 5125,
@@ -1046,107 +1232,28 @@ describe("the server issue repository", () => {
             ]);
             const stubbedSearch = stub(jiraClient, "search");
             const { stubbedError } = stubLogging();
-            const summaries = await repository.getTestTypes("CYP-123");
+            const labels = await repository.getLabels("CYP-123");
             expect(stubbedSearch).to.not.have.been.called;
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch issue test types
-                    Failed to fetch Jira field ID for field with name: test type
+                    Failed to fetch issue labels
+                    Failed to fetch Jira field ID for field with name: labels
                     There are multiple fields with this name
 
                     Duplicates:
-                      id: test_type, name: Test Type, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: test type, schema: [object Object]
-                      id: customfield_12345, name: test type, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: test type (custom), schema: [object Object]
+                      id: labels, name: Labels, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: labels, schema: [object Object]
+                      id: customfield_12345, name: Labels, custom: false, orderable: true, navigable: true, searchable: true, clauseNames: labels (custom), schema: [object Object]
 
                     You can provide field IDs in the options:
 
                       jira: {
                         fields: {
-                          testType: <id> // "test_type" or "customfield_12345"
+                          labels: <id> // "labels" or "customfield_12345"
                         }
                       }
                 `)
             );
-            expect(summaries).to.deep.eq({});
-        });
-
-        it("displays an error when the test type field does not exist", async () => {
-            stub(jiraClient, "getFields").resolves([]);
-            const stubbedSearch = stub(jiraClient, "search");
-            const { stubbedError } = stubLogging();
-            const testTypes = await repository.getTestTypes("CYP-123");
-            expect(stubbedSearch).to.not.have.been.called;
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to fetch issue test types
-                    Failed to fetch Jira field ID for field with name: test type
-                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
-
-                    You can provide field IDs directly without relying on language settings:
-
-                      jira: {
-                        fields: {
-                          testType: <id> // corresponding field ID
-                        }
-                      }
-                `)
-            );
-            expect(testTypes).to.deep.eq({});
-        });
-
-        it("displays an error containing field hints when the test type field does not exist", async () => {
-            stub(jiraClient, "getFields").resolves([
-                {
-                    id: "test_type_french",
-                    name: "Type de Test",
-                    custom: false,
-                    orderable: true,
-                    navigable: true,
-                    searchable: true,
-                    clauseNames: ["description"],
-                    schema: {
-                        type: "string",
-                        system: "description",
-                    },
-                },
-                {
-                    id: "test_type_german",
-                    name: "Testtyp",
-                    custom: false,
-                    orderable: true,
-                    navigable: true,
-                    searchable: true,
-                    clauseNames: ["description"],
-                    schema: {
-                        type: "string",
-                        system: "description",
-                    },
-                },
-            ]);
-            const stubbedSearch = stub(jiraClient, "search");
-            const { stubbedError } = stubLogging();
-            const summaries = await repository.getTestTypes("CYP-123");
-            expect(stubbedSearch).to.not.have.been.called;
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to fetch issue test types
-                    Failed to fetch Jira field ID for field with name: test type
-                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
-
-                    Available fields:
-                      name: Type de Test, id: test_type_french
-                      name: Testtyp, id: test_type_german
-
-                    You can provide field IDs directly without relying on language settings:
-
-                      jira: {
-                        fields: {
-                          testType: <id> // corresponding field ID
-                        }
-                      }
-                `)
-            );
-            expect(summaries).to.deep.eq({});
+            expect(labels).to.deep.eq({});
         });
 
         it("handles get field failures gracefully", async () => {
@@ -1161,31 +1268,30 @@ describe("the server issue repository", () => {
                 },
             ]);
             const { stubbedError } = stubLogging();
-            const testTypes = await repository.getTestTypes("CYP-123");
+            const labels = await repository.getLabels("CYP-123");
             expect(stubbedSearch).to.not.have.been.called;
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch issue test types
-                    Failed to fetch Jira field ID for field with name: test type
+                    Failed to fetch issue labels
+                    Failed to fetch Jira field ID for field with name: labels
                 `)
             );
-            expect(testTypes).to.deep.eq({});
+            expect(labels).to.deep.eq({});
         });
 
         it("handles unparseable field failures gracefully", async () => {
             stub(jiraClient, "getFields").resolves([
                 {
-                    id: "customfield_12100",
-                    name: "Test Type",
-                    custom: true,
+                    id: "labels",
+                    name: "labels",
+                    custom: false,
                     orderable: true,
                     navigable: true,
                     searchable: true,
-                    clauseNames: ["cf[12100]", "Test Type"],
+                    clauseNames: ["labels"],
                     schema: {
-                        type: "option",
-                        custom: "com.xpandit.plugins.xray:test-type-custom-field",
-                        customId: 12100,
+                        type: "string",
+                        system: "labels",
                     },
                 },
             ]);
@@ -1197,7 +1303,7 @@ describe("the server issue repository", () => {
                     self: "https://example.org/rest/api/2/issue/1000",
                     key: "CYP-123",
                     fields: {
-                        customfield_12100: ["This is a somewhat unexpected", "description"],
+                        labels: 5,
                     },
                 },
                 {
@@ -1206,7 +1312,7 @@ describe("the server issue repository", () => {
                     self: "https://example.org/rest/api/2/issue/1001",
                     key: "CYP-456",
                     fields: {
-                        customfield_12100: {
+                        labels: {
                             Something: 5,
                         },
                     },
@@ -1217,44 +1323,25 @@ describe("the server issue repository", () => {
                     self: "https://example.org/rest/api/2/issue/1002",
                     key: "CYP-789",
                     fields: {
-                        customfield_12100: {
-                            self: "https://example.org/rest/api/2/customFieldOption/12701",
-                            value: "Generic",
-                            id: "12701",
-                            disabled: false,
-                        },
-                    },
-                },
-                {
-                    expand: "operations,versionedRepresentations,editmeta,changelog,renderedFields",
-                    id: "1003",
-                    self: "https://example.org/rest/api/2/issue/1003",
-                    key: "CYP-420",
-                    fields: {
-                        customfield_12100: null,
+                        labels: "Bonjour (encore)",
                     },
                 },
             ]);
             const { stubbedError } = stubLogging();
-            const testTypes = await repository.getTestTypes(
-                "CYP-123",
-                "CYP-456",
-                "CYP-789",
-                "CYP-420"
-            );
+            const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
-                    Failed to fetch issue test types
-                    Failed to parse Jira field with ID: customfield_12100
-                    Expected the field to be: an object with a value property
+                    Failed to fetch issue labels
+                    Failed to parse Jira field with ID: labels
+                    Expected the field to be: an array of strings
                     Make sure the correct field is present on the following issues:
 
-                      CYP-123: ["This is a somewhat unexpected","description"]
+                      CYP-123: 5
                       CYP-456: {"Something":5}
-                      CYP-420: null
+                      CYP-789: "Bonjour (encore)"
                 `)
             );
-            expect(testTypes).to.deep.eq({});
+            expect(labels).to.deep.eq({});
         });
     });
 });
