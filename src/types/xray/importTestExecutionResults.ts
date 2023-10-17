@@ -1,4 +1,4 @@
-import { DateTimeISO, OneOf } from "../util";
+import { DateTimeISO } from "../util";
 
 /**
  * Taken from:
@@ -374,21 +374,18 @@ export type XrayCustomFieldServer = {
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22customField%22object-storetestruncustomfields
  */
-export type XrayCustomFieldCloud = OneOf<
-    [
-        XrayCustomFieldServer,
-        {
-            /**
-             * The test run custom field name.
-             */
-            name: string;
-            /**
-             * The test run custom field value.
-             */
-            value: string;
-        }
-    ]
->;
+export type XrayCustomFieldCloud =
+    | XrayCustomFieldServer
+    | {
+          /**
+           * The test run custom field name.
+           */
+          name: string;
+          /**
+           * The test run custom field value.
+           */
+          value: string;
+      };
 
 // Small utility type to better express meaning.
 export type Base64String = string;

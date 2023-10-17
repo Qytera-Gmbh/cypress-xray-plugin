@@ -1,5 +1,3 @@
-import { OneOf } from "../../util";
-
 export type IssueDetails = {
     id: string;
     key: string;
@@ -27,9 +25,9 @@ export type ImportFeatureResponseServerFailure = {
     preconditionIssues: IssueDetails[];
     message: string;
 };
-export type ImportFeatureResponseServer = OneOf<
-    [ImportFeatureResponseServerSuccess, ImportFeatureResponseServerFailure]
->;
+export type ImportFeatureResponseServer =
+    | ImportFeatureResponseServerSuccess
+    | ImportFeatureResponseServerFailure;
 /**
  * The cucumber features were successfully imported.
  *

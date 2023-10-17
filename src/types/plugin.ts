@@ -3,8 +3,7 @@ import { JiraClientCloud } from "../client/jira/jiraClientCloud";
 import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientCloud } from "../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
-import { JiraRepositoryCloud } from "../repository/jira/jiraRepositoryCloud";
-import { JiraRepositoryServer } from "../repository/jira/jiraRepositoryServer";
+import { JiraRepository } from "../repository/jira/jiraRepository";
 import { IIssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
 export interface Options {
@@ -362,13 +361,13 @@ export type ClientCombination =
           kind: "server";
           jiraClient: JiraClientServer;
           xrayClient: XrayClientServer;
-          jiraRepository: JiraRepositoryServer;
+          jiraRepository: JiraRepository;
       }
     | {
           kind: "cloud";
           jiraClient: JiraClientCloud;
           xrayClient: XrayClientCloud;
-          jiraRepository: JiraRepositoryCloud;
+          jiraRepository: JiraRepository;
       };
 
 export interface PluginContext {
