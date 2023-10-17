@@ -1,30 +1,21 @@
-import {
-    IssueTypeDetailsCloud,
-    IssueTypeDetailsServer,
-} from "../../jira/responses/issueTypeDetails";
-import { IssueUpdateCloud, IssueUpdateServer } from "../../jira/responses/issueUpdate";
+import { IIssueTypeDetails } from "../../jira/responses/issueTypeDetails";
+import { IIssueUpdate } from "../../jira/responses/issueUpdate";
 
-type CucumberMultipartInfo<IssueTypeDetails, IssueUpdateType> = IssueUpdateType & {
+export interface ICucumberMultipartInfo extends IIssueUpdate {
     fields: {
         project: {
             key: string;
         };
         summary: string;
         description?: string;
-        issuetype: IssueTypeDetails;
+        issuetype: IIssueTypeDetails;
         labels?: string[];
+        [k: string]: unknown;
     };
-};
-export type CucumberMultipartInfoServer = CucumberMultipartInfo<
-    IssueTypeDetailsServer,
-    IssueUpdateServer
->;
-export type CucumberMultipartInfoCloud = CucumberMultipartInfo<
-    IssueTypeDetailsCloud,
-    IssueUpdateCloud
-> & {
+}
+export interface CucumberMultipartInfoCloud extends ICucumberMultipartInfo {
     xrayFields?: {
         testPlanKey?: string;
         environments?: string[];
     };
-};
+}

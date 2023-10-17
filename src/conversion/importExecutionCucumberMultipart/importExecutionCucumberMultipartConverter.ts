@@ -2,13 +2,9 @@ import { SupportedField } from "../../repository/jira/fields/fetching";
 import { JiraRepository } from "../../repository/jira/jiraRepository";
 import { InternalOptions } from "../../types/plugin";
 import {
-    CucumberMultipart,
     CucumberMultipartFeature,
+    ICucumberMultipart,
 } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import {
-    CucumberMultipartInfoCloud,
-    CucumberMultipartInfoServer,
-} from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { Converter } from "../converter";
 import { getMultipartFeatures } from "./multipartFeatureConversion";
 import {
@@ -25,11 +21,9 @@ import {
  */
 export type ConversionParameters = Omit<CypressCommandLine.CypressRunResult, "runs" | "config">;
 
-type CucumberMultipartInfoType = CucumberMultipartInfoServer | CucumberMultipartInfoCloud;
-
 export class ImportExecutionCucumberMultipartConverter extends Converter<
     CucumberMultipartFeature[],
-    CucumberMultipart<CucumberMultipartInfoType>,
+    ICucumberMultipart,
     ConversionParameters
 > {
     /**
@@ -61,7 +55,7 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
     public async convert(
         input: CucumberMultipartFeature[],
         parameters: ConversionParameters
-    ): Promise<CucumberMultipart<CucumberMultipartInfoType>> {
+    ): Promise<ICucumberMultipart> {
         const features = getMultipartFeatures(input, {
             testExecutionIssueKey: this.options.jira.testExecutionIssueKey,
             includeScreenshots: this.options.xray.uploadScreenshots,

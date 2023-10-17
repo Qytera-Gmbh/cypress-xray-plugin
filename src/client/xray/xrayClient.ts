@@ -14,10 +14,7 @@ import {
     XrayTestServer,
 } from "../../types/xray/importTestExecutionResults";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import {
-    CucumberMultipartInfoCloud,
-    CucumberMultipartInfoServer,
-} from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import {
     ImportExecutionResponseCloud,
@@ -79,7 +76,7 @@ export interface IXrayClient {
      */
     importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfoServer | CucumberMultipartInfoCloud
+        cucumberInfo: ICucumberMultipartInfo
     ): Promise<string | null | undefined>;
 }
 
@@ -255,7 +252,7 @@ export abstract class XrayClient<
 
     public async importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfoServer | CucumberMultipartInfoCloud
+        cucumberInfo: ICucumberMultipartInfo
     ): Promise<string | null | undefined> {
         try {
             if (cucumberJson.length === 0) {
@@ -293,7 +290,7 @@ export abstract class XrayClient<
      */
     public abstract prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfoServer | CucumberMultipartInfoCloud
+        cucumberInfo: ICucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>>;
 
     /**

@@ -5,7 +5,7 @@ import {
 } from "../authentication/credentials";
 import { Requests } from "../https/requests";
 import { logDebug, logInfo } from "../logging/logging";
-import { UserCloud, UserServer } from "../types/jira/responses/user";
+import { IUser } from "../types/jira/responses/user";
 import { dedent } from "./dedent";
 import { errorMessage } from "./errors";
 import { startInterval } from "./time";
@@ -69,7 +69,7 @@ export async function pingJiraInstance(
     }
 }
 
-function getUserString(user: UserServer | UserCloud): string | undefined {
+function getUserString(user: IUser): string | undefined {
     return user.displayName ?? user.emailAddress ?? user.name;
 }
 

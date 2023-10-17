@@ -1,7 +1,4 @@
-import {
-    CucumberMultipartInfoCloud,
-    CucumberMultipartInfoServer,
-} from "./importExecutionCucumberMultipartInfo";
+import { ICucumberMultipartInfo } from "./importExecutionCucumberMultipartInfo";
 
 /*
  * There is unfortunately no official Cucumber JSON report scheme available anywhere, as stated
@@ -13,12 +10,10 @@ import {
  * - https://github.com/cucumber/cucumber-json-converter/blob/main/src/CucumberJson.ts
  */
 
-export type CucumberMultipart<CucumberMultipartInfoType> = {
+export interface ICucumberMultipart {
     features: CucumberMultipartFeature[];
-    info: CucumberMultipartInfoType;
-};
-export type CucumberMultipartServer = CucumberMultipart<CucumberMultipartInfoServer>;
-export type CucumberMultipartCloud = CucumberMultipart<CucumberMultipartInfoCloud>;
+    info: ICucumberMultipartInfo;
+}
 export interface CucumberMultipartFeature {
     description: string;
     elements: CucumberMultipartElement[];

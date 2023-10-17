@@ -1,11 +1,12 @@
 import { expect } from "chai";
 import { DummyJiraClient, RESOLVED_JWT_CREDENTIALS, stubLogging } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
+import { IXrayClient } from "./xrayClient";
 import { XrayClientCloud } from "./xrayClientCloud";
 import { XrayClientServer } from "./xrayClientServer";
 
 describe("the xray clients", () => {
-    let client: XrayClientServer | XrayClientCloud;
+    let client: IXrayClient;
 
     ["server", "cloud"].forEach((clientType: string) => {
         describe(clientType, () => {

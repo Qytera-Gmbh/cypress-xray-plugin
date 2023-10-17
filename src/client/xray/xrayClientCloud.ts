@@ -4,7 +4,7 @@ import { RequestConfigPost, Requests } from "../../https/requests";
 import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
@@ -192,7 +192,7 @@ export class XrayClientCloud extends XrayClient<JWTCredentials> {
 
     public async prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfoServer
+        cucumberInfo: ICucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>> {
         const formData = new FormData();
         const resultString = JSON.stringify(cucumberJson);

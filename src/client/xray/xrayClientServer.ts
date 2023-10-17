@@ -3,7 +3,7 @@ import { BasicAuthCredentials, PATCredentials } from "../../authentication/crede
 import { RequestConfigPost } from "../../https/requests";
 import { logDebug, logError } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import {
     ImportFeatureResponseServer,
@@ -90,7 +90,7 @@ export class XrayClientServer extends XrayClient<BasicAuthCredentials | PATCrede
 
     public async prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfoServer
+        cucumberInfo: ICucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>> {
         const formData = new FormData();
         const resultString = JSON.stringify(cucumberJson);
