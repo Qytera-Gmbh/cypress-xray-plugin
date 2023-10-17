@@ -4,6 +4,7 @@ import fs from "fs";
 import { expectToExist, stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { SearchResultsServer } from "../../types/jira/responses/searchResults";
+import { IJiraClient } from "./jiraClient";
 import { JiraClientCloud } from "./jiraClientCloud";
 import { JiraClientServer } from "./jiraClientServer";
 
@@ -11,7 +12,7 @@ describe("the jira clients", () => {
     ["server", "cloud"].forEach((clientType: string) => {
         // The concrete client implementation does not matter here. The methods here only test the
         // abstract base class's code.
-        let client: JiraClientServer | JiraClientCloud;
+        let client: IJiraClient;
 
         describe(clientType, () => {
             beforeEach(() => {

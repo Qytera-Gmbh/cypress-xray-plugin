@@ -1,17 +1,16 @@
-import { JiraClientCloud } from "../../../client/jira/jiraClientCloud";
-import { JiraClientServer } from "../../../client/jira/jiraClientServer";
+import { IJiraClient } from "../../../client/jira/jiraClient";
 import { FieldDetailCloud, FieldDetailServer } from "../../../types/jira/responses/fieldDetail";
 import { InternalJiraOptions } from "../../../types/plugin";
 import { StringMap } from "../../../types/util";
 
 export class JiraFieldRepository {
-    protected readonly jiraClient: JiraClientServer | JiraClientCloud;
+    protected readonly jiraClient: IJiraClient;
     protected readonly jiraOptions: InternalJiraOptions;
 
     private readonly names: StringMap<string> = {};
     private readonly ids: StringMap<string> = {};
 
-    constructor(jiraClient: JiraClientServer | JiraClientCloud, jiraOptions: InternalJiraOptions) {
+    constructor(jiraClient: IJiraClient, jiraOptions: InternalJiraOptions) {
         this.jiraClient = jiraClient;
         this.jiraOptions = jiraOptions;
     }

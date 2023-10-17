@@ -5,7 +5,7 @@ import { XrayClientCloud } from "../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
 import { JiraRepositoryCloud } from "../repository/jira/jiraRepositoryCloud";
 import { JiraRepositoryServer } from "../repository/jira/jiraRepositoryServer";
-import { IssueTypeDetailsCloud, IssueTypeDetailsServer } from "./jira/responses/issueTypeDetails";
+import { IIssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
 export interface Options {
     jira: JiraOptions;
@@ -168,7 +168,7 @@ export type InternalJiraOptions = JiraOptions &
         /**
          * The details of the test execution issue type.
          */
-        testExecutionIssueDetails: IssueTypeDetailsServer | IssueTypeDetailsCloud;
+        testExecutionIssueDetails: IIssueTypeDetails;
     };
 
 export interface XrayOptions {

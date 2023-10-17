@@ -12,12 +12,7 @@ import {
 import { JiraClientServer } from "../jira/jiraClientServer";
 import { XrayClient } from "./xrayClient";
 
-export class XrayClientServer extends XrayClient<
-    BasicAuthCredentials | PATCredentials,
-    ImportFeatureResponseServer,
-    ImportExecutionResponseServer,
-    CucumberMultipartInfoServer
-> {
+export class XrayClientServer extends XrayClient<BasicAuthCredentials | PATCredentials> {
     /**
      * The configured Jira client.
      */

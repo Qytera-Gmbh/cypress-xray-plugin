@@ -1,5 +1,4 @@
-import { JiraClientCloud } from "../../client/jira/jiraClientCloud";
-import { JiraClientServer } from "../../client/jira/jiraClientServer";
+import { IJiraClient } from "../../client/jira/jiraClient";
 import { XrayClientCloud } from "../../client/xray/xrayClientCloud";
 import { XrayClientServer } from "../../client/xray/xrayClientServer";
 import { logError } from "../../logging/logging";
@@ -24,12 +23,9 @@ export type FieldName =
     | "test plan"
     | "test type";
 
-export abstract class JiraRepository<
-    JiraClientType extends JiraClientServer | JiraClientCloud,
-    XrayClientType extends XrayClientServer | XrayClientCloud
-> {
+export abstract class JiraRepository<XrayClientType extends XrayClientServer | XrayClientCloud> {
     protected readonly jiraFieldRepository: JiraFieldRepository;
-    protected readonly jiraClient: JiraClientType;
+    protected readonly jiraClient: IJiraClient;
     protected readonly xrayClient: XrayClientType;
     protected readonly jiraOptions: InternalJiraOptions;
 
@@ -71,7 +67,7 @@ export abstract class JiraRepository<
     private readonly labels: StringMap<string[]> = {};
 
     constructor(
-        jiraClient: JiraClientType,
+        jiraClient: IJiraClient,
         xrayClient: XrayClientType,
         jiraOptions: InternalJiraOptions
     ) {

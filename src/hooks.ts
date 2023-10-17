@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { IJiraClient } from "./client/jira/jiraClient";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { ImportExecutionConverter } from "./conversion/importExecution/importExecutionConverter";
@@ -14,10 +15,7 @@ import {
 } from "./preprocessing/preprocessing";
 import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
 import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
-import {
-    IssueTypeDetailsCloud,
-    IssueTypeDetailsServer,
-} from "./types/jira/responses/issueTypeDetails";
+import { IIssueTypeDetails } from "./types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalOptions } from "./types/plugin";
 import { StringMap, nonNull } from "./types/util";
 import { CucumberMultipartFeature } from "./types/xray/requests/importExecutionCucumberMultipart";
@@ -63,9 +61,11 @@ export async function beforeRunHook(
     }
 }
 
-function retrieveIssueTypeInformation<
-    IssueTypeDetails extends IssueTypeDetailsServer | IssueTypeDetailsCloud
->(type: string, issueDetails: IssueTypeDetails[], projectKey: string): IssueTypeDetails {
+function retrieveIssueTypeInformation(
+    type: string,
+    issueDetails: IIssueTypeDetails[],
+    projectKey: string
+): IIssueTypeDetails {
     const details = issueDetails.filter((details) => details.name === type);
     if (details.length === 0) {
         throw new Error(
@@ -212,7 +212,7 @@ async function uploadCucumberResults(
 async function attachVideos(
     runResult: CypressCommandLine.CypressRunResult,
     issueKey: string,
-    jiraClient: JiraClientServer | JiraClientCloud
+    jiraClient: IJiraClient
 ): Promise<void> {
     const videos: string[] = runResult.runs
         .map((result: CypressCommandLine.RunResult) => {
@@ -299,7 +299,7 @@ export async function synchronizeFile(
 async function resetSummaries(
     issueData: FeatureFileIssueData,
     testSummaries: StringMap<string>,
-    jiraClient: JiraClientServer | JiraClientCloud,
+    jiraClient: IJiraClient,
     jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
 ) {
     const allIssues = [...issueData.tests, ...issueData.preconditions];

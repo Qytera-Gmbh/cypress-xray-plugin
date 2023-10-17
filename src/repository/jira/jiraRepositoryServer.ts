@@ -1,9 +1,8 @@
-import { JiraClientServer } from "../../client/jira/jiraClientServer";
 import { XrayClientServer } from "../../client/xray/xrayClientServer";
 import { StringMap } from "../../types/util";
 import { JiraRepository } from "./jiraRepository";
 
-export class JiraRepositoryServer extends JiraRepository<JiraClientServer, XrayClientServer> {
+export class JiraRepositoryServer extends JiraRepository<XrayClientServer> {
     protected async fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>> {
         let fieldId = this.jiraOptions.fields?.testType;
         if (!fieldId) {

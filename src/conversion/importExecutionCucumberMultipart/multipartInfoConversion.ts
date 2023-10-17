@@ -1,7 +1,4 @@
-import {
-    IssueTypeDetailsCloud,
-    IssueTypeDetailsServer,
-} from "../../types/jira/responses/issueTypeDetails";
+import { IIssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import {
     CucumberMultipartInfoCloud,
     CucumberMultipartInfoServer,
@@ -21,7 +18,7 @@ export type RunData = Pick<
  */
 export interface TestExecutionIssueData {
     projectKey: string;
-    issuetype: IssueTypeDetailsServer | IssueTypeDetailsCloud;
+    issuetype: IIssueTypeDetails;
     summary?: string;
     description?: string;
     testPlan?: {

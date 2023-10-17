@@ -1,7 +1,7 @@
 import { DateTimeISO } from "../../util";
-import { UserCloud, UserServer } from "./user";
+import { IUser } from "./user";
 
-type Attachment<UserType> = {
+export interface IAttachment {
     /**
      * The URL of the attachment details response.
      */
@@ -13,7 +13,7 @@ type Attachment<UserType> = {
     /**
      * Details of the user who added the attachment.
      */
-    author?: UserType;
+    author?: IUser;
     /**
      * The datetime the attachment was created.
      */
@@ -40,19 +40,19 @@ type Attachment<UserType> = {
      * The URL of a thumbnail representing the attachment.
      */
     thumbnail?: string;
-};
+}
 /**
  * An attachment response.
  * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
  */
-export type AttachmentServer = Attachment<UserServer>;
+export interface AttachmentServer extends IAttachment {}
 /**
  * An attachment response.
  * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
  */
-export type AttachmentCloud = Attachment<UserCloud> & {
+export interface AttachmentCloud extends IAttachment {
     /**
      * The ID of the attachment.
      */
     id?: string;
-};
+}

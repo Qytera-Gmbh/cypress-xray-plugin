@@ -4,10 +4,7 @@ import { RequestConfigPost, Requests } from "../../https/requests";
 import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import {
-    CucumberMultipartInfoCloud,
-    CucumberMultipartInfoServer,
-} from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
@@ -18,12 +15,7 @@ type GetTestsJiraData = {
     key: string;
 };
 
-export class XrayClientCloud extends XrayClient<
-    JWTCredentials,
-    ImportFeatureResponseCloud,
-    ImportExecutionResponseCloud,
-    CucumberMultipartInfoCloud
-> {
+export class XrayClientCloud extends XrayClient<JWTCredentials> {
     /**
      * The URLs of Xray's Cloud API.
      * Note: API v1 would also work, but let's stick to the more recent one.

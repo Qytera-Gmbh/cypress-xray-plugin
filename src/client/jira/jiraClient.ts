@@ -5,13 +5,14 @@ import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authenti
 import { Requests } from "../../https/requests";
 import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { SearchRequestCloud, SearchRequestServer } from "../../types/jira/requests/search";
-import { AttachmentCloud, AttachmentServer } from "../../types/jira/responses/attachment";
+import {
+    AttachmentCloud,
+    AttachmentServer,
+    IAttachment,
+} from "../../types/jira/responses/attachment";
 import { FieldDetailCloud, FieldDetailServer } from "../../types/jira/responses/fieldDetail";
 import { IssueCloud, IssueServer } from "../../types/jira/responses/issue";
-import {
-    IssueTypeDetailsCloud,
-    IssueTypeDetailsServer,
-} from "../../types/jira/responses/issueTypeDetails";
+import { IIssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import { IssueUpdateCloud, IssueUpdateServer } from "../../types/jira/responses/issueUpdate";
 import { JsonTypeCloud, JsonTypeServer } from "../../types/jira/responses/jsonType";
 import { SearchResults } from "../../types/jira/responses/searchResults";
@@ -31,10 +32,7 @@ export interface IJiraClient {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
      */
-    addAttachment(
-        issueIdOrKey: string,
-        ...files: string[]
-    ): Promise<(AttachmentServer | AttachmentCloud)[] | undefined>;
+    addAttachment(issueIdOrKey: string, ...files: string[]): Promise<IAttachment[] | undefined>;
     /**
      * Returns all issue types.
      *
@@ -42,7 +40,7 @@ export interface IJiraClient {
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/issuetype-getIssueAllTypes
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-rest-api-3-issuetype-get
      */
-    getIssueTypes(): Promise<(IssueTypeDetailsServer | IssueTypeDetailsCloud)[] | undefined>;
+    getIssueTypes(): Promise<IIssueTypeDetails[] | undefined>;
     /**
      * Returns system and custom issue fields according to the following rules:
      * - Fields that cannot be added to the issue navigator are always returned
@@ -91,16 +89,7 @@ export interface IJiraClient {
 /**
  * A Jira client class for communicating with Jira instances.
  */
-export abstract class JiraClient<
-        CredentialsType extends BasicAuthCredentials | PATCredentials,
-        AttachmentType extends AttachmentServer | AttachmentCloud,
-        FieldDetailType extends FieldDetailServer | FieldDetailCloud,
-        JsonType extends JsonTypeServer | JsonTypeCloud,
-        IssueType extends IssueServer | IssueCloud,
-        IssueTypeDetailsResponse extends IssueTypeDetailsServer | IssueTypeDetailsCloud,
-        SearchRequestType extends SearchRequestServer | SearchRequestCloud,
-        IssueUpdateType extends IssueUpdateServer | IssueUpdateCloud
-    >
+export abstract class JiraClient<CredentialsType extends BasicAuthCredentials | PATCredentials>
     extends Client<CredentialsType>
     implements IJiraClient
 {
@@ -117,7 +106,7 @@ export abstract class JiraClient<
     public async addAttachment(
         issueIdOrKey: string,
         ...files: string[]
-    ): Promise<AttachmentType[] | undefined> {
+    ): Promise<(AttachmentServer | AttachmentCloud)[] | undefined> {
         if (files.length === 0) {
             logWarning(`No files provided to attach to issue ${issueIdOrKey}. Skipping attaching.`);
             return [];
@@ -146,22 +135,19 @@ export abstract class JiraClient<
                     logDebug("Attaching files:", ...files);
                     const progressInterval = this.startResponseInterval(this.apiBaseURL);
                     try {
-                        const response: AxiosResponse<AttachmentType[]> = await Requests.post(
-                            this.getUrlAddAttachment(issueIdOrKey),
-                            form,
-                            {
+                        const response: AxiosResponse<(AttachmentServer | AttachmentCloud)[]> =
+                            await Requests.post(this.getUrlAddAttachment(issueIdOrKey), form, {
                                 headers: {
                                     ...header,
                                     ...form.getHeaders(),
                                     "X-Atlassian-Token": "no-check",
                                 },
-                            }
-                        );
+                            });
                         logDebug(
                             dedent(`
                                 Successfully attached files to issue: ${issueIdOrKey}
                                   ${response.data
-                                      .map((attachment: AttachmentType) => attachment.filename)
+                                      .map((attachment) => attachment.filename)
                                       .join("\n")}
                             `)
                         );
@@ -184,13 +170,13 @@ export abstract class JiraClient<
      */
     public abstract getUrlAddAttachment(issueIdOrKey: string): string;
 
-    public async getIssueTypes(): Promise<IssueTypeDetailsResponse[] | undefined> {
+    public async getIssueTypes(): Promise<IIssueTypeDetails[] | undefined> {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logDebug("Getting issue types...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
-                const response: AxiosResponse<IssueTypeDetailsResponse[]> = await Requests.get(
+                const response: AxiosResponse<IIssueTypeDetails[]> = await Requests.get(
                     this.getUrlGetIssueTypes(),
                     {
                         headers: {
@@ -203,10 +189,7 @@ export abstract class JiraClient<
                     dedent(`
                         Received data for issue types:
                         ${response.data
-                            .map(
-                                (issueType: IssueTypeDetailsResponse) =>
-                                    `${issueType.name} (id: ${issueType.id})`
-                            )
+                            .map((issueType) => `${issueType.name} (id: ${issueType.id})`)
                             .join("\n")}
                     `)
                 );
@@ -227,26 +210,24 @@ export abstract class JiraClient<
      */
     public abstract getUrlGetIssueTypes(): string;
 
-    public async getFields(): Promise<FieldDetailType[] | undefined> {
+    public async getFields(): Promise<(FieldDetailServer | FieldDetailCloud)[] | undefined> {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logDebug("Getting fields...");
             const progressInterval = this.startResponseInterval(this.apiBaseURL);
             try {
-                const response: AxiosResponse<FieldDetailType[]> = await Requests.get(
-                    this.getUrlGetFields(),
-                    {
+                const response: AxiosResponse<(FieldDetailServer | FieldDetailCloud)[]> =
+                    await Requests.get(this.getUrlGetFields(), {
                         headers: {
                             ...authenticationHeader,
                         },
-                    }
-                );
+                    });
                 logDebug(`Successfully retrieved data for ${response.data.length} fields`);
                 logDebug(
                     dedent(`
                         Received data for fields:
                         ${response.data
-                            .map((field: FieldDetailType) => `${field.name} (id: ${field.id})`)
+                            .map((field) => `${field.name} (id: ${field.id})`)
                             .join("\n")}
                     `)
                 );
@@ -267,7 +248,9 @@ export abstract class JiraClient<
      */
     public abstract getUrlGetFields(): string;
 
-    public async search(request: SearchRequestType): Promise<IssueType[] | undefined> {
+    public async search(
+        request: SearchRequestServer | SearchRequestCloud
+    ): Promise<(IssueServer | IssueCloud)[] | undefined> {
         try {
             return await this.credentials
                 .getAuthenticationHeader()
@@ -277,18 +260,22 @@ export abstract class JiraClient<
                     try {
                         let total = 0;
                         let startAt = request.startAt ?? 0;
-                        const results: IssueType[] = [];
+                        const results: (IssueServer | IssueCloud)[] = [];
                         do {
                             const paginatedRequest = {
                                 ...request,
                                 startAt: startAt,
                             };
-                            const response: AxiosResponse<SearchResults<IssueType, JsonType>> =
-                                await Requests.post(this.getUrlPostSearch(), paginatedRequest, {
-                                    headers: {
-                                        ...header,
-                                    },
-                                });
+                            const response: AxiosResponse<
+                                SearchResults<
+                                    IssueServer | IssueCloud,
+                                    JsonTypeServer | JsonTypeCloud
+                                >
+                            > = await Requests.post(this.getUrlPostSearch(), paginatedRequest, {
+                                headers: {
+                                    ...header,
+                                },
+                            });
                             total = response.data.total ?? total;
                             if (response.data.issues) {
                                 results.push(...response.data.issues);
@@ -319,7 +306,7 @@ export abstract class JiraClient<
 
     public async editIssue(
         issueIdOrKey: string,
-        issueUpdateData: IssueUpdateType
+        issueUpdateData: IssueUpdateServer | IssueUpdateCloud
     ): Promise<string | undefined> {
         try {
             await this.credentials.getAuthenticationHeader().then(async (header: HTTPHeader) => {

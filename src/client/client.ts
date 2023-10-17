@@ -4,15 +4,12 @@ import {
     PATCredentials,
 } from "../authentication/credentials";
 import { logInfo } from "../logging/logging";
-import { OneOf } from "../types/util";
 import { startInterval } from "../util/time";
 
 /**
  * A basic client interface which stores credentials data used for communicating with a server.
  */
-export abstract class Client<
-    T extends OneOf<[BasicAuthCredentials, PATCredentials, JWTCredentials]>
-> {
+export abstract class Client<T extends BasicAuthCredentials | PATCredentials | JWTCredentials> {
     /**
      * The server URL.
      */

@@ -6,7 +6,7 @@ import { Opsbar } from "./opsbar";
 import { Properties } from "./properties";
 import { TransitionCloud, TransitionServer } from "./transition";
 
-type Issue<ChangelogType, EditMetaType, JsonType, TransitionType> = {
+export interface IIssue<ChangelogType, EditMetaType, JsonType, TransitionType> {
     /**
      * Expand options that include additional issue details in the response.
      */
@@ -79,6 +79,6 @@ type Issue<ChangelogType, EditMetaType, JsonType, TransitionType> = {
      * The parsed and queried fields or similar query parameters.
      */
     fieldsToInclude?: IncludedFields;
-};
-export type IssueServer = Issue<ChangelogServer, EditMetaServer, JsonTypeServer, TransitionServer>;
-export type IssueCloud = Issue<ChangelogCloud, EditMetaCloud, JsonTypeCloud, TransitionCloud>;
+}
+export type IssueServer = IIssue<ChangelogServer, EditMetaServer, JsonTypeServer, TransitionServer>;
+export type IssueCloud = IIssue<ChangelogCloud, EditMetaCloud, JsonTypeCloud, TransitionCloud>;
