@@ -1,8 +1,8 @@
-import { ChangeItem } from "./changeItem";
-import { HistoryMetadata } from "./historyMetadata";
-import { UserCloud, UserServer } from "./user";
+import { IChangeItem } from "./changeItem";
+import { IHistoryMetadata } from "./historyMetadata";
+import { IUser } from "./user";
 
-type ChangeHistory<UserType> = {
+export interface IChangeHistory {
     /**
      * The ID of the changelog.
      */
@@ -10,7 +10,7 @@ type ChangeHistory<UserType> = {
     /**
      * The user who made the change.
      */
-    author?: UserType;
+    author?: IUser;
     /**
      * The date on which the change took place.
      */
@@ -18,11 +18,9 @@ type ChangeHistory<UserType> = {
     /**
      * The list of items changed.
      */
-    items?: ChangeItem[];
+    items?: IChangeItem[];
     /**
      * The history metadata associated with the changed.
      */
-    historyMetadata?: HistoryMetadata;
-};
-export type ChangeHistoryServer = ChangeHistory<UserServer>;
-export type ChangeHistoryCloud = ChangeHistory<UserCloud>;
+    historyMetadata?: IHistoryMetadata;
+}

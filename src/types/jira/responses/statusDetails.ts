@@ -1,6 +1,6 @@
-import { StatusCategory } from "./statusCategory";
+import { IStatusCategory } from "./statusCategory";
 
-type StatusDetails = {
+export interface IStatusDetails {
     /**
      * The URL of the status.
      */
@@ -24,9 +24,8 @@ type StatusDetails = {
     /**
      * The category assigned to the status.
      */
-    statusCategory?: StatusCategory;
-};
-export type StatusDetailsServer = StatusDetails & {
+    statusCategory?: IStatusCategory;
+}
+export interface StatusDetailsServer extends IStatusDetails {
     statusColor?: string;
-};
-export type StatusDetailsCloud = StatusDetails;
+}

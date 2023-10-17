@@ -1,4 +1,4 @@
-export type ChangeItem = {
+export interface IChangeItem {
     /**
      * The name of the field changed.
      */
@@ -23,4 +23,4 @@ export type ChangeItem = {
      * The details of the new value as a string.
      */
     toString?: string;
-};
+}

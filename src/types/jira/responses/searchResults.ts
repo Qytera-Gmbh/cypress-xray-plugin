@@ -1,7 +1,12 @@
-import { IssueCloud, IssueServer } from "./issue";
-import { JsonTypeCloud, JsonTypeServer } from "./jsonType";
+import { IIssue } from "./issue";
+import { IJsonType } from "./jsonType";
 
-export type SearchResults<IssueType, JsonType> = {
+/**
+ * An issue search response.
+ * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
+ * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
+ */
+export interface ISearchResults {
     /**
      * Expand options that include additional search result details in the response.
      */
@@ -21,7 +26,7 @@ export type SearchResults<IssueType, JsonType> = {
     /**
      * The list of issues found by the search.
      */
-    issues?: IssueType[];
+    issues?: IIssue[];
     /**
      * Any warnings related to the JQL query.
      */
@@ -36,16 +41,6 @@ export type SearchResults<IssueType, JsonType> = {
      * The schema describing the field types in the search results.
      */
     schema?: {
-        [k: string]: JsonType;
+        [k: string]: IJsonType;
     };
-};
-/**
- * An issue search response.
- * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
- */
-export type SearchResultsServer = SearchResults<IssueServer, JsonTypeServer>;
-/**
- * An issue search response.
- * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
- */
-export type SearchResultsCloud = SearchResults<IssueCloud, JsonTypeCloud>;
+}

@@ -1,4 +1,4 @@
-type JsonType = {
+export interface IJsonType {
     /**
      * The data type of the field.
      */
@@ -19,13 +19,12 @@ type JsonType = {
      * If the field is a custom field, the custom ID of the field.
      */
     customId?: number;
-};
-export type JsonTypeServer = JsonType;
-export type JsonTypeCloud = JsonType & {
+}
+export interface JsonTypeCloud extends IJsonType {
     /**
      * If the field is a custom field, the configuration of the field.
      */
     configuration?: {
         [k: string]: unknown;
     };
-};
+}

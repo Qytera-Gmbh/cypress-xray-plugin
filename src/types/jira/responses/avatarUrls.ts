@@ -1,7 +1,7 @@
 /**
  * The URLs of avatars.
  */
-export type AvatarUrls = {
+export interface IAvatarUrls {
     /**
      * The URL of the item's 16x16 pixel avatar.
      */
@@ -18,4 +18,4 @@ export type AvatarUrls = {
      * The URL of the item's 48x48 pixel avatar.
      */
     "48x48"?: string;
-};
+}

@@ -1,12 +1,10 @@
-import { FieldMetaCloud, FieldMetaServer } from "./fieldMeta";
+import { IFieldMeta } from "./fieldMeta";
 
-type EditMeta<FieldMetaType> = {
+export interface IEditMeta {
     /**
      * A list of editable field details.
      */
     fields?: {
-        [k: string]: FieldMetaType;
+        [k: string]: IFieldMeta;
     };
-};
-export type EditMetaServer = EditMeta<FieldMetaServer>;
-export type EditMetaCloud = EditMeta<FieldMetaCloud>;
+}

@@ -1,4 +1,4 @@
-export type Group = {
+export type IGroup = {
     name?: string;
     self?: string;
 };

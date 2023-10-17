@@ -1,13 +1,13 @@
-import { FieldMetaCloud, FieldMetaServer } from "./fieldMeta";
-import { StatusDetailsCloud, StatusDetailsServer } from "./statusDetails";
+import { IFieldMeta } from "./fieldMeta";
+import { IStatusDetails } from "./statusDetails";
 
-type IssueTransition<FieldMetaType, StatusDetailsType> = {
+export interface IIssueTransition {
     /**
      * Details of the fields associated with the issue transition screen. Use this information to
      * populate `fields` and `update` in a transition request.
      */
     fields?: {
-        [k: string]: FieldMetaType;
+        [k: string]: IFieldMeta;
     };
     /**
      * The ID of the issue transition. Required when specifying a transition to undertake.
@@ -20,12 +20,12 @@ type IssueTransition<FieldMetaType, StatusDetailsType> = {
     /**
      * Details of the issue status after the transition.
      */
-    to?: StatusDetailsType;
-};
-export type IssueTransitionServer = IssueTransition<FieldMetaServer, StatusDetailsServer> & {
+    to?: IStatusDetails;
+}
+export interface IssueTransitionServer extends IIssueTransition {
     opsbarSequence?: number;
-};
-export type IssueTransitionCloud = IssueTransition<FieldMetaCloud, StatusDetailsCloud> & {
+}
+export interface IssueTransitionCloud extends IIssueTransition {
     /**
      * Expand options that include additional transition details in the response.
      */
@@ -52,4 +52,4 @@ export type IssueTransitionCloud = IssueTransition<FieldMetaCloud, StatusDetails
      */
     isInitial?: boolean;
     looped?: boolean;
-};
+}

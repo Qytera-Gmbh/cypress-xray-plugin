@@ -1,4 +1,4 @@
-export type SimpleLink = {
+export interface ISimpleLink {
     id?: string;
     styleClass?: string;
     iconClass?: string;
@@ -9,4 +9,4 @@ export type SimpleLink = {
     params?: {
         [k: string]: string;
     };
-};
+}

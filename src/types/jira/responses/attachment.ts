@@ -1,6 +1,11 @@
 import { DateTimeISO } from "../../util";
 import { IUser } from "./user";
 
+/**
+ * An attachment response.
+ * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
+ * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post*
+ */
 export interface IAttachment {
     /**
      * The URL of the attachment details response.
@@ -41,11 +46,6 @@ export interface IAttachment {
      */
     thumbnail?: string;
 }
-/**
- * An attachment response.
- * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
- */
-export interface AttachmentServer extends IAttachment {}
 /**
  * An attachment response.
  * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post

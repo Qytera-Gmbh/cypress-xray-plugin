@@ -1,4 +1,4 @@
-import { SimpleListWrapper } from "./simpleListWrapper";
+import { ISimpleListWrapper } from "./simpleListWrapper";
 
 export interface IUser {
     /**
@@ -48,8 +48,8 @@ export interface IUser {
 }
 export interface UserServer extends IUser {
     locale?: string;
-    groups?: SimpleListWrapper;
-    applicationRoles?: SimpleListWrapper;
+    groups?: ISimpleListWrapper;
+    applicationRoles?: ISimpleListWrapper;
     expand?: string;
     deleted?: boolean;
 }

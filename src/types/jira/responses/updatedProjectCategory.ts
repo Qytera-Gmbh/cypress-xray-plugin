@@ -1,7 +1,7 @@
 /**
  * The project an item has scope in.
  */
-export type UpdatedProjectCategory = {
+export interface IUpdatedProjectCategory {
     /**
      * The name of the project category.
      */
@@ -18,4 +18,4 @@ export type UpdatedProjectCategory = {
      * The URL of the project category.
      */
     self?: string;
-};
+}

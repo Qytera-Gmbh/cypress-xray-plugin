@@ -1,6 +1,6 @@
-import { ChangeHistoryCloud, ChangeHistoryServer } from "./changeHistory";
+import { IChangeHistory } from "./changeHistory";
 
-type Changelog<ChangeHistoryType> = {
+export interface IChangelog {
     /**
      * The index of the first item returned on the page.
      */
@@ -16,7 +16,5 @@ type Changelog<ChangeHistoryType> = {
     /**
      * The list of changelogs.
      */
-    histories?: ChangeHistoryType[];
-};
-export type ChangelogServer = Changelog<ChangeHistoryServer>;
-export type ChangelogCloud = Changelog<ChangeHistoryCloud>;
+    histories?: IChangeHistory[];
+}
