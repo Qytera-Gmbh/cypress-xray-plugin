@@ -4,7 +4,7 @@ import fs from "fs";
 import { HttpHeader, IHttpCredentials } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
 import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
-import { SearchRequestCloud, SearchRequestServer } from "../../types/jira/requests/search";
+import { ISearchRequest } from "../../types/jira/requests/search";
 import { IAttachment } from "../../types/jira/responses/attachment";
 import { IFieldDetail } from "../../types/jira/responses/fieldDetail";
 import { IIssue } from "../../types/jira/responses/issue";
@@ -59,7 +59,7 @@ export interface IJiraClient {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
      */
-    search(request: SearchRequestServer | SearchRequestCloud): Promise<IIssue[] | undefined>;
+    search(request: ISearchRequest): Promise<IIssue[] | undefined>;
     /**
      * Edits an issue. A transition may be applied and issue properties updated as part of the edit.
      * The edits to the issue's fields are defined using `update` and `fields`.
@@ -240,9 +240,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
      */
     public abstract getUrlGetFields(): string;
 
-    public async search(
-        request: SearchRequestServer | SearchRequestCloud
-    ): Promise<IIssue[] | undefined> {
+    public async search(request: ISearchRequest): Promise<IIssue[] | undefined> {
         try {
             return await this.credentials
                 .getAuthenticationHeader()

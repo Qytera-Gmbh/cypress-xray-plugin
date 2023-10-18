@@ -3,7 +3,7 @@
  * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
  * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
  */
-type SearchRequest = {
+export interface ISearchRequest {
     /**
      * A JQL expression.
      */
@@ -27,8 +27,8 @@ type SearchRequest = {
      * The default is `*navigable`.
      */
     fields?: string[];
-};
-export type SearchRequestServer = SearchRequest & {
+}
+export interface SearchRequestServer extends ISearchRequest {
     /**
      * Determines how to validate the JQL query and treat the validation results. Supported values:
      * - `true` returns a 400 response code if any errors are found, along with a list of all
@@ -38,8 +38,8 @@ export type SearchRequestServer = SearchRequest & {
      * The default is `true`.
      */
     validateQuery?: boolean;
-};
-export type SearchRequestCloud = SearchRequest & {
+}
+export interface SearchRequestCloud extends ISearchRequest {
     /**
      * Use expand to include additional information about issues in the response. Note that, unlike
      * the majority of instances where `expand` is specified, `expand` is defined as a list of
@@ -76,4 +76,4 @@ export type SearchRequestCloud = SearchRequest & {
      * The default is `strict`.
      */
     validateQuery?: "strict" | "warn" | "none";
-};
+}
