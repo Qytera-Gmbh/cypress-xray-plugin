@@ -18,20 +18,29 @@ import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
 import { normalizedFilename } from "../../util/files";
 import { truncateISOTime } from "../../util/time";
-import { Converter } from "../converter";
-import { TestIssueData } from "./importExecutionConverter";
 import { ITestRunData, getTestRunData_V12, getTestRunData_V13 } from "./runConversion";
 import { getXrayStatus } from "./statusConversion";
 
-export class TestConverter extends Converter<
-    CypressRunResult_V12 | CypressRunResult_V13,
-    [IXrayTest, ...IXrayTest[]],
-    TestIssueData
-> {
+export class TestConverter {
+    /**
+     * The configured plugin options.
+     */
+    private readonly options: InternalOptions;
+    /**
+     * Whether the converter is a cloud converter.
+     */
     private readonly isCloudConverter: boolean;
 
-    constructor(isCloudConverter: boolean, options: InternalOptions) {
-        super(options);
+    /**
+     * Construct a new converter with access to the provided options. The cloud converter flag is
+     * used to deduce the output format. When set to `true`, Xray cloud JSONs will be created, if
+     * set to `false`, the format will be Xray server JSON.
+     *
+     * @param options - the options
+     * @param isCloudConverter - whether Xray cloud JSONs should be created
+     */
+    constructor(options: InternalOptions, isCloudConverter: boolean) {
+        this.options = options;
         this.isCloudConverter = isCloudConverter;
     }
 

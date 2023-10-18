@@ -43,7 +43,7 @@ describe("the test converter", () => {
         const result: CypressRunResult_V13 = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0_manualScreenshot.json", "utf-8")
         );
-        const converter = new TestConverter(false, options);
+        const converter = new TestConverter(options, false);
         const { stubbedWarning } = stubLogging();
         const json = await converter.convert(result);
         expect(stubbedWarning).to.have.been.calledOnceWithExactly(
@@ -78,7 +78,7 @@ describe("the test converter", () => {
             },
             { featureFileExtension: ".feature" }
         );
-        const converter = new TestConverter(true, options);
+        const converter = new TestConverter(options, true);
         await expect(converter.convert(result)).to.eventually.be.rejectedWith(
             "Failed to extract test run data: Only Cucumber tests were executed"
         );
@@ -99,7 +99,7 @@ describe("the test converter", () => {
             },
             { featureFileExtension: ".ts" }
         );
-        const converter = new TestConverter(false, options);
+        const converter = new TestConverter(options, false);
         await expect(converter.convert(result)).to.eventually.be.rejectedWith(
             "Failed to extract test run data: Only Cucumber tests were executed"
         );
@@ -109,7 +109,7 @@ describe("the test converter", () => {
         const result: CypressRunResult_V12 = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const converter = new TestConverter(false, options);
+        const converter = new TestConverter(options, false);
         const json = await converter.convert(result);
         expect(json).to.deep.eq([
             {
@@ -143,7 +143,7 @@ describe("the test converter", () => {
         const result: CypressRunResult_V13 = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
         );
-        const converter = new TestConverter(false, options);
+        const converter = new TestConverter(options, false);
         const json = await converter.convert(result);
         expect(json).to.deep.eq([
             {
@@ -189,7 +189,7 @@ describe("the test converter", () => {
         const result: CypressRunResult_V12 = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const converter = new TestConverter(true, options);
+        const converter = new TestConverter(options, true);
         const json = await converter.convert(result);
         expect(json).to.deep.eq([
             {
@@ -223,7 +223,7 @@ describe("the test converter", () => {
         const result: CypressRunResult_V13 = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
         );
-        const converter = new TestConverter(true, options);
+        const converter = new TestConverter(options, true);
         const json = await converter.convert(result);
         expect(json).to.deep.eq([
             {

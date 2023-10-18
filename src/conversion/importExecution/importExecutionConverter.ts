@@ -5,7 +5,6 @@ import { StringMap } from "../../types/util";
 import { IXrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { dedent } from "../../util/dedent";
 import { truncateISOTime } from "../../util/time";
-import { Converter } from "../converter";
 import { TestConverter } from "./testConverter";
 
 export type TestIssueData = {
@@ -15,11 +14,11 @@ export type TestIssueData = {
 
 type CypressRunResultType = CypressRunResult_V_12 | CypressRunResult_V_13;
 
-export class ImportExecutionConverter extends Converter<
-    CypressRunResultType,
-    IXrayTestExecutionResults,
-    never
-> {
+export class ImportExecutionConverter {
+    /**
+     * The configured plugin options.
+     */
+    protected readonly options: InternalOptions;
     /**
      * Whether the converter is a cloud converter. Useful for automatically deducing which test
      * converters to use.
@@ -36,12 +35,12 @@ export class ImportExecutionConverter extends Converter<
      * @param isCloudConverter - whether Xray cloud JSONs should be created
      */
     constructor(options: InternalOptions, isCloudConverter: boolean) {
-        super(options);
+        this.options = options;
         this.isCloudConverter = isCloudConverter;
     }
 
     public async convert(results: CypressRunResultType): Promise<IXrayTestExecutionResults> {
-        const testConverter: TestConverter = new TestConverter(this.isCloudConverter, this.options);
+        const testConverter: TestConverter = new TestConverter(this.options, this.isCloudConverter);
         return {
             testExecutionKey: this.options.jira.testExecutionIssueKey,
             info: {

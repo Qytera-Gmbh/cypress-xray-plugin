@@ -5,7 +5,6 @@ import {
     CucumberMultipartFeature,
     ICucumberMultipart,
 } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { Converter } from "../converter";
 import { getMultipartFeatures } from "./multipartFeatureConversion";
 import {
     TestExecutionIssueData,
@@ -21,16 +20,19 @@ import {
  */
 export type ConversionParameters = Omit<CypressCommandLine.CypressRunResult, "runs" | "config">;
 
-export class ImportExecutionCucumberMultipartConverter extends Converter<
-    CucumberMultipartFeature[],
-    ICucumberMultipart,
-    ConversionParameters
-> {
+export class ImportExecutionCucumberMultipartConverter {
+    /**
+     * The configured plugin options.
+     */
+    private readonly options: InternalOptions;
     /**
      * Whether the converter is a cloud converter. Useful for automatically deducing which test
      * converters to use.
      */
     private readonly isCloudConverter: boolean;
+    /**
+     * The Jira repository for fetching issue data.
+     */
     private readonly jiraRepository: JiraRepository;
 
     /**
@@ -47,7 +49,7 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
         isCloudConverter: boolean,
         jiraRepository: JiraRepository
     ) {
-        super(options);
+        this.options = options;
         this.isCloudConverter = isCloudConverter;
         this.jiraRepository = jiraRepository;
     }

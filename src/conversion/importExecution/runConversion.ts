@@ -102,8 +102,8 @@ export function getTestRunData_V12(runResult: RunResult_V12): Promise<ITestRunDa
 }
 
 /**
- * Converts a Cypress v13 (and above) run result into several {@link ITestRunData} objects. The
- * project key is required for mapping screenshots to test cases.
+ * Converts a Cypress v13 (and above) run result into several {@link ITestRunData | `ITestRunData`}
+ * objects. The project key is required for mapping screenshots to test cases.
  *
  * The function returns an array of promises because the conversion of the test results contained
  * within the run can fail for individual tests. This makes sure that a single failing conversion
