@@ -16,16 +16,15 @@ import { startInterval } from "../util/time";
  */
 export type HTTPHeader = StringMap<string>;
 
-export abstract class APICredentials {
-    public abstract getAuthenticationHeader(): Promise<HTTPHeader>;
+export interface APICredentials {
+    getAuthenticationHeader(): Promise<HTTPHeader>;
 }
 
-export class BasicAuthCredentials extends APICredentials {
+export class BasicAuthCredentials implements APICredentials {
     private readonly username: string;
     private readonly password: string;
 
     constructor(username: string, password: string) {
-        super();
         this.username = username;
         this.password = password;
     }
@@ -41,11 +40,10 @@ export class BasicAuthCredentials extends APICredentials {
     }
 }
 
-export class PATCredentials extends APICredentials {
+export class PATCredentials implements APICredentials {
     private readonly token: string;
 
     constructor(token: string) {
-        super();
         this.token = token;
     }
 
@@ -61,7 +59,7 @@ export interface JWTCredentialsOptions {
     authenticationURL: string;
 }
 
-export class JWTCredentials extends APICredentials {
+export class JWTCredentials implements APICredentials {
     private readonly clientId: string;
     private readonly clientSecret: string;
     private readonly authenticationUrl: string;
@@ -69,7 +67,6 @@ export class JWTCredentials extends APICredentials {
     private token?: string;
 
     constructor(clientId: string, clientSecret: string, authenticationUrl: string) {
-        super();
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.authenticationUrl = authenticationUrl;
