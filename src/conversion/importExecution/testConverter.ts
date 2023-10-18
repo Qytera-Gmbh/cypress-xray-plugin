@@ -11,38 +11,42 @@ import {
     RunResult as RunResult_V13,
     ScreenshotInformation as ScreenshotInformation_V13,
 } from "../../types/cypress/13.0.0/api";
-import {
-    XrayEvidenceItem,
-    XrayTestCloud,
-    XrayTestServer,
-} from "../../types/xray/importTestExecutionResults";
+import { InternalOptions } from "../../types/plugin";
+import { IXrayTest, XrayEvidenceItem } from "../../types/xray/importTestExecutionResults";
 import { encodeFile } from "../../util/base64";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
 import { normalizedFilename } from "../../util/files";
+import { truncateISOTime } from "../../util/time";
 import { Converter } from "../converter";
 import { TestIssueData } from "./importExecutionConverter";
 import { ITestRunData, getTestRunData_V12, getTestRunData_V13 } from "./runConversion";
+import { getXrayStatus } from "./statusConversion";
 
-export abstract class TestConverter<
-    XrayTestType extends XrayTestServer | XrayTestCloud
-> extends Converter<
+export class TestConverter extends Converter<
     CypressRunResult_V12 | CypressRunResult_V13,
-    [XrayTestType, ...XrayTestType[]],
+    [IXrayTest, ...IXrayTest[]],
     TestIssueData
 > {
+    private readonly isCloudConverter: boolean;
+
+    constructor(isCloudConverter: boolean, options: InternalOptions) {
+        super(options);
+        this.isCloudConverter = isCloudConverter;
+    }
+
     public async convert(
         runResults: CypressRunResult_V12 | CypressRunResult_V13
-    ): Promise<[XrayTestType, ...XrayTestType[]]> {
+    ): Promise<[IXrayTest, ...IXrayTest[]]> {
         const testRunData = await this.getTestRunData(runResults);
-        const xrayTests: XrayTestType[] = [];
+        const xrayTests: IXrayTest[] = [];
         testRunData.forEach((testData: ITestRunData) => {
             try {
                 const issueKey = getNativeTestIssueKey(
                     testData.title,
                     this.options.jira.projectKey
                 );
-                const test: XrayTestType = this.getTest(
+                const test: IXrayTest = this.getTest(
                     testData,
                     issueKey,
                     this.getXrayEvidence(testData)
@@ -65,12 +69,6 @@ export abstract class TestConverter<
         }
         return [xrayTests[0], ...xrayTests.slice(1)];
     }
-
-    protected abstract getTest(
-        test: ITestRunData,
-        issueKey: string,
-        evidence: XrayEvidenceItem[]
-    ): XrayTestType;
 
     private async getTestRunData(
         runResults: CypressRunResult_V12 | CypressRunResult_V13
@@ -154,6 +152,22 @@ export abstract class TestConverter<
             }
         }
         return testRunData;
+    }
+
+    private getTest(test: ITestRunData, issueKey: string, evidence: XrayEvidenceItem[]): IXrayTest {
+        // TODO: Support multiple iterations.
+        const xrayTest: IXrayTest = {
+            testKey: issueKey,
+            start: truncateISOTime(test.startedAt.toISOString()),
+            finish: truncateISOTime(
+                new Date(test.startedAt.getTime() + test.duration).toISOString()
+            ),
+            status: getXrayStatus(test.status, this.isCloudConverter, this.options.xray.status),
+        };
+        if (evidence.length > 0) {
+            xrayTest.evidence = evidence;
+        }
+        return xrayTest;
     }
 
     private getXrayEvidence(testRunData: ITestRunData): XrayEvidenceItem[] {

@@ -2,17 +2,11 @@ import { CypressRunResult as CypressRunResult_V_12 } from "../../types/cypress/1
 import { CypressRunResult as CypressRunResult_V_13 } from "../../types/cypress/13.0.0/api";
 import { InternalOptions } from "../../types/plugin";
 import { StringMap } from "../../types/util";
-import {
-    XrayTestCloud,
-    XrayTestExecutionResults,
-    XrayTestServer,
-} from "../../types/xray/importTestExecutionResults";
+import { IXrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { dedent } from "../../util/dedent";
 import { truncateISOTime } from "../../util/time";
 import { Converter } from "../converter";
 import { TestConverter } from "./testConverter";
-import { TestConverterCloud } from "./testConverterCloud";
-import { TestConverterServer } from "./testConverterServer";
 
 export type TestIssueData = {
     summaries: StringMap<string>;
@@ -20,11 +14,10 @@ export type TestIssueData = {
 };
 
 type CypressRunResultType = CypressRunResult_V_12 | CypressRunResult_V_13;
-type XrayTestType = XrayTestServer | XrayTestCloud;
 
 export class ImportExecutionConverter extends Converter<
     CypressRunResultType,
-    XrayTestExecutionResults<XrayTestType>,
+    IXrayTestExecutionResults,
     never
 > {
     /**
@@ -47,15 +40,8 @@ export class ImportExecutionConverter extends Converter<
         this.isCloudConverter = isCloudConverter;
     }
 
-    public async convert(
-        results: CypressRunResultType
-    ): Promise<XrayTestExecutionResults<XrayTestType>> {
-        let testConverter: TestConverter<XrayTestType>;
-        if (this.isCloudConverter) {
-            testConverter = new TestConverterCloud(this.options);
-        } else {
-            testConverter = new TestConverterServer(this.options);
-        }
+    public async convert(results: CypressRunResultType): Promise<IXrayTestExecutionResults> {
+        const testConverter: TestConverter = new TestConverter(this.isCloudConverter, this.options);
         return {
             testExecutionKey: this.options.jira.testExecutionIssueKey,
             info: {

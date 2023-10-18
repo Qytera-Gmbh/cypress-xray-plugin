@@ -8,11 +8,7 @@ import {
 } from "../../authentication/credentials";
 import { RequestConfigPost, Requests } from "../../https/requests";
 import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
-import {
-    XrayTestCloud,
-    XrayTestExecutionResults,
-    XrayTestServer,
-} from "../../types/xray/importTestExecutionResults";
+import { IXrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
@@ -35,9 +31,7 @@ export interface IXrayClient {
      * in case of errors
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
-    importExecution<R extends XrayTestExecutionResults<XrayTestServer | XrayTestCloud>>(
-        execution: R
-    ): Promise<string | null | undefined>;
+    importExecution(execution: IXrayTestExecutionResults): Promise<string | null | undefined>;
     /**
      * Downloads feature (file) specifications from corresponding Xray issues.
      *
@@ -97,9 +91,9 @@ export abstract class XrayClient extends Client implements IXrayClient {
         super(apiBaseUrl, credentials);
     }
 
-    public async importExecution<
-        R extends XrayTestExecutionResults<XrayTestServer | XrayTestCloud>
-    >(execution: R): Promise<string | null | undefined> {
+    public async importExecution(
+        execution: IXrayTestExecutionResults
+    ): Promise<string | null | undefined> {
         try {
             if (!execution.tests || execution.tests.length === 0) {
                 logWarning("No native Cypress tests were executed. Skipping native upload.");
