@@ -39,7 +39,7 @@ export class XrayClientCloud extends XrayClient {
     }
 
     public getUrlImportExecution(): string {
-        return `${this.apiBaseURL}/import/execution`;
+        return `${this.apiBaseUrl}/import/execution`;
     }
 
     public handleResponseImportExecution(response: ImportExecutionResponseCloud): string {
@@ -57,7 +57,7 @@ export class XrayClientCloud extends XrayClient {
         if (query.length === 0) {
             throw new Error("One of issueKeys or filter must be provided to export feature files");
         }
-        return `${this.apiBaseURL}/export/cucumber?${query.join("&")}`;
+        return `${this.apiBaseUrl}/export/cucumber?${query.join("&")}`;
     }
 
     public getUrlImportFeature(projectKey?: string, projectId?: string): string {
@@ -68,7 +68,7 @@ export class XrayClientCloud extends XrayClient {
         if (projectId) {
             query.push(`projectId=${projectId}`);
         }
-        return `${this.apiBaseURL}/import/feature?${query.join("&")}`;
+        return `${this.apiBaseUrl}/import/feature?${query.join("&")}`;
     }
 
     public handleResponseImportFeature(response: ImportFeatureResponseCloud): void {
@@ -110,7 +110,7 @@ export class XrayClientCloud extends XrayClient {
             }
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logDebug("Retrieving test types...");
-            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const types: StringMap<string> = {};
                 let total = 0;
@@ -205,7 +205,7 @@ export class XrayClientCloud extends XrayClient {
         });
         const authenticationHeader = await this.credentials.getAuthenticationHeader();
         return {
-            url: `${this.apiBaseURL}/import/execution/cucumber/multipart`,
+            url: `${this.apiBaseUrl}/import/execution/cucumber/multipart`,
             data: formData,
             config: {
                 headers: {

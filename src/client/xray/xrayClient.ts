@@ -107,7 +107,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
             }
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logDebug("Importing execution...");
-            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<
                     ImportExecutionResponseServer | ImportExecutionResponseCloud
@@ -152,7 +152,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logDebug("Exporting Cucumber tests...");
-            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response = await Requests.get(this.getUrlExportCucumber(keys, filter), {
                     headers: {
@@ -195,7 +195,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logDebug("Importing Cucumber features...");
-            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const fileContent = fs.createReadStream(file);
                 const form = new FormData();
@@ -262,7 +262,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
                 cucumberJson,
                 cucumberInfo
             );
-            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<
                     ImportExecutionResponseServer | ImportExecutionResponseCloud

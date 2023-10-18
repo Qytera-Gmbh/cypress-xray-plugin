@@ -1,7 +1,7 @@
 import { AxiosResponse } from "axios";
 import FormData from "form-data";
 import fs from "fs";
-import { APICredentials, HTTPHeader } from "../../authentication/credentials";
+import { HttpHeader, IHttpCredentials } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
 import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { SearchRequestCloud, SearchRequestServer } from "../../types/jira/requests/search";
@@ -83,11 +83,11 @@ export abstract class JiraClient extends Client implements IJiraClient {
     /**
      * Construct a new Jira client using the provided credentials.
      *
-     * @param apiBaseURL - the Jira base endpoint
+     * @param apiBaseUrl - the Jira base endpoint
      * @param credentials - the credentials to use during authentication
      */
-    constructor(apiBaseURL: string, credentials: APICredentials) {
-        super(apiBaseURL, credentials);
+    constructor(apiBaseUrl: string, credentials: IHttpCredentials) {
+        super(apiBaseUrl, credentials);
     }
 
     public async addAttachment(
@@ -118,9 +118,9 @@ export abstract class JiraClient extends Client implements IJiraClient {
         try {
             return await this.credentials
                 .getAuthenticationHeader()
-                .then(async (header: HTTPHeader) => {
+                .then(async (header: HttpHeader) => {
                     logDebug("Attaching files:", ...files);
-                    const progressInterval = this.startResponseInterval(this.apiBaseURL);
+                    const progressInterval = this.startResponseInterval(this.apiBaseUrl);
                     try {
                         const response: AxiosResponse<IAttachment[]> = await Requests.post(
                             this.getUrlAddAttachment(issueIdOrKey),
@@ -164,7 +164,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logDebug("Getting issue types...");
-            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<IIssueTypeDetails[]> = await Requests.get(
                     this.getUrlGetIssueTypes(),
@@ -204,7 +204,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
         try {
             const authenticationHeader = await this.credentials.getAuthenticationHeader();
             logDebug("Getting fields...");
-            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<IFieldDetail[]> = await Requests.get(
                     this.getUrlGetFields(),
@@ -246,9 +246,9 @@ export abstract class JiraClient extends Client implements IJiraClient {
         try {
             return await this.credentials
                 .getAuthenticationHeader()
-                .then(async (header: HTTPHeader) => {
+                .then(async (header: HttpHeader) => {
                     logDebug("Searching issues...");
-                    const progressInterval = this.startResponseInterval(this.apiBaseURL);
+                    const progressInterval = this.startResponseInterval(this.apiBaseUrl);
                     try {
                         let total = 0;
                         let startAt = request.startAt ?? 0;
@@ -300,9 +300,9 @@ export abstract class JiraClient extends Client implements IJiraClient {
         issueUpdateData: IIssueUpdate
     ): Promise<string | undefined> {
         try {
-            await this.credentials.getAuthenticationHeader().then(async (header: HTTPHeader) => {
+            await this.credentials.getAuthenticationHeader().then(async (header: HttpHeader) => {
                 logDebug("Editing issue...");
-                const progressInterval = this.startResponseInterval(this.apiBaseURL);
+                const progressInterval = this.startResponseInterval(this.apiBaseUrl);
                 try {
                     await Requests.put(this.getUrlEditIssue(issueIdOrKey), issueUpdateData, {
                         headers: {

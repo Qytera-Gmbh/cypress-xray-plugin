@@ -35,7 +35,7 @@ export class XrayClientServer extends XrayClient {
     }
 
     public getUrlImportExecution(): string {
-        return `${this.apiBaseURL}/rest/raven/latest/import/execution`;
+        return `${this.apiBaseUrl}/rest/raven/latest/import/execution`;
     }
 
     public handleResponseImportExecution(response: ImportExecutionResponseServer): string {
@@ -55,11 +55,11 @@ export class XrayClientServer extends XrayClient {
         }
         // Always zip feature files, even single ones.
         query.push("fz=true");
-        return `${this.apiBaseURL}/rest/raven/latest/export/test?${query.join("&")}`;
+        return `${this.apiBaseUrl}/rest/raven/latest/export/test?${query.join("&")}`;
     }
 
     public getUrlImportFeature(projectKey: string): string {
-        return `${this.apiBaseURL}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
+        return `${this.apiBaseUrl}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
     }
 
     public handleResponseImportFeature(response: ImportFeatureResponseServer): void {
@@ -103,7 +103,7 @@ export class XrayClientServer extends XrayClient {
         });
         const authenticationHeader = await this.credentials.getAuthenticationHeader();
         return {
-            url: `${this.apiBaseURL}/rest/raven/latest/import/execution/cucumber/multipart`,
+            url: `${this.apiBaseUrl}/rest/raven/latest/import/execution/cucumber/multipart`,
             data: formData,
             config: {
                 headers: {

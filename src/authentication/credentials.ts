@@ -14,13 +14,13 @@ import { startInterval } from "../util/time";
  *   { "Content-Type": "application/json" }
  * ```
  */
-export type HTTPHeader = StringMap<string>;
+export type HttpHeader = StringMap<string>;
 
-export interface APICredentials {
-    getAuthenticationHeader(): Promise<HTTPHeader>;
+export interface IHttpCredentials {
+    getAuthenticationHeader(): Promise<HttpHeader>;
 }
 
-export class BasicAuthCredentials implements APICredentials {
+export class BasicAuthCredentials implements IHttpCredentials {
     private readonly username: string;
     private readonly password: string;
 
@@ -29,10 +29,10 @@ export class BasicAuthCredentials implements APICredentials {
         this.password = password;
     }
 
-    public getAuthenticationHeader(): Promise<HTTPHeader> {
+    public getAuthenticationHeader(): Promise<HttpHeader> {
         // See: https://developer.atlassian.com/server/jira/platform/basic-authentication/#construct-the-authorization-header
         const encodedString = encode(`${this.username}:${this.password}`);
-        return new Promise((resolve: (value: HTTPHeader) => void) =>
+        return new Promise((resolve: (value: HttpHeader) => void) =>
             resolve({
                 Authorization: `Basic ${encodedString}`,
             })
@@ -40,15 +40,15 @@ export class BasicAuthCredentials implements APICredentials {
     }
 }
 
-export class PATCredentials implements APICredentials {
+export class PATCredentials implements IHttpCredentials {
     private readonly token: string;
 
     constructor(token: string) {
         this.token = token;
     }
 
-    public getAuthenticationHeader(): Promise<HTTPHeader> {
-        return new Promise((resolve: (value: HTTPHeader) => void) =>
+    public getAuthenticationHeader(): Promise<HttpHeader> {
+        return new Promise((resolve: (value: HttpHeader) => void) =>
             resolve({
                 Authorization: `Bearer ${this.token}`,
             })
@@ -56,10 +56,10 @@ export class PATCredentials implements APICredentials {
     }
 }
 export interface JWTCredentialsOptions {
-    authenticationURL: string;
+    authenticationUrl: string;
 }
 
-export class JWTCredentials implements APICredentials {
+export class JWTCredentials implements IHttpCredentials {
     private readonly clientId: string;
     private readonly clientSecret: string;
     private readonly authenticationUrl: string;
@@ -126,7 +126,7 @@ export class JWTCredentials implements APICredentials {
         return this.token;
     }
 
-    public async getAuthenticationHeader(): Promise<HTTPHeader> {
+    public async getAuthenticationHeader(): Promise<HttpHeader> {
         return {
             Authorization: `Bearer ${await this.getToken()}`,
         };
