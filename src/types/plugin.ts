@@ -1,8 +1,6 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
-import { JiraClientCloud } from "../client/jira/jiraClientCloud";
-import { JiraClientServer } from "../client/jira/jiraClientServer";
-import { XrayClientCloud } from "../client/xray/xrayClientCloud";
-import { XrayClientServer } from "../client/xray/xrayClientServer";
+import { JiraClient } from "../client/jira/jiraClient";
+import { XrayClient } from "../client/xray/xrayClient";
 import { JiraRepository } from "../repository/jira/jiraRepository";
 import { IIssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
@@ -345,30 +343,23 @@ export type InternalOpenSSLOptions = OpenSSLOptions;
 /**
  * Options only intended for internal plugin use.
  */
-export type InternalOptions = {
+export interface InternalOptions {
     jira: InternalJiraOptions;
     plugin: InternalPluginOptions;
     xray: InternalXrayOptions;
     cucumber?: InternalCucumberOptions;
     openSSL: InternalOpenSSLOptions;
-};
+}
 
 /**
  * Type describing the possible client combinations.
  */
-export type ClientCombination =
-    | {
-          kind: "server";
-          jiraClient: JiraClientServer;
-          xrayClient: XrayClientServer;
-          jiraRepository: JiraRepository;
-      }
-    | {
-          kind: "cloud";
-          jiraClient: JiraClientCloud;
-          xrayClient: XrayClientCloud;
-          jiraRepository: JiraRepository;
-      };
+export interface ClientCombination {
+    kind: "server" | "cloud";
+    jiraClient: JiraClient;
+    xrayClient: XrayClient;
+    jiraRepository: JiraRepository;
+}
 
 export interface PluginContext {
     cypress: Cypress.PluginConfigOptions;
