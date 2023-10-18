@@ -4,7 +4,11 @@ import { JiraClient } from "./jiraClient";
 /**
  * A Jira client class for communicating with Jira Cloud instances.
  */
-export class JiraClientCloud extends JiraClient<BasicAuthCredentials> {
+export class JiraClientCloud extends JiraClient {
+    constructor(apiBaseURL: string, credentials: BasicAuthCredentials) {
+        super(apiBaseURL, credentials);
+    }
+
     public getUrlAddAttachment(issueIdOrKey: string): string {
         return `${this.apiBaseURL}/rest/api/3/issue/${issueIdOrKey}/attachments`;
     }

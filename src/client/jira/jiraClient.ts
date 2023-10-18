@@ -1,7 +1,7 @@
 import { AxiosResponse } from "axios";
 import FormData from "form-data";
 import fs from "fs";
-import { BasicAuthCredentials, HTTPHeader, PATCredentials } from "../../authentication/credentials";
+import { APICredentials, HTTPHeader } from "../../authentication/credentials";
 import { Requests } from "../../https/requests";
 import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { SearchRequestCloud, SearchRequestServer } from "../../types/jira/requests/search";
@@ -79,17 +79,14 @@ export interface IJiraClient {
 /**
  * A Jira client class for communicating with Jira instances.
  */
-export abstract class JiraClient<CredentialsType extends BasicAuthCredentials | PATCredentials>
-    extends Client<CredentialsType>
-    implements IJiraClient
-{
+export abstract class JiraClient extends Client implements IJiraClient {
     /**
      * Construct a new Jira client using the provided credentials.
      *
      * @param apiBaseURL - the Jira base endpoint
      * @param credentials - the credentials to use during authentication
      */
-    constructor(apiBaseURL: string, credentials: CredentialsType) {
+    constructor(apiBaseURL: string, credentials: APICredentials) {
         super(apiBaseURL, credentials);
     }
 

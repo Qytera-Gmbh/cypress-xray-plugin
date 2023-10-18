@@ -97,7 +97,7 @@ after(async () => {
     }
 });
 
-export class DummyXrayClient extends XrayClient<PATCredentials> {
+export class DummyXrayClient extends XrayClient {
     constructor() {
         super("https://example.org", new PATCredentials("token"));
     }
@@ -127,7 +127,7 @@ export class DummyXrayClient extends XrayClient<PATCredentials> {
     }
 }
 
-export class DummyJiraClient extends JiraClient<PATCredentials> {
+export class DummyJiraClient extends JiraClient {
     constructor() {
         super("https://example.org", new PATCredentials("token"));
     }

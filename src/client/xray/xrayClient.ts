@@ -83,19 +83,17 @@ export interface IXrayClient {
 /**
  * An abstract Xray client class for communicating with Xray instances.
  */
-export abstract class XrayClient<
-        CredentialsType extends BasicAuthCredentials | PATCredentials | JWTCredentials
-    >
-    extends Client<CredentialsType>
-    implements IXrayClient
-{
+export abstract class XrayClient extends Client implements IXrayClient {
     /**
      * Construct a new client using the provided credentials.
      *
      * @param apiBaseUrl - the base URL for all HTTP requests
      * @param credentials - the credentials to use during authentication
      */
-    constructor(apiBaseUrl: string, credentials: CredentialsType) {
+    constructor(
+        apiBaseUrl: string,
+        credentials: BasicAuthCredentials | PATCredentials | JWTCredentials
+    ) {
         super(apiBaseUrl, credentials);
     }
 

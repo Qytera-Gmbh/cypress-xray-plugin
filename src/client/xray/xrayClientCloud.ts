@@ -15,7 +15,7 @@ type GetTestsJiraData = {
     key: string;
 };
 
-export class XrayClientCloud extends XrayClient<JWTCredentials> {
+export class XrayClientCloud extends XrayClient {
     /**
      * The URLs of Xray's Cloud API.
      * Note: API v1 would also work, but let's stick to the more recent one.
