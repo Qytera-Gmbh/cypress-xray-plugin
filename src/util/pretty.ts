@@ -25,7 +25,7 @@ import { StringMap } from "../types/util";
  * @param objects - the objects to pretty pad
  * @returns the pretty padded objects
  */
-export function prettyPadObjects(objects: StringMap<unknown>[]): StringMap<string>[] {
+export function prettyPadObjects(objects: object[]): StringMap<string>[] {
     const maxPropertyLengths: StringMap<number> = {};
     for (let i = 0; i < objects.length; i++) {
         Object.entries(objects[i]).forEach((entry) => {
@@ -48,10 +48,21 @@ export function prettyPadObjects(objects: StringMap<unknown>[]): StringMap<strin
  * Pads the values of an object such that all values are mapped to strings of equal length. For
  * stringification, {@link JSON.stringify | `JSON.stringify`} is used.
  *
+ * @example
+ * ```ts
+ * const a = {
+ *   x: "hello",
+ *   y: "bonjour"
+ *   z: 123
+ * };
+ * console.log(JSON.stringify(prettyPadValues(a));
+ * // '{"x":"hello  ","y":"bonjour","z":"123    "}'
+ * ```
+ *
  * @param value - the object
  * @returns the pretty padded object
  */
-export function prettyPadValues(value: StringMap<unknown>): StringMap<string> {
+export function prettyPadValues(value: object): StringMap<string> {
     let maxPropertyLength: number = 0;
     Object.entries(value).forEach((entry) => {
         const valueLength = JSON.stringify(entry[1]).length;
