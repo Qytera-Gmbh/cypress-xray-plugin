@@ -11,7 +11,7 @@ import {
     containsNativeTest,
     getCucumberIssueData,
 } from "./preprocessing/preprocessing";
-import { SupportedField } from "./repository/jira/fields/fetching";
+import { SupportedFields } from "./repository/jira/fields/jiraIssueFetcher";
 import { IJiraRepository, JiraRepository } from "./repository/jira/jiraRepository";
 import { IIssueTypeDetails } from "./types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalOptions } from "./types/plugin";
@@ -318,7 +318,7 @@ async function resetSummaries(
         }
         if (oldSummary !== newSummary) {
             const summaryFieldId = await jiraRepository.getFieldId(
-                SupportedField.SUMMARY,
+                SupportedFields.SUMMARY,
                 "summary"
             );
             const fields: StringMap<string> = {};
@@ -373,7 +373,7 @@ async function resetLabels(
             continue;
         }
         if (!newLabels.every((label) => oldLabels.includes(label))) {
-            const labelFieldId = await jiraRepository.getFieldId(SupportedField.LABELS, "labels");
+            const labelFieldId = await jiraRepository.getFieldId(SupportedFields.LABELS);
             const fields: StringMap<string[]> = {};
             fields[labelFieldId] = oldLabels;
             logDebug(

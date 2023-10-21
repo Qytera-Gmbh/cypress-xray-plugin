@@ -6,14 +6,14 @@ import { initJiraOptions } from "../../context";
 import { InternalJiraOptions } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
-import { IJiraFieldFetcher, JiraFieldFetcher } from "./fields/jiraFieldFetcher";
 import { IJiraFieldRepository, JiraFieldRepository } from "./fields/jiraFieldRepository";
+import { IJiraIssueFetcher, JiraIssueFetcher } from "./fields/jiraIssueFetcher";
 import { IJiraRepository, JiraRepository } from "./jiraRepository";
 
 describe("the cloud issue repository", () => {
     let jiraOptions: InternalJiraOptions;
     let jiraFieldRepository: IJiraFieldRepository;
-    let jiraFieldFetcher: IJiraFieldFetcher;
+    let jiraFieldFetcher: IJiraIssueFetcher;
     let repository: IJiraRepository;
 
     beforeEach(() => {
@@ -29,7 +29,7 @@ describe("the cloud issue repository", () => {
             new BasicAuthCredentials("user", "xyz")
         );
         jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
-        jiraFieldFetcher = new JiraFieldFetcher(
+        jiraFieldFetcher = new JiraIssueFetcher(
             jiraClient,
             jiraFieldRepository,
             jiraOptions.fields
@@ -39,7 +39,7 @@ describe("the cloud issue repository", () => {
 
     describe("getSummaries", () => {
         it("fetches summaries", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Mock called unexpectedly");
                 },
@@ -72,7 +72,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("fetches summaries only for unknown issues", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Mock called unexpectedly");
                 },
@@ -111,7 +111,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("displays an error for issues which do not exist", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Mock called unexpectedly");
                 },
@@ -150,7 +150,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("handles get field failures gracefully", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Mock called unexpectedly");
                 },
@@ -179,7 +179,7 @@ describe("the cloud issue repository", () => {
 
     describe("getDescriptions", () => {
         it("fetches descriptions", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: async (...issueKeys: []): Promise<StringMap<string>> => {
                     if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
                         return {
@@ -210,7 +210,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("fetches descriptions only for unknown issues", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: async (...issueKeys: []): Promise<StringMap<string>> => {
                     if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
                         return {
@@ -247,7 +247,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("displays an error for issues which do not exist", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: async (): Promise<StringMap<string>> => {
                     return {
                         "CYP-123": "I am a description",
@@ -281,7 +281,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("handles get field failures gracefully", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Expected error");
                 },
@@ -310,7 +310,7 @@ describe("the cloud issue repository", () => {
 
     describe("getTestTypes", () => {
         it("fetches test types", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Mock called unexpectedly");
                 },
@@ -338,7 +338,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("fetches test types only for unknown issues", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Mock called unexpectedly");
                 },
@@ -375,7 +375,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("displays an error for issues which do not exist", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Mock called unexpectedly");
                 },
@@ -410,7 +410,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("handles failed test type requests gracefully", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Mock called unexpectedly");
                 },
@@ -439,7 +439,7 @@ describe("the cloud issue repository", () => {
 
     describe("getLabels", () => {
         it("fetches labels", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Mock called unexpectedly");
                 },
@@ -470,7 +470,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("fetches labels only for unknown issues", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Mock called unexpectedly");
                 },
@@ -507,7 +507,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("displays an error for issues which do not exist", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Mock called unexpectedly");
                 },
@@ -544,7 +544,7 @@ describe("the cloud issue repository", () => {
         });
 
         it("handles get field failures gracefully", async () => {
-            const mockedFieldFetcher: IJiraFieldFetcher = {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
                 fetchDescriptions: () => {
                     throw new Error("Mock called unexpectedly");
                 },

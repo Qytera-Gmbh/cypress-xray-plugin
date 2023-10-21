@@ -15,8 +15,8 @@ import {
     initXrayOptions,
 } from "./context";
 import { beforeRunHook, synchronizeFile } from "./hooks";
-import { JiraFieldFetcher } from "./repository/jira/fields/jiraFieldFetcher";
 import { JiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
+import { JiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
 import { JiraRepository } from "./repository/jira/jiraRepository";
 import { ClientCombination, InternalOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
@@ -53,7 +53,7 @@ describe("the hooks", () => {
             jiraClient
         );
         const jiraFieldRepository = new JiraFieldRepository(jiraClient, options.jira);
-        const jiraFieldFetcher = new JiraFieldFetcher(
+        const jiraFieldFetcher = new JiraIssueFetcher(
             jiraClient,
             jiraFieldRepository,
             options.jira.fields

@@ -3,12 +3,11 @@ import { InternalJiraOptions, JiraFieldIds } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
-import { SupportedField, getFieldId } from "./fields/fetching";
-import { IJiraFieldFetcher } from "./fields/jiraFieldFetcher";
 import { IJiraFieldRepository } from "./fields/jiraFieldRepository";
+import { IJiraIssueFetcher, SupportedFields } from "./fields/jiraIssueFetcher";
 
 export interface IJiraRepository {
-    getFieldId(fieldName: SupportedField, optionName: keyof JiraFieldIds): Promise<string>;
+    getFieldId(fieldName: SupportedFields, optionName: keyof JiraFieldIds): Promise<string>;
     getSummaries(...issueKeys: string[]): Promise<StringMap<string>>;
     getDescriptions(...issueKeys: string[]): Promise<StringMap<string>>;
     getTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;
@@ -17,7 +16,7 @@ export interface IJiraRepository {
 
 export class JiraRepository implements IJiraRepository {
     protected readonly jiraFieldRepository: IJiraFieldRepository;
-    protected readonly jiraFieldFetcher: IJiraFieldFetcher;
+    protected readonly jiraFieldFetcher: IJiraIssueFetcher;
     protected readonly jiraOptions: InternalJiraOptions;
 
     private readonly summaries: StringMap<string> = {};
@@ -27,7 +26,7 @@ export class JiraRepository implements IJiraRepository {
 
     constructor(
         jiraFieldRepository: IJiraFieldRepository,
-        jiraFieldFetcher: IJiraFieldFetcher,
+        jiraFieldFetcher: IJiraIssueFetcher,
         jiraOptions: InternalJiraOptions
     ) {
         this.jiraFieldRepository = jiraFieldRepository;
@@ -35,11 +34,8 @@ export class JiraRepository implements IJiraRepository {
         this.jiraOptions = jiraOptions;
     }
 
-    public async getFieldId(
-        fieldName: SupportedField,
-        optionName: keyof JiraFieldIds
-    ): Promise<string> {
-        return getFieldId(this.jiraFieldRepository, fieldName, optionName);
+    public async getFieldId(fieldName: SupportedFields): Promise<string> {
+        return this.jiraFieldRepository.getFieldId(fieldName);
     }
 
     public async getSummaries(...issueKeys: string[]): Promise<StringMap<string>> {

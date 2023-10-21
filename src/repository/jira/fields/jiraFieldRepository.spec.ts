@@ -4,9 +4,10 @@ import { stub } from "sinon";
 import { BasicAuthCredentials } from "../../../authentication/credentials";
 import { JiraClientServer } from "../../../client/jira/jiraClientServer";
 import { initJiraOptions } from "../../../context";
-import { IFieldDetail } from "../../../types/jira/responses/fieldDetail";
 import { InternalJiraOptions } from "../../../types/plugin";
+import { dedent } from "../../../util/dedent";
 import { JiraFieldRepository } from "./jiraFieldRepository";
+import { SupportedFields } from "./jiraIssueFetcher";
 
 chai.use(chaiAsPromised);
 
@@ -34,7 +35,7 @@ describe("the jira field repository", () => {
         stub(jiraClient, "getFields").resolves([
             {
                 id: "customfield_12345",
-                name: "summary",
+                name: "Summary",
                 custom: false,
                 orderable: true,
                 navigable: true,
@@ -46,7 +47,7 @@ describe("the jira field repository", () => {
                 },
             },
         ]);
-        const id = await repository.getFieldId("SuMmArY");
+        const id = await repository.getFieldId(SupportedFields.SUMMARY);
         expect(id).to.eq("customfield_12345");
     });
 
@@ -79,13 +80,13 @@ describe("the jira field repository", () => {
                 },
             },
         ]);
-        await repository.getFieldId("description");
-        const id = await repository.getFieldId("summary");
+        await repository.getFieldId(SupportedFields.DESCRIPTION);
+        const id = await repository.getFieldId(SupportedFields.SUMMARY);
         expect(id).to.eq("customfield_12345");
         expect(stubbedGetFields).to.have.been.calledOnce;
     });
 
-    it("calls the missing fields callback", async () => {
+    it("throws for missing fields", async () => {
         stub(jiraClient, "getFields").resolves([
             {
                 id: "summary",
@@ -114,21 +115,29 @@ describe("the jira field repository", () => {
                 },
             },
         ]);
-        const callbacks = {
-            onMissingFieldError: (availableFields: string[]) => {
-                expect(availableFields).to.deep.eq([
-                    "name: Summary, id: summary",
-                    "name: Description, id: description",
-                ]);
-            },
-        };
-        const callback = stub(callbacks, "onMissingFieldError");
-        const id = await repository.getFieldId("Damage", { onMissingFieldError: callback });
-        expect(id).to.be.undefined;
-        expect(callback).to.have.been.calledOnce;
+        await expect(
+            repository.getFieldId(SupportedFields.TEST_PLAN)
+        ).to.eventually.be.rejectedWith(
+            dedent(`
+                Failed to fetch Jira field ID for field with name: test plan
+                Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                Available fields:
+                  name: "Description" id: "description"
+                  name: "Summary"     id: "summary"
+
+                You can provide field IDs directly without relying on language settings:
+
+                  jira: {
+                    fields: {
+                      testPlan: // corresponding field ID
+                    }
+                  }
+            `)
+        );
     });
 
-    it("calls the multiple fields callback", async () => {
+    it("throws for multiple fields", async () => {
         const fields = [
             {
                 id: "summary",
@@ -158,27 +167,30 @@ describe("the jira field repository", () => {
             },
         ];
         stub(jiraClient, "getFields").resolves(fields);
-        const callbacks = {
-            onMultipleFieldsError: (duplicates: IFieldDetail[]) => {
-                expect(duplicates).to.deep.eq(fields);
-            },
-        };
-        const callback = stub(callbacks, "onMultipleFieldsError");
-        const id = await repository.getFieldId("Summary", { onMultipleFieldsError: callback });
-        expect(id).to.be.undefined;
-        expect(callback).to.have.been.calledOnce;
+        await expect(repository.getFieldId(SupportedFields.SUMMARY)).to.eventually.be.rejectedWith(
+            dedent(`
+                Failed to fetch Jira field ID for field with name: summary
+                There are multiple fields with this name
+
+                Duplicates:
+                  id: "customfield_12345", name: "Summary", custom: false, orderable: true, navigable: true, searchable: true, clauseNames: ["summary (custom)"], schema: {"type":"string","customId":5125}
+                  id: "summary"          , name: "summary", custom: false, orderable: true, navigable: true, searchable: true, clauseNames: ["summary"]         , schema: {"type":"string","system":"summary"}
+
+                You can provide field IDs in the options:
+
+                  jira: {
+                    fields: {
+                      summary: // "summary" or "customfield_12345"
+                    }
+                  }
+            `)
+        );
     });
 
-    it("handles get field failures gracefully", async () => {
+    it("throws for total field fetch failures", async () => {
         stub(jiraClient, "getFields").resolves(undefined);
-        const callbacks = {
-            onFetchError: () => {
-                expect(true).to.eq(true);
-            },
-        };
-        const callback = stub(callbacks, "onFetchError");
-        const id = await repository.getFieldId("Summary", { onFetchError: callback });
-        expect(id).to.be.undefined;
-        expect(callback).to.have.been.calledOnce;
+        await expect(repository.getFieldId(SupportedFields.SUMMARY)).to.eventually.be.rejectedWith(
+            "Failed to fetch Jira field ID for field with name: summary"
+        );
     });
 });

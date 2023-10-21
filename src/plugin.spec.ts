@@ -8,8 +8,8 @@ import { XrayClientServer } from "./client/xray/xrayClientServer";
 import * as context from "./context";
 import * as hooks from "./hooks";
 import { addXrayResultUpload, configureXrayPlugin, syncFeatureFile } from "./plugin";
-import { JiraFieldFetcher } from "./repository/jira/fields/jiraFieldFetcher";
 import { JiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
+import { JiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
 import { JiraRepository } from "./repository/jira/jiraRepository";
 import { Options, PluginContext } from "./types/plugin";
 import { dedent } from "./util/dedent";
@@ -34,7 +34,7 @@ describe("the plugin", () => {
             }
         );
         const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
-        const jiraFieldFetcher = new JiraFieldFetcher(
+        const jiraFieldFetcher = new JiraIssueFetcher(
             jiraClient,
             jiraFieldRepository,
             jiraOptions.fields

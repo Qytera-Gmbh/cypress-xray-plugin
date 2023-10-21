@@ -47,8 +47,8 @@ import {
     importOptionalDependency,
 } from "./dependencies";
 import { logDebug, logInfo } from "./logging/logging";
-import { JiraFieldFetcher, JiraFieldFetcherCloud } from "./repository/jira/fields/jiraFieldFetcher";
 import { JiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
+import { JiraIssueFetcher, JiraIssueFetcherCloud } from "./repository/jira/fields/jiraIssueFetcher";
 import { JiraRepository } from "./repository/jira/jiraRepository";
 import {
     ClientCombination,
@@ -334,7 +334,7 @@ export async function initClients(
             await pingXrayCloud(xrayCredentials);
             const xrayClient = new XrayClientCloud(xrayCredentials);
             const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
-            const jiraFieldFetcher = new JiraFieldFetcherCloud(
+            const jiraFieldFetcher = new JiraIssueFetcherCloud(
                 jiraClient,
                 jiraFieldRepository,
                 xrayClient,
@@ -369,7 +369,7 @@ export async function initClients(
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials, jiraClient);
         const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
-        const jiraFieldFetcher = new JiraFieldFetcher(
+        const jiraFieldFetcher = new JiraIssueFetcher(
             jiraClient,
             jiraFieldRepository,
             jiraOptions.fields
@@ -392,7 +392,7 @@ export async function initClients(
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials, jiraClient);
         const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
-        const jiraFieldFetcher = new JiraFieldFetcher(
+        const jiraFieldFetcher = new JiraIssueFetcher(
             jiraClient,
             jiraFieldRepository,
             jiraOptions.fields
