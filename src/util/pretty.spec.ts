@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { prettyPadObjects } from "./pretty";
+import { prettyPadObjects, prettyPadValues } from "./pretty";
 
 describe("pretty", () => {
     describe("prettyPadObjects", () => {
@@ -20,16 +20,14 @@ describe("pretty", () => {
                 },
                 {
                     id: "description",
-                    name: "Description",
-                    custom: false,
                     orderable: true,
-                    navigable: true,
-                    searchable: true,
-                    clauseNames: ["description"],
+                    name: "Description",
                     schema: {
                         type: "string",
                         system: "description",
                     },
+                    individualProperty: "I'm a space traveller",
+                    custom: false,
                 },
             ];
             expect(prettyPadObjects(array)).to.deep.eq([
@@ -40,7 +38,7 @@ describe("pretty", () => {
                     orderable: "true",
                     navigable: "true",
                     searchable: "true",
-                    clauseNames: '["summary"]    ',
+                    clauseNames: '["summary"]',
                     schema: '{"type":"string","system":"summary"}    ',
                 },
                 {
@@ -48,12 +46,29 @@ describe("pretty", () => {
                     name: '"Description"',
                     custom: "false",
                     orderable: "true",
-                    navigable: "true",
-                    searchable: "true",
-                    clauseNames: '["description"]',
+                    individualProperty: '"I\'m a space traveller"',
                     schema: '{"type":"string","system":"description"}',
                 },
             ]);
+        });
+        it("pretty pad object values", () => {
+            expect(
+                prettyPadValues({
+                    x: 12345,
+                    a: [1, 2, false, true, "george"],
+                    y: "hello gooood Morning",
+                    somethingLong: {
+                        i: 1,
+                        j: 2,
+                        k: "snake",
+                    },
+                })
+            ).to.deep.eq({
+                x: "12345                    ",
+                a: '[1,2,false,true,"george"]',
+                y: '"hello gooood Morning"   ',
+                somethingLong: '{"i":1,"j":2,"k":"snake"}',
+            });
         });
     });
 });
