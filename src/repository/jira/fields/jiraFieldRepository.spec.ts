@@ -86,7 +86,85 @@ describe("the jira field repository", () => {
         expect(stubbedGetFields).to.have.been.calledOnce;
     });
 
-    it("throws for missing fields", async () => {
+    it("throws for missing descriptions", async () => {
+        stub(jiraClient, "getFields").resolves([]);
+        await expect(
+            repository.getFieldId(SupportedFields.DESCRIPTION)
+        ).to.eventually.be.rejectedWith(
+            dedent(`
+                Failed to fetch Jira field ID for field with name: description
+                Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                You can provide field IDs directly without relying on language settings:
+
+                  jira: {
+                    fields: {
+                      description: // corresponding field ID
+                    }
+                  }
+            `)
+        );
+    });
+
+    it("throws for missing labels", async () => {
+        stub(jiraClient, "getFields").resolves([]);
+        await expect(repository.getFieldId(SupportedFields.LABELS)).to.eventually.be.rejectedWith(
+            dedent(`
+                Failed to fetch Jira field ID for field with name: labels
+                Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                You can provide field IDs directly without relying on language settings:
+
+                  jira: {
+                    fields: {
+                      labels: // corresponding field ID
+                    }
+                  }
+            `)
+        );
+    });
+
+    it("throws for missing test environments", async () => {
+        stub(jiraClient, "getFields").resolves([]);
+        await expect(
+            repository.getFieldId(SupportedFields.TEST_ENVIRONMENTS)
+        ).to.eventually.be.rejectedWith(
+            dedent(`
+                Failed to fetch Jira field ID for field with name: test environments
+                Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                You can provide field IDs directly without relying on language settings:
+
+                  jira: {
+                    fields: {
+                      testEnvironments: // corresponding field ID
+                    }
+                  }
+            `)
+        );
+    });
+
+    it("throws for missing test types", async () => {
+        stub(jiraClient, "getFields").resolves([]);
+        await expect(
+            repository.getFieldId(SupportedFields.TEST_TYPE)
+        ).to.eventually.be.rejectedWith(
+            dedent(`
+                Failed to fetch Jira field ID for field with name: test type
+                Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                You can provide field IDs directly without relying on language settings:
+
+                  jira: {
+                    fields: {
+                      testType: // corresponding field ID
+                    }
+                  }
+            `)
+        );
+    });
+
+    it("throws for missing fields and displays a hint", async () => {
         stub(jiraClient, "getFields").resolves([
             {
                 id: "summary",
