@@ -61,6 +61,7 @@ import {
     PluginContext,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
+import { HELP } from "./util/help";
 import { asArrayOfStrings, asBoolean, asInt, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
 
@@ -308,7 +309,7 @@ export async function initClients(
         throw new Error(
             dedent(`
                 Failed to configure Jira client: no Jira URL was provided
-                Make sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
+                Make sure Jira was configured correctly: ${HELP.plugin.configuration.authentication.jira.root}
             `)
         );
     }
@@ -354,7 +355,7 @@ export async function initClients(
             throw new Error(
                 dedent(`
                     Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials
-                    You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                    You can find all configurations currently supported at: ${HELP.plugin.configuration.authentication.root}
                 `)
             );
         }
@@ -407,7 +408,7 @@ export async function initClients(
         throw new Error(
             dedent(`
                 Failed to configure Jira client: no viable authentication method was configured
-                You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                You can find all configurations currently supported at: ${HELP.plugin.configuration.authentication.root}
             `)
         );
     }

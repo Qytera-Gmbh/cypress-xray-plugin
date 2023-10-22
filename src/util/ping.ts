@@ -8,6 +8,7 @@ import { logDebug, logInfo } from "../logging/logging";
 import { IUser } from "../types/jira/responses/user";
 import { dedent } from "./dedent";
 import { errorMessage } from "./errors";
+import { HELP } from "./help";
 import { startInterval } from "./time";
 
 /**
@@ -58,10 +59,12 @@ export async function pingJiraInstance(
                 ${errorMessage(error)}
 
                 Make sure you have correctly set up:
-                - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
-                - Jira authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
+                - Jira base URL: ${HELP.plugin.configuration.jira.url}
+                - Jira authentication: ${HELP.plugin.configuration.authentication.jira.root}
 
-                For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
+                For more information, set the plugin to debug mode: ${
+                    HELP.plugin.configuration.plugin.debug
+                }
             `)
         );
     } finally {
@@ -123,11 +126,15 @@ export async function pingXrayServer(
                 ${errorMessage(error)}
 
                 Make sure you have correctly set up:
-                - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
-                - Xray server authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#xray-server
-                - Xray itself: https://docs.getxray.app/display/XRAY/Installation
+                - Jira base URL: ${HELP.plugin.configuration.jira.url}
+                - Xray server authentication: ${
+                    HELP.plugin.configuration.authentication.xray.server
+                }
+                - Xray itself: ${HELP.xray.installation.server}
 
-                For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
+                For more information, set the plugin to debug mode: ${
+                    HELP.plugin.configuration.plugin.debug
+                }
 
             `)
         );
@@ -160,10 +167,12 @@ export async function pingXrayCloud(credentials: JWTCredentials): Promise<void> 
                 ${errorMessage(error)}
 
                 Make sure you have correctly set up:
-                - Xray cloud authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#xray-cloud
-                - Xray itself: https://docs.getxray.app/display/XRAYCLOUD/Installation
+                - Xray cloud authentication: ${HELP.plugin.configuration.authentication.xray.cloud}
+                - Xray itself: ${HELP.xray.installation.cloud}
 
-                For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
+                For more information, set the plugin to debug mode: ${
+                    HELP.plugin.configuration.plugin.debug
+                }
             `)
         );
     }

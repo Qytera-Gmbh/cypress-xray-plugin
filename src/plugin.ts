@@ -13,6 +13,7 @@ import { Requests } from "./https/requests";
 import { initLogging, logError, logInfo, logWarning } from "./logging/logging";
 import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
 import { dedent } from "./util/dedent";
+import { HELP } from "./util/help";
 
 export async function configureXrayPlugin(config: Cypress.PluginConfigOptions, options: Options) {
     // Resolve these before all other options for correct enabledness.
@@ -126,7 +127,7 @@ function logInitializationError(hook: "before:run" | "after:run" | "file:preproc
         dedent(`
             Skipping ${hook} hook: Plugin misconfigured: configureXrayPlugin() was not called
 
-            Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
+            Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
         `)
     );
 }

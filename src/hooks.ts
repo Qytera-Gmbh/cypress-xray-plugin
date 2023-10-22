@@ -19,6 +19,7 @@ import { StringMap, nonNull } from "./types/util";
 import { CucumberMultipartFeature } from "./types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "./util/dedent";
 import { errorMessage } from "./util/errors";
+import { HELP } from "./util/help";
 
 export async function beforeRunHook(
     specs: Cypress.Spec[],
@@ -46,8 +47,8 @@ export async function beforeRunHook(
                     Please make sure project ${options.jira.projectKey} exists at ${options.jira.url}
 
                     For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#projectkey
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
+                    - ${HELP.plugin.configuration.jira.projectKey}
+                    - ${HELP.plugin.configuration.jira.url}
                 `)
             );
         }
@@ -73,8 +74,8 @@ function retrieveIssueTypeInformation(
                 Make sure you have Xray installed.
 
                 For more information, visit:
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#testExecutionIssueType
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#testPlanIssueType
+                - ${HELP.plugin.configuration.jira.testExecutionIssueType}
+                - ${HELP.plugin.configuration.jira.testPlanIssueType}
             `)
         );
     } else if (details.length > 1) {
@@ -85,8 +86,8 @@ function retrieveIssueTypeInformation(
                 Make sure to only make a single one available in project ${projectKey}.
 
                 For more information, visit:
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#testExecutionIssueType
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#testPlanIssueType
+                - ${HELP.plugin.configuration.jira.testExecutionIssueType}
+                - ${HELP.plugin.configuration.jira.testPlanIssueType}
             `)
         );
     }
