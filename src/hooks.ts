@@ -12,7 +12,7 @@ import {
     getCucumberIssueData,
 } from "./preprocessing/preprocessing";
 import { SupportedFields } from "./repository/jira/fields/jiraIssueFetcher";
-import { IJiraRepository, JiraRepository } from "./repository/jira/jiraRepository";
+import { CachingJiraRepository, IJiraRepository } from "./repository/jira/jiraRepository";
 import { IIssueTypeDetails } from "./types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalOptions } from "./types/plugin";
 import { StringMap, nonNull } from "./types/util";
@@ -353,7 +353,7 @@ async function resetLabels(
     issueData: FeatureFileIssueDataTest[],
     testLabels: StringMap<string[]>,
     jiraClient: IJiraClient,
-    jiraRepository: JiraRepository
+    jiraRepository: CachingJiraRepository
 ) {
     for (let i = 0; i < issueData.length; i++) {
         const issueKey = issueData[i].key;

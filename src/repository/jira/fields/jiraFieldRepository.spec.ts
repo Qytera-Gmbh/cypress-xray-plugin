@@ -3,32 +3,22 @@ import chaiAsPromised from "chai-as-promised";
 import { stub } from "sinon";
 import { BasicAuthCredentials } from "../../../authentication/credentials";
 import { JiraClientServer } from "../../../client/jira/jiraClientServer";
-import { initJiraOptions } from "../../../context";
-import { InternalJiraOptions } from "../../../types/plugin";
 import { dedent } from "../../../util/dedent";
-import { JiraFieldRepository } from "./jiraFieldRepository";
+import { CachingJiraFieldRepository } from "./jiraFieldRepository";
 import { SupportedFields } from "./jiraIssueFetcher";
 
 chai.use(chaiAsPromised);
 
 describe("the jira field repository", () => {
-    let jiraOptions: InternalJiraOptions;
     let jiraClient: JiraClientServer;
-    let repository: JiraFieldRepository;
+    let repository: CachingJiraFieldRepository;
 
     beforeEach(() => {
-        jiraOptions = initJiraOptions(
-            {},
-            {
-                projectKey: "CYP",
-                url: "https://example.org",
-            }
-        );
         jiraClient = new JiraClientServer(
             "https://example.org",
             new BasicAuthCredentials("user", "xyz")
         );
-        repository = new JiraFieldRepository(jiraClient, jiraOptions);
+        repository = new CachingJiraFieldRepository(jiraClient);
     });
 
     it("fetches fields case-insensitively", async () => {
