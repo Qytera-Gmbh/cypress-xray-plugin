@@ -4,6 +4,13 @@
     "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
     "root": true,
     "rules": {
-        "tsdoc/syntax": "error"
+        "tsdoc/syntax": "error",
+        "@typescript-eslint/parameter-properties": [
+          "error",
+            {
+              "allow": ["public", "public readonly", "protected", "protected readonly"],
+              "prefer": "parameter-property"
+            }
+          ]
     }
 }

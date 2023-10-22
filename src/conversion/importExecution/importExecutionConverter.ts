@@ -19,11 +19,6 @@ export class ImportExecutionConverter {
      * The configured plugin options.
      */
     protected readonly options: InternalOptions;
-    /**
-     * Whether the converter is a cloud converter. Useful for automatically deducing which test
-     * converters to use.
-     */
-    private readonly isCloudConverter: boolean;
 
     /**
      * Construct a new converter with access to the provided options. The cloud converter flag is
@@ -34,9 +29,8 @@ export class ImportExecutionConverter {
      * @param options - the options
      * @param isCloudConverter - whether Xray cloud JSONs should be created
      */
-    constructor(options: InternalOptions, isCloudConverter: boolean) {
+    constructor(options: InternalOptions, private readonly isCloudConverter: boolean) {
         this.options = options;
-        this.isCloudConverter = isCloudConverter;
     }
 
     public async convert(results: CypressRunResultType): Promise<IXrayTestExecutionResults> {

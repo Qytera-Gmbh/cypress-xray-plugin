@@ -23,15 +23,6 @@ import { getXrayStatus } from "./statusConversion";
 
 export class TestConverter {
     /**
-     * The configured plugin options.
-     */
-    private readonly options: InternalOptions;
-    /**
-     * Whether the converter is a cloud converter.
-     */
-    private readonly isCloudConverter: boolean;
-
-    /**
      * Construct a new converter with access to the provided options. The cloud converter flag is
      * used to deduce the output format. When set to `true`, Xray cloud JSONs will be created, if
      * set to `false`, the format will be Xray server JSON.
@@ -39,10 +30,10 @@ export class TestConverter {
      * @param options - the options
      * @param isCloudConverter - whether Xray cloud JSONs should be created
      */
-    constructor(options: InternalOptions, isCloudConverter: boolean) {
-        this.options = options;
-        this.isCloudConverter = isCloudConverter;
-    }
+    constructor(
+        private readonly options: InternalOptions,
+        private readonly isCloudConverter: boolean
+    ) {}
 
     public async convert(
         runResults: CypressRunResult_V12 | CypressRunResult_V13
