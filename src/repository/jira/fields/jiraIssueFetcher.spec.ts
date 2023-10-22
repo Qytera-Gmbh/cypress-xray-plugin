@@ -323,6 +323,16 @@ describe("the jira issue fetcher", () => {
             `)
         );
     });
+
+    it("handles search failures gracefully", async () => {
+        mockedJiraClient.search = async () => {
+            return undefined;
+        };
+        const fetcher = new JiraIssueFetcher(mockedJiraClient, mockedFieldRepository, {
+            summary: "summary",
+        });
+        expect(await fetcher.fetchSummaries("CYP-123", "CYP-456")).to.deep.eq({});
+    });
 });
 
 describe("the jira cloud issue fetcher", () => {
