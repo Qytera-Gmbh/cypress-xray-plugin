@@ -15,24 +15,16 @@ export interface IJiraRepository {
 }
 
 export class JiraRepository implements IJiraRepository {
-    protected readonly jiraFieldRepository: IJiraFieldRepository;
-    protected readonly jiraFieldFetcher: IJiraIssueFetcher;
-    protected readonly jiraOptions: InternalJiraOptions;
-
     private readonly summaries: StringMap<string> = {};
     private readonly descriptions: StringMap<string> = {};
     private readonly testTypes: StringMap<string> = {};
     private readonly labels: StringMap<string[]> = {};
 
     constructor(
-        jiraFieldRepository: IJiraFieldRepository,
-        jiraFieldFetcher: IJiraIssueFetcher,
-        jiraOptions: InternalJiraOptions
-    ) {
-        this.jiraFieldRepository = jiraFieldRepository;
-        this.jiraFieldFetcher = jiraFieldFetcher;
-        this.jiraOptions = jiraOptions;
-    }
+        protected readonly jiraFieldRepository: IJiraFieldRepository,
+        protected readonly jiraFieldFetcher: IJiraIssueFetcher,
+        protected readonly jiraOptions: InternalJiraOptions
+    ) {}
 
     public async getFieldId(fieldName: SupportedFields): Promise<string> {
         return this.jiraFieldRepository.getFieldId(fieldName);

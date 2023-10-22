@@ -1,15 +1,16 @@
 import { IJiraClient } from "../../../client/jira/jiraClient";
-import { XrayClientCloud } from "../../../client/xray/xrayClientCloud";
+import { IXrayClientCloud } from "../../../client/xray/xrayClientCloud";
 import { IIssue } from "../../../types/jira/responses/issue";
 import { InternalJiraOptions, JiraFieldIds } from "../../../types/plugin";
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
+import { errorMessage } from "../../../util/errors";
 import {
     extractArrayOfStrings,
     extractNestedString,
     extractString,
 } from "../../../util/extraction";
-import { IJiraFieldRepository, JiraFieldRepository } from "./jiraFieldRepository";
+import { IJiraFieldRepository } from "./jiraFieldRepository";
 
 export enum SupportedFields {
     DESCRIPTION = "description",
@@ -28,19 +29,11 @@ export interface IJiraIssueFetcher {
 }
 
 export class JiraIssueFetcher implements IJiraIssueFetcher {
-    private readonly jiraClient: IJiraClient;
-    private readonly jiraFieldRepository: IJiraFieldRepository;
-    private readonly fieldIds?: JiraFieldIds;
-
     constructor(
-        jiraClient: IJiraClient,
-        jiraFieldRepository: IJiraFieldRepository,
-        fieldIds?: JiraFieldIds
-    ) {
-        this.jiraClient = jiraClient;
-        this.jiraFieldRepository = jiraFieldRepository;
-        this.fieldIds = fieldIds;
-    }
+        private readonly jiraClient: IJiraClient,
+        private readonly jiraFieldRepository: IJiraFieldRepository,
+        private readonly fieldIds?: JiraFieldIds
+    ) {}
 
     public async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
         let summaryId = this.fieldIds?.summary;
@@ -50,7 +43,6 @@ export class JiraIssueFetcher implements IJiraIssueFetcher {
         // Field property example:
         // summary: "Bug 12345"
         const fields = await this.fetchFieldData(
-            this.jiraClient,
             summaryId,
             (issue, fieldId) => {
                 return extractString(issue.fields, fieldId);
@@ -68,7 +60,6 @@ export class JiraIssueFetcher implements IJiraIssueFetcher {
         // Field property example:
         // description: "This is a description"
         const fields = await this.fetchFieldData(
-            this.jiraClient,
             descriptionId,
             (issue, fieldId) => {
                 return extractString(issue.fields, fieldId);
@@ -86,7 +77,6 @@ export class JiraIssueFetcher implements IJiraIssueFetcher {
         // Field property example:
         // labels: ["regression", "quality"]
         const fields = await this.fetchFieldData(
-            this.jiraClient,
             labelsId,
             (issue, fieldId) => {
                 return extractArrayOfStrings(issue.fields, fieldId);
@@ -108,7 +98,6 @@ export class JiraIssueFetcher implements IJiraIssueFetcher {
         //   disabled: false
         // }
         const fields = await this.fetchFieldData(
-            this.jiraClient,
             testTypeId,
             (issue, fieldId) => {
                 return extractNestedString(issue.fields, [fieldId, "value"]);
@@ -119,13 +108,12 @@ export class JiraIssueFetcher implements IJiraIssueFetcher {
     }
 
     private async fetchFieldData<T>(
-        jiraClient: IJiraClient,
         fieldId: string,
         extractor: (issue: IIssue, fieldId: string) => T | Promise<T>,
         ...issueKeys: string[]
     ): Promise<StringMap<T>> {
         const results: StringMap<T> = {};
-        const issues: IIssue[] | undefined = await jiraClient.search({
+        const issues: IIssue[] | undefined = await this.jiraClient.search({
             jql: `issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
         });
@@ -139,7 +127,9 @@ export class JiraIssueFetcher implements IJiraIssueFetcher {
                         issuesWithUnparseableField.push(`Unknown: ${JSON.stringify(issue)}`);
                     }
                 } catch (error: unknown) {
-                    issuesWithUnparseableField.push(`${issue.key ?? "Unknown issue"}: ${error}`);
+                    issuesWithUnparseableField.push(
+                        `${issue.key ?? "Unknown issue"}: ${errorMessage(error)}`
+                    );
                 }
             }
             if (issuesWithUnparseableField.length > 0) {
@@ -159,18 +149,13 @@ export class JiraIssueFetcher implements IJiraIssueFetcher {
 }
 
 export class JiraIssueFetcherCloud extends JiraIssueFetcher {
-    private readonly xrayClient: XrayClientCloud;
-    private readonly jiraOptions: InternalJiraOptions;
-
     constructor(
         jiraClient: IJiraClient,
-        jiraFieldRepository: JiraFieldRepository,
-        xrayClient: XrayClientCloud,
-        jiraOptions: InternalJiraOptions
+        jiraFieldRepository: IJiraFieldRepository,
+        private readonly xrayClient: IXrayClientCloud,
+        private readonly jiraOptions: InternalJiraOptions
     ) {
         super(jiraClient, jiraFieldRepository, jiraOptions.fields);
-        this.xrayClient = xrayClient;
-        this.jiraOptions = jiraOptions;
     }
 
     public async fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>> {

@@ -7,14 +7,7 @@ import { prettyPadObjects, prettyPadValues } from "../../../util/pretty";
 import { SupportedFields } from "./jiraIssueFetcher";
 
 export interface IJiraFieldRepository {
-    getFieldId(
-        fieldName: string,
-        callbacks?: {
-            onFetchError?: () => void;
-            onMultipleFieldsError?: (duplicates: IFieldDetail[]) => void;
-            onMissingFieldError?: (availableFields: string[]) => void;
-        }
-    ): Promise<string>;
+    getFieldId(fieldName: string): Promise<string>;
 }
 
 export class JiraFieldRepository implements IJiraFieldRepository {

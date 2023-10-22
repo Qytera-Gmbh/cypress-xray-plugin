@@ -9,13 +9,25 @@ import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
-import { XrayClient } from "./xrayClient";
+import { IXrayClient, XrayClient } from "./xrayClient";
 
 type GetTestsJiraData = {
     key: string;
 };
 
-export class XrayClientCloud extends XrayClient {
+export interface IXrayClientCloud extends IXrayClient {
+    /**
+     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
+     * `Generic`.
+     *
+     * @param projectKey - key of the project containing the test issues
+     * @param issueKeys - the keys of the test issues to retrieve test types for
+     * @returns a promise which will contain the mapping of issues to test types
+     */
+    getTestTypes(projectKey: string, ...issueKeys: string[]): Promise<StringMap<string>>;
+}
+
+export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
     /**
      * The URLs of Xray's Cloud API.
      * Note: API v1 would also work, but let's stick to the more recent one.
@@ -91,14 +103,6 @@ export class XrayClientCloud extends XrayClient {
         }
     }
 
-    /**
-     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
-     * `Generic`.
-     *
-     * @param projectKey - key of the project containing the test issues
-     * @param issueKeys - the keys of the test issues to retrieve test types for
-     * @returns a promise which will contain the mapping of issues to test types
-     */
     public async getTestTypes(
         projectKey: string,
         ...issueKeys: string[]
