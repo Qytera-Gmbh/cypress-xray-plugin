@@ -15,8 +15,11 @@ jobs:
         with:
           node-version: 18.x
           cache: "npm"
-      - name: Run tests
-        run: npm ci && npm test
-        # build plugin to check if it can still be built
-      - name: Verify plugin build
+      - name: Install plugin dependencies
+        run: npm install
+      - name: Build plugin
         run: npm run build
+      - name: Run tests
+        run: npm run test
+      - name: Run ESLint
+        run: npm run eslint

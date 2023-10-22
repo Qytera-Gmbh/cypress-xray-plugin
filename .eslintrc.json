@@ -3,6 +3,7 @@
     "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc"],
     "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
     "root": true,
+    "ignorePatterns": ["node_modules", "dist"],
     "rules": {
         "tsdoc/syntax": "error",
         "@typescript-eslint/parameter-properties": [
