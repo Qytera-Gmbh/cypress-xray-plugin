@@ -42,7 +42,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json.tests).to.have.length(3);
     });
 
@@ -51,7 +51,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
         );
         const { stubbedWarning } = stubLogging();
-        await expect(converter.convert(result)).to.eventually.be.rejectedWith(
+        await expect(converter.toXrayJson(result)).to.eventually.be.rejectedWith(
             "Failed to convert Cypress tests into Xray tests: No Cypress tests to upload"
         );
         expect(stubbedWarning.firstCall).to.have.been.calledWith(
@@ -74,7 +74,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json.info?.startDate).to.eq("2022-11-28T17:41:12Z");
         expect(json.info?.finishDate).to.eq("2022-11-28T17:41:19Z");
     });
@@ -83,7 +83,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expectToExist(json.tests);
         expect(json.tests[0].evidence).to.be.undefined;
         expect(json.tests[1].evidence).to.be.undefined;
@@ -97,7 +97,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         options.xray.uploadScreenshots = false;
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].evidence).to.be.undefined;
@@ -110,7 +110,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
         options.plugin.normalizeScreenshotNames = true;
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expectToExist(json.tests);
         expectToExist(json.tests[0].evidence);
         expect(json.tests[0].evidence[0].filename).to.eq("t_rtle_with_problem_tic_name.png");
@@ -120,7 +120,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
         );
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expectToExist(json.tests);
         expectToExist(json.tests[0].evidence);
         expect(json.tests[0].evidence[0].filename).to.eq("tûrtle with problemätic name.png");
@@ -131,7 +131,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         options.xray.status = { passed: "it worked" };
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("it worked");
         expect(json.tests[1].status).to.eq("it worked");
@@ -142,7 +142,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         options.xray.status = { failed: "it did not work" };
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expectToExist(json.tests);
         expect(json.tests[2].status).to.eq("it did not work");
     });
@@ -152,7 +152,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultPending.json", "utf-8")
         );
         options.xray.status = { pending: "still pending" };
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expectToExist(json.tests);
         expect(json.tests[0].status).to.eq("still pending");
         expect(json.tests[1].status).to.eq("still pending");
@@ -165,7 +165,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultSkipped.json", "utf-8")
         );
         options.xray.status = { skipped: "omit" };
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expectToExist(json.tests);
         expect(json.tests[1].status).to.eq("omit");
     });
@@ -174,7 +174,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json.tests).to.have.length(3);
         expectToExist(json.tests);
         expect(json.tests[0].testInfo).to.be.undefined;
@@ -186,7 +186,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json.tests).to.have.length(3);
         expectToExist(json.tests);
         expect(json.tests[0].testKey).to.eq("CYP-40");
@@ -199,7 +199,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         options.jira.testExecutionIssueKey = "CYP-123";
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json.testExecutionKey).to.eq("CYP-123");
     });
 
@@ -208,7 +208,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         options.jira.testPlanIssueKey = "CYP-123";
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json?.info?.testPlanKey).to.eq("CYP-123");
     });
 
@@ -216,7 +216,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json.testExecutionKey).to.be.undefined;
     });
 
@@ -224,7 +224,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json?.info?.testPlanKey).to.be.undefined;
     });
 
@@ -233,7 +233,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         options.jira.testExecutionIssueSummary = "Jeffrey's Test";
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json?.info?.summary).to.eq("Jeffrey's Test");
     });
 
@@ -241,7 +241,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json?.info?.summary).to.eq("Execution Results [1669657272234]");
     });
 
@@ -250,7 +250,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         options.jira.testExecutionIssueKey = "CYP-100";
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json?.info?.summary).to.be.undefined;
     });
 
@@ -259,7 +259,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         options.jira.testExecutionIssueDescription = "Very Useful Text";
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json?.info?.description).to.eq("Very Useful Text");
     });
 
@@ -267,7 +267,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json?.info?.description).to.eq(
             dedent(`
                 Cypress version: 11.1.0
@@ -281,7 +281,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         options.jira.testExecutionIssueKey = "CYP-100";
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json?.info?.description).to.be.undefined;
     });
 
@@ -290,7 +290,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         converter = new ImportExecutionConverter(options, true);
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(3);
         expect(json.tests[0].status).to.eq("PASSED");
@@ -303,7 +303,7 @@ describe("the import execution converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         options.xray.testEnvironments = ["DEV"];
-        const json = await converter.convert(result);
+        const json = await converter.toXrayJson(result);
         expect(json?.info?.testEnvironments).to.deep.eq(["DEV"]);
     });
 });

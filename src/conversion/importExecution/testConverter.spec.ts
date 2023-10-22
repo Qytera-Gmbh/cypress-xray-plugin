@@ -45,7 +45,7 @@ describe("the test converter", () => {
         );
         const converter = new TestConverter(options, false);
         const { stubbedWarning } = stubLogging();
-        const json = await converter.convert(result);
+        const json = await converter.toXrayTests(result);
         expect(stubbedWarning).to.have.been.calledOnceWithExactly(
             dedent(`
                 Screenshot will not be uploaded: ./test/resources/small.png
@@ -79,7 +79,7 @@ describe("the test converter", () => {
             { featureFileExtension: ".feature" }
         );
         const converter = new TestConverter(options, true);
-        await expect(converter.convert(result)).to.eventually.be.rejectedWith(
+        await expect(converter.toXrayTests(result)).to.eventually.be.rejectedWith(
             "Failed to extract test run data: Only Cucumber tests were executed"
         );
     });
@@ -100,7 +100,7 @@ describe("the test converter", () => {
             { featureFileExtension: ".ts" }
         );
         const converter = new TestConverter(options, false);
-        await expect(converter.convert(result)).to.eventually.be.rejectedWith(
+        await expect(converter.toXrayTests(result)).to.eventually.be.rejectedWith(
             "Failed to extract test run data: Only Cucumber tests were executed"
         );
     });
@@ -110,7 +110,7 @@ describe("the test converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         const converter = new TestConverter(options, false);
-        const json = await converter.convert(result);
+        const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
             {
                 testKey: "CYP-40",
@@ -144,7 +144,7 @@ describe("the test converter", () => {
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
         );
         const converter = new TestConverter(options, false);
-        const json = await converter.convert(result);
+        const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
             {
                 testKey: "CYP-452",
@@ -190,7 +190,7 @@ describe("the test converter", () => {
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         );
         const converter = new TestConverter(options, true);
-        const json = await converter.convert(result);
+        const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
             {
                 testKey: "CYP-40",
@@ -224,7 +224,7 @@ describe("the test converter", () => {
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
         );
         const converter = new TestConverter(options, true);
-        const json = await converter.convert(result);
+        const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
             {
                 testKey: "CYP-452",

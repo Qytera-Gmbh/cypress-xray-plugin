@@ -3,9 +3,9 @@ import { readFileSync } from "fs";
 import { expectToExist, stubLogging } from "../../../test/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "../../util/dedent";
-import { getMultipartFeatures } from "./multipartFeatureConversion";
+import { buildMultipartFeatures } from "./multipartFeatureBuilder";
 
-describe("getMultipartFeatures", () => {
+describe("buildMultipartFeatures", () => {
     it("includes all tagged features and tests", async () => {
         const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
             readFileSync(
@@ -13,7 +13,7 @@ describe("getMultipartFeatures", () => {
                 "utf-8"
             )
         );
-        const features = getMultipartFeatures(cucumberReport, {
+        const features = buildMultipartFeatures(cucumberReport, {
             projectKey: "CYP",
             useCloudTags: true,
         });
@@ -29,7 +29,7 @@ describe("getMultipartFeatures", () => {
                 "utf-8"
             )
         );
-        const features = getMultipartFeatures(cucumberReport, {
+        const features = buildMultipartFeatures(cucumberReport, {
             testExecutionIssueKey: "CYP-456",
             projectKey: "CYP",
             useCloudTags: true,
@@ -45,7 +45,7 @@ describe("getMultipartFeatures", () => {
                 "utf-8"
             )
         );
-        const features = getMultipartFeatures(cucumberReport, {
+        const features = buildMultipartFeatures(cucumberReport, {
             includeScreenshots: true,
             projectKey: "CYP",
             useCloudTags: true,
@@ -63,7 +63,7 @@ describe("getMultipartFeatures", () => {
                 "utf-8"
             )
         );
-        const features = getMultipartFeatures(cucumberReport, {
+        const features = buildMultipartFeatures(cucumberReport, {
             includeScreenshots: false,
             projectKey: "CYP",
             useCloudTags: true,
@@ -84,7 +84,7 @@ describe("getMultipartFeatures", () => {
                 "utf-8"
             )
         );
-        const features = getMultipartFeatures(cucumberReport, {
+        const features = buildMultipartFeatures(cucumberReport, {
             includeScreenshots: false,
             projectKey: "CYP",
             useCloudTags: false,
@@ -116,7 +116,7 @@ describe("getMultipartFeatures", () => {
                 "utf-8"
             )
         );
-        const features = getMultipartFeatures(cucumberReport, {
+        const features = buildMultipartFeatures(cucumberReport, {
             includeScreenshots: false,
             projectKey: "CYP",
             useCloudTags: true,

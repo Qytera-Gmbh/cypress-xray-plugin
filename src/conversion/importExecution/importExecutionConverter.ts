@@ -1,19 +1,17 @@
 import { CypressRunResult as CypressRunResult_V_12 } from "../../types/cypress/12.0.0/api";
 import { CypressRunResult as CypressRunResult_V_13 } from "../../types/cypress/13.0.0/api";
 import { InternalOptions } from "../../types/plugin";
-import { StringMap } from "../../types/util";
 import { IXrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { dedent } from "../../util/dedent";
 import { truncateISOTime } from "../../util/time";
 import { TestConverter } from "./testConverter";
 
-export type TestIssueData = {
-    summaries: StringMap<string>;
-    testTypes: StringMap<string>;
-};
-
 type CypressRunResultType = CypressRunResult_V_12 | CypressRunResult_V_13;
 
+/**
+ * A class for converting Cypress run results into Xray JSON. Both Xray server JSON and Xray cloud
+ * JSON are supported.
+ */
 export class ImportExecutionConverter {
     /**
      * The configured plugin options.
@@ -33,7 +31,7 @@ export class ImportExecutionConverter {
         this.options = options;
     }
 
-    public async convert(results: CypressRunResultType): Promise<IXrayTestExecutionResults> {
+    public async toXrayJson(results: CypressRunResultType): Promise<IXrayTestExecutionResults> {
         const testConverter: TestConverter = new TestConverter(this.options, this.isCloudConverter);
         return {
             testExecutionKey: this.options.jira.testExecutionIssueKey,
@@ -46,7 +44,7 @@ export class ImportExecutionConverter {
                 testPlanKey: this.options.jira.testPlanIssueKey,
                 testEnvironments: this.options.xray.testEnvironments,
             },
-            tests: await testConverter.convert(results),
+            tests: await testConverter.toXrayTests(results),
         };
     }
 

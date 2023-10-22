@@ -13,7 +13,16 @@ import {
     multipleTestKeysInCucumberScenarioError,
 } from "../../util/errors";
 
-export function getMultipartFeatures(
+/**
+ * Modifies the input Cucumber JSON results by adding test execution issue tags and filtering
+ * screenshots, based on the options provided. The function also asserts that every test contained
+ * within the results has been appropriately tagged with either Xray cloud or Xray server tags.
+ *
+ * @param input - the Cucumber JSON results
+ * @param options - the options for results modification
+ * @returns the modified Cucumber JSON results
+ */
+export function buildMultipartFeatures(
     input: CucumberMultipartFeature[],
     options: {
         testExecutionIssueKey?: string;
@@ -21,7 +30,7 @@ export function getMultipartFeatures(
         projectKey: string;
         useCloudTags: boolean;
     }
-) {
+): CucumberMultipartFeature[] {
     const tests: CucumberMultipartFeature[] = [];
     input.forEach((result: CucumberMultipartFeature) => {
         const test: CucumberMultipartFeature = {

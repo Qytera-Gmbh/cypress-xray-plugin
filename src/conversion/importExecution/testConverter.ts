@@ -21,6 +21,12 @@ import { truncateISOTime } from "../../util/time";
 import { ITestRunData, getTestRunData_V12, getTestRunData_V13 } from "./runConversion";
 import { getXrayStatus } from "./statusConversion";
 
+/**
+ * A class for converting Cypress run results into Xray test JSON.
+ *
+ * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22tests%22object-TestRundetails
+ * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22test%22object-TestRundetails
+ */
 export class TestConverter {
     /**
      * Construct a new converter with access to the provided options. The cloud converter flag is
@@ -35,7 +41,7 @@ export class TestConverter {
         private readonly isCloudConverter: boolean
     ) {}
 
-    public async convert(
+    public async toXrayTests(
         runResults: CypressRunResult_V12 | CypressRunResult_V13
     ): Promise<[IXrayTest, ...IXrayTest[]]> {
         const testRunData = await this.getTestRunData(runResults);

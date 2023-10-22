@@ -8,10 +8,11 @@ import { dedent } from "../../util/dedent";
 /**
  * Interface containing general/minimal Cypress run data.
  */
-export type RunData = Pick<
-    CypressCommandLine.CypressRunResult,
-    "browserName" | "browserVersion" | "cypressVersion" | "startedTestsAt"
->;
+export interface IRunData
+    extends Pick<
+        CypressCommandLine.CypressRunResult,
+        "browserName" | "browserVersion" | "cypressVersion" | "startedTestsAt"
+    > {}
 
 /**
  * Additional information used by test execution issues when uploading Cucumber results.
@@ -52,8 +53,8 @@ export interface TestExecutionIssueDataServer extends TestExecutionIssueData {
  * @param testExecutionIssueData - additional information to consider
  * @returns the Cucumber multipart information data for Xray server
  */
-export function getMultipartInfoServer(
-    runData: RunData,
+export function buildMultipartInfoServer(
+    runData: IRunData,
     testExecutionIssueData: TestExecutionIssueDataServer
 ): ICucumberMultipartInfo {
     const multipartInfo: ICucumberMultipartInfo = {
@@ -93,8 +94,8 @@ export function getMultipartInfoServer(
  * @param testExecutionIssueData - additional information to consider
  * @returns the Cucumber multipart information data for Xray cloud
  */
-export function getMultipartInfoCloud(
-    runData: RunData,
+export function buildMultipartInfoCloud(
+    runData: IRunData,
     testExecutionIssueData: TestExecutionIssueData
 ): CucumberMultipartInfoCloud {
     return {

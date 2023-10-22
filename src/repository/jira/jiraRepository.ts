@@ -1,5 +1,5 @@
 import { logError } from "../../logging/logging";
-import { InternalJiraOptions, JiraFieldIds } from "../../types/plugin";
+import { InternalJiraOptions } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
@@ -7,7 +7,7 @@ import { IJiraFieldRepository } from "./fields/jiraFieldRepository";
 import { IJiraIssueFetcher, SupportedFields } from "./fields/jiraIssueFetcher";
 
 export interface IJiraRepository {
-    getFieldId(fieldName: SupportedFields, optionName: keyof JiraFieldIds): Promise<string>;
+    getFieldId(fieldName: SupportedFields): Promise<string>;
     getSummaries(...issueKeys: string[]): Promise<StringMap<string>>;
     getDescriptions(...issueKeys: string[]): Promise<StringMap<string>>;
     getTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;

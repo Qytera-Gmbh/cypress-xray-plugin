@@ -176,7 +176,7 @@ async function uploadCypressResults(
 ) {
     const converter = new ImportExecutionConverter(options, clients.kind === "cloud");
     try {
-        const cypressExecution = await converter.convert(runResult);
+        const cypressExecution = await converter.toXrayJson(runResult);
         return await clients.xrayClient.importExecution(cypressExecution);
     } catch (error: unknown) {
         logError(errorMessage(error));
@@ -318,10 +318,7 @@ async function resetSummaries(
             continue;
         }
         if (oldSummary !== newSummary) {
-            const summaryFieldId = await jiraRepository.getFieldId(
-                SupportedFields.SUMMARY,
-                "summary"
-            );
+            const summaryFieldId = await jiraRepository.getFieldId(SupportedFields.SUMMARY);
             const fields: StringMap<string> = {};
             fields[summaryFieldId] = oldSummary;
             logDebug(
