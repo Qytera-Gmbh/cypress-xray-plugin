@@ -21,11 +21,7 @@ describe("the plugin", () => {
     beforeEach(() => {
         config = JSON.parse(fs.readFileSync("./test/resources/cypress.config.json", "utf-8"));
         const jiraClient = new JiraClientServer("https://example.org", new PATCredentials("token"));
-        const xrayClient = new XrayClientServer(
-            "https://example.org",
-            new PATCredentials("token"),
-            jiraClient
-        );
+        const xrayClient = new XrayClientServer("https://example.org", new PATCredentials("token"));
         const jiraOptions = context.initJiraOptions(
             {},
             {

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { DummyJiraClient, RESOLVED_JWT_CREDENTIALS, stubLogging } from "../../../test/util";
+import { RESOLVED_JWT_CREDENTIALS, stubLogging } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { IXrayClient } from "./xrayClient";
 import { XrayClientCloud } from "./xrayClientCloud";
@@ -15,8 +15,7 @@ describe("the xray clients", () => {
                     clientType === "server"
                         ? new XrayClientServer(
                               "https://example.org",
-                              new BasicAuthCredentials("user", "token"),
-                              new DummyJiraClient()
+                              new BasicAuthCredentials("user", "token")
                           )
                         : new XrayClientCloud(RESOLVED_JWT_CREDENTIALS);
             });

@@ -9,29 +9,17 @@ import {
     ImportFeatureResponseServer,
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
-import { JiraClientServer } from "../jira/jiraClientServer";
 import { XrayClient } from "./xrayClient";
 
 export class XrayClientServer extends XrayClient {
-    /**
-     * The configured Jira client.
-     */
-    protected readonly jiraClient: JiraClientServer;
-
     /**
      * Construct a new Xray Server client using the provided credentials.
      *
      * @param apiBaseUrl - the base URL for all HTTP requests
      * @param credentials - the credentials to use during authentication
-     * @param jiraClient - the configured Jira client
      */
-    constructor(
-        apiBaseUrl: string,
-        credentials: BasicAuthCredentials | PATCredentials,
-        jiraClient: JiraClientServer
-    ) {
+    constructor(apiBaseUrl: string, credentials: BasicAuthCredentials | PATCredentials) {
         super(apiBaseUrl, credentials);
-        this.jiraClient = jiraClient;
     }
 
     public getUrlImportExecution(): string {

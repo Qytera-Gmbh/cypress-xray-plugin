@@ -47,11 +47,7 @@ describe("the hooks", () => {
             openSSL: initOpenSSLOptions({}, {}),
         };
         const jiraClient = new JiraClientServer("https://example.org", new PATCredentials("token"));
-        const xrayClient = new XrayClientServer(
-            "https://example.org",
-            new PATCredentials("token"),
-            jiraClient
-        );
+        const xrayClient = new XrayClientServer("https://example.org", new PATCredentials("token"));
         const jiraFieldRepository = new JiraFieldRepository(jiraClient, options.jira);
         const jiraFieldFetcher = new JiraIssueFetcher(
             jiraClient,

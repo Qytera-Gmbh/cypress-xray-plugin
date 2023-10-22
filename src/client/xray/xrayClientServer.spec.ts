@@ -3,14 +3,12 @@ import { expect } from "chai";
 import fs from "fs";
 import { stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
-import { JiraClientServer } from "../jira/jiraClientServer";
 import { XrayClientServer } from "./xrayClientServer";
 
 describe("the xray server client", () => {
     const client: XrayClientServer = new XrayClientServer(
         "https://example.org",
-        new BasicAuthCredentials("user", "xyz"),
-        new JiraClientServer("https://example.org", new BasicAuthCredentials("user", "xyz"))
+        new BasicAuthCredentials("user", "xyz")
     );
 
     describe("import execution", () => {

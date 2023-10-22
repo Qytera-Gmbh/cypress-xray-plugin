@@ -367,7 +367,7 @@ export async function initClients(
         // Xray server authentication: no username, only token.
         logInfo("Jira PAT found. Setting up Xray server PAT credentials");
         await pingXrayServer(jiraOptions.url, credentials);
-        const xrayClient = new XrayClientServer(jiraOptions.url, credentials, jiraClient);
+        const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
         const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
         const jiraFieldFetcher = new JiraIssueFetcher(
             jiraClient,
@@ -390,7 +390,7 @@ export async function initClients(
         const jiraClient = new JiraClientServer(jiraOptions.url, credentials);
         logInfo("Jira username and password found. Setting up Xray server basic auth credentials");
         await pingXrayServer(jiraOptions.url, credentials);
-        const xrayClient = new XrayClientServer(jiraOptions.url, credentials, jiraClient);
+        const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
         const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
         const jiraFieldFetcher = new JiraIssueFetcher(
             jiraClient,
