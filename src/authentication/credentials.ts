@@ -14,65 +14,85 @@ import { startInterval } from "../util/time";
  *   { "Content-Type": "application/json" }
  * ```
  */
-export type HTTPHeader = StringMap<string>;
+export type HttpHeader = StringMap<string>;
 
-export abstract class APICredentials {
-    public abstract getAuthenticationHeader(): Promise<HTTPHeader>;
+/**
+ * The interface which all credential classes must implement. All credentials must be usable in an
+ * HTTP authorization request header.
+ */
+export interface IHttpCredentials {
+    /**
+     * Returns the HTTP authorization header value of the credentials.
+     *
+     * @returns the HTTP header value
+     */
+    getAuthorizationHeader(): Promise<HttpHeader>;
 }
 
-export class BasicAuthCredentials extends APICredentials {
-    private readonly username: string;
-    private readonly password: string;
-
+/**
+ * A basic authorization credentials class, storing base64 encoded credentials of usernames and
+ * passwords.
+ */
+export class BasicAuthCredentials implements IHttpCredentials {
+    private readonly encodedCredentials: string;
+    /**
+     * Constructs new basic authorization credentials.
+     *
+     * @param username - the username
+     * @param password - the password
+     */
     constructor(username: string, password: string) {
-        super();
-        this.username = username;
-        this.password = password;
-    }
-
-    public getAuthenticationHeader(): Promise<HTTPHeader> {
         // See: https://developer.atlassian.com/server/jira/platform/basic-authentication/#construct-the-authorization-header
-        const encodedString = encode(`${this.username}:${this.password}`);
-        return new Promise((resolve: (value: HTTPHeader) => void) =>
-            resolve({
-                Authorization: `Basic ${encodedString}`,
-            })
-        );
+        this.encodedCredentials = encode(`${username}:${password}`);
+    }
+
+    public async getAuthorizationHeader(): Promise<HttpHeader> {
+        return {
+            Authorization: `Basic ${this.encodedCredentials}`,
+        };
     }
 }
 
-export class PATCredentials extends APICredentials {
-    private readonly token: string;
+/**
+ * A personal access token (_PAT_) credentials class, storing a secret token to use during HTTP
+ * authorization.
+ */
+export class PATCredentials implements IHttpCredentials {
+    /**
+     * Constructs new PAT credentials from the provided token.
+     *
+     * @param token - the token
+     */
+    constructor(private readonly token: string) {}
 
-    constructor(token: string) {
-        super();
-        this.token = token;
-    }
-
-    public getAuthenticationHeader(): Promise<HTTPHeader> {
-        return new Promise((resolve: (value: HTTPHeader) => void) =>
-            resolve({
-                Authorization: `Bearer ${this.token}`,
-            })
-        );
+    public async getAuthorizationHeader(): Promise<HttpHeader> {
+        return {
+            Authorization: `Bearer ${this.token}`,
+        };
     }
 }
-export interface JWTCredentialsOptions {
-    authenticationURL: string;
-}
 
-export class JWTCredentials extends APICredentials {
-    private readonly clientId: string;
-    private readonly clientSecret: string;
-    private readonly authenticationUrl: string;
-
+/**
+ * A JWT credentials class, storing a JWT token to use during HTTP authorization. The class is
+ * designed to retrieve fresh JWT tokens from an authentication URL/endpoint. Once retrieved, the
+ * token will be stored and reused whenever necessary.
+ */
+export class JWTCredentials implements IHttpCredentials {
     private token?: string;
 
-    constructor(clientId: string, clientSecret: string, authenticationUrl: string) {
-        super();
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.authenticationUrl = authenticationUrl;
+    /**
+     * Constructs new JWT credentials. The client ID and client secret will be used to retrieve a
+     * JWT token from the authentication URL on demand.
+     *
+     * @param clientId - the client ID
+     * @param clientSecret - the client secret
+     * @param authenticationUrl - the authentication URL/token endpoint
+     */
+    constructor(
+        private readonly clientId: string,
+        private readonly clientSecret: string,
+        private readonly authenticationUrl: string
+    ) {
         this.token = undefined;
     }
 
@@ -129,7 +149,7 @@ export class JWTCredentials extends APICredentials {
         return this.token;
     }
 
-    public async getAuthenticationHeader(): Promise<HTTPHeader> {
+    public async getAuthorizationHeader(): Promise<HttpHeader> {
         return {
             Authorization: `Bearer ${await this.getToken()}`,
         };

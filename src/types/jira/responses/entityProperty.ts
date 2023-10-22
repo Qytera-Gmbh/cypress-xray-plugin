@@ -1,4 +1,4 @@
-export type EntityProperty = {
+export type IEntityProperty = {
     /**
      * The key of the property. Required on create and update.
      */

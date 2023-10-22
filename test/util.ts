@@ -11,13 +11,6 @@ import { XrayClient } from "../src/client/xray/xrayClient";
 import { RequestConfigPost, Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
-import { SearchRequestServer } from "../src/types/jira/requests/search";
-import { AttachmentServer } from "../src/types/jira/responses/attachment";
-import { FieldDetailServer } from "../src/types/jira/responses/fieldDetail";
-import { IssueServer } from "../src/types/jira/responses/issue";
-import { IssueTypeDetailsServer } from "../src/types/jira/responses/issueTypeDetails";
-import { IssueUpdateServer } from "../src/types/jira/responses/issueUpdate";
-import { JsonTypeServer } from "../src/types/jira/responses/jsonType";
 
 chai.use(sinonChai);
 
@@ -89,7 +82,7 @@ before(() => {
             headers: new AxiosHeaders(),
         },
     });
-    RESOLVED_JWT_CREDENTIALS.getAuthenticationHeader();
+    RESOLVED_JWT_CREDENTIALS.getAuthorizationHeader();
 });
 
 beforeEach(() => {
@@ -104,7 +97,7 @@ after(async () => {
     }
 });
 
-export class DummyXrayClient extends XrayClient<PATCredentials, null, null, null> {
+export class DummyXrayClient extends XrayClient {
     constructor() {
         super("https://example.org", new PATCredentials("token"));
     }
@@ -134,16 +127,7 @@ export class DummyXrayClient extends XrayClient<PATCredentials, null, null, null
     }
 }
 
-export class DummyJiraClient extends JiraClient<
-    PATCredentials,
-    AttachmentServer,
-    FieldDetailServer,
-    JsonTypeServer,
-    IssueServer,
-    IssueTypeDetailsServer,
-    SearchRequestServer,
-    IssueUpdateServer
-> {
+export class DummyJiraClient extends JiraClient {
     constructor() {
         super("https://example.org", new PATCredentials("token"));
     }
@@ -191,6 +175,10 @@ export function env(key: string): string {
         throw new Error(`Expected environment variable ${key} to not be undefined, which it was`);
     }
     return value as string;
+}
+
+export function arrayEquals(a: unknown[], b: unknown[]) {
+    return a.length === b.length && a.every((val, index) => val === b[index]);
 }
 
 // ============================================================================================== //

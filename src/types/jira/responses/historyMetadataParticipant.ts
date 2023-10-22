@@ -1,4 +1,4 @@
-export type HistoryMetadataParticipant = {
+export interface IHistoryMetadataParticipant {
     /**
      * The ID of the user or system associated with a history record.
      */
@@ -23,4 +23,4 @@ export type HistoryMetadataParticipant = {
      * The URL of the user or system associated with a history record.
      */
     url?: string;
-};
+}

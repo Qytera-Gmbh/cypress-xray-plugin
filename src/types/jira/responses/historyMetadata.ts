@@ -1,9 +1,9 @@
-import { HistoryMetadataParticipant } from "./historyMetadataParticipant";
+import { IHistoryMetadataParticipant } from "./historyMetadataParticipant";
 
 /**
  * History metadata associated with a changelog.
  */
-export type HistoryMetadata = {
+export interface IHistoryMetadata {
     /**
      * The type of the history record.
      */
@@ -35,19 +35,19 @@ export type HistoryMetadata = {
     /**
      * Details of the user whose action created the history record.
      */
-    actor?: HistoryMetadataParticipant;
+    actor?: IHistoryMetadataParticipant;
     /**
      * Details of the system that generated the history record.
      */
-    generator?: HistoryMetadataParticipant;
+    generator?: IHistoryMetadataParticipant;
     /**
      * Details of the cause that triggered the creation the history record.
      */
-    cause?: HistoryMetadataParticipant;
+    cause?: IHistoryMetadataParticipant;
     /**
      * Additional arbitrary information about the history record.
      */
     extraData?: {
         [k: string]: string;
     };
-};
+}

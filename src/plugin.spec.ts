@@ -8,7 +8,9 @@ import { XrayClientServer } from "./client/xray/xrayClientServer";
 import * as context from "./context";
 import * as hooks from "./hooks";
 import { addXrayResultUpload, configureXrayPlugin, syncFeatureFile } from "./plugin";
-import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
+import { JiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
+import { JiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
+import { JiraRepository } from "./repository/jira/jiraRepository";
 import { Options, PluginContext } from "./types/plugin";
 import { dedent } from "./util/dedent";
 
@@ -19,11 +21,7 @@ describe("the plugin", () => {
     beforeEach(() => {
         config = JSON.parse(fs.readFileSync("./test/resources/cypress.config.json", "utf-8"));
         const jiraClient = new JiraClientServer("https://example.org", new PATCredentials("token"));
-        const xrayClient = new XrayClientServer(
-            "https://example.org",
-            new PATCredentials("token"),
-            jiraClient
-        );
+        const xrayClient = new XrayClientServer("https://example.org", new PATCredentials("token"));
         const jiraOptions = context.initJiraOptions(
             {},
             {
@@ -31,7 +29,17 @@ describe("the plugin", () => {
                 url: "https://example.org",
             }
         );
-        const jiraRepository = new JiraRepositoryServer(jiraClient, xrayClient, jiraOptions);
+        const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
+        const jiraFieldFetcher = new JiraIssueFetcher(
+            jiraClient,
+            jiraFieldRepository,
+            jiraOptions.fields
+        );
+        const jiraRepository = new JiraRepository(
+            jiraFieldRepository,
+            jiraFieldFetcher,
+            jiraOptions
+        );
         pluginContext = {
             cypress: config,
             internal: {

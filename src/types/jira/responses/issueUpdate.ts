@@ -1,14 +1,14 @@
-import { EntityProperty } from "./entityProperty";
-import { FieldUpdateOperation } from "./fieldUpdateOperation";
-import { HistoryMetadata } from "./historyMetadata";
-import { IssueTransitionCloud, IssueTransitionServer } from "./issueTransition";
+import { IEntityProperty } from "./entityProperty";
+import { IFieldUpdateOperation } from "./fieldUpdateOperation";
+import { IHistoryMetadata } from "./historyMetadata";
+import { IIssueTransition } from "./issueTransition";
 
-type IssueUpdate<IssueTransitionType> = {
+export interface IIssueUpdate {
     /**
      * Details of a transition. Required when performing a transition, optional when creating or
      * editing an issue.
      */
-    transition?: IssueTransitionType;
+    transition?: IIssueTransition;
     /**
      * List of issue screen fields to update, specifying the sub-field to update and its value for
      * each field. This field provides a straightforward option when setting a sub-field. When
@@ -26,16 +26,14 @@ type IssueUpdate<IssueTransitionType> = {
      * field. Note that fields included in here cannot be included in {@link fields}.
      */
     update?: {
-        [k: string]: FieldUpdateOperation[];
+        [k: string]: IFieldUpdateOperation[];
     };
     /**
      * Additional issue history details.
      */
-    historyMetadata?: HistoryMetadata;
+    historyMetadata?: IHistoryMetadata;
     /**
      * Details of issue properties to be add or update.
      */
-    properties?: EntityProperty[];
-};
-export type IssueUpdateServer = IssueUpdate<IssueTransitionServer>;
-export type IssueUpdateCloud = IssueUpdate<IssueTransitionCloud>;
+    properties?: IEntityProperty[];
+}

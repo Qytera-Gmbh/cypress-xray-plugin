@@ -15,7 +15,9 @@ import {
     initXrayOptions,
 } from "./context";
 import { beforeRunHook, synchronizeFile } from "./hooks";
-import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
+import { JiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
+import { JiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
+import { JiraRepository } from "./repository/jira/jiraRepository";
 import { ClientCombination, InternalOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
 
@@ -45,16 +47,18 @@ describe("the hooks", () => {
             openSSL: initOpenSSLOptions({}, {}),
         };
         const jiraClient = new JiraClientServer("https://example.org", new PATCredentials("token"));
-        const xrayClient = new XrayClientServer(
-            "https://example.org",
-            new PATCredentials("token"),
-            jiraClient
+        const xrayClient = new XrayClientServer("https://example.org", new PATCredentials("token"));
+        const jiraFieldRepository = new JiraFieldRepository(jiraClient, options.jira);
+        const jiraFieldFetcher = new JiraIssueFetcher(
+            jiraClient,
+            jiraFieldRepository,
+            options.jira.fields
         );
         clients = {
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new JiraRepositoryServer(jiraClient, xrayClient, options.jira),
+            jiraRepository: new JiraRepository(jiraFieldRepository, jiraFieldFetcher, options.jira),
         };
     });
 

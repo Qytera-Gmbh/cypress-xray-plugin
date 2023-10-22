@@ -1,15 +1,10 @@
-import { JiraRepositoryCloud } from "../../repository/jira/jiraRepositoryCloud";
-import { JiraRepositoryServer } from "../../repository/jira/jiraRepositoryServer";
+import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
+import { JiraRepository } from "../../repository/jira/jiraRepository";
 import { InternalOptions } from "../../types/plugin";
 import {
-    CucumberMultipart,
     CucumberMultipartFeature,
+    ICucumberMultipart,
 } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import {
-    CucumberMultipartInfoCloud,
-    CucumberMultipartInfoServer,
-} from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
-import { Converter } from "../converter";
 import { getMultipartFeatures } from "./multipartFeatureConversion";
 import {
     TestExecutionIssueData,
@@ -25,19 +20,20 @@ import {
  */
 export type ConversionParameters = Omit<CypressCommandLine.CypressRunResult, "runs" | "config">;
 
-type CucumberMultipartInfoType = CucumberMultipartInfoServer | CucumberMultipartInfoCloud;
-
-export class ImportExecutionCucumberMultipartConverter extends Converter<
-    CucumberMultipartFeature[],
-    CucumberMultipart<CucumberMultipartInfoType>,
-    ConversionParameters
-> {
+export class ImportExecutionCucumberMultipartConverter {
+    /**
+     * The configured plugin options.
+     */
+    private readonly options: InternalOptions;
     /**
      * Whether the converter is a cloud converter. Useful for automatically deducing which test
      * converters to use.
      */
     private readonly isCloudConverter: boolean;
-    private readonly jiraRepository: JiraRepositoryServer | JiraRepositoryCloud;
+    /**
+     * The Jira repository for fetching issue data.
+     */
+    private readonly jiraRepository: JiraRepository;
 
     /**
      * Construct a new converter with access to the provided options. The cloud converter flag is
@@ -51,9 +47,9 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
     constructor(
         options: InternalOptions,
         isCloudConverter: boolean,
-        jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
+        jiraRepository: JiraRepository
     ) {
-        super(options);
+        this.options = options;
         this.isCloudConverter = isCloudConverter;
         this.jiraRepository = jiraRepository;
     }
@@ -61,7 +57,7 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
     public async convert(
         input: CucumberMultipartFeature[],
         parameters: ConversionParameters
-    ): Promise<CucumberMultipart<CucumberMultipartInfoType>> {
+    ): Promise<ICucumberMultipart> {
         const features = getMultipartFeatures(input, {
             testExecutionIssueKey: this.options.jira.testExecutionIssueKey,
             includeScreenshots: this.options.xray.uploadScreenshots,
@@ -99,16 +95,13 @@ export class ImportExecutionCucumberMultipartConverter extends Converter<
         if (this.options.jira.testPlanIssueKey) {
             testExecutionIssueData.testPlan = {
                 issueKey: this.options.jira.testPlanIssueKey,
-                fieldId: await this.jiraRepository.getFieldId("test plan", "testPlan"),
+                fieldId: await this.jiraRepository.getFieldId(SupportedFields.TEST_PLAN),
             };
         }
         if (this.options.xray.testEnvironments) {
             testExecutionIssueData.testEnvironments = {
                 environments: this.options.xray.testEnvironments,
-                fieldId: await this.jiraRepository.getFieldId(
-                    "test environments",
-                    "testEnvironments"
-                ),
+                fieldId: await this.jiraRepository.getFieldId(SupportedFields.TEST_ENVIRONMENTS),
             };
         }
         return {

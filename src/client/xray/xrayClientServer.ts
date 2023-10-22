@@ -3,44 +3,27 @@ import { BasicAuthCredentials, PATCredentials } from "../../authentication/crede
 import { RequestConfigPost } from "../../https/requests";
 import { logDebug, logError } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { CucumberMultipartInfoServer } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import {
     ImportFeatureResponseServer,
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
-import { JiraClientServer } from "../jira/jiraClientServer";
 import { XrayClient } from "./xrayClient";
 
-export class XrayClientServer extends XrayClient<
-    BasicAuthCredentials | PATCredentials,
-    ImportFeatureResponseServer,
-    ImportExecutionResponseServer,
-    CucumberMultipartInfoServer
-> {
-    /**
-     * The configured Jira client.
-     */
-    protected readonly jiraClient: JiraClientServer;
-
+export class XrayClientServer extends XrayClient {
     /**
      * Construct a new Xray Server client using the provided credentials.
      *
      * @param apiBaseUrl - the base URL for all HTTP requests
      * @param credentials - the credentials to use during authentication
-     * @param jiraClient - the configured Jira client
      */
-    constructor(
-        apiBaseUrl: string,
-        credentials: BasicAuthCredentials | PATCredentials,
-        jiraClient: JiraClientServer
-    ) {
+    constructor(apiBaseUrl: string, credentials: BasicAuthCredentials | PATCredentials) {
         super(apiBaseUrl, credentials);
-        this.jiraClient = jiraClient;
     }
 
     public getUrlImportExecution(): string {
-        return `${this.apiBaseURL}/rest/raven/latest/import/execution`;
+        return `${this.apiBaseUrl}/rest/raven/latest/import/execution`;
     }
 
     public handleResponseImportExecution(response: ImportExecutionResponseServer): string {
@@ -60,11 +43,11 @@ export class XrayClientServer extends XrayClient<
         }
         // Always zip feature files, even single ones.
         query.push("fz=true");
-        return `${this.apiBaseURL}/rest/raven/latest/export/test?${query.join("&")}`;
+        return `${this.apiBaseUrl}/rest/raven/latest/export/test?${query.join("&")}`;
     }
 
     public getUrlImportFeature(projectKey: string): string {
-        return `${this.apiBaseURL}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
+        return `${this.apiBaseUrl}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
     }
 
     public handleResponseImportFeature(response: ImportFeatureResponseServer): void {
@@ -95,7 +78,7 @@ export class XrayClientServer extends XrayClient<
 
     public async prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfoServer
+        cucumberInfo: ICucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>> {
         const formData = new FormData();
         const resultString = JSON.stringify(cucumberJson);
@@ -106,13 +89,13 @@ export class XrayClientServer extends XrayClient<
         formData.append("info", infoString, {
             filename: "info.json",
         });
-        const authenticationHeader = await this.credentials.getAuthenticationHeader();
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
         return {
-            url: `${this.apiBaseURL}/rest/raven/latest/import/execution/cucumber/multipart`,
+            url: `${this.apiBaseUrl}/rest/raven/latest/import/execution/cucumber/multipart`,
             data: formData,
             config: {
                 headers: {
-                    ...authenticationHeader,
+                    ...authorizationHeader,
                     ...formData.getHeaders(),
                 },
             },

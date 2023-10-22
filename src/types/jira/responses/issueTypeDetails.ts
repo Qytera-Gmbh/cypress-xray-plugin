@@ -1,9 +1,9 @@
-import { Scope } from "./scope";
+import { IScope } from "./scope";
 
 /**
  * An issue type visible to the Jira user.
  */
-type IssueTypeDetails = {
+export interface IIssueTypeDetails {
     /**
      * The URL of these issue type details.
      */
@@ -32,9 +32,8 @@ type IssueTypeDetails = {
      * The ID of the issue type's avatar.
      */
     avatarId?: number;
-};
-export type IssueTypeDetailsServer = IssueTypeDetails;
-export type IssueTypeDetailsCloud = IssueTypeDetails & {
+}
+export interface IssueTypeDetailsCloud extends IIssueTypeDetails {
     /**
      * Unique ID for next-gen projects.
      */
@@ -46,10 +45,10 @@ export type IssueTypeDetailsCloud = IssueTypeDetails & {
     /**
      * Details of the next-gen projects the issue type is available in.
      */
-    scope?: Scope;
+    scope?: IScope;
     /**
      * The untranslated name of the issue type
      * ([currently undocumented](https://community.developer.atlassian.com/t/untranslatedname-property-returned-within-the-issue-types-api-response/46934)).
      */
     untranslatedName?: string;
-};
+}

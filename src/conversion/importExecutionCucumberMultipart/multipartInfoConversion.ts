@@ -1,10 +1,7 @@
-import {
-    IssueTypeDetailsCloud,
-    IssueTypeDetailsServer,
-} from "../../types/jira/responses/issueTypeDetails";
+import { IIssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import {
     CucumberMultipartInfoCloud,
-    CucumberMultipartInfoServer,
+    ICucumberMultipartInfo,
 } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { dedent } from "../../util/dedent";
 
@@ -21,7 +18,7 @@ export type RunData = Pick<
  */
 export interface TestExecutionIssueData {
     projectKey: string;
-    issuetype: IssueTypeDetailsServer | IssueTypeDetailsCloud;
+    issuetype: IIssueTypeDetails;
     summary?: string;
     description?: string;
     testPlan?: {
@@ -58,8 +55,8 @@ export interface TestExecutionIssueDataServer extends TestExecutionIssueData {
 export function getMultipartInfoServer(
     runData: RunData,
     testExecutionIssueData: TestExecutionIssueDataServer
-): CucumberMultipartInfoServer {
-    const multipartInfo: CucumberMultipartInfoServer = {
+): ICucumberMultipartInfo {
+    const multipartInfo: ICucumberMultipartInfo = {
         fields: {
             project: {
                 key: testExecutionIssueData.projectKey,

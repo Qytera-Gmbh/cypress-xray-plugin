@@ -1,12 +1,12 @@
-import { ChangelogCloud, ChangelogServer } from "./changelog";
-import { EditMetaCloud, EditMetaServer } from "./editMeta";
-import { IncludedFields } from "./includedFields";
-import { JsonTypeCloud, JsonTypeServer } from "./jsonType";
-import { Opsbar } from "./opsbar";
-import { Properties } from "./properties";
-import { TransitionCloud, TransitionServer } from "./transition";
+import { IChangelog } from "./changelog";
+import { IEditMeta } from "./editMeta";
+import { IIncludedFields } from "./includedFields";
+import { IJsonType } from "./jsonType";
+import { IOpsbar } from "./opsbar";
+import { IProperties } from "./properties";
+import { ITransition } from "./transition";
 
-type Issue<ChangelogType, EditMetaType, JsonType, TransitionType> = {
+export interface IIssue {
     /**
      * Expand options that include additional issue details in the response.
      */
@@ -38,7 +38,7 @@ type Issue<ChangelogType, EditMetaType, JsonType, TransitionType> = {
     /**
      * Details of the issue properties identified in the request.
      */
-    properties?: Properties;
+    properties?: IProperties;
     /**
      * The ID and name of each field present on the issue.
      */
@@ -49,24 +49,24 @@ type Issue<ChangelogType, EditMetaType, JsonType, TransitionType> = {
      * The schema describing each field present on the issue.
      */
     schema?: {
-        [k: string]: JsonType;
+        [k: string]: IJsonType;
     };
     /**
      * The transitions that can be performed on the issue.
      */
-    transitions?: TransitionType[];
+    transitions?: ITransition[];
     /**
      * The operations that can be performed on the issue.
      */
-    operations?: Opsbar;
+    operations?: IOpsbar;
     /**
      * The metadata for the fields on the issue that can be amended.
      */
-    editmeta?: EditMetaType;
+    editmeta?: IEditMeta;
     /**
      * Details of changelogs associated with the issue.
      */
-    changelog?: ChangelogType;
+    changelog?: IChangelog;
     /**
      * The versions of each field on the issue.
      */
@@ -78,7 +78,5 @@ type Issue<ChangelogType, EditMetaType, JsonType, TransitionType> = {
     /**
      * The parsed and queried fields or similar query parameters.
      */
-    fieldsToInclude?: IncludedFields;
-};
-export type IssueServer = Issue<ChangelogServer, EditMetaServer, JsonTypeServer, TransitionServer>;
-export type IssueCloud = Issue<ChangelogCloud, EditMetaCloud, JsonTypeCloud, TransitionCloud>;
+    fieldsToInclude?: IIncludedFields;
+}

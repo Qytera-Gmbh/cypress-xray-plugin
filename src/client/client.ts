@@ -1,26 +1,19 @@
-import {
-    BasicAuthCredentials,
-    JWTCredentials,
-    PATCredentials,
-} from "../authentication/credentials";
+import { IHttpCredentials } from "../authentication/credentials";
 import { logInfo } from "../logging/logging";
-import { OneOf } from "../types/util";
 import { startInterval } from "../util/time";
 
 /**
  * A basic client interface which stores credentials data used for communicating with a server.
  */
-export abstract class Client<
-    T extends OneOf<[BasicAuthCredentials, PATCredentials, JWTCredentials]>
-> {
+export abstract class Client {
     /**
      * The server URL.
      */
-    protected readonly apiBaseURL: string;
+    protected readonly apiBaseUrl: string;
     /**
      * The credentials to use for authentication.
      */
-    protected readonly credentials: T;
+    protected readonly credentials: IHttpCredentials;
 
     /**
      * Construct a new client using the provided credentials.
@@ -28,8 +21,8 @@ export abstract class Client<
      * @param apiBaseUrl - the base URL for all HTTP requests
      * @param credentials - the credentials to use during authentication
      */
-    constructor(apiBaseUrl: string, credentials: T) {
-        this.apiBaseURL = apiBaseUrl;
+    constructor(apiBaseUrl: string, credentials: IHttpCredentials) {
+        this.apiBaseUrl = apiBaseUrl;
         this.credentials = credentials;
     }
 
@@ -38,7 +31,7 @@ export abstract class Client<
      *
      * @returns the credentials
      */
-    public getCredentials(): T {
+    public getCredentials(): IHttpCredentials {
         return this.credentials;
     }
 

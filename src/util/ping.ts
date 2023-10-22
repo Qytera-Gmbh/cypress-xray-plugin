@@ -5,7 +5,7 @@ import {
 } from "../authentication/credentials";
 import { Requests } from "../https/requests";
 import { logDebug, logInfo } from "../logging/logging";
-import { UserCloud, UserServer } from "../types/jira/responses/user";
+import { IUser } from "../types/jira/responses/user";
 import { dedent } from "./dedent";
 import { errorMessage } from "./errors";
 import { startInterval } from "./time";
@@ -29,7 +29,7 @@ export async function pingJiraInstance(
         logInfo(`Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
     });
     try {
-        const header = await credentials.getAuthenticationHeader();
+        const header = await credentials.getAuthorizationHeader();
         const userResponse = await Requests.get(`${url}/rest/api/latest/myself`, {
             headers: {
                 ...header,
@@ -69,7 +69,7 @@ export async function pingJiraInstance(
     }
 }
 
-function getUserString(user: UserServer | UserCloud): string | undefined {
+function getUserString(user: IUser): string | undefined {
     return user.displayName ?? user.emailAddress ?? user.name;
 }
 
@@ -91,7 +91,7 @@ export async function pingXrayServer(
         logInfo(`Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
     });
     try {
-        const header = await credentials.getAuthenticationHeader();
+        const header = await credentials.getAuthorizationHeader();
         const licenseResponse = await Requests.get(`${url}/rest/raven/latest/api/xraylicense`, {
             headers: {
                 ...header,
@@ -145,7 +145,7 @@ export async function pingXrayServer(
 export async function pingXrayCloud(credentials: JWTCredentials): Promise<void> {
     logDebug("Pinging Xray cloud...");
     try {
-        await credentials.getAuthenticationHeader();
+        await credentials.getAuthorizationHeader();
         logDebug(
             dedent(`
                 Successfully established communication with: ${credentials.getAuthenticationUrl()}

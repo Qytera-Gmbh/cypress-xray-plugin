@@ -1,0 +1,573 @@
+import { expect } from "chai";
+import { arrayEquals, stubLogging } from "../../../test/util";
+import { BasicAuthCredentials } from "../../authentication/credentials";
+import { JiraClientCloud } from "../../client/jira/jiraClientCloud";
+import { initJiraOptions } from "../../context";
+import { InternalJiraOptions } from "../../types/plugin";
+import { StringMap } from "../../types/util";
+import { dedent } from "../../util/dedent";
+import { IJiraFieldRepository, JiraFieldRepository } from "./fields/jiraFieldRepository";
+import { IJiraIssueFetcher, JiraIssueFetcher } from "./fields/jiraIssueFetcher";
+import { IJiraRepository, JiraRepository } from "./jiraRepository";
+
+describe("the cloud issue repository", () => {
+    let jiraOptions: InternalJiraOptions;
+    let jiraFieldRepository: IJiraFieldRepository;
+    let jiraFieldFetcher: IJiraIssueFetcher;
+    let repository: IJiraRepository;
+
+    beforeEach(() => {
+        jiraOptions = initJiraOptions(
+            {},
+            {
+                projectKey: "CYP",
+                url: "https://example.org",
+            }
+        );
+        const jiraClient = new JiraClientCloud(
+            "https://example.org",
+            new BasicAuthCredentials("user", "xyz")
+        );
+        jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
+        jiraFieldFetcher = new JiraIssueFetcher(
+            jiraClient,
+            jiraFieldRepository,
+            jiraOptions.fields
+        );
+        repository = new JiraRepository(jiraFieldRepository, jiraFieldFetcher, jiraOptions);
+    });
+
+    describe("getSummaries", () => {
+        it("fetches summaries", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: async function (
+                    ...issueKeys: string[]
+                ): Promise<StringMap<string>> {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                        return {
+                            "CYP-123": "Hello",
+                            "CYP-456": "Good Morning",
+                            "CYP-789": "Goodbye",
+                        };
+                    }
+                    throw new Error(`Unexpected argument: ${issueKeys}`);
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
+            expect(summaries).to.deep.eq({
+                "CYP-123": "Hello",
+                "CYP-456": "Good Morning",
+                "CYP-789": "Goodbye",
+            });
+        });
+
+        it("fetches summaries only for unknown issues", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: async function (
+                    ...issueKeys: string[]
+                ): Promise<StringMap<string>> {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
+                        return {
+                            "CYP-123": "Hello",
+                            "CYP-789": "Goodbye",
+                        };
+                    } else if (arrayEquals(issueKeys, ["CYP-456"])) {
+                        return {
+                            "CYP-456": "Good Morning",
+                        };
+                    }
+                    throw new Error(`Unexpected argument: ${issueKeys}`);
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            await repository.getSummaries("CYP-123", "CYP-789");
+            const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
+            expect(summaries).to.deep.eq({
+                "CYP-123": "Hello",
+                "CYP-456": "Good Morning",
+                "CYP-789": "Goodbye",
+            });
+            // Everything's fetched already, should not fetch anything again.
+            await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
+        });
+
+        it("displays an error for issues which do not exist", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: async function (
+                    ...issueKeys: string[]
+                ): Promise<StringMap<string>> {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                        return {
+                            "CYP-123": "Hello",
+                        };
+                    }
+                    throw new Error(`Unexpected argument: ${issueKeys}`);
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue summaries
+                    Make sure these issues exist:
+
+                      CYP-456
+                      CYP-789
+                `)
+            );
+            expect(summaries).to.deep.eq({
+                "CYP-123": "Hello",
+            });
+        });
+
+        it("handles get field failures gracefully", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: async function (): Promise<StringMap<string>> {
+                    throw new Error("Expected error");
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const { stubbedError } = stubLogging();
+            const summaries = await repository.getSummaries("CYP-123");
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue summaries
+                    Expected error
+                `)
+            );
+            expect(summaries).to.deep.eq({});
+        });
+    });
+
+    describe("getDescriptions", () => {
+        it("fetches descriptions", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: async (...issueKeys: []): Promise<StringMap<string>> => {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                        return {
+                            "CYP-123": "Very informative",
+                            "CYP-456": "Even more informative",
+                            "CYP-789": "Not that informative",
+                        };
+                    }
+                    throw new Error(`Unexpected argument. ${issueKeys}`);
+                },
+                fetchLabels: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
+            expect(descriptions).to.deep.eq({
+                "CYP-123": "Very informative",
+                "CYP-456": "Even more informative",
+                "CYP-789": "Not that informative",
+            });
+        });
+
+        it("fetches descriptions only for unknown issues", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: async (...issueKeys: []): Promise<StringMap<string>> => {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
+                        return {
+                            "CYP-123": "Very informative",
+                            "CYP-789": "Not that informative",
+                        };
+                    } else if (arrayEquals(issueKeys, ["CYP-456"])) {
+                        return {
+                            "CYP-456": "Even more informative",
+                        };
+                    }
+                    throw new Error(`Unexpected argument. ${issueKeys}`);
+                },
+                fetchLabels: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            await repository.getDescriptions("CYP-123", "CYP-789");
+            const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
+            expect(descriptions).to.deep.eq({
+                "CYP-123": "Very informative",
+                "CYP-456": "Even more informative",
+                "CYP-789": "Not that informative",
+            });
+            // Everything's fetched already, should not fetch anything again.
+            await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
+        });
+
+        it("displays an error for issues which do not exist", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: async (): Promise<StringMap<string>> => {
+                    return {
+                        "CYP-123": "I am a description",
+                    };
+                },
+                fetchLabels: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const { stubbedError } = stubLogging();
+            const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue descriptions
+                    Make sure these issues exist:
+
+                      CYP-456
+                      CYP-789
+                `)
+            );
+            expect(descriptions).to.deep.eq({
+                "CYP-123": "I am a description",
+            });
+        });
+
+        it("handles get field failures gracefully", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Expected error");
+                },
+                fetchLabels: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const { stubbedError } = stubLogging();
+            const descriptions = await repository.getDescriptions("CYP-123");
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue descriptions
+                    Expected error
+                `)
+            );
+            expect(descriptions).to.deep.eq({});
+        });
+    });
+
+    describe("getTestTypes", () => {
+        it("fetches test types", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: async (): Promise<StringMap<string>> => {
+                    return {
+                        "CYP-123": "Cucumber",
+                        "CYP-456": "Generic",
+                        "CYP-789": "Manual",
+                    };
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
+            expect(testTypes).to.deep.eq({
+                "CYP-123": "Cucumber",
+                "CYP-456": "Generic",
+                "CYP-789": "Manual",
+            });
+        });
+
+        it("fetches test types only for unknown issues", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: async (...issueKeys: string[]): Promise<StringMap<string>> => {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
+                        return {
+                            "CYP-123": "Cucumber",
+                            "CYP-789": "Manual",
+                        };
+                    } else if (arrayEquals(issueKeys, ["CYP-456"])) {
+                        return {
+                            "CYP-456": "Generic",
+                        };
+                    }
+                    throw new Error(`Unexpected argument: ${issueKeys}`);
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            await repository.getTestTypes("CYP-123", "CYP-789");
+            const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
+            expect(testTypes).to.deep.eq({
+                "CYP-123": "Cucumber",
+                "CYP-456": "Generic",
+                "CYP-789": "Manual",
+            });
+            // Everything's fetched already, should not fetch anything again.
+            await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
+        });
+
+        it("displays an error for issues which do not exist", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: async (...issueKeys: string[]): Promise<StringMap<string>> => {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                        return {
+                            "CYP-123": "Cucumber",
+                        };
+                    }
+                    throw new Error(`Unexpected argument: ${issueKeys}`);
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const { stubbedError } = stubLogging();
+            const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue test types
+                    Make sure these issues exist and are test issues:
+
+                      CYP-456
+                      CYP-789
+                `)
+            );
+            expect(testTypes).to.deep.eq({ "CYP-123": "Cucumber" });
+        });
+
+        it("handles failed test type requests gracefully", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchSummaries: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Expected error");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const { stubbedError } = stubLogging();
+            const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue test types
+                    Expected error
+                `)
+            );
+            expect(testTypes).to.deep.eq({});
+        });
+    });
+
+    describe("getLabels", () => {
+        it("fetches labels", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: async (...issueKeys: string[]): Promise<StringMap<string[]>> => {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                        return {
+                            "CYP-123": ["A", "B", "C"],
+                            "CYP-456": [],
+                            "CYP-789": ["D"],
+                        };
+                    }
+                    throw new Error(`Unexpected argument: ${issueKeys}`);
+                },
+                fetchSummaries: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
+            expect(labels).to.deep.eq({
+                "CYP-123": ["A", "B", "C"],
+                "CYP-456": [],
+                "CYP-789": ["D"],
+            });
+        });
+
+        it("fetches labels only for unknown issues", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: async (...issueKeys: string[]): Promise<StringMap<string[]>> => {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
+                        return {
+                            "CYP-123": ["A", "B", "C"],
+                            "CYP-789": ["E"],
+                        };
+                    } else if (arrayEquals(issueKeys, ["CYP-456"])) {
+                        return {
+                            "CYP-456": ["D"],
+                        };
+                    }
+                    throw new Error(`Unexpected argument: ${issueKeys}`);
+                },
+                fetchSummaries: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            await repository.getLabels("CYP-123", "CYP-789");
+            const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
+            expect(labels).to.deep.eq({
+                "CYP-123": ["A", "B", "C"],
+                "CYP-456": ["D"],
+                "CYP-789": ["E"],
+            });
+            // Everything's fetched already, should not fetch anything again.
+            await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
+        });
+
+        it("displays an error for issues which do not exist", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: async (...issueKeys: string[]): Promise<StringMap<string[]>> => {
+                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                        return {
+                            "CYP-123": ["X"],
+                        };
+                    }
+                    throw new Error(`Unexpected argument: ${issueKeys}`);
+                },
+                fetchSummaries: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const { stubbedError } = stubLogging();
+            const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue labels
+                    Make sure these issues exist:
+
+                      CYP-456
+                      CYP-789
+                `)
+            );
+            expect(labels).to.deep.eq({
+                "CYP-123": ["X"],
+            });
+        });
+
+        it("handles get field failures gracefully", async () => {
+            const mockedFieldFetcher: IJiraIssueFetcher = {
+                fetchDescriptions: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchLabels: () => {
+                    throw new Error("Expected error");
+                },
+                fetchSummaries: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+                fetchTestTypes: () => {
+                    throw new Error("Mock called unexpectedly");
+                },
+            };
+            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            const { stubbedError } = stubLogging();
+            const labels = await repository.getLabels("CYP-123");
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to fetch issue labels
+                    Expected error
+                `)
+            );
+            expect(labels).to.deep.eq({});
+        });
+    });
+});

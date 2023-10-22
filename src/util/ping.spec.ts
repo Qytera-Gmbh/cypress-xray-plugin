@@ -4,7 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import Sinon from "sinon";
 import { RESOLVED_JWT_CREDENTIALS, stubLogging, stubRequests } from "../../test/util";
 import { JWTCredentials, PATCredentials } from "../authentication/credentials";
-import { UserCloud, UserServer } from "../types/jira/responses/user";
+import { IUser } from "../types/jira/responses/user";
 import { XrayLicenseStatus } from "../types/xray/responses/license";
 import { dedent } from "./dedent";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./ping";
@@ -14,7 +14,7 @@ chai.use(chaiAsPromised);
 describe("Jira instance ping", () => {
     it("returns true on success", async () => {
         const { stubbedGet } = stubRequests();
-        const response: AxiosResponse<UserServer | UserCloud> = {
+        const response: AxiosResponse<IUser> = {
             status: HttpStatusCode.Ok,
             data: {
                 active: true,
@@ -64,7 +64,7 @@ describe("Jira instance ping", () => {
 
     it("returns false if user data is missing", async () => {
         const { stubbedGet } = stubRequests();
-        const response: AxiosResponse<UserServer | UserCloud> = {
+        const response: AxiosResponse<IUser> = {
             status: HttpStatusCode.Ok,
             data: {
                 active: true,
@@ -95,7 +95,7 @@ describe("Jira instance ping", () => {
         const { stubbedGet } = stubRequests();
         const { stubbedInfo } = stubLogging();
         const clock = Sinon.useFakeTimers();
-        const response: AxiosResponse<UserServer | UserCloud> = {
+        const response: AxiosResponse<IUser> = {
             status: HttpStatusCode.Ok,
             data: {
                 active: true,

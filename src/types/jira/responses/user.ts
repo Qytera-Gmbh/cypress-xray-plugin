@@ -1,6 +1,6 @@
-import { SimpleListWrapper } from "./simpleListWrapper";
+import { ISimpleListWrapper } from "./simpleListWrapper";
 
-type User = {
+export interface IUser {
     /**
      * The URL of the user.
      */
@@ -45,15 +45,15 @@ type User = {
      * may be returned as null.
      */
     timeZone?: string;
-};
-export type UserServer = User & {
+}
+export interface UserServer extends IUser {
     locale?: string;
-    groups?: SimpleListWrapper;
-    applicationRoles?: SimpleListWrapper;
+    groups?: ISimpleListWrapper;
+    applicationRoles?: ISimpleListWrapper;
     expand?: string;
     deleted?: boolean;
-};
-export type UserCloud = User & {
+}
+export interface UserCloud extends IUser {
     /**
      * The account ID of the user, which uniquely identifies the user across all Atlassian products.
      * @example "5b10ac8d82e05b22cc7d4ef5"
@@ -63,4 +63,4 @@ export type UserCloud = User & {
      * The type of account represented by this user.
      */
     accountType?: "atlassian" | "app" | "customer";
-};
+}

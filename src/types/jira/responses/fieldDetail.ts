@@ -1,7 +1,7 @@
-import { JsonTypeCloud, JsonTypeServer } from "./jsonType";
-import { Scope } from "./scope";
+import { IJsonType } from "./jsonType";
+import { IScope } from "./scope";
 
-type FieldDetail<JsonType> = {
+export interface IFieldDetail {
     /**
      * The ID of the field.
      */
@@ -33,10 +33,9 @@ type FieldDetail<JsonType> = {
     /**
      * The data schema for the field.
      */
-    schema: JsonType;
-};
-export type FieldDetailServer = FieldDetail<JsonTypeServer>;
-export type FieldDetailCloud = FieldDetail<JsonTypeCloud> & {
+    schema: IJsonType;
+}
+export interface FieldDetailCloud extends IFieldDetail {
     /**
      * The key of the field.
      */
@@ -44,5 +43,5 @@ export type FieldDetailCloud = FieldDetail<JsonTypeCloud> & {
     /**
      * The scope of the field.
      */
-    scope?: Scope;
-};
+    scope?: IScope;
+}

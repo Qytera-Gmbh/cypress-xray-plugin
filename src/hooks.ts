@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { JiraClientCloud } from "./client/jira/jiraClientCloud";
-import { JiraClientServer } from "./client/jira/jiraClientServer";
+import { IJiraClient } from "./client/jira/jiraClient";
 import { ImportExecutionConverter } from "./conversion/importExecution/importExecutionConverter";
 import { ImportExecutionCucumberMultipartConverter } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverter";
 import { logDebug, logError, logInfo, logSuccess, logWarning } from "./logging/logging";
@@ -12,12 +11,9 @@ import {
     containsNativeTest,
     getCucumberIssueData,
 } from "./preprocessing/preprocessing";
-import { JiraRepositoryCloud } from "./repository/jira/jiraRepositoryCloud";
-import { JiraRepositoryServer } from "./repository/jira/jiraRepositoryServer";
-import {
-    IssueTypeDetailsCloud,
-    IssueTypeDetailsServer,
-} from "./types/jira/responses/issueTypeDetails";
+import { SupportedFields } from "./repository/jira/fields/jiraIssueFetcher";
+import { IJiraRepository, JiraRepository } from "./repository/jira/jiraRepository";
+import { IIssueTypeDetails } from "./types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalOptions } from "./types/plugin";
 import { StringMap, nonNull } from "./types/util";
 import { CucumberMultipartFeature } from "./types/xray/requests/importExecutionCucumberMultipart";
@@ -63,9 +59,11 @@ export async function beforeRunHook(
     }
 }
 
-function retrieveIssueTypeInformation<
-    IssueTypeDetails extends IssueTypeDetailsServer | IssueTypeDetailsCloud
->(type: string, issueDetails: IssueTypeDetails[], projectKey: string): IssueTypeDetails {
+function retrieveIssueTypeInformation(
+    type: string,
+    issueDetails: IIssueTypeDetails[],
+    projectKey: string
+): IIssueTypeDetails {
     const details = issueDetails.filter((details) => details.name === type);
     if (details.length === 0) {
         throw new Error(
@@ -212,7 +210,7 @@ async function uploadCucumberResults(
 async function attachVideos(
     runResult: CypressCommandLine.CypressRunResult,
     issueKey: string,
-    jiraClient: JiraClientServer | JiraClientCloud
+    jiraClient: IJiraClient
 ): Promise<void> {
     const videos: string[] = runResult.runs
         .map((result: CypressCommandLine.RunResult) => {
@@ -299,8 +297,8 @@ export async function synchronizeFile(
 async function resetSummaries(
     issueData: FeatureFileIssueData,
     testSummaries: StringMap<string>,
-    jiraClient: JiraClientServer | JiraClientCloud,
-    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
+    jiraClient: IJiraClient,
+    jiraRepository: IJiraRepository
 ) {
     const allIssues = [...issueData.tests, ...issueData.preconditions];
     for (let i = 0; i < allIssues.length; i++) {
@@ -319,7 +317,10 @@ async function resetSummaries(
             continue;
         }
         if (oldSummary !== newSummary) {
-            const summaryFieldId = await jiraRepository.getFieldId("summary", "summary");
+            const summaryFieldId = await jiraRepository.getFieldId(
+                SupportedFields.SUMMARY,
+                "summary"
+            );
             const fields: StringMap<string> = {};
             fields[summaryFieldId] = oldSummary;
             logDebug(
@@ -353,8 +354,8 @@ async function resetSummaries(
 async function resetLabels(
     issueData: FeatureFileIssueDataTest[],
     testLabels: StringMap<string[]>,
-    jiraClient: JiraClientServer | JiraClientCloud,
-    jiraRepository: JiraRepositoryServer | JiraRepositoryCloud
+    jiraClient: IJiraClient,
+    jiraRepository: JiraRepository
 ) {
     for (let i = 0; i < issueData.length; i++) {
         const issueKey = issueData[i].key;
@@ -372,7 +373,7 @@ async function resetLabels(
             continue;
         }
         if (!newLabels.every((label) => oldLabels.includes(label))) {
-            const labelFieldId = await jiraRepository.getFieldId("labels", "labels");
+            const labelFieldId = await jiraRepository.getFieldId(SupportedFields.LABELS);
             const fields: StringMap<string[]> = {};
             fields[labelFieldId] = oldLabels;
             logDebug(

@@ -1,13 +1,13 @@
-import { SimpleLink } from "./simpleLink";
+import { ISimpleLink } from "./simpleLink";
 
-export type LinkGroup = {
+export interface ILinkGroup {
     id?: string;
     styleClass?: string;
     /**
      * Details about the operations available in this version.
      */
-    header?: SimpleLink;
+    header?: ISimpleLink;
     weight?: number;
-    links?: SimpleLink[];
-    groups?: LinkGroup[];
-};
+    links?: ISimpleLink[];
+    groups?: ILinkGroup[];
+}

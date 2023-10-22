@@ -1,14 +1,14 @@
-import { AvatarUrls } from "./avatarUrls";
-import { UpdatedProjectCategory } from "./updatedProjectCategory";
+import { IAvatarUrls } from "./avatarUrls";
+import { IUpdatedProjectCategory } from "./updatedProjectCategory";
 
 /**
  * The project an item has scope in.
  */
-export type ProjectDetails = {
+export interface IProjectDetails {
     /**
      * The URLs of the project's avatars.
      */
-    avatarUrls?: AvatarUrls;
+    avatarUrls?: IAvatarUrls;
     /**
      * The ID of the project.
      */
@@ -24,7 +24,7 @@ export type ProjectDetails = {
     /**
      * The category the project belongs to.
      */
-    projectCategory?: UpdatedProjectCategory;
+    projectCategory?: IUpdatedProjectCategory;
     /**
      * The project type of the project.
      */
@@ -37,4 +37,4 @@ export type ProjectDetails = {
      * Whether or not the project is simplified.
      */
     simplified?: boolean;
-};
+}

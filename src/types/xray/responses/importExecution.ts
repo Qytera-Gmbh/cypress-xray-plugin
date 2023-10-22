@@ -1,18 +1,18 @@
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST
  */
-export type ImportExecutionResponseServer = {
+export interface ImportExecutionResponseServer {
     testExecIssue: {
         id: string;
         key: string;
         name: string;
     };
-};
+}
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST
  */
-export type ImportExecutionResponseCloud = {
+export interface ImportExecutionResponseCloud {
     id: string;
     key: string;
     self: string;
-};
+}

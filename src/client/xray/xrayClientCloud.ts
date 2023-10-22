@@ -4,26 +4,30 @@ import { RequestConfigPost, Requests } from "../../https/requests";
 import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import {
-    CucumberMultipartInfoCloud,
-    CucumberMultipartInfoServer,
-} from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
-import { XrayClient } from "./xrayClient";
+import { IXrayClient, XrayClient } from "./xrayClient";
 
 type GetTestsJiraData = {
     key: string;
 };
 
-export class XrayClientCloud extends XrayClient<
-    JWTCredentials,
-    ImportFeatureResponseCloud,
-    ImportExecutionResponseCloud,
-    CucumberMultipartInfoCloud
-> {
+export interface IXrayClientCloud extends IXrayClient {
+    /**
+     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
+     * `Generic`.
+     *
+     * @param projectKey - key of the project containing the test issues
+     * @param issueKeys - the keys of the test issues to retrieve test types for
+     * @returns a promise which will contain the mapping of issues to test types
+     */
+    getTestTypes(projectKey: string, ...issueKeys: string[]): Promise<StringMap<string>>;
+}
+
+export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
     /**
      * The URLs of Xray's Cloud API.
      * Note: API v1 would also work, but let's stick to the more recent one.
@@ -47,7 +51,7 @@ export class XrayClientCloud extends XrayClient<
     }
 
     public getUrlImportExecution(): string {
-        return `${this.apiBaseURL}/import/execution`;
+        return `${this.apiBaseUrl}/import/execution`;
     }
 
     public handleResponseImportExecution(response: ImportExecutionResponseCloud): string {
@@ -65,7 +69,7 @@ export class XrayClientCloud extends XrayClient<
         if (query.length === 0) {
             throw new Error("One of issueKeys or filter must be provided to export feature files");
         }
-        return `${this.apiBaseURL}/export/cucumber?${query.join("&")}`;
+        return `${this.apiBaseUrl}/export/cucumber?${query.join("&")}`;
     }
 
     public getUrlImportFeature(projectKey?: string, projectId?: string): string {
@@ -76,7 +80,7 @@ export class XrayClientCloud extends XrayClient<
         if (projectId) {
             query.push(`projectId=${projectId}`);
         }
-        return `${this.apiBaseURL}/import/feature?${query.join("&")}`;
+        return `${this.apiBaseUrl}/import/feature?${query.join("&")}`;
     }
 
     public handleResponseImportFeature(response: ImportFeatureResponseCloud): void {
@@ -99,14 +103,6 @@ export class XrayClientCloud extends XrayClient<
         }
     }
 
-    /**
-     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
-     * `Generic`.
-     *
-     * @param projectKey - key of the project containing the test issues
-     * @param issueKeys - the keys of the test issues to retrieve test types for
-     * @returns a promise which will contain the mapping of issues to test types
-     */
     public async getTestTypes(
         projectKey: string,
         ...issueKeys: string[]
@@ -116,9 +112,9 @@ export class XrayClientCloud extends XrayClient<
                 logWarning("No issue keys provided. Skipping test type retrieval");
                 return {};
             }
-            const authenticationHeader = await this.credentials.getAuthenticationHeader();
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
             logDebug("Retrieving test types...");
-            const progressInterval = this.startResponseInterval(this.apiBaseURL);
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const types: StringMap<string> = {};
                 let total = 0;
@@ -151,7 +147,7 @@ export class XrayClientCloud extends XrayClient<
                     const response: GetTestsResponse<GetTestsJiraData> = (
                         await Requests.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
                             headers: {
-                                ...authenticationHeader,
+                                ...authorizationHeader,
                             },
                         })
                     ).data;
@@ -200,7 +196,7 @@ export class XrayClientCloud extends XrayClient<
 
     public async prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfoServer
+        cucumberInfo: ICucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>> {
         const formData = new FormData();
         const resultString = JSON.stringify(cucumberJson);
@@ -211,13 +207,13 @@ export class XrayClientCloud extends XrayClient<
         formData.append("info", infoString, {
             filename: "info.json",
         });
-        const authenticationHeader = await this.credentials.getAuthenticationHeader();
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
         return {
-            url: `${this.apiBaseURL}/import/execution/cucumber/multipart`,
+            url: `${this.apiBaseUrl}/import/execution/cucumber/multipart`,
             data: formData,
             config: {
                 headers: {
-                    ...authenticationHeader,
+                    ...authorizationHeader,
                     ...formData.getHeaders(),
                 },
             },
