@@ -4,7 +4,9 @@ export const HELP = {
     plugin: {
         configuration: {
             authentication: {
-                jira: { root: `${BASE_URL}/section/configuration/authentication/#jira` },
+                jira: {
+                    root: `${BASE_URL}/section/configuration/authentication/#jira`,
+                },
                 root: `${BASE_URL}/section/configuration/authentication/`,
                 xray: {
                     cloud: `${BASE_URL}/section/configuration/authentication/#xray-cloud`,
@@ -28,12 +30,12 @@ export const HELP = {
     },
     xray: {
         installation: {
-            server: "https://docs.getxray.app/display/XRAY/Installation",
             cloud: "https://docs.getxray.app/display/XRAYCLOUD/Installation",
+            server: "https://docs.getxray.app/display/XRAY/Installation",
         },
         importCucumberTests: {
-            server: "https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST",
             cloud: "https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2",
+            server: "https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST",
         },
     },
 };
