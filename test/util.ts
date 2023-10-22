@@ -82,7 +82,7 @@ before(() => {
             headers: new AxiosHeaders(),
         },
     });
-    RESOLVED_JWT_CREDENTIALS.getAuthenticationHeader();
+    RESOLVED_JWT_CREDENTIALS.getAuthorizationHeader();
 });
 
 beforeEach(() => {

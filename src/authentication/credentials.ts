@@ -16,60 +16,83 @@ import { startInterval } from "../util/time";
  */
 export type HttpHeader = StringMap<string>;
 
+/**
+ * The interface which all credential classes must implement. All credentials must be usable in an
+ * HTTP authorization request header.
+ */
 export interface IHttpCredentials {
-    getAuthenticationHeader(): Promise<HttpHeader>;
+    /**
+     * Returns the HTTP authorization header value of the credentials.
+     *
+     * @returns the HTTP header value
+     */
+    getAuthorizationHeader(): Promise<HttpHeader>;
 }
 
+/**
+ * A basic authorization credentials class, storing base64 encoded credentials of usernames and
+ * passwords.
+ */
 export class BasicAuthCredentials implements IHttpCredentials {
-    private readonly username: string;
-    private readonly password: string;
-
+    private readonly encodedCredentials: string;
+    /**
+     * Constructs new basic authorization credentials.
+     *
+     * @param username - the username
+     * @param password - the password
+     */
     constructor(username: string, password: string) {
-        this.username = username;
-        this.password = password;
-    }
-
-    public getAuthenticationHeader(): Promise<HttpHeader> {
         // See: https://developer.atlassian.com/server/jira/platform/basic-authentication/#construct-the-authorization-header
-        const encodedString = encode(`${this.username}:${this.password}`);
-        return new Promise((resolve: (value: HttpHeader) => void) =>
-            resolve({
-                Authorization: `Basic ${encodedString}`,
-            })
-        );
+        this.encodedCredentials = encode(`${username}:${password}`);
+    }
+
+    public async getAuthorizationHeader(): Promise<HttpHeader> {
+        return {
+            Authorization: `Basic ${this.encodedCredentials}`,
+        };
     }
 }
 
+/**
+ * A personal access token (_PAT_) credentials class, storing a secret token to use during HTTP
+ * authorization.
+ */
 export class PATCredentials implements IHttpCredentials {
-    private readonly token: string;
+    /**
+     * Constructs new PAT credentials from the provided token.
+     *
+     * @param token - the token
+     */
+    constructor(private readonly token: string) {}
 
-    constructor(token: string) {
-        this.token = token;
-    }
-
-    public getAuthenticationHeader(): Promise<HttpHeader> {
-        return new Promise((resolve: (value: HttpHeader) => void) =>
-            resolve({
-                Authorization: `Bearer ${this.token}`,
-            })
-        );
+    public async getAuthorizationHeader(): Promise<HttpHeader> {
+        return {
+            Authorization: `Bearer ${this.token}`,
+        };
     }
 }
-export interface JWTCredentialsOptions {
-    authenticationUrl: string;
-}
 
+/**
+ * A JWT credentials class, storing a JWT token to use during HTTP authorization. The class is
+ * designed to retrieve fresh JWT tokens from an authentication URL/endpoint. Once retrieved, the
+ * token will be stored and reused whenever necessary.
+ */
 export class JWTCredentials implements IHttpCredentials {
-    private readonly clientId: string;
-    private readonly clientSecret: string;
-    private readonly authenticationUrl: string;
-
     private token?: string;
 
-    constructor(clientId: string, clientSecret: string, authenticationUrl: string) {
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.authenticationUrl = authenticationUrl;
+    /**
+     * Constructs new JWT credentials. The client ID and client secret will be used to retrieve a
+     * JWT token from the authentication URL on demand.
+     *
+     * @param clientId - the client ID
+     * @param clientSecret - the client secret
+     * @param authenticationUrl - the authentication URL/token endpoint
+     */
+    constructor(
+        private readonly clientId: string,
+        private readonly clientSecret: string,
+        private readonly authenticationUrl: string
+    ) {
         this.token = undefined;
     }
 
@@ -126,7 +149,7 @@ export class JWTCredentials implements IHttpCredentials {
         return this.token;
     }
 
-    public async getAuthenticationHeader(): Promise<HttpHeader> {
+    public async getAuthorizationHeader(): Promise<HttpHeader> {
         return {
             Authorization: `Bearer ${await this.getToken()}`,
         };

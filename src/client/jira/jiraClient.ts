@@ -117,7 +117,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
 
         try {
             return await this.credentials
-                .getAuthenticationHeader()
+                .getAuthorizationHeader()
                 .then(async (header: HttpHeader) => {
                     logDebug("Attaching files:", ...files);
                     const progressInterval = this.startResponseInterval(this.apiBaseUrl);
@@ -162,7 +162,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
 
     public async getIssueTypes(): Promise<IIssueTypeDetails[] | undefined> {
         try {
-            const authenticationHeader = await this.credentials.getAuthenticationHeader();
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
             logDebug("Getting issue types...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
@@ -170,7 +170,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
                     this.getUrlGetIssueTypes(),
                     {
                         headers: {
-                            ...authenticationHeader,
+                            ...authorizationHeader,
                         },
                     }
                 );
@@ -202,7 +202,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
 
     public async getFields(): Promise<IFieldDetail[] | undefined> {
         try {
-            const authenticationHeader = await this.credentials.getAuthenticationHeader();
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
             logDebug("Getting fields...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
@@ -210,7 +210,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
                     this.getUrlGetFields(),
                     {
                         headers: {
-                            ...authenticationHeader,
+                            ...authorizationHeader,
                         },
                     }
                 );
@@ -243,7 +243,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
     public async search(request: ISearchRequest): Promise<IIssue[] | undefined> {
         try {
             return await this.credentials
-                .getAuthenticationHeader()
+                .getAuthorizationHeader()
                 .then(async (header: HttpHeader) => {
                     logDebug("Searching issues...");
                     const progressInterval = this.startResponseInterval(this.apiBaseUrl);
@@ -298,7 +298,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
         issueUpdateData: IIssueUpdate
     ): Promise<string | undefined> {
         try {
-            await this.credentials.getAuthenticationHeader().then(async (header: HttpHeader) => {
+            await this.credentials.getAuthorizationHeader().then(async (header: HttpHeader) => {
                 logDebug("Editing issue...");
                 const progressInterval = this.startResponseInterval(this.apiBaseUrl);
                 try {

@@ -101,13 +101,13 @@ export class XrayClientServer extends XrayClient {
         formData.append("info", infoString, {
             filename: "info.json",
         });
-        const authenticationHeader = await this.credentials.getAuthenticationHeader();
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
         return {
             url: `${this.apiBaseUrl}/rest/raven/latest/import/execution/cucumber/multipart`,
             data: formData,
             config: {
                 headers: {
-                    ...authenticationHeader,
+                    ...authorizationHeader,
                     ...formData.getHeaders(),
                 },
             },

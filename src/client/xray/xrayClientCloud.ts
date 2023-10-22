@@ -112,7 +112,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
                 logWarning("No issue keys provided. Skipping test type retrieval");
                 return {};
             }
-            const authenticationHeader = await this.credentials.getAuthenticationHeader();
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
             logDebug("Retrieving test types...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
@@ -147,7 +147,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
                     const response: GetTestsResponse<GetTestsJiraData> = (
                         await Requests.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
                             headers: {
-                                ...authenticationHeader,
+                                ...authorizationHeader,
                             },
                         })
                     ).data;
@@ -207,13 +207,13 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         formData.append("info", infoString, {
             filename: "info.json",
         });
-        const authenticationHeader = await this.credentials.getAuthenticationHeader();
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
         return {
             url: `${this.apiBaseUrl}/import/execution/cucumber/multipart`,
             data: formData,
             config: {
                 headers: {
-                    ...authenticationHeader,
+                    ...authorizationHeader,
                     ...formData.getHeaders(),
                 },
             },

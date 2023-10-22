@@ -99,7 +99,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
                 logWarning("No native Cypress tests were executed. Skipping native upload.");
                 return null;
             }
-            const authenticationHeader = await this.credentials.getAuthenticationHeader();
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
             logDebug("Importing execution...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
@@ -107,7 +107,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
                     ImportExecutionResponseServer | ImportExecutionResponseCloud
                 > = await Requests.post(this.getUrlImportExecution(), execution, {
                     headers: {
-                        ...authenticationHeader,
+                        ...authorizationHeader,
                     },
                 });
                 const key = this.handleResponseImportExecution(response.data);
@@ -144,13 +144,13 @@ export abstract class XrayClient extends Client implements IXrayClient {
         filter?: number
     ): Promise<ExportCucumberTestsResponse> {
         try {
-            const authenticationHeader = await this.credentials.getAuthenticationHeader();
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
             logDebug("Exporting Cucumber tests...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response = await Requests.get(this.getUrlExportCucumber(keys, filter), {
                     headers: {
-                        ...authenticationHeader,
+                        ...authorizationHeader,
                     },
                 });
                 // Extract filename from response.
@@ -187,7 +187,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
         source?: string
     ): Promise<boolean> {
         try {
-            const authenticationHeader = await this.credentials.getAuthenticationHeader();
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
             logDebug("Importing Cucumber features...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
@@ -202,7 +202,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
                     form,
                     {
                         headers: {
-                            ...authenticationHeader,
+                            ...authorizationHeader,
                             ...form.getHeaders(),
                         },
                     }
