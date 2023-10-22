@@ -80,9 +80,9 @@ export function clearPluginContext(): void {
 }
 
 /**
- * Returns an {@link InternalJiraOptions | `InternalJiraOptions`} instance based on parsed environment
- * variables and a provided options object. Environment variables will take precedence over the
- * options set in the object.
+ * Returns an {@link InternalJiraOptions | `InternalJiraOptions`} instance based on parsed
+ * environment variables and a provided options object. Environment variables will take precedence
+ * over the options set in the object.
  *
  * @param env - an object containing environment variables as properties
  * @param options - an options object containing Jira options
