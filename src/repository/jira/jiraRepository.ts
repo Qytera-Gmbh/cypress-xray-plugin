@@ -1,29 +1,75 @@
 import { logError } from "../../logging/logging";
-import { InternalJiraOptions, JiraFieldIds } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
 import { IJiraFieldRepository } from "./fields/jiraFieldRepository";
 import { IJiraIssueFetcher, SupportedFields } from "./fields/jiraIssueFetcher";
 
+/**
+ * An interface describing a Jira repository, which provides methods for retrieving issue data such
+ * as summaries, descriptions, labels or test types.
+ */
 export interface IJiraRepository {
-    getFieldId(fieldName: SupportedFields, optionName: keyof JiraFieldIds): Promise<string>;
-    getSummaries(...issueKeys: string[]): Promise<StringMap<string>>;
+    /**
+     * Retrieve the internal Jira ID of a field.
+     *
+     * @param fieldName - the field
+     * @returns the field ID
+     * @see https://confluence.atlassian.com/jirakb/how-to-find-id-for-custom-field-s-744522503.html
+     */
+    getFieldId(fieldName: SupportedFields): Promise<string>;
+    /**
+     * Retrieve the descriptions of all provided issues, represented through their Jira issue keys.
+     *
+     * @param issueKeys - the issue keys
+     * @returns a mapping of issue keys to issue descriptions
+     */
     getDescriptions(...issueKeys: string[]): Promise<StringMap<string>>;
-    getTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;
+    /**
+     * Retrieve the labels of all provided issues, represented through their Jira issue keys.
+     *
+     * @param issueKeys - the issue keys
+     * @returns a mapping of issue keys to issue labels
+     */
     getLabels(...issueKeys: string[]): Promise<StringMap<string[]>>;
+    /**
+     * Retrieve the summaries of all provided issues, represented through their Jira issue keys.
+     *
+     * @param issueKeys - the issue keys
+     * @returns a mapping of issue keys to issue summaries
+     */
+    getSummaries(...issueKeys: string[]): Promise<StringMap<string>>;
+    /**
+     * Retrieve the test types of all provided test issues, represented through their Jira issue
+     * keys.
+     *
+     * @param issueKeys - the issue keys
+     * @returns a mapping of issue keys to test issue types
+     * @see https://docs.getxray.app/display/ON/Enabling+Xray+Issue+Types
+     */
+    getTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;
 }
 
-export class JiraRepository implements IJiraRepository {
+/**
+ * A Jira repository which caches retrieved data. Caching means that live issue information is only
+ * retrieved for the first request. All subsequent accesses will then return the cached value.
+ */
+export class CachingJiraRepository implements IJiraRepository {
     private readonly summaries: StringMap<string> = {};
     private readonly descriptions: StringMap<string> = {};
     private readonly testTypes: StringMap<string> = {};
     private readonly labels: StringMap<string[]> = {};
 
+    /**
+     * Construct a new caching Jira repository. It relies on an internal field repository and an
+     * issue data fetcher for information retrieval.
+     *
+     * @param jiraFieldRepository - the Jira field repository
+     * @param jiraIssueFetcher - the Jira issue fetcher
+     */
     constructor(
         protected readonly jiraFieldRepository: IJiraFieldRepository,
-        protected readonly jiraFieldFetcher: IJiraIssueFetcher,
-        protected readonly jiraOptions: InternalJiraOptions
+        protected readonly jiraIssueFetcher: IJiraIssueFetcher
     ) {}
 
     public async getFieldId(fieldName: SupportedFields): Promise<string> {
@@ -35,7 +81,7 @@ export class JiraRepository implements IJiraRepository {
         try {
             result = await this.mergeRemainingFields(
                 this.summaries,
-                this.jiraFieldFetcher.fetchSummaries,
+                this.jiraIssueFetcher.fetchSummaries,
                 ...issueKeys
             );
             const missingSummaries: string[] = issueKeys.filter(
@@ -66,7 +112,7 @@ export class JiraRepository implements IJiraRepository {
         try {
             result = await this.mergeRemainingFields(
                 this.descriptions,
-                this.jiraFieldFetcher.fetchDescriptions,
+                this.jiraIssueFetcher.fetchDescriptions,
                 ...issueKeys
             );
             const missingDescriptions: string[] = issueKeys.filter(
@@ -97,7 +143,7 @@ export class JiraRepository implements IJiraRepository {
         try {
             result = await this.mergeRemainingFields(
                 this.testTypes,
-                this.jiraFieldFetcher.fetchTestTypes,
+                this.jiraIssueFetcher.fetchTestTypes,
                 ...issueKeys
             );
             const missingTestTypes: string[] = issueKeys.filter(
@@ -128,7 +174,7 @@ export class JiraRepository implements IJiraRepository {
         try {
             result = await this.mergeRemainingFields(
                 this.labels,
-                this.jiraFieldFetcher.fetchLabels,
+                this.jiraIssueFetcher.fetchLabels,
                 ...issueKeys
             );
             const missingLabels: string[] = issueKeys.filter(

@@ -47,9 +47,9 @@ import {
     importOptionalDependency,
 } from "./dependencies";
 import { logDebug, logInfo } from "./logging/logging";
-import { JiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
+import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import { JiraIssueFetcher, JiraIssueFetcherCloud } from "./repository/jira/fields/jiraIssueFetcher";
-import { JiraRepository } from "./repository/jira/jiraRepository";
+import { CachingJiraRepository } from "./repository/jira/jiraRepository";
 import {
     ClientCombination,
     InternalCucumberOptions,
@@ -80,9 +80,9 @@ export function clearPluginContext(): void {
 }
 
 /**
- * Returns an {@link InternalJiraOptions | `InternalJiraOptions`} instance based on parsed environment
- * variables and a provided options object. Environment variables will take precedence over the
- * options set in the object.
+ * Returns an {@link InternalJiraOptions | `InternalJiraOptions`} instance based on parsed
+ * environment variables and a provided options object. Environment variables will take precedence
+ * over the options set in the object.
  *
  * @param env - an object containing environment variables as properties
  * @param options - an options object containing Jira options
@@ -334,7 +334,7 @@ export async function initClients(
             );
             await pingXrayCloud(xrayCredentials);
             const xrayClient = new XrayClientCloud(xrayCredentials);
-            const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
+            const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
             const jiraFieldFetcher = new JiraIssueFetcherCloud(
                 jiraClient,
                 jiraFieldRepository,
@@ -345,11 +345,7 @@ export async function initClients(
                 kind: "cloud",
                 jiraClient: jiraClient,
                 xrayClient: xrayClient,
-                jiraRepository: new JiraRepository(
-                    jiraFieldRepository,
-                    jiraFieldFetcher,
-                    jiraOptions
-                ),
+                jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
             };
         } else {
             throw new Error(
@@ -369,7 +365,7 @@ export async function initClients(
         logInfo("Jira PAT found. Setting up Xray server PAT credentials");
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
-        const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
+        const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
         const jiraFieldFetcher = new JiraIssueFetcher(
             jiraClient,
             jiraFieldRepository,
@@ -379,7 +375,7 @@ export async function initClients(
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new JiraRepository(jiraFieldRepository, jiraFieldFetcher, jiraOptions),
+            jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
         };
     } else if (ENV_JIRA_USERNAME in env && ENV_JIRA_PASSWORD in env && jiraOptions.url) {
         logInfo("Jira username and password found. Setting up Jira server basic auth credentials");
@@ -392,7 +388,7 @@ export async function initClients(
         logInfo("Jira username and password found. Setting up Xray server basic auth credentials");
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
-        const jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
+        const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
         const jiraFieldFetcher = new JiraIssueFetcher(
             jiraClient,
             jiraFieldRepository,
@@ -402,7 +398,7 @@ export async function initClients(
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new JiraRepository(jiraFieldRepository, jiraFieldFetcher, jiraOptions),
+            jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
         };
     } else {
         throw new Error(

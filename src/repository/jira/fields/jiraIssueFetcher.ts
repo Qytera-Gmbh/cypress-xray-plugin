@@ -21,14 +21,56 @@ export enum SupportedFields {
     TEST_TYPE = "test type",
 }
 
+/**
+ * An interface describing classes which can fetch Jira issue data such as descriptions, labels or
+ * summaries.
+ */
 export interface IJiraIssueFetcher {
+    /**
+     * Fetches the descriptions of issues specified by their Jira issue keys.
+     *
+     * @param issueKeys - the issue keys
+     * @returns a mapping of issue keys to descriptions
+     */
     fetchDescriptions(...issueKeys: string[]): Promise<StringMap<string>>;
+    /**
+     * Fetches the labels of issues specified by their Jira issue keys.
+     *
+     * @param issueKeys - the issue keys
+     * @returns a mapping of issue keys to their labels
+     */
     fetchLabels(...issueKeys: string[]): Promise<StringMap<string[]>>;
+    /**
+     * Fetches the summaries of issues specified by their Jira issue keys.
+     *
+     * @param issueKeys - the issue keys
+     * @returns a mapping of issue keys to summaries
+     */
     fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>>;
+    /**
+     * Fetches the test types of Xray test issues specified by their Jira issue keys.
+     *
+     * @param issueKeys - the issue keys
+     * @returns a mapping of issue keys to their descriptions
+     */
     fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>>;
 }
 
+/**
+ * A generic Jira issue data fetcher which fetches issue data for every call, i.e. does not perform
+ * any caching.
+ */
 export class JiraIssueFetcher implements IJiraIssueFetcher {
+    /**
+     * Constructs a new Jira issue fetcher. The Jira client is necessary for accessing Jira. The
+     * field repository is required because issue data can only be retrieved through Jira fields,
+     * which might have custom field IDs. An optional mapping of known field IDs can be provided,
+     * which will then be used instead of accessing the field repository.
+     *
+     * @param jiraClient - the Jira client
+     * @param jiraFieldRepository - the Jira field repository
+     * @param fieldIds - an optional mapping of known field IDs
+     */
     constructor(
         private readonly jiraClient: IJiraClient,
         private readonly jiraFieldRepository: IJiraFieldRepository,

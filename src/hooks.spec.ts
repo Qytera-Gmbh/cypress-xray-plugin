@@ -15,9 +15,9 @@ import {
     initXrayOptions,
 } from "./context";
 import { beforeRunHook, synchronizeFile } from "./hooks";
-import { JiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
+import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import { JiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
-import { JiraRepository } from "./repository/jira/jiraRepository";
+import { CachingJiraRepository } from "./repository/jira/jiraRepository";
 import { ClientCombination, InternalOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
 
@@ -48,7 +48,7 @@ describe("the hooks", () => {
         };
         const jiraClient = new JiraClientServer("https://example.org", new PATCredentials("token"));
         const xrayClient = new XrayClientServer("https://example.org", new PATCredentials("token"));
-        const jiraFieldRepository = new JiraFieldRepository(jiraClient, options.jira);
+        const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
         const jiraFieldFetcher = new JiraIssueFetcher(
             jiraClient,
             jiraFieldRepository,
@@ -58,7 +58,7 @@ describe("the hooks", () => {
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new JiraRepository(jiraFieldRepository, jiraFieldFetcher, options.jira),
+            jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
         };
     });
 

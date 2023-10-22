@@ -1,26 +1,41 @@
 import { IJiraClient } from "../../../client/jira/jiraClient";
 import { IFieldDetail } from "../../../types/jira/responses/fieldDetail";
-import { InternalJiraOptions, JiraFieldIds } from "../../../types/plugin";
+import { JiraFieldIds } from "../../../types/plugin";
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
 import { prettyPadObjects, prettyPadValues } from "../../../util/pretty";
 import { SupportedFields } from "./jiraIssueFetcher";
 
+/**
+ * An interface describing a Jira field repository, which provides methods for retrieving arbitrary
+ * field IDs from Jira.
+ */
 export interface IJiraFieldRepository {
-    getFieldId(fieldName: string): Promise<string>;
+    /**
+     * Returns the Jira field ID for the field with the provided name.
+     *
+     * @param fieldName - the field name
+     * @returns the field's Jira ID
+     * @throws if the field does not exist or if there are multiple fields with the given name
+     */
+    getFieldId(fieldName: SupportedFields): Promise<string>;
 }
 
-export class JiraFieldRepository implements IJiraFieldRepository {
-    protected readonly jiraClient: IJiraClient;
-    protected readonly jiraOptions: InternalJiraOptions;
-
+/**
+ * A Jira field repository which caches retrieved field IDs. After the first ID retrieval, all
+ * subsequent accesses will return the cached value.
+ */
+export class CachingJiraFieldRepository implements IJiraFieldRepository {
     private readonly names: StringMap<string> = {};
     private readonly ids: StringMap<string> = {};
 
-    constructor(jiraClient: IJiraClient, jiraOptions: InternalJiraOptions) {
-        this.jiraClient = jiraClient;
-        this.jiraOptions = jiraOptions;
-    }
+    /**
+     * Constructs a new caching Jira field repository. The Jira client is necessary for accessing
+     * Jira data.
+     *
+     * @param jiraClient - the Jira client
+     */
+    constructor(private readonly jiraClient: IJiraClient) {}
 
     public async getFieldId(fieldName: SupportedFields): Promise<string> {
         // Lowercase everything to work around case sensitivities.

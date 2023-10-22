@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import { dedent } from "../../util/dedent";
-import { getMultipartInfoCloud, getMultipartInfoServer } from "./multipartInfoConversion";
+import { buildMultipartInfoCloud, buildMultipartInfoServer } from "./multipartInfoBuilder";
 
-describe("getMultipartInfoCloud", () => {
+describe("buildMultipartInfoCloud", () => {
     it("adds default information", async () => {
-        const info = getMultipartInfoCloud(
+        const info = buildMultipartInfoCloud(
             {
                 startedTestsAt: "2023-09-28T15:51:36.000Z",
                 browserName: "Chromium",
@@ -42,7 +42,7 @@ describe("getMultipartInfoCloud", () => {
     });
 
     it("uses provided summaries", async () => {
-        const info = getMultipartInfoCloud(
+        const info = buildMultipartInfoCloud(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
                 browserName: "Chromium",
@@ -61,7 +61,7 @@ describe("getMultipartInfoCloud", () => {
     });
 
     it("uses provided descriptions", async () => {
-        const info = getMultipartInfoCloud(
+        const info = buildMultipartInfoCloud(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
                 browserName: "Chromium",
@@ -80,7 +80,7 @@ describe("getMultipartInfoCloud", () => {
     });
 
     it("uses provided test plans", async () => {
-        const info = getMultipartInfoCloud(
+        const info = buildMultipartInfoCloud(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
                 browserName: "Chromium",
@@ -101,9 +101,9 @@ describe("getMultipartInfoCloud", () => {
     });
 });
 
-describe("getMultipartInfoServer", () => {
+describe("buildMultipartInfoServer", () => {
     it("adds default information", async () => {
-        const info = getMultipartInfoServer(
+        const info = buildMultipartInfoServer(
             {
                 startedTestsAt: "2023-09-28T15:51:36.000Z",
                 browserName: "Chromium",
@@ -135,7 +135,7 @@ describe("getMultipartInfoServer", () => {
     });
 
     it("uses provided summaries", async () => {
-        const info = getMultipartInfoServer(
+        const info = buildMultipartInfoServer(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
                 browserName: "Chromium",
@@ -154,7 +154,7 @@ describe("getMultipartInfoServer", () => {
     });
 
     it("uses provided descriptions", async () => {
-        const info = getMultipartInfoServer(
+        const info = buildMultipartInfoServer(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
                 browserName: "Chromium",
@@ -173,7 +173,7 @@ describe("getMultipartInfoServer", () => {
     });
 
     it("uses provided test plans", async () => {
-        const info = getMultipartInfoServer(
+        const info = buildMultipartInfoServer(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
                 browserName: "Chromium",
@@ -195,7 +195,7 @@ describe("getMultipartInfoServer", () => {
     });
 
     it("uses provided test environments", async () => {
-        const info = getMultipartInfoServer(
+        const info = buildMultipartInfoServer(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
                 browserName: "Chromium",

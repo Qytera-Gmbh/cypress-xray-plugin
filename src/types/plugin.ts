@@ -1,7 +1,7 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
-import { JiraClient } from "../client/jira/jiraClient";
-import { XrayClient } from "../client/xray/xrayClient";
-import { JiraRepository } from "../repository/jira/jiraRepository";
+import { IJiraClient } from "../client/jira/jiraClient";
+import { IXrayClient } from "../client/xray/xrayClient";
+import { IJiraRepository } from "../repository/jira/jiraRepository";
 import { IIssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
 export interface Options {
@@ -356,9 +356,9 @@ export interface InternalOptions {
  */
 export interface ClientCombination {
     kind: "server" | "cloud";
-    jiraClient: JiraClient;
-    xrayClient: XrayClient;
-    jiraRepository: JiraRepository;
+    jiraClient: IJiraClient;
+    xrayClient: IXrayClient;
+    jiraRepository: IJiraRepository;
 }
 
 export interface PluginContext {

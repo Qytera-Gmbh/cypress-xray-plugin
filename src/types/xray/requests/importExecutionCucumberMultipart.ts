@@ -1,7 +1,7 @@
 import { ICucumberMultipartInfo } from "./importExecutionCucumberMultipartInfo";
 
 /*
- * There is unfortunately no official Cucumber JSON report scheme available anywhere, as stated
+ * There unfortunately is no official Cucumber JSON report scheme available anywhere, as stated
  * here: https://github.com/cucumber/messages#lack-of-a-schema
  *
  * Therefore, the types in here are a mix of the following sources:

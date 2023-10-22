@@ -1041,8 +1041,12 @@ describe("the plugin context configuration", () => {
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
             expect(jiraClient).to.be.an.instanceof(JiraClientCloud);
             expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
-            expect(jiraClient.getCredentials()).to.be.an.instanceof(BasicAuthCredentials);
-            expect(xrayClient.getCredentials()).to.be.an.instanceof(JWTCredentials);
+            expect((jiraClient as JiraClientCloud).getCredentials()).to.be.an.instanceof(
+                BasicAuthCredentials
+            );
+            expect((xrayClient as XrayClientCloud).getCredentials()).to.be.an.instanceof(
+                JWTCredentials
+            );
             expect(stubbedInfo).to.have.been.calledWith(
                 "Jira username and API token found. Setting up Jira cloud basic auth credentials"
             );
@@ -1084,8 +1088,12 @@ describe("the plugin context configuration", () => {
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
             expect(jiraClient).to.be.an.instanceof(JiraClientServer);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
-            expect(jiraClient.getCredentials()).to.be.an.instanceof(PATCredentials);
-            expect(xrayClient.getCredentials()).to.be.an.instanceof(PATCredentials);
+            expect((jiraClient as JiraClientServer).getCredentials()).to.be.an.instanceof(
+                PATCredentials
+            );
+            expect((xrayClient as XrayClientServer).getCredentials()).to.be.an.instanceof(
+                PATCredentials
+            );
             expect(stubbedInfo).to.have.been.calledWith(
                 "Jira PAT found. Setting up Jira server PAT credentials"
             );
@@ -1109,8 +1117,12 @@ describe("the plugin context configuration", () => {
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
             expect(jiraClient).to.be.an.instanceof(JiraClientServer);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
-            expect(jiraClient.getCredentials()).to.be.an.instanceof(BasicAuthCredentials);
-            expect(xrayClient.getCredentials()).to.be.an.instanceof(BasicAuthCredentials);
+            expect((jiraClient as JiraClientServer).getCredentials()).to.be.an.instanceof(
+                BasicAuthCredentials
+            );
+            expect((xrayClient as XrayClientServer).getCredentials()).to.be.an.instanceof(
+                BasicAuthCredentials
+            );
             expect(stubbedInfo).to.have.been.calledWith(
                 "Jira username and password found. Setting up Jira server basic auth credentials"
             );
@@ -1137,8 +1149,12 @@ describe("the plugin context configuration", () => {
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
             expect(jiraClient).to.be.an.instanceof(JiraClientCloud);
             expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
-            expect(jiraClient.getCredentials()).to.be.an.instanceof(BasicAuthCredentials);
-            expect(xrayClient.getCredentials()).to.be.an.instanceof(JWTCredentials);
+            expect((jiraClient as JiraClientCloud).getCredentials()).to.be.an.instanceof(
+                BasicAuthCredentials
+            );
+            expect((xrayClient as XrayClientCloud).getCredentials()).to.be.an.instanceof(
+                JWTCredentials
+            );
         });
         it("should throw an error for missing jira urls", async () => {
             jiraOptions.url = undefined as unknown as string;

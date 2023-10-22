@@ -6,9 +6,9 @@ import { initJiraOptions } from "../../context";
 import { InternalJiraOptions } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
-import { IJiraFieldRepository, JiraFieldRepository } from "./fields/jiraFieldRepository";
+import { CachingJiraFieldRepository, IJiraFieldRepository } from "./fields/jiraFieldRepository";
 import { IJiraIssueFetcher, JiraIssueFetcher } from "./fields/jiraIssueFetcher";
-import { IJiraRepository, JiraRepository } from "./jiraRepository";
+import { CachingJiraRepository, IJiraRepository } from "./jiraRepository";
 
 describe("the cloud issue repository", () => {
     let jiraOptions: InternalJiraOptions;
@@ -28,13 +28,13 @@ describe("the cloud issue repository", () => {
             "https://example.org",
             new BasicAuthCredentials("user", "xyz")
         );
-        jiraFieldRepository = new JiraFieldRepository(jiraClient, jiraOptions);
+        jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
         jiraFieldFetcher = new JiraIssueFetcher(
             jiraClient,
             jiraFieldRepository,
             jiraOptions.fields
         );
-        repository = new JiraRepository(jiraFieldRepository, jiraFieldFetcher, jiraOptions);
+        repository = new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher);
     });
 
     describe("getSummaries", () => {
@@ -62,7 +62,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Mock called unexpectedly");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
             expect(summaries).to.deep.eq({
                 "CYP-123": "Hello",
@@ -98,7 +98,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Mock called unexpectedly");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             await repository.getSummaries("CYP-123", "CYP-789");
             const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
             expect(summaries).to.deep.eq({
@@ -132,7 +132,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Mock called unexpectedly");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
             const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
@@ -164,7 +164,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Mock called unexpectedly");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
             const summaries = await repository.getSummaries("CYP-123");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
@@ -200,7 +200,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Mock called unexpectedly");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
             expect(descriptions).to.deep.eq({
                 "CYP-123": "Very informative",
@@ -234,7 +234,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Mock called unexpectedly");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             await repository.getDescriptions("CYP-123", "CYP-789");
             const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
             expect(descriptions).to.deep.eq({
@@ -263,7 +263,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Mock called unexpectedly");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
             const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
@@ -295,7 +295,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Mock called unexpectedly");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
             const descriptions = await repository.getDescriptions("CYP-123");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
@@ -328,7 +328,7 @@ describe("the cloud issue repository", () => {
                     };
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(testTypes).to.deep.eq({
                 "CYP-123": "Cucumber",
@@ -362,7 +362,7 @@ describe("the cloud issue repository", () => {
                     throw new Error(`Unexpected argument: ${issueKeys}`);
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             await repository.getTestTypes("CYP-123", "CYP-789");
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(testTypes).to.deep.eq({
@@ -394,7 +394,7 @@ describe("the cloud issue repository", () => {
                     throw new Error(`Unexpected argument: ${issueKeys}`);
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
@@ -424,7 +424,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Expected error");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
@@ -460,7 +460,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Mock called unexpectedly");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
             expect(labels).to.deep.eq({
                 "CYP-123": ["A", "B", "C"],
@@ -494,7 +494,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Mock called unexpectedly");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             await repository.getLabels("CYP-123", "CYP-789");
             const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
             expect(labels).to.deep.eq({
@@ -526,7 +526,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Mock called unexpectedly");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
             const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
@@ -558,7 +558,7 @@ describe("the cloud issue repository", () => {
                     throw new Error("Mock called unexpectedly");
                 },
             };
-            repository = new JiraRepository(jiraFieldRepository, mockedFieldFetcher, jiraOptions);
+            repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
             const labels = await repository.getLabels("CYP-123");
             expect(stubbedError).to.have.been.calledOnceWithExactly(

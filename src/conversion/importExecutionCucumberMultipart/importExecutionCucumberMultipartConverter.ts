@@ -1,25 +1,41 @@
 import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
-import { JiraRepository } from "../../repository/jira/jiraRepository";
-import { InternalOptions } from "../../types/plugin";
+import { IJiraRepository } from "../../repository/jira/jiraRepository";
+import { InternalJiraOptions, InternalXrayOptions } from "../../types/plugin";
 import {
     CucumberMultipartFeature,
     ICucumberMultipart,
 } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { getMultipartFeatures } from "./multipartFeatureConversion";
+import { buildMultipartFeatures } from "./multipartFeatureBuilder";
 import {
+    IRunData,
     TestExecutionIssueData,
     TestExecutionIssueDataServer,
-    getMultipartInfoCloud,
-    getMultipartInfoServer,
-} from "./multipartInfoConversion";
+    buildMultipartInfoCloud,
+    buildMultipartInfoServer,
+} from "./multipartInfoBuilder";
 
 /**
- * This type provides lots of information which the converters require for results conversion. The
- * properties `runs` and `config` are excluded because in the scope of the converters, they have
- * been replaced with the Cucumber JSON and the plugin's options respectively.
+ * An interface containing all options which can be passed to the Cucumber multipart converter.
  */
-export type ConversionParameters = Omit<CypressCommandLine.CypressRunResult, "runs" | "config">;
+export interface ImportExecutionCucumberMultipartConverterOptions {
+    jira: Pick<
+        InternalJiraOptions,
+        | "projectKey"
+        | "testExecutionIssueDescription"
+        | "testExecutionIssueDetails"
+        | "testExecutionIssueKey"
+        | "testExecutionIssueSummary"
+        | "testPlanIssueKey"
+    >;
+    xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
+}
 
+/**
+ * A class for converting Cucumber JSON results into Xray Cucumber multipart JSON.
+ *
+ * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-CucumberJSONresultsMultipart
+ * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-CucumberJSONresultsMultipart
+ */
 export class ImportExecutionCucumberMultipartConverter {
     /**
      * Construct a new converter with access to the provided options. The cloud converter flag is
@@ -31,16 +47,24 @@ export class ImportExecutionCucumberMultipartConverter {
      * @param jiraRepository - the Jira repository for fetching issue data
      */
     constructor(
-        private readonly options: InternalOptions,
+        private readonly options: ImportExecutionCucumberMultipartConverterOptions,
         private readonly isCloudConverter: boolean,
-        private readonly jiraRepository: JiraRepository
+        private readonly jiraRepository: IJiraRepository
     ) {}
 
+    /**
+     * Converts Cucumber JSON results into Xray Cucumber multipart JSON. Additional Cypress run data
+     * is required during conversion for some information like Cypress version or the browser used.
+     *
+     * @param input - the Cucumber JSON results
+     * @param runData - the Cypress run data
+     * @returns corresponding Xray Cucumber multipart JSON
+     */
     public async convert(
         input: CucumberMultipartFeature[],
-        parameters: ConversionParameters
+        runData: IRunData
     ): Promise<ICucumberMultipart> {
-        const features = getMultipartFeatures(input, {
+        const features = buildMultipartFeatures(input, {
             testExecutionIssueKey: this.options.jira.testExecutionIssueKey,
             includeScreenshots: this.options.xray.uploadScreenshots,
             projectKey: this.options.jira.projectKey,
@@ -65,7 +89,7 @@ export class ImportExecutionCucumberMultipartConverter {
             }
             return {
                 features: features,
-                info: getMultipartInfoCloud(parameters, testExecutionIssueData),
+                info: buildMultipartInfoCloud(runData, testExecutionIssueData),
             };
         }
         const testExecutionIssueData: TestExecutionIssueDataServer = {
@@ -88,7 +112,7 @@ export class ImportExecutionCucumberMultipartConverter {
         }
         return {
             features: features,
-            info: getMultipartInfoServer(parameters, testExecutionIssueData),
+            info: buildMultipartInfoServer(runData, testExecutionIssueData),
         };
     }
 }
