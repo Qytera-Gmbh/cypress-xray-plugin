@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConfigOptions, ResolvedConfigOptions, TestingType } from "./cypress";
 
 type HookName = "before" | "beforeEach" | "afterEach" | "after";

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Minimatch from "cypress/types/cy-minimatch";
 
 type FileContents = string | unknown[] | object;

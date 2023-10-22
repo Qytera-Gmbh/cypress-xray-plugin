@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConfigOptions, PublicBrowser, ResolvedConfigOptions, TestingType } from "./cypress";
 
 interface CypressRunOptions extends CypressCommonOptions {
@@ -14,7 +15,7 @@ interface CypressRunOptions extends CypressCommonOptions {
     quiet: boolean;
     record: boolean;
     reporter: string;
-    reporterOptions: any;
+    reporterOptions: unknown;
     spec: string;
     autoCancelAfterFailures: number | false;
     runnerUi: boolean;

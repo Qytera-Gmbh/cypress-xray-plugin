@@ -22,20 +22,6 @@ export type ConversionParameters = Omit<CypressCommandLine.CypressRunResult, "ru
 
 export class ImportExecutionCucumberMultipartConverter {
     /**
-     * The configured plugin options.
-     */
-    private readonly options: InternalOptions;
-    /**
-     * Whether the converter is a cloud converter. Useful for automatically deducing which test
-     * converters to use.
-     */
-    private readonly isCloudConverter: boolean;
-    /**
-     * The Jira repository for fetching issue data.
-     */
-    private readonly jiraRepository: JiraRepository;
-
-    /**
      * Construct a new converter with access to the provided options. The cloud converter flag is
      * used to deduce the output format. When set to `true`, Xray cloud JSONs will be created, if
      * set to `false`, the format will be Xray server JSON.
@@ -45,14 +31,10 @@ export class ImportExecutionCucumberMultipartConverter {
      * @param jiraRepository - the Jira repository for fetching issue data
      */
     constructor(
-        options: InternalOptions,
-        isCloudConverter: boolean,
-        jiraRepository: JiraRepository
-    ) {
-        this.options = options;
-        this.isCloudConverter = isCloudConverter;
-        this.jiraRepository = jiraRepository;
-    }
+        private readonly options: InternalOptions,
+        private readonly isCloudConverter: boolean,
+        private readonly jiraRepository: JiraRepository
+    ) {}
 
     public async convert(
         input: CucumberMultipartFeature[],
