@@ -1,5 +1,15 @@
 # Changelog
 
+# `5.2.1`
+
+## Dependency updates
+
+- Bump @badeball/cypress-cucumber-preprocessor from 18.0.6 to 19.0.1
+
+- Bump @cucumber/messages from 22.0.0 to 23.0.0
+
+- Bump axios from 1.5.1 to 1.6.0
+
 # `5.2.0`
 
 ## Notable changes
