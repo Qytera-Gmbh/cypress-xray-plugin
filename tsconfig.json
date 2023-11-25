@@ -2,15 +2,16 @@
     "include": ["**/*.ts"],
     "exclude": ["node_modules/", "dist/"],
     "compilerOptions": {
-        "target": "ESNext",
-        "module": "CommonJS",
-        "declaration": true,
-        "outDir": "dist",
-        "esModuleInterop": true,
-        "moduleResolution": "Node",
-        "lib": ["ESNext", "DOM"],
-        "types": ["cypress", "node"],
         "allowJs": true,
-        "strict": true
+        "declaration": true,
+        "esModuleInterop": true,
+        "lib": ["ESNext", "DOM"],
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "outDir": "dist",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext",
+        "types": ["cypress", "node"],
     }
 }

@@ -23,3 +23,7 @@ jobs:
         run: npm run test
       - name: Run ESLint
         run: npm run eslint
+      - name: Check if skipLibCheck is still needed
+        # https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/171#issuecomment-1763836002
+        run: npx tsc --project tsconfigBuild.json --skipLibCheck false --noEmit
+        continue-on-error: true
