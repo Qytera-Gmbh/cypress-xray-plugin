@@ -92,18 +92,19 @@ describe("buildMultipartFeatures", () => {
         expect(features).to.have.length(0);
         expect(stubbedWarning).to.have.been.calledOnceWithExactly(
             dedent(`
-              Skipping result upload for scenario: Doing stuff
+                Skipping result upload for scenario: Doing stuff
 
-              No test issue keys found in tags of scenario: Doing stuff
-              You can target existing test issues by adding a corresponding tag:
+                No test issue keys found in tags of scenario: Doing stuff
+                You can target existing test issues by adding a corresponding tag:
 
-              @CYP-123
-              Scenario: Doing stuff
-                # steps ...
+                @CYP-123
+                Scenario: Doing stuff
+                  When I prepare something
+                  ...
 
-              For more information, visit:
-              - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-              - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                For more information, visit:
+                - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
             `)
         );
     });
@@ -124,19 +125,20 @@ describe("buildMultipartFeatures", () => {
         expect(features).to.have.length(0);
         expect(stubbedWarning).to.have.been.calledOnceWithExactly(
             dedent(`
-              Skipping result upload for scenario: Doing stuff
+                Skipping result upload for scenario: Doing stuff
 
-              Multiple test issue keys found in tags of scenario: Doing stuff
-              The plugin cannot decide for you which one to use:
+                Multiple test issue keys found in tags of scenario: Doing stuff
+                The plugin cannot decide for you which one to use:
 
-              @TestName:CYP-123 @TestName:CYP-456
-              ^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^
-              Scenario: Doing stuff
-                # steps ...
+                @TestName:CYP-123 @TestName:CYP-456
+                ^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^
+                Scenario: Doing stuff
+                  When I prepare something
+                  ...
 
-              For more information, visit:
-              - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-              - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                For more information, visit:
+                - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
             `)
         );
     });

@@ -105,10 +105,15 @@ export function missingTestKeyInCucumberScenarioError(
     scenario: {
         name: string;
         keyword: string;
+        steps: readonly { keyword: string; text: string }[];
     },
     projectKey: string,
     expectedCloudTags: boolean
 ): Error {
+    const firstStepLine =
+        scenario.steps.length > 0
+            ? `${scenario.steps[0].keyword.trim()} ${scenario.steps[0].text}`
+            : "Given A step";
     return new Error(
         dedent(`
             No test issue keys found in tags of scenario: ${scenario.name}
@@ -116,7 +121,8 @@ export function missingTestKeyInCucumberScenarioError(
 
             ${expectedCloudTags ? `@TestName:${projectKey}-123` : `@${projectKey}-123`}
             ${scenario.keyword}: ${scenario.name}
-              # steps ...
+              ${firstStepLine}
+              ...
 
             For more information, visit:
             - ${
@@ -143,11 +149,16 @@ export function multipleTestKeysInCucumberScenarioError(
     scenario: {
         name: string;
         keyword: string;
+        steps: readonly { keyword: string; text: string }[];
     },
     tags: readonly { name: string }[],
     issueKeys: string[],
     expectedCloudTags: boolean
 ): Error {
+    const firstStepLine =
+        scenario.steps.length > 0
+            ? `${scenario.steps[0].keyword.trim()} ${scenario.steps[0].text}`
+            : "Given A step";
     return new Error(
         dedent(`
             Multiple test issue keys found in tags of scenario: ${scenario.name}
@@ -164,7 +175,8 @@ export function multipleTestKeysInCucumberScenarioError(
                 .join(" ")
                 .trimEnd()}
             ${scenario.keyword}: ${scenario.name}
-              # steps ...
+              ${firstStepLine}
+              ...
 
             For more information, visit:
             - ${
@@ -191,6 +203,10 @@ export function missingPreconditionKeyInCucumberBackgroundError(
     projectKey: string,
     expectedCloudTags: boolean
 ): Error {
+    const firstStepLine =
+        background.steps.length > 0
+            ? `${background.steps[0].keyword.trim()} ${background.steps[0].text}`
+            : "Given A step";
     return new Error(
         dedent(`
             No precondition issue keys found in comments of background: ${background.name}
@@ -198,7 +214,8 @@ export function missingPreconditionKeyInCucumberBackgroundError(
 
             ${background.keyword}: ${background.name}
               ${expectedCloudTags ? `#@Precondition:${projectKey}-123` : `#@${projectKey}-123`}
-              # steps ...
+              ${firstStepLine}
+              ...
 
             For more information, visit:
             - ${
@@ -262,6 +279,11 @@ function reconstructMultipleTagsBackground(
             }
         }
     }
-    example.push("  # steps ...");
+    example.push(
+        background.steps.length > 0
+            ? `  ${background.steps[0].keyword.trim()} ${background.steps[0].text}`
+            : "  Given A step"
+    );
+    example.push("  ...");
     return example.join("\n");
 }
