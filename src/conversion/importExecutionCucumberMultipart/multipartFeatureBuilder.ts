@@ -101,6 +101,9 @@ function assertScenarioContainsIssueKey(
                 {
                     name: element.name,
                     keyword: element.keyword,
+                    steps: element.steps.map((step: CucumberMultipartStep) => {
+                        return { keyword: step.keyword, text: step.name };
+                    }),
                 },
                 element.tags,
                 issueKeys,
@@ -109,7 +112,17 @@ function assertScenarioContainsIssueKey(
         }
     }
     if (issueKeys.length === 0) {
-        throw missingTestKeyInCucumberScenarioError(element, projectKey, useCloudTags);
+        throw missingTestKeyInCucumberScenarioError(
+            {
+                name: element.name,
+                keyword: element.keyword,
+                steps: element.steps.map((step: CucumberMultipartStep) => {
+                    return { keyword: step.keyword, text: step.name };
+                }),
+            },
+            projectKey,
+            useCloudTags
+        );
     }
 }
 

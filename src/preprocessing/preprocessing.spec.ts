@@ -178,7 +178,8 @@ describe("cucumber preprocessing", () => {
 
                     @CYP-123
                     Scenario: A scenario
-                      # steps ...
+                      Given an assumption
+                      ...
 
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
@@ -202,7 +203,8 @@ describe("cucumber preprocessing", () => {
                     @CYP-123 @Some @Other @CYP-456 @Tags
                     ^^^^^^^^              ^^^^^^^^
                     Scenario: A scenario
-                      # steps ...
+                      Given an assumption
+                      ...
 
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
@@ -225,7 +227,8 @@ describe("cucumber preprocessing", () => {
 
                     Background: A background
                       #@CYP-123
-                      # steps ...
+                      Given abc123
+                      ...
 
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
@@ -252,7 +255,8 @@ describe("cucumber preprocessing", () => {
                       # a random comment
                       #@CYP-262
                       ^^^^^^^^^
-                      # steps ...
+                      Given abc123
+                      ...
 
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
@@ -304,7 +308,8 @@ describe("cucumber preprocessing", () => {
 
                     @TestName:CYP-123
                     Scenario: A scenario
-                      # steps ...
+                      Given an assumption
+                      ...
 
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
@@ -328,7 +333,8 @@ describe("cucumber preprocessing", () => {
                     @TestName:CYP-123 @Some @Other @TestName:CYP-456 @Tags
                     ^^^^^^^^^^^^^^^^^              ^^^^^^^^^^^^^^^^^
                     Scenario: A scenario
-                      # steps ...
+                      Given an assumption
+                      ...
 
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
@@ -351,7 +357,8 @@ describe("cucumber preprocessing", () => {
 
                     Background: A background
                       #@Precondition:CYP-123
-                      # steps ...
+                      Given abc123
+                      ...
 
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
@@ -378,7 +385,8 @@ describe("cucumber preprocessing", () => {
                       # a random comment
                       #@Precondition:CYP-262
                       ^^^^^^^^^^^^^^^^^^^^^^
-                      # steps ...
+                      Given abc123
+                      ...
 
                     For more information, visit:
                     - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2

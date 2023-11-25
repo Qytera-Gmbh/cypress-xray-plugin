@@ -99,7 +99,8 @@ describe("buildMultipartFeatures", () => {
 
               @CYP-123
               Scenario: Doing stuff
-                # steps ...
+                When I prepare something
+                ...
 
               For more information, visit:
               - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
@@ -132,7 +133,8 @@ describe("buildMultipartFeatures", () => {
               @TestName:CYP-123 @TestName:CYP-456
               ^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^
               Scenario: Doing stuff
-                # steps ...
+                When I prepare something
+                ...
 
               For more information, visit:
               - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
