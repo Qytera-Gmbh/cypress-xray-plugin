@@ -1,5 +1,21 @@
 # Changelog
 
+# `5.2.2`
+
+## Notable changes
+
+- Hide initialization error messages if the plugin is disabled (fixes [#271](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/271))
+
+- Add first step to Cucumber error messages ([#257](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/257))
+
+## Dependency updates
+
+- Bump @cucumber/messages from 23.0.0 to 24.0.0
+
+- Bump @badeball/cypress-cucumber-preprocessor from 19.0.1 to 19.2.0
+
+- Bump axios from 1.6.0 to 1.6.2
+
 # `5.2.1`
 
 ## Dependency updates
