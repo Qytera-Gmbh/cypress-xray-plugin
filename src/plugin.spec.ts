@@ -7,7 +7,7 @@ import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
 import * as context from "./context";
 import * as hooks from "./hooks";
-import { addXrayResultUpload, configureXrayPlugin, syncFeatureFile } from "./plugin";
+import { addXrayResultUpload, configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import { JiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
 import { CachingJiraRepository } from "./repository/jira/jiraRepository";
@@ -51,7 +51,7 @@ describe("the plugin", () => {
                 jiraRepository: jiraRepository,
             },
         };
-        context.clearPluginContext();
+        resetPlugin();
     });
 
     describe("configureXrayPlugin", () => {
@@ -206,21 +206,36 @@ describe("the plugin", () => {
 
     describe("addXrayResultUpload", () => {
         describe("on before:run", () => {
-            it("displays errors if the plugin was not configured", async () => {
+            it("displays warnings if the plugin was not configured", async () => {
                 const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
                     fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
                 );
-                const { stubbedError } = stubLogging();
+                const { stubbedWarning } = stubLogging();
                 await addXrayResultUpload(
                     mockedCypressEventEmitter("before:run", beforeRunDetails)
                 );
-                expect(stubbedError).to.have.been.calledWith(
+                expect(stubbedWarning).to.have.been.calledWith(
                     dedent(`
                         Skipping before:run hook: Plugin misconfigured: configureXrayPlugin() was not called
 
                         Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
                     `)
                 );
+            });
+
+            it("does not display a warning if the plugin was configured but disabled", async () => {
+                const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
+                    fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
+                );
+                const { stubbedWarning } = stubLogging();
+                await configureXrayPlugin(config, {
+                    jira: { projectKey: "CYP", url: "https://example.org" },
+                    plugin: { enabled: false },
+                });
+                await addXrayResultUpload(
+                    mockedCypressEventEmitter("before:run", beforeRunDetails)
+                );
+                expect(stubbedWarning).to.not.have.been.called;
             });
 
             it("does nothing if disabled", async () => {
@@ -271,20 +286,33 @@ describe("the plugin", () => {
         });
 
         describe("on after:run", () => {
-            it("displays errors if the plugin was not configured", async () => {
+            it("displays warnings if the plugin was not configured", async () => {
                 const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
                     fs.readFileSync("./test/resources/runResult.json", "utf-8")
                 );
-                const { stubbedError } = stubLogging();
+                const { stubbedWarning } = stubLogging();
                 await addXrayResultUpload(mockedCypressEventEmitter("after:run", afterRunResult));
-                expect(stubbedError).to.have.been.calledOnce;
-                expect(stubbedError).to.have.been.calledWith(
+                expect(stubbedWarning).to.have.been.calledOnce;
+                expect(stubbedWarning).to.have.been.calledWith(
                     dedent(`
                         Skipping after:run hook: Plugin misconfigured: configureXrayPlugin() was not called
 
                         Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
                     `)
                 );
+            });
+
+            it("does not display a warning if the plugin was configured but disabled", async () => {
+                const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
+                    fs.readFileSync("./test/resources/runResult.json", "utf-8")
+                );
+                const { stubbedWarning } = stubLogging();
+                await configureXrayPlugin(config, {
+                    jira: { projectKey: "CYP", url: "https://example.org" },
+                    plugin: { enabled: false },
+                });
+                await addXrayResultUpload(mockedCypressEventEmitter("after:run", afterRunResult));
+                expect(stubbedWarning).to.not.have.been.called;
             });
 
             it("does not display an error for failed runs if disabled", async () => {
@@ -365,17 +393,27 @@ describe("the plugin", () => {
             };
         });
 
-        it("displays errors if the plugin was not configured", async () => {
-            const { stubbedError } = stubLogging();
+        it("displays warnings if the plugin was not configured", async () => {
+            const { stubbedWarning } = stubLogging();
             await syncFeatureFile(file);
-            expect(stubbedError).to.have.been.calledOnce;
-            expect(stubbedError).to.have.been.calledWith(
+            expect(stubbedWarning).to.have.been.calledOnce;
+            expect(stubbedWarning).to.have.been.calledWith(
                 dedent(`
                     Skipping file:preprocessor hook: Plugin misconfigured: configureXrayPlugin() was not called
 
                     Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
                 `)
             );
+        });
+
+        it("does not display a warning if the plugin was configured but disabled", async () => {
+            const { stubbedWarning } = stubLogging();
+            await configureXrayPlugin(config, {
+                jira: { projectKey: "CYP", url: "https://example.org" },
+                plugin: { enabled: false },
+            });
+            await syncFeatureFile(file);
+            expect(stubbedWarning).to.not.have.been.called;
         });
 
         it("does not do anything if disabled", async () => {
