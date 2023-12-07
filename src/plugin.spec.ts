@@ -7,7 +7,7 @@ import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
 import * as context from "./context";
 import * as hooks from "./hooks";
-import { addXrayResultUpload, configureXrayPlugin, syncFeatureFile } from "./plugin";
+import { addXrayResultUpload, configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import { JiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
 import { CachingJiraRepository } from "./repository/jira/jiraRepository";
@@ -51,7 +51,7 @@ describe("the plugin", () => {
                 jiraRepository: jiraRepository,
             },
         };
-        context.clearPluginContext();
+        resetPlugin();
     });
 
     describe("configureXrayPlugin", () => {
@@ -210,11 +210,11 @@ describe("the plugin", () => {
                 const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
                     fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
                 );
-                const { stubbedError } = stubLogging();
+                const { stubbedWarning } = stubLogging();
                 await addXrayResultUpload(
                     mockedCypressEventEmitter("before:run", beforeRunDetails)
                 );
-                expect(stubbedError).to.have.been.calledWith(
+                expect(stubbedWarning).to.have.been.calledWith(
                     dedent(`
                         Skipping before:run hook: Plugin misconfigured: configureXrayPlugin() was not called
 
@@ -275,10 +275,10 @@ describe("the plugin", () => {
                 const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
                     fs.readFileSync("./test/resources/runResult.json", "utf-8")
                 );
-                const { stubbedError } = stubLogging();
+                const { stubbedWarning } = stubLogging();
                 await addXrayResultUpload(mockedCypressEventEmitter("after:run", afterRunResult));
-                expect(stubbedError).to.have.been.calledOnce;
-                expect(stubbedError).to.have.been.calledWith(
+                expect(stubbedWarning).to.have.been.calledOnce;
+                expect(stubbedWarning).to.have.been.calledWith(
                     dedent(`
                         Skipping after:run hook: Plugin misconfigured: configureXrayPlugin() was not called
 
@@ -366,10 +366,10 @@ describe("the plugin", () => {
         });
 
         it("displays errors if the plugin was not configured", async () => {
-            const { stubbedError } = stubLogging();
+            const { stubbedWarning } = stubLogging();
             await syncFeatureFile(file);
-            expect(stubbedError).to.have.been.calledOnce;
-            expect(stubbedError).to.have.been.calledWith(
+            expect(stubbedWarning).to.have.been.calledOnce;
+            expect(stubbedWarning).to.have.been.calledWith(
                 dedent(`
                     Skipping file:preprocessor hook: Plugin misconfigured: configureXrayPlugin() was not called
 
