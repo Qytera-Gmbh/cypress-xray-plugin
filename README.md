@@ -33,7 +33,7 @@ Run the following command to add the plugin to your project:
 npm install --save-dev cypress-xray-plugin
 ```
 
-> **Note**
+> [!NOTE]
 > This plugin only works when running Cypress through the CLI (i.e. `npx cypress run`).
 
 ## Documentation
