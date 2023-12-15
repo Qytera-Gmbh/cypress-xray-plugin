@@ -75,6 +75,7 @@ export const ENV_NAMES: Remapping<Options & IAuthentication, string> = {
         featureFileExtension: "CUCUMBER_FEATURE_FILE_EXTENSION",
         uploadFeatures: "CUCUMBER_UPLOAD_FEATURES",
         tagPrefix: {
+            precondition: "CUCUMBER_TAG_PREFIX_PRECONDITION",
             test: "CUCUMBER_TAG_PREFIX_TEST",
         },
     },

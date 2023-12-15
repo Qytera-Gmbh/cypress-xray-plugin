@@ -261,26 +261,43 @@ export interface CucumberOptions {
      * Xray usually adds tags to exported feature files and in turn expects these tags to be present
      * when importing Cucumber test results or feature files. The tags are of the form
      * `@Prefix:CYP-123`, containing the prefix and the issue key. For example, a scenario can be
-     * annotated with `@TestName:CYP-123` to link the scenario's execution to a corresponding test
-     * issue in Jira. Alternatively, backgrounds can be tagged with `@Precondition:CYP-456` to link
-     * to precondition issues.
+     * annotated with `@TestName:CYP-123` to link the scenario's to a corresponding test issue in
+     * Jira. Alternatively, backgrounds could be tagged with `@Precondition:CYP-456` to link to
+     * precondition issues. The concrete prefixes depend on the configured prefix scheme in Xray.
      *
      * If any tag in a feature file (and thus the Cucumber JSON report used for importing test
      * execution results) is not consistent with the scheme defined in Xray, Xray will reject the
      * imported results altogether.
      *
-     * @see {@link https://docs.getxray.app/display/XRAY/Export+Cucumber+Features | Xray server feature tagging}
-     * @see {@link https://docs.getxray.app/display/XRAYCLOUD/Generate+Cucumber+Features | Xray cloud feature tagging}
-     * @see {@link https://docs.getxray.app/display/XRAY/Miscellaneous#Miscellaneous-CucumberExportPrefixes | Xray server Cucumber settings}
-     * @see {@link https://docs.getxray.app/display/XRAYCLOUD/Global+Settings%3A+Cucumber | Xray cloud Cucumber settings}
+     * More information:
+     * - Xray feature tagging
+     *   - {@link https://docs.getxray.app/display/XRAY/Export+Cucumber+Features | Xray server}
+     *   - {@link https://docs.getxray.app/display/XRAYCLOUD/Generate+Cucumber+Features | Xray cloud}
+     * - Xray import behaviour
+     *   - {@link https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST | Xray server}
+     *   - {@link https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST | Xray cloud}
+     * - Xray Cucumber prefix schemes
+     *   - {@link https://docs.getxray.app/display/XRAY/Miscellaneous#Miscellaneous-CucumberExportPrefixes | Xray server}
+     *   - {@link https://docs.getxray.app/display/XRAYCLOUD/Global+Settings%3A+Cucumber | Xray cloud}
      */
     tagPrefix?: {
         /**
+         * The prefix for Cucumber background tags.
+         *
+         * If left undefined, the plugin will assume that your Xray instance is able to properly
+         * parse issue tags _without_ any prefixes, e.g. background tags of the form `@CYP-123`
+         * instead of something like `@Precondition:CYP-123`.
+         *
+         * @example 'Precondition:'
+         * @example 'PRECOND_'
+         */
+        precondition?: string;
+        /**
          * The prefix for Cucumber scenario tags.
          *
-         * If left undefined, the plugin will assume that your Xray instance is able to properly parse
-         * issue tags _without_ any prefixes, e.g. scenario tags of the form `@CYP-123` instead of
-         * `@TestName:CYP-123`.
+         * If left undefined, the plugin will assume that your Xray instance is able to properly
+         * parse issue tags _without_ any prefixes, e.g. scenario tags of the form `@CYP-123`
+         * instead of something like `@TestName:CYP-123`.
          *
          * @example 'TestName:'
          * @example 'TEST_'

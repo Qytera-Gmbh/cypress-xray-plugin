@@ -147,6 +147,9 @@ describe("the plugin context configuration", () => {
                 });
 
                 describe("tagPrefix", () => {
+                    it("precondition", () => {
+                        expect(cucumberOptions?.tagPrefix?.precondition).to.eq(undefined);
+                    });
                     it("test", () => {
                         expect(cucumberOptions?.tagPrefix?.test).to.eq(undefined);
                     });
@@ -473,6 +476,23 @@ describe("the plugin context configuration", () => {
                     expect(cucumberOptions?.downloadFeatures).to.eq(true);
                 });
                 describe("tagPrefix", () => {
+                    it("precondition", async () => {
+                        const cucumberOptions = await initCucumberOptions(
+                            {
+                                testingType: "component",
+                                projectRoot: "",
+                                reporter: "",
+                                specPattern: "",
+                                excludeSpecPattern: "",
+                                env: { jsonEnabled: true },
+                            },
+                            {
+                                featureFileExtension: ".feature",
+                                tagPrefix: { precondition: "PreconditionYeah_" },
+                            }
+                        );
+                        expect(cucumberOptions?.tagPrefix?.precondition).to.eq("PreconditionYeah_");
+                    });
                     it("test", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
@@ -838,6 +858,27 @@ describe("the plugin context configuration", () => {
                         }
                     );
                     expect(cucumberOptions?.downloadFeatures).to.be.true;
+                });
+
+                it("CUCUMBER_TAG_PREFIX_PRECONDITION", async () => {
+                    const cucumberOptions = await initCucumberOptions(
+                        {
+                            testingType: "e2e",
+                            projectRoot: "",
+                            reporter: "",
+                            specPattern: "",
+                            excludeSpecPattern: "",
+                            env: {
+                                CUCUMBER_TAG_PREFIX_PRECONDITION: "BigPrecondition:",
+                                jsonEnabled: true,
+                            },
+                        },
+                        {
+                            featureFileExtension: ".feature",
+                            tagPrefix: { precondition: "SmallPrecondition:" },
+                        }
+                    );
+                    expect(cucumberOptions?.tagPrefix?.precondition).to.eq("BigPrecondition:");
                 });
 
                 it("CUCUMBER_TAG_PREFIX_TEST", async () => {
