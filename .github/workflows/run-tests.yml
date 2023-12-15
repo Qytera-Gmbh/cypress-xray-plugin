@@ -1,8 +1,8 @@
-name: Run Plugin Tests
+name: Run plugin tests
 
 on:
   pull_request:
-    branches: ["main"]
+    branches: [main]
   workflow_dispatch:
     # manually triggered
 
@@ -10,19 +10,16 @@ jobs:
   run-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 18.x
-          cache: "npm"
-      - name: Install plugin dependencies
-        run: npm install
-      - name: Build plugin
-        run: npm run build
-      - name: Run tests
-        run: npm run test
-      - name: Run ESLint
-        run: npm run eslint
+          registry-url: https://registry.npmjs.org/
+          cache: npm
+      - run: npm install
+      - run: npm run build
+      - run: npm run test
+      - run: npm run eslint
       - name: Check if skipLibCheck is still needed
         # https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/171#issuecomment-1763836002
         run: npx tsc --project tsconfigBuild.json --skipLibCheck false --noEmit
