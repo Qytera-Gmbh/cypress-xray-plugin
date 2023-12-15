@@ -243,7 +243,8 @@ export async function synchronizeFile(
                 const issueData = getCucumberIssueData(
                     file.filePath,
                     options.jira.projectKey,
-                    clients.kind === "cloud"
+                    clients.kind === "cloud",
+                    options.cucumber.prefixes
                 );
                 // Xray currently (almost) always overwrites issue summaries when importing feature
                 // files to existing issues. Therefore, we manually need to backup and reset the

@@ -250,6 +250,7 @@ describe("the hooks", () => {
                 featureFileExtension: ".feature",
                 downloadFeatures: false,
                 uploadFeatures: true,
+                prefixes: {},
             };
             await synchronizeFile(file, ".", options, clients);
             expect(stubbedError).to.have.been.calledOnce;

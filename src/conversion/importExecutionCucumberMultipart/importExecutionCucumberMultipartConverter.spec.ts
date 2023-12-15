@@ -151,6 +151,7 @@ describe("the import execution cucumber multpart converter", () => {
                         projectKey: "CYP",
                         testExecutionIssueDetails: { subtask: false, id: "issue_1578" },
                     },
+                    cucumber: { prefixes: { test: "TestName:" } },
                     xray: { uploadScreenshots: false },
                 },
                 true,

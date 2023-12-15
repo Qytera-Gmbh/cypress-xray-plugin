@@ -16,6 +16,7 @@ describe("buildMultipartFeatures", () => {
         const features = buildMultipartFeatures(cucumberReport, {
             projectKey: "CYP",
             useCloudTags: true,
+            testPrefix: "TestName:",
         });
         expect(features).to.be.an("array").with.length(2);
         expect(features[0].elements).to.be.an("array").with.length(3);
@@ -33,6 +34,7 @@ describe("buildMultipartFeatures", () => {
             testExecutionIssueKey: "CYP-456",
             projectKey: "CYP",
             useCloudTags: true,
+            testPrefix: "TestName:",
         });
         expect(features[0].tags).to.deep.eq([{ name: "@CYP-456" }]);
         expect(features[1].tags).to.deep.eq([{ name: "@CYP-456" }]);
@@ -49,6 +51,7 @@ describe("buildMultipartFeatures", () => {
             includeScreenshots: true,
             projectKey: "CYP",
             useCloudTags: true,
+            testPrefix: "TestName:",
         });
         expectToExist(features[0].elements[2].steps[1].embeddings);
         expect(features[0].elements[2].steps[1].embeddings).to.have.length(1);
@@ -67,6 +70,7 @@ describe("buildMultipartFeatures", () => {
             includeScreenshots: false,
             projectKey: "CYP",
             useCloudTags: true,
+            testPrefix: "TestName:",
         });
         expect(features[0].elements[0].steps[0].embeddings).to.be.empty;
         expect(features[0].elements[0].steps[1].embeddings).to.be.empty;
@@ -121,6 +125,7 @@ describe("buildMultipartFeatures", () => {
             includeScreenshots: false,
             projectKey: "CYP",
             useCloudTags: true,
+            testPrefix: "TestName:",
         });
         expect(features).to.have.length(0);
         expect(stubbedWarning).to.have.been.calledOnceWithExactly(

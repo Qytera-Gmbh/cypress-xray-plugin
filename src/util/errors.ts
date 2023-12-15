@@ -98,7 +98,8 @@ export function multipleTestKeysInNativeTestTitleError(
  *
  * @param scenario - the Cucumber scenario
  * @param projectKey - the project key
- * @param expectedCloudTags - whether Xray cloud tags were expected
+ * @param isCloudClient - whether Xray cloud is being used
+ * @param testPrefix - the prefix of issues linked in scenario tags
  * @returns the error
  */
 export function missingTestKeyInCucumberScenarioError(
@@ -108,7 +109,8 @@ export function missingTestKeyInCucumberScenarioError(
         steps: readonly { keyword: string; text: string }[];
     },
     projectKey: string,
-    expectedCloudTags: boolean
+    isCloudClient: boolean,
+    testPrefix?: string
 ): Error {
     const firstStepLine =
         scenario.steps.length > 0
@@ -119,14 +121,14 @@ export function missingTestKeyInCucumberScenarioError(
             No test issue keys found in tags of scenario: ${scenario.name}
             You can target existing test issues by adding a corresponding tag:
 
-            ${expectedCloudTags ? `@TestName:${projectKey}-123` : `@${projectKey}-123`}
+            @${testPrefix ?? ""}${projectKey}-123
             ${scenario.keyword}: ${scenario.name}
               ${firstStepLine}
               ...
 
             For more information, visit:
             - ${
-                expectedCloudTags
+                isCloudClient
                     ? HELP.xray.importCucumberTests.cloud
                     : HELP.xray.importCucumberTests.server
             }
@@ -142,7 +144,8 @@ export function missingTestKeyInCucumberScenarioError(
  * @param scenario - the Cucumber scenario
  * @param tags - the scenario tags
  * @param issueKeys - the issue keys
- * @param expectedCloudTags - whether Xray cloud tags were expected
+ * @param isCloudClient - whether Xray cloud is being used
+ * @param testPrefix - the prefix of issues linked in scenario tags
  * @returns the error
  */
 export function multipleTestKeysInCucumberScenarioError(
@@ -153,7 +156,7 @@ export function multipleTestKeysInCucumberScenarioError(
     },
     tags: readonly { name: string }[],
     issueKeys: string[],
-    expectedCloudTags: boolean
+    isCloudClient: boolean
 ): Error {
     const firstStepLine =
         scenario.steps.length > 0
@@ -180,7 +183,7 @@ export function multipleTestKeysInCucumberScenarioError(
 
             For more information, visit:
             - ${
-                expectedCloudTags
+                isCloudClient
                     ? HELP.xray.importCucumberTests.cloud
                     : HELP.xray.importCucumberTests.server
             }
@@ -195,13 +198,15 @@ export function multipleTestKeysInCucumberScenarioError(
  *
  * @param background - the Cucumber background
  * @param projectKey - the project key
- * @param expectedCloudTags - whether Xray cloud tags were expected
+ * @param isCloudClient - whether Xray cloud is being used
+ * @param preconditionPrefix - the prefix of issues linked in background tags
  * @returns the error
  */
 export function missingPreconditionKeyInCucumberBackgroundError(
     background: Background,
     projectKey: string,
-    expectedCloudTags: boolean
+    isCloudClient: boolean,
+    preconditionPrefix?: string
 ): Error {
     const firstStepLine =
         background.steps.length > 0
@@ -213,13 +218,13 @@ export function missingPreconditionKeyInCucumberBackgroundError(
             You can target existing precondition issues by adding a corresponding comment:
 
             ${background.keyword}: ${background.name}
-              ${expectedCloudTags ? `#@Precondition:${projectKey}-123` : `#@${projectKey}-123`}
+              #@${preconditionPrefix ?? ""}${projectKey}-123
               ${firstStepLine}
               ...
 
             For more information, visit:
             - ${
-                expectedCloudTags
+                isCloudClient
                     ? HELP.xray.importCucumberTests.cloud
                     : HELP.xray.importCucumberTests.server
             }
@@ -235,14 +240,14 @@ export function missingPreconditionKeyInCucumberBackgroundError(
  * @param background - the Cucumber background
  * @param preconditionKeys - the issue keys
  * @param comments - the precondition comments
- * @param expectedCloudTags - whether Xray cloud tags were expected
+ * @param isCloudClient - whether Xray cloud is being used
  * @returns the error
  */
 export function multiplePreconditionKeysInCucumberBackgroundError(
     background: Background,
     preconditionKeys: readonly string[],
     comments: readonly Comment[],
-    expectedCloudTags: boolean
+    isCloudClient: boolean
 ): Error {
     return new Error(
         dedent(`
@@ -253,7 +258,7 @@ export function multiplePreconditionKeysInCucumberBackgroundError(
 
             For more information, visit:
             - ${
-                expectedCloudTags
+                isCloudClient
                     ? HELP.xray.importCucumberTests.cloud
                     : HELP.xray.importCucumberTests.server
             }

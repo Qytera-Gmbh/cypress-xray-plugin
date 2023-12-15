@@ -271,12 +271,7 @@ describe("cucumber preprocessing", () => {
             );
             // Cast because we know for certain it exists.
             const background: Background = document.feature?.children[0].background as Background;
-            const tag = getCucumberPreconditionIssueTags(
-                background,
-                "CYP",
-                false,
-                document.comments
-            );
+            const tag = getCucumberPreconditionIssueTags(background, "CYP", document.comments);
             expect(tag).to.deep.eq(["CYP-244", "CYP-262"]);
         });
 
@@ -286,7 +281,7 @@ describe("cucumber preprocessing", () => {
             ).feature;
             // Cast because we know for certain it exists.
             const scenario: Scenario = feature?.children[1].scenario as Scenario;
-            expect(getCucumberScenarioIssueTags(scenario, "CYP", false)).to.deep.eq([
+            expect(getCucumberScenarioIssueTags(scenario, "CYP")).to.deep.eq([
                 "CYP-123",
                 "CYP-456",
             ]);
@@ -299,7 +294,8 @@ describe("cucumber preprocessing", () => {
                 getCucumberIssueData(
                     "./test/resources/features/taggedCloudMissingScenario.feature",
                     "CYP",
-                    true
+                    true,
+                    { test: "TestName:", precondition: "Precondition:" }
                 )
             ).to.throw(
                 dedent(`
@@ -323,7 +319,8 @@ describe("cucumber preprocessing", () => {
                 getCucumberIssueData(
                     "./test/resources/features/taggedCloudMultipleScenario.feature",
                     "CYP",
-                    true
+                    true,
+                    { test: "TestName:", precondition: "Precondition:" }
                 )
             ).to.throw(
                 dedent(`
@@ -348,7 +345,8 @@ describe("cucumber preprocessing", () => {
                 getCucumberIssueData(
                     "./test/resources/features/taggedCloudMissingBackground.feature",
                     "CYP",
-                    true
+                    true,
+                    { precondition: "Precondition:" }
                 )
             ).to.throw(
                 dedent(`
@@ -372,7 +370,8 @@ describe("cucumber preprocessing", () => {
                 getCucumberIssueData(
                     "./test/resources/features/taggedCloudMultipleBackground.feature",
                     "CYP",
-                    true
+                    true,
+                    { precondition: "Precondition:" }
                 )
             ).to.throw(
                 dedent(`
@@ -404,8 +403,8 @@ describe("cucumber preprocessing", () => {
             const tag = getCucumberPreconditionIssueTags(
                 background,
                 "CYP",
-                true,
-                document.comments
+                document.comments,
+                "Precondition:"
             );
             expect(tag).to.deep.eq(["CYP-244", "CYP-262"]);
         });
@@ -416,7 +415,7 @@ describe("cucumber preprocessing", () => {
             ).feature;
             // Cast because we know for certain it exists.
             const scenario: Scenario = feature?.children[1].scenario as Scenario;
-            expect(getCucumberScenarioIssueTags(scenario, "CYP", true)).to.deep.eq([
+            expect(getCucumberScenarioIssueTags(scenario, "CYP", "TestName:")).to.deep.eq([
                 "CYP-123",
                 "CYP-456",
             ]);

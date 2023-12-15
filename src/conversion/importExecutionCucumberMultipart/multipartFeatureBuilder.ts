@@ -29,6 +29,7 @@ export function buildMultipartFeatures(
         includeScreenshots?: boolean;
         projectKey: string;
         useCloudTags: boolean;
+        testPrefix?: string;
     }
 ): CucumberMultipartFeature[] {
     const tests: CucumberMultipartFeature[] = [];
@@ -37,7 +38,6 @@ export function buildMultipartFeatures(
             ...result,
         };
         if (options?.testExecutionIssueKey) {
-            // For feature tags, there's no Cloud/Server distinction for some reason.
             const testExecutionIssueTag: CucumberMultipartTag = {
                 name: `@${options.testExecutionIssueKey}`,
             };
@@ -55,7 +55,8 @@ export function buildMultipartFeatures(
                     assertScenarioContainsIssueKey(
                         element,
                         options.projectKey,
-                        options.useCloudTags
+                        options.useCloudTags,
+                        options.testPrefix
                     );
                     const modifiedElement: CucumberMultipartElement = {
                         ...element,
@@ -84,12 +85,13 @@ export function buildMultipartFeatures(
 function assertScenarioContainsIssueKey(
     element: CucumberMultipartElement,
     projectKey: string,
-    useCloudTags: boolean
+    isXrayCloud: boolean,
+    testPrefix?: string
 ): void {
     const issueKeys: string[] = [];
     if (element.tags) {
         for (const tag of element.tags) {
-            const matches = tag.name.match(getScenarioTagRegex(projectKey, useCloudTags));
+            const matches = tag.name.match(getScenarioTagRegex(projectKey, testPrefix));
             if (!matches) {
                 continue;
             } else if (matches.length === 2) {
@@ -107,7 +109,7 @@ function assertScenarioContainsIssueKey(
                 },
                 element.tags,
                 issueKeys,
-                useCloudTags
+                isXrayCloud
             );
         }
     }
@@ -121,7 +123,8 @@ function assertScenarioContainsIssueKey(
                 }),
             },
             projectKey,
-            useCloudTags
+            isXrayCloud,
+            testPrefix
         );
     }
 }

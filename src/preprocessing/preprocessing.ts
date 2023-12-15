@@ -2,6 +2,7 @@ import { AstBuilder, GherkinClassicTokenMatcher, Parser } from "@cucumber/gherki
 import { Background, Comment, GherkinDocument, IdGenerator, Scenario } from "@cucumber/messages";
 import fs from "fs";
 import { logWarning } from "../logging/logging";
+import { CucumberOptions } from "../types/plugin";
 import {
     errorMessage,
     missingPreconditionKeyInCucumberBackgroundError,
@@ -115,7 +116,8 @@ export interface FeatureFileIssueDataPrecondition {
 export function getCucumberIssueData(
     filePath: string,
     projectKey: string,
-    isCloudClient: boolean
+    isCloudClient: boolean,
+    prefixes?: CucumberOptions["prefixes"]
 ): FeatureFileIssueData {
     const featureFileIssueKeys: FeatureFileIssueData = {
         tests: [],
@@ -130,13 +132,14 @@ export function getCucumberIssueData(
             const issueKeys = getCucumberScenarioIssueTags(
                 child.scenario,
                 projectKey,
-                isCloudClient
+                prefixes?.test
             );
             if (issueKeys.length === 0) {
                 throw missingTestKeyInCucumberScenarioError(
                     child.scenario,
                     projectKey,
-                    isCloudClient
+                    isCloudClient,
+                    prefixes?.test
                 );
             } else if (issueKeys.length > 1) {
                 throw multipleTestKeysInCucumberScenarioError(
@@ -155,14 +158,15 @@ export function getCucumberIssueData(
             const preconditionKeys = getCucumberPreconditionIssueTags(
                 child.background,
                 projectKey,
-                isCloudClient,
-                document.comments
+                document.comments,
+                prefixes?.precondition
             );
             if (preconditionKeys.length === 0) {
                 throw missingPreconditionKeyInCucumberBackgroundError(
                     child.background,
                     projectKey,
-                    isCloudClient
+                    isCloudClient,
+                    prefixes?.precondition
                 );
             } else if (preconditionKeys.length > 1) {
                 throw multiplePreconditionKeysInCucumberBackgroundError(
@@ -206,11 +210,11 @@ export function parseFeatureFile(
 export function getCucumberScenarioIssueTags(
     scenario: Scenario,
     projectKey: string,
-    isCloudClient: boolean
+    testPrefix?: string
 ): string[] {
     const issueKeys: string[] = [];
     for (const tag of scenario.tags) {
-        const matches = tag.name.match(getScenarioTagRegex(projectKey, isCloudClient));
+        const matches = tag.name.match(getScenarioTagRegex(projectKey, testPrefix));
         if (!matches) {
             continue;
         } else if (matches.length === 2) {
@@ -220,10 +224,10 @@ export function getCucumberScenarioIssueTags(
     return issueKeys;
 }
 
-export function getScenarioTagRegex(projectKey: string, isCloudClient: boolean) {
-    if (isCloudClient) {
+export function getScenarioTagRegex(projectKey: string, testPrefix?: string) {
+    if (testPrefix) {
         // @TestName:CYP-123
-        return new RegExp(`@TestName:(${projectKey}-\\d+)`);
+        return new RegExp(`@${testPrefix}(${projectKey}-\\d+)`);
     }
     // @CYP-123
     return new RegExp(`@(${projectKey}-\\d+)`);
@@ -232,8 +236,8 @@ export function getScenarioTagRegex(projectKey: string, isCloudClient: boolean) 
 export function getCucumberPreconditionIssueTags(
     background: Background,
     projectKey: string,
-    isCloudClient: boolean,
-    comments: readonly Comment[]
+    comments: readonly Comment[],
+    preconditionPrefix?: string
 ): string[] {
     const preconditionKeys: string[] = [];
     if (background.steps.length > 0) {
@@ -241,7 +245,7 @@ export function getCucumberPreconditionIssueTags(
         const firstStepLine = background.steps[0].location.line;
         for (const comment of comments) {
             if (comment.location.line > backgroundLine && comment.location.line < firstStepLine) {
-                const matches = comment.text.match(backgroundRegex(projectKey, isCloudClient));
+                const matches = comment.text.match(backgroundRegex(projectKey, preconditionPrefix));
                 if (!matches) {
                     continue;
                 } else if (matches.length === 2) {
@@ -253,10 +257,10 @@ export function getCucumberPreconditionIssueTags(
     return preconditionKeys;
 }
 
-function backgroundRegex(projectKey: string, isCloudClient: boolean) {
-    if (isCloudClient) {
+function backgroundRegex(projectKey: string, preconditionPrefix?: string) {
+    if (preconditionPrefix) {
         // @Precondition:CYP-111
-        return new RegExp(`@Precondition:(${projectKey}-\\d+)`);
+        return new RegExp(`@${preconditionPrefix}(${projectKey}-\\d+)`);
     }
     // @CYP-111
     return new RegExp(`@(${projectKey}-\\d+)`);
