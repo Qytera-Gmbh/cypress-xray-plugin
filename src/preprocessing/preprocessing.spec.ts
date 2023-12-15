@@ -163,11 +163,11 @@ describe("cypress preprocessing", () => {
 });
 
 describe("cucumber preprocessing", () => {
-    describe("server", () => {
+    describe("no prefix", () => {
         it("throws for missing scenario tags", () => {
             expect(() =>
                 getCucumberIssueData(
-                    "./test/resources/features/taggedServerMissingScenario.feature",
+                    "./test/resources/features/taggedNoPrefixMissingScenario.feature",
                     "CYP",
                     false
                 )
@@ -191,7 +191,7 @@ describe("cucumber preprocessing", () => {
         it("throws for multiple scenario tags", async () => {
             expect(() =>
                 getCucumberIssueData(
-                    "./test/resources/features/taggedServerMultipleScenario.feature",
+                    "./test/resources/features/taggedNoPrefixMultipleScenario.feature",
                     "CYP",
                     false
                 )
@@ -216,7 +216,7 @@ describe("cucumber preprocessing", () => {
         it("should throw for missing background tags", async () => {
             expect(() =>
                 getCucumberIssueData(
-                    "./test/resources/features/taggedServerMissingBackground.feature",
+                    "./test/resources/features/taggedNoPrefixMissingBackground.feature",
                     "CYP",
                     false
                 )
@@ -240,7 +240,7 @@ describe("cucumber preprocessing", () => {
         it("should throw for multiple background tags", async () => {
             expect(() =>
                 getCucumberIssueData(
-                    "./test/resources/features/taggedServerMultipleBackground.feature",
+                    "./test/resources/features/taggedNoPrefixMultipleBackground.feature",
                     "CYP",
                     false
                 )
@@ -265,9 +265,9 @@ describe("cucumber preprocessing", () => {
             );
         });
 
-        it("extracts xray server background tags", () => {
+        it("extracts background tags without prefix", () => {
             const document = parseFeatureFile(
-                "./test/resources/features/taggedServerMultipleBackground.feature"
+                "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
             );
             // Cast because we know for certain it exists.
             const background: Background = document.feature?.children[0].background as Background;
@@ -275,9 +275,9 @@ describe("cucumber preprocessing", () => {
             expect(tag).to.deep.eq(["CYP-244", "CYP-262"]);
         });
 
-        it("extracts xray server scenario tags", () => {
+        it("extracts scenario tags without prefix", () => {
             const feature = parseFeatureFile(
-                "./test/resources/features/taggedServerMultipleScenario.feature"
+                "./test/resources/features/taggedNoPrefixMultipleScenario.feature"
             ).feature;
             // Cast because we know for certain it exists.
             const scenario: Scenario = feature?.children[1].scenario as Scenario;
@@ -288,11 +288,11 @@ describe("cucumber preprocessing", () => {
         });
     });
 
-    describe("cloud", () => {
+    describe("prefixed", () => {
         it("throws for missing scenario tags", async () => {
             expect(() =>
                 getCucumberIssueData(
-                    "./test/resources/features/taggedCloudMissingScenario.feature",
+                    "./test/resources/features/taggedPrefixMissingScenario.feature",
                     "CYP",
                     true,
                     { test: "TestName:", precondition: "Precondition:" }
@@ -317,7 +317,7 @@ describe("cucumber preprocessing", () => {
         it("throws for multiple scenario tags", async () => {
             expect(() =>
                 getCucumberIssueData(
-                    "./test/resources/features/taggedCloudMultipleScenario.feature",
+                    "./test/resources/features/taggedPrefixMultipleScenario.feature",
                     "CYP",
                     true,
                     { test: "TestName:", precondition: "Precondition:" }
@@ -343,7 +343,7 @@ describe("cucumber preprocessing", () => {
         it("throws for missing background tags", async () => {
             expect(() =>
                 getCucumberIssueData(
-                    "./test/resources/features/taggedCloudMissingBackground.feature",
+                    "./test/resources/features/taggedPrefixMissingBackground.feature",
                     "CYP",
                     true,
                     { precondition: "Precondition:" }
@@ -368,7 +368,7 @@ describe("cucumber preprocessing", () => {
         it("throws for multiple background tags", async () => {
             expect(() =>
                 getCucumberIssueData(
-                    "./test/resources/features/taggedCloudMultipleBackground.feature",
+                    "./test/resources/features/taggedPrefixMultipleBackground.feature",
                     "CYP",
                     true,
                     { precondition: "Precondition:" }
@@ -394,9 +394,9 @@ describe("cucumber preprocessing", () => {
             );
         });
 
-        it("extracts xray cloud background tags", () => {
+        it("extracts background tags with prefix", () => {
             const document = parseFeatureFile(
-                "./test/resources/features/taggedCloudMultipleBackground.feature"
+                "./test/resources/features/taggedPrefixMultipleBackground.feature"
             );
             // Cast because we know for certain it exists.
             const background: Background = document.feature?.children[0].background as Background;
@@ -409,9 +409,9 @@ describe("cucumber preprocessing", () => {
             expect(tag).to.deep.eq(["CYP-244", "CYP-262"]);
         });
 
-        it("extracts xray cloud scenario tags", () => {
+        it("extracts scenario tags with prefix", () => {
             const feature = parseFeatureFile(
-                "./test/resources/features/taggedCloudMultipleScenario.feature"
+                "./test/resources/features/taggedPrefixMultipleScenario.feature"
             ).feature;
             // Cast because we know for certain it exists.
             const scenario: Scenario = feature?.children[1].scenario as Scenario;
