@@ -252,6 +252,42 @@ export interface CucumberOptions {
      */
     downloadFeatures?: boolean;
     /**
+     * These settings allow specifying tag prefixes used by Xray when exporting or importing feature
+     * files and Cucumber test results. The plugin will access these options to verify that your
+     * feature files are tagged correctly according to your Xray prefix scheme.
+     *
+     * @remarks
+     *
+     * Xray usually adds tags to exported feature files and in turn expects these tags to be present
+     * when importing Cucumber test results or feature files. The tags are of the form
+     * `@Prefix:CYP-123`, containing the prefix and the issue key. For example, a scenario can be
+     * annotated with `@TestName:CYP-123` to link the scenario's execution to a corresponding test
+     * issue in Jira. Alternatively, backgrounds can be tagged with `@Precondition:CYP-456` to link
+     * to precondition issues.
+     *
+     * If any tag in a feature file (and thus the Cucumber JSON report used for importing test
+     * execution results) is not consistent with the scheme defined in Xray, Xray will reject the
+     * imported results altogether.
+     *
+     * @see {@link https://docs.getxray.app/display/XRAY/Export+Cucumber+Features | Xray server feature tagging}
+     * @see {@link https://docs.getxray.app/display/XRAYCLOUD/Generate+Cucumber+Features | Xray cloud feature tagging}
+     * @see {@link https://docs.getxray.app/display/XRAY/Miscellaneous#Miscellaneous-CucumberExportPrefixes | Xray server Cucumber settings}
+     * @see {@link https://docs.getxray.app/display/XRAYCLOUD/Global+Settings%3A+Cucumber | Xray cloud Cucumber settings}
+     */
+    tagPrefix?: {
+        /**
+         * The prefix for Cucumber scenario tags.
+         *
+         * If left undefined, the plugin will assume that your Xray instance is able to properly parse
+         * issue tags _without_ any prefixes, e.g. scenario tags of the form `@CYP-123` instead of
+         * `@TestName:CYP-123`.
+         *
+         * @example 'TestName:'
+         * @example 'TEST_'
+         */
+        test?: string;
+    };
+    /**
      * Set it to true to automatically create or update existing Xray issues (summary, steps),
      * based on the feature file executed by Cypress.
      *

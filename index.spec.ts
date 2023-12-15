@@ -18,7 +18,7 @@ describe("the plugin exports should work", () => {
         expect(configureXrayPlugin).to.be.a("function");
     });
 
-    it("addXrayResultUpload", () => {
+    it("syncFeatureFile", () => {
         expect(syncFeatureFile).to.be.a("function");
     });
 

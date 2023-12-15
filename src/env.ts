@@ -74,6 +74,9 @@ export const ENV_NAMES: Remapping<Options & IAuthentication, string> = {
         downloadFeatures: "CUCUMBER_DOWNLOAD_FEATURES",
         featureFileExtension: "CUCUMBER_FEATURE_FILE_EXTENSION",
         uploadFeatures: "CUCUMBER_UPLOAD_FEATURES",
+        tagPrefix: {
+            test: "CUCUMBER_TAG_PREFIX_TEST",
+        },
     },
     openSSL: {
         rootCAPath: "OPENSSL_ROOT_CA_PATH",

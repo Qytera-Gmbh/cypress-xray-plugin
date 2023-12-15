@@ -126,20 +126,30 @@ describe("the plugin context configuration", () => {
             });
 
             describe("cucumber", async () => {
-                const cucumberOptions: InternalCucumberOptions | undefined =
-                    await initCucumberOptions(
+                let cucumberOptions: InternalCucumberOptions | undefined = undefined;
+                beforeEach(async () => {
+                    cucumberOptions = await initCucumberOptions(
                         {
                             testingType: "e2e",
                             projectRoot: "",
                             reporter: "",
                             specPattern: "",
                             excludeSpecPattern: "",
-                            env: {},
+                            env: {
+                                jsonEnabled: true,
+                            },
                         },
                         { featureFileExtension: ".feature" }
                     );
+                });
                 it("downloadFeatures", () => {
                     expect(cucumberOptions?.downloadFeatures).to.eq(false);
+                });
+
+                describe("tagPrefix", () => {
+                    it("test", () => {
+                        expect(cucumberOptions?.tagPrefix?.test).to.eq(undefined);
+                    });
                 });
                 it("uploadFeatures", () => {
                     expect(cucumberOptions?.uploadFeatures).to.eq(false);
@@ -453,7 +463,7 @@ describe("the plugin context configuration", () => {
                             reporter: "",
                             specPattern: "",
                             excludeSpecPattern: "",
-                            env: { jsonEnabled: true, jsonOutput: "hello" },
+                            env: { jsonEnabled: true },
                         },
                         {
                             featureFileExtension: ".feature",
@@ -461,6 +471,25 @@ describe("the plugin context configuration", () => {
                         }
                     );
                     expect(cucumberOptions?.downloadFeatures).to.eq(true);
+                });
+                describe("tagPrefix", () => {
+                    it("test", async () => {
+                        const cucumberOptions = await initCucumberOptions(
+                            {
+                                testingType: "component",
+                                projectRoot: "",
+                                reporter: "",
+                                specPattern: "",
+                                excludeSpecPattern: "",
+                                env: { jsonEnabled: true },
+                            },
+                            {
+                                featureFileExtension: ".feature",
+                                tagPrefix: { test: "TestSomething_" },
+                            }
+                        );
+                        expect(cucumberOptions?.tagPrefix?.test).to.eq("TestSomething_");
+                    });
                 });
                 it("uploadFeatures", async () => {
                     const cucumberOptions = await initCucumberOptions(
@@ -470,7 +499,7 @@ describe("the plugin context configuration", () => {
                             reporter: "",
                             specPattern: "",
                             excludeSpecPattern: "",
-                            env: { jsonEnabled: true, jsonOutput: "hello" },
+                            env: { jsonEnabled: true },
                         },
                         {
                             featureFileExtension: ".feature",
@@ -781,7 +810,6 @@ describe("the plugin context configuration", () => {
                             env: {
                                 CUCUMBER_FEATURE_FILE_EXTENSION: ".feature.file",
                                 jsonEnabled: true,
-                                jsonOutput: "hello",
                             },
                         },
                         {
@@ -802,7 +830,6 @@ describe("the plugin context configuration", () => {
                             env: {
                                 CUCUMBER_DOWNLOAD_FEATURES: "true",
                                 jsonEnabled: true,
-                                jsonOutput: "hello",
                             },
                         },
                         {
@@ -811,6 +838,27 @@ describe("the plugin context configuration", () => {
                         }
                     );
                     expect(cucumberOptions?.downloadFeatures).to.be.true;
+                });
+
+                it("CUCUMBER_TAG_PREFIX_TEST", async () => {
+                    const cucumberOptions = await initCucumberOptions(
+                        {
+                            testingType: "e2e",
+                            projectRoot: "",
+                            reporter: "",
+                            specPattern: "",
+                            excludeSpecPattern: "",
+                            env: {
+                                CUCUMBER_TAG_PREFIX_TEST: "BigTest:",
+                                jsonEnabled: true,
+                            },
+                        },
+                        {
+                            featureFileExtension: ".feature",
+                            tagPrefix: { test: "SmallTest:" },
+                        }
+                    );
+                    expect(cucumberOptions?.tagPrefix?.test).to.eq("BigTest:");
                 });
 
                 it("CUCUMBER_UPLOAD_FEATURES", async () => {
@@ -824,7 +872,6 @@ describe("the plugin context configuration", () => {
                             env: {
                                 CUCUMBER_UPLOAD_FEATURES: "true",
                                 jsonEnabled: true,
-                                jsonOutput: "hello",
                             },
                         },
                         {
