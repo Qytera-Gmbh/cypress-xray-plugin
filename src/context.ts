@@ -242,13 +242,13 @@ export async function initCucumberOptions(
                 false,
             featureFileExtension: featureFileExtension,
             preprocessor: preprocessorConfiguration,
-            tagPrefix: {
+            prefixes: {
                 precondition:
-                    parse(config.env, ENV_NAMES.cucumber.tagPrefix.precondition, asString) ??
-                    options?.tagPrefix?.precondition,
+                    parse(config.env, ENV_NAMES.cucumber.prefixes.precondition, asString) ??
+                    options?.prefixes?.precondition,
                 test:
-                    parse(config.env, ENV_NAMES.cucumber.tagPrefix.test, asString) ??
-                    options?.tagPrefix?.test,
+                    parse(config.env, ENV_NAMES.cucumber.prefixes.test, asString) ??
+                    options?.prefixes?.test,
             },
             uploadFeatures:
                 parse(config.env, ENV_NAMES.cucumber.uploadFeatures, asBoolean) ??

@@ -280,7 +280,7 @@ export interface CucumberOptions {
      *   - {@link https://docs.getxray.app/display/XRAY/Miscellaneous#Miscellaneous-CucumberExportPrefixes | Xray server}
      *   - {@link https://docs.getxray.app/display/XRAYCLOUD/Global+Settings%3A+Cucumber | Xray cloud}
      */
-    tagPrefix?: {
+    prefixes?: {
         /**
          * The prefix for Cucumber background tags.
          *
@@ -318,15 +318,12 @@ export interface CucumberOptions {
  * A more specific Cucumber options type with optional properties converted to required ones if
  * default/fallback values are used by the plugin.
  */
-export type InternalCucumberOptions = CucumberOptions &
-    Required<
-        Pick<CucumberOptions, "featureFileExtension" | "downloadFeatures" | "uploadFeatures">
-    > & {
-        /**
-         * The Cucumber preprocessor configuration.
-         */
-        preprocessor?: IPreprocessorConfiguration;
-    };
+export type InternalCucumberOptions = Required<CucumberOptions> & {
+    /**
+     * The Cucumber preprocessor configuration.
+     */
+    preprocessor?: IPreprocessorConfiguration;
+};
 
 export interface PluginOptions {
     /**
