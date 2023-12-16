@@ -1,7 +1,7 @@
 import FormData from "form-data";
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
 import { RequestConfigPost } from "../../https/requests";
-import { logDebug, logError } from "../../logging/logging";
+import { logDebug } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
@@ -63,7 +63,7 @@ export class XrayClientServer extends XrayClient {
         if (typeof serverResponse === "object" && "message" in serverResponse) {
             if (serverResponse.message) {
                 response.errors.push(serverResponse.message);
-                logError(
+                logDebug(
                     `Encountered an error during feature file import: ${serverResponse.message}`
                 );
             }

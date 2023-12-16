@@ -217,7 +217,7 @@ describe("the xray cloud client", () => {
 
         it("handles responses with errors", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedError } = stubLogging();
+            const { stubbedDebug } = stubLogging();
             stubbedPost.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -250,11 +250,52 @@ describe("the xray cloud client", () => {
                 ],
                 updatedOrCreatedIssues: ["CYP-555"],
             });
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
+            expect(stubbedDebug).to.have.been.calledWithExactly(
                 dedent(`
                     Encountered some errors during feature file import:
                     - Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!
                     - Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!
+                `)
+            );
+        });
+
+        it("handles responses without any updated issues", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedDebug } = stubLogging();
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    errors: [
+                        "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
+                        "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
+                        "Error in file taggedPrefixCorrect.feature: Test with key CYP-555 was not found!",
+                    ],
+                    updatedOrCreatedTests: [],
+                    updatedOrCreatedPreconditions: [],
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            const response = await client.importFeature(
+                "./test/resources/features/taggedPrefixCorrect.feature",
+                "utf-8",
+                "CYP"
+            );
+            expect(response).to.deep.eq({
+                errors: [
+                    "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
+                    "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
+                    "Error in file taggedPrefixCorrect.feature: Test with key CYP-555 was not found!",
+                ],
+                updatedOrCreatedIssues: [],
+            });
+            expect(stubbedDebug).to.have.been.calledWithExactly(
+                dedent(`
+                    Encountered some errors during feature file import:
+                    - Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!
+                    - Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!
+                    - Error in file taggedPrefixCorrect.feature: Test with key CYP-555 was not found!
                 `)
             );
         });

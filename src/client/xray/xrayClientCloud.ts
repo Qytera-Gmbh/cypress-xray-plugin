@@ -96,7 +96,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         };
         if (cloudResponse.errors.length > 0) {
             response.errors.push(...cloudResponse.errors);
-            logError(
+            logDebug(
                 dedent(`
                     Encountered some errors during feature file import:
                     ${cloudResponse.errors.map((error: string) => `- ${error}`).join("\n")}

@@ -144,7 +144,7 @@ describe("the xray server client", () => {
 
         it("handles responses with errors", async () => {
             const { stubbedPost } = stubRequests();
-            const { stubbedError } = stubLogging();
+            const { stubbedDebug } = stubLogging();
             stubbedPost.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -185,8 +185,39 @@ describe("the xray server client", () => {
                 errors: ["Test with key CYP-333 was not found!"],
                 updatedOrCreatedIssues: ["CYP-555", "CYP-222"],
             });
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
+            expect(stubbedDebug).to.have.been.calledWithExactly(
                 "Encountered an error during feature file import: Test with key CYP-333 was not found!"
+            );
+        });
+
+        it("handles responses without any updated issues", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedDebug } = stubLogging();
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    message:
+                        "Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!",
+                    testIssues: [],
+                    preconditionIssues: [],
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            const response = await client.importFeature(
+                "./test/resources/features/taggedPrefixCorrect.feature",
+                "utf-8",
+                "CYP"
+            );
+            expect(response).to.deep.eq({
+                errors: [
+                    "Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!",
+                ],
+                updatedOrCreatedIssues: [],
+            });
+            expect(stubbedDebug).to.have.been.calledWithExactly(
+                "Encountered an error during feature file import: Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!"
             );
         });
 
