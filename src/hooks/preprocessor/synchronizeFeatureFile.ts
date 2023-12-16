@@ -50,13 +50,13 @@ export async function synchronizeFeatureFile(
         logDebug(
             dedent(`
                 Creating issue backups (summaries, labels) for issues:
-                    ${issueKeys.join("\n")}
+                  ${issueKeys.join("\n")}
             `)
         );
         logInfo("Importing feature file to Xray...");
         const testSummaries = await clients.jiraRepository.getSummaries(...issueKeys);
         const testLabels = await clients.jiraRepository.getLabels(...issueKeys);
-        const updatedIssues = await importTaggedFeature(
+        const updatedIssues = await importKnownFeature(
             file.filePath,
             options.jira.projectKey,
             issueKeys,
@@ -98,32 +98,40 @@ export async function synchronizeFeatureFile(
 }
 
 /**
- * Imports a properly tagged feature file to Xray.
+ * Imports a feature file to Xray containings tags which correspond to known issues.
  *
  * @param filePath - the feature file
  * @param projectKey - the project to import the features to
- * @param tagIssueKeys - all issue keys contain in tags within the feature file
+ * @param expectedIssues - all issue keys which are expected to be updated
  * @param xrayClient - the Xray client
  * @returns all issue keys within the feature file belonging to issues that were updated by Jira
  */
-export async function importTaggedFeature(
+export async function importKnownFeature(
     filePath: string,
     projectKey: string,
-    tagIssueKeys: string[],
+    expectedIssues: string[],
     xrayClient: IXrayClient
 ): Promise<string[] | undefined> {
     const importResponse = await xrayClient.importFeature(filePath, projectKey);
     if (importResponse) {
-        const setOverlap = computeOverlap(tagIssueKeys, importResponse.updatedOrCreatedIssues);
+        if (importResponse.errors.length > 0) {
+            logWarning(
+                dedent(`
+                    Encountered errors during feature file import:
+                    ${importResponse.errors.map((error) => `- ${error}`).join("\n")}
+                `)
+            );
+        }
+        const setOverlap = computeOverlap(expectedIssues, importResponse.updatedOrCreatedIssues);
         if (setOverlap.leftOnly.length > 0 || setOverlap.rightOnly.length > 0) {
             logWarning(
                 dedent(`
                     Mismatch between feature file issue tags and updated Jira issues detected
 
-                    Issues contained in feature file tags which were not updated by Jira:
-                        ${setOverlap.leftOnly.join("\n")}
-                    Issues created or updated by Jira, which are not present in feature file tags:
-                        ${setOverlap.rightOnly.join("\n")}
+                    Issues contained in feature file tags which were not updated by Jira and might not exist:
+                      ${setOverlap.leftOnly.join("\n")}
+                    Issues updated by Jira which are not present in feature file tags and might have been created:
+                      ${setOverlap.rightOnly.join("\n")}
 
                     Make sure that:
                     - All issues present in feature file tags belong to existing issues

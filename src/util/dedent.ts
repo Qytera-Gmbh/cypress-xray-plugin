@@ -9,9 +9,9 @@
  * @returns the dedented string
  */
 export function dedent(string: string): string {
-    // Trim newline whitespace in the front and all whitespace in the back.
+    // Trim whitespace up until the first newline in the front and all whitespace in the back.
     const lines = string
-        .replace(/^(\s*\n)*/, "")
+        .replace(/^\s*\n/, "")
         .trimEnd()
         .split("\n");
     const indents = lines.map((line) => line.length - line.trimStart().length);
@@ -34,5 +34,5 @@ export function dedent(string: string): string {
         // whitespace. Trimming after concatenation replaces blank lines with the empty string.
         dedentedLines.push(`${indent}${line.trimStart()}`.trimEnd());
     });
-    return dedentedLines.join("\n").trim();
+    return dedentedLines.join("\n");
 }
