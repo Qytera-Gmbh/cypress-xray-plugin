@@ -39,7 +39,16 @@ export interface ImportFeatureResponseCloud {
     updatedOrCreatedPreconditions: IssueDetails[];
 }
 
+/**
+ * Models a summarized response when importing Cucumber feature files to Xray.
+ */
 export interface ImportFeatureResponse {
+    /**
+     * All errors which occurred during import.
+     */
     errors: string[];
-    updatedOrCreatedIssues: IssueDetails[];
+    /**
+     * The Jira issue keys of issues created or updated during import.
+     */
+    updatedOrCreatedIssues: string[];
 }

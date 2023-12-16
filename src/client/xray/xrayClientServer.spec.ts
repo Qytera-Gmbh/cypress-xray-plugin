@@ -1,8 +1,9 @@
-import { AxiosHeaders, HttpStatusCode } from "axios";
+import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
-import { stubRequests } from "../../../test/util";
+import { stubLogging, stubRequests } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
+import { dedent } from "../../util/dedent";
 import { XrayClientServer } from "./xrayClientServer";
 
 describe("the xray server client", () => {
@@ -89,6 +90,145 @@ describe("the xray server client", () => {
                 )
             );
             expect(response).to.eq("CYP-123");
+        });
+    });
+
+    describe("import feature", () => {
+        it("handles successful responses", async () => {
+            const { stubbedPost } = stubRequests();
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: [
+                    {
+                        id: "14400",
+                        key: "CYP-333",
+                        self: "http://localhost:8727/rest/api/2/issue/14400",
+                        issueType: {
+                            id: "10100",
+                            name: "Test",
+                        },
+                    },
+                    {
+                        id: "14401",
+                        key: "CYP-555",
+                        self: "http://localhost:8727/rest/api/2/issue/14401",
+                        issueType: {
+                            id: "10103",
+                            name: "Test",
+                        },
+                    },
+                    {
+                        id: "14401",
+                        key: "CYP-222",
+                        self: "http://localhost:8727/rest/api/2/issue/14401",
+                        issueType: {
+                            id: "10103",
+                            name: "Pre-Condition",
+                        },
+                    },
+                ],
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            const response = await client.importFeature(
+                "./test/resources/features/taggedPrefixCorrect.feature",
+                "utf-8",
+                "CYP"
+            );
+            expect(response).to.deep.eq({
+                errors: [],
+                updatedOrCreatedIssues: ["CYP-333", "CYP-555", "CYP-222"],
+            });
+        });
+
+        it("handles responses with errors", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedError } = stubLogging();
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    message: "Test with key CYP-333 was not found!",
+                    testIssues: [
+                        {
+                            id: "14401",
+                            key: "CYP-555",
+                            self: "http://localhost:8727/rest/api/2/issue/14401",
+                            issueType: {
+                                id: "10103",
+                                name: "Test",
+                            },
+                        },
+                    ],
+                    preconditionIssues: [
+                        {
+                            id: "14401",
+                            key: "CYP-222",
+                            self: "http://localhost:8727/rest/api/2/issue/14401",
+                            issueType: {
+                                id: "10103",
+                                name: "Pre-Condition",
+                            },
+                        },
+                    ],
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            const response = await client.importFeature(
+                "./test/resources/features/taggedPrefixCorrect.feature",
+                "utf-8",
+                "CYP"
+            );
+            expect(response).to.deep.eq({
+                errors: ["Test with key CYP-333 was not found!"],
+                updatedOrCreatedIssues: ["CYP-555", "CYP-222"],
+            });
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                "Encountered an error during feature file import: Test with key CYP-333 was not found!"
+            );
+        });
+
+        it("handles bad responses", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+            const error = new AxiosError(
+                "Request failed with status code 400",
+                "400",
+                { headers: new AxiosHeaders() },
+                null,
+                {
+                    status: 400,
+                    statusText: "Bad Request",
+                    config: { headers: new AxiosHeaders() },
+                    headers: {},
+                    data: {
+                        error: "There are no valid tests imported", // sic
+                    },
+                }
+            );
+            stubbedPost.onFirstCall().rejects(error);
+            const response = await client.importFeature(
+                "./test/resources/features/taggedPrefixCorrect.feature",
+                "utf-8",
+                "CYP"
+            );
+            expect(response).to.be.undefined;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to import Cucumber features: AxiosError: Request failed with status code 400
+
+                    The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
+
+                    For more information, visit:
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                `)
+            );
+            expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+                error,
+                "importFeatureError"
+            );
         });
     });
 

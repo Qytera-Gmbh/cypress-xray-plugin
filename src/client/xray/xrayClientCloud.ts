@@ -96,24 +96,35 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         };
         if (cloudResponse.errors.length > 0) {
             response.errors.push(...cloudResponse.errors);
-            logError("Encountered some errors during import:", ...cloudResponse.errors);
+            logError(
+                dedent(`
+                    Encountered some errors during feature file import:
+                    ${cloudResponse.errors.map((error: string) => `- ${error}`).join("\n")}
+                `)
+            );
         }
         if (cloudResponse.updatedOrCreatedTests.length > 0) {
-            response.updatedOrCreatedIssues.push(...cloudResponse.updatedOrCreatedTests);
+            const testKeys = cloudResponse.updatedOrCreatedTests.map(
+                (test: IssueDetails) => test.key
+            );
+            response.updatedOrCreatedIssues.push(...testKeys);
             logDebug(
-                "Successfully updated or created test issues:",
-                cloudResponse.updatedOrCreatedTests
-                    .map((issue: IssueDetails) => issue.key)
-                    .join(", ")
+                dedent(`
+                    Successfully updated or created test issues:
+                    ${testKeys.join("\n")}
+                `)
             );
         }
         if (cloudResponse.updatedOrCreatedPreconditions.length > 0) {
-            response.updatedOrCreatedIssues.push(...cloudResponse.updatedOrCreatedPreconditions);
+            const preconditionKeys = cloudResponse.updatedOrCreatedPreconditions.map(
+                (test: IssueDetails) => test.key
+            );
+            response.updatedOrCreatedIssues.push(...preconditionKeys);
             logDebug(
-                "Successfully updated or created precondition issues:",
-                cloudResponse.updatedOrCreatedPreconditions
-                    .map((issue: IssueDetails) => issue.key)
-                    .join(", ")
+                dedent(`
+                    Successfully updated or created precondition issues:
+                    ${preconditionKeys.join(", ")}
+                `)
             );
         }
         return response;

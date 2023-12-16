@@ -1,4 +1,4 @@
-import { AxiosResponse } from "axios";
+import { AxiosResponse, HttpStatusCode, isAxiosError } from "axios";
 import FormData from "form-data";
 import fs from "fs";
 import {
@@ -21,6 +21,8 @@ import {
     ImportFeatureResponseCloud,
     ImportFeatureResponseServer,
 } from "../../types/xray/responses/importFeature";
+import { dedent } from "../../util/dedent";
+import { HELP } from "../../util/help";
 import { Client } from "../client";
 
 export interface IXrayClient {
@@ -213,8 +215,21 @@ export abstract class XrayClient extends Client implements IXrayClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to import cucumber features: ${error}`);
             writeErrorFile(error, "importFeatureError");
+            if (isAxiosError(error) && error.response?.status === HttpStatusCode.BadRequest) {
+                logError(
+                    dedent(`
+                        Failed to import Cucumber features: ${error}
+
+                        The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
+
+                        For more information, visit:
+                        - ${HELP.plugin.configuration.cucumber.prefixes}
+                    `)
+                );
+            } else {
+                logError(`Failed to import Cucumber features: ${error}`);
+            }
         }
     }
 

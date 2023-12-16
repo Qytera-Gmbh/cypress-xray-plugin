@@ -10,6 +10,7 @@ import {
     ImportFeatureResponseServer,
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
+import { dedent } from "../../util/dedent";
 import { XrayClient } from "./xrayClient";
 
 export class XrayClientServer extends XrayClient {
@@ -62,29 +63,40 @@ export class XrayClientServer extends XrayClient {
         if (typeof serverResponse === "object" && "message" in serverResponse) {
             if (serverResponse.message) {
                 response.errors.push(serverResponse.message);
-                logError("Encountered an error during import:", serverResponse.message);
+                logError(
+                    `Encountered an error during feature file import: ${serverResponse.message}`
+                );
             }
             if (serverResponse.testIssues && serverResponse.testIssues.length > 0) {
-                response.updatedOrCreatedIssues.push(...serverResponse.testIssues);
+                const testKeys = serverResponse.testIssues.map((test: IssueDetails) => test.key);
+                response.updatedOrCreatedIssues.push(...testKeys);
                 logDebug(
-                    "Successfully updated or created test issues:",
-                    serverResponse.testIssues.map((issue: IssueDetails) => issue.key).join(", ")
+                    dedent(`
+                        Successfully updated or created test issues:
+                        ${testKeys.join(", ")}
+                    `)
                 );
             }
             if (serverResponse.preconditionIssues && serverResponse.preconditionIssues.length > 0) {
-                response.updatedOrCreatedIssues.push(...serverResponse.preconditionIssues);
+                const preconditionKeys = serverResponse.preconditionIssues.map(
+                    (test: IssueDetails) => test.key
+                );
+                response.updatedOrCreatedIssues.push(...preconditionKeys);
                 logDebug(
-                    "Successfully updated or created precondition issues:",
-                    serverResponse.preconditionIssues
-                        .map((issue: IssueDetails) => issue.key)
-                        .join(", ")
+                    dedent(`
+                        Successfully updated or created precondition issues:
+                        ${preconditionKeys.join(", ")}
+                    `)
                 );
             }
         } else if (Array.isArray(serverResponse)) {
-            response.updatedOrCreatedIssues.push(...serverResponse);
+            const issueKeys = serverResponse.map((test: IssueDetails) => test.key);
+            response.updatedOrCreatedIssues.push(...issueKeys);
             logDebug(
-                "Successfully updated or created issues:",
-                serverResponse.map((issue: IssueDetails) => issue.key).join(", ")
+                dedent(`
+                    Successfully updated or created issues:
+                    ${issueKeys.join(", ")}
+                `)
             );
         }
         return response;

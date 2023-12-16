@@ -20,6 +20,9 @@ export const HELP = {
                 testPlanIssueType: `${BASE_URL}/section/configuration/jira/#testPlanIssueType`,
                 url: `${BASE_URL}/section/configuration/jira/#url`,
             },
+            cucumber: {
+                prefixes: `${BASE_URL}/section/configuration/cucumber/#prefixes`,
+            },
             plugin: {
                 debug: `${BASE_URL}/section/configuration/plugin/#debug`,
             },

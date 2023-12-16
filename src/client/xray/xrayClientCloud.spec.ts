@@ -173,6 +173,134 @@ describe("the xray cloud client", () => {
         });
     });
 
+    describe("import feature", () => {
+        it("handles successful responses", async () => {
+            const { stubbedPost } = stubRequests();
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    errors: [],
+                    updatedOrCreatedTests: [
+                        {
+                            id: "32495",
+                            key: "CYP-333",
+                            self: "https://devxray3.atlassian.net/rest/api/2/issue/32495",
+                        },
+                        {
+                            id: "32493",
+                            key: "CYP-555",
+                            self: "https://devxray3.atlassian.net/rest/api/2/issue/32493",
+                        },
+                    ],
+                    updatedOrCreatedPreconditions: [
+                        {
+                            id: "12345",
+                            key: "CYP-222",
+                            self: "https://devxray3.atlassian.net/rest/api/2/issue/12345",
+                        },
+                    ],
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            const response = await client.importFeature(
+                "./test/resources/features/taggedPrefixCorrect.feature",
+                "utf-8",
+                "CYP"
+            );
+            expect(response).to.deep.eq({
+                errors: [],
+                updatedOrCreatedIssues: ["CYP-333", "CYP-555", "CYP-222"],
+            });
+        });
+
+        it("handles responses with errors", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedError } = stubLogging();
+            stubbedPost.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    errors: [
+                        "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
+                        "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
+                    ],
+                    updatedOrCreatedTests: [
+                        {
+                            id: "32493",
+                            key: "CYP-555",
+                            self: "https://devxray3.atlassian.net/rest/api/2/issue/32493",
+                        },
+                    ],
+                    updatedOrCreatedPreconditions: [],
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            const response = await client.importFeature(
+                "./test/resources/features/taggedPrefixCorrect.feature",
+                "utf-8",
+                "CYP"
+            );
+            expect(response).to.deep.eq({
+                errors: [
+                    "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
+                    "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
+                ],
+                updatedOrCreatedIssues: ["CYP-555"],
+            });
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Encountered some errors during feature file import:
+                    - Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!
+                    - Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!
+                `)
+            );
+        });
+
+        it("handles bad responses", async () => {
+            const { stubbedPost } = stubRequests();
+            const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+            const error = new AxiosError(
+                "Request failed with status code 400",
+                "400",
+                { headers: new AxiosHeaders() },
+                null,
+                {
+                    status: 400,
+                    statusText: "Bad Request",
+                    config: { headers: new AxiosHeaders() },
+                    headers: {},
+                    data: {
+                        error: "There are no valid tests imported", // sic
+                    },
+                }
+            );
+            stubbedPost.onFirstCall().rejects(error);
+            const response = await client.importFeature(
+                "./test/resources/features/taggedPrefixCorrect.feature",
+                "utf-8",
+                "CYP"
+            );
+            expect(response).to.be.undefined;
+            expect(stubbedError).to.have.been.calledOnceWithExactly(
+                dedent(`
+                    Failed to import Cucumber features: AxiosError: Request failed with status code 400
+
+                    The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
+
+                    For more information, visit:
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                `)
+            );
+            expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+                error,
+                "importFeatureError"
+            );
+        });
+    });
+
     describe("get test types", () => {
         it("should handle successful responses", async () => {
             const { stubbedPost } = stubRequests();
