@@ -1,17 +1,13 @@
 import { AxiosHeaders, HttpStatusCode } from "axios";
 import chai from "chai";
-import FormData from "form-data";
 import fs from "fs";
 import path from "path";
 import Sinon, { spy, stub } from "sinon";
 import sinonChai from "sinon-chai";
-import { JWTCredentials, PATCredentials } from "../src/authentication/credentials";
-import { JiraClient } from "../src/client/jira/jiraClient";
-import { XrayClient } from "../src/client/xray/xrayClient";
-import { RequestConfigPost, Requests } from "../src/https/requests";
+import { JWTCredentials } from "../src/authentication/credentials";
+import { Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
-import { ImportFeatureResponse } from "../src/types/xray/responses/importFeature";
 
 chai.use(sinonChai);
 
@@ -97,59 +93,6 @@ after(async () => {
         fs.rmSync(TEST_TMP_DIR, { recursive: true });
     }
 });
-
-export class DummyXrayClient extends XrayClient {
-    constructor() {
-        super("https://example.org", new PATCredentials("token"));
-    }
-    public getUrlImportExecution(): string {
-        throw new Error("Method not implemented.");
-    }
-    protected handleResponseImportExecution(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlExportCucumber(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlImportFeature(): string {
-        throw new Error("Method not implemented.");
-    }
-    protected handleResponseImportFeature(): ImportFeatureResponse {
-        throw new Error("Method not implemented.");
-    }
-    public getTestTypes(): Promise<{ [key: string]: string }> {
-        throw new Error("Method not implemented.");
-    }
-    protected prepareRequestImportExecutionCucumberMultipart(): Promise<
-        RequestConfigPost<FormData>
-    > {
-        throw new Error("Method not implemented.");
-    }
-    protected handleResponseImportExecutionCucumberMultipart(): string {
-        throw new Error("Method not implemented.");
-    }
-}
-
-export class DummyJiraClient extends JiraClient {
-    constructor() {
-        super("https://example.org", new PATCredentials("token"));
-    }
-    public getUrlAddAttachment(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlGetFields(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlPostSearch(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlGetIssueTypes(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlEditIssue(): string {
-        throw new Error("Method not implemented.");
-    }
-}
 
 /**
  * Use in place of `expect(value).to.exist`

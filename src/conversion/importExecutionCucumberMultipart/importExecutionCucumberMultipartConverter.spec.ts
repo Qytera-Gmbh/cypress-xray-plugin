@@ -1,5 +1,7 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
+
+import { getMockedJiraRepository } from "../../../test/mocks";
 import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
 import { IJiraRepository } from "../../repository/jira/jiraRepository";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
@@ -9,23 +11,7 @@ describe("the import execution cucumber multpart converter", () => {
     let mockedJiraRepository: IJiraRepository;
 
     beforeEach(() => {
-        mockedJiraRepository = {
-            getFieldId: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getSummaries: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getDescriptions: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getTestTypes: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getLabels: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-        };
+        mockedJiraRepository = getMockedJiraRepository();
     });
 
     describe("server", () => {

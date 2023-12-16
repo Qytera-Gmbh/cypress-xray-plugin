@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { getMockedJiraIssueFetcher } from "../../../test/mocks";
 import { arrayEquals, stubLogging } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { JiraClientCloud } from "../../client/jira/jiraClientCloud";
@@ -15,6 +16,7 @@ describe("the cloud issue repository", () => {
     let jiraFieldRepository: IJiraFieldRepository;
     let jiraFieldFetcher: IJiraIssueFetcher;
     let repository: IJiraRepository;
+    let mockedFieldFetcher = getMockedJiraIssueFetcher();
 
     beforeEach(() => {
         jiraOptions = initJiraOptions(
@@ -35,32 +37,28 @@ describe("the cloud issue repository", () => {
             jiraOptions.fields
         );
         repository = new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher);
+        mockedFieldFetcher = getMockedJiraIssueFetcher();
     });
 
     describe("getSummaries", () => {
+        let mockedFieldFetcher = getMockedJiraIssueFetcher();
+
+        beforeEach(() => {
+            mockedFieldFetcher = getMockedJiraIssueFetcher();
+        });
+
         it("fetches summaries", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchLabels: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchSummaries: async function (
-                    ...issueKeys: string[]
-                ): Promise<StringMap<string>> {
-                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
-                        return {
-                            "CYP-123": "Hello",
-                            "CYP-456": "Good Morning",
-                            "CYP-789": "Goodbye",
-                        };
-                    }
-                    throw new Error(`Unexpected argument: ${issueKeys}`);
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
+            mockedFieldFetcher.fetchSummaries = async function (
+                ...issueKeys: string[]
+            ): Promise<StringMap<string>> {
+                if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                    return {
+                        "CYP-123": "Hello",
+                        "CYP-456": "Good Morning",
+                        "CYP-789": "Goodbye",
+                    };
+                }
+                throw new Error(`Unexpected argument: ${issueKeys}`);
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
@@ -72,31 +70,20 @@ describe("the cloud issue repository", () => {
         });
 
         it("fetches summaries only for unknown issues", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchLabels: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchSummaries: async function (
-                    ...issueKeys: string[]
-                ): Promise<StringMap<string>> {
-                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
-                        return {
-                            "CYP-123": "Hello",
-                            "CYP-789": "Goodbye",
-                        };
-                    } else if (arrayEquals(issueKeys, ["CYP-456"])) {
-                        return {
-                            "CYP-456": "Good Morning",
-                        };
-                    }
-                    throw new Error(`Unexpected argument: ${issueKeys}`);
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
+            mockedFieldFetcher.fetchSummaries = async function (
+                ...issueKeys: string[]
+            ): Promise<StringMap<string>> {
+                if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
+                    return {
+                        "CYP-123": "Hello",
+                        "CYP-789": "Goodbye",
+                    };
+                } else if (arrayEquals(issueKeys, ["CYP-456"])) {
+                    return {
+                        "CYP-456": "Good Morning",
+                    };
+                }
+                throw new Error(`Unexpected argument: ${issueKeys}`);
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             await repository.getSummaries("CYP-123", "CYP-789");
@@ -111,26 +98,15 @@ describe("the cloud issue repository", () => {
         });
 
         it("displays an error for issues which do not exist", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchLabels: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchSummaries: async function (
-                    ...issueKeys: string[]
-                ): Promise<StringMap<string>> {
-                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
-                        return {
-                            "CYP-123": "Hello",
-                        };
-                    }
-                    throw new Error(`Unexpected argument: ${issueKeys}`);
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
+            mockedFieldFetcher.fetchSummaries = async function (
+                ...issueKeys: string[]
+            ): Promise<StringMap<string>> {
+                if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                    return {
+                        "CYP-123": "Hello",
+                    };
+                }
+                throw new Error(`Unexpected argument: ${issueKeys}`);
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
@@ -150,19 +126,8 @@ describe("the cloud issue repository", () => {
         });
 
         it("handles get field failures gracefully", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchLabels: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchSummaries: async function (): Promise<StringMap<string>> {
-                    throw new Error("Expected error");
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
+            mockedFieldFetcher.fetchSummaries = async function (): Promise<StringMap<string>> {
+                throw new Error("Expected error");
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
@@ -179,26 +144,17 @@ describe("the cloud issue repository", () => {
 
     describe("getDescriptions", () => {
         it("fetches descriptions", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: async (...issueKeys: []): Promise<StringMap<string>> => {
-                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
-                        return {
-                            "CYP-123": "Very informative",
-                            "CYP-456": "Even more informative",
-                            "CYP-789": "Not that informative",
-                        };
-                    }
-                    throw new Error(`Unexpected argument. ${issueKeys}`);
-                },
-                fetchLabels: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchSummaries: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
+            mockedFieldFetcher.fetchDescriptions = async (
+                ...issueKeys: []
+            ): Promise<StringMap<string>> => {
+                if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                    return {
+                        "CYP-123": "Very informative",
+                        "CYP-456": "Even more informative",
+                        "CYP-789": "Not that informative",
+                    };
+                }
+                throw new Error(`Unexpected argument. ${issueKeys}`);
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
@@ -210,29 +166,20 @@ describe("the cloud issue repository", () => {
         });
 
         it("fetches descriptions only for unknown issues", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: async (...issueKeys: []): Promise<StringMap<string>> => {
-                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
-                        return {
-                            "CYP-123": "Very informative",
-                            "CYP-789": "Not that informative",
-                        };
-                    } else if (arrayEquals(issueKeys, ["CYP-456"])) {
-                        return {
-                            "CYP-456": "Even more informative",
-                        };
-                    }
-                    throw new Error(`Unexpected argument. ${issueKeys}`);
-                },
-                fetchLabels: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchSummaries: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
+            mockedFieldFetcher.fetchDescriptions = async (
+                ...issueKeys: []
+            ): Promise<StringMap<string>> => {
+                if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
+                    return {
+                        "CYP-123": "Very informative",
+                        "CYP-789": "Not that informative",
+                    };
+                } else if (arrayEquals(issueKeys, ["CYP-456"])) {
+                    return {
+                        "CYP-456": "Even more informative",
+                    };
+                }
+                throw new Error(`Unexpected argument. ${issueKeys}`);
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             await repository.getDescriptions("CYP-123", "CYP-789");
@@ -247,21 +194,10 @@ describe("the cloud issue repository", () => {
         });
 
         it("displays an error for issues which do not exist", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: async (): Promise<StringMap<string>> => {
-                    return {
-                        "CYP-123": "I am a description",
-                    };
-                },
-                fetchLabels: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchSummaries: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
+            mockedFieldFetcher.fetchDescriptions = async (): Promise<StringMap<string>> => {
+                return {
+                    "CYP-123": "I am a description",
+                };
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
@@ -281,19 +217,8 @@ describe("the cloud issue repository", () => {
         });
 
         it("handles get field failures gracefully", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Expected error");
-                },
-                fetchLabels: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchSummaries: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
+            mockedFieldFetcher.fetchDescriptions = () => {
+                throw new Error("Expected error");
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
@@ -307,26 +232,14 @@ describe("the cloud issue repository", () => {
             expect(descriptions).to.deep.eq({});
         });
     });
-
     describe("getTestTypes", () => {
         it("fetches test types", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchLabels: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchSummaries: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchTestTypes: async (): Promise<StringMap<string>> => {
-                    return {
-                        "CYP-123": "Cucumber",
-                        "CYP-456": "Generic",
-                        "CYP-789": "Manual",
-                    };
-                },
+            mockedFieldFetcher.fetchTestTypes = async (): Promise<StringMap<string>> => {
+                return {
+                    "CYP-123": "Cucumber",
+                    "CYP-456": "Generic",
+                    "CYP-789": "Manual",
+                };
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
@@ -338,29 +251,20 @@ describe("the cloud issue repository", () => {
         });
 
         it("fetches test types only for unknown issues", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchLabels: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchSummaries: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchTestTypes: async (...issueKeys: string[]): Promise<StringMap<string>> => {
-                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
-                        return {
-                            "CYP-123": "Cucumber",
-                            "CYP-789": "Manual",
-                        };
-                    } else if (arrayEquals(issueKeys, ["CYP-456"])) {
-                        return {
-                            "CYP-456": "Generic",
-                        };
-                    }
-                    throw new Error(`Unexpected argument: ${issueKeys}`);
-                },
+            mockedFieldFetcher.fetchTestTypes = async (
+                ...issueKeys: string[]
+            ): Promise<StringMap<string>> => {
+                if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
+                    return {
+                        "CYP-123": "Cucumber",
+                        "CYP-789": "Manual",
+                    };
+                } else if (arrayEquals(issueKeys, ["CYP-456"])) {
+                    return {
+                        "CYP-456": "Generic",
+                    };
+                }
+                throw new Error(`Unexpected argument: ${issueKeys}`);
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             await repository.getTestTypes("CYP-123", "CYP-789");
@@ -375,24 +279,15 @@ describe("the cloud issue repository", () => {
         });
 
         it("displays an error for issues which do not exist", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchLabels: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchSummaries: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchTestTypes: async (...issueKeys: string[]): Promise<StringMap<string>> => {
-                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
-                        return {
-                            "CYP-123": "Cucumber",
-                        };
-                    }
-                    throw new Error(`Unexpected argument: ${issueKeys}`);
-                },
+            mockedFieldFetcher.fetchTestTypes = async (
+                ...issueKeys: string[]
+            ): Promise<StringMap<string>> => {
+                if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                    return {
+                        "CYP-123": "Cucumber",
+                    };
+                }
+                throw new Error(`Unexpected argument: ${issueKeys}`);
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
@@ -410,19 +305,8 @@ describe("the cloud issue repository", () => {
         });
 
         it("handles failed test type requests gracefully", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchLabels: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchSummaries: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Expected error");
-                },
+            mockedFieldFetcher.fetchTestTypes = () => {
+                throw new Error("Expected error");
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
@@ -439,26 +323,17 @@ describe("the cloud issue repository", () => {
 
     describe("getLabels", () => {
         it("fetches labels", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchLabels: async (...issueKeys: string[]): Promise<StringMap<string[]>> => {
-                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
-                        return {
-                            "CYP-123": ["A", "B", "C"],
-                            "CYP-456": [],
-                            "CYP-789": ["D"],
-                        };
-                    }
-                    throw new Error(`Unexpected argument: ${issueKeys}`);
-                },
-                fetchSummaries: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
+            mockedFieldFetcher.fetchLabels = async (
+                ...issueKeys: string[]
+            ): Promise<StringMap<string[]>> => {
+                if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                    return {
+                        "CYP-123": ["A", "B", "C"],
+                        "CYP-456": [],
+                        "CYP-789": ["D"],
+                    };
+                }
+                throw new Error(`Unexpected argument: ${issueKeys}`);
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
@@ -470,29 +345,20 @@ describe("the cloud issue repository", () => {
         });
 
         it("fetches labels only for unknown issues", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchLabels: async (...issueKeys: string[]): Promise<StringMap<string[]>> => {
-                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
-                        return {
-                            "CYP-123": ["A", "B", "C"],
-                            "CYP-789": ["E"],
-                        };
-                    } else if (arrayEquals(issueKeys, ["CYP-456"])) {
-                        return {
-                            "CYP-456": ["D"],
-                        };
-                    }
-                    throw new Error(`Unexpected argument: ${issueKeys}`);
-                },
-                fetchSummaries: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
+            mockedFieldFetcher.fetchLabels = async (
+                ...issueKeys: string[]
+            ): Promise<StringMap<string[]>> => {
+                if (arrayEquals(issueKeys, ["CYP-123", "CYP-789"])) {
+                    return {
+                        "CYP-123": ["A", "B", "C"],
+                        "CYP-789": ["E"],
+                    };
+                } else if (arrayEquals(issueKeys, ["CYP-456"])) {
+                    return {
+                        "CYP-456": ["D"],
+                    };
+                }
+                throw new Error(`Unexpected argument: ${issueKeys}`);
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             await repository.getLabels("CYP-123", "CYP-789");
@@ -507,24 +373,15 @@ describe("the cloud issue repository", () => {
         });
 
         it("displays an error for issues which do not exist", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchLabels: async (...issueKeys: string[]): Promise<StringMap<string[]>> => {
-                    if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
-                        return {
-                            "CYP-123": ["X"],
-                        };
-                    }
-                    throw new Error(`Unexpected argument: ${issueKeys}`);
-                },
-                fetchSummaries: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
+            mockedFieldFetcher.fetchLabels = async (
+                ...issueKeys: string[]
+            ): Promise<StringMap<string[]>> => {
+                if (arrayEquals(issueKeys, ["CYP-123", "CYP-456", "CYP-789"])) {
+                    return {
+                        "CYP-123": ["X"],
+                    };
+                }
+                throw new Error(`Unexpected argument: ${issueKeys}`);
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();
@@ -544,19 +401,8 @@ describe("the cloud issue repository", () => {
         });
 
         it("handles get field failures gracefully", async () => {
-            const mockedFieldFetcher: IJiraIssueFetcher = {
-                fetchDescriptions: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchLabels: () => {
-                    throw new Error("Expected error");
-                },
-                fetchSummaries: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
-                fetchTestTypes: () => {
-                    throw new Error("Mock called unexpectedly");
-                },
+            mockedFieldFetcher.fetchLabels = () => {
+                throw new Error("Expected error");
             };
             repository = new CachingJiraRepository(jiraFieldRepository, mockedFieldFetcher);
             const { stubbedError } = stubLogging();

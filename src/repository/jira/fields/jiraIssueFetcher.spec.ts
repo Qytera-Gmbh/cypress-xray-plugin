@@ -1,5 +1,10 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import {
+    getMockedJiraClient,
+    getMockedJiraFieldRepository,
+    getMockedXrayClient,
+} from "../../../../test/mocks";
 import { arrayEquals } from "../../../../test/util";
 import { IJiraClient } from "../../../client/jira/jiraClient";
 import { IXrayClientCloud } from "../../../client/xray/xrayClientCloud";
@@ -18,28 +23,8 @@ describe("the jira issue fetcher", () => {
     let mockedJiraClient: IJiraClient;
 
     beforeEach(() => {
-        mockedFieldRepository = {
-            getFieldId: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-        };
-        mockedJiraClient = {
-            search: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            addAttachment: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getIssueTypes: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getFields: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            editIssue: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-        };
+        mockedFieldRepository = getMockedJiraFieldRepository();
+        mockedJiraClient = getMockedJiraClient();
     });
 
     describe("fetchDescriptions", () => {
@@ -341,45 +326,9 @@ describe("the jira cloud issue fetcher", () => {
     let mockedXrayClient: IXrayClientCloud;
 
     beforeEach(() => {
-        mockedFieldRepository = {
-            getFieldId: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-        };
-        mockedJiraClient = {
-            search: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            addAttachment: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getIssueTypes: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getFields: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            editIssue: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-        };
-        mockedXrayClient = {
-            importExecution: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            exportCucumber: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            importFeature: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            importExecutionCucumberMultipart: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getTestTypes: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-        };
+        mockedFieldRepository = getMockedJiraFieldRepository();
+        mockedJiraClient = getMockedJiraClient();
+        mockedXrayClient = getMockedXrayClient("cloud");
     });
 
     describe("fetchTestTypes", () => {
@@ -398,7 +347,7 @@ describe("the jira cloud issue fetcher", () => {
                         "CYP-789": "pear",
                     };
                 }
-                throw new Error("Mock called unexpectedly");
+                throw new Error(`Unexpected arguments:\n${projectKey}\n${issueKeys}`);
             };
             const fetcher = new JiraIssueFetcherCloud(
                 mockedJiraClient,

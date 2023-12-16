@@ -1,19 +1,18 @@
 import { expect } from "chai";
 import path from "path";
+import {
+    getMockedJiraClient,
+    getMockedJiraRepository,
+    getMockedXrayClient,
+} from "../../../test/mocks";
 import { stubLogging } from "../../../test/util";
-import { PATCredentials } from "../../authentication/credentials";
-import { JiraClientServer } from "../../client/jira/jiraClientServer";
 import { IXrayClient } from "../../client/xray/xrayClient";
-import { XrayClientServer } from "../../client/xray/xrayClientServer";
 import {
     initJiraOptions,
     initOpenSSLOptions,
     initPluginOptions,
     initXrayOptions,
 } from "../../context";
-import { CachingJiraFieldRepository } from "../../repository/jira/fields/jiraFieldRepository";
-import { JiraIssueFetcher } from "../../repository/jira/fields/jiraIssueFetcher";
-import { CachingJiraRepository } from "../../repository/jira/jiraRepository";
 import { ClientCombination, InternalOptions } from "../../types/plugin";
 import { ImportFeatureResponse } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
@@ -41,31 +40,52 @@ describe("synchronizeFeatureFile", () => {
             plugin: initPluginOptions({}, {}),
             openSSL: initOpenSSLOptions({}, {}),
         };
-        const jiraClient = new JiraClientServer("https://example.org", new PATCredentials("token"));
-        const xrayClient = new XrayClientServer("https://example.org", new PATCredentials("token"));
-        const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-        const jiraFieldFetcher = new JiraIssueFetcher(
-            jiraClient,
-            jiraFieldRepository,
-            options.jira.fields
-        );
         clients = {
             kind: "server",
-            jiraClient: jiraClient,
-            xrayClient: xrayClient,
-            jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
+            jiraClient: getMockedJiraClient(),
+            xrayClient: getMockedXrayClient(),
+            jiraRepository: getMockedJiraRepository(),
         };
     });
-    // Weird workaround.
-    const emitter = {} as Cypress.FileObject;
     const file: Cypress.FileObject = {
-        ...emitter,
+        // Weird workaround.
+        ...({} as Cypress.FileObject),
         filePath: "./test/resources/features/taggedCloud.feature",
         outputPath: "",
         shouldWatch: false,
     };
 
     it("should display errors for invalid feature files", async () => {
+        file.filePath = "./test/resources/features/invalid.feature";
+        const { stubbedInfo, stubbedError } = stubLogging();
+        options.cucumber = {
+            featureFileExtension: ".feature",
+            downloadFeatures: false,
+            uploadFeatures: true,
+            prefixes: {},
+        };
+        await synchronizeFeatureFile(file, ".", options, clients);
+        expect(stubbedError).to.have.been.calledOnce;
+        expect(stubbedError).to.have.been.calledWith(
+            dedent(`
+                Feature file invalid, skipping synchronization: ./test/resources/features/invalid.feature
+
+                Parser errors:
+                (9:3): expected: #EOF, #TableRow, #DocStringSeparator, #StepLine, #TagLine, #ScenarioLine, #RuleLine, #Comment, #Empty, got 'Invalid: Element'
+            `)
+        );
+        expect(stubbedInfo).to.have.been.calledOnce;
+        expect(stubbedInfo).to.have.been.calledWith(
+            `Preprocessing feature file ${path.join(
+                "test",
+                "resources",
+                "features",
+                "invalid.feature"
+            )}...`
+        );
+    });
+
+    it("resets updated issues only", async () => {
         file.filePath = "./test/resources/features/invalid.feature";
         const { stubbedInfo, stubbedError } = stubLogging();
         options.cucumber = {
@@ -104,24 +124,20 @@ describe("synchronizeFeatureFile", () => {
 });
 
 describe("importKnownFeature", () => {
+    let mockedXrayClient: IXrayClient;
+    beforeEach(() => {
+        mockedXrayClient = getMockedXrayClient();
+    });
+
     it("returns updated issue keys", async () => {
         const { stubbedWarning } = stubLogging();
-        const mockedXrayClient: IXrayClient = {
-            importExecution: function () {
-                throw new Error("Mock called unexpectedly");
-            },
-            exportCucumber: function () {
-                throw new Error("Mock called unexpectedly");
-            },
-            importFeature: async function (): Promise<ImportFeatureResponse | undefined> {
-                return {
-                    errors: [],
-                    updatedOrCreatedIssues: ["CYP-123", "CYP-756", "CYP-42"],
-                };
-            },
-            importExecutionCucumberMultipart: function () {
-                throw new Error("Mock called unexpectedly");
-            },
+        mockedXrayClient.importFeature = async function (): Promise<
+            ImportFeatureResponse | undefined
+        > {
+            return {
+                errors: [],
+                updatedOrCreatedIssues: ["CYP-123", "CYP-756", "CYP-42"],
+            };
         };
         const updatedIssues = await importKnownFeature(
             "/path/to/some.feature",
@@ -135,22 +151,13 @@ describe("importKnownFeature", () => {
 
     it("warns about import errors", async () => {
         const { stubbedWarning } = stubLogging();
-        const mockedXrayClient: IXrayClient = {
-            importExecution: function () {
-                throw new Error("Mock called unexpectedly");
-            },
-            exportCucumber: function () {
-                throw new Error("Mock called unexpectedly");
-            },
-            importFeature: async function (): Promise<ImportFeatureResponse | undefined> {
-                return {
-                    errors: ["CYP-123 does not exist", "CYP-42: Access denied", "Big\nProblem"],
-                    updatedOrCreatedIssues: [],
-                };
-            },
-            importExecutionCucumberMultipart: function () {
-                throw new Error("Mock called unexpectedly");
-            },
+        mockedXrayClient.importFeature = async function (): Promise<
+            ImportFeatureResponse | undefined
+        > {
+            return {
+                errors: ["CYP-123 does not exist", "CYP-42: Access denied", "Big\nProblem"],
+                updatedOrCreatedIssues: [],
+            };
         };
         await importKnownFeature(
             "/path/to/some.feature",
@@ -170,22 +177,11 @@ describe("importKnownFeature", () => {
 
     it("warns about issue key mismatches", async () => {
         const { stubbedWarning } = stubLogging();
-        const mockedXrayClient: IXrayClient = {
-            importExecution: function () {
-                throw new Error("Mock called unexpectedly");
-            },
-            exportCucumber: function () {
-                throw new Error("Mock called unexpectedly");
-            },
-            importFeature: async function (): Promise<ImportFeatureResponse> {
-                return {
-                    errors: [],
-                    updatedOrCreatedIssues: ["CYP-536", "CYP-552", "CYP-756"],
-                };
-            },
-            importExecutionCucumberMultipart: function () {
-                throw new Error("Mock called unexpectedly");
-            },
+        mockedXrayClient.importFeature = async function (): Promise<ImportFeatureResponse> {
+            return {
+                errors: [],
+                updatedOrCreatedIssues: ["CYP-536", "CYP-552", "CYP-756"],
+            };
         };
         await importKnownFeature(
             "/path/to/some.feature",
@@ -216,19 +212,8 @@ describe("importKnownFeature", () => {
 
     it("does not do anything if the import fails", async () => {
         const { stubbedWarning } = stubLogging();
-        const mockedXrayClient: IXrayClient = {
-            importExecution: function () {
-                throw new Error("Mock called unexpectedly");
-            },
-            exportCucumber: function () {
-                throw new Error("Mock called unexpectedly");
-            },
-            importFeature: async function (): Promise<undefined> {
-                return undefined;
-            },
-            importExecutionCucumberMultipart: function () {
-                throw new Error("Mock called unexpectedly");
-            },
+        mockedXrayClient.importFeature = async function (): Promise<undefined> {
+            return undefined;
         };
         expect(
             await importKnownFeature(
