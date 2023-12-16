@@ -6,17 +6,17 @@ Funktionalität: A cool story
     Grundlage:
         #@Precondition:CYP-222
         Angenommen A Given
-        When A When
+        Wenn A When
         Dann A Then
 
     @TestName:CYP-333 @TestSet:CYP-444
     Szenario: Scenario 1
         Angenommen A Given
-        When A When
+        Wenn A When
         Dann A Then
 
     @TestName:CYP-555 @TestSet:CYP-444
     Szenario: Scenario 2
         Angenommen A Given
-        When A When
+        Wenn A When
         Dann A Then

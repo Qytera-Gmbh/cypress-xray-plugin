@@ -124,20 +124,31 @@ export async function importKnownFeature(
         }
         const setOverlap = computeOverlap(expectedIssues, importResponse.updatedOrCreatedIssues);
         if (setOverlap.leftOnly.length > 0 || setOverlap.rightOnly.length > 0) {
+            const mismatchLines: string[] = [];
+            if (setOverlap.leftOnly.length > 0) {
+                mismatchLines.push(
+                    "Issues contained in feature file tags which were not updated by Jira and might not exist:"
+                );
+                mismatchLines.push(...setOverlap.leftOnly.map((issueKey) => `  ${issueKey}`));
+            }
+            if (setOverlap.rightOnly.length > 0) {
+                mismatchLines.push(
+                    "Issues updated by Jira which are not present in feature file tags and might have been created:"
+                );
+                mismatchLines.push(...setOverlap.rightOnly.map((issueKey) => `  ${issueKey}`));
+            }
             logWarning(
                 dedent(`
                     Mismatch between feature file issue tags and updated Jira issues detected
 
-                    Issues contained in feature file tags which were not updated by Jira and might not exist:
-                      ${setOverlap.leftOnly.join("\n")}
-                    Issues updated by Jira which are not present in feature file tags and might have been created:
-                      ${setOverlap.rightOnly.join("\n")}
+                    ${mismatchLines.join("\n")}
 
                     Make sure that:
                     - All issues present in feature file tags belong to existing issues
                     - Your plugin tag prefix settings are consistent with the ones defined in Xray
 
                     More information:
+                    - ${HELP.plugin.guides.targetingExistingIssues}
                     - ${HELP.plugin.configuration.cucumber.prefixes}
                 `)
             );
@@ -170,8 +181,6 @@ async function resetSummaries(
         }
         if (oldSummary !== newSummary) {
             const summaryFieldId = await jiraRepository.getFieldId(SupportedFields.SUMMARY);
-            const fields: StringMap<string> = {};
-            fields[summaryFieldId] = oldSummary;
             logDebug(
                 dedent(`
                     Resetting issue summary of issue: ${issueKey}
@@ -180,6 +189,7 @@ async function resetSummaries(
                     Summary post sync: ${newSummary}
                 `)
             );
+            const fields = { [summaryFieldId]: oldSummary };
             if (!(await jiraClient.editIssue(issueKey, { fields: fields }))) {
                 logError(
                     dedent(`
@@ -223,8 +233,6 @@ async function resetLabels(
         }
         if (!newLabels.every((label) => oldLabels.includes(label))) {
             const labelFieldId = await jiraRepository.getFieldId(SupportedFields.LABELS);
-            const fields: StringMap<string[]> = {};
-            fields[labelFieldId] = oldLabels;
             logDebug(
                 dedent(`
                     Resetting issue labels of issue: ${issueKey}
@@ -233,6 +241,7 @@ async function resetLabels(
                     Labels post sync: ${newLabels}
                 `)
             );
+            const fields = { [labelFieldId]: oldLabels };
             if (!(await jiraClient.editIssue(issueKey, { fields: fields }))) {
                 logError(
                     dedent(`

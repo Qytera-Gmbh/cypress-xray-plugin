@@ -1,5 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { SinonStubbedInstance } from "sinon";
 import {
     getMockedJiraClient,
     getMockedJiraFieldRepository,
@@ -9,37 +10,28 @@ import { arrayEquals } from "../../../../test/util";
 import { IJiraClient } from "../../../client/jira/jiraClient";
 import { IXrayClientCloud } from "../../../client/xray/xrayClientCloud";
 import { initJiraOptions } from "../../../context";
-import { ISearchRequest } from "../../../types/jira/requests/search";
-import { IIssue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
 import { IJiraFieldRepository } from "./jiraFieldRepository";
-import { JiraIssueFetcher, JiraIssueFetcherCloud } from "./jiraIssueFetcher";
+import { JiraIssueFetcher, JiraIssueFetcherCloud, SupportedFields } from "./jiraIssueFetcher";
 
 chai.use(chaiAsPromised);
 
 describe("the jira issue fetcher", () => {
-    let mockedFieldRepository: IJiraFieldRepository;
-    let mockedJiraClient: IJiraClient;
+    let fieldRepository: SinonStubbedInstance<IJiraFieldRepository>;
+    let jiraClient: SinonStubbedInstance<IJiraClient>;
 
     beforeEach(() => {
-        mockedFieldRepository = getMockedJiraFieldRepository();
-        mockedJiraClient = getMockedJiraClient();
+        fieldRepository = getMockedJiraFieldRepository();
+        jiraClient = getMockedJiraClient();
     });
 
     describe("fetchDescriptions", () => {
         it("uses provided description IDs", async () => {
-            mockedJiraClient.search = async (
-                request: ISearchRequest
-            ): Promise<IIssue[] | undefined> => {
-                if (request.fields && request.fields.includes("customfield_456")) {
-                    if (request.jql === "issue in (CYP-789)") {
-                        return [{ key: "CYP-789", fields: { customfield_456: "orange juice" } }];
-                    }
-                }
-                throw new Error(`Unexpected argument: ${JSON.stringify(request)}`);
-            };
-            const fetcher = new JiraIssueFetcher(mockedJiraClient, mockedFieldRepository, {
+            jiraClient.search
+                .withArgs({ fields: ["customfield_456"], jql: "issue in (CYP-789)" })
+                .resolves([{ key: "CYP-789", fields: { customfield_456: "orange juice" } }]);
+            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
                 description: "customfield_456",
             });
             const descriptions = await fetcher.fetchDescriptions("CYP-789");
@@ -49,27 +41,20 @@ describe("the jira issue fetcher", () => {
         });
 
         it("fetches description IDs automatically", async () => {
-            mockedFieldRepository.getFieldId = async (fieldName: string): Promise<string> => {
-                if (fieldName === "description") {
-                    return "customfield_456";
-                }
-                throw new Error(`Unexpected argument: ${fieldName}`);
-            };
-            mockedJiraClient.search = async (
-                request: ISearchRequest
-            ): Promise<IIssue[] | undefined> => {
-                if (request.fields && request.fields.includes("customfield_456")) {
-                    if (request.jql === "issue in (CYP-123,CYP-456,CYP-789)") {
-                        return [
-                            { key: "CYP-123", fields: { customfield_456: "I" } },
-                            { key: "CYP-456", fields: { customfield_456: "like" } },
-                            { key: "CYP-789", fields: { customfield_456: "orange juice" } },
-                        ];
-                    }
-                }
-                throw new Error(`Unexpected argument: ${JSON.stringify(request)}`);
-            };
-            const fetcher = new JiraIssueFetcher(mockedJiraClient, mockedFieldRepository);
+            fieldRepository.getFieldId
+                .withArgs(SupportedFields.DESCRIPTION)
+                .resolves("customfield_456");
+            jiraClient.search
+                .withArgs({
+                    fields: ["customfield_456"],
+                    jql: "issue in (CYP-123,CYP-456,CYP-789)",
+                })
+                .resolves([
+                    { key: "CYP-123", fields: { customfield_456: "I" } },
+                    { key: "CYP-456", fields: { customfield_456: "like" } },
+                    { key: "CYP-789", fields: { customfield_456: "orange juice" } },
+                ]);
+            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository);
             const descriptions = await fetcher.fetchDescriptions("CYP-123", "CYP-456", "CYP-789");
             expect(descriptions).to.deep.eq({
                 "CYP-123": "I",
@@ -81,22 +66,18 @@ describe("the jira issue fetcher", () => {
 
     describe("fetchLabels", () => {
         it("uses provided label IDs", async () => {
-            mockedJiraClient.search = async (
-                request: ISearchRequest
-            ): Promise<IIssue[] | undefined> => {
-                if (request.fields && request.fields.includes("customfield_789")) {
-                    if (request.jql === "issue in (CYP-789)") {
-                        return [
-                            {
-                                key: "CYP-789",
-                                fields: { customfield_789: ["orange juice", "grape juice"] },
-                            },
-                        ];
-                    }
-                }
-                throw new Error(`Unexpected argument: ${JSON.stringify(request)}`);
-            };
-            const fetcher = new JiraIssueFetcher(mockedJiraClient, mockedFieldRepository, {
+            jiraClient.search
+                .withArgs({
+                    fields: ["customfield_789"],
+                    jql: "issue in (CYP-789)",
+                })
+                .resolves([
+                    {
+                        key: "CYP-789",
+                        fields: { customfield_789: ["orange juice", "grape juice"] },
+                    },
+                ]);
+            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
                 labels: "customfield_789",
             });
             const labels = await fetcher.fetchLabels("CYP-789");
@@ -105,30 +86,21 @@ describe("the jira issue fetcher", () => {
             });
         });
         it("fetches label IDs automatically", async () => {
-            mockedFieldRepository.getFieldId = async (fieldName: string): Promise<string> => {
-                if (fieldName === "labels") {
-                    return "customfield_789";
-                }
-                throw new Error(`Unexpected argument: ${fieldName}`);
-            };
-            mockedJiraClient.search = async (
-                request: ISearchRequest
-            ): Promise<IIssue[] | undefined> => {
-                if (request.fields && request.fields.includes("customfield_789")) {
-                    if (request.jql === "issue in (CYP-123,CYP-456,CYP-789)") {
-                        return [
-                            { key: "CYP-123", fields: { customfield_789: ["I"] } },
-                            { key: "CYP-456", fields: { customfield_789: ["like"] } },
-                            {
-                                key: "CYP-789",
-                                fields: { customfield_789: ["orange juice", "grape juice"] },
-                            },
-                        ];
-                    }
-                }
-                throw new Error(`Unexpected argument: ${JSON.stringify(request)}`);
-            };
-            const fetcher = new JiraIssueFetcher(mockedJiraClient, mockedFieldRepository);
+            fieldRepository.getFieldId.withArgs(SupportedFields.LABELS).resolves("customfield_789");
+            jiraClient.search
+                .withArgs({
+                    fields: ["customfield_789"],
+                    jql: "issue in (CYP-123,CYP-456,CYP-789)",
+                })
+                .resolves([
+                    { key: "CYP-123", fields: { customfield_789: ["I"] } },
+                    { key: "CYP-456", fields: { customfield_789: ["like"] } },
+                    {
+                        key: "CYP-789",
+                        fields: { customfield_789: ["orange juice", "grape juice"] },
+                    },
+                ]);
+            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository);
             const labels = await fetcher.fetchLabels("CYP-123", "CYP-456", "CYP-789");
             expect(labels).to.deep.eq({
                 "CYP-123": ["I"],
@@ -140,17 +112,13 @@ describe("the jira issue fetcher", () => {
 
     describe("fetchSummaries", () => {
         it("uses provided summary IDs", async () => {
-            mockedJiraClient.search = async (
-                request: ISearchRequest
-            ): Promise<IIssue[] | undefined> => {
-                if (request.fields && request.fields.includes("customfield_123")) {
-                    if (request.jql === "issue in (CYP-789)") {
-                        return [{ key: "CYP-789", fields: { customfield_123: "apple juice" } }];
-                    }
-                }
-                throw new Error(`Unexpected argument: ${JSON.stringify(request)}`);
-            };
-            const fetcher = new JiraIssueFetcher(mockedJiraClient, mockedFieldRepository, {
+            jiraClient.search
+                .withArgs({
+                    fields: ["customfield_123"],
+                    jql: "issue in (CYP-789)",
+                })
+                .resolves([{ key: "CYP-789", fields: { customfield_123: "apple juice" } }]);
+            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
                 summary: "customfield_123",
             });
             const summaries = await fetcher.fetchSummaries("CYP-789");
@@ -159,27 +127,20 @@ describe("the jira issue fetcher", () => {
             });
         });
         it("fetches summary IDs automatically", async () => {
-            mockedFieldRepository.getFieldId = async (fieldName: string): Promise<string> => {
-                if (fieldName === "summary") {
-                    return "customfield_123";
-                }
-                throw new Error(`Unexpected argument: ${fieldName}`);
-            };
-            mockedJiraClient.search = async (
-                request: ISearchRequest
-            ): Promise<IIssue[] | undefined> => {
-                if (request.fields && request.fields.includes("customfield_123")) {
-                    if (request.jql === "issue in (CYP-123,CYP-456,CYP-789)") {
-                        return [
-                            { key: "CYP-123", fields: { customfield_123: "I" } },
-                            { key: "CYP-456", fields: { customfield_123: "like" } },
-                            { key: "CYP-789", fields: { customfield_123: "apple juice" } },
-                        ];
-                    }
-                }
-                throw new Error(`Unexpected argument: ${JSON.stringify(request)}`);
-            };
-            const fetcher = new JiraIssueFetcher(mockedJiraClient, mockedFieldRepository);
+            fieldRepository.getFieldId
+                .withArgs(SupportedFields.SUMMARY)
+                .resolves("customfield_123");
+            jiraClient.search
+                .withArgs({
+                    fields: ["customfield_123"],
+                    jql: "issue in (CYP-123,CYP-456,CYP-789)",
+                })
+                .resolves([
+                    { key: "CYP-123", fields: { customfield_123: "I" } },
+                    { key: "CYP-456", fields: { customfield_123: "like" } },
+                    { key: "CYP-789", fields: { customfield_123: "apple juice" } },
+                ]);
+            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository);
             const summaries = await fetcher.fetchSummaries("CYP-123", "CYP-456", "CYP-789");
             expect(summaries).to.deep.eq({
                 "CYP-123": "I",
@@ -191,22 +152,18 @@ describe("the jira issue fetcher", () => {
 
     describe("fetchTestTypes", () => {
         it("uses provided test type IDs", async () => {
-            mockedJiraClient.search = async (
-                request: ISearchRequest
-            ): Promise<IIssue[] | undefined> => {
-                if (request.fields && request.fields.includes("customfield_011")) {
-                    if (request.jql === "issue in (CYP-789)") {
-                        return [
-                            {
-                                key: "CYP-789",
-                                fields: { customfield_011: { value: "cherry" } },
-                            },
-                        ];
-                    }
-                }
-                throw new Error(`Unexpected argument: ${JSON.stringify(request)}`);
-            };
-            const fetcher = new JiraIssueFetcher(mockedJiraClient, mockedFieldRepository, {
+            jiraClient.search
+                .withArgs({
+                    fields: ["customfield_011"],
+                    jql: "issue in (CYP-789)",
+                })
+                .resolves([
+                    {
+                        key: "CYP-789",
+                        fields: { customfield_011: { value: "cherry" } },
+                    },
+                ]);
+            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
                 testType: "customfield_011",
             });
             const testTypes = await fetcher.fetchTestTypes("CYP-789");
@@ -215,36 +172,20 @@ describe("the jira issue fetcher", () => {
             });
         });
         it("fetches test type IDs automatically", async () => {
-            mockedFieldRepository.getFieldId = async (fieldName: string): Promise<string> => {
-                if (fieldName === "test type") {
-                    return "customfield_011";
-                }
-                throw new Error(`Unexpected argument: ${fieldName}`);
-            };
-            mockedJiraClient.search = async (
-                request: ISearchRequest
-            ): Promise<IIssue[] | undefined> => {
-                if (request.fields && request.fields.includes("customfield_011")) {
-                    if (request.jql === "issue in (CYP-123,CYP-456,CYP-789)") {
-                        return [
-                            {
-                                key: "CYP-123",
-                                fields: { customfield_011: { value: "banana" } },
-                            },
-                            {
-                                key: "CYP-456",
-                                fields: { customfield_011: { value: "pineapple" } },
-                            },
-                            {
-                                key: "CYP-789",
-                                fields: { customfield_011: { value: "cherry" } },
-                            },
-                        ];
-                    }
-                }
-                throw new Error(`Unexpected argument: ${JSON.stringify(request)}`);
-            };
-            const fetcher = new JiraIssueFetcher(mockedJiraClient, mockedFieldRepository);
+            fieldRepository.getFieldId
+                .withArgs(SupportedFields.TEST_TYPE)
+                .resolves("customfield_011");
+            jiraClient.search
+                .withArgs({
+                    fields: ["customfield_011"],
+                    jql: "issue in (CYP-123,CYP-456,CYP-789)",
+                })
+                .resolves([
+                    { key: "CYP-123", fields: { customfield_011: { value: "banana" } } },
+                    { key: "CYP-456", fields: { customfield_011: { value: "pineapple" } } },
+                    { key: "CYP-789", fields: { customfield_011: { value: "cherry" } } },
+                ]);
+            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository);
             const testTypes = await fetcher.fetchTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(testTypes).to.deep.eq({
                 "CYP-123": "banana",
@@ -255,20 +196,16 @@ describe("the jira issue fetcher", () => {
     });
 
     it("displays errors for unknown issues", async () => {
-        mockedJiraClient.search = async (
-            request: ISearchRequest
-        ): Promise<IIssue[] | undefined> => {
-            if (request.fields && request.fields.includes("summary")) {
-                if (request.jql === "issue in (CYP-123,CYP-456)") {
-                    return [
-                        { key: "CYP-123", fields: { summary: "banana" } },
-                        { fields: { summary: "cherry" } },
-                    ];
-                }
-            }
-            throw new Error(`Unexpected argument: ${JSON.stringify(request)}`);
-        };
-        const fetcher = new JiraIssueFetcher(mockedJiraClient, mockedFieldRepository, {
+        jiraClient.search
+            .withArgs({
+                fields: ["summary"],
+                jql: "issue in (CYP-123,CYP-456)",
+            })
+            .resolves([
+                { key: "CYP-123", fields: { summary: "banana" } },
+                { fields: { summary: "cherry" } },
+            ]);
+        const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
             summary: "summary",
         });
         await expect(fetcher.fetchSummaries("CYP-123", "CYP-456")).to.eventually.be.rejectedWith(
@@ -282,20 +219,16 @@ describe("the jira issue fetcher", () => {
     });
 
     it("displays errors for unparseable fields", async () => {
-        mockedJiraClient.search = async (
-            request: ISearchRequest
-        ): Promise<IIssue[] | undefined> => {
-            if (request.fields && request.fields.includes("summary")) {
-                if (request.jql === "issue in (CYP-123,CYP-456)") {
-                    return [
-                        { key: "CYP-456", fields: { jeff: "cherry" } },
-                        { key: "CYP-123", fields: { george: "banana" } },
-                    ];
-                }
-            }
-            throw new Error(`Unexpected argument: ${JSON.stringify(request)}`);
-        };
-        const fetcher = new JiraIssueFetcher(mockedJiraClient, mockedFieldRepository, {
+        jiraClient.search
+            .withArgs({
+                fields: ["summary"],
+                jql: "issue in (CYP-123,CYP-456)",
+            })
+            .resolves([
+                { key: "CYP-456", fields: { jeff: "cherry" } },
+                { key: "CYP-123", fields: { george: "banana" } },
+            ]);
+        const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
             summary: "summary",
         });
         await expect(fetcher.fetchSummaries("CYP-123", "CYP-456")).to.eventually.be.rejectedWith(
@@ -310,10 +243,8 @@ describe("the jira issue fetcher", () => {
     });
 
     it("handles search failures gracefully", async () => {
-        mockedJiraClient.search = async () => {
-            return undefined;
-        };
-        const fetcher = new JiraIssueFetcher(mockedJiraClient, mockedFieldRepository, {
+        jiraClient.search.resolves(undefined);
+        const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
             summary: "summary",
         });
         expect(await fetcher.fetchSummaries("CYP-123", "CYP-456")).to.deep.eq({});
@@ -321,13 +252,13 @@ describe("the jira issue fetcher", () => {
 });
 
 describe("the jira cloud issue fetcher", () => {
-    let mockedFieldRepository: IJiraFieldRepository;
-    let mockedJiraClient: IJiraClient;
+    let fieldRepository: IJiraFieldRepository;
+    let jiraClient: IJiraClient;
     let mockedXrayClient: IXrayClientCloud;
 
     beforeEach(() => {
-        mockedFieldRepository = getMockedJiraFieldRepository();
-        mockedJiraClient = getMockedJiraClient();
+        fieldRepository = getMockedJiraFieldRepository();
+        jiraClient = getMockedJiraClient();
         mockedXrayClient = getMockedXrayClient("cloud");
     });
 
@@ -350,8 +281,8 @@ describe("the jira cloud issue fetcher", () => {
                 throw new Error(`Unexpected arguments:\n${projectKey}\n${issueKeys}`);
             };
             const fetcher = new JiraIssueFetcherCloud(
-                mockedJiraClient,
-                mockedFieldRepository,
+                jiraClient,
+                fieldRepository,
                 mockedXrayClient,
                 initJiraOptions({}, { projectKey: "CYP", url: "https://example.org" })
             );

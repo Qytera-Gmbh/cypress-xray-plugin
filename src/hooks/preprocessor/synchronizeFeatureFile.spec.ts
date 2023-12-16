@@ -1,11 +1,13 @@
 import { expect } from "chai";
 import path from "path";
+import { SinonStubbedInstance } from "sinon";
 import {
     getMockedJiraClient,
     getMockedJiraRepository,
     getMockedXrayClient,
 } from "../../../test/mocks";
 import { stubLogging } from "../../../test/util";
+import { IJiraClient } from "../../client/jira/jiraClient";
 import { IXrayClient } from "../../client/xray/xrayClient";
 import {
     initJiraOptions,
@@ -13,14 +15,18 @@ import {
     initPluginOptions,
     initXrayOptions,
 } from "../../context";
-import { ClientCombination, InternalOptions } from "../../types/plugin";
+import { IJiraRepository } from "../../repository/jira/jiraRepository";
+import { InternalOptions } from "../../types/plugin";
 import { ImportFeatureResponse } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
 import { importKnownFeature, synchronizeFeatureFile } from "./synchronizeFeatureFile";
 
 describe("synchronizeFeatureFile", () => {
+    let file: Cypress.FileObject;
     let options: InternalOptions;
-    let clients: ClientCombination;
+    let jiraClient: SinonStubbedInstance<IJiraClient>;
+    let xrayClient: SinonStubbedInstance<IXrayClient>;
+    let jiraRepository: SinonStubbedInstance<IJiraRepository>;
 
     beforeEach(() => {
         options = {
@@ -40,20 +46,17 @@ describe("synchronizeFeatureFile", () => {
             plugin: initPluginOptions({}, {}),
             openSSL: initOpenSSLOptions({}, {}),
         };
-        clients = {
-            kind: "server",
-            jiraClient: getMockedJiraClient(),
-            xrayClient: getMockedXrayClient(),
-            jiraRepository: getMockedJiraRepository(),
+        jiraClient = getMockedJiraClient();
+        xrayClient = getMockedXrayClient();
+        jiraRepository = getMockedJiraRepository();
+        file = {
+            // Weird workaround.
+            ...({} as Cypress.FileObject),
+            filePath: "./test/resources/features/taggedCloud.feature",
+            outputPath: "",
+            shouldWatch: false,
         };
     });
-    const file: Cypress.FileObject = {
-        // Weird workaround.
-        ...({} as Cypress.FileObject),
-        filePath: "./test/resources/features/taggedCloud.feature",
-        outputPath: "",
-        shouldWatch: false,
-    };
 
     it("should display errors for invalid feature files", async () => {
         file.filePath = "./test/resources/features/invalid.feature";
@@ -64,7 +67,12 @@ describe("synchronizeFeatureFile", () => {
             uploadFeatures: true,
             prefixes: {},
         };
-        await synchronizeFeatureFile(file, ".", options, clients);
+        await synchronizeFeatureFile(file, ".", options, {
+            kind: "server",
+            jiraClient: jiraClient,
+            jiraRepository: jiraRepository,
+            xrayClient: xrayClient,
+        });
         expect(stubbedError).to.have.been.calledOnce;
         expect(stubbedError).to.have.been.calledWith(
             dedent(`
@@ -86,39 +94,57 @@ describe("synchronizeFeatureFile", () => {
     });
 
     it("resets updated issues only", async () => {
-        file.filePath = "./test/resources/features/invalid.feature";
-        const { stubbedInfo, stubbedError } = stubLogging();
+        file.filePath = "./test/resources/features/taggedPrefixCorrect.feature";
+        // const { stubbedInfo, stubbedError } = stubLogging();
         options.cucumber = {
             featureFileExtension: ".feature",
             downloadFeatures: false,
             uploadFeatures: true,
-            prefixes: {},
+            prefixes: { test: "TestName:", precondition: "Precondition:" },
         };
-        await synchronizeFeatureFile(file, ".", options, clients);
-        expect(stubbedError).to.have.been.calledOnce;
-        expect(stubbedError).to.have.been.calledWith(
-            dedent(`
-                Feature file invalid, skipping synchronization: ./test/resources/features/invalid.feature
-
-                Parser errors:
-                (9:3): expected: #EOF, #TableRow, #DocStringSeparator, #StepLine, #TagLine, #ScenarioLine, #RuleLine, #Comment, #Empty, got 'Invalid: Element'
-            `)
-        );
-        expect(stubbedInfo).to.have.been.calledOnce;
-        expect(stubbedInfo).to.have.been.calledWith(
-            `Preprocessing feature file ${path.join(
-                "test",
-                "resources",
-                "features",
-                "invalid.feature"
-            )}...`
-        );
+        jiraRepository.getSummaries.resolves({
+            "CYP-222": "Big",
+            "CYP-333": "Backup",
+            "CYP-555": "Yo",
+        });
+        jiraRepository.getLabels.resolves({
+            "CYP-222": ["Some"],
+            "CYP-333": ["Labels", "Here"],
+            "CYP-555": [],
+        });
+        xrayClient.importFeature.resolves({
+            errors: [],
+            updatedOrCreatedIssues: ["CYP-222", "CYP-555"],
+        });
+        // clients.jiraRepository.getFieldId = async function (
+        //     fieldName: SupportedFields
+        // ): Promise<string> {
+        //     switch (fieldName) {
+        //         case SupportedFields.SUMMARY:
+        //             return "summary";
+        //         case SupportedFields.LABELS:
+        //             return "labels";
+        //     }
+        //     throw new Error(`Unexpected argument: ${fieldName}`);
+        // };
+        await synchronizeFeatureFile(file, ".", options, {
+            kind: "cloud",
+            jiraClient: jiraClient,
+            jiraRepository: jiraRepository,
+            xrayClient: xrayClient,
+        });
+        expect(5).to.be.false;
     });
 
     it("should not try to parse mismatched feature files", async () => {
         file.filePath = "./test/resources/greetings.txt";
         const { stubbedError } = stubLogging();
-        await synchronizeFeatureFile(file, ".", options, clients);
+        await synchronizeFeatureFile(file, ".", options, {
+            kind: "server",
+            jiraClient: jiraClient,
+            jiraRepository: jiraRepository,
+            xrayClient: xrayClient,
+        });
         expect(stubbedError).to.not.have.been.called;
     });
 });
@@ -205,6 +231,7 @@ describe("importKnownFeature", () => {
                 - Your plugin tag prefix settings are consistent with the ones defined in Xray
 
                 More information:
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                 - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
             `)
         );
