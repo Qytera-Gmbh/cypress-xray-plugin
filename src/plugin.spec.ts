@@ -6,7 +6,7 @@ import { PATCredentials } from "./authentication/credentials";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
 import * as context from "./context";
-import * as hooks from "./hooks";
+import * as hooks from "./hooks/hooks";
 import { addXrayResultUpload, configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import { JiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";

@@ -3,23 +3,23 @@ import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import path from "path";
 import { stub } from "sinon";
-import { stubLogging } from "../test/util";
-import { PATCredentials } from "./authentication/credentials";
-import { JiraClientServer } from "./client/jira/jiraClientServer";
-import { XrayClientServer } from "./client/xray/xrayClientServer";
+import { stubLogging } from "../../test/util";
+import { PATCredentials } from "../authentication/credentials";
+import { JiraClientServer } from "../client/jira/jiraClientServer";
+import { XrayClientServer } from "../client/xray/xrayClientServer";
 import {
     initCucumberOptions,
     initJiraOptions,
     initOpenSSLOptions,
     initPluginOptions,
     initXrayOptions,
-} from "./context";
+} from "../context";
+import { CachingJiraFieldRepository } from "../repository/jira/fields/jiraFieldRepository";
+import { JiraIssueFetcher } from "../repository/jira/fields/jiraIssueFetcher";
+import { CachingJiraRepository } from "../repository/jira/jiraRepository";
+import { ClientCombination, InternalOptions } from "../types/plugin";
+import { dedent } from "../util/dedent";
 import { beforeRunHook, synchronizeFile } from "./hooks";
-import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
-import { JiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
-import { CachingJiraRepository } from "./repository/jira/jiraRepository";
-import { ClientCombination, InternalOptions } from "./types/plugin";
-import { dedent } from "./util/dedent";
 
 // Enable promise assertions.
 chai.use(chaiAsPromised);

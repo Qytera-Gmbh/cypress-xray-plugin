@@ -1,26 +1,26 @@
 import fs from "fs";
 import path from "path";
-import { IJiraClient } from "./client/jira/jiraClient";
-import { ImportExecutionConverter } from "./conversion/importExecution/importExecutionConverter";
-import { ImportExecutionCucumberMultipartConverter } from "./conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverter";
-import { logDebug, logError, logInfo, logSuccess, logWarning } from "./logging/logging";
+import { IJiraClient } from "../client/jira/jiraClient";
+import { ImportExecutionConverter } from "../conversion/importExecution/importExecutionConverter";
+import { ImportExecutionCucumberMultipartConverter } from "../conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverter";
+import { logDebug, logError, logInfo, logSuccess, logWarning } from "../logging/logging";
 import {
     FeatureFileIssueData,
     FeatureFileIssueDataTest,
     containsCucumberTest,
     containsNativeTest,
     getCucumberIssueData,
-} from "./preprocessing/preprocessing";
-import { SupportedFields } from "./repository/jira/fields/jiraIssueFetcher";
-import { IJiraRepository } from "./repository/jira/jiraRepository";
-import { IIssueTypeDetails } from "./types/jira/responses/issueTypeDetails";
-import { ClientCombination, InternalOptions } from "./types/plugin";
-import { StringMap, nonNull } from "./types/util";
-import { CucumberMultipartFeature } from "./types/xray/requests/importExecutionCucumberMultipart";
-import { dedent } from "./util/dedent";
-import { errorMessage } from "./util/errors";
-import { HELP } from "./util/help";
-import { computeOverlap } from "./util/set";
+} from "../preprocessing/preprocessing";
+import { SupportedFields } from "../repository/jira/fields/jiraIssueFetcher";
+import { IJiraRepository } from "../repository/jira/jiraRepository";
+import { IIssueTypeDetails } from "../types/jira/responses/issueTypeDetails";
+import { ClientCombination, InternalOptions } from "../types/plugin";
+import { StringMap, nonNull } from "../types/util";
+import { CucumberMultipartFeature } from "../types/xray/requests/importExecutionCucumberMultipart";
+import { dedent } from "../util/dedent";
+import { errorMessage } from "../util/errors";
+import { HELP } from "../util/help";
+import { computeOverlap } from "../util/set";
 
 export async function beforeRunHook(
     specs: Cypress.Spec[],

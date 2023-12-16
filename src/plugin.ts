@@ -9,7 +9,7 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
-import { afterRunHook, beforeRunHook, synchronizeFile } from "./hooks";
+import { afterRunHook, beforeRunHook, synchronizeFile } from "./hooks/hooks";
 import { Requests } from "./https/requests";
 import { initLogging, logError, logInfo, logWarning } from "./logging/logging";
 import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
