@@ -20,6 +20,7 @@ import { CucumberMultipartFeature } from "./types/xray/requests/importExecutionC
 import { dedent } from "./util/dedent";
 import { errorMessage } from "./util/errors";
 import { HELP } from "./util/help";
+import { computeOverlap } from "./util/set";
 
 export async function beforeRunHook(
     specs: Cypress.Spec[],
@@ -240,7 +241,7 @@ export async function synchronizeFile(
                 throw new Error("feature not yet implemented");
             }
             if (options.cucumber?.uploadFeatures) {
-                const issueData = getCucumberIssueData(
+                let issueData = getCucumberIssueData(
                     file.filePath,
                     options.jira.projectKey,
                     clients.kind === "cloud",
@@ -257,7 +258,7 @@ export async function synchronizeFile(
                 ];
                 logDebug(
                     dedent(`
-                        Creating issue summary backups for issues:
+                        Creating issue backups (summaries, labels) for issues:
                           ${issueKeys.join("\n")}
                     `)
                 );
@@ -269,6 +270,40 @@ export async function synchronizeFile(
                     options.jira.projectKey
                 );
                 if (importResponse) {
+                    const setOverlap = computeOverlap(
+                        issueKeys,
+                        importResponse.updatedOrCreatedIssues
+                    );
+                    if (setOverlap.leftOnly.length > 0 || setOverlap.rightOnly.length > 0) {
+                        logWarning(
+                            dedent(`
+                                Mismatch between feature file issue tags and updated Jira issues detected
+
+                                Issues contained in feature file tags which were not updated by Jira:
+                                  ${setOverlap.leftOnly.join("\n")}
+                                Issues created or updated by Jira, which are not present in feature file tags:
+                                  ${setOverlap.rightOnly.join("\n")}
+
+                                Make sure that:
+                                - All issues present in feature file tags belong to existing issues
+                                - Your plugin tag prefix settings are consistent with the ones defined in Xray
+
+                                More information:
+                                - ${HELP.plugin.configuration.cucumber.prefixes}
+                            `)
+                        );
+                    }
+                    // We can skip restoring issues which:
+                    // - Jira created (in overlap: right only)
+                    // - Jira did not update (in overlap: left only)
+                    issueData = {
+                        tests: issueData.tests.filter((test) =>
+                            setOverlap.intersection.includes(test.key)
+                        ),
+                        preconditions: issueData.tests.filter((precondition) =>
+                            setOverlap.intersection.includes(precondition.key)
+                        ),
+                    };
                     await resetSummaries(
                         issueData,
                         testSummaries,
