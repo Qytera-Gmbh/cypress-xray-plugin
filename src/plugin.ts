@@ -9,7 +9,8 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
-import { afterRunHook, beforeRunHook, synchronizeFile } from "./hooks/hooks";
+import { afterRunHook, beforeRunHook } from "./hooks/hooks";
+import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
 import { Requests } from "./https/requests";
 import { initLogging, logError, logInfo, logWarning } from "./logging/logging";
 import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
@@ -165,7 +166,7 @@ export async function syncFeatureFile(file: Cypress.FileObject): Promise<string>
         );
         return file.filePath;
     }
-    return await synchronizeFile(
+    return await synchronizeFeatureFile(
         file,
         context.cypress.projectRoot,
         context.internal,

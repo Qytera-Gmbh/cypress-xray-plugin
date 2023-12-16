@@ -7,6 +7,7 @@ import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
 import * as context from "./context";
 import * as hooks from "./hooks/hooks";
+import * as synchronizeFeatureFileHook from "./hooks/preprocessor/synchronizeFeatureFile";
 import { addXrayResultUpload, configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import { JiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
@@ -429,7 +430,7 @@ describe("the plugin", () => {
         });
 
         it("calls the synchronizeFile hook", async () => {
-            const stubbedHook = stub(hooks, "synchronizeFile");
+            const stubbedHook = stub(synchronizeFeatureFileHook, "synchronizeFeatureFile");
             context.setPluginContext(pluginContext);
             await syncFeatureFile(file);
             expect(stubbedHook).to.have.been.calledOnceWithExactly(

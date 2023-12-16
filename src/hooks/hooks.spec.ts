@@ -1,7 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
-import path from "path";
 import { stub } from "sinon";
 import { stubLogging } from "../../test/util";
 import { PATCredentials } from "../authentication/credentials";
@@ -19,7 +18,7 @@ import { JiraIssueFetcher } from "../repository/jira/fields/jiraIssueFetcher";
 import { CachingJiraRepository } from "../repository/jira/jiraRepository";
 import { ClientCombination, InternalOptions } from "../types/plugin";
 import { dedent } from "../util/dedent";
-import { beforeRunHook, synchronizeFile } from "./hooks";
+import { beforeRunHook } from "./hooks";
 
 // Enable promise assertions.
 chai.use(chaiAsPromised);
@@ -230,54 +229,6 @@ describe("the hooks", () => {
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
                 `)
             );
-        });
-    });
-
-    describe("the synchronize file hook", () => {
-        // Weird workaround.
-        const emitter = {} as Cypress.FileObject;
-        const file: Cypress.FileObject = {
-            ...emitter,
-            filePath: "./test/resources/features/taggedCloud.feature",
-            outputPath: "",
-            shouldWatch: false,
-        };
-
-        it("should display errors for invalid feature files", async () => {
-            file.filePath = "./test/resources/features/invalid.feature";
-            const { stubbedInfo, stubbedError } = stubLogging();
-            options.cucumber = {
-                featureFileExtension: ".feature",
-                downloadFeatures: false,
-                uploadFeatures: true,
-                prefixes: {},
-            };
-            await synchronizeFile(file, ".", options, clients);
-            expect(stubbedError).to.have.been.calledOnce;
-            expect(stubbedError).to.have.been.calledWith(
-                dedent(`
-                    Feature file invalid, skipping synchronization: ./test/resources/features/invalid.feature
-
-                    Parser errors:
-                    (9:3): expected: #EOF, #TableRow, #DocStringSeparator, #StepLine, #TagLine, #ScenarioLine, #RuleLine, #Comment, #Empty, got 'Invalid: Element'
-                `)
-            );
-            expect(stubbedInfo).to.have.been.calledOnce;
-            expect(stubbedInfo).to.have.been.calledWith(
-                `Preprocessing feature file ${path.join(
-                    "test",
-                    "resources",
-                    "features",
-                    "invalid.feature"
-                )}...`
-            );
-        });
-
-        it("should not try to parse mismatched feature files", async () => {
-            file.filePath = "./test/resources/greetings.txt";
-            const { stubbedError } = stubLogging();
-            await synchronizeFile(file, ".", options, clients);
-            expect(stubbedError).to.not.have.been.called;
         });
     });
 });

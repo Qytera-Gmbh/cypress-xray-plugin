@@ -1,0 +1,246 @@
+import path from "path";
+import { IJiraClient } from "../../client/jira/jiraClient";
+import { IXrayClient } from "../../client/xray/xrayClient";
+import { logDebug, logError, logInfo, logWarning } from "../../logging/logging";
+import {
+    FeatureFileIssueData,
+    FeatureFileIssueDataTest,
+    getCucumberIssueData,
+} from "../../preprocessing/preprocessing";
+import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
+import { IJiraRepository } from "../../repository/jira/jiraRepository";
+import { ClientCombination, InternalOptions } from "../../types/plugin";
+import { StringMap } from "../../types/util";
+import { dedent } from "../../util/dedent";
+import { errorMessage } from "../../util/errors";
+import { HELP } from "../../util/help";
+import { computeOverlap } from "../../util/set";
+
+export async function synchronizeFeatureFile(
+    file: Cypress.FileObject,
+    projectRoot: string,
+    options: InternalOptions,
+    clients: ClientCombination
+): Promise<string> {
+    if (
+        !options.cucumber ||
+        !file.filePath.endsWith(options.cucumber.featureFileExtension) ||
+        !options.cucumber?.uploadFeatures
+    ) {
+        return file.filePath;
+    }
+    const relativePath = path.relative(projectRoot, file.filePath);
+    logInfo(`Preprocessing feature file ${relativePath}...`);
+    try {
+        let issueData = getCucumberIssueData(
+            file.filePath,
+            options.jira.projectKey,
+            clients.kind === "cloud",
+            options.cucumber.prefixes
+        );
+        const issueKeys = [
+            ...issueData.tests.map((data) => data.key),
+            ...issueData.preconditions.map((data) => data.key),
+        ];
+        // Xray currently (almost) always overwrites issue summaries when importing feature
+        // files to existing issues. Therefore, we manually need to backup and reset the
+        // summary once the import is done.
+        // See: https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+        // See: https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+        logDebug(
+            dedent(`
+                Creating issue backups (summaries, labels) for issues:
+                    ${issueKeys.join("\n")}
+            `)
+        );
+        logInfo("Importing feature file to Xray...");
+        const testSummaries = await clients.jiraRepository.getSummaries(...issueKeys);
+        const testLabels = await clients.jiraRepository.getLabels(...issueKeys);
+        const updatedIssues = await importTaggedFeature(
+            file.filePath,
+            options.jira.projectKey,
+            issueKeys,
+            clients.xrayClient
+        );
+        if (updatedIssues) {
+            // We can skip restoring issues which:
+            // - Jira created (in overlap: right only)
+            // - Jira did not update (in overlap: left only)
+            issueData = {
+                tests: issueData.tests.filter((test) => updatedIssues.includes(test.key)),
+                preconditions: issueData.tests.filter((precondition) =>
+                    updatedIssues.includes(precondition.key)
+                ),
+            };
+            await resetSummaries(
+                issueData,
+                testSummaries,
+                clients.jiraClient,
+                clients.jiraRepository
+            );
+            await resetLabels(
+                issueData.tests,
+                testLabels,
+                clients.jiraClient,
+                clients.jiraRepository
+            );
+        }
+    } catch (error: unknown) {
+        logError(
+            dedent(`
+                Feature file invalid, skipping synchronization: ${file.filePath}
+
+                ${errorMessage(error)}
+            `)
+        );
+    }
+    return file.filePath;
+}
+
+/**
+ * Imports a properly tagged feature file to Xray.
+ *
+ * @param filePath - the feature file
+ * @param projectKey - the project to import the features to
+ * @param tagIssueKeys - all issue keys contain in tags within the feature file
+ * @param xrayClient - the Xray client
+ * @returns all issue keys within the feature file belonging to issues that were updated by Jira
+ */
+export async function importTaggedFeature(
+    filePath: string,
+    projectKey: string,
+    tagIssueKeys: string[],
+    xrayClient: IXrayClient
+): Promise<string[] | undefined> {
+    const importResponse = await xrayClient.importFeature(filePath, projectKey);
+    if (importResponse) {
+        const setOverlap = computeOverlap(tagIssueKeys, importResponse.updatedOrCreatedIssues);
+        if (setOverlap.leftOnly.length > 0 || setOverlap.rightOnly.length > 0) {
+            logWarning(
+                dedent(`
+                    Mismatch between feature file issue tags and updated Jira issues detected
+
+                    Issues contained in feature file tags which were not updated by Jira:
+                        ${setOverlap.leftOnly.join("\n")}
+                    Issues created or updated by Jira, which are not present in feature file tags:
+                        ${setOverlap.rightOnly.join("\n")}
+
+                    Make sure that:
+                    - All issues present in feature file tags belong to existing issues
+                    - Your plugin tag prefix settings are consistent with the ones defined in Xray
+
+                    More information:
+                    - ${HELP.plugin.configuration.cucumber.prefixes}
+                `)
+            );
+        }
+        return setOverlap.intersection;
+    }
+}
+
+async function resetSummaries(
+    issueData: FeatureFileIssueData,
+    testSummaries: StringMap<string>,
+    jiraClient: IJiraClient,
+    jiraRepository: IJiraRepository
+) {
+    const allIssues = [...issueData.tests, ...issueData.preconditions];
+    for (let i = 0; i < allIssues.length; i++) {
+        const issueKey = allIssues[i].key;
+        const oldSummary = testSummaries[issueKey];
+        const newSummary = allIssues[i].summary;
+        if (!oldSummary) {
+            logError(
+                dedent(`
+                    Failed to reset issue summary of issue to its old summary: ${issueKey}
+                    The issue's old summary could not be fetched, make sure to restore it manually if needed
+
+                    Summary post sync: ${newSummary}
+                `)
+            );
+            continue;
+        }
+        if (oldSummary !== newSummary) {
+            const summaryFieldId = await jiraRepository.getFieldId(SupportedFields.SUMMARY);
+            const fields: StringMap<string> = {};
+            fields[summaryFieldId] = oldSummary;
+            logDebug(
+                dedent(`
+                    Resetting issue summary of issue: ${issueKey}
+
+                    Summary pre sync:  ${oldSummary}
+                    Summary post sync: ${newSummary}
+                `)
+            );
+            if (!(await jiraClient.editIssue(issueKey, { fields: fields }))) {
+                logError(
+                    dedent(`
+                        Failed to reset issue summary of issue to its old summary: ${issueKey}
+
+                        Summary pre sync:  ${oldSummary}
+                        Summary post sync: ${newSummary}
+
+                        Make sure to reset it manually if needed
+                    `)
+                );
+            }
+        } else {
+            logDebug(
+                `Issue summary is identical to scenario (outline) name already: ${issueKey} (${oldSummary})`
+            );
+        }
+    }
+}
+
+async function resetLabels(
+    issueData: FeatureFileIssueDataTest[],
+    testLabels: StringMap<string[]>,
+    jiraClient: IJiraClient,
+    jiraRepository: IJiraRepository
+) {
+    for (let i = 0; i < issueData.length; i++) {
+        const issueKey = issueData[i].key;
+        const oldLabels = testLabels[issueKey];
+        const newLabels = issueData[i].tags;
+        if (!oldLabels) {
+            logError(
+                dedent(`
+                    Failed to reset issue labels of issue to its old labels: ${issueKey}
+                    The issue's old labels could not be fetched, make sure to restore them manually if needed
+
+                    Labels post sync: ${newLabels}
+                `)
+            );
+            continue;
+        }
+        if (!newLabels.every((label) => oldLabels.includes(label))) {
+            const labelFieldId = await jiraRepository.getFieldId(SupportedFields.LABELS);
+            const fields: StringMap<string[]> = {};
+            fields[labelFieldId] = oldLabels;
+            logDebug(
+                dedent(`
+                    Resetting issue labels of issue: ${issueKey}
+
+                    Labels pre sync:  ${oldLabels}
+                    Labels post sync: ${newLabels}
+                `)
+            );
+            if (!(await jiraClient.editIssue(issueKey, { fields: fields }))) {
+                logError(
+                    dedent(`
+                        Failed to reset issue labels of issue to its old labels: ${issueKey}
+
+                        Labels pre sync:  ${oldLabels}
+                        Labels post sync: ${newLabels}
+
+                        Make sure to reset them manually if needed
+                    `)
+                );
+            }
+        } else {
+            logDebug(
+                `Issue labels are identical to scenario (outline) labels already: ${issueKey} (${oldLabels})`
+            );
+        }
+    }
+}
