@@ -18,8 +18,8 @@ export function getMockedJiraClient(): SinonStubbedInstance<IJiraClient> {
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    issueIdOrKey: ${JSON.stringify(issueIdOrKey)}
-                    files: ${JSON.stringify(files)}
+                      arg 1: ${JSON.stringify(issueIdOrKey)}
+                      arg 2: ${JSON.stringify(files)}
                 `)
             );
         },
@@ -33,7 +33,7 @@ export function getMockedJiraClient(): SinonStubbedInstance<IJiraClient> {
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    request: ${JSON.stringify(request)}
+                      arg 1: ${JSON.stringify(request)}
                 `)
             );
         },
@@ -41,13 +41,19 @@ export function getMockedJiraClient(): SinonStubbedInstance<IJiraClient> {
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    issueIdOrKey: ${JSON.stringify(issueIdOrKey)}
-                    issueUpdateData: ${JSON.stringify(issueUpdateData)}
+                      arg 1: ${JSON.stringify(issueIdOrKey)}
+                      arg 2: ${JSON.stringify(issueUpdateData)}
                 `)
             );
         },
     };
-    return Sinon.stub(client);
+    const stub = Sinon.stub(client);
+    stub.addAttachment.callThrough();
+    stub.getIssueTypes.callThrough();
+    stub.getFields.callThrough();
+    stub.search.callThrough();
+    stub.editIssue.callThrough();
+    return stub;
 }
 
 interface XrayClientMap {
@@ -64,7 +70,7 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
                 throw new Error(
                     dedent(`
                         Mock called unexpectedly with args:
-                        execution: ${JSON.stringify(execution)}
+                          arg 1: ${JSON.stringify(execution)}
                     `)
                 );
             },
@@ -72,8 +78,8 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
                 throw new Error(
                     dedent(`
                         Mock called unexpectedly with args:
-                        keys: ${JSON.stringify(keys)}
-                        filter: ${JSON.stringify(filter)}
+                          arg 1: ${JSON.stringify(keys)}
+                          arg 2: ${JSON.stringify(filter)}
                     `)
                 );
             },
@@ -86,10 +92,10 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
                 throw new Error(
                     dedent(`
                         Mock called unexpectedly with args:
-                        file: ${JSON.stringify(file)}
-                        projectKey: ${JSON.stringify(projectKey)}
-                        projectId: ${JSON.stringify(projectId)}
-                        source: ${JSON.stringify(source)}
+                          arg 1: ${JSON.stringify(file)}
+                          arg 2: ${JSON.stringify(projectKey)}
+                          arg 3: ${JSON.stringify(projectId)}
+                          arg 4: ${JSON.stringify(source)}
                     `)
                 );
             },
@@ -100,20 +106,25 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
                 throw new Error(
                     dedent(`
                         Mock called unexpectedly with args:
-                        cucumberJson: ${JSON.stringify(cucumberJson)}
-                        cucumberInfo: ${JSON.stringify(cucumberInfo)}
+                          arg 1: ${JSON.stringify(cucumberJson)}
+                          arg 2: ${JSON.stringify(cucumberInfo)}
                     `)
                 );
             },
         };
-        return Sinon.stub(client);
+        const stub = Sinon.stub(client);
+        stub.importExecution.callThrough();
+        stub.exportCucumber.callThrough();
+        stub.importFeature.callThrough();
+        stub.importExecutionCucumberMultipart.callThrough();
+        return stub;
     }
     const client: IXrayClientCloud = {
         importExecution: function (execution: IXrayTestExecutionResults) {
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    execution: ${JSON.stringify(execution)}
+                      arg 1: ${JSON.stringify(execution)}
                 `)
             );
         },
@@ -121,8 +132,8 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    keys: ${JSON.stringify(keys)}
-                    filter: ${JSON.stringify(filter)}
+                      arg 1: ${JSON.stringify(keys)}
+                      arg 2: ${JSON.stringify(filter)}
                 `)
             );
         },
@@ -135,10 +146,10 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    file: ${JSON.stringify(file)}
-                    projectKey: ${JSON.stringify(projectKey)}
-                    projectId: ${JSON.stringify(projectId)}
-                    source: ${JSON.stringify(source)}
+                      arg 1: ${JSON.stringify(file)}
+                      arg 2: ${JSON.stringify(projectKey)}
+                      arg 3: ${JSON.stringify(projectId)}
+                      arg 4: ${JSON.stringify(source)}
                 `)
             );
         },
@@ -149,8 +160,8 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    cucumberJson: ${JSON.stringify(cucumberJson)}
-                    cucumberInfo: ${JSON.stringify(cucumberInfo)}
+                      arg 1: ${JSON.stringify(cucumberJson)}
+                      arg 2: ${JSON.stringify(cucumberInfo)}
                 `)
             );
         },
@@ -158,22 +169,35 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    projectKey: ${JSON.stringify(projectKey)}
-                    issueKeys: ${JSON.stringify(issueKeys)}
+                      arg 1: ${JSON.stringify(projectKey)}
+                      arg 2: ${JSON.stringify(issueKeys)}
                 `)
             );
         },
     };
-    return Sinon.stub(client);
+    const stub = Sinon.stub(client);
+    stub.importExecution.callThrough();
+    stub.exportCucumber.callThrough();
+    stub.importFeature.callThrough();
+    stub.importExecutionCucumberMultipart.callThrough();
+    stub.getTestTypes.callThrough();
+    return stub;
 }
 
 export function getMockedJiraFieldRepository(): SinonStubbedInstance<IJiraFieldRepository> {
     const fieldRepository: IJiraFieldRepository = {
-        getFieldId: function () {
-            throw new Error("Mock called unexpectedly");
+        getFieldId: function (fieldName: SupportedFields) {
+            throw new Error(
+                dedent(`
+                    Mock called unexpectedly with args:
+                      arg 1: ${JSON.stringify(fieldName)}
+                `)
+            );
         },
     };
-    return Sinon.stub(fieldRepository);
+    const stub = Sinon.stub(fieldRepository);
+    stub.getFieldId.callThrough();
+    return stub;
 }
 
 export function getMockedJiraIssueFetcher(): SinonStubbedInstance<IJiraIssueFetcher> {
@@ -182,7 +206,7 @@ export function getMockedJiraIssueFetcher(): SinonStubbedInstance<IJiraIssueFetc
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    issueKeys: ${JSON.stringify(issueKeys)}
+                      arg 1: ${JSON.stringify(issueKeys)}
                 `)
             );
         },
@@ -190,7 +214,7 @@ export function getMockedJiraIssueFetcher(): SinonStubbedInstance<IJiraIssueFetc
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    issueKeys: ${JSON.stringify(issueKeys)}
+                      arg 1: ${JSON.stringify(issueKeys)}
                 `)
             );
         },
@@ -198,7 +222,7 @@ export function getMockedJiraIssueFetcher(): SinonStubbedInstance<IJiraIssueFetc
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    issueKeys: ${JSON.stringify(issueKeys)}
+                      arg 1: ${JSON.stringify(issueKeys)}
                 `)
             );
         },
@@ -206,12 +230,17 @@ export function getMockedJiraIssueFetcher(): SinonStubbedInstance<IJiraIssueFetc
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    issueKeys: ${JSON.stringify(issueKeys)}
+                      arg 1: ${JSON.stringify(issueKeys)}
                 `)
             );
         },
     };
-    return Sinon.stub(jiraIssueFetcher);
+    const stub = Sinon.stub(jiraIssueFetcher);
+    stub.fetchDescriptions.callThrough();
+    stub.fetchLabels.callThrough();
+    stub.fetchSummaries.callThrough();
+    stub.fetchTestTypes.callThrough();
+    return stub;
 }
 
 export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository> {
@@ -220,7 +249,7 @@ export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository>
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    fieldName: ${JSON.stringify(fieldName)}
+                      arg 1: ${JSON.stringify(fieldName)}
                 `)
             );
         },
@@ -228,7 +257,7 @@ export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository>
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    issueKeys: ${JSON.stringify(issueKeys)}
+                      arg 1: ${JSON.stringify(issueKeys)}
                 `)
             );
         },
@@ -236,7 +265,7 @@ export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository>
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    issueKeys: ${JSON.stringify(issueKeys)}
+                      arg 1: ${JSON.stringify(issueKeys)}
                 `)
             );
         },
@@ -244,7 +273,7 @@ export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository>
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    issueKeys: ${JSON.stringify(issueKeys)}
+                      arg 1: ${JSON.stringify(issueKeys)}
                 `)
             );
         },
@@ -252,10 +281,16 @@ export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository>
             throw new Error(
                 dedent(`
                     Mock called unexpectedly with args:
-                    issueKeys: ${JSON.stringify(issueKeys)}
+                      arg 1: ${JSON.stringify(issueKeys)}
                 `)
             );
         },
     };
-    return Sinon.stub(jiraRepository);
+    const stub = Sinon.stub(jiraRepository);
+    stub.getFieldId.callThrough();
+    stub.getDescriptions.callThrough();
+    stub.getLabels.callThrough();
+    stub.getSummaries.callThrough();
+    stub.getTestTypes.callThrough();
+    return stub;
 }
