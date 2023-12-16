@@ -240,12 +240,13 @@ describe("the xray server client", () => {
                 }
             );
             stubbedPost.onFirstCall().rejects(error);
-            const response = await client.importFeature(
-                "./test/resources/features/taggedPrefixCorrect.feature",
-                "utf-8",
-                "CYP"
-            );
-            expect(response).to.be.undefined;
+            await expect(
+                client.importFeature(
+                    "./test/resources/features/taggedPrefixCorrect.feature",
+                    "utf-8",
+                    "CYP"
+                )
+            ).to.eventually.be.rejectedWith("Feature file import failed");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to import Cucumber features: AxiosError: Request failed with status code 400

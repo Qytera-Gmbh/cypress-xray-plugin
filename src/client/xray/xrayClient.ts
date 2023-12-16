@@ -22,6 +22,7 @@ import {
     ImportFeatureResponseServer,
 } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
+import { LoggedError } from "../../util/errors";
 import { HELP } from "../../util/help";
 import { Client } from "../client";
 
@@ -51,7 +52,7 @@ export interface IXrayClient {
      * @param projectKey - key of the project where the tests and pre-conditions are located
      * @param projectId - id of the project where the tests and pre-conditions are located
      * @param source - a name designating the source of the features being imported (e.g. the source project name)
-     * @returns the response containing updated issues or `undefined` in case of errors
+     * @returns the response containing updated issues
      * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
      * @see https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
      */
@@ -60,7 +61,7 @@ export interface IXrayClient {
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<ImportFeatureResponse | undefined>;
+    ): Promise<ImportFeatureResponse>;
     /**
      * Uploads Cucumber test results to the Xray instance.
      *
@@ -188,7 +189,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<ImportFeatureResponse | undefined> {
+    ): Promise<ImportFeatureResponse> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             logDebug("Importing Cucumber features...");
@@ -230,6 +231,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
             } else {
                 logError(`Failed to import Cucumber features: ${error}`);
             }
+            throw new LoggedError("Feature file import failed");
         }
     }
 

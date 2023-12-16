@@ -62,29 +62,17 @@ export async function synchronizeFeatureFile(
             issueKeys,
             clients.xrayClient
         );
-        if (updatedIssues) {
-            // We can skip restoring issues which:
-            // - Jira created (in overlap: right only)
-            // - Jira did not update (in overlap: left only)
-            issueData = {
-                tests: issueData.tests.filter((test) => updatedIssues.includes(test.key)),
-                preconditions: issueData.tests.filter((precondition) =>
-                    updatedIssues.includes(precondition.key)
-                ),
-            };
-            await resetSummaries(
-                issueData,
-                testSummaries,
-                clients.jiraClient,
-                clients.jiraRepository
-            );
-            await resetLabels(
-                issueData.tests,
-                testLabels,
-                clients.jiraClient,
-                clients.jiraRepository
-            );
-        }
+        // We can skip restoring issues which:
+        // - Jira created (in overlap: right only)
+        // - Jira did not update (in overlap: left only)
+        issueData = {
+            tests: issueData.tests.filter((test) => updatedIssues.includes(test.key)),
+            preconditions: issueData.tests.filter((precondition) =>
+                updatedIssues.includes(precondition.key)
+            ),
+        };
+        await resetSummaries(issueData, testSummaries, clients.jiraClient, clients.jiraRepository);
+        await resetLabels(issueData.tests, testLabels, clients.jiraClient, clients.jiraRepository);
     } catch (error: unknown) {
         logError(
             dedent(`
@@ -111,50 +99,48 @@ export async function importKnownFeature(
     projectKey: string,
     expectedIssues: string[],
     xrayClient: IXrayClient
-): Promise<string[] | undefined> {
+): Promise<string[]> {
     const importResponse = await xrayClient.importFeature(filePath, projectKey);
-    if (importResponse) {
-        if (importResponse.errors.length > 0) {
-            logWarning(
-                dedent(`
-                    Encountered errors during feature file import:
-                    ${importResponse.errors.map((error) => `- ${error}`).join("\n")}
-                `)
-            );
-        }
-        const setOverlap = computeOverlap(expectedIssues, importResponse.updatedOrCreatedIssues);
-        if (setOverlap.leftOnly.length > 0 || setOverlap.rightOnly.length > 0) {
-            const mismatchLines: string[] = [];
-            if (setOverlap.leftOnly.length > 0) {
-                mismatchLines.push(
-                    "Issues contained in feature file tags which were not updated by Jira and might not exist:"
-                );
-                mismatchLines.push(...setOverlap.leftOnly.map((issueKey) => `  ${issueKey}`));
-            }
-            if (setOverlap.rightOnly.length > 0) {
-                mismatchLines.push(
-                    "Issues updated by Jira which are not present in feature file tags and might have been created:"
-                );
-                mismatchLines.push(...setOverlap.rightOnly.map((issueKey) => `  ${issueKey}`));
-            }
-            logWarning(
-                dedent(`
-                    Mismatch between feature file issue tags and updated Jira issues detected
-
-                    ${mismatchLines.join("\n")}
-
-                    Make sure that:
-                    - All issues present in feature file tags belong to existing issues
-                    - Your plugin tag prefix settings are consistent with the ones defined in Xray
-
-                    More information:
-                    - ${HELP.plugin.guides.targetingExistingIssues}
-                    - ${HELP.plugin.configuration.cucumber.prefixes}
-                `)
-            );
-        }
-        return setOverlap.intersection;
+    if (importResponse.errors.length > 0) {
+        logWarning(
+            dedent(`
+                Encountered errors during feature file import:
+                ${importResponse.errors.map((error) => `- ${error}`).join("\n")}
+            `)
+        );
     }
+    const setOverlap = computeOverlap(expectedIssues, importResponse.updatedOrCreatedIssues);
+    if (setOverlap.leftOnly.length > 0 || setOverlap.rightOnly.length > 0) {
+        const mismatchLines: string[] = [];
+        if (setOverlap.leftOnly.length > 0) {
+            mismatchLines.push(
+                "Issues contained in feature file tags which were not updated by Jira and might not exist:"
+            );
+            mismatchLines.push(...setOverlap.leftOnly.map((issueKey) => `  ${issueKey}`));
+        }
+        if (setOverlap.rightOnly.length > 0) {
+            mismatchLines.push(
+                "Issues updated by Jira which are not present in feature file tags and might have been created:"
+            );
+            mismatchLines.push(...setOverlap.rightOnly.map((issueKey) => `  ${issueKey}`));
+        }
+        logWarning(
+            dedent(`
+                Mismatch between feature file issue tags and updated Jira issues detected
+
+                ${mismatchLines.join("\n")}
+
+                Make sure that:
+                - All issues present in feature file tags belong to existing issues
+                - Your plugin tag prefix settings are consistent with the ones defined in Xray
+
+                More information:
+                - ${HELP.plugin.guides.targetingExistingIssues}
+                - ${HELP.plugin.configuration.cucumber.prefixes}
+            `)
+        );
+    }
+    return setOverlap.intersection;
 }
 
 async function resetSummaries(

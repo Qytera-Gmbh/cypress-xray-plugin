@@ -1,10 +1,13 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
-import { expect } from "chai";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import { RESOLVED_JWT_CREDENTIALS, stubLogging, stubRequests } from "../../../test/util";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { dedent } from "../../util/dedent";
 import { XrayClientCloud } from "./xrayClientCloud";
+
+chai.use(chaiAsPromised);
 
 describe("the xray cloud client", () => {
     const client: XrayClientCloud = new XrayClientCloud(RESOLVED_JWT_CREDENTIALS);
@@ -319,12 +322,13 @@ describe("the xray cloud client", () => {
                 }
             );
             stubbedPost.onFirstCall().rejects(error);
-            const response = await client.importFeature(
-                "./test/resources/features/taggedPrefixCorrect.feature",
-                "utf-8",
-                "CYP"
-            );
-            expect(response).to.be.undefined;
+            await expect(
+                client.importFeature(
+                    "./test/resources/features/taggedPrefixCorrect.feature",
+                    "utf-8",
+                    "CYP"
+                )
+            ).to.eventually.be.rejectedWith("Feature file import failed");
             expect(stubbedError).to.have.been.calledOnceWithExactly(
                 dedent(`
                     Failed to import Cucumber features: AxiosError: Request failed with status code 400

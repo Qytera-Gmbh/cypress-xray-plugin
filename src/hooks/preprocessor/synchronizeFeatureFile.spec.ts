@@ -15,9 +15,9 @@ import {
     initPluginOptions,
     initXrayOptions,
 } from "../../context";
+import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
 import { IJiraRepository } from "../../repository/jira/jiraRepository";
 import { InternalOptions } from "../../types/plugin";
-import { ImportFeatureResponse } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
 import { importKnownFeature, synchronizeFeatureFile } from "./synchronizeFeatureFile";
 
@@ -95,7 +95,7 @@ describe("synchronizeFeatureFile", () => {
 
     it("resets updated issues only", async () => {
         file.filePath = "./test/resources/features/taggedPrefixCorrect.feature";
-        // const { stubbedInfo, stubbedError } = stubLogging();
+        stubLogging();
         options.cucumber = {
             featureFileExtension: ".feature",
             downloadFeatures: false,
@@ -116,24 +116,22 @@ describe("synchronizeFeatureFile", () => {
             errors: [],
             updatedOrCreatedIssues: ["CYP-222", "CYP-555"],
         });
-        // clients.jiraRepository.getFieldId = async function (
-        //     fieldName: SupportedFields
-        // ): Promise<string> {
-        //     switch (fieldName) {
-        //         case SupportedFields.SUMMARY:
-        //             return "summary";
-        //         case SupportedFields.LABELS:
-        //             return "labels";
-        //     }
-        //     throw new Error(`Unexpected argument: ${fieldName}`);
-        // };
+        jiraRepository.getFieldId.withArgs(SupportedFields.SUMMARY).resolves("summary");
+        jiraRepository.getFieldId.withArgs(SupportedFields.LABELS).resolves("label");
+        jiraClient.editIssue
+            .withArgs("CYP-222", { fields: { summary: "Big" } })
+            .resolves("CYP-222");
+        jiraClient.editIssue.withArgs("CYP-555", { fields: { summary: "Yo" } }).resolves("CYP-555");
+        jiraClient.editIssue
+            .withArgs("CYP-222", { fields: { label: ["Some"] } })
+            .resolves("CYP-222");
+        jiraClient.editIssue.withArgs("CYP-555", { fields: { label: [] } }).resolves("CYP-555");
         await synchronizeFeatureFile(file, ".", options, {
             kind: "cloud",
             jiraClient: jiraClient,
             jiraRepository: jiraRepository,
             xrayClient: xrayClient,
         });
-        expect(5).to.be.false;
     });
 
     it("should not try to parse mismatched feature files", async () => {
@@ -150,26 +148,22 @@ describe("synchronizeFeatureFile", () => {
 });
 
 describe("importKnownFeature", () => {
-    let mockedXrayClient: IXrayClient;
+    let xrayClient: SinonStubbedInstance<IXrayClient>;
     beforeEach(() => {
-        mockedXrayClient = getMockedXrayClient();
+        xrayClient = getMockedXrayClient();
     });
 
     it("returns updated issue keys", async () => {
         const { stubbedWarning } = stubLogging();
-        mockedXrayClient.importFeature = async function (): Promise<
-            ImportFeatureResponse | undefined
-        > {
-            return {
-                errors: [],
-                updatedOrCreatedIssues: ["CYP-123", "CYP-756", "CYP-42"],
-            };
-        };
+        xrayClient.importFeature.resolves({
+            errors: [],
+            updatedOrCreatedIssues: ["CYP-123", "CYP-756", "CYP-42"],
+        });
         const updatedIssues = await importKnownFeature(
             "/path/to/some.feature",
             "CYP",
             ["CYP-123", "CYP-756", "CYP-42"],
-            mockedXrayClient
+            xrayClient
         );
         expect(updatedIssues).to.deep.eq(["CYP-123", "CYP-756", "CYP-42"]);
         expect(stubbedWarning).to.not.have.been.called;
@@ -177,19 +171,15 @@ describe("importKnownFeature", () => {
 
     it("warns about import errors", async () => {
         const { stubbedWarning } = stubLogging();
-        mockedXrayClient.importFeature = async function (): Promise<
-            ImportFeatureResponse | undefined
-        > {
-            return {
-                errors: ["CYP-123 does not exist", "CYP-42: Access denied", "Big\nProblem"],
-                updatedOrCreatedIssues: [],
-            };
-        };
+        xrayClient.importFeature.resolves({
+            errors: ["CYP-123 does not exist", "CYP-42: Access denied", "Big\nProblem"],
+            updatedOrCreatedIssues: [],
+        });
         await importKnownFeature(
             "/path/to/some.feature",
             "CYP",
             ["CYP-123", "CYP-756", "CYP-42"],
-            mockedXrayClient
+            xrayClient
         );
         expect(stubbedWarning).to.have.been.calledWithExactly(
             dedent(`
@@ -203,17 +193,15 @@ describe("importKnownFeature", () => {
 
     it("warns about issue key mismatches", async () => {
         const { stubbedWarning } = stubLogging();
-        mockedXrayClient.importFeature = async function (): Promise<ImportFeatureResponse> {
-            return {
-                errors: [],
-                updatedOrCreatedIssues: ["CYP-536", "CYP-552", "CYP-756"],
-            };
-        };
+        xrayClient.importFeature.resolves({
+            errors: [],
+            updatedOrCreatedIssues: ["CYP-536", "CYP-552", "CYP-756"],
+        });
         await importKnownFeature(
             "/path/to/some.feature",
             "CYP",
             ["CYP-123", "CYP-756", "CYP-42"],
-            mockedXrayClient
+            xrayClient
         );
         expect(stubbedWarning).to.have.been.calledWithExactly(
             dedent(`
@@ -239,17 +227,15 @@ describe("importKnownFeature", () => {
 
     it("does not do anything if the import fails", async () => {
         const { stubbedWarning } = stubLogging();
-        mockedXrayClient.importFeature = async function (): Promise<undefined> {
-            return undefined;
-        };
-        expect(
-            await importKnownFeature(
+        xrayClient.importFeature.rejects(new Error("Oh no"));
+        await expect(
+            importKnownFeature(
                 "/path/to/some.feature",
                 "CYP",
                 ["CYP-123", "CYP-756", "CYP-42"],
-                mockedXrayClient
+                xrayClient
             )
-        ).to.be.undefined;
+        ).to.eventually.be.rejectedWith("Oh no");
         expect(stubbedWarning).to.not.have.been.called;
     });
 });
