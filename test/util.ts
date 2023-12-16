@@ -11,6 +11,7 @@ import { XrayClient } from "../src/client/xray/xrayClient";
 import { RequestConfigPost, Requests } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
+import { ImportFeatureResponse } from "../src/types/xray/responses/importFeature";
 
 chai.use(sinonChai);
 
@@ -104,7 +105,7 @@ export class DummyXrayClient extends XrayClient {
     public getUrlImportExecution(): string {
         throw new Error("Method not implemented.");
     }
-    public handleResponseImportExecution(): string {
+    protected handleResponseImportExecution(): string {
         throw new Error("Method not implemented.");
     }
     public getUrlExportCucumber(): string {
@@ -113,16 +114,18 @@ export class DummyXrayClient extends XrayClient {
     public getUrlImportFeature(): string {
         throw new Error("Method not implemented.");
     }
-    public handleResponseImportFeature(): void {
+    protected handleResponseImportFeature(): ImportFeatureResponse {
         throw new Error("Method not implemented.");
     }
     public getTestTypes(): Promise<{ [key: string]: string }> {
         throw new Error("Method not implemented.");
     }
-    public prepareRequestImportExecutionCucumberMultipart(): Promise<RequestConfigPost<FormData>> {
+    protected prepareRequestImportExecutionCucumberMultipart(): Promise<
+        RequestConfigPost<FormData>
+    > {
         throw new Error("Method not implemented.");
     }
-    public handleResponseImportExecutionCucumberMultipart(): string {
+    protected handleResponseImportExecutionCucumberMultipart(): string {
         throw new Error("Method not implemented.");
     }
 }

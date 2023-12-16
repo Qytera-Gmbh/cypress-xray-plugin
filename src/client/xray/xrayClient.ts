@@ -17,6 +17,7 @@ import {
     ImportExecutionResponseServer,
 } from "../../types/xray/responses/importExecution";
 import {
+    ImportFeatureResponse,
     ImportFeatureResponseCloud,
     ImportFeatureResponseServer,
 } from "../../types/xray/responses/importFeature";
@@ -45,10 +46,10 @@ export interface IXrayClient {
      * Uploads (zipped) feature file(s) to corresponding Xray issues.
      *
      * @param file - the (zipped) Cucumber feature file(s)
-     * @param projectKey - key of the project where the tests and pre-conditions are going to be created
-     * @param projectId - id of the project where the tests and pre-conditions are going to be created
+     * @param projectKey - key of the project where the tests and pre-conditions are located
+     * @param projectId - id of the project where the tests and pre-conditions are located
      * @param source - a name designating the source of the features being imported (e.g. the source project name)
-     * @returns `true` if the import was successful, `false` otherwise
+     * @returns the response containing updated issues or `undefined` in case of errors
      * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
      * @see https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
      */
@@ -57,7 +58,7 @@ export interface IXrayClient {
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<boolean>;
+    ): Promise<ImportFeatureResponse | undefined>;
     /**
      * Uploads Cucumber test results to the Xray instance.
      *
@@ -135,7 +136,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
      * @param response - the import execution response
      * @returns the test execution issue key
      */
-    public abstract handleResponseImportExecution(
+    protected abstract handleResponseImportExecution(
         response: ImportExecutionResponseServer | ImportExecutionResponseCloud
     ): string;
 
@@ -185,7 +186,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
         projectKey?: string,
         projectId?: string,
         source?: string
-    ): Promise<boolean> {
+    ): Promise<ImportFeatureResponse | undefined> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             logDebug("Importing Cucumber features...");
@@ -207,8 +208,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
                         },
                     }
                 );
-                this.handleResponseImportFeature(response.data);
-                return true;
+                return this.handleResponseImportFeature(response.data);
             } finally {
                 clearInterval(progressInterval);
             }
@@ -216,14 +216,13 @@ export abstract class XrayClient extends Client implements IXrayClient {
             logError(`Failed to import cucumber features: ${error}`);
             writeErrorFile(error, "importFeatureError");
         }
-        return false;
     }
 
     /**
      * Returns the endpoint to use for importing Cucumber feature files.
      *
-     * @param projectKey - key of the project where the tests and pre-conditions are going to be created
-     * @param projectId - id of the project where the tests and pre-conditions are going to be created
+     * @param projectKey - key of the project where the tests and pre-conditions are located
+     * @param projectId - id of the project where the tests and pre-conditions are located
      * @param source - a name designating the source of the features being imported (e.g. the source project name)
      * @returns the URL
      */
@@ -236,11 +235,11 @@ export abstract class XrayClient extends Client implements IXrayClient {
     /**
      * This method is called when a feature file was successfully imported to Xray.
      *
-     * @param response - the import feature response
+     * @param response - the import feature response or `undefined` in case of errors
      */
-    public abstract handleResponseImportFeature(
+    protected abstract handleResponseImportFeature(
         response: ImportFeatureResponseServer | ImportFeatureResponseCloud
-    ): void;
+    ): ImportFeatureResponse;
 
     public async importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
@@ -280,7 +279,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
      * @param cucumberInfo - the test execution information
      * @returns the import execution request
      */
-    public abstract prepareRequestImportExecutionCucumberMultipart(
+    protected abstract prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: ICucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>>;
@@ -291,7 +290,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
      * @param response - the import execution response
      * @returns the test execution issue key
      */
-    public abstract handleResponseImportExecutionCucumberMultipart(
+    protected abstract handleResponseImportExecutionCucumberMultipart(
         response: ImportExecutionResponseServer | ImportExecutionResponseCloud
     ): string;
 }

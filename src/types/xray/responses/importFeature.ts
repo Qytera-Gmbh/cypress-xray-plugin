@@ -12,9 +12,9 @@ export interface IssueType {
  *
  * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
  */
-export interface ImportFeatureResponseServerSuccess extends IssueDetails {
+export type ImportFeatureResponseServerSuccess = (IssueDetails & {
     issueType: IssueType;
-}
+})[];
 /**
  * Cucumber feature import failed.
  *
@@ -37,4 +37,9 @@ export interface ImportFeatureResponseCloud {
     errors: string[];
     updatedOrCreatedTests: IssueDetails[];
     updatedOrCreatedPreconditions: IssueDetails[];
+}
+
+export interface ImportFeatureResponse {
+    errors: string[];
+    updatedOrCreatedIssues: IssueDetails[];
 }

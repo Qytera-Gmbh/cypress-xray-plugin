@@ -7,7 +7,11 @@ import { CucumberMultipartFeature } from "../../types/xray/requests/importExecut
 import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
-import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
+import {
+    ImportFeatureResponse,
+    ImportFeatureResponseCloud,
+    IssueDetails,
+} from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
 import { IXrayClient, XrayClient } from "./xrayClient";
 
@@ -54,7 +58,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         return `${this.apiBaseUrl}/import/execution`;
     }
 
-    public handleResponseImportExecution(response: ImportExecutionResponseCloud): string {
+    protected handleResponseImportExecution(response: ImportExecutionResponseCloud): string {
         return response.key;
     }
 
@@ -83,24 +87,36 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         return `${this.apiBaseUrl}/import/feature?${query.join("&")}`;
     }
 
-    public handleResponseImportFeature(response: ImportFeatureResponseCloud): void {
-        if (response.errors.length > 0) {
-            logError("Encountered some errors during import:", ...response.errors);
+    protected handleResponseImportFeature(
+        cloudResponse: ImportFeatureResponseCloud
+    ): ImportFeatureResponse {
+        const response: ImportFeatureResponse = {
+            errors: [],
+            updatedOrCreatedIssues: [],
+        };
+        if (cloudResponse.errors.length > 0) {
+            response.errors.push(...cloudResponse.errors);
+            logError("Encountered some errors during import:", ...cloudResponse.errors);
         }
-        if (response.updatedOrCreatedTests.length > 0) {
+        if (cloudResponse.updatedOrCreatedTests.length > 0) {
+            response.updatedOrCreatedIssues.push(...cloudResponse.updatedOrCreatedTests);
             logDebug(
                 "Successfully updated or created test issues:",
-                response.updatedOrCreatedTests.map((issue: IssueDetails) => issue.key).join(", ")
-            );
-        }
-        if (response.updatedOrCreatedPreconditions.length > 0) {
-            logDebug(
-                "Successfully updated or created precondition issues:",
-                response.updatedOrCreatedPreconditions
+                cloudResponse.updatedOrCreatedTests
                     .map((issue: IssueDetails) => issue.key)
                     .join(", ")
             );
         }
+        if (cloudResponse.updatedOrCreatedPreconditions.length > 0) {
+            response.updatedOrCreatedIssues.push(...cloudResponse.updatedOrCreatedPreconditions);
+            logDebug(
+                "Successfully updated or created precondition issues:",
+                cloudResponse.updatedOrCreatedPreconditions
+                    .map((issue: IssueDetails) => issue.key)
+                    .join(", ")
+            );
+        }
+        return response;
     }
 
     public async getTestTypes(
@@ -194,7 +210,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         return {};
     }
 
-    public async prepareRequestImportExecutionCucumberMultipart(
+    protected async prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: ICucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>> {
@@ -220,7 +236,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         };
     }
 
-    public handleResponseImportExecutionCucumberMultipart(
+    protected handleResponseImportExecutionCucumberMultipart(
         response: ImportExecutionResponseCloud
     ): string {
         return response.key;

@@ -6,6 +6,7 @@ import { CucumberMultipartFeature } from "../../types/xray/requests/importExecut
 import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import {
+    ImportFeatureResponse,
     ImportFeatureResponseServer,
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
@@ -26,7 +27,7 @@ export class XrayClientServer extends XrayClient {
         return `${this.apiBaseUrl}/rest/raven/latest/import/execution`;
     }
 
-    public handleResponseImportExecution(response: ImportExecutionResponseServer): string {
+    protected handleResponseImportExecution(response: ImportExecutionResponseServer): string {
         return response.testExecIssue.key;
     }
 
@@ -50,33 +51,46 @@ export class XrayClientServer extends XrayClient {
         return `${this.apiBaseUrl}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
     }
 
-    public handleResponseImportFeature(response: ImportFeatureResponseServer): void {
+    protected handleResponseImportFeature(
+        serverResponse: ImportFeatureResponseServer
+    ): ImportFeatureResponse {
+        const response: ImportFeatureResponse = {
+            errors: [],
+            updatedOrCreatedIssues: [],
+        };
         // Happens when scenarios cause errors in Xray, e.g. typos in keywords ('Scenariot').
-        if (typeof response === "object" && "message" in response) {
-            if (response.message) {
-                logError("Encountered an error during import:", response.message);
+        if (typeof serverResponse === "object" && "message" in serverResponse) {
+            if (serverResponse.message) {
+                response.errors.push(serverResponse.message);
+                logError("Encountered an error during import:", serverResponse.message);
             }
-            if (response.testIssues && response.testIssues.length > 0) {
+            if (serverResponse.testIssues && serverResponse.testIssues.length > 0) {
+                response.updatedOrCreatedIssues.push(...serverResponse.testIssues);
                 logDebug(
                     "Successfully updated or created test issues:",
-                    response.testIssues.map((issue: IssueDetails) => issue.key).join(", ")
+                    serverResponse.testIssues.map((issue: IssueDetails) => issue.key).join(", ")
                 );
             }
-            if (response.preconditionIssues && response.preconditionIssues.length > 0) {
+            if (serverResponse.preconditionIssues && serverResponse.preconditionIssues.length > 0) {
+                response.updatedOrCreatedIssues.push(...serverResponse.preconditionIssues);
                 logDebug(
                     "Successfully updated or created precondition issues:",
-                    response.preconditionIssues.map((issue: IssueDetails) => issue.key).join(", ")
+                    serverResponse.preconditionIssues
+                        .map((issue: IssueDetails) => issue.key)
+                        .join(", ")
                 );
             }
-        } else if (Array.isArray(response)) {
+        } else if (Array.isArray(serverResponse)) {
+            response.updatedOrCreatedIssues.push(...serverResponse);
             logDebug(
                 "Successfully updated or created issues:",
-                response.map((issue: IssueDetails) => issue.key).join(", ")
+                serverResponse.map((issue: IssueDetails) => issue.key).join(", ")
             );
         }
+        return response;
     }
 
-    public async prepareRequestImportExecutionCucumberMultipart(
+    protected async prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: ICucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>> {
@@ -102,7 +116,7 @@ export class XrayClientServer extends XrayClient {
         };
     }
 
-    public handleResponseImportExecutionCucumberMultipart(
+    protected handleResponseImportExecutionCucumberMultipart(
         response: ImportExecutionResponseServer
     ): string {
         return response.testExecIssue.key;

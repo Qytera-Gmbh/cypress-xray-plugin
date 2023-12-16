@@ -264,11 +264,11 @@ export async function synchronizeFile(
                 logInfo("Importing feature file to Xray...");
                 const testSummaries = await clients.jiraRepository.getSummaries(...issueKeys);
                 const testLabels = await clients.jiraRepository.getLabels(...issueKeys);
-                const wasImportSuccessful = await clients.xrayClient.importFeature(
+                const importResponse = await clients.xrayClient.importFeature(
                     file.filePath,
                     options.jira.projectKey
                 );
-                if (wasImportSuccessful) {
+                if (importResponse) {
                     await resetSummaries(
                         issueData,
                         testSummaries,
