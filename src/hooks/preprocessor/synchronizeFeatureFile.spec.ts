@@ -213,4 +213,31 @@ describe("importKnownFeature", () => {
             `)
         );
     });
+
+    it("does not do anything if the import fails", async () => {
+        const { stubbedWarning } = stubLogging();
+        const mockedXrayClient: IXrayClient = {
+            importExecution: function () {
+                throw new Error("Mock called unexpectedly");
+            },
+            exportCucumber: function () {
+                throw new Error("Mock called unexpectedly");
+            },
+            importFeature: async function (): Promise<undefined> {
+                return undefined;
+            },
+            importExecutionCucumberMultipart: function () {
+                throw new Error("Mock called unexpectedly");
+            },
+        };
+        expect(
+            await importKnownFeature(
+                "/path/to/some.feature",
+                "CYP",
+                ["CYP-123", "CYP-756", "CYP-42"],
+                mockedXrayClient
+            )
+        ).to.be.undefined;
+        expect(stubbedWarning).to.not.have.been.called;
+    });
 });
