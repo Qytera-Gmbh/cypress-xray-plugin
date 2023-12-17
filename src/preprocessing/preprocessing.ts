@@ -154,10 +154,14 @@ export function getCucumberIssueData(
                 tags: child.scenario.tags.map((tag) => tag.name.replace("@", "")),
             });
         } else if (child.background) {
+            const preconditionComments = getCucumberPreconditionIssueComments(
+                child.background,
+                document.comments
+            );
             const preconditionKeys = getCucumberPreconditionIssueTags(
                 child.background,
                 projectKey,
-                document.comments,
+                preconditionComments,
                 prefixes?.precondition
             );
             if (preconditionKeys.length === 0) {
@@ -165,7 +169,7 @@ export function getCucumberIssueData(
                     child.background,
                     projectKey,
                     isCloudClient,
-                    prefixes?.precondition
+                    preconditionComments
                 );
             } else if (preconditionKeys.length > 1) {
                 throw multiplePreconditionKeysInCucumberBackgroundError(
@@ -232,24 +236,42 @@ export function getScenarioTagRegex(projectKey: string, testPrefix?: string) {
     return new RegExp(`@(${projectKey}-\\d+)`);
 }
 
+/**
+ * Extracts all comments which are relevant for linking a background to precondition issues.
+ *
+ * @param background - the background
+ * @param comments - the feature file comments
+ * @returns the relevant comments
+ */
+export function getCucumberPreconditionIssueComments(
+    background: Background,
+    comments: readonly Comment[]
+): string[] {
+    if (background.steps.length === 0) {
+        return [];
+    }
+    const backgroundLine = background.location.line;
+    const firstStepLine = background.steps[0].location.line;
+    return comments
+        .filter((comment: Comment) => comment.location.line > backgroundLine)
+        .filter((comment: Comment) => comment.location.line < firstStepLine)
+        .map((comment: Comment) => comment.text);
+}
+
 export function getCucumberPreconditionIssueTags(
     background: Background,
     projectKey: string,
-    comments: readonly Comment[],
+    comments: readonly string[],
     preconditionPrefix?: string
 ): string[] {
     const preconditionKeys: string[] = [];
     if (background.steps.length > 0) {
-        const backgroundLine = background.location.line;
-        const firstStepLine = background.steps[0].location.line;
         for (const comment of comments) {
-            if (comment.location.line > backgroundLine && comment.location.line < firstStepLine) {
-                const matches = comment.text.match(backgroundRegex(projectKey, preconditionPrefix));
-                if (!matches) {
-                    continue;
-                } else if (matches.length === 2) {
-                    preconditionKeys.push(matches[1]);
-                }
+            const matches = comment.match(backgroundRegex(projectKey, preconditionPrefix));
+            if (!matches) {
+                continue;
+            } else if (matches.length === 2) {
+                preconditionKeys.push(matches[1]);
             }
         }
     }

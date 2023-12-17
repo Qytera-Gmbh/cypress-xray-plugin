@@ -5,6 +5,9 @@ Feature: A tagged feature
     # a random comment
     #@CYP-262
 		Given abc123
+    # another comment
+    # another tag
+    #@CYP-647
 		Then xyz987
 
   Scenario: A scenario

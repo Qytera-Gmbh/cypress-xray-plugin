@@ -123,7 +123,7 @@ export function missingTestKeyInCucumberScenarioError(
                 Available tags:
                   ${scenario.tags.map((tag) => tag.name).join("\n")}
 
-                If a tag contain the scenario's issue key already, specify a global prefix to align the plugin with Xray
+                If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray
                   For example, with the following plugin configuration:
                     {
                       cucumber: {
@@ -248,36 +248,86 @@ export function multipleTestKeysInCucumberScenarioError(
  * @param background - the Cucumber background
  * @param projectKey - the project key
  * @param isCloudClient - whether Xray cloud is being used
- * @param preconditionPrefix - the prefix of issues linked in background tags
+ * @param comments - the comments containing precondition issue keys
  * @returns the error
  */
 export function missingPreconditionKeyInCucumberBackgroundError(
     background: Background,
     projectKey: string,
     isCloudClient: boolean,
-    preconditionPrefix?: string
+    comments?: readonly string[]
 ): Error {
     const firstStepLine =
         background.steps.length > 0
             ? `${background.steps[0].keyword.trim()} ${background.steps[0].text}`
             : "Given A step";
+    if (comments && comments.length > 0) {
+        return new Error(
+            dedent(`
+                No precondition issue keys found in comments of background: ${background.name}
+
+                Available comments:
+                  ${comments.map((comment: string) => comment.trim()).join("\n")}
+
+                If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray
+                  For example, with the following plugin configuration:
+                    {
+                      cucumber: {
+                        prefixes: {
+                          precondition: "Precondition:"
+                        }
+                      }
+                    }
+
+                  The following comment will be recognized as an issue tag by the plugin:
+                    ${background.keyword}: ${background.name}
+                      #@Precondition:${projectKey}-123
+                      ${firstStepLine}
+                      ...
+
+                For more information, visit:
+                - ${HELP.plugin.guides.targetingExistingIssues}
+                - ${HELP.plugin.configuration.cucumber.prefixes}
+                - ${
+                    isCloudClient
+                        ? HELP.xray.importCucumberTests.cloud
+                        : HELP.xray.importCucumberTests.server
+                }
+            `)
+        );
+    }
     return new Error(
         dedent(`
             No precondition issue keys found in comments of background: ${background.name}
-            You can target existing precondition issues by adding a corresponding comment:
 
-            ${background.keyword}: ${background.name}
-              #@${preconditionPrefix ?? ""}${projectKey}-123
-              ${firstStepLine}
-              ...
+            You can target existing precondition issues by adding a corresponding comment:
+              ${background.keyword}: ${background.name}
+                #@${projectKey}-123
+                ${firstStepLine}
+                ...
+
+            You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+              {
+                cucumber: {
+                  prefixes: {
+                    precondition: "Precondition:"
+                  }
+                }
+              }
+
+              ${background.keyword}: ${background.name}
+                #@Precondition:${projectKey}-123
+                ${firstStepLine}
+                ...
 
             For more information, visit:
+            - ${HELP.plugin.guides.targetingExistingIssues}
+            - ${HELP.plugin.configuration.cucumber.prefixes}
             - ${
                 isCloudClient
                     ? HELP.xray.importCucumberTests.cloud
                     : HELP.xray.importCucumberTests.server
             }
-            - ${HELP.plugin.guides.targetingExistingIssues}
         `)
     );
 }
