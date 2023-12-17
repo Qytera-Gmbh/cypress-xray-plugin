@@ -1,7 +1,7 @@
 import { Background, Scenario } from "@cucumber/messages";
 import { expect } from "chai";
 import fs from "fs";
-import { stubLogging } from "../../test/util";
+import { stubLogging } from "../../test/mocks";
 import { dedent } from "../util/dedent";
 import {
     containsCucumberTest,

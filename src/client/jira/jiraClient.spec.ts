@@ -1,7 +1,8 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
-import { expectToExist, stubLogging, stubRequests } from "../../../test/util";
+import { stubLogging, stubRequests } from "../../../test/mocks";
+import { expectToExist } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { ISearchResults } from "../../types/jira/responses/searchResults";
 import { IJiraClient } from "./jiraClient";

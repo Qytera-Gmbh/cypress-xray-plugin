@@ -2,7 +2,7 @@ import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
-import { RESOLVED_JWT_CREDENTIALS, stubLogging, stubRequests } from "../../../test/util";
+import { getMockedJWTCredentials, stubLogging, stubRequests } from "../../../test/mocks";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { dedent } from "../../util/dedent";
 import { XrayClientCloud } from "./xrayClientCloud";
@@ -10,7 +10,13 @@ import { XrayClientCloud } from "./xrayClientCloud";
 chai.use(chaiAsPromised);
 
 describe("the xray cloud client", () => {
-    const client: XrayClientCloud = new XrayClientCloud(RESOLVED_JWT_CREDENTIALS);
+    let client: XrayClientCloud;
+
+    beforeEach(() => {
+        const credentials = getMockedJWTCredentials();
+        credentials.getAuthorizationHeader.resolves({ Authorization: "ey12345" });
+        client = new XrayClientCloud(credentials);
+    });
 
     describe("import execution", () => {
         it("should handle successful responses", async () => {

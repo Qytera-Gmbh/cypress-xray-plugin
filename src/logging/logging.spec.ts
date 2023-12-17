@@ -2,7 +2,8 @@ import { AxiosError, AxiosHeaders } from "axios";
 import { expect } from "chai";
 import fs from "fs";
 import path from "path";
-import { resolveTestDirPath, stubLogging } from "../../test/util";
+import { stubLogging } from "../../test/mocks";
+import { resolveTestDirPath } from "../../test/util";
 import { LoggedError } from "../util/errors";
 import { initLogging, writeErrorFile } from "./logging";
 

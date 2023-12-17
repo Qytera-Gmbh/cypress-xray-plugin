@@ -2,7 +2,7 @@ import { AxiosHeaders, AxiosResponse, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import Sinon from "sinon";
-import { RESOLVED_JWT_CREDENTIALS, stubLogging, stubRequests } from "../../test/util";
+import { getMockedJWTCredentials, stubLogging, stubRequests } from "../../test/mocks";
 import { JWTCredentials, PATCredentials } from "../authentication/credentials";
 import { IUser } from "../types/jira/responses/user";
 import { XrayLicenseStatus } from "../types/xray/responses/license";
@@ -255,7 +255,9 @@ describe("Xray cloud ping", () => {
                 client_secret: "token",
             })
             .resolves(response);
-        await pingXrayCloud(RESOLVED_JWT_CREDENTIALS);
+        const credentials = getMockedJWTCredentials();
+        credentials.getAuthorizationHeader.resolves({ Authorization: "ey12345" });
+        await pingXrayCloud(credentials);
     });
 
     it("returns false on failure", async () => {

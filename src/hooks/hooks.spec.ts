@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { stub } from "sinon";
-import { stubLogging } from "../../test/util";
+import { stubLogging } from "../../test/mocks";
 import { PATCredentials } from "../authentication/credentials";
 import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientServer } from "../client/xray/xrayClientServer";

@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { stub } from "sinon";
-import { stubLogging } from "../test/util";
+import { stubLogging } from "../test/mocks";
 import { BasicAuthCredentials, JWTCredentials, PATCredentials } from "./authentication/credentials";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";

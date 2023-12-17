@@ -1,7 +1,8 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
-import { expectToExist, stubLogging } from "../../../test/util";
+import { stubLogging } from "../../../test/mocks";
+import { expectToExist } from "../../../test/util";
 import {
     initJiraOptions,
     initOpenSSLOptions,

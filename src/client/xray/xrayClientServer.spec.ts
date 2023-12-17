@@ -1,7 +1,7 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
-import { stubLogging, stubRequests } from "../../../test/util";
+import { stubLogging, stubRequests } from "../../../test/mocks";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { dedent } from "../../util/dedent";
 import { XrayClientServer } from "./xrayClientServer";

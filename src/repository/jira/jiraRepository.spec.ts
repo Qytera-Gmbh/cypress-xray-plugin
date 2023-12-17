@@ -1,7 +1,10 @@
 import { expect } from "chai";
 import { SinonStubbedInstance } from "sinon";
-import { getMockedJiraFieldRepository, getMockedJiraIssueFetcher } from "../../../test/mocks";
-import { stubLogging } from "../../../test/util";
+import {
+    getMockedJiraFieldRepository,
+    getMockedJiraIssueFetcher,
+    stubLogging,
+} from "../../../test/mocks";
 import { dedent } from "../../util/dedent";
 import { IJiraFieldRepository } from "./fields/jiraFieldRepository";
 import { IJiraIssueFetcher } from "./fields/jiraIssueFetcher";

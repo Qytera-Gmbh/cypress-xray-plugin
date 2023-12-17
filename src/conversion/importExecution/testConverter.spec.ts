@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
-import { stubLogging } from "../../../test/util";
+import { stubLogging } from "../../../test/mocks";
 import {
     initCucumberOptions,
     initJiraOptions,

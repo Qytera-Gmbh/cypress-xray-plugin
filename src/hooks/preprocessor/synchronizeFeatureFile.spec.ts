@@ -5,8 +5,8 @@ import {
     getMockedJiraClient,
     getMockedJiraRepository,
     getMockedXrayClient,
+    stubLogging,
 } from "../../../test/mocks";
-import { stubLogging } from "../../../test/util";
 import { IJiraClient } from "../../client/jira/jiraClient";
 import { IXrayClient } from "../../client/xray/xrayClient";
 import {

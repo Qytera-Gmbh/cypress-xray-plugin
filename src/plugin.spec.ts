@@ -1,7 +1,8 @@
 import { expect } from "chai";
 import fs from "fs";
 import { stub } from "sinon";
-import { mockedCypressEventEmitter, stubLogging, stubRequests } from "../test/util";
+import { stubLogging, stubRequests } from "../test/mocks";
+import { mockedCypressEventEmitter } from "../test/util";
 import { PATCredentials } from "./authentication/credentials";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientServer } from "./client/xray/xrayClientServer";

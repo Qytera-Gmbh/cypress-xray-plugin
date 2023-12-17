@@ -1,7 +1,13 @@
-import Sinon, { SinonStubbedInstance } from "sinon";
+import chai from "chai";
+import Sinon, { SinonStubbedInstance, spy, stub } from "sinon";
+import sinonChai from "sinon-chai";
+import { JWTCredentials } from "../src/authentication/credentials";
 import { IJiraClient } from "../src/client/jira/jiraClient";
 import { IXrayClient } from "../src/client/xray/xrayClient";
 import { IXrayClientCloud } from "../src/client/xray/xrayClientCloud";
+import { Requests } from "../src/https/requests";
+import * as logging from "../src/logging/logging";
+import { initLogging } from "../src/logging/logging";
 import { IJiraFieldRepository } from "../src/repository/jira/fields/jiraFieldRepository";
 import { IJiraIssueFetcher, SupportedFields } from "../src/repository/jira/fields/jiraIssueFetcher";
 import { IJiraRepository } from "../src/repository/jira/jiraRepository";
@@ -11,6 +17,61 @@ import { IXrayTestExecutionResults } from "../src/types/xray/importTestExecution
 import { CucumberMultipartFeature } from "../src/types/xray/requests/importExecutionCucumberMultipart";
 import { ICucumberMultipartInfo } from "../src/types/xray/requests/importExecutionCucumberMultipartInfo";
 import { dedent } from "../src/util/dedent";
+import { TEST_TMP_DIR } from "./util";
+
+chai.use(sinonChai);
+
+before(() => {
+    stubLogging("initLogging");
+});
+
+beforeEach(() => {
+    Sinon.restore();
+    initLogging({ logDirectory: TEST_TMP_DIR });
+});
+
+/**
+ * Stubs the logging module members. An optional list of spies can be provided, which will result
+ * in the corresponding members being spied on instead of stubbing them completely.
+ *
+ * @param spies - the array of members to spy on only
+ * @returns an object containing the logging module's stubs or spies
+ */
+export const stubLogging = (...spies: (keyof typeof logging)[]) => {
+    return {
+        stubbedInit: spies.includes("initLogging")
+            ? spy(logging, "initLogging")
+            : stub(logging, "initLogging"),
+        stubbedWrite: spies.includes("writeFile")
+            ? spy(logging, "writeFile")
+            : stub(logging, "writeFile"),
+        stubbedWriteErrorFile: spies.includes("writeErrorFile")
+            ? spy(logging, "writeErrorFile")
+            : stub(logging, "writeErrorFile"),
+        stubbedInfo: spies.includes("logInfo") ? spy(logging, "logInfo") : stub(logging, "logInfo"),
+        stubbedError: spies.includes("logError")
+            ? spy(logging, "logError")
+            : stub(logging, "logError"),
+        stubbedSuccess: spies.includes("logSuccess")
+            ? spy(logging, "logSuccess")
+            : stub(logging, "logSuccess"),
+        stubbedWarning: spies.includes("logWarning")
+            ? spy(logging, "logWarning")
+            : stub(logging, "logWarning"),
+        stubbedDebug: spies.includes("logDebug")
+            ? spy(logging, "logDebug")
+            : stub(logging, "logDebug"),
+    };
+};
+
+export const stubRequests = () => {
+    return {
+        stubbedGet: stub(Requests, "get"),
+        stubbedPost: stub(Requests, "post"),
+        stubbedPut: stub(Requests, "put"),
+        stubbedInit: stub(Requests, "init"),
+    };
+};
 
 export function getMockedJiraClient(): SinonStubbedInstance<IJiraClient> {
     const client: IJiraClient = {
@@ -263,6 +324,10 @@ export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository>
         },
     };
     return makeTransparent(Sinon.stub(jiraRepository));
+}
+
+export function getMockedJWTCredentials(): SinonStubbedInstance<JWTCredentials> {
+    return makeTransparent(Sinon.stub(new JWTCredentials("abc", "xyz", "https://example.org")));
 }
 
 /**

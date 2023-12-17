@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { RESOLVED_JWT_CREDENTIALS, stubLogging } from "../../../test/util";
+import { getMockedJWTCredentials, stubLogging } from "../../../test/mocks";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { IXrayClient } from "./xrayClient";
 import { XrayClientCloud } from "./xrayClientCloud";
@@ -11,13 +11,15 @@ describe("the xray clients", () => {
     ["server", "cloud"].forEach((clientType: string) => {
         describe(clientType, () => {
             beforeEach(() => {
+                const credentials = getMockedJWTCredentials();
+                credentials.getAuthorizationHeader.resolves({ Authorization: "ey12345" });
                 client =
                     clientType === "server"
                         ? new XrayClientServer(
                               "https://example.org",
                               new BasicAuthCredentials("user", "token")
                           )
-                        : new XrayClientCloud(RESOLVED_JWT_CREDENTIALS);
+                        : new XrayClientCloud(credentials);
             });
 
             describe("import execution", () => {

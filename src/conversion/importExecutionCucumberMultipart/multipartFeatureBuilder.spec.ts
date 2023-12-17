@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { expectToExist, stubLogging } from "../../../test/util";
+import { stubLogging } from "../../../test/mocks";
+import { expectToExist } from "../../../test/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "../../util/dedent";
 import { buildMultipartFeatures } from "./multipartFeatureBuilder";
