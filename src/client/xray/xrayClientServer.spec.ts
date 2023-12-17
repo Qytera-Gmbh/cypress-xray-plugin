@@ -2,9 +2,10 @@ import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
 import { SinonStubbedInstance } from "sinon";
-import { getMockedRestClient, stubLogging } from "../../../test/mocks";
+import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { AxiosRestClient } from "../../https/requests";
+import { Level } from "../../logging/logging";
 import { dedent } from "../../util/dedent";
 import { XrayClientServer } from "./xrayClientServer";
 
@@ -147,7 +148,7 @@ describe("the xray server client", () => {
         });
 
         it("handles responses with errors", async () => {
-            const { stubbedDebug } = stubLogging();
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
             restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -188,13 +189,14 @@ describe("the xray server client", () => {
                 errors: ["Test with key CYP-333 was not found!"],
                 updatedOrCreatedIssues: ["CYP-555", "CYP-222"],
             });
-            expect(stubbedDebug).to.have.been.calledWithExactly(
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.DEBUG,
                 "Encountered an error during feature file import: Test with key CYP-333 was not found!"
             );
         });
 
         it("handles responses without any updated issues", async () => {
-            const { stubbedDebug } = stubLogging();
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
             restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -218,13 +220,14 @@ describe("the xray server client", () => {
                 ],
                 updatedOrCreatedIssues: [],
             });
-            expect(stubbedDebug).to.have.been.calledWithExactly(
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.DEBUG,
                 "Encountered an error during feature file import: Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!"
             );
         });
 
         it("handles bad responses", async () => {
-            const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const error = new AxiosError(
                 "Request failed with status code 400",
                 "400",
@@ -248,7 +251,8 @@ describe("the xray server client", () => {
                     "CYP"
                 )
             ).to.eventually.be.rejectedWith("Feature file import failed");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.ERROR,
                 dedent(`
                     Failed to import Cucumber features: AxiosError: Request failed with status code 400
 
@@ -258,7 +262,7 @@ describe("the xray server client", () => {
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                 `)
             );
-            expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+            expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                 error,
                 "importFeatureError"
             );

@@ -1,7 +1,7 @@
 import path from "path";
 import { IJiraClient } from "../../client/jira/jiraClient";
 import { IXrayClient } from "../../client/xray/xrayClient";
-import { logDebug, logError, logInfo, logWarning } from "../../logging/logging";
+import { LOG, Level } from "../../logging/logging";
 import {
     FeatureFileIssueData,
     FeatureFileIssueDataTest,
@@ -30,7 +30,7 @@ export async function synchronizeFeatureFile(
         return file.filePath;
     }
     const relativePath = path.relative(projectRoot, file.filePath);
-    logInfo(`Preprocessing feature file ${relativePath}...`);
+    LOG.message(Level.INFO, `Preprocessing feature file ${relativePath}...`);
     try {
         let issueData = getCucumberIssueData(
             file.filePath,
@@ -47,13 +47,14 @@ export async function synchronizeFeatureFile(
         // summary once the import is done.
         // See: https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
         // See: https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-        logDebug(
+        LOG.message(
+            Level.DEBUG,
             dedent(`
                 Creating issue backups (summaries, labels) for issues:
                   ${issueKeys.join("\n")}
             `)
         );
-        logInfo("Importing feature file to Xray...");
+        LOG.message(Level.INFO, "Importing feature file to Xray...");
         const testSummaries = await clients.jiraRepository.getSummaries(...issueKeys);
         const testLabels = await clients.jiraRepository.getLabels(...issueKeys);
         const updatedIssues = await importKnownFeature(
@@ -74,7 +75,8 @@ export async function synchronizeFeatureFile(
         await resetSummaries(issueData, testSummaries, clients.jiraClient, clients.jiraRepository);
         await resetLabels(issueData.tests, testLabels, clients.jiraClient, clients.jiraRepository);
     } catch (error: unknown) {
-        logError(
+        LOG.message(
+            Level.ERROR,
             dedent(`
                 Feature file invalid, skipping synchronization: ${file.filePath}
 
@@ -102,7 +104,8 @@ export async function importKnownFeature(
 ): Promise<string[]> {
     const importResponse = await xrayClient.importFeature(filePath, projectKey);
     if (importResponse.errors.length > 0) {
-        logWarning(
+        LOG.message(
+            Level.WARNING,
             dedent(`
                 Encountered errors during feature file import:
                 ${importResponse.errors.map((error) => `- ${error}`).join("\n")}
@@ -124,7 +127,8 @@ export async function importKnownFeature(
             );
             mismatchLines.push(...setOverlap.rightOnly.map((issueKey) => `  ${issueKey}`));
         }
-        logWarning(
+        LOG.message(
+            Level.WARNING,
             dedent(`
                 Mismatch between feature file issue tags and updated Jira issues detected
 
@@ -155,7 +159,8 @@ async function resetSummaries(
         const oldSummary = testSummaries[issueKey];
         const newSummary = allIssues[i].summary;
         if (!oldSummary) {
-            logError(
+            LOG.message(
+                Level.ERROR,
                 dedent(`
                     Failed to reset issue summary of issue to its old summary: ${issueKey}
                     The issue's old summary could not be fetched, make sure to restore it manually if needed
@@ -167,7 +172,8 @@ async function resetSummaries(
         }
         if (oldSummary !== newSummary) {
             const summaryFieldId = await jiraRepository.getFieldId(SupportedFields.SUMMARY);
-            logDebug(
+            LOG.message(
+                Level.DEBUG,
                 dedent(`
                     Resetting issue summary of issue: ${issueKey}
 
@@ -177,7 +183,8 @@ async function resetSummaries(
             );
             const fields = { [summaryFieldId]: oldSummary };
             if (!(await jiraClient.editIssue(issueKey, { fields: fields }))) {
-                logError(
+                LOG.message(
+                    Level.ERROR,
                     dedent(`
                         Failed to reset issue summary of issue to its old summary: ${issueKey}
 
@@ -189,7 +196,8 @@ async function resetSummaries(
                 );
             }
         } else {
-            logDebug(
+            LOG.message(
+                Level.DEBUG,
                 `Issue summary is identical to scenario (outline) name already: ${issueKey} (${oldSummary})`
             );
         }
@@ -207,7 +215,8 @@ async function resetLabels(
         const oldLabels = testLabels[issueKey];
         const newLabels = issueData[i].tags;
         if (!oldLabels) {
-            logError(
+            LOG.message(
+                Level.ERROR,
                 dedent(`
                     Failed to reset issue labels of issue to its old labels: ${issueKey}
                     The issue's old labels could not be fetched, make sure to restore them manually if needed
@@ -219,7 +228,8 @@ async function resetLabels(
         }
         if (!newLabels.every((label) => oldLabels.includes(label))) {
             const labelFieldId = await jiraRepository.getFieldId(SupportedFields.LABELS);
-            logDebug(
+            LOG.message(
+                Level.DEBUG,
                 dedent(`
                     Resetting issue labels of issue: ${issueKey}
 
@@ -229,7 +239,8 @@ async function resetLabels(
             );
             const fields = { [labelFieldId]: oldLabels };
             if (!(await jiraClient.editIssue(issueKey, { fields: fields }))) {
-                logError(
+                LOG.message(
+                    Level.ERROR,
                     dedent(`
                         Failed to reset issue labels of issue to its old labels: ${issueKey}
 
@@ -241,7 +252,8 @@ async function resetLabels(
                 );
             }
         } else {
-            logDebug(
+            LOG.message(
+                Level.DEBUG,
                 `Issue labels are identical to scenario (outline) labels already: ${issueKey} (${oldLabels})`
             );
         }

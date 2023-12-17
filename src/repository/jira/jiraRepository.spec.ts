@@ -3,8 +3,9 @@ import { SinonStubbedInstance } from "sinon";
 import {
     getMockedJiraFieldRepository,
     getMockedJiraIssueFetcher,
-    stubLogging,
+    getMockedLogger,
 } from "../../../test/mocks";
+import { Level } from "../../logging/logging";
 import { dedent } from "../../util/dedent";
 import { IJiraFieldRepository } from "./fields/jiraFieldRepository";
 import { IJiraIssueFetcher } from "./fields/jiraIssueFetcher";
@@ -63,17 +64,20 @@ describe("the cloud issue repository", () => {
                 .resolves({
                     "CYP-123": "Hello",
                 });
-            const { stubbedError } = stubLogging();
+            const logger = getMockedLogger();
+            logger.message
+                .withArgs(
+                    Level.ERROR,
+                    dedent(`
+                        Failed to fetch issue summaries
+                        Make sure these issues exist:
+                          CYP-456
+                          CYP-789
+                    `)
+                )
+                .onFirstCall()
+                .returns();
             const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to fetch issue summaries
-                    Make sure these issues exist:
-
-                      CYP-456
-                      CYP-789
-                `)
-            );
             expect(summaries).to.deep.eq({
                 "CYP-123": "Hello",
             });
@@ -81,14 +85,18 @@ describe("the cloud issue repository", () => {
 
         it("handles get field failures gracefully", async () => {
             jiraIssueFetcher.fetchSummaries.rejects(new Error("Expected error"));
-            const { stubbedError } = stubLogging();
+            const logger = getMockedLogger();
+            logger.message
+                .withArgs(
+                    Level.ERROR,
+                    dedent(`
+                        Failed to fetch issue summaries
+                        Expected error
+                    `)
+                )
+                .onFirstCall()
+                .returns();
             const summaries = await repository.getSummaries("CYP-123");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to fetch issue summaries
-                    Expected error
-                `)
-            );
             expect(summaries).to.deep.eq({});
         });
     });
@@ -133,17 +141,20 @@ describe("the cloud issue repository", () => {
             jiraIssueFetcher.fetchDescriptions.resolves({
                 "CYP-123": "I am a description",
             });
-            const { stubbedError } = stubLogging();
+            const logger = getMockedLogger();
+            logger.message
+                .withArgs(
+                    Level.ERROR,
+                    dedent(`
+                        Failed to fetch issue descriptions
+                        Make sure these issues exist:
+                          CYP-456
+                          CYP-789
+                    `)
+                )
+                .onFirstCall()
+                .returns();
             const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to fetch issue descriptions
-                    Make sure these issues exist:
-
-                      CYP-456
-                      CYP-789
-                `)
-            );
             expect(descriptions).to.deep.eq({
                 "CYP-123": "I am a description",
             });
@@ -151,14 +162,18 @@ describe("the cloud issue repository", () => {
 
         it("handles get field failures gracefully", async () => {
             jiraIssueFetcher.fetchDescriptions.rejects(new Error("Expected error"));
-            const { stubbedError } = stubLogging();
+            const logger = getMockedLogger();
+            logger.message
+                .withArgs(
+                    Level.ERROR,
+                    dedent(`
+                        Failed to fetch issue descriptions
+                        Expected error
+                    `)
+                )
+                .onFirstCall()
+                .returns();
             const descriptions = await repository.getDescriptions("CYP-123");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to fetch issue descriptions
-                    Expected error
-                `)
-            );
             expect(descriptions).to.deep.eq({});
         });
     });
@@ -202,30 +217,38 @@ describe("the cloud issue repository", () => {
                 .resolves({
                     "CYP-123": "Cucumber",
                 });
-            const { stubbedError } = stubLogging();
+            const logger = getMockedLogger();
+            logger.message
+                .withArgs(
+                    Level.ERROR,
+                    dedent(`
+                        Failed to fetch issue test types
+                        Make sure these issues exist and are test issues:
+                          CYP-456
+                          CYP-789
+                    `)
+                )
+                .onFirstCall()
+                .returns();
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to fetch issue test types
-                    Make sure these issues exist and are test issues:
 
-                      CYP-456
-                      CYP-789
-                `)
-            );
             expect(testTypes).to.deep.eq({ "CYP-123": "Cucumber" });
         });
 
         it("handles failed test type requests gracefully", async () => {
             jiraIssueFetcher.fetchTestTypes.rejects(new Error("Expected error"));
-            const { stubbedError } = stubLogging();
+            const logger = getMockedLogger();
+            logger.message
+                .withArgs(
+                    Level.ERROR,
+                    dedent(`
+                        Failed to fetch issue test types
+                        Expected error
+                    `)
+                )
+                .onFirstCall()
+                .returns();
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to fetch issue test types
-                    Expected error
-                `)
-            );
             expect(testTypes).to.deep.eq({});
         });
     });
@@ -268,17 +291,20 @@ describe("the cloud issue repository", () => {
             jiraIssueFetcher.fetchLabels.withArgs(...["CYP-123", "CYP-456", "CYP-789"]).resolves({
                 "CYP-123": ["X"],
             });
-            const { stubbedError } = stubLogging();
+            const logger = getMockedLogger();
+            logger.message
+                .withArgs(
+                    Level.ERROR,
+                    dedent(`
+                        Failed to fetch issue labels
+                        Make sure these issues exist:
+                          CYP-456
+                          CYP-789
+                    `)
+                )
+                .onFirstCall()
+                .returns();
             const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to fetch issue labels
-                    Make sure these issues exist:
-
-                      CYP-456
-                      CYP-789
-                `)
-            );
             expect(labels).to.deep.eq({
                 "CYP-123": ["X"],
             });
@@ -286,14 +312,18 @@ describe("the cloud issue repository", () => {
 
         it("handles get field failures gracefully", async () => {
             jiraIssueFetcher.fetchLabels.rejects(new Error("Expected error"));
-            const { stubbedError } = stubLogging();
+            const logger = getMockedLogger();
+            logger.message
+                .withArgs(
+                    Level.ERROR,
+                    dedent(`
+                        Failed to fetch issue labels
+                        Expected error
+                    `)
+                )
+                .onFirstCall()
+                .returns();
             const labels = await repository.getLabels("CYP-123");
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
-                dedent(`
-                    Failed to fetch issue labels
-                    Expected error
-                `)
-            );
             expect(labels).to.deep.eq({});
         });
     });

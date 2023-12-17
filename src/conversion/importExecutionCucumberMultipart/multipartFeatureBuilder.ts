@@ -1,4 +1,4 @@
-import { logWarning } from "../../logging/logging";
+import { LOG, Level } from "../../logging/logging";
 import { getScenarioTagRegex } from "../../preprocessing/preprocessing";
 import {
     CucumberMultipartElement,
@@ -65,7 +65,8 @@ export function buildMultipartFeatures(
                     elements.push(modifiedElement);
                 }
             } catch (error: unknown) {
-                logWarning(
+                LOG.message(
+                    Level.WARNING,
                     dedent(`
                         Skipping result upload for ${element.type}: ${element.name}
 

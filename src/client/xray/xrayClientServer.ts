@@ -1,7 +1,7 @@
 import FormData from "form-data";
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
 import { RequestConfigPost } from "../../https/requests";
-import { logDebug } from "../../logging/logging";
+import { LOG, Level } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
@@ -63,14 +63,16 @@ export class XrayClientServer extends XrayClient {
         if (typeof serverResponse === "object" && "message" in serverResponse) {
             if (serverResponse.message) {
                 response.errors.push(serverResponse.message);
-                logDebug(
+                LOG.message(
+                    Level.DEBUG,
                     `Encountered an error during feature file import: ${serverResponse.message}`
                 );
             }
             if (serverResponse.testIssues && serverResponse.testIssues.length > 0) {
                 const testKeys = serverResponse.testIssues.map((test: IssueDetails) => test.key);
                 response.updatedOrCreatedIssues.push(...testKeys);
-                logDebug(
+                LOG.message(
+                    Level.DEBUG,
                     dedent(`
                         Successfully updated or created test issues:
                         ${testKeys.join(", ")}
@@ -82,7 +84,8 @@ export class XrayClientServer extends XrayClient {
                     (test: IssueDetails) => test.key
                 );
                 response.updatedOrCreatedIssues.push(...preconditionKeys);
-                logDebug(
+                LOG.message(
+                    Level.DEBUG,
                     dedent(`
                         Successfully updated or created precondition issues:
                         ${preconditionKeys.join(", ")}
@@ -92,7 +95,8 @@ export class XrayClientServer extends XrayClient {
         } else if (Array.isArray(serverResponse)) {
             const issueKeys = serverResponse.map((test: IssueDetails) => test.key);
             response.updatedOrCreatedIssues.push(...issueKeys);
-            logDebug(
+            LOG.message(
+                Level.DEBUG,
                 dedent(`
                     Successfully updated or created issues:
                     ${issueKeys.join(", ")}

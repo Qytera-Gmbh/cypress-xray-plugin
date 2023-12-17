@@ -7,7 +7,7 @@ import {
     PATCredentials,
 } from "../../authentication/credentials";
 import { REST, RequestConfigPost } from "../../https/requests";
-import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
+import { LOG, Level } from "../../logging/logging";
 import { IXrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
@@ -100,11 +100,14 @@ export abstract class XrayClient extends Client implements IXrayClient {
     ): Promise<string | null | undefined> {
         try {
             if (!execution.tests || execution.tests.length === 0) {
-                logWarning("No native Cypress tests were executed. Skipping native upload.");
+                LOG.message(
+                    Level.WARNING,
+                    "No native Cypress tests were executed. Skipping native upload."
+                );
                 return null;
             }
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            logDebug("Importing execution...");
+            LOG.message(Level.DEBUG, "Importing execution...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<
@@ -115,14 +118,14 @@ export abstract class XrayClient extends Client implements IXrayClient {
                     },
                 });
                 const key = this.handleResponseImportExecution(response.data);
-                logDebug(`Successfully uploaded test execution results to ${key}.`);
+                LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
                 return key;
             } finally {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to import execution: ${error}`);
-            writeErrorFile(error, "importExecutionError");
+            LOG.message(Level.ERROR, `Failed to import execution: ${error}`);
+            LOG.logErrorToFile(error, "importExecutionError");
         }
     }
 
@@ -149,7 +152,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
     ): Promise<ExportCucumberTestsResponse> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            logDebug("Exporting Cucumber tests...");
+            LOG.message(Level.DEBUG, "Exporting Cucumber tests...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response = await REST.get(this.getUrlExportCucumber(keys, filter), {
@@ -169,8 +172,8 @@ export abstract class XrayClient extends Client implements IXrayClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to export Cucumber tests: ${error}`);
-            writeErrorFile(error, "exportCucumberError");
+            LOG.message(Level.ERROR, `Failed to export Cucumber tests: ${error}`);
+            LOG.logErrorToFile(error, "exportCucumberError");
         }
         throw new Error("Method not implemented.");
     }
@@ -192,7 +195,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
     ): Promise<ImportFeatureResponse> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            logDebug("Importing Cucumber features...");
+            LOG.message(Level.DEBUG, "Importing Cucumber features...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const fileContent = fs.createReadStream(file);
@@ -212,9 +215,10 @@ export abstract class XrayClient extends Client implements IXrayClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            writeErrorFile(error, "importFeatureError");
+            LOG.logErrorToFile(error, "importFeatureError");
             if (isAxiosError(error) && error.response?.status === HttpStatusCode.BadRequest) {
-                logError(
+                LOG.message(
+                    Level.ERROR,
                     dedent(`
                         Failed to import Cucumber features: ${error}
 
@@ -225,7 +229,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
                     `)
                 );
             } else {
-                logError(`Failed to import Cucumber features: ${error}`);
+                LOG.message(Level.ERROR, `Failed to import Cucumber features: ${error}`);
             }
             throw new LoggedError("Feature file import failed");
         }
@@ -260,10 +264,13 @@ export abstract class XrayClient extends Client implements IXrayClient {
     ): Promise<string | null | undefined> {
         try {
             if (cucumberJson.length === 0) {
-                logWarning("No Cucumber tests were executed. Skipping Cucumber upload.");
+                LOG.message(
+                    Level.WARNING,
+                    "No Cucumber tests were executed. Skipping Cucumber upload."
+                );
                 return null;
             }
-            logDebug("Importing execution (Cucumber)...");
+            LOG.message(Level.DEBUG, "Importing execution (Cucumber)...");
             const request = await this.prepareRequestImportExecutionCucumberMultipart(
                 cucumberJson,
                 cucumberInfo
@@ -274,14 +281,17 @@ export abstract class XrayClient extends Client implements IXrayClient {
                     ImportExecutionResponseServer | ImportExecutionResponseCloud
                 > = await REST.post(request.url, request.data, request.config);
                 const key = this.handleResponseImportExecutionCucumberMultipart(response.data);
-                logDebug(`Successfully uploaded Cucumber test execution results to ${key}.`);
+                LOG.message(
+                    Level.DEBUG,
+                    `Successfully uploaded Cucumber test execution results to ${key}.`
+                );
                 return key;
             } finally {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to import Cucumber execution: ${error}`);
-            writeErrorFile(error, "importExecutionCucumberMultipartError");
+            LOG.message(Level.ERROR, `Failed to import Cucumber execution: ${error}`);
+            LOG.logErrorToFile(error, "importExecutionCucumberMultipartError");
         }
     }
 

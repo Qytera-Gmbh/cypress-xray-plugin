@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
-import { stubLogging } from "../../../test/mocks";
+import { getMockedLogger } from "../../../test/mocks";
 import {
     initCucumberOptions,
     initJiraOptions,
@@ -9,6 +9,7 @@ import {
     initPluginOptions,
     initXrayOptions,
 } from "../../context";
+import { Level } from "../../logging/logging";
 import { CypressRunResult as CypressRunResult_V12 } from "../../types/cypress/12.0.0/api";
 import { CypressRunResult as CypressRunResult_V13 } from "../../types/cypress/13.0.0/api";
 import { InternalOptions } from "../../types/plugin";
@@ -44,18 +45,22 @@ describe("the test converter", () => {
             readFileSync("./test/resources/runResult_13_0_0_manualScreenshot.json", "utf-8")
         );
         const converter = new TestConverter(options, false);
-        const { stubbedWarning } = stubLogging();
+        const logger = getMockedLogger();
+        logger.message
+            .withArgs(
+                Level.WARNING,
+                dedent(`
+                    Screenshot will not be uploaded: ./test/resources/small.png
+
+                    Its filename does not contain a test issue key.
+                    To upload screenshots, include a test issue key anywhere in their names:
+
+                    cy.screenshot("CYP-123 small")
+                `)
+            )
+            .onFirstCall()
+            .returns();
         const json = await converter.toXrayTests(result);
-        expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-            dedent(`
-                Screenshot will not be uploaded: ./test/resources/small.png
-
-                Its filename does not contain a test issue key.
-                To upload screenshots, include a test issue key anywhere in their names:
-
-                cy.screenshot("CYP-123 small")
-            `)
-        );
         expect(json[0].evidence).to.be.undefined;
         expect(json[1].evidence).to.be.undefined;
         expect(json[2].evidence).to.be.undefined;

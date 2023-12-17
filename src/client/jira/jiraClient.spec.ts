@@ -2,10 +2,11 @@ import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
 import { SinonStubbedInstance } from "sinon";
-import { getMockedRestClient, stubLogging } from "../../../test/mocks";
+import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { expectToExist } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { AxiosRestClient } from "../../https/requests";
+import { Level } from "../../logging/logging";
 import { ISearchResults } from "../../types/jira/responses/searchResults";
 import { IJiraClient } from "./jiraClient";
 import { JiraClientCloud } from "./jiraClientCloud";
@@ -39,7 +40,6 @@ describe("the jira clients", () => {
 
             describe("add attachment", () => {
                 it("should use the correct headers", async () => {
-                    stubLogging();
                     restClient.post.resolves({
                         status: HttpStatusCode.Ok,
                         data: JSON.parse(
@@ -64,7 +64,6 @@ describe("the jira clients", () => {
 
                 describe("single file attachment", () => {
                     it("returns the correct values", async () => {
-                        stubLogging();
                         const mockedData = JSON.parse(
                             fs.readFileSync(
                                 "./test/resources/fixtures/jira/responses/singleAttachment.json",
@@ -90,7 +89,6 @@ describe("the jira clients", () => {
 
                 describe("multiple file attachment", () => {
                     it("returns the correct values", async () => {
-                        stubLogging();
                         const mockedData = JSON.parse(
                             fs.readFileSync(
                                 "./test/resources/fixtures/jira/responses/multipleAttachments.json",
@@ -115,8 +113,8 @@ describe("the jira clients", () => {
                     });
                 });
 
-                it("should log missing files", async () => {
-                    const { stubbedWarning } = stubLogging();
+                it("logs missing files", async () => {
+                    const logger = getMockedLogger({ allowUnstubbedCalls: true });
                     const mockedData = JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/singleAttachment.json",
@@ -138,15 +136,15 @@ describe("the jira clients", () => {
                         "./test/resources/turtle.png"
                     );
                     expect(response).to.eq(mockedData);
-                    expect(stubbedWarning).to.have.been.calledOnceWith(
+                    expect(logger.message).to.have.been.calledWithExactly(
+                        Level.WARNING,
                         "File does not exist:",
                         "./test/resources/missingGreetings.txt"
                     );
                 });
 
-                it("should skip missing files", async () => {
-                    // These are checked elsewhere.
-                    stubLogging();
+                it("skips missing files", async () => {
+                    getMockedLogger({ allowUnstubbedCalls: true });
                     const mockedData = JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/multipleAttachments.json",
@@ -171,30 +169,35 @@ describe("the jira clients", () => {
                     expect(response).to.eq(mockedData);
                 });
 
-                it("should immediately return an empty array when all files are missing", async () => {
-                    const { stubbedWarning } = stubLogging();
+                it("immediately returns an empty array when all files are missing", async () => {
+                    const logger = getMockedLogger({ allowUnstubbedCalls: true });
                     const response = await client.addAttachment(
                         "CYP-123",
                         "./test/resources/missingGreetings.txt",
                         "./test/resources/missingSomething.png"
                     );
                     expect(response).to.be.an("array").that.is.empty;
-                    expect(stubbedWarning).to.have.been.calledWithExactly(
+                    expect(logger.message).to.have.been.calledWithExactly(
+                        Level.WARNING,
                         "All files do not exist. Skipping attaching."
                     );
                 });
 
-                it("should immediately return an empty array when no files are provided", async () => {
-                    const { stubbedWarning } = stubLogging();
+                it("immediately returns an empty array when no files are provided", async () => {
+                    const logger = getMockedLogger();
+                    logger.message
+                        .withArgs(
+                            Level.WARNING,
+                            "No files provided to attach to issue CYP-123. Skipping attaching."
+                        )
+                        .onFirstCall()
+                        .returns();
                     const response = await client.addAttachment("CYP-123");
                     expect(response).to.be.an("array").that.is.empty;
-                    expect(stubbedWarning).to.have.been.calledWithExactly(
-                        "No files provided to attach to issue CYP-123. Skipping attaching."
-                    );
                 });
 
-                it("should handle bad responses", async () => {
-                    const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+                it("handles bad responses", async () => {
+                    const logger = getMockedLogger({ allowUnstubbedCalls: true });
                     const error = new AxiosError(
                         "Request failed with status code 413",
                         HttpStatusCode.BadRequest.toString(),
@@ -216,10 +219,11 @@ describe("the jira clients", () => {
                         "./test/resources/greetings.txt"
                     );
                     expect(response).to.be.undefined;
-                    expect(stubbedError).to.have.been.calledOnceWithExactly(
+                    expect(logger.message).to.have.been.calledWithExactly(
+                        Level.ERROR,
                         "Failed to attach files: AxiosError: Request failed with status code 413"
                     );
-                    expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+                    expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                         error,
                         "addAttachmentError"
                     );
@@ -228,7 +232,6 @@ describe("the jira clients", () => {
 
             describe("get fields", () => {
                 it("returns the correct values", async () => {
-                    stubLogging();
                     const mockedData = JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/getFields.json",
@@ -248,8 +251,8 @@ describe("the jira clients", () => {
                     expect(fields).to.eq(mockedData);
                 });
 
-                it("should handle bad responses", async () => {
-                    const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+                it("handles bad responses", async () => {
+                    const logger = getMockedLogger({ allowUnstubbedCalls: true });
                     const error = new AxiosError(
                         "Request failed with status code 409",
                         HttpStatusCode.BadRequest.toString(),
@@ -268,10 +271,11 @@ describe("the jira clients", () => {
                     restClient.get.onFirstCall().rejects(error);
                     const response = await client.getFields();
                     expect(response).to.be.undefined;
-                    expect(stubbedError).to.have.been.calledOnceWithExactly(
+                    expect(logger.message).to.have.been.calledWithExactly(
+                        Level.ERROR,
                         "Failed to get fields: AxiosError: Request failed with status code 409"
                     );
-                    expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+                    expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                         error,
                         "getFieldsError"
                     );
@@ -280,7 +284,6 @@ describe("the jira clients", () => {
 
             describe("search", () => {
                 it("should return all issues without pagination", async () => {
-                    stubLogging();
                     restClient.post.onFirstCall().resolves({
                         status: HttpStatusCode.Ok,
                         data: JSON.parse(
@@ -309,7 +312,6 @@ describe("the jira clients", () => {
                     expect(response[4].key).to.eq("CYP-237");
                 });
                 it("should return all issues with pagination", async () => {
-                    stubLogging();
                     const mockedData: ISearchResults = JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/search.json",
@@ -375,8 +377,8 @@ describe("the jira clients", () => {
                     expect(response[4].key).to.eq("CYP-237");
                 });
 
-                it("should handle bad responses", async () => {
-                    const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+                it("handles bad responses", async () => {
+                    const logger = getMockedLogger({ allowUnstubbedCalls: true });
                     const error = new AxiosError(
                         "Request failed with status code 401",
                         HttpStatusCode.BadRequest.toString(),
@@ -395,10 +397,11 @@ describe("the jira clients", () => {
                     restClient.post.onFirstCall().rejects(error);
                     const response = await client.search({});
                     expect(response).to.be.undefined;
-                    expect(stubbedError).to.have.been.calledOnceWithExactly(
+                    expect(logger.message).to.have.been.calledWithExactly(
+                        Level.ERROR,
                         "Failed to search issues: AxiosError: Request failed with status code 401"
                     );
-                    expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+                    expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                         error,
                         "searchError"
                     );
@@ -406,8 +409,8 @@ describe("the jira clients", () => {
             });
 
             describe("editIssue", () => {
-                it("should handle bad responses", async () => {
-                    const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+                it("handles bad responses", async () => {
+                    const logger = getMockedLogger({ allowUnstubbedCalls: true });
                     const error = new AxiosError(
                         "Request failed with status code 400",
                         HttpStatusCode.BadRequest.toString(),
@@ -428,10 +431,11 @@ describe("the jira clients", () => {
                         fields: { summary: "Hi" },
                     });
                     expect(response).to.be.undefined;
-                    expect(stubbedError).to.have.been.calledOnceWithExactly(
+                    expect(logger.message).to.have.been.calledWithExactly(
+                        Level.ERROR,
                         "Failed to edit issue: AxiosError: Request failed with status code 400"
                     );
-                    expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+                    expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                         error,
                         "editIssue"
                     );

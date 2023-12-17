@@ -3,7 +3,7 @@ import FormData from "form-data";
 import fs from "fs";
 import { HttpHeader, IHttpCredentials } from "../../authentication/credentials";
 import { REST } from "../../https/requests";
-import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
+import { LOG, Level } from "../../logging/logging";
 import { ISearchRequest } from "../../types/jira/requests/search";
 import { IAttachment } from "../../types/jira/responses/attachment";
 import { IFieldDetail } from "../../types/jira/responses/fieldDetail";
@@ -95,14 +95,17 @@ export abstract class JiraClient extends Client implements IJiraClient {
         ...files: string[]
     ): Promise<IAttachment[] | undefined> {
         if (files.length === 0) {
-            logWarning(`No files provided to attach to issue ${issueIdOrKey}. Skipping attaching.`);
+            LOG.message(
+                Level.WARNING,
+                `No files provided to attach to issue ${issueIdOrKey}. Skipping attaching.`
+            );
             return [];
         }
         const form = new FormData();
         let filesIncluded = 0;
         files.forEach((file: string) => {
             if (!fs.existsSync(file)) {
-                logWarning("File does not exist:", file);
+                LOG.message(Level.WARNING, "File does not exist:", file);
                 return;
             }
             filesIncluded++;
@@ -111,7 +114,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
         });
 
         if (filesIncluded === 0) {
-            logWarning("All files do not exist. Skipping attaching.");
+            LOG.message(Level.WARNING, "All files do not exist. Skipping attaching.");
             return [];
         }
 
@@ -119,7 +122,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
             return await this.credentials
                 .getAuthorizationHeader()
                 .then(async (header: HttpHeader) => {
-                    logDebug("Attaching files:", ...files);
+                    LOG.message(Level.DEBUG, "Attaching files:", ...files);
                     const progressInterval = this.startResponseInterval(this.apiBaseUrl);
                     try {
                         const response: AxiosResponse<IAttachment[]> = await REST.post(
@@ -133,7 +136,8 @@ export abstract class JiraClient extends Client implements IJiraClient {
                                 },
                             }
                         );
-                        logDebug(
+                        LOG.message(
+                            Level.DEBUG,
                             dedent(`
                                 Successfully attached files to issue: ${issueIdOrKey}
                                   ${response.data
@@ -147,8 +151,8 @@ export abstract class JiraClient extends Client implements IJiraClient {
                     }
                 });
         } catch (error: unknown) {
-            logError(`Failed to attach files: ${error}`);
-            writeErrorFile(error, "addAttachmentError");
+            LOG.message(Level.ERROR, `Failed to attach files: ${error}`);
+            LOG.logErrorToFile(error, "addAttachmentError");
         }
     }
 
@@ -163,7 +167,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
     public async getIssueTypes(): Promise<IIssueTypeDetails[] | undefined> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            logDebug("Getting issue types...");
+            LOG.message(Level.DEBUG, "Getting issue types...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<IIssueTypeDetails[]> = await REST.get(
@@ -174,8 +178,12 @@ export abstract class JiraClient extends Client implements IJiraClient {
                         },
                     }
                 );
-                logDebug(`Successfully retrieved data for ${response.data.length} issue types.`);
-                logDebug(
+                LOG.message(
+                    Level.DEBUG,
+                    `Successfully retrieved data for ${response.data.length} issue types.`
+                );
+                LOG.message(
+                    Level.DEBUG,
                     dedent(`
                         Received data for issue types:
                         ${response.data
@@ -188,8 +196,8 @@ export abstract class JiraClient extends Client implements IJiraClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to get issue types: ${error}`);
-            writeErrorFile(error, "getIssueTypesError");
+            LOG.message(Level.ERROR, `Failed to get issue types: ${error}`);
+            LOG.logErrorToFile(error, "getIssueTypesError");
         }
     }
 
@@ -203,7 +211,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
     public async getFields(): Promise<IFieldDetail[] | undefined> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            logDebug("Getting fields...");
+            LOG.message(Level.DEBUG, "Getting fields...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<IFieldDetail[]> = await REST.get(
@@ -214,8 +222,12 @@ export abstract class JiraClient extends Client implements IJiraClient {
                         },
                     }
                 );
-                logDebug(`Successfully retrieved data for ${response.data.length} fields`);
-                logDebug(
+                LOG.message(
+                    Level.DEBUG,
+                    `Successfully retrieved data for ${response.data.length} fields`
+                );
+                LOG.message(
+                    Level.DEBUG,
                     dedent(`
                         Received data for fields:
                         ${response.data
@@ -228,8 +240,8 @@ export abstract class JiraClient extends Client implements IJiraClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to get fields: ${error}`);
-            writeErrorFile(error, "getFieldsError");
+            LOG.message(Level.ERROR, `Failed to get fields: ${error}`);
+            LOG.logErrorToFile(error, "getFieldsError");
         }
     }
 
@@ -245,7 +257,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
             return await this.credentials
                 .getAuthorizationHeader()
                 .then(async (header: HttpHeader) => {
-                    logDebug("Searching issues...");
+                    LOG.message(Level.DEBUG, "Searching issues...");
                     const progressInterval = this.startResponseInterval(this.apiBaseUrl);
                     try {
                         let total = 0;
@@ -274,15 +286,15 @@ export abstract class JiraClient extends Client implements IJiraClient {
                                 }
                             }
                         } while (startAt && startAt < total);
-                        logDebug(`Found ${total} issues`);
+                        LOG.message(Level.DEBUG, `Found ${total} issues`);
                         return results;
                     } finally {
                         clearInterval(progressInterval);
                     }
                 });
         } catch (error: unknown) {
-            logError(`Failed to search issues: ${error}`);
-            writeErrorFile(error, "searchError");
+            LOG.message(Level.ERROR, `Failed to search issues: ${error}`);
+            LOG.logErrorToFile(error, "searchError");
         }
     }
 
@@ -299,7 +311,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
     ): Promise<string | undefined> {
         try {
             await this.credentials.getAuthorizationHeader().then(async (header: HttpHeader) => {
-                logDebug("Editing issue...");
+                LOG.message(Level.DEBUG, "Editing issue...");
                 const progressInterval = this.startResponseInterval(this.apiBaseUrl);
                 try {
                     await REST.put(this.getUrlEditIssue(issueIdOrKey), issueUpdateData, {
@@ -307,15 +319,15 @@ export abstract class JiraClient extends Client implements IJiraClient {
                             ...header,
                         },
                     });
-                    logDebug(`Successfully edited issue: ${issueIdOrKey}`);
+                    LOG.message(Level.DEBUG, `Successfully edited issue: ${issueIdOrKey}`);
                 } finally {
                     clearInterval(progressInterval);
                 }
             });
             return issueIdOrKey;
         } catch (error: unknown) {
-            logError(`Failed to edit issue: ${error}`);
-            writeErrorFile(error, "editIssue");
+            LOG.message(Level.ERROR, `Failed to edit issue: ${error}`);
+            LOG.logErrorToFile(error, "editIssue");
         }
     }
 

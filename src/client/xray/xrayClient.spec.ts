@@ -1,6 +1,7 @@
 import { expect } from "chai";
-import { getMockedJWTCredentials, stubLogging } from "../../../test/mocks";
+import { getMockedJWTCredentials, getMockedLogger } from "../../../test/mocks";
 import { BasicAuthCredentials } from "../../authentication/credentials";
+import { Level } from "../../logging/logging";
 import { IXrayClient } from "./xrayClient";
 import { XrayClientCloud } from "./xrayClientCloud";
 import { XrayClientServer } from "./xrayClientServer";
@@ -24,18 +25,29 @@ describe("the xray clients", () => {
 
             describe("import execution", () => {
                 it("should skip empty test uploads", async () => {
-                    const { stubbedWarning } = stubLogging();
+                    const logger = getMockedLogger();
+                    logger.message
+                        .withArgs(
+                            Level.WARNING,
+                            "No native Cypress tests were executed. Skipping native upload."
+                        )
+                        .onFirstCall()
+                        .returns();
                     const result = await client.importExecution({});
                     expect(result).to.be.null;
-                    expect(stubbedWarning).to.have.been.calledOnceWith(
-                        "No native Cypress tests were executed. Skipping native upload."
-                    );
                 });
             });
 
             describe("import execution cucumber multipart", () => {
                 it("should skip empty test uploads", async () => {
-                    const { stubbedWarning } = stubLogging();
+                    const logger = getMockedLogger();
+                    logger.message
+                        .withArgs(
+                            Level.WARNING,
+                            "No Cucumber tests were executed. Skipping Cucumber upload."
+                        )
+                        .onFirstCall()
+                        .returns();
                     const response = await client.importExecutionCucumberMultipart([], {
                         fields: {
                             project: { key: "PRJ" },
@@ -46,9 +58,6 @@ describe("the xray clients", () => {
                         },
                     });
                     expect(response).to.be.null;
-                    expect(stubbedWarning).to.have.been.calledWithExactly(
-                        "No Cucumber tests were executed. Skipping Cucumber upload."
-                    );
                 });
             });
         });

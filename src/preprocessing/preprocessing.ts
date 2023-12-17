@@ -1,7 +1,7 @@
 import { AstBuilder, GherkinClassicTokenMatcher, Parser } from "@cucumber/gherkin";
 import { Background, Comment, GherkinDocument, IdGenerator, Scenario } from "@cucumber/messages";
 import fs from "fs";
-import { logWarning } from "../logging/logging";
+import { LOG, Level } from "../logging/logging";
 import { CucumberOptions } from "../types/plugin";
 import {
     errorMessage,
@@ -53,7 +53,7 @@ export function getNativeTestIssueKeys(
                 keyedTests.push(testResult);
                 issueKeys.push(issueKey);
             } catch (error: unknown) {
-                logWarning(`Skipping test: ${title}\n\n${errorMessage(error)}`);
+                LOG.message(Level.WARNING, `Skipping test: ${title}\n\n${errorMessage(error)}`);
             }
         }
         runResult.tests = keyedTests;

@@ -2,9 +2,10 @@ import { AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import Sinon, { SinonStubbedInstance } from "sinon";
-import { getMockedJWTCredentials, getMockedRestClient, stubLogging } from "../../test/mocks";
+import { getMockedJWTCredentials, getMockedLogger, getMockedRestClient } from "../../test/mocks";
 import { JWTCredentials, PATCredentials } from "../authentication/credentials";
 import { AxiosRestClient } from "../https/requests";
+import { Level } from "../logging/logging";
 import { dedent } from "./dedent";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./ping";
 
@@ -91,7 +92,7 @@ describe("Jira instance ping", () => {
     });
 
     it("logs progress", async () => {
-        const { stubbedInfo } = stubLogging();
+        const logger = getMockedLogger();
         const clock = Sinon.useFakeTimers();
         restClient.get
             .callsFake((...args: unknown[]) => {
@@ -110,12 +111,24 @@ describe("Jira instance ping", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
+        logger.message
+            .withArgs(Level.INFO, "Waiting for https://example.org to respond... (10 seconds)")
+            .onFirstCall()
+            .returns();
+        logger.message.withArgs(Level.DEBUG, "Pinging Jira instance...").onFirstCall().returns();
+        logger.message
+            .withArgs(
+                Level.DEBUG,
+                dedent(`
+                    Successfully established communication with: https://example.org
+                    The provided Jira credentials belong to: Demo User
+                `)
+            )
+            .onFirstCall()
+            .returns();
         const promise = pingJiraInstance("https://example.org", new PATCredentials("token"));
         clock.tick(10000);
         await promise;
-        expect(stubbedInfo).to.have.been.calledOnceWithExactly(
-            "Waiting for https://example.org to respond... (10 seconds)"
-        );
     });
 });
 
@@ -202,7 +215,7 @@ describe("Xray server ping", () => {
     });
 
     it("logs progress", async () => {
-        const { stubbedInfo } = stubLogging();
+        const logger = getMockedLogger();
         const clock = Sinon.useFakeTimers();
         restClient.get
             .callsFake((...args: unknown[]) => {
@@ -221,12 +234,27 @@ describe("Xray server ping", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
+        logger.message
+            .withArgs(Level.INFO, "Waiting for https://example.org to respond... (10 seconds)")
+            .onFirstCall()
+            .returns();
+        logger.message
+            .withArgs(Level.DEBUG, "Pinging Xray server instance...")
+            .onFirstCall()
+            .returns();
+        logger.message
+            .withArgs(
+                Level.DEBUG,
+                dedent(`
+                    Successfully established communication with: https://example.org
+                    Xray license is active: Demo License
+                `)
+            )
+            .onFirstCall()
+            .returns();
         const promise = pingXrayServer("https://example.org", new PATCredentials("token"));
         clock.tick(10000);
         await promise;
-        expect(stubbedInfo).to.have.been.calledOnceWithExactly(
-            "Waiting for https://example.org to respond... (10 seconds)"
-        );
     });
 });
 
@@ -258,9 +286,8 @@ describe("Xray cloud ping", () => {
     });
 
     it("returns false on failure", async () => {
-        // Checked somewhere else.
-        stubLogging();
-        restClient.post.resolves({
+        getMockedLogger({ allowUnstubbedCalls: true });
+        restClient.post.onFirstCall().resolves({
             status: HttpStatusCode.NotFound,
             data: "<div>Not Found</div>",
             headers: {},

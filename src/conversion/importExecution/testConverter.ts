@@ -1,6 +1,6 @@
 import Path, { basename } from "path";
 import { gte, lt } from "semver";
-import { logWarning } from "../../logging/logging";
+import { LOG, Level } from "../../logging/logging";
 import { getNativeTestIssueKey } from "../../preprocessing/preprocessing";
 import {
     CypressRunResult as CypressRunResult_V12,
@@ -59,7 +59,8 @@ export class TestConverter {
                 );
                 xrayTests.push(test);
             } catch (error: unknown) {
-                logWarning(
+                LOG.message(
+                    Level.WARNING,
                     dedent(`
                         Skipping result upload for test: ${testData.title}
 
@@ -127,7 +128,8 @@ export class TestConverter {
             if (promise.status === "fulfilled") {
                 testRunData.push(promise.value);
             } else {
-                logWarning(
+                LOG.message(
+                    Level.WARNING,
                     dedent(`
                         Skipping result upload for test: ${conversionPromises[index][0]}
 
@@ -142,7 +144,8 @@ export class TestConverter {
                     for (const screenshot of run.screenshots) {
                         if (!this.willBeUploaded(screenshot, testRunData)) {
                             const path = Path.parse(screenshot.path);
-                            logWarning(
+                            LOG.message(
+                                Level.WARNING,
                                 dedent(`
                                     Screenshot will not be uploaded: ${screenshot.path}
 

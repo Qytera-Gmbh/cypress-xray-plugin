@@ -4,7 +4,7 @@ import {
     PATCredentials,
 } from "../authentication/credentials";
 import { REST } from "../https/requests";
-import { logDebug, logInfo } from "../logging/logging";
+import { LOG, Level } from "../logging/logging";
 import { IUser } from "../types/jira/responses/user";
 import { dedent } from "./dedent";
 import { errorMessage } from "./errors";
@@ -25,9 +25,9 @@ export async function pingJiraInstance(
     url: string,
     credentials: BasicAuthCredentials | PATCredentials
 ): Promise<void> {
-    logDebug("Pinging Jira instance...");
+    LOG.message(Level.DEBUG, "Pinging Jira instance...");
     const progressInterval = startInterval((totalTime: number) => {
-        logInfo(`Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
+        LOG.message(Level.INFO, `Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
     });
     try {
         const header = await credentials.getAuthorizationHeader();
@@ -38,7 +38,8 @@ export async function pingJiraInstance(
         });
         const username = getUserString(userResponse.data);
         if (username) {
-            logDebug(
+            LOG.message(
+                Level.DEBUG,
                 dedent(`
                     Successfully established communication with: ${url}
                     The provided Jira credentials belong to: ${username}
@@ -89,9 +90,9 @@ export async function pingXrayServer(
     url: string,
     credentials: BasicAuthCredentials | PATCredentials
 ): Promise<void> {
-    logDebug("Pinging Xray server instance...");
+    LOG.message(Level.DEBUG, "Pinging Xray server instance...");
     const progressInterval = startInterval((totalTime: number) => {
-        logInfo(`Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
+        LOG.message(Level.INFO, `Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
     });
     try {
         const header = await credentials.getAuthorizationHeader();
@@ -102,7 +103,8 @@ export async function pingXrayServer(
         });
         if (typeof licenseResponse.data === "object" && "active" in licenseResponse.data) {
             if (licenseResponse.data.active) {
-                logDebug(
+                LOG.message(
+                    Level.DEBUG,
                     dedent(`
                         Successfully established communication with: ${url}
                         Xray license is active: ${licenseResponse.data.licenseType}
@@ -150,10 +152,11 @@ export async function pingXrayServer(
  * @see https://docs.getxray.app/display/XRAYCLOUD/Authentication+-+REST+v2
  */
 export async function pingXrayCloud(credentials: JWTCredentials): Promise<void> {
-    logDebug("Pinging Xray cloud...");
+    LOG.message(Level.DEBUG, "Pinging Xray cloud...");
     try {
         await credentials.getAuthorizationHeader();
-        logDebug(
+        LOG.message(
+            Level.DEBUG,
             dedent(`
                 Successfully established communication with: ${credentials.getAuthenticationUrl()}
                 The provided credentials belong to a user with a valid Xray license

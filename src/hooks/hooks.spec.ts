@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { stub } from "sinon";
-import { stubLogging } from "../../test/mocks";
+import { getMockedLogger } from "../../test/mocks";
 import { PATCredentials } from "../authentication/credentials";
 import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
@@ -13,6 +13,7 @@ import {
     initPluginOptions,
     initXrayOptions,
 } from "../context";
+import { Level } from "../logging/logging";
 import { CachingJiraFieldRepository } from "../repository/jira/fields/jiraFieldRepository";
 import { JiraIssueFetcher } from "../repository/jira/fields/jiraIssueFetcher";
 import { CachingJiraRepository } from "../repository/jira/jiraRepository";
@@ -73,7 +74,7 @@ describe("the hooks", () => {
         });
 
         it("should fetch xray issue type information to prepare for cucumber results upload", async () => {
-            const { stubbedInfo } = stubLogging();
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             );
@@ -99,25 +100,26 @@ describe("the hooks", () => {
                 },
             ]);
             await beforeRunHook(beforeRunDetails.specs, options, clients);
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Fetching necessary Jira issue type information in preparation for Cucumber result uploads..."
-            );
             expect(options.jira.testExecutionIssueDetails).to.deep.eq({
                 name: "Test Execution",
                 id: "12345",
                 subtask: false,
             });
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Fetching necessary Jira issue type information in preparation for Cucumber result uploads..."
+            );
         });
 
         it("should not fetch xray issue type information for native results upload", async () => {
-            const { stubbedInfo } = stubLogging();
+            const logger = getMockedLogger();
             beforeRunDetails = JSON.parse(readFileSync("./test/resources/beforeRun.json", "utf-8"));
             await beforeRunHook(beforeRunDetails.specs, options, clients);
-            expect(stubbedInfo).to.not.have.been.called;
+            expect(logger.message).to.not.have.been.called;
         });
 
         it("should throw if xray test execution issue type information can not be fetched", async () => {
-            stubLogging();
+            getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             );
@@ -156,7 +158,7 @@ describe("the hooks", () => {
         });
 
         it("should throw if multiple xray test execution issue types are fetched", async () => {
-            stubLogging();
+            getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             );
@@ -200,7 +202,7 @@ describe("the hooks", () => {
         });
 
         it("should throw if jira issue type information cannot be fetched", async () => {
-            stubLogging();
+            getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             );

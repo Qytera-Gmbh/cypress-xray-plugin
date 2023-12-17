@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { stub } from "sinon";
-import { stubLogging } from "../test/mocks";
+import { getMockedLogger } from "../test/mocks";
 import { BasicAuthCredentials, JWTCredentials, PATCredentials } from "./authentication/credentials";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
@@ -16,6 +16,7 @@ import {
     initXrayOptions,
 } from "./context";
 import * as dependencies from "./dependencies";
+import { Level } from "./logging/logging";
 import {
     InternalCucumberOptions,
     InternalJiraOptions,
@@ -1121,11 +1122,25 @@ describe("the plugin context configuration", () => {
                 XRAY_CLIENT_ID: "abc",
                 XRAY_CLIENT_SECRET: "xyz",
             };
-            const { stubbedInfo } = stubLogging();
+            const logger = getMockedLogger();
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
             const stubbedXrayPing = stub(ping, "pingXrayCloud");
             stubbedJiraPing.onFirstCall().resolves();
             stubbedXrayPing.onFirstCall().resolves();
+            logger.message
+                .withArgs(
+                    Level.INFO,
+                    "Jira username and API token found. Setting up Jira cloud basic auth credentials"
+                )
+                .onFirstCall()
+                .returns();
+            logger.message
+                .withArgs(
+                    Level.INFO,
+                    "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
+                )
+                .onFirstCall()
+                .returns();
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
             expect(jiraClient).to.be.an.instanceof(JiraClientCloud);
             expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
@@ -1134,12 +1149,6 @@ describe("the plugin context configuration", () => {
             );
             expect((xrayClient as XrayClientCloud).getCredentials()).to.be.an.instanceof(
                 JWTCredentials
-            );
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and API token found. Setting up Jira cloud basic auth credentials"
-            );
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
             );
             expect(stubbedJiraPing).to.have.been.calledOnce;
             expect(stubbedXrayPing).to.have.been.calledOnce;
@@ -1150,17 +1159,21 @@ describe("the plugin context configuration", () => {
                 JIRA_USERNAME: "user@somewhere.xyz",
                 JIRA_API_TOKEN: "1337",
             };
-            const { stubbedInfo } = stubLogging();
+            const logger = getMockedLogger();
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
             stubbedJiraPing.onFirstCall().resolves();
+            logger.message
+                .withArgs(
+                    Level.INFO,
+                    "Jira username and API token found. Setting up Jira cloud basic auth credentials"
+                )
+                .onFirstCall()
+                .returns();
             await expect(initClients(jiraOptions, env)).to.eventually.be.rejectedWith(
                 dedent(`
                     Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials
                     You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
                 `)
-            );
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and API token found. Setting up Jira cloud basic auth credentials"
             );
         });
 
@@ -1168,11 +1181,19 @@ describe("the plugin context configuration", () => {
             const env = {
                 JIRA_API_TOKEN: "1337",
             };
-            const { stubbedInfo } = stubLogging();
+            const logger = getMockedLogger();
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
             const stubbedXrayPing = stub(ping, "pingXrayServer");
             stubbedJiraPing.onFirstCall().resolves();
             stubbedXrayPing.onFirstCall().resolves();
+            logger.message
+                .withArgs(Level.INFO, "Jira PAT found. Setting up Jira server PAT credentials")
+                .onFirstCall()
+                .returns();
+            logger.message
+                .withArgs(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials")
+                .onFirstCall()
+                .returns();
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
             expect(jiraClient).to.be.an.instanceof(JiraClientServer);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
@@ -1181,12 +1202,6 @@ describe("the plugin context configuration", () => {
             );
             expect((xrayClient as XrayClientServer).getCredentials()).to.be.an.instanceof(
                 PATCredentials
-            );
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Jira PAT found. Setting up Jira server PAT credentials"
-            );
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Jira PAT found. Setting up Xray server PAT credentials"
             );
             expect(stubbedJiraPing).to.have.been.calledOnce;
             expect(stubbedXrayPing).to.have.been.calledOnce;
@@ -1197,11 +1212,25 @@ describe("the plugin context configuration", () => {
                 JIRA_USERNAME: "user",
                 JIRA_PASSWORD: "1337",
             };
-            const { stubbedInfo } = stubLogging();
+            const logger = getMockedLogger();
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
             const stubbedXrayPing = stub(ping, "pingXrayServer");
             stubbedJiraPing.onFirstCall().resolves();
             stubbedXrayPing.onFirstCall().resolves();
+            logger.message
+                .withArgs(
+                    Level.INFO,
+                    "Jira username and password found. Setting up Jira server basic auth credentials"
+                )
+                .onFirstCall()
+                .returns();
+            logger.message
+                .withArgs(
+                    Level.INFO,
+                    "Jira username and password found. Setting up Xray server basic auth credentials"
+                )
+                .onFirstCall()
+                .returns();
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
             expect(jiraClient).to.be.an.instanceof(JiraClientServer);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
@@ -1210,12 +1239,6 @@ describe("the plugin context configuration", () => {
             );
             expect((xrayClient as XrayClientServer).getCredentials()).to.be.an.instanceof(
                 BasicAuthCredentials
-            );
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and password found. Setting up Jira server basic auth credentials"
-            );
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Jira username and password found. Setting up Xray server basic auth credentials"
             );
             expect(stubbedJiraPing).to.have.been.calledOnce;
             expect(stubbedXrayPing).to.have.been.calledOnce;
@@ -1229,7 +1252,7 @@ describe("the plugin context configuration", () => {
                 XRAY_CLIENT_ID: "abc",
                 XRAY_CLIENT_SECRET: "xyz",
             };
-            stubLogging();
+            getMockedLogger({ allowUnstubbedCalls: true });
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
             const stubbedXrayPing = stub(ping, "pingXrayCloud");
             stubbedJiraPing.onFirstCall().resolves();

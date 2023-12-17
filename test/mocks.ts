@@ -8,7 +8,7 @@ import { IXrayClient } from "../src/client/xray/xrayClient";
 import { IXrayClientCloud } from "../src/client/xray/xrayClientCloud";
 import { AxiosRestClient, REST } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
-import { initLogging } from "../src/logging/logging";
+import { ILogger } from "../src/logging/logging";
 import { IJiraFieldRepository } from "../src/repository/jira/fields/jiraFieldRepository";
 import { IJiraIssueFetcher, SupportedFields } from "../src/repository/jira/fields/jiraIssueFetcher";
 import { IJiraRepository } from "../src/repository/jira/jiraRepository";
@@ -18,85 +18,44 @@ import { IXrayTestExecutionResults } from "../src/types/xray/importTestExecution
 import { CucumberMultipartFeature } from "../src/types/xray/requests/importExecutionCucumberMultipart";
 import { ICucumberMultipartInfo } from "../src/types/xray/requests/importExecutionCucumberMultipartInfo";
 import { dedent } from "../src/util/dedent";
-import { TEST_TMP_DIR } from "./util";
 
 chai.use(sinonChai);
 
-before(() => {
-    stubLogging("initLogging");
-});
-
 beforeEach(() => {
     Sinon.restore();
-    initLogging({ logDirectory: TEST_TMP_DIR });
 });
 
-/**
- * Stubs the logging module members. An optional list of spies can be provided, which will result
- * in the corresponding members being spied on instead of stubbing them completely.
- *
- * @param spies - the array of members to spy on only
- * @returns an object containing the logging module's stubs or spies
- */
-export const stubLogging = (...spies: (keyof typeof logging)[]) => {
-    return {
-        stubbedInit: spies.includes("initLogging")
-            ? Sinon.spy(logging, "initLogging")
-            : Sinon.stub(logging, "initLogging"),
-        stubbedWrite: spies.includes("writeFile")
-            ? Sinon.spy(logging, "writeFile")
-            : Sinon.stub(logging, "writeFile"),
-        stubbedWriteErrorFile: spies.includes("writeErrorFile")
-            ? Sinon.spy(logging, "writeErrorFile")
-            : Sinon.stub(logging, "writeErrorFile"),
-        stubbedInfo: spies.includes("logInfo")
-            ? Sinon.spy(logging, "logInfo")
-            : Sinon.stub(logging, "logInfo"),
-        stubbedError: spies.includes("logError")
-            ? Sinon.spy(logging, "logError")
-            : Sinon.stub(logging, "logError"),
-        stubbedSuccess: spies.includes("logSuccess")
-            ? Sinon.spy(logging, "logSuccess")
-            : Sinon.stub(logging, "logSuccess"),
-        stubbedWarning: spies.includes("logWarning")
-            ? Sinon.spy(logging, "logWarning")
-            : Sinon.stub(logging, "logWarning"),
-        stubbedDebug: spies.includes("logDebug")
-            ? Sinon.spy(logging, "logDebug")
-            : Sinon.stub(logging, "logDebug"),
-    };
-};
+export function getMockedLogger(
+    options: { allowUnstubbedCalls?: boolean } = { allowUnstubbedCalls: false }
+): SinonStubbedInstance<ILogger> {
+    const logger = Sinon.stub(logging.LOG);
+    if (!options.allowUnstubbedCalls) {
+        logger.configure.callsFake((options: logging.LoggingOptions) => {
+            throw mockCalledUnexpectedlyError(options);
+        });
+        logger.logErrorToFile.callsFake((error: unknown, filename: string) => {
+            throw mockCalledUnexpectedlyError(error, filename);
+        });
+        logger.logToFile.callsFake((data: unknown, filename: string) => {
+            throw mockCalledUnexpectedlyError(data, filename);
+        });
+        logger.message.callsFake((level: logging.Level, ...text: string[]) => {
+            throw mockCalledUnexpectedlyError(level, text);
+        });
+    }
+    return logger;
+}
 
 export function getMockedRestClient(): SinonStubbedInstance<AxiosRestClient> {
     const client = Sinon.stub(REST);
     client.get.callsFake((url: string, config?: AxiosRequestConfig<undefined>) => {
-        throw new Error(
-            dedent(`
-                Mock called unexpectedly with args:
-                  arg 1: ${JSON.stringify(url)}
-                  arg 2: ${JSON.stringify(config)}
-            `)
-        );
+        throw mockCalledUnexpectedlyError(url, config);
     });
     client.post.callsFake((url: string, data?: unknown, config?: AxiosRequestConfig<unknown>) => {
-        throw new Error(
-            dedent(`
-                Mock called unexpectedly with args:
-                  arg 1: ${JSON.stringify(url)}
-                  arg 2: ${JSON.stringify(data)}
-                  arg 3: ${JSON.stringify(config)}
-            `)
-        );
+        throw mockCalledUnexpectedlyError(url, data, config);
     });
     client.put.callsFake((url: string, data?: unknown, config?: AxiosRequestConfig<unknown>) => {
-        throw new Error(
-            dedent(`
-                Mock called unexpectedly with args:
-                  arg 1: ${JSON.stringify(url)}
-                  arg 2: ${JSON.stringify(data)}
-                  arg 3: ${JSON.stringify(config)}
-            `)
-        );
+        throw mockCalledUnexpectedlyError(url, data, config);
     });
     return client;
 }
@@ -104,36 +63,19 @@ export function getMockedRestClient(): SinonStubbedInstance<AxiosRestClient> {
 export function getMockedJiraClient(): SinonStubbedInstance<IJiraClient> {
     const client: IJiraClient = {
         addAttachment: function (issueIdOrKey: string, ...files: string[]) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(issueIdOrKey)}
-                      arg 2: ${JSON.stringify(files)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(issueIdOrKey, files);
         },
         getIssueTypes: function () {
-            throw new Error("Mock called unexpectedly");
+            throw mockCalledUnexpectedlyError();
         },
         getFields: function () {
-            throw new Error("Mock called unexpectedly");
+            throw mockCalledUnexpectedlyError();
         },
         search: function (request: ISearchRequest) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(request)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(request);
         },
         editIssue: function (issueIdOrKey: string, issueUpdateData: IIssueUpdate) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(issueIdOrKey)}
-                      arg 2: ${JSON.stringify(issueUpdateData)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(issueIdOrKey, issueUpdateData);
         },
     };
     return makeTransparent(Sinon.stub(client));
@@ -150,21 +92,10 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
     if (kind !== "cloud") {
         const client: IXrayClient = {
             importExecution: function (execution: IXrayTestExecutionResults) {
-                throw new Error(
-                    dedent(`
-                        Mock called unexpectedly with args:
-                          arg 1: ${JSON.stringify(execution)}
-                    `)
-                );
+                throw mockCalledUnexpectedlyError(execution);
             },
             exportCucumber: function (keys?: string[], filter?: number) {
-                throw new Error(
-                    dedent(`
-                        Mock called unexpectedly with args:
-                          arg 1: ${JSON.stringify(keys)}
-                          arg 2: ${JSON.stringify(filter)}
-                    `)
-                );
+                throw mockCalledUnexpectedlyError(keys, filter);
             },
             importFeature: function (
                 file: string,
@@ -172,48 +103,23 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
                 projectId?: string,
                 source?: string
             ) {
-                throw new Error(
-                    dedent(`
-                        Mock called unexpectedly with args:
-                          arg 1: ${JSON.stringify(file)}
-                          arg 2: ${JSON.stringify(projectKey)}
-                          arg 3: ${JSON.stringify(projectId)}
-                          arg 4: ${JSON.stringify(source)}
-                    `)
-                );
+                throw mockCalledUnexpectedlyError(file, projectKey, projectId, source);
             },
             importExecutionCucumberMultipart: function (
                 cucumberJson: CucumberMultipartFeature[],
                 cucumberInfo: ICucumberMultipartInfo
             ) {
-                throw new Error(
-                    dedent(`
-                        Mock called unexpectedly with args:
-                          arg 1: ${JSON.stringify(cucumberJson)}
-                          arg 2: ${JSON.stringify(cucumberInfo)}
-                    `)
-                );
+                throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
             },
         };
         return makeTransparent(Sinon.stub(client));
     }
     const client: IXrayClientCloud = {
         importExecution: function (execution: IXrayTestExecutionResults) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(execution)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(execution);
         },
         exportCucumber: function (keys?: string[], filter?: number) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(keys)}
-                      arg 2: ${JSON.stringify(filter)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(keys, filter);
         },
         importFeature: function (
             file: string,
@@ -221,36 +127,16 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             projectId?: string,
             source?: string
         ) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(file)}
-                      arg 2: ${JSON.stringify(projectKey)}
-                      arg 3: ${JSON.stringify(projectId)}
-                      arg 4: ${JSON.stringify(source)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(file, projectKey, projectId, source);
         },
         importExecutionCucumberMultipart: function (
             cucumberJson: CucumberMultipartFeature[],
             cucumberInfo: ICucumberMultipartInfo
         ) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(cucumberJson)}
-                      arg 2: ${JSON.stringify(cucumberInfo)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
         },
         getTestTypes: function (projectKey: string, ...issueKeys: string[]) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(projectKey)}
-                      arg 2: ${JSON.stringify(issueKeys)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(projectKey, issueKeys);
         },
     };
     return makeTransparent(Sinon.stub(client));
@@ -259,12 +145,7 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
 export function getMockedJiraFieldRepository(): SinonStubbedInstance<IJiraFieldRepository> {
     const fieldRepository: IJiraFieldRepository = {
         getFieldId: function (fieldName: SupportedFields) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(fieldName)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(fieldName);
         },
     };
     return makeTransparent(Sinon.stub(fieldRepository));
@@ -273,36 +154,16 @@ export function getMockedJiraFieldRepository(): SinonStubbedInstance<IJiraFieldR
 export function getMockedJiraIssueFetcher(): SinonStubbedInstance<IJiraIssueFetcher> {
     const jiraIssueFetcher: IJiraIssueFetcher = {
         fetchDescriptions: function (...issueKeys: string[]) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(issueKeys)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(issueKeys);
         },
         fetchLabels: function (...issueKeys: string[]) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(issueKeys)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(issueKeys);
         },
         fetchSummaries: function (...issueKeys: string[]) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(issueKeys)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(issueKeys);
         },
         fetchTestTypes: function (...issueKeys: string[]) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(issueKeys)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(issueKeys);
         },
     };
     return makeTransparent(Sinon.stub(jiraIssueFetcher));
@@ -311,44 +172,19 @@ export function getMockedJiraIssueFetcher(): SinonStubbedInstance<IJiraIssueFetc
 export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository> {
     const jiraRepository: IJiraRepository = {
         getFieldId: function (fieldName: SupportedFields) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(fieldName)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(fieldName);
         },
         getDescriptions: function (...issueKeys: string[]) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(issueKeys)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(issueKeys);
         },
         getLabels: function (...issueKeys: string[]) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(issueKeys)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(issueKeys);
         },
         getSummaries: function (...issueKeys: string[]) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(issueKeys)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(issueKeys);
         },
         getTestTypes: function (...issueKeys: string[]) {
-            throw new Error(
-                dedent(`
-                    Mock called unexpectedly with args:
-                      arg 1: ${JSON.stringify(issueKeys)}
-                `)
-            );
+            throw mockCalledUnexpectedlyError(issueKeys);
         },
     };
     return makeTransparent(Sinon.stub(jiraRepository));
@@ -356,6 +192,18 @@ export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository>
 
 export function getMockedJWTCredentials(): SinonStubbedInstance<JWTCredentials> {
     return makeTransparent(Sinon.stub(new JWTCredentials("abc", "xyz", "https://example.org")));
+}
+
+function mockCalledUnexpectedlyError(...args: unknown[]): Error {
+    if (args.length > 0) {
+        return new Error(
+            dedent(`
+                Mock called unexpectedly with args:
+                  ${args.map((arg, index) => `arg ${index}: ${JSON.stringify(arg)}`).join("\n")};
+            `)
+        );
+    }
+    return new Error("Mock called unexpectedly");
 }
 
 /**

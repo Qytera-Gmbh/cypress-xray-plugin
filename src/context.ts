@@ -9,7 +9,7 @@ import {
     importOptionalDependency,
 } from "./dependencies";
 import { ENV_NAMES } from "./env";
-import { logDebug, logInfo } from "./logging/logging";
+import { LOG, Level } from "./logging/logging";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import { JiraIssueFetcher, JiraIssueFetcherCloud } from "./repository/jira/fields/jiraIssueFetcher";
 import { CachingJiraRepository } from "./repository/jira/jiraRepository";
@@ -209,7 +209,8 @@ export async function initCucumberOptions(
                 `)
             );
         }
-        logDebug(
+        LOG.message(
+            Level.DEBUG,
             `Successfully resolved configuration of @badeball/cypress-cucumber-preprocessor package`
         );
         const preprocessorConfiguration = await preprocessor.resolvePreprocessorConfiguration(
@@ -295,7 +296,10 @@ export async function initClients(
         ENV_NAMES.authentication.jira.apiToken in env
     ) {
         // Jira cloud authentication: username (Email) and token.
-        logInfo("Jira username and API token found. Setting up Jira cloud basic auth credentials");
+        LOG.message(
+            Level.INFO,
+            "Jira username and API token found. Setting up Jira cloud basic auth credentials"
+        );
         const credentials = new BasicAuthCredentials(
             env[ENV_NAMES.authentication.jira.username],
             env[ENV_NAMES.authentication.jira.apiToken]
@@ -307,7 +311,8 @@ export async function initClients(
             ENV_NAMES.authentication.xray.clientSecret in env
         ) {
             // Xray cloud authentication: client ID and client secret.
-            logInfo(
+            LOG.message(
+                Level.INFO,
                 "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
             );
             const xrayCredentials = new JWTCredentials(
@@ -340,12 +345,12 @@ export async function initClients(
         }
     } else if (ENV_NAMES.authentication.jira.apiToken in env && jiraOptions.url) {
         // Jira server authentication: no username, only token.
-        logInfo("Jira PAT found. Setting up Jira server PAT credentials");
+        LOG.message(Level.INFO, "Jira PAT found. Setting up Jira server PAT credentials");
         const credentials = new PATCredentials(env[ENV_NAMES.authentication.jira.apiToken]);
         await pingJiraInstance(jiraOptions.url, credentials);
         const jiraClient = new JiraClientServer(jiraOptions.url, credentials);
         // Xray server authentication: no username, only token.
-        logInfo("Jira PAT found. Setting up Xray server PAT credentials");
+        LOG.message(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials");
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
         const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
@@ -365,14 +370,20 @@ export async function initClients(
         ENV_NAMES.authentication.jira.password in env &&
         jiraOptions.url
     ) {
-        logInfo("Jira username and password found. Setting up Jira server basic auth credentials");
+        LOG.message(
+            Level.INFO,
+            "Jira username and password found. Setting up Jira server basic auth credentials"
+        );
         const credentials = new BasicAuthCredentials(
             env[ENV_NAMES.authentication.jira.username],
             env[ENV_NAMES.authentication.jira.password]
         );
         await pingJiraInstance(jiraOptions.url, credentials);
         const jiraClient = new JiraClientServer(jiraOptions.url, credentials);
-        logInfo("Jira username and password found. Setting up Xray server basic auth credentials");
+        LOG.message(
+            Level.INFO,
+            "Jira username and password found. Setting up Xray server basic auth credentials"
+        );
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
         const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);

@@ -1,7 +1,7 @@
 import axios, { Axios, AxiosRequestConfig, AxiosResponse, isAxiosError } from "axios";
 import { readFileSync } from "fs";
 import { Agent } from "https";
-import { logDebug, writeFile } from "../logging/logging";
+import { LOG, Level } from "../logging/logging";
 import { InternalOpenSSLOptions } from "../types/plugin";
 import { normalizedFilename } from "../util/files";
 
@@ -60,7 +60,7 @@ export class AxiosRestClient {
                         const filename = normalizedFilename(
                             `${timestamp}_${method}_${url}_request.json`
                         );
-                        const resolvedFilename = writeFile(
+                        const resolvedFilename = LOG.logToFile(
                             {
                                 url: url,
                                 headers: request.headers,
@@ -69,7 +69,7 @@ export class AxiosRestClient {
                             },
                             filename
                         );
-                        logDebug(`Request:  ${resolvedFilename}`);
+                        LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
                         return request;
                     },
                     (error) => {
@@ -87,8 +87,8 @@ export class AxiosRestClient {
                             filename = normalizedFilename(`${timestamp}_request.json`);
                             data = error;
                         }
-                        const resolvedFilename = writeFile(data, filename);
-                        logDebug(`Request:  ${resolvedFilename}`);
+                        const resolvedFilename = LOG.logToFile(data, filename);
+                        LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
                         return Promise.reject(error);
                     }
                 );
@@ -100,7 +100,7 @@ export class AxiosRestClient {
                         const filename = normalizedFilename(
                             `${timestamp}_${method}_${url}_response.json`
                         );
-                        const resolvedFilename = writeFile(
+                        const resolvedFilename = LOG.logToFile(
                             {
                                 data: response.data,
                                 headers: response.headers,
@@ -109,7 +109,7 @@ export class AxiosRestClient {
                             },
                             filename
                         );
-                        logDebug(`Response: ${resolvedFilename}`);
+                        LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
                         return response;
                     },
                     (error) => {
@@ -127,8 +127,8 @@ export class AxiosRestClient {
                             filename = normalizedFilename(`${timestamp}_response.json`);
                             data = error;
                         }
-                        const resolvedFilename = writeFile(data, filename);
-                        logDebug(`Response: ${resolvedFilename}`);
+                        const resolvedFilename = LOG.logToFile(data, filename);
+                        LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
                         return Promise.reject(error);
                     }
                 );

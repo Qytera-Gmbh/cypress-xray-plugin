@@ -1,7 +1,7 @@
 import FormData from "form-data";
 import { JWTCredentials } from "../../authentication/credentials";
 import { RequestConfigPost, REST } from "../../https/requests";
-import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
+import { Level, LOG } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
@@ -96,7 +96,8 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         };
         if (cloudResponse.errors.length > 0) {
             response.errors.push(...cloudResponse.errors);
-            logDebug(
+            LOG.message(
+                Level.DEBUG,
                 dedent(`
                     Encountered some errors during feature file import:
                     ${cloudResponse.errors.map((error: string) => `- ${error}`).join("\n")}
@@ -108,7 +109,8 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
                 (test: IssueDetails) => test.key
             );
             response.updatedOrCreatedIssues.push(...testKeys);
-            logDebug(
+            LOG.message(
+                Level.DEBUG,
                 dedent(`
                     Successfully updated or created test issues:
                     ${testKeys.join("\n")}
@@ -120,7 +122,8 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
                 (test: IssueDetails) => test.key
             );
             response.updatedOrCreatedIssues.push(...preconditionKeys);
-            logDebug(
+            LOG.message(
+                Level.DEBUG,
                 dedent(`
                     Successfully updated or created precondition issues:
                     ${preconditionKeys.join(", ")}
@@ -136,11 +139,11 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
     ): Promise<StringMap<string>> {
         try {
             if (!issueKeys || issueKeys.length === 0) {
-                logWarning("No issue keys provided. Skipping test type retrieval");
+                LOG.message(Level.WARNING, "No issue keys provided. Skipping test type retrieval");
                 return {};
             }
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            logDebug("Retrieving test types...");
+            LOG.message(Level.DEBUG, "Retrieving test types...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const types: StringMap<string> = {};
@@ -209,14 +212,17 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
                         `)
                     );
                 }
-                logDebug(`Successfully retrieved test types for ${issueKeys.length} issues`);
+                LOG.message(
+                    Level.DEBUG,
+                    `Successfully retrieved test types for ${issueKeys.length} issues`
+                );
                 return types;
             } finally {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to get test types: ${error}`);
-            writeErrorFile(error, "getTestTypes");
+            LOG.message(Level.ERROR, `Failed to get test types: ${error}`);
+            LOG.logErrorToFile(error, "getTestTypes");
         }
         return {};
     }

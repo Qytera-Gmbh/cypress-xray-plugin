@@ -1,4 +1,4 @@
-import { logError } from "../../logging/logging";
+import { LOG, Level } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
@@ -91,13 +91,13 @@ export class CachingJiraRepository implements IJiraRepository {
                 throw new Error(
                     dedent(`
                         Make sure these issues exist:
-
                           ${missingSummaries.join("\n")}
                     `)
                 );
             }
         } catch (error: unknown) {
-            logError(
+            LOG.message(
+                Level.ERROR,
                 dedent(`
                     Failed to fetch issue summaries
                     ${errorMessage(error)}
@@ -122,13 +122,13 @@ export class CachingJiraRepository implements IJiraRepository {
                 throw new Error(
                     dedent(`
                         Make sure these issues exist:
-
                           ${missingDescriptions.join("\n")}
                     `)
                 );
             }
         } catch (error: unknown) {
-            logError(
+            LOG.message(
+                Level.ERROR,
                 dedent(`
                     Failed to fetch issue descriptions
                     ${errorMessage(error)}
@@ -153,13 +153,13 @@ export class CachingJiraRepository implements IJiraRepository {
                 throw new Error(
                     dedent(`
                         Make sure these issues exist and are test issues:
-
                           ${missingTestTypes.join("\n")}
                     `)
                 );
             }
         } catch (error: unknown) {
-            logError(
+            LOG.message(
+                Level.ERROR,
                 dedent(`
                     Failed to fetch issue test types
                     ${errorMessage(error)}
@@ -184,13 +184,13 @@ export class CachingJiraRepository implements IJiraRepository {
                 throw new Error(
                     dedent(`
                         Make sure these issues exist:
-
                           ${missingLabels.join("\n")}
                     `)
                 );
             }
         } catch (error: unknown) {
-            logError(
+            LOG.message(
+                Level.ERROR,
                 dedent(`
                     Failed to fetch issue labels
                     ${errorMessage(error)}

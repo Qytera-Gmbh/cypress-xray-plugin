@@ -2,7 +2,7 @@ import fs from "fs";
 import { IJiraClient } from "../client/jira/jiraClient";
 import { ImportExecutionConverter } from "../conversion/importExecution/importExecutionConverter";
 import { ImportExecutionCucumberMultipartConverter } from "../conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverter";
-import { logError, logInfo, logSuccess, logWarning } from "../logging/logging";
+import { LOG, Level } from "../logging/logging";
 import { containsCucumberTest, containsNativeTest } from "../preprocessing/preprocessing";
 import { IIssueTypeDetails } from "../types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalOptions } from "../types/plugin";
@@ -26,7 +26,8 @@ export async function beforeRunHook(
                 spec.absolute.endsWith(options.cucumber.featureFileExtension)
         )
     ) {
-        logInfo(
+        LOG.message(
+            Level.INFO,
             "Fetching necessary Jira issue type information in preparation for Cucumber result uploads..."
         );
         const issueDetails = await clients.jiraClient.getIssueTypes();
@@ -93,14 +94,15 @@ export async function afterRunHook(
     const runResult = results as CypressCommandLine.CypressRunResult;
     let issueKey: string | null | undefined = null;
     if (containsNativeTest(runResult, options.cucumber?.featureFileExtension)) {
-        logInfo("Uploading native Cypress test results...");
+        LOG.message(Level.INFO, "Uploading native Cypress test results...");
         issueKey = await uploadCypressResults(runResult, options, clients);
         if (
             options.jira.testExecutionIssueKey &&
             issueKey &&
             issueKey !== options.jira.testExecutionIssueKey
         ) {
-            logWarning(
+            LOG.message(
+                Level.WARNING,
                 dedent(`
                     Cypress execution results were imported to test execution ${issueKey}, which is different from the configured one: ${options.jira.testExecutionIssueKey}
 
@@ -113,14 +115,15 @@ export async function afterRunHook(
         }
     }
     if (containsCucumberTest(runResult, options.cucumber?.featureFileExtension)) {
-        logInfo("Uploading Cucumber test results...");
+        LOG.message(Level.INFO, "Uploading Cucumber test results...");
         const cucumberIssueKey = await uploadCucumberResults(runResult, options, clients);
         if (
             options.jira.testExecutionIssueKey &&
             cucumberIssueKey &&
             cucumberIssueKey !== options.jira.testExecutionIssueKey
         ) {
-            logWarning(
+            LOG.message(
+                Level.WARNING,
                 dedent(`
                     Cucumber execution results were imported to test execution ${cucumberIssueKey}, which is different from the configured one: ${options.jira.testExecutionIssueKey}
 
@@ -134,7 +137,8 @@ export async function afterRunHook(
             cucumberIssueKey &&
             cucumberIssueKey !== issueKey
         ) {
-            logWarning(
+            LOG.message(
+                Level.WARNING,
                 dedent(`
                     Cucumber execution results were imported to a different test execution issue than the Cypress execution results.
 
@@ -146,13 +150,17 @@ export async function afterRunHook(
         }
     }
     if (issueKey === undefined) {
-        logWarning("Execution results import failed. Skipping remaining tasks");
+        LOG.message(Level.WARNING, "Execution results import failed. Skipping remaining tasks");
         return;
     } else if (issueKey === null) {
-        logWarning("Execution results import was skipped. Skipping remaining tasks");
+        LOG.message(
+            Level.WARNING,
+            "Execution results import was skipped. Skipping remaining tasks"
+        );
         return;
     }
-    logSuccess(
+    LOG.message(
+        Level.SUCCESS,
         `Uploaded test results to issue: ${issueKey} (${options.jira.url}/browse/${issueKey})`
     );
     if (options.jira.attachVideos) {
@@ -170,7 +178,7 @@ async function uploadCypressResults(
         const cypressExecution = await converter.toXrayJson(runResult);
         return await clients.xrayClient.importExecution(cypressExecution);
     } catch (error: unknown) {
-        logError(errorMessage(error));
+        LOG.message(Level.ERROR, errorMessage(error));
     }
 }
 
@@ -210,7 +218,7 @@ async function attachVideos(
         })
         .filter(nonNull);
     if (videos.length === 0) {
-        logWarning("No videos were uploaded: No videos have been captured");
+        LOG.message(Level.WARNING, "No videos were uploaded: No videos have been captured");
     } else {
         await jiraClient.addAttachment(issueKey, ...videos);
     }
