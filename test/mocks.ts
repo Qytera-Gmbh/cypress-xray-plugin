@@ -47,13 +47,7 @@ export function getMockedJiraClient(): SinonStubbedInstance<IJiraClient> {
             );
         },
     };
-    const stub = Sinon.stub(client);
-    stub.addAttachment.callThrough();
-    stub.getIssueTypes.callThrough();
-    stub.getFields.callThrough();
-    stub.search.callThrough();
-    stub.editIssue.callThrough();
-    return stub;
+    return makeTransparent(Sinon.stub(client));
 }
 
 interface XrayClientMap {
@@ -112,12 +106,7 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
                 );
             },
         };
-        const stub = Sinon.stub(client);
-        stub.importExecution.callThrough();
-        stub.exportCucumber.callThrough();
-        stub.importFeature.callThrough();
-        stub.importExecutionCucumberMultipart.callThrough();
-        return stub;
+        return makeTransparent(Sinon.stub(client));
     }
     const client: IXrayClientCloud = {
         importExecution: function (execution: IXrayTestExecutionResults) {
@@ -175,13 +164,7 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             );
         },
     };
-    const stub = Sinon.stub(client);
-    stub.importExecution.callThrough();
-    stub.exportCucumber.callThrough();
-    stub.importFeature.callThrough();
-    stub.importExecutionCucumberMultipart.callThrough();
-    stub.getTestTypes.callThrough();
-    return stub;
+    return makeTransparent(Sinon.stub(client));
 }
 
 export function getMockedJiraFieldRepository(): SinonStubbedInstance<IJiraFieldRepository> {
@@ -195,9 +178,7 @@ export function getMockedJiraFieldRepository(): SinonStubbedInstance<IJiraFieldR
             );
         },
     };
-    const stub = Sinon.stub(fieldRepository);
-    stub.getFieldId.callThrough();
-    return stub;
+    return makeTransparent(Sinon.stub(fieldRepository));
 }
 
 export function getMockedJiraIssueFetcher(): SinonStubbedInstance<IJiraIssueFetcher> {
@@ -235,12 +216,7 @@ export function getMockedJiraIssueFetcher(): SinonStubbedInstance<IJiraIssueFetc
             );
         },
     };
-    const stub = Sinon.stub(jiraIssueFetcher);
-    stub.fetchDescriptions.callThrough();
-    stub.fetchLabels.callThrough();
-    stub.fetchSummaries.callThrough();
-    stub.fetchTestTypes.callThrough();
-    return stub;
+    return makeTransparent(Sinon.stub(jiraIssueFetcher));
 }
 
 export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository> {
@@ -286,11 +262,43 @@ export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository>
             );
         },
     };
-    const stub = Sinon.stub(jiraRepository);
-    stub.getFieldId.callThrough();
-    stub.getDescriptions.callThrough();
-    stub.getLabels.callThrough();
-    stub.getSummaries.callThrough();
-    stub.getTestTypes.callThrough();
+    return makeTransparent(Sinon.stub(jiraRepository));
+}
+
+/**
+ * Forces stubs to call the real method unless overriden in tests.
+ *
+ * @param stub - the stub
+ * @returns the transparent stub
+ */
+function makeTransparent<T>(stub: SinonStubbedInstance<T>): SinonStubbedInstance<T> {
+    Object.values(stub).forEach((value: unknown) => {
+        if (isStubbedFunction(value)) {
+            value.callThrough();
+        }
+    });
     return stub;
+}
+
+/**
+ * Checks whether a function is a stubbed function.
+ *
+ * @param f - the function
+ * @returns `true` if the function is a stubbed function, `false` otherwise
+ *
+ * @see https://github.com/sinonjs/sinon/issues/532
+ */
+function isStubbedFunction<T extends unknown[], R>(f: unknown): f is Sinon.SinonStub<T, R> {
+    if (f === null || typeof f !== "function" || !("restore" in f)) {
+        return false;
+    }
+    const wrappedMethod = f["restore"];
+    if (
+        wrappedMethod === null ||
+        typeof wrappedMethod !== "function" ||
+        !("sinon" in wrappedMethod)
+    ) {
+        return false;
+    }
+    return wrappedMethod["sinon"] === true;
 }
