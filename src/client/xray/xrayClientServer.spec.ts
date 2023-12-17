@@ -1,8 +1,10 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
-import { stubLogging, stubRequests } from "../../../test/mocks";
+import { SinonStubbedInstance } from "sinon";
+import { getMockedRestClient, stubLogging } from "../../../test/mocks";
 import { BasicAuthCredentials } from "../../authentication/credentials";
+import { AxiosRestClient } from "../../https/requests";
 import { dedent } from "../../util/dedent";
 import { XrayClientServer } from "./xrayClientServer";
 
@@ -11,11 +13,15 @@ describe("the xray server client", () => {
         "https://example.org",
         new BasicAuthCredentials("user", "xyz")
     );
+    let restClient: SinonStubbedInstance<AxiosRestClient>;
+
+    beforeEach(() => {
+        restClient = getMockedRestClient();
+    });
 
     describe("import execution", () => {
         it("should handle successful responses", async () => {
-            const { stubbedPost } = stubRequests();
-            stubbedPost.resolves({
+            restClient.post.resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     testExecIssue: {
@@ -61,8 +67,7 @@ describe("the xray server client", () => {
 
     describe("import execution cucumber multipart", () => {
         it("should handle successful responses", async () => {
-            const { stubbedPost } = stubRequests();
-            stubbedPost.resolves({
+            restClient.post.resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     testExecIssue: {
@@ -95,8 +100,7 @@ describe("the xray server client", () => {
 
     describe("import feature", () => {
         it("handles successful responses", async () => {
-            const { stubbedPost } = stubRequests();
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: [
                     {
@@ -143,9 +147,8 @@ describe("the xray server client", () => {
         });
 
         it("handles responses with errors", async () => {
-            const { stubbedPost } = stubRequests();
             const { stubbedDebug } = stubLogging();
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     message: "Test with key CYP-333 was not found!",
@@ -191,9 +194,8 @@ describe("the xray server client", () => {
         });
 
         it("handles responses without any updated issues", async () => {
-            const { stubbedPost } = stubRequests();
             const { stubbedDebug } = stubLogging();
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     message:
@@ -222,7 +224,6 @@ describe("the xray server client", () => {
         });
 
         it("handles bad responses", async () => {
-            const { stubbedPost } = stubRequests();
             const { stubbedError, stubbedWriteErrorFile } = stubLogging();
             const error = new AxiosError(
                 "Request failed with status code 400",
@@ -239,7 +240,7 @@ describe("the xray server client", () => {
                     },
                 }
             );
-            stubbedPost.onFirstCall().rejects(error);
+            restClient.post.onFirstCall().rejects(error);
             await expect(
                 client.importFeature(
                     "./test/resources/features/taggedPrefixCorrect.feature",

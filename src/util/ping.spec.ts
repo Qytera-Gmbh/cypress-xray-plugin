@@ -1,50 +1,51 @@
-import { AxiosHeaders, AxiosResponse, HttpStatusCode } from "axios";
+import { AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import Sinon from "sinon";
-import { getMockedJWTCredentials, stubLogging, stubRequests } from "../../test/mocks";
+import Sinon, { SinonStubbedInstance } from "sinon";
+import { getMockedJWTCredentials, getMockedRestClient, stubLogging } from "../../test/mocks";
 import { JWTCredentials, PATCredentials } from "../authentication/credentials";
-import { IUser } from "../types/jira/responses/user";
-import { XrayLicenseStatus } from "../types/xray/responses/license";
+import { AxiosRestClient } from "../https/requests";
 import { dedent } from "./dedent";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./ping";
 
 chai.use(chaiAsPromised);
 
 describe("Jira instance ping", () => {
+    let restClient: SinonStubbedInstance<AxiosRestClient>;
+
+    beforeEach(() => {
+        restClient = getMockedRestClient();
+    });
+
     it("returns true on success", async () => {
-        const { stubbedGet } = stubRequests();
-        const response: AxiosResponse<IUser> = {
-            status: HttpStatusCode.Ok,
-            data: {
-                active: true,
-                displayName: "Demo User",
-            },
-            headers: {},
-            statusText: HttpStatusCode[HttpStatusCode.Ok],
-            config: { headers: new AxiosHeaders() },
-        };
-        stubbedGet
+        restClient.get
             .callsFake((...args: unknown[]) => {
                 throw new Error(`Cannot call GET stub with arguments: ${args}`);
             })
             .withArgs("https://example.org/rest/api/latest/myself", {
                 headers: { Authorization: "Bearer token" },
             })
-            .resolves(response);
+            .resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    active: true,
+                    displayName: "Demo User",
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
         await pingJiraInstance("https://example.org", new PATCredentials("token"));
     });
 
     it("returns false if no license data is returned", async () => {
-        const { stubbedGet } = stubRequests();
-        const response: AxiosResponse<string> = {
+        restClient.get.resolves({
             status: HttpStatusCode.Ok,
             data: "<div>Welcome</div>",
             headers: {},
             statusText: HttpStatusCode[HttpStatusCode.Ok],
             config: { headers: new AxiosHeaders() },
-        };
-        stubbedGet.resolves(response);
+        });
         await expect(
             pingJiraInstance("https://example.org", new PATCredentials("token"))
         ).to.eventually.be.rejectedWith(
@@ -63,8 +64,7 @@ describe("Jira instance ping", () => {
     });
 
     it("returns false if user data is missing", async () => {
-        const { stubbedGet } = stubRequests();
-        const response: AxiosResponse<IUser> = {
+        restClient.get.resolves({
             status: HttpStatusCode.Ok,
             data: {
                 active: true,
@@ -72,8 +72,7 @@ describe("Jira instance ping", () => {
             headers: {},
             statusText: HttpStatusCode[HttpStatusCode.Ok],
             config: { headers: new AxiosHeaders() },
-        };
-        stubbedGet.resolves(response);
+        });
         await expect(
             pingJiraInstance("https://example.org", new PATCredentials("token"))
         ).to.eventually.be.rejectedWith(
@@ -92,27 +91,25 @@ describe("Jira instance ping", () => {
     });
 
     it("logs progress", async () => {
-        const { stubbedGet } = stubRequests();
         const { stubbedInfo } = stubLogging();
         const clock = Sinon.useFakeTimers();
-        const response: AxiosResponse<IUser> = {
-            status: HttpStatusCode.Ok,
-            data: {
-                active: true,
-                displayName: "Demo User",
-            },
-            headers: {},
-            statusText: HttpStatusCode[HttpStatusCode.Ok],
-            config: { headers: new AxiosHeaders() },
-        };
-        stubbedGet
+        restClient.get
             .callsFake((...args: unknown[]) => {
                 throw new Error(`Cannot call GET stub with arguments: ${args}`);
             })
             .withArgs("https://example.org/rest/api/latest/myself", {
                 headers: { Authorization: "Bearer token" },
             })
-            .resolves(response);
+            .resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    active: true,
+                    displayName: "Demo User",
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
         const promise = pingJiraInstance("https://example.org", new PATCredentials("token"));
         clock.tick(10000);
         await promise;
@@ -123,39 +120,40 @@ describe("Jira instance ping", () => {
 });
 
 describe("Xray server ping", () => {
+    let restClient: SinonStubbedInstance<AxiosRestClient>;
+
+    beforeEach(() => {
+        restClient = getMockedRestClient();
+    });
     it("returns true on success", async () => {
-        const { stubbedGet } = stubRequests();
-        const response: AxiosResponse<XrayLicenseStatus> = {
-            status: HttpStatusCode.Ok,
-            data: {
-                active: true,
-                licenseType: "Demo License",
-            },
-            headers: {},
-            statusText: HttpStatusCode[HttpStatusCode.Ok],
-            config: { headers: new AxiosHeaders() },
-        };
-        stubbedGet
+        restClient.get
             .callsFake((...args: unknown[]) => {
                 throw new Error(`Cannot call GET stub with arguments: ${args}`);
             })
             .withArgs("https://example.org/rest/raven/latest/api/xraylicense", {
                 headers: { Authorization: "Bearer token" },
             })
-            .resolves(response);
+            .resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    active: true,
+                    licenseType: "Demo License",
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
         await pingXrayServer("https://example.org", new PATCredentials("token"));
     });
 
     it("returns false if no license data is returned", async () => {
-        const { stubbedGet } = stubRequests();
-        const response: AxiosResponse<string> = {
+        restClient.get.resolves({
             status: HttpStatusCode.Ok,
             data: "<div>Welcome</div>",
             headers: {},
             statusText: HttpStatusCode[HttpStatusCode.Ok],
             config: { headers: new AxiosHeaders() },
-        };
-        stubbedGet.resolves(response);
+        });
         await expect(
             pingXrayServer("https://example.org", new PATCredentials("token"))
         ).to.eventually.be.rejectedWith(
@@ -175,8 +173,7 @@ describe("Xray server ping", () => {
     });
 
     it("returns false if the license is not active", async () => {
-        const { stubbedGet } = stubRequests();
-        const response: AxiosResponse<XrayLicenseStatus> = {
+        restClient.get.resolves({
             status: HttpStatusCode.Ok,
             data: {
                 active: false,
@@ -185,8 +182,7 @@ describe("Xray server ping", () => {
             headers: {},
             statusText: HttpStatusCode[HttpStatusCode.Ok],
             config: { headers: new AxiosHeaders() },
-        };
-        stubbedGet.resolves(response);
+        });
         await expect(
             pingXrayServer("https://example.org", new PATCredentials("token"))
         ).to.eventually.be.rejectedWith(
@@ -206,27 +202,25 @@ describe("Xray server ping", () => {
     });
 
     it("logs progress", async () => {
-        const { stubbedGet } = stubRequests();
         const { stubbedInfo } = stubLogging();
         const clock = Sinon.useFakeTimers();
-        const response: AxiosResponse<XrayLicenseStatus> = {
-            status: HttpStatusCode.Ok,
-            data: {
-                active: true,
-                licenseType: "Demo License",
-            },
-            headers: {},
-            statusText: HttpStatusCode[HttpStatusCode.Ok],
-            config: { headers: new AxiosHeaders() },
-        };
-        stubbedGet
+        restClient.get
             .callsFake((...args: unknown[]) => {
                 throw new Error(`Cannot call GET stub with arguments: ${args}`);
             })
             .withArgs("https://example.org/rest/raven/latest/api/xraylicense", {
                 headers: { Authorization: "Bearer token" },
             })
-            .resolves(response);
+            .resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    active: true,
+                    licenseType: "Demo License",
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
         const promise = pingXrayServer("https://example.org", new PATCredentials("token"));
         clock.tick(10000);
         await promise;
@@ -237,16 +231,13 @@ describe("Xray server ping", () => {
 });
 
 describe("Xray cloud ping", () => {
+    let restClient: SinonStubbedInstance<AxiosRestClient>;
+
+    beforeEach(() => {
+        restClient = getMockedRestClient();
+    });
     it("returns true on success", async () => {
-        const { stubbedPost } = stubRequests();
-        const response: AxiosResponse<string> = {
-            status: HttpStatusCode.Ok,
-            data: "ey.123.xyz",
-            headers: {},
-            statusText: HttpStatusCode[HttpStatusCode.Ok],
-            config: { headers: new AxiosHeaders() },
-        };
-        stubbedPost
+        restClient.post
             .callsFake((...args: unknown[]) => {
                 throw new Error(`Cannot call POST stub with arguments: ${args}`);
             })
@@ -254,24 +245,28 @@ describe("Xray cloud ping", () => {
                 client_id: "user",
                 client_secret: "token",
             })
-            .resolves(response);
+            .resolves({
+                status: HttpStatusCode.Ok,
+                data: "ey.123.xyz",
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
         const credentials = getMockedJWTCredentials();
         credentials.getAuthorizationHeader.resolves({ Authorization: "ey12345" });
         await pingXrayCloud(credentials);
     });
 
     it("returns false on failure", async () => {
-        const { stubbedPost } = stubRequests();
         // Checked somewhere else.
         stubLogging();
-        const response: AxiosResponse<string> = {
+        restClient.post.resolves({
             status: HttpStatusCode.NotFound,
             data: "<div>Not Found</div>",
             headers: {},
             statusText: HttpStatusCode[HttpStatusCode.NotFound],
             config: { headers: new AxiosHeaders() },
-        };
-        stubbedPost.resolves(response);
+        });
         await expect(
             pingXrayCloud(new JWTCredentials("id", "secret", "https://example.org"))
         ).to.eventually.be.rejectedWith(

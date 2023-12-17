@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import fs from "fs";
 import { stub } from "sinon";
-import { stubLogging, stubRequests } from "../test/mocks";
+import { getMockedRestClient, stubLogging } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
 import { PATCredentials } from "./authentication/credentials";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
@@ -172,8 +172,8 @@ describe("the plugin", () => {
         });
 
         it("initializes the requests module", async () => {
+            const restClient = getMockedRestClient();
             const stubbedClients = stub(context, "initClients");
-            const { stubbedInit } = stubRequests();
             stubbedClients.onFirstCall().resolves(pluginContext.clients);
             const options: Options = {
                 jira: {
@@ -182,7 +182,7 @@ describe("the plugin", () => {
                 },
             };
             await configureXrayPlugin(config, options);
-            expect(stubbedInit).to.have.been.calledOnceWithExactly({
+            expect(restClient.init).to.have.been.calledOnceWithExactly({
                 debug: false,
                 openSSL: pluginContext.internal.openSSL,
             });

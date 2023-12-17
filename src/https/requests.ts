@@ -1,4 +1,4 @@
-import axios, { Axios, AxiosResponse, RawAxiosRequestConfig, isAxiosError } from "axios";
+import axios, { Axios, AxiosRequestConfig, AxiosResponse, isAxiosError } from "axios";
 import { readFileSync } from "fs";
 import { Agent } from "https";
 import { logDebug, writeFile } from "../logging/logging";
@@ -8,7 +8,7 @@ import { normalizedFilename } from "../util/files";
 export type RequestConfigPost<D = unknown> = {
     url: string;
     data?: D;
-    config?: RawAxiosRequestConfig<D>;
+    config?: AxiosRequestConfig<D>;
 };
 
 /**
@@ -144,20 +144,17 @@ export class AxiosRestClient {
         return readFileSync(path);
     }
 
-    public async get(
-        url: string,
-        config?: RawAxiosRequestConfig<undefined>
-    ): Promise<AxiosResponse> {
+    public async get(url: string, config?: AxiosRequestConfig<undefined>): Promise<AxiosResponse> {
         return this.getAxios().get(url, {
             ...config,
             httpsAgent: this.getAgent(),
         });
     }
 
-    public async post<D = unknown>(
+    public async post<D>(
         url: string,
         data?: D,
-        config?: RawAxiosRequestConfig<D>
+        config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse> {
         return this.getAxios().post(url, data, {
             ...config,
@@ -165,10 +162,10 @@ export class AxiosRestClient {
         });
     }
 
-    public async put<D = unknown>(
+    public async put<D>(
         url: string,
         data?: D,
-        config?: RawAxiosRequestConfig<D>
+        config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse> {
         return this.getAxios().put(url, data, {
             ...config,

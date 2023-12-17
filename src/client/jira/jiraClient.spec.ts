@@ -1,15 +1,23 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
-import { stubLogging, stubRequests } from "../../../test/mocks";
+import { SinonStubbedInstance } from "sinon";
+import { getMockedRestClient, stubLogging } from "../../../test/mocks";
 import { expectToExist } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
+import { AxiosRestClient } from "../../https/requests";
 import { ISearchResults } from "../../types/jira/responses/searchResults";
 import { IJiraClient } from "./jiraClient";
 import { JiraClientCloud } from "./jiraClientCloud";
 import { JiraClientServer } from "./jiraClientServer";
 
 describe("the jira clients", () => {
+    let restClient: SinonStubbedInstance<AxiosRestClient>;
+
+    beforeEach(() => {
+        restClient = getMockedRestClient();
+    });
+
     ["server", "cloud"].forEach((clientType: string) => {
         // The concrete client implementation does not matter here. The methods here only test the
         // abstract base class's code.
@@ -32,8 +40,7 @@ describe("the jira clients", () => {
             describe("add attachment", () => {
                 it("should use the correct headers", async () => {
                     stubLogging();
-                    const { stubbedPost } = stubRequests();
-                    stubbedPost.resolves({
+                    restClient.post.resolves({
                         status: HttpStatusCode.Ok,
                         data: JSON.parse(
                             fs.readFileSync(
@@ -48,7 +55,7 @@ describe("the jira clients", () => {
                         },
                     });
                     await client.addAttachment("CYP-123", "./test/resources/turtle.png");
-                    const headers = stubbedPost.getCalls()[0].args[2]?.headers;
+                    const headers = restClient.post.getCalls()[0].args[2]?.headers;
                     expectToExist(headers);
                     expect(headers.Authorization).to.eq("Basic dXNlcjp0b2tlbg==");
                     expect(headers["X-Atlassian-Token"]).to.eq("no-check");
@@ -58,14 +65,13 @@ describe("the jira clients", () => {
                 describe("single file attachment", () => {
                     it("returns the correct values", async () => {
                         stubLogging();
-                        const { stubbedPost } = stubRequests();
                         const mockedData = JSON.parse(
                             fs.readFileSync(
                                 "./test/resources/fixtures/jira/responses/singleAttachment.json",
                                 "utf-8"
                             )
                         );
-                        stubbedPost.resolves({
+                        restClient.post.resolves({
                             status: HttpStatusCode.Ok,
                             data: mockedData,
                             headers: {},
@@ -85,14 +91,13 @@ describe("the jira clients", () => {
                 describe("multiple file attachment", () => {
                     it("returns the correct values", async () => {
                         stubLogging();
-                        const { stubbedPost } = stubRequests();
                         const mockedData = JSON.parse(
                             fs.readFileSync(
                                 "./test/resources/fixtures/jira/responses/multipleAttachments.json",
                                 "utf-8"
                             )
                         );
-                        stubbedPost.resolves({
+                        restClient.post.resolves({
                             status: HttpStatusCode.Ok,
                             data: mockedData,
                             headers: {},
@@ -111,7 +116,6 @@ describe("the jira clients", () => {
                 });
 
                 it("should log missing files", async () => {
-                    const { stubbedPost } = stubRequests();
                     const { stubbedWarning } = stubLogging();
                     const mockedData = JSON.parse(
                         fs.readFileSync(
@@ -119,7 +123,7 @@ describe("the jira clients", () => {
                             "utf-8"
                         )
                     );
-                    stubbedPost.resolves({
+                    restClient.post.resolves({
                         status: HttpStatusCode.Ok,
                         data: mockedData,
                         headers: {},
@@ -141,7 +145,6 @@ describe("the jira clients", () => {
                 });
 
                 it("should skip missing files", async () => {
-                    const { stubbedPost } = stubRequests();
                     // These are checked elsewhere.
                     stubLogging();
                     const mockedData = JSON.parse(
@@ -150,7 +153,7 @@ describe("the jira clients", () => {
                             "utf-8"
                         )
                     );
-                    stubbedPost.resolves({
+                    restClient.post.resolves({
                         status: HttpStatusCode.Ok,
                         data: mockedData,
                         headers: {},
@@ -191,7 +194,6 @@ describe("the jira clients", () => {
                 });
 
                 it("should handle bad responses", async () => {
-                    const { stubbedPost } = stubRequests();
                     const { stubbedError, stubbedWriteErrorFile } = stubLogging();
                     const error = new AxiosError(
                         "Request failed with status code 413",
@@ -208,7 +210,7 @@ describe("the jira clients", () => {
                             },
                         }
                     );
-                    stubbedPost.rejects(error);
+                    restClient.post.rejects(error);
                     const response = await client.addAttachment(
                         "CYP-123",
                         "./test/resources/greetings.txt"
@@ -227,14 +229,13 @@ describe("the jira clients", () => {
             describe("get fields", () => {
                 it("returns the correct values", async () => {
                     stubLogging();
-                    const { stubbedGet } = stubRequests();
                     const mockedData = JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/getFields.json",
                             "utf-8"
                         )
                     );
-                    stubbedGet.onFirstCall().resolves({
+                    restClient.get.onFirstCall().resolves({
                         status: HttpStatusCode.Ok,
                         data: mockedData,
                         headers: {},
@@ -248,7 +249,6 @@ describe("the jira clients", () => {
                 });
 
                 it("should handle bad responses", async () => {
-                    const { stubbedGet } = stubRequests();
                     const { stubbedError, stubbedWriteErrorFile } = stubLogging();
                     const error = new AxiosError(
                         "Request failed with status code 409",
@@ -265,7 +265,7 @@ describe("the jira clients", () => {
                             },
                         }
                     );
-                    stubbedGet.onFirstCall().rejects(error);
+                    restClient.get.onFirstCall().rejects(error);
                     const response = await client.getFields();
                     expect(response).to.be.undefined;
                     expect(stubbedError).to.have.been.calledOnceWithExactly(
@@ -281,8 +281,7 @@ describe("the jira clients", () => {
             describe("search", () => {
                 it("should return all issues without pagination", async () => {
                     stubLogging();
-                    const { stubbedPost } = stubRequests();
-                    stubbedPost.onFirstCall().resolves({
+                    restClient.post.onFirstCall().resolves({
                         status: HttpStatusCode.Ok,
                         data: JSON.parse(
                             fs.readFileSync(
@@ -300,7 +299,7 @@ describe("the jira clients", () => {
                         jql: "project = CYP AND issue in (CYP-268,CYP-237,CYP-332,CYP-333,CYP-338)",
                         fields: ["customfield_12100"],
                     });
-                    expect(stubbedPost).to.have.been.calledOnce;
+                    expect(restClient.post).to.have.been.calledOnce;
                     expect(response).to.be.an("array").with.length(5);
                     expectToExist(response);
                     expect(response[0].key).to.eq("CYP-333").and;
@@ -311,14 +310,13 @@ describe("the jira clients", () => {
                 });
                 it("should return all issues with pagination", async () => {
                     stubLogging();
-                    const { stubbedPost } = stubRequests();
                     const mockedData: ISearchResults = JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/search.json",
                             "utf-8"
                         )
                     );
-                    stubbedPost.onFirstCall().resolves({
+                    restClient.post.onFirstCall().resolves({
                         status: HttpStatusCode.Ok,
                         data: {
                             ...mockedData,
@@ -332,7 +330,7 @@ describe("the jira clients", () => {
                             headers: new AxiosHeaders(),
                         },
                     });
-                    stubbedPost.onSecondCall().resolves({
+                    restClient.post.onSecondCall().resolves({
                         status: HttpStatusCode.Ok,
                         data: {
                             ...mockedData,
@@ -346,7 +344,7 @@ describe("the jira clients", () => {
                             headers: new AxiosHeaders(),
                         },
                     });
-                    stubbedPost.onThirdCall().resolves({
+                    restClient.post.onThirdCall().resolves({
                         status: HttpStatusCode.Ok,
                         data: {
                             ...mockedData,
@@ -364,10 +362,10 @@ describe("the jira clients", () => {
                         jql: "project = CYP AND issue in (CYP-268,CYP-237,CYP-332,CYP-333,CYP-338)",
                         fields: ["customfield_12100"],
                     });
-                    expect(stubbedPost).to.have.been.calledThrice;
-                    expect(stubbedPost.getCall(0).args[1]).to.have.property("startAt", 0);
-                    expect(stubbedPost.getCall(1).args[1]).to.have.property("startAt", 2);
-                    expect(stubbedPost.getCall(2).args[1]).to.have.property("startAt", 4);
+                    expect(restClient.post).to.have.been.calledThrice;
+                    expect(restClient.post.getCall(0).args[1]).to.have.property("startAt", 0);
+                    expect(restClient.post.getCall(1).args[1]).to.have.property("startAt", 2);
+                    expect(restClient.post.getCall(2).args[1]).to.have.property("startAt", 4);
                     expectToExist(response);
                     expect(response).to.be.an("array").with.length(5);
                     expect(response[0].key).to.eq("CYP-333");
@@ -378,7 +376,6 @@ describe("the jira clients", () => {
                 });
 
                 it("should handle bad responses", async () => {
-                    const { stubbedPost } = stubRequests();
                     const { stubbedError, stubbedWriteErrorFile } = stubLogging();
                     const error = new AxiosError(
                         "Request failed with status code 401",
@@ -395,7 +392,7 @@ describe("the jira clients", () => {
                             },
                         }
                     );
-                    stubbedPost.onFirstCall().rejects(error);
+                    restClient.post.onFirstCall().rejects(error);
                     const response = await client.search({});
                     expect(response).to.be.undefined;
                     expect(stubbedError).to.have.been.calledOnceWithExactly(
@@ -411,7 +408,6 @@ describe("the jira clients", () => {
             describe("editIssue", () => {
                 it("should handle bad responses", async () => {
                     const { stubbedError, stubbedWriteErrorFile } = stubLogging();
-                    const { stubbedPut } = stubRequests();
                     const error = new AxiosError(
                         "Request failed with status code 400",
                         HttpStatusCode.BadRequest.toString(),
@@ -427,7 +423,7 @@ describe("the jira clients", () => {
                             },
                         }
                     );
-                    stubbedPut.onFirstCall().rejects(error);
+                    restClient.put.onFirstCall().rejects(error);
                     const response = await client.editIssue("CYP-XYZ", {
                         fields: { summary: "Hi" },
                     });

@@ -2,7 +2,9 @@ import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
-import { getMockedJWTCredentials, stubLogging, stubRequests } from "../../../test/mocks";
+import { SinonStubbedInstance } from "sinon";
+import { getMockedJWTCredentials, getMockedRestClient, stubLogging } from "../../../test/mocks";
+import { AxiosRestClient } from "../../https/requests";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { dedent } from "../../util/dedent";
 import { XrayClientCloud } from "./xrayClientCloud";
@@ -11,17 +13,18 @@ chai.use(chaiAsPromised);
 
 describe("the xray cloud client", () => {
     let client: XrayClientCloud;
+    let restClient: SinonStubbedInstance<AxiosRestClient>;
 
     beforeEach(() => {
         const credentials = getMockedJWTCredentials();
         credentials.getAuthorizationHeader.resolves({ Authorization: "ey12345" });
         client = new XrayClientCloud(credentials);
+        restClient = getMockedRestClient();
     });
 
     describe("import execution", () => {
         it("should handle successful responses", async () => {
-            const { stubbedPost } = stubRequests();
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     id: "12345",
@@ -62,7 +65,6 @@ describe("the xray cloud client", () => {
             expect(response).to.eq("CYP-123");
         });
         it("should handle bad responses", async () => {
-            const { stubbedPost } = stubRequests();
             const { stubbedError, stubbedWriteErrorFile } = stubLogging();
             const error = new AxiosError(
                 "Request failed with status code 400",
@@ -79,7 +81,7 @@ describe("the xray cloud client", () => {
                     },
                 }
             );
-            stubbedPost.onFirstCall().rejects(error);
+            restClient.post.onFirstCall().rejects(error);
             const response = await client.importExecution({
                 testExecutionKey: "CYP-42",
                 info: {
@@ -109,8 +111,7 @@ describe("the xray cloud client", () => {
 
     describe("import execution cucumber multipart", () => {
         it("should handle successful responses", async () => {
-            const { stubbedPost } = stubRequests();
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     id: "12345",
@@ -139,7 +140,6 @@ describe("the xray cloud client", () => {
         });
 
         it("should handle bad responses", async () => {
-            const { stubbedPost } = stubRequests();
             const { stubbedError, stubbedWriteErrorFile } = stubLogging();
             const error = new AxiosError(
                 "Request failed with status code 400",
@@ -156,7 +156,7 @@ describe("the xray cloud client", () => {
                     },
                 }
             );
-            stubbedPost.onFirstCall().rejects(error);
+            restClient.post.onFirstCall().rejects(error);
             const response = await client.importExecutionCucumberMultipart(
                 JSON.parse(
                     fs.readFileSync(
@@ -184,8 +184,7 @@ describe("the xray cloud client", () => {
 
     describe("import feature", () => {
         it("handles successful responses", async () => {
-            const { stubbedPost } = stubRequests();
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     errors: [],
@@ -225,9 +224,8 @@ describe("the xray cloud client", () => {
         });
 
         it("handles responses with errors", async () => {
-            const { stubbedPost } = stubRequests();
             const { stubbedDebug } = stubLogging();
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     errors: [
@@ -269,9 +267,8 @@ describe("the xray cloud client", () => {
         });
 
         it("handles responses without any updated issues", async () => {
-            const { stubbedPost } = stubRequests();
             const { stubbedDebug } = stubLogging();
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     errors: [
@@ -310,7 +307,6 @@ describe("the xray cloud client", () => {
         });
 
         it("handles bad responses", async () => {
-            const { stubbedPost } = stubRequests();
             const { stubbedError, stubbedWriteErrorFile } = stubLogging();
             const error = new AxiosError(
                 "Request failed with status code 400",
@@ -327,7 +323,7 @@ describe("the xray cloud client", () => {
                     },
                 }
             );
-            stubbedPost.onFirstCall().rejects(error);
+            restClient.post.onFirstCall().rejects(error);
             await expect(
                 client.importFeature(
                     "./test/resources/features/taggedPrefixCorrect.feature",
@@ -354,8 +350,7 @@ describe("the xray cloud client", () => {
 
     describe("get test types", () => {
         it("should handle successful responses", async () => {
-            const { stubbedPost } = stubRequests();
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: JSON.parse(
                     fs.readFileSync(
@@ -376,14 +371,13 @@ describe("the xray cloud client", () => {
         });
 
         it("should paginate big requests", async () => {
-            const { stubbedPost } = stubRequests();
             const mockedData: GetTestsResponse<unknown> = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/responses/getTestsTypes.json",
                     "utf-8"
                 )
             );
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     data: {
@@ -397,7 +391,7 @@ describe("the xray cloud client", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-            stubbedPost.onSecondCall().resolves({
+            restClient.post.onSecondCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     data: {
@@ -412,7 +406,7 @@ describe("the xray cloud client", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-            stubbedPost.onThirdCall().resolves({
+            restClient.post.onThirdCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     data: {
@@ -436,7 +430,6 @@ describe("the xray cloud client", () => {
         });
 
         it("should throw for missing test types", async () => {
-            const { stubbedPost } = stubRequests();
             const { stubbedError } = stubLogging();
             const mockedData: GetTestsResponse<unknown> = JSON.parse(
                 fs.readFileSync(
@@ -444,7 +437,7 @@ describe("the xray cloud client", () => {
                     "utf-8"
                 )
             );
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     data: {
@@ -474,7 +467,6 @@ describe("the xray cloud client", () => {
         });
 
         it("should handle bad responses", async () => {
-            const { stubbedPost } = stubRequests();
             const { stubbedError, stubbedWriteErrorFile } = stubLogging();
             const error = new AxiosError(
                 "Request failed with status code 400",
@@ -491,7 +483,7 @@ describe("the xray cloud client", () => {
                     },
                 }
             );
-            stubbedPost.onFirstCall().rejects(error);
+            restClient.post.onFirstCall().rejects(error);
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
             expect(response).to.deep.eq({});
             expect(stubbedError).to.have.been.calledWith(

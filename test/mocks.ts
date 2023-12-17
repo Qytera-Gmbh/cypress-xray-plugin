@@ -1,11 +1,12 @@
+import { AxiosRequestConfig } from "axios";
 import chai from "chai";
-import Sinon, { SinonStubbedInstance, spy, stub } from "sinon";
+import Sinon, { SinonStubbedInstance } from "sinon";
 import sinonChai from "sinon-chai";
 import { JWTCredentials } from "../src/authentication/credentials";
 import { IJiraClient } from "../src/client/jira/jiraClient";
 import { IXrayClient } from "../src/client/xray/xrayClient";
 import { IXrayClientCloud } from "../src/client/xray/xrayClientCloud";
-import { REST } from "../src/https/requests";
+import { AxiosRestClient, REST } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
 import { IJiraFieldRepository } from "../src/repository/jira/fields/jiraFieldRepository";
@@ -40,38 +41,65 @@ beforeEach(() => {
 export const stubLogging = (...spies: (keyof typeof logging)[]) => {
     return {
         stubbedInit: spies.includes("initLogging")
-            ? spy(logging, "initLogging")
-            : stub(logging, "initLogging"),
+            ? Sinon.spy(logging, "initLogging")
+            : Sinon.stub(logging, "initLogging"),
         stubbedWrite: spies.includes("writeFile")
-            ? spy(logging, "writeFile")
-            : stub(logging, "writeFile"),
+            ? Sinon.spy(logging, "writeFile")
+            : Sinon.stub(logging, "writeFile"),
         stubbedWriteErrorFile: spies.includes("writeErrorFile")
-            ? spy(logging, "writeErrorFile")
-            : stub(logging, "writeErrorFile"),
-        stubbedInfo: spies.includes("logInfo") ? spy(logging, "logInfo") : stub(logging, "logInfo"),
+            ? Sinon.spy(logging, "writeErrorFile")
+            : Sinon.stub(logging, "writeErrorFile"),
+        stubbedInfo: spies.includes("logInfo")
+            ? Sinon.spy(logging, "logInfo")
+            : Sinon.stub(logging, "logInfo"),
         stubbedError: spies.includes("logError")
-            ? spy(logging, "logError")
-            : stub(logging, "logError"),
+            ? Sinon.spy(logging, "logError")
+            : Sinon.stub(logging, "logError"),
         stubbedSuccess: spies.includes("logSuccess")
-            ? spy(logging, "logSuccess")
-            : stub(logging, "logSuccess"),
+            ? Sinon.spy(logging, "logSuccess")
+            : Sinon.stub(logging, "logSuccess"),
         stubbedWarning: spies.includes("logWarning")
-            ? spy(logging, "logWarning")
-            : stub(logging, "logWarning"),
+            ? Sinon.spy(logging, "logWarning")
+            : Sinon.stub(logging, "logWarning"),
         stubbedDebug: spies.includes("logDebug")
-            ? spy(logging, "logDebug")
-            : stub(logging, "logDebug"),
+            ? Sinon.spy(logging, "logDebug")
+            : Sinon.stub(logging, "logDebug"),
     };
 };
 
-export const stubRequests = () => {
-    return {
-        stubbedGet: stub(REST, "get"),
-        stubbedPost: stub(REST, "post"),
-        stubbedPut: stub(REST, "put"),
-        stubbedInit: stub(REST, "init"),
-    };
-};
+export function getMockedRestClient(): SinonStubbedInstance<AxiosRestClient> {
+    const client = Sinon.stub(REST);
+    client.get.callsFake((url: string, config?: AxiosRequestConfig<undefined>) => {
+        throw new Error(
+            dedent(`
+                Mock called unexpectedly with args:
+                  arg 1: ${JSON.stringify(url)}
+                  arg 2: ${JSON.stringify(config)}
+            `)
+        );
+    });
+    client.post.callsFake((url: string, data?: unknown, config?: AxiosRequestConfig<unknown>) => {
+        throw new Error(
+            dedent(`
+                Mock called unexpectedly with args:
+                  arg 1: ${JSON.stringify(url)}
+                  arg 2: ${JSON.stringify(data)}
+                  arg 3: ${JSON.stringify(config)}
+            `)
+        );
+    });
+    client.put.callsFake((url: string, data?: unknown, config?: AxiosRequestConfig<unknown>) => {
+        throw new Error(
+            dedent(`
+                Mock called unexpectedly with args:
+                  arg 1: ${JSON.stringify(url)}
+                  arg 2: ${JSON.stringify(data)}
+                  arg 3: ${JSON.stringify(config)}
+            `)
+        );
+    });
+    return client;
+}
 
 export function getMockedJiraClient(): SinonStubbedInstance<IJiraClient> {
     const client: IJiraClient = {
