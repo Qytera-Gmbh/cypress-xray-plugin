@@ -97,16 +97,31 @@ describe("buildMultipartFeatures", () => {
                     Skipping result upload for scenario: Doing stuff
 
                     No test issue keys found in tags of scenario: Doing stuff
-                    You can target existing test issues by adding a corresponding tag:
 
-                    @CYP-123
-                    Scenario: Doing stuff
-                      When I prepare something
-                      ...
+                    You can target existing test issues by adding a corresponding tag:
+                      @CYP-123
+                      Scenario: Doing stuff
+                        When I prepare something
+                        ...
+
+                    You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+                      {
+                        cucumber: {
+                          prefixes: {
+                            test: "TestName:"
+                          }
+                        }
+                      }
+
+                      @TestName:CYP-123
+                      Scenario: Doing stuff
+                        When I prepare something
+                        ...
 
                     For more information, visit:
-                    - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                    - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                 `)
             )
             .onFirstCall()

@@ -122,10 +122,10 @@ function assertScenarioContainsIssueKey(
                 steps: element.steps.map((step: CucumberMultipartStep) => {
                     return { keyword: step.keyword, text: step.name };
                 }),
+                tags: element.tags,
             },
             projectKey,
-            isXrayCloud,
-            testPrefix
+            isXrayCloud
         );
     }
 }

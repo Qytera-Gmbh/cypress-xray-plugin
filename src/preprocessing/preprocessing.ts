@@ -138,8 +138,7 @@ export function getCucumberIssueData(
                 throw missingTestKeyInCucumberScenarioError(
                     child.scenario,
                     projectKey,
-                    isCloudClient,
-                    prefixes?.test
+                    isCloudClient
                 );
             } else if (issueKeys.length > 1) {
                 throw multipleTestKeysInCucumberScenarioError(

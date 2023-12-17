@@ -99,7 +99,6 @@ export function multipleTestKeysInNativeTestTitleError(
  * @param scenario - the Cucumber scenario
  * @param projectKey - the project key
  * @param isCloudClient - whether Xray cloud is being used
- * @param testPrefix - the prefix of issues linked in scenario tags
  * @returns the error
  */
 export function missingTestKeyInCucumberScenarioError(
@@ -107,32 +106,82 @@ export function missingTestKeyInCucumberScenarioError(
         name: string;
         keyword: string;
         steps: readonly { keyword: string; text: string }[];
+        tags?: readonly { name: string }[];
     },
     projectKey: string,
-    isCloudClient: boolean,
-    testPrefix?: string
+    isCloudClient: boolean
 ): Error {
     const firstStepLine =
         scenario.steps.length > 0
             ? `${scenario.steps[0].keyword.trim()} ${scenario.steps[0].text}`
             : "Given A step";
+    if (scenario.tags && scenario.tags.length > 0) {
+        return new Error(
+            dedent(`
+                No test issue keys found in tags of scenario: ${scenario.name}
+
+                Available tags:
+                  ${scenario.tags.map((tag) => tag.name).join("\n")}
+
+                If a tag contain the scenario's issue key already, specify a global prefix to align the plugin with Xray
+                  For example, with the following plugin configuration:
+                    {
+                      cucumber: {
+                        prefixes: {
+                          test: "TestName:"
+                        }
+                      }
+                    }
+
+                  The following tag will be recognized as an issue tag by the plugin:
+                    @TestName:${projectKey}-123
+                    ${scenario.keyword}: ${scenario.name}
+                      ${firstStepLine}
+                      ...
+
+                For more information, visit:
+                - ${HELP.plugin.guides.targetingExistingIssues}
+                - ${HELP.plugin.configuration.cucumber.prefixes}
+                - ${
+                    isCloudClient
+                        ? HELP.xray.importCucumberTests.cloud
+                        : HELP.xray.importCucumberTests.server
+                }
+            `)
+        );
+    }
     return new Error(
         dedent(`
             No test issue keys found in tags of scenario: ${scenario.name}
-            You can target existing test issues by adding a corresponding tag:
 
-            @${testPrefix ?? ""}${projectKey}-123
-            ${scenario.keyword}: ${scenario.name}
-              ${firstStepLine}
-              ...
+            You can target existing test issues by adding a corresponding tag:
+              @${projectKey}-123
+              ${scenario.keyword}: ${scenario.name}
+                ${firstStepLine}
+                ...
+
+            You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+              {
+                cucumber: {
+                  prefixes: {
+                    test: "TestName:"
+                  }
+                }
+              }
+
+              @TestName:${projectKey}-123
+              ${scenario.keyword}: ${scenario.name}
+                ${firstStepLine}
+                ...
 
             For more information, visit:
+            - ${HELP.plugin.guides.targetingExistingIssues}
+            - ${HELP.plugin.configuration.cucumber.prefixes}
             - ${
                 isCloudClient
                     ? HELP.xray.importCucumberTests.cloud
                     : HELP.xray.importCucumberTests.server
             }
-            - ${HELP.plugin.guides.targetingExistingIssues}
         `)
     );
 }
