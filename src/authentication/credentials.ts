@@ -1,4 +1,4 @@
-import { Requests } from "../https/requests";
+import { REST } from "../https/requests";
 import { logDebug, logError, logInfo, writeErrorFile } from "../logging/logging";
 import { StringMap } from "../types/util";
 import { encode } from "../util/base64";
@@ -117,7 +117,7 @@ export class JWTCredentials implements IHttpCredentials {
                 });
                 try {
                     logInfo(`Authenticating to: ${this.authenticationUrl}...`);
-                    const tokenResponse = await Requests.post(this.authenticationUrl, {
+                    const tokenResponse = await REST.post(this.authenticationUrl, {
                         client_id: this.clientId,
                         client_secret: this.clientSecret,
                     });

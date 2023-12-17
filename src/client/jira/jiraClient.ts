@@ -2,7 +2,7 @@ import { AxiosResponse } from "axios";
 import FormData from "form-data";
 import fs from "fs";
 import { HttpHeader, IHttpCredentials } from "../../authentication/credentials";
-import { Requests } from "../../https/requests";
+import { REST } from "../../https/requests";
 import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { ISearchRequest } from "../../types/jira/requests/search";
 import { IAttachment } from "../../types/jira/responses/attachment";
@@ -122,7 +122,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
                     logDebug("Attaching files:", ...files);
                     const progressInterval = this.startResponseInterval(this.apiBaseUrl);
                     try {
-                        const response: AxiosResponse<IAttachment[]> = await Requests.post(
+                        const response: AxiosResponse<IAttachment[]> = await REST.post(
                             this.getUrlAddAttachment(issueIdOrKey),
                             form,
                             {
@@ -166,7 +166,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
             logDebug("Getting issue types...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response: AxiosResponse<IIssueTypeDetails[]> = await Requests.get(
+                const response: AxiosResponse<IIssueTypeDetails[]> = await REST.get(
                     this.getUrlGetIssueTypes(),
                     {
                         headers: {
@@ -206,7 +206,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
             logDebug("Getting fields...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response: AxiosResponse<IFieldDetail[]> = await Requests.get(
+                const response: AxiosResponse<IFieldDetail[]> = await REST.get(
                     this.getUrlGetFields(),
                     {
                         headers: {
@@ -256,7 +256,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
                                 ...request,
                                 startAt: startAt,
                             };
-                            const response: AxiosResponse<ISearchResults> = await Requests.post(
+                            const response: AxiosResponse<ISearchResults> = await REST.post(
                                 this.getUrlPostSearch(),
                                 paginatedRequest,
                                 {
@@ -302,7 +302,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
                 logDebug("Editing issue...");
                 const progressInterval = this.startResponseInterval(this.apiBaseUrl);
                 try {
-                    await Requests.put(this.getUrlEditIssue(issueIdOrKey), issueUpdateData, {
+                    await REST.put(this.getUrlEditIssue(issueIdOrKey), issueUpdateData, {
                         headers: {
                             ...header,
                         },

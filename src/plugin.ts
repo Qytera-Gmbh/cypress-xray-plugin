@@ -11,7 +11,7 @@ import {
 } from "./context";
 import { afterRunHook, beforeRunHook } from "./hooks/hooks";
 import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
-import { Requests } from "./https/requests";
+import { REST } from "./https/requests";
 import { initLogging, logError, logInfo, logWarning } from "./logging/logging";
 import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
 import { dedent } from "./util/dedent";
@@ -66,7 +66,7 @@ export async function configureXrayPlugin(
         cucumber: await initCucumberOptions(config, options.cucumber),
         openSSL: initOpenSSLOptions(config.env, options.openSSL),
     };
-    Requests.init({
+    REST.init({
         debug: internalOptions.plugin.debug,
         openSSL: internalOptions.openSSL,
     });

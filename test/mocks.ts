@@ -5,7 +5,7 @@ import { JWTCredentials } from "../src/authentication/credentials";
 import { IJiraClient } from "../src/client/jira/jiraClient";
 import { IXrayClient } from "../src/client/xray/xrayClient";
 import { IXrayClientCloud } from "../src/client/xray/xrayClientCloud";
-import { Requests } from "../src/https/requests";
+import { REST } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { initLogging } from "../src/logging/logging";
 import { IJiraFieldRepository } from "../src/repository/jira/fields/jiraFieldRepository";
@@ -66,10 +66,10 @@ export const stubLogging = (...spies: (keyof typeof logging)[]) => {
 
 export const stubRequests = () => {
     return {
-        stubbedGet: stub(Requests, "get"),
-        stubbedPost: stub(Requests, "post"),
-        stubbedPut: stub(Requests, "put"),
-        stubbedInit: stub(Requests, "init"),
+        stubbedGet: stub(REST, "get"),
+        stubbedPost: stub(REST, "post"),
+        stubbedPut: stub(REST, "put"),
+        stubbedInit: stub(REST, "init"),
     };
 };
 

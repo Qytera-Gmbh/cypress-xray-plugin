@@ -1,6 +1,6 @@
 import FormData from "form-data";
 import { JWTCredentials } from "../../authentication/credentials";
-import { RequestConfigPost, Requests } from "../../https/requests";
+import { RequestConfigPost, REST } from "../../https/requests";
 import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
@@ -172,7 +172,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
                         },
                     };
                     const response: GetTestsResponse<GetTestsJiraData> = (
-                        await Requests.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
+                        await REST.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
                             headers: {
                                 ...authorizationHeader,
                             },

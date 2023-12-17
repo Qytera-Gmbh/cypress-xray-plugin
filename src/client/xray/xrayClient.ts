@@ -6,7 +6,7 @@ import {
     JWTCredentials,
     PATCredentials,
 } from "../../authentication/credentials";
-import { RequestConfigPost, Requests } from "../../https/requests";
+import { REST, RequestConfigPost } from "../../https/requests";
 import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
 import { IXrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
@@ -109,7 +109,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
             try {
                 const response: AxiosResponse<
                     ImportExecutionResponseServer | ImportExecutionResponseCloud
-                > = await Requests.post(this.getUrlImportExecution(), execution, {
+                > = await REST.post(this.getUrlImportExecution(), execution, {
                     headers: {
                         ...authorizationHeader,
                     },
@@ -152,7 +152,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
             logDebug("Exporting Cucumber tests...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response = await Requests.get(this.getUrlExportCucumber(keys, filter), {
+                const response = await REST.get(this.getUrlExportCucumber(keys, filter), {
                     headers: {
                         ...authorizationHeader,
                     },
@@ -201,16 +201,12 @@ export abstract class XrayClient extends Client implements IXrayClient {
 
                 const response: AxiosResponse<
                     ImportFeatureResponseServer | ImportFeatureResponseCloud
-                > = await Requests.post(
-                    this.getUrlImportFeature(projectKey, projectId, source),
-                    form,
-                    {
-                        headers: {
-                            ...authorizationHeader,
-                            ...form.getHeaders(),
-                        },
-                    }
-                );
+                > = await REST.post(this.getUrlImportFeature(projectKey, projectId, source), form, {
+                    headers: {
+                        ...authorizationHeader,
+                        ...form.getHeaders(),
+                    },
+                });
                 return this.handleResponseImportFeature(response.data);
             } finally {
                 clearInterval(progressInterval);
@@ -276,7 +272,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
             try {
                 const response: AxiosResponse<
                     ImportExecutionResponseServer | ImportExecutionResponseCloud
-                > = await Requests.post(request.url, request.data, request.config);
+                > = await REST.post(request.url, request.data, request.config);
                 const key = this.handleResponseImportExecutionCucumberMultipart(response.data);
                 logDebug(`Successfully uploaded Cucumber test execution results to ${key}.`);
                 return key;

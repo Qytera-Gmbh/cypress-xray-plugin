@@ -3,7 +3,7 @@ import {
     JWTCredentials,
     PATCredentials,
 } from "../authentication/credentials";
-import { Requests } from "../https/requests";
+import { REST } from "../https/requests";
 import { logDebug, logInfo } from "../logging/logging";
 import { IUser } from "../types/jira/responses/user";
 import { dedent } from "./dedent";
@@ -31,7 +31,7 @@ export async function pingJiraInstance(
     });
     try {
         const header = await credentials.getAuthorizationHeader();
-        const userResponse = await Requests.get(`${url}/rest/api/latest/myself`, {
+        const userResponse = await REST.get(`${url}/rest/api/latest/myself`, {
             headers: {
                 ...header,
             },
@@ -95,7 +95,7 @@ export async function pingXrayServer(
     });
     try {
         const header = await credentials.getAuthorizationHeader();
-        const licenseResponse = await Requests.get(`${url}/rest/raven/latest/api/xraylicense`, {
+        const licenseResponse = await REST.get(`${url}/rest/raven/latest/api/xraylicense`, {
             headers: {
                 ...header,
             },
