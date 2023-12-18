@@ -287,8 +287,8 @@ Some of the plugin's core functionality has been rewritten entirely to keep thin
 
   - It now also skips feature file upload/synchronization of feature files for which the above does not apply
 
-  > [!NOTE]
-  > If the plugin still creates test or precondition issues somehow, [please file a bug](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues), since it's simply not supposed to anymore.
+> [!NOTE]
+> If the plugin still creates test or precondition issues somehow, [please file a bug](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues), since it's simply not supposed to anymore.
 
 - Jira client instantiation is now _mandatory_, meaning both Xray _and_ Jira credentials must *always* be provided
 
