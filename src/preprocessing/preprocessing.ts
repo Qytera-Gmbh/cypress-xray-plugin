@@ -156,6 +156,7 @@ export function getCucumberIssueData(
         } else if (child.background) {
             const preconditionComments = getCucumberPreconditionIssueComments(
                 child.background,
+                projectKey,
                 document.comments
             );
             const preconditionKeys = getCucumberPreconditionIssueTags(
@@ -240,11 +241,13 @@ export function getScenarioTagRegex(projectKey: string, testPrefix?: string) {
  * Extracts all comments which are relevant for linking a background to precondition issues.
  *
  * @param background - the background
+ * @param projectKey - the project key
  * @param comments - the feature file comments
  * @returns the relevant comments
  */
 export function getCucumberPreconditionIssueComments(
     background: Background,
+    projectKey: string,
     comments: readonly Comment[]
 ): string[] {
     if (background.steps.length === 0) {
@@ -255,7 +258,8 @@ export function getCucumberPreconditionIssueComments(
     return comments
         .filter((comment: Comment) => comment.location.line > backgroundLine)
         .filter((comment: Comment) => comment.location.line < firstStepLine)
-        .map((comment: Comment) => comment.text);
+        .filter((comment: Comment) => new RegExp(`@\\S*${projectKey}-\\d+`).test(comment.text))
+        .map((comment: Comment) => comment.text.trim());
 }
 
 export function getCucumberPreconditionIssueTags(

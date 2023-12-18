@@ -407,13 +407,31 @@ describe("cucumber preprocessing", () => {
             );
         });
 
+        it("extracts relevant comments without prefix", () => {
+            const document = parseFeatureFile(
+                "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
+            );
+            // Cast because we know for certain it exists.
+            const background: Background = document.feature?.children[0].background as Background;
+            const comments = getCucumberPreconditionIssueComments(
+                background,
+                "CYP",
+                document.comments
+            );
+            expect(comments).to.deep.eq(["#@CYP-244", "#@CYP-262"]);
+        });
+
         it("extracts background tags without prefix", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
             );
             // Cast because we know for certain it exists.
             const background: Background = document.feature?.children[0].background as Background;
-            const comments = getCucumberPreconditionIssueComments(background, document.comments);
+            const comments = getCucumberPreconditionIssueComments(
+                background,
+                "CYP",
+                document.comments
+            );
             const tags = getCucumberPreconditionIssueTags(background, "CYP", comments);
             expect(tags).to.deep.eq(["CYP-244", "CYP-262"]);
         });
@@ -487,13 +505,31 @@ describe("cucumber preprocessing", () => {
             );
         });
 
+        it("extracts relevant comments with prefix", () => {
+            const document = parseFeatureFile(
+                "./test/resources/features/taggedPrefixMultipleBackground.feature"
+            );
+            // Cast because we know for certain it exists.
+            const background: Background = document.feature?.children[0].background as Background;
+            const comments = getCucumberPreconditionIssueComments(
+                background,
+                "CYP",
+                document.comments
+            );
+            expect(comments).to.deep.eq(["#@Precondition:CYP-244", "#@Precondition:CYP-262"]);
+        });
+
         it("extracts background tags with prefix", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMultipleBackground.feature"
             );
             // Cast because we know for certain it exists.
             const background: Background = document.feature?.children[0].background as Background;
-            const comments = getCucumberPreconditionIssueComments(background, document.comments);
+            const comments = getCucumberPreconditionIssueComments(
+                background,
+                "CYP",
+                document.comments
+            );
             const tags = getCucumberPreconditionIssueTags(
                 background,
                 "CYP",
