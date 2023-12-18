@@ -11,6 +11,7 @@
 # Cypress Xray Plugin
 
 > A plugin for coupling together Cypress and Xray.
+> Supports Xray Server/DC and Xray Cloud.
 
 Features include:
 
@@ -20,10 +21,10 @@ Features include:
     - reuse existing test execution and test plan issues
   - CI/CD ready
     - no hardcoded credentials
-	- every option customizable in CLI
+    - every option customizable in CLI
   - Cucumber integration
     - synchronization/upload of step definitions to Xray
-	- results upload as described above
+    - results upload as described above
 
 ## Quick Setup
 
