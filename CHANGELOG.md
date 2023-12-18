@@ -1,12 +1,105 @@
 # Changelog
 
+# `6.0.0`
+
+> [!NOTE]
+> The breaking changes apply to projects with Cucumber integration only.
+
+Up until version `6.0.0`, the plugin assumed in feature file imports and Cucumber execution results upload that:
+- Xray cloud:
+  - always uses `Precondition:` prefixes for background-precondition linking
+  - always uses `TestName:` prefixes for scenario-test linking
+- Xray server:
+  - always tags without prefixes for background-precondition linking
+  - always tags without prefixes for scenario-test linking
+
+This was found to be not the case in [#275](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/275), both Xray cloud and Xray server have the option to customize all these prefixes.
+
+## Breaking changes
+
+- Cucumber tag prefixes should now be manually configured, as demonstrated for the following feature file:
+
+  ```gherkin
+  Feature: A cool story
+
+    Background:
+        #@MyPreconditionPrefix:CYP-222
+        Given A
+        When B
+        Then C
+
+    @MyTestPrefix:CYP-333
+    Scenario: A cool scenario
+        Given X
+        When Y
+        Then Z
+  ```
+
+  <table>
+  <thead>
+  <tr>
+  <th>
+  <pre>5.2.2</pre>
+  </th>
+  <th>
+  <pre>6.0.0</pre>
+  </th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+  <td>
+
+  ```ts
+  async setupNodeEvents(on, config) {
+    await configureXrayPlugin(
+      config,
+      {
+        cucumber: {
+          // No extra configuration necessary, the plugin
+          // automatically assumed tag prefixes
+        }
+      }
+    );
+  }
+  ```
+  </td>
+  <td>
+
+  ```ts
+  async setupNodeEvents(on, config) {
+    await configureXrayPlugin(
+      config,
+      {
+        cucumber: {
+          prefixes: {
+            precondition: "MyPreconditionPrefix:",
+            test: "MyTestPrefix:"
+          }
+        }
+      }
+    );
+  }
+  ```
+  </td>
+  </tr>
+  </tbody>
+  </table>
+
+## Notable changes
+
+- Added `cucumber.prefixes` options
+
+- Removed `decompress` dependency
+
+
 # `5.2.2`
 
 ## Notable changes
 
-- Hide initialization error messages if the plugin is disabled (fixes [#271](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/271))
+- Hid initialization error messages if the plugin is disabled (fixes [#271](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/271))
 
-- Add first step to Cucumber error messages ([#257](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/257))
+- Added first step to Cucumber error messages ([#257](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/257))
 
 ## Dependency updates
 
@@ -30,13 +123,13 @@
 
 ## Notable changes
 
-- Add test environment support (fixes [#223](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/223))
+- Added test environment support (fixes [#223](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/223))
 
 # `5.1.1`
 
 ## Notable changes
 
-- Add Jira and Xray pings during plugin initialization for configuration verification ([#199](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/199))
+- Added Jira and Xray pings during plugin initialization for configuration verification ([#199](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/199))
 
 - Prevent results upload from modifying test issues unnecessarily (fixes [#209](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/209), [#210](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/210))
 
@@ -64,12 +157,12 @@
 
 [Cypress version 13](https://docs.cypress.io/guides/references/changelog#13-0-0) was recently released and changed the module API, which this plugin heavily relies on to upload test results to Xray. A few core feature of the plugin had to be rewritten to adapt to these changes.
 
-> **Note**
+> [!NOTE]
 > Previous versions of Cypress will still work just fine, the plugin is backwards compatible regarding Cypress versions.
 
 The changes included a removal of the test function code, which previously was used to update the test steps in Xray. Because the step updates were furthermore quite problematic/lackluster anyways ([#50](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/50), [#164](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/164), [#169](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/169)), step updates have been removed from the plugin entirely.
 
-> **Note**
+> [!NOTE]
 > Cucumber feature file synchronization was not affected by this change, which means that upload of feature files can still change Cucumber steps in Xray.
 
 ## Breaking changes
@@ -123,7 +216,7 @@ The changes included a removal of the test function code, which previously was u
   </tbody>
   </table>
 
-  > **Note**
+  > [!NOTE]
   > Their environment variables have *not* changed.
 
 - With Node V16 being past its [end of life date](https://nodejs.dev/en/about/releases/), the plugin now requires Node V18 (LTS) to be installed
@@ -194,7 +287,7 @@ Some of the plugin's core functionality has been rewritten entirely to keep thin
 
   - It now also skips feature file upload/synchronization of feature files for which the above does not apply
 
-  > **Note**
+  > [!NOTE]
   > If the plugin still creates test or precondition issues somehow, [please file a bug](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues), since it's simply not supposed to anymore.
 
 - Jira client instantiation is now _mandatory_, meaning both Xray _and_ Jira credentials must *always* be provided
@@ -275,13 +368,13 @@ Some of the plugin's core functionality has been rewritten entirely to keep thin
 
 ## Notable changes
 
-- Restrict exported plugin members to those defined in `index.ts`
+- Restricted exported plugin members to those defined in `index.ts`
 
-- Add `plugin.logDirectory` option
+- Added `plugin.logDirectory` option
 
-- Add `jira.testExecutionIssueType` option
+- Added `jira.testExecutionIssueType` option
 
-- Add `jira.testPlanIssueType` option
+- Added `jira.testPlanIssueType` option
 
 - Feature file upload/synchronization now automatically resets the summary should the import change it
 
