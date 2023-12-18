@@ -258,18 +258,24 @@ export interface CucumberOptions {
      *
      * @remarks
      *
-     * Xray usually adds tags to exported feature files and in turn expects these tags to be present
-     * when importing Cucumber test results or feature files. The tags are of the form
-     * `@Prefix:CYP-123`, containing the prefix and the issue key. For example, a scenario can be
-     * annotated with `@TestName:CYP-123` to link the scenario's to a corresponding test issue in
-     * Jira. Alternatively, backgrounds could be tagged with `@Precondition:CYP-456` to link to
-     * precondition issues. The concrete prefixes depend on the configured prefix scheme in Xray.
+     * Whenever Cucumber test results or entire feature files are imported, Xray tries to link
+     * existing test and precondition Jira issues with the executed/present Cucumber scenarios and
+     * backgrounds. The default matching is quite involved (see documentation for
+     * {@link https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST | Xray server}
+     * or {@link https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST | Xray cloud}),
+     * but luckily Xray also supports and uses
+     * {@link https://cucumber.io/docs/cucumber/api/?lang=java#tags | feature file tags}.
+     *
+     * The tags are of the form `@CYP-123` or `@Prefix:CYP-123`, containing an optional prefix and
+     * the issue key. The concrete prefix and whether a prefix is at all necessary depends on your
+     * configured prefix scheme in Xray.
      *
      * If any tag in a feature file (and thus the Cucumber JSON report used for importing test
      * execution results) is not consistent with the scheme defined in Xray, Xray will reject the
      * imported results altogether.
      *
      * More information:
+     * - {@link https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes | Plugin documentation for `prefixes`}
      * - Xray feature tagging
      *   - {@link https://docs.getxray.app/display/XRAY/Export+Cucumber+Features | Xray server}
      *   - {@link https://docs.getxray.app/display/XRAYCLOUD/Generate+Cucumber+Features | Xray cloud}
