@@ -118,7 +118,9 @@ export function missingTestKeyInCucumberScenarioError(
     if (scenario.tags && scenario.tags.length > 0) {
         return new Error(
             dedent(`
-                No test issue keys found in tags of scenario: ${scenario.name}
+                No test issue keys found in tags of scenario${
+                    scenario.name.length > 0 ? `: ${scenario.name}` : ""
+                }
 
                 Available tags:
                   ${scenario.tags.map((tag) => tag.name).join("\n")}
@@ -155,7 +157,9 @@ export function missingTestKeyInCucumberScenarioError(
     }
     return new Error(
         dedent(`
-            No test issue keys found in tags of scenario: ${scenario.name}
+            No test issue keys found in tags of scenario${
+                scenario.name.length > 0 ? `: ${scenario.name}` : ""
+            }
 
             You can target existing test issues by adding a corresponding tag:
 
@@ -222,7 +226,9 @@ export function multipleTestKeysInCucumberScenarioError(
             : "Given A step";
     return new Error(
         dedent(`
-            Multiple test issue keys found in tags of scenario: ${scenario.name}
+            Multiple test issue keys found in tags of scenario${
+                scenario.name.length > 0 ? `: ${scenario.name}` : ""
+            }
             The plugin cannot decide for you which one to use:
 
             ${tags.map((tag) => tag.name).join(" ")}
@@ -273,10 +279,12 @@ export function missingPreconditionKeyInCucumberBackgroundError(
     if (comments && comments.length > 0) {
         return new Error(
             dedent(`
-                No precondition issue keys found in comments of background: ${background.name}
+                No precondition issue keys found in comments of background${
+                    background.name.length > 0 ? `: ${background.name}` : ""
+                }
 
                 Available comments:
-                  ${comments.map((comment: string) => comment.trim()).join("\n")}
+                  ${comments.join("\n")}
 
                 If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray
 
@@ -310,7 +318,9 @@ export function missingPreconditionKeyInCucumberBackgroundError(
     }
     return new Error(
         dedent(`
-            No precondition issue keys found in comments of background: ${background.name}
+            No precondition issue keys found in comments of background${
+                background.name.length > 0 ? `: ${background.name}` : ""
+            }
 
             You can target existing precondition issues by adding a corresponding comment:
 
@@ -368,7 +378,9 @@ export function multiplePreconditionKeysInCucumberBackgroundError(
 ): Error {
     return new Error(
         dedent(`
-            Multiple precondition issue keys found in comments of background: ${background.name}
+            Multiple precondition issue keys found in comments of background${
+                background.name.length > 0 ? `: ${background.name}` : ""
+            }
             The plugin cannot decide for you which one to use:
 
             ${reconstructMultipleTagsBackground(background, preconditionKeys, comments)}
