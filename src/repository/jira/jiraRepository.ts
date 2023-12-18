@@ -81,7 +81,7 @@ export class CachingJiraRepository implements IJiraRepository {
         try {
             result = await this.mergeRemainingFields(
                 this.summaries,
-                this.jiraIssueFetcher.fetchSummaries,
+                this.jiraIssueFetcher.fetchSummaries.bind(this.jiraIssueFetcher),
                 ...issueKeys
             );
             const missingSummaries: string[] = issueKeys.filter(
@@ -112,7 +112,7 @@ export class CachingJiraRepository implements IJiraRepository {
         try {
             result = await this.mergeRemainingFields(
                 this.descriptions,
-                this.jiraIssueFetcher.fetchDescriptions,
+                this.jiraIssueFetcher.fetchDescriptions.bind(this.jiraIssueFetcher),
                 ...issueKeys
             );
             const missingDescriptions: string[] = issueKeys.filter(
@@ -143,7 +143,7 @@ export class CachingJiraRepository implements IJiraRepository {
         try {
             result = await this.mergeRemainingFields(
                 this.testTypes,
-                this.jiraIssueFetcher.fetchTestTypes,
+                this.jiraIssueFetcher.fetchTestTypes.bind(this.jiraIssueFetcher),
                 ...issueKeys
             );
             const missingTestTypes: string[] = issueKeys.filter(
@@ -174,7 +174,7 @@ export class CachingJiraRepository implements IJiraRepository {
         try {
             result = await this.mergeRemainingFields(
                 this.labels,
-                this.jiraIssueFetcher.fetchLabels,
+                this.jiraIssueFetcher.fetchLabels.bind(this.jiraIssueFetcher),
                 ...issueKeys
             );
             const missingLabels: string[] = issueKeys.filter(
