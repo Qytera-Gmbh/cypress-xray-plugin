@@ -189,24 +189,30 @@ describe("cucumber preprocessing", () => {
                 No test issue keys found in tags of scenario: A scenario
 
                 You can target existing test issues by adding a corresponding tag:
+
                   @CYP-123
                   Scenario: A scenario
                     Given an assumption
                     ...
 
                 You can also specify a prefix to match the tagging scheme configured in your Xray instance:
-                  {
-                    cucumber: {
-                      prefixes: {
-                        test: "TestName:"
+
+                  Plugin configuration:
+
+                    {
+                      cucumber: {
+                        prefixes: {
+                          test: "TestName:"
+                        }
                       }
                     }
-                  }
 
-                  @TestName:CYP-123
-                  Scenario: A scenario
-                    Given an assumption
-                    ...
+                  Feature file:
+
+                    @TestName:CYP-123
+                    Scenario: A scenario
+                      Given an assumption
+                      ...
 
                 For more information, visit:
                 - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
@@ -233,7 +239,9 @@ describe("cucumber preprocessing", () => {
                   @Lucky:CYP-415
 
                 If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray
+
                   For example, with the following plugin configuration:
+
                     {
                       cucumber: {
                         prefixes: {
@@ -242,7 +250,8 @@ describe("cucumber preprocessing", () => {
                       }
                     }
 
-                  The following tag will be recognized as an issue tag by the plugin:
+                  The following tag will be recognized as a test issue tag by the plugin:
+
                     @TestName:CYP-123
                     Scenario: A scenario
                       Given an assumption
@@ -269,24 +278,30 @@ describe("cucumber preprocessing", () => {
                 No precondition issue keys found in comments of background: A background
 
                 You can target existing precondition issues by adding a corresponding comment:
+
                   Background: A background
                     #@CYP-123
                     Given abc123
                     ...
 
                 You can also specify a prefix to match the tagging scheme configured in your Xray instance:
-                  {
-                    cucumber: {
-                      prefixes: {
-                        precondition: "Precondition:"
+
+                  Plugin configuration:
+
+                    {
+                      cucumber: {
+                        prefixes: {
+                          precondition: "Precondition:"
+                        }
                       }
                     }
-                  }
 
-                  Background: A background
-                    #@Precondition:CYP-123
-                    Given abc123
-                    ...
+                  Feature file:
+
+                    Background: A background
+                      #@Precondition:CYP-123
+                      Given abc123
+                      ...
 
                 For more information, visit:
                 - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
@@ -312,7 +327,9 @@ describe("cucumber preprocessing", () => {
                   #@PavlovConditioning:CYP-784
 
                 If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray
+
                   For example, with the following plugin configuration:
+
                     {
                       cucumber: {
                         prefixes: {
@@ -321,7 +338,8 @@ describe("cucumber preprocessing", () => {
                       }
                     }
 
-                  The following comment will be recognized as an issue tag by the plugin:
+                  The following comment will be recognized as a precondition issue tag by the plugin:
+
                     Background: A background
                       #@Precondition:CYP-123
                       Given abc123

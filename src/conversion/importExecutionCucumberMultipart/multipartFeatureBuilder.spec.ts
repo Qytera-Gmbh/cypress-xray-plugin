@@ -99,24 +99,30 @@ describe("buildMultipartFeatures", () => {
                     No test issue keys found in tags of scenario: Doing stuff
 
                     You can target existing test issues by adding a corresponding tag:
+
                       @CYP-123
                       Scenario: Doing stuff
                         When I prepare something
                         ...
 
                     You can also specify a prefix to match the tagging scheme configured in your Xray instance:
-                      {
-                        cucumber: {
-                          prefixes: {
-                            test: "TestName:"
+
+                      Plugin configuration:
+
+                        {
+                          cucumber: {
+                            prefixes: {
+                              test: "TestName:"
+                            }
                           }
                         }
-                      }
 
-                      @TestName:CYP-123
-                      Scenario: Doing stuff
-                        When I prepare something
-                        ...
+                      Feature file:
+
+                        @TestName:CYP-123
+                        Scenario: Doing stuff
+                          When I prepare something
+                          ...
 
                     For more information, visit:
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/

@@ -124,7 +124,9 @@ export function missingTestKeyInCucumberScenarioError(
                   ${scenario.tags.map((tag) => tag.name).join("\n")}
 
                 If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray
+
                   For example, with the following plugin configuration:
+
                     {
                       cucumber: {
                         prefixes: {
@@ -133,7 +135,8 @@ export function missingTestKeyInCucumberScenarioError(
                       }
                     }
 
-                  The following tag will be recognized as an issue tag by the plugin:
+                  The following tag will be recognized as a test issue tag by the plugin:
+
                     @TestName:${projectKey}-123
                     ${scenario.keyword}: ${scenario.name}
                       ${firstStepLine}
@@ -155,24 +158,30 @@ export function missingTestKeyInCucumberScenarioError(
             No test issue keys found in tags of scenario: ${scenario.name}
 
             You can target existing test issues by adding a corresponding tag:
+
               @${projectKey}-123
               ${scenario.keyword}: ${scenario.name}
                 ${firstStepLine}
                 ...
 
             You can also specify a prefix to match the tagging scheme configured in your Xray instance:
-              {
-                cucumber: {
-                  prefixes: {
-                    test: "TestName:"
+
+              Plugin configuration:
+
+                {
+                  cucumber: {
+                    prefixes: {
+                      test: "TestName:"
+                    }
                   }
                 }
-              }
 
-              @TestName:${projectKey}-123
-              ${scenario.keyword}: ${scenario.name}
-                ${firstStepLine}
-                ...
+              Feature file:
+
+                @TestName:${projectKey}-123
+                ${scenario.keyword}: ${scenario.name}
+                  ${firstStepLine}
+                  ...
 
             For more information, visit:
             - ${HELP.plugin.guides.targetingExistingIssues}
@@ -270,7 +279,9 @@ export function missingPreconditionKeyInCucumberBackgroundError(
                   ${comments.map((comment: string) => comment.trim()).join("\n")}
 
                 If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray
+
                   For example, with the following plugin configuration:
+
                     {
                       cucumber: {
                         prefixes: {
@@ -279,7 +290,8 @@ export function missingPreconditionKeyInCucumberBackgroundError(
                       }
                     }
 
-                  The following comment will be recognized as an issue tag by the plugin:
+                  The following comment will be recognized as a precondition issue tag by the plugin:
+
                     ${background.keyword}: ${background.name}
                       #@Precondition:${projectKey}-123
                       ${firstStepLine}
@@ -301,24 +313,30 @@ export function missingPreconditionKeyInCucumberBackgroundError(
             No precondition issue keys found in comments of background: ${background.name}
 
             You can target existing precondition issues by adding a corresponding comment:
+
               ${background.keyword}: ${background.name}
                 #@${projectKey}-123
                 ${firstStepLine}
                 ...
 
             You can also specify a prefix to match the tagging scheme configured in your Xray instance:
-              {
-                cucumber: {
-                  prefixes: {
-                    precondition: "Precondition:"
+
+              Plugin configuration:
+
+                {
+                  cucumber: {
+                    prefixes: {
+                      precondition: "Precondition:"
+                    }
                   }
                 }
-              }
 
-              ${background.keyword}: ${background.name}
-                #@Precondition:${projectKey}-123
-                ${firstStepLine}
-                ...
+              Feature file:
+
+                ${background.keyword}: ${background.name}
+                  #@Precondition:${projectKey}-123
+                  ${firstStepLine}
+                  ...
 
             For more information, visit:
             - ${HELP.plugin.guides.targetingExistingIssues}
