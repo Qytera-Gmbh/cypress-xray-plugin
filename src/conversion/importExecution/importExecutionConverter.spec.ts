@@ -1,13 +1,15 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
-import { expectToExist, stubLogging } from "../../../test/util";
+import { getMockedLogger } from "../../../test/mocks";
+import { expectToExist } from "../../../test/util";
 import {
     initJiraOptions,
     initOpenSSLOptions,
     initPluginOptions,
     initXrayOptions,
 } from "../../context";
+import { Level } from "../../logging/logging";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
 import { ImportExecutionConverter } from "./importExecutionConverter";
@@ -50,23 +52,32 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
         );
-        const { stubbedWarning } = stubLogging();
+        const logger = getMockedLogger();
+        logger.message
+
+            .withArgs(
+                Level.WARNING,
+                dedent(`
+                    Skipping result upload for test: TodoMVC hides footer initially
+
+                    Unknown Cypress test status: broken
+                `)
+            )
+            .onFirstCall()
+            .returns();
+        logger.message
+            .withArgs(
+                Level.WARNING,
+                dedent(`
+                    Skipping result upload for test: TodoMVC adds 2 todos
+
+                    Unknown Cypress test status: california
+                `)
+            )
+            .onFirstCall()
+            .returns();
         await expect(converter.toXrayJson(result)).to.eventually.be.rejectedWith(
             "Failed to convert Cypress tests into Xray tests: No Cypress tests to upload"
-        );
-        expect(stubbedWarning.firstCall).to.have.been.calledWith(
-            dedent(`
-                Skipping result upload for test: TodoMVC hides footer initially
-
-                Unknown Cypress test status: broken
-            `)
-        );
-        expect(stubbedWarning.secondCall).to.have.been.calledWith(
-            dedent(`
-                Skipping result upload for test: TodoMVC adds 2 todos
-
-                Unknown Cypress test status: california
-            `)
         );
     });
 

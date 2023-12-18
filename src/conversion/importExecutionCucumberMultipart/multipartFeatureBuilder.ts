@@ -1,4 +1,4 @@
-import { logWarning } from "../../logging/logging";
+import { LOG, Level } from "../../logging/logging";
 import { getScenarioTagRegex } from "../../preprocessing/preprocessing";
 import {
     CucumberMultipartElement,
@@ -29,6 +29,7 @@ export function buildMultipartFeatures(
         includeScreenshots?: boolean;
         projectKey: string;
         useCloudTags: boolean;
+        testPrefix?: string;
     }
 ): CucumberMultipartFeature[] {
     const tests: CucumberMultipartFeature[] = [];
@@ -37,7 +38,6 @@ export function buildMultipartFeatures(
             ...result,
         };
         if (options?.testExecutionIssueKey) {
-            // For feature tags, there's no Cloud/Server distinction for some reason.
             const testExecutionIssueTag: CucumberMultipartTag = {
                 name: `@${options.testExecutionIssueKey}`,
             };
@@ -55,7 +55,8 @@ export function buildMultipartFeatures(
                     assertScenarioContainsIssueKey(
                         element,
                         options.projectKey,
-                        options.useCloudTags
+                        options.useCloudTags,
+                        options.testPrefix
                     );
                     const modifiedElement: CucumberMultipartElement = {
                         ...element,
@@ -64,7 +65,8 @@ export function buildMultipartFeatures(
                     elements.push(modifiedElement);
                 }
             } catch (error: unknown) {
-                logWarning(
+                LOG.message(
+                    Level.WARNING,
                     dedent(`
                         Skipping result upload for ${element.type}: ${element.name}
 
@@ -84,12 +86,13 @@ export function buildMultipartFeatures(
 function assertScenarioContainsIssueKey(
     element: CucumberMultipartElement,
     projectKey: string,
-    useCloudTags: boolean
+    isXrayCloud: boolean,
+    testPrefix?: string
 ): void {
     const issueKeys: string[] = [];
     if (element.tags) {
         for (const tag of element.tags) {
-            const matches = tag.name.match(getScenarioTagRegex(projectKey, useCloudTags));
+            const matches = tag.name.match(getScenarioTagRegex(projectKey, testPrefix));
             if (!matches) {
                 continue;
             } else if (matches.length === 2) {
@@ -107,7 +110,7 @@ function assertScenarioContainsIssueKey(
                 },
                 element.tags,
                 issueKeys,
-                useCloudTags
+                isXrayCloud
             );
         }
     }
@@ -119,9 +122,10 @@ function assertScenarioContainsIssueKey(
                 steps: element.steps.map((step: CucumberMultipartStep) => {
                     return { keyword: step.keyword, text: step.name };
                 }),
+                tags: element.tags,
             },
             projectKey,
-            useCloudTags
+            isXrayCloud
         );
     }
 }

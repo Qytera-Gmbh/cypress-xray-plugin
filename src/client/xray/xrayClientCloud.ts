@@ -1,13 +1,17 @@
 import FormData from "form-data";
 import { JWTCredentials } from "../../authentication/credentials";
-import { RequestConfigPost, Requests } from "../../https/requests";
-import { logDebug, logError, logWarning, writeErrorFile } from "../../logging/logging";
+import { RequestConfigPost, REST } from "../../https/requests";
+import { Level, LOG } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
-import { ImportFeatureResponseCloud, IssueDetails } from "../../types/xray/responses/importFeature";
+import {
+    ImportFeatureResponse,
+    ImportFeatureResponseCloud,
+    IssueDetails,
+} from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
 import { IXrayClient, XrayClient } from "./xrayClient";
 
@@ -54,7 +58,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         return `${this.apiBaseUrl}/import/execution`;
     }
 
-    public handleResponseImportExecution(response: ImportExecutionResponseCloud): string {
+    protected handleResponseImportExecution(response: ImportExecutionResponseCloud): string {
         return response.key;
     }
 
@@ -83,24 +87,50 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         return `${this.apiBaseUrl}/import/feature?${query.join("&")}`;
     }
 
-    public handleResponseImportFeature(response: ImportFeatureResponseCloud): void {
-        if (response.errors.length > 0) {
-            logError("Encountered some errors during import:", ...response.errors);
-        }
-        if (response.updatedOrCreatedTests.length > 0) {
-            logDebug(
-                "Successfully updated or created test issues:",
-                response.updatedOrCreatedTests.map((issue: IssueDetails) => issue.key).join(", ")
+    protected handleResponseImportFeature(
+        cloudResponse: ImportFeatureResponseCloud
+    ): ImportFeatureResponse {
+        const response: ImportFeatureResponse = {
+            errors: [],
+            updatedOrCreatedIssues: [],
+        };
+        if (cloudResponse.errors.length > 0) {
+            response.errors.push(...cloudResponse.errors);
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Encountered some errors during feature file import:
+                    ${cloudResponse.errors.map((error: string) => `- ${error}`).join("\n")}
+                `)
             );
         }
-        if (response.updatedOrCreatedPreconditions.length > 0) {
-            logDebug(
-                "Successfully updated or created precondition issues:",
-                response.updatedOrCreatedPreconditions
-                    .map((issue: IssueDetails) => issue.key)
-                    .join(", ")
+        if (cloudResponse.updatedOrCreatedTests.length > 0) {
+            const testKeys = cloudResponse.updatedOrCreatedTests.map(
+                (test: IssueDetails) => test.key
+            );
+            response.updatedOrCreatedIssues.push(...testKeys);
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Successfully updated or created test issues:
+                    ${testKeys.join("\n")}
+                `)
             );
         }
+        if (cloudResponse.updatedOrCreatedPreconditions.length > 0) {
+            const preconditionKeys = cloudResponse.updatedOrCreatedPreconditions.map(
+                (test: IssueDetails) => test.key
+            );
+            response.updatedOrCreatedIssues.push(...preconditionKeys);
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Successfully updated or created precondition issues:
+                    ${preconditionKeys.join(", ")}
+                `)
+            );
+        }
+        return response;
     }
 
     public async getTestTypes(
@@ -109,11 +139,11 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
     ): Promise<StringMap<string>> {
         try {
             if (!issueKeys || issueKeys.length === 0) {
-                logWarning("No issue keys provided. Skipping test type retrieval");
+                LOG.message(Level.WARNING, "No issue keys provided. Skipping test type retrieval");
                 return {};
             }
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            logDebug("Retrieving test types...");
+            LOG.message(Level.DEBUG, "Retrieving test types...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const types: StringMap<string> = {};
@@ -145,7 +175,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
                         },
                     };
                     const response: GetTestsResponse<GetTestsJiraData> = (
-                        await Requests.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
+                        await REST.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
                             headers: {
                                 ...authorizationHeader,
                             },
@@ -182,19 +212,22 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
                         `)
                     );
                 }
-                logDebug(`Successfully retrieved test types for ${issueKeys.length} issues`);
+                LOG.message(
+                    Level.DEBUG,
+                    `Successfully retrieved test types for ${issueKeys.length} issues`
+                );
                 return types;
             } finally {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            logError(`Failed to get test types: ${error}`);
-            writeErrorFile(error, "getTestTypes");
+            LOG.message(Level.ERROR, `Failed to get test types: ${error}`);
+            LOG.logErrorToFile(error, "getTestTypes");
         }
         return {};
     }
 
-    public async prepareRequestImportExecutionCucumberMultipart(
+    protected async prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: ICucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>> {
@@ -220,7 +253,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         };
     }
 
-    public handleResponseImportExecutionCucumberMultipart(
+    protected handleResponseImportExecutionCucumberMultipart(
         response: ImportExecutionResponseCloud
     ): string {
         return response.key;

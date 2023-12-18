@@ -1,18 +1,31 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
-import { expect } from "chai";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
-import { RESOLVED_JWT_CREDENTIALS, stubLogging, stubRequests } from "../../../test/util";
+import { SinonStubbedInstance } from "sinon";
+import { getMockedJWTCredentials, getMockedLogger, getMockedRestClient } from "../../../test/mocks";
+import { AxiosRestClient } from "../../https/requests";
+import { Level } from "../../logging/logging";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { dedent } from "../../util/dedent";
 import { XrayClientCloud } from "./xrayClientCloud";
 
+chai.use(chaiAsPromised);
+
 describe("the xray cloud client", () => {
-    const client: XrayClientCloud = new XrayClientCloud(RESOLVED_JWT_CREDENTIALS);
+    let client: XrayClientCloud;
+    let restClient: SinonStubbedInstance<AxiosRestClient>;
+
+    beforeEach(() => {
+        const credentials = getMockedJWTCredentials();
+        credentials.getAuthorizationHeader.resolves({ Authorization: "ey12345" });
+        client = new XrayClientCloud(credentials);
+        restClient = getMockedRestClient();
+    });
 
     describe("import execution", () => {
         it("should handle successful responses", async () => {
-            const { stubbedPost } = stubRequests();
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     id: "12345",
@@ -52,9 +65,8 @@ describe("the xray cloud client", () => {
             });
             expect(response).to.eq("CYP-123");
         });
-        it("should handle bad responses", async () => {
-            const { stubbedPost } = stubRequests();
-            const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+        it("handles bad responses", async () => {
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const error = new AxiosError(
                 "Request failed with status code 400",
                 "400",
@@ -70,7 +82,7 @@ describe("the xray cloud client", () => {
                     },
                 }
             );
-            stubbedPost.onFirstCall().rejects(error);
+            restClient.post.onFirstCall().rejects(error);
             const response = await client.importExecution({
                 testExecutionKey: "CYP-42",
                 info: {
@@ -88,10 +100,11 @@ describe("the xray cloud client", () => {
                 ],
             });
             expect(response).to.be.undefined;
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.ERROR,
                 "Failed to import execution: AxiosError: Request failed with status code 400"
             );
-            expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+            expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                 error,
                 "importExecutionError"
             );
@@ -100,8 +113,7 @@ describe("the xray cloud client", () => {
 
     describe("import execution cucumber multipart", () => {
         it("should handle successful responses", async () => {
-            const { stubbedPost } = stubRequests();
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     id: "12345",
@@ -129,9 +141,8 @@ describe("the xray cloud client", () => {
             expect(response).to.eq("CYP-123");
         });
 
-        it("should handle bad responses", async () => {
-            const { stubbedPost } = stubRequests();
-            const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+        it("handles bad responses", async () => {
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const error = new AxiosError(
                 "Request failed with status code 400",
                 "400",
@@ -147,7 +158,7 @@ describe("the xray cloud client", () => {
                     },
                 }
             );
-            stubbedPost.onFirstCall().rejects(error);
+            restClient.post.onFirstCall().rejects(error);
             const response = await client.importExecutionCucumberMultipart(
                 JSON.parse(
                     fs.readFileSync(
@@ -163,20 +174,189 @@ describe("the xray cloud client", () => {
                 )
             );
             expect(response).to.be.undefined;
-            expect(stubbedError).to.have.been.calledOnceWithExactly(
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.ERROR,
                 "Failed to import Cucumber execution: AxiosError: Request failed with status code 400"
             );
-            expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(
+            expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                 error,
                 "importExecutionCucumberMultipartError"
             );
         });
     });
 
+    describe("import feature", () => {
+        it("handles successful responses", async () => {
+            restClient.post.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    errors: [],
+                    updatedOrCreatedTests: [
+                        {
+                            id: "32495",
+                            key: "CYP-333",
+                            self: "https://devxray3.atlassian.net/rest/api/2/issue/32495",
+                        },
+                        {
+                            id: "32493",
+                            key: "CYP-555",
+                            self: "https://devxray3.atlassian.net/rest/api/2/issue/32493",
+                        },
+                    ],
+                    updatedOrCreatedPreconditions: [
+                        {
+                            id: "12345",
+                            key: "CYP-222",
+                            self: "https://devxray3.atlassian.net/rest/api/2/issue/12345",
+                        },
+                    ],
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            const response = await client.importFeature(
+                "./test/resources/features/taggedPrefixCorrect.feature",
+                "utf-8",
+                "CYP"
+            );
+            expect(response).to.deep.eq({
+                errors: [],
+                updatedOrCreatedIssues: ["CYP-333", "CYP-555", "CYP-222"],
+            });
+        });
+
+        it("handles responses with errors", async () => {
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            restClient.post.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    errors: [
+                        "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
+                        "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
+                    ],
+                    updatedOrCreatedTests: [
+                        {
+                            id: "32493",
+                            key: "CYP-555",
+                            self: "https://devxray3.atlassian.net/rest/api/2/issue/32493",
+                        },
+                    ],
+                    updatedOrCreatedPreconditions: [],
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            const response = await client.importFeature(
+                "./test/resources/features/taggedPrefixCorrect.feature",
+                "utf-8",
+                "CYP"
+            );
+            expect(response).to.deep.eq({
+                errors: [
+                    "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
+                    "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
+                ],
+                updatedOrCreatedIssues: ["CYP-555"],
+            });
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.DEBUG,
+                dedent(`
+                    Encountered some errors during feature file import:
+                    - Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!
+                    - Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!
+                `)
+            );
+        });
+
+        it("handles responses without any updated issues", async () => {
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            restClient.post.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    errors: [
+                        "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
+                        "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
+                        "Error in file taggedPrefixCorrect.feature: Test with key CYP-555 was not found!",
+                    ],
+                    updatedOrCreatedTests: [],
+                    updatedOrCreatedPreconditions: [],
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            const response = await client.importFeature(
+                "./test/resources/features/taggedPrefixCorrect.feature",
+                "utf-8",
+                "CYP"
+            );
+            expect(response).to.deep.eq({
+                errors: [
+                    "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
+                    "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
+                    "Error in file taggedPrefixCorrect.feature: Test with key CYP-555 was not found!",
+                ],
+                updatedOrCreatedIssues: [],
+            });
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.DEBUG,
+                dedent(`
+                    Encountered some errors during feature file import:
+                    - Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!
+                    - Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!
+                    - Error in file taggedPrefixCorrect.feature: Test with key CYP-555 was not found!
+                `)
+            );
+        });
+
+        it("handles bad responses", async () => {
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            const error = new AxiosError(
+                "Request failed with status code 400",
+                "400",
+                { headers: new AxiosHeaders() },
+                null,
+                {
+                    status: 400,
+                    statusText: "Bad Request",
+                    config: { headers: new AxiosHeaders() },
+                    headers: {},
+                    data: {
+                        error: "There are no valid tests imported", // sic
+                    },
+                }
+            );
+            restClient.post.onFirstCall().rejects(error);
+            await expect(
+                client.importFeature(
+                    "./test/resources/features/taggedPrefixCorrect.feature",
+                    "utf-8",
+                    "CYP"
+                )
+            ).to.eventually.be.rejectedWith("Feature file import failed");
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.ERROR,
+                dedent(`
+                    Failed to import Cucumber features: AxiosError: Request failed with status code 400
+
+                    The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
+
+                    For more information, visit:
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                `)
+            );
+            expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                error,
+                "importFeatureError"
+            );
+        });
+    });
+
     describe("get test types", () => {
         it("should handle successful responses", async () => {
-            const { stubbedPost } = stubRequests();
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: JSON.parse(
                     fs.readFileSync(
@@ -197,14 +377,13 @@ describe("the xray cloud client", () => {
         });
 
         it("should paginate big requests", async () => {
-            const { stubbedPost } = stubRequests();
             const mockedData: GetTestsResponse<unknown> = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/responses/getTestsTypes.json",
                     "utf-8"
                 )
             );
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     data: {
@@ -218,7 +397,7 @@ describe("the xray cloud client", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-            stubbedPost.onSecondCall().resolves({
+            restClient.post.onSecondCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     data: {
@@ -233,7 +412,7 @@ describe("the xray cloud client", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-            stubbedPost.onThirdCall().resolves({
+            restClient.post.onThirdCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     data: {
@@ -257,15 +436,14 @@ describe("the xray cloud client", () => {
         });
 
         it("should throw for missing test types", async () => {
-            const { stubbedPost } = stubRequests();
-            const { stubbedError } = stubLogging();
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const mockedData: GetTestsResponse<unknown> = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/responses/getTestsTypes.json",
                     "utf-8"
                 )
             );
-            stubbedPost.onFirstCall().resolves({
+            restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     data: {
@@ -282,7 +460,8 @@ describe("the xray cloud client", () => {
             });
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
             expect(response).to.deep.eq({});
-            expect(stubbedError).to.have.been.calledOnceWith(
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.ERROR,
                 dedent(`
                     Failed to get test types: Error: Failed to retrieve test types for issues:
 
@@ -295,8 +474,7 @@ describe("the xray cloud client", () => {
         });
 
         it("should handle bad responses", async () => {
-            const { stubbedPost } = stubRequests();
-            const { stubbedError, stubbedWriteErrorFile } = stubLogging();
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const error = new AxiosError(
                 "Request failed with status code 400",
                 "400",
@@ -312,22 +490,24 @@ describe("the xray cloud client", () => {
                     },
                 }
             );
-            stubbedPost.onFirstCall().rejects(error);
+            restClient.post.onFirstCall().rejects(error);
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
             expect(response).to.deep.eq({});
-            expect(stubbedError).to.have.been.calledWith(
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.ERROR,
                 "Failed to get test types: AxiosError: Request failed with status code 400"
             );
-            expect(stubbedWriteErrorFile).to.have.been.calledWithExactly(error, "getTestTypes");
+            expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(error, "getTestTypes");
         });
 
         it("should skip empty issues", async () => {
-            const { stubbedWarning } = stubLogging();
+            const logger = getMockedLogger();
+            logger.message
+                .withArgs(Level.WARNING, "No issue keys provided. Skipping test type retrieval")
+                .onFirstCall()
+                .returns();
             const response = await client.getTestTypes("CYP");
             expect(response).to.deep.eq({});
-            expect(stubbedWarning).to.have.been.calledWithExactly(
-                "No issue keys provided. Skipping test type retrieval"
-            );
         });
     });
 

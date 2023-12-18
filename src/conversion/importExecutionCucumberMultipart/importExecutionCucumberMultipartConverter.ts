@@ -1,6 +1,10 @@
 import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
 import { IJiraRepository } from "../../repository/jira/jiraRepository";
-import { InternalJiraOptions, InternalXrayOptions } from "../../types/plugin";
+import {
+    InternalCucumberOptions,
+    InternalJiraOptions,
+    InternalXrayOptions,
+} from "../../types/plugin";
 import {
     CucumberMultipartFeature,
     ICucumberMultipart,
@@ -27,6 +31,7 @@ export interface ImportExecutionCucumberMultipartConverterOptions {
         | "testExecutionIssueSummary"
         | "testPlanIssueKey"
     >;
+    cucumber?: Pick<InternalCucumberOptions, "prefixes">;
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 
@@ -69,6 +74,7 @@ export class ImportExecutionCucumberMultipartConverter {
             includeScreenshots: this.options.xray.uploadScreenshots,
             projectKey: this.options.jira.projectKey,
             useCloudTags: this.isCloudConverter,
+            testPrefix: this.options.cucumber?.prefixes.test,
         });
         if (this.isCloudConverter) {
             const testExecutionIssueData: TestExecutionIssueData = {

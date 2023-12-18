@@ -4,126 +4,156 @@ import fs from "fs";
 import path from "path";
 import { isLoggedError } from "../util/errors";
 
-const INFO = "INFO";
-const ERROR = "ERROR";
-const SUCCESS = "SUCCESS";
-const WARNING = "WARNING";
-const DEBUG = "DEBUG";
+export enum Level {
+    INFO = "INFO",
+    ERROR = "ERROR",
+    SUCCESS = "SUCCESS",
+    WARNING = "WARNING",
+    DEBUG = "DEBUG",
+}
 
-const VARIANTS = [INFO, ERROR, SUCCESS, WARNING, DEBUG];
-const MAX_PREFIX_LENGTH = Math.max(...VARIANTS.map((s) => s.length));
-const PREFIXES = {
-    info: prefix(INFO),
-    error: prefix(ERROR),
-    success: prefix(SUCCESS),
-    warning: prefix(WARNING),
-    debug: prefix(DEBUG),
-};
+/**
+ * A generic logging interface.
+ */
+export interface ILogger {
+    /**
+     * Logs a log message.
+     *
+     * @param text - the individual messages
+     */
+    message(level: Level, ...text: string[]): void;
+    /**
+     * Writes arbitrary data to a file under the log path configured in
+     * {@link configure | `configure`}.
+     *
+     * @param data - the data to write
+     * @param filename - the filename to use for the file
+     * @returns the file path
+     */
+    logToFile<T>(data: T, filename: string): string;
+    /**
+     * Writes an error to a file under the log path configured in
+     * {@link configure | `configure`}.
+     *
+     * @param error - the error
+     * @param filename - the filename to use for the file
+     * @returns the file path
+     */
+    logErrorToFile(error: unknown, filename: string): void;
+    /**
+     * Configures the logger.
+     *
+     * @param options - the logging options to use from now on
+     */
+    configure(options: LoggingOptions): void;
+}
 
 export interface LoggingOptions {
     debug?: boolean;
     logDirectory: string;
 }
 
-let loggingOptions: LoggingOptions;
+/**
+ * A Chalk-based logger.
+ */
+export class PluginLogger implements ILogger {
+    private readonly prefixes: Record<Level, string>;
+    private readonly colorizers: Record<Level, chalk.Chalk>;
+    private readonly logFunctions: Record<Level, (...data: unknown[]) => void>;
+    private loggingOptions: LoggingOptions;
 
-export function initLogging(options: LoggingOptions) {
-    loggingOptions = options;
-}
-function prefix(type: string): string {
-    return chalk.white(`│ Cypress Xray Plugin │ ${type.padEnd(MAX_PREFIX_LENGTH, " ")} │`);
-}
-
-export const logInfo = (...text: string[]) => {
-    log(text, PREFIXES.info, console.log, chalk.gray);
-};
-
-export const logError = (...text: string[]) => {
-    log(text, PREFIXES.error, console.error, chalk.red);
-};
-
-export const logSuccess = (...text: string[]) => {
-    log(text, PREFIXES.success, console.log, chalk.green);
-};
-
-export const logWarning = (...text: string[]) => {
-    log(text, PREFIXES.warning, console.log, chalk.yellow);
-};
-
-export const logDebug = (...text: string[]) => {
-    if (loggingOptions.debug) {
-        log(text, PREFIXES.debug, console.log, chalk.cyan);
+    constructor(options: LoggingOptions = { logDirectory: "." }) {
+        this.loggingOptions = options;
+        const maxPrefixLength = Math.max(...Object.values(Level).map((s) => s.length));
+        this.prefixes = {
+            [Level.INFO]: this.prefix(Level.INFO, maxPrefixLength),
+            [Level.ERROR]: this.prefix(Level.ERROR, maxPrefixLength),
+            [Level.SUCCESS]: this.prefix(Level.SUCCESS, maxPrefixLength),
+            [Level.WARNING]: this.prefix(Level.WARNING, maxPrefixLength),
+            [Level.DEBUG]: this.prefix(Level.DEBUG, maxPrefixLength),
+        };
+        this.colorizers = {
+            [Level.INFO]: chalk.gray,
+            [Level.ERROR]: chalk.red,
+            [Level.SUCCESS]: chalk.green,
+            [Level.WARNING]: chalk.yellow,
+            [Level.DEBUG]: chalk.cyan,
+        };
+        this.logFunctions = {
+            [Level.INFO]: console.info,
+            [Level.ERROR]: console.error,
+            [Level.SUCCESS]: console.log,
+            [Level.WARNING]: console.warn,
+            [Level.DEBUG]: console.debug,
+        };
     }
-};
 
-function log(
-    text: string[],
-    prefix: string,
-    logger: (...text: unknown[]) => void,
-    colorizer: (...text: unknown[]) => string
-) {
-    const lines = text.join(" ").split("\n");
-    lines.forEach((line: string, index: number) => {
-        if (index === 0) {
-            logger(`${prefix} ${colorizer(line)}`);
+    public message(level: Level, ...text: string[]) {
+        if (level === Level.DEBUG && !this.loggingOptions.debug) {
+            return;
+        }
+        const colorizer = this.colorizers[level];
+        const prefix = this.prefixes[level];
+        const logFunction = this.logFunctions[level];
+        const lines = text.join(" ").split("\n");
+        lines.forEach((line: string, index: number) => {
+            if (index === 0) {
+                logFunction(`${prefix} ${colorizer(line)}`);
+            } else {
+                logFunction(`${prefix}   ${colorizer(line)}`);
+            }
+            // Pad multiline log messages with an extra new line to cleanly separate them from the
+            // following line.
+            if (index > 0 && index === lines.length - 1) {
+                logFunction(prefix);
+            }
+        });
+    }
+
+    public logToFile<T>(data: T, filename: string): string {
+        const logDirectoryPath = path.resolve(this.loggingOptions.logDirectory);
+        fs.mkdirSync(logDirectoryPath, { recursive: true });
+        const filepath = path.resolve(logDirectoryPath, filename);
+        fs.writeFileSync(filepath, JSON.stringify(data));
+        return filepath;
+    }
+
+    public logErrorToFile(error: unknown, filename: string): void {
+        let errorFileName: string;
+        let errorData: unknown;
+        if (isLoggedError(error)) {
+            return;
+        }
+        if (isAxiosError(error)) {
+            errorFileName = `${filename}.json`;
+            errorData = {
+                error: error.toJSON(),
+                response: error.response?.data,
+            };
+        } else if (error instanceof Error) {
+            errorFileName = `${filename}.json`;
+            errorData = {
+                error: `${error.name}: ${error.message}`,
+                stacktrace: error.stack,
+            };
         } else {
-            logger(`${prefix}   ${colorizer(line)}`);
+            errorFileName = `${filename}.log`;
+            errorData = error;
         }
-        // Pad multiline log messages with an extra new line to cleanly separate them from the
-        // following line.
-        if (index > 0 && index === lines.length - 1) {
-            logger(prefix);
-        }
-    });
+        const filepath = this.logToFile(errorData, errorFileName);
+        this.message(Level.ERROR, `Complete error logs have been written to: ${filepath}`);
+    }
+
+    public configure(options: LoggingOptions): void {
+        this.loggingOptions = options;
+    }
+
+    private prefix(type: string, maxPrefixLength: number): string {
+        return chalk.white(`│ Cypress Xray Plugin │ ${type.padEnd(maxPrefixLength, " ")} │`);
+    }
 }
 
 /**
- * Writes arbitrary data to a file under the log path configured in
- * {@link initLogging | `initLogging`}.
- *
- * @param data - the data to write
- * @param filename - the filename to use for the file
+ * The global logger instance.
  */
-export function writeFile<T>(data: T, filename: string): string {
-    const logDirectoryPath = path.resolve(loggingOptions.logDirectory);
-    fs.mkdirSync(logDirectoryPath, { recursive: true });
-    const filepath = path.resolve(logDirectoryPath, filename);
-    fs.writeFileSync(filepath, JSON.stringify(data));
-    return filepath;
-}
-
-/**
- * Writes an error to a file (e.g. HTTP response errors) under the log path configured in
- * {@link initLogging | `initLogging`}.
- *
- * @param error - the error
- * @param filename - the filename to use for the file
- */
-export function writeErrorFile(error: unknown, filename: string): void {
-    let errorFileName: string;
-    let errorData: string;
-    if (isLoggedError(error)) {
-        return;
-    }
-    if (isAxiosError(error)) {
-        errorFileName = `${filename}.json`;
-        errorData = JSON.stringify({
-            error: error.toJSON(),
-            response: error.response?.data,
-        });
-    } else if (error instanceof Error) {
-        errorFileName = `${filename}.json`;
-        errorData = JSON.stringify({
-            error: `${error.name}: ${error.message}`,
-            stacktrace: error.stack,
-        });
-    } else {
-        errorFileName = `${filename}.log`;
-        errorData = JSON.stringify(error);
-    }
-    const logDirectoryPath = path.resolve(loggingOptions.logDirectory);
-    fs.mkdirSync(logDirectoryPath, { recursive: true });
-    errorFileName = path.resolve(logDirectoryPath, errorFileName);
-    fs.writeFileSync(errorFileName, errorData);
-    logError(`Complete error logs have been written to: ${errorFileName}`);
-}
+export const LOG: ILogger = new PluginLogger();

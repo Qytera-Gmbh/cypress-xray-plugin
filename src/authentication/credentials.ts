@@ -1,5 +1,5 @@
-import { Requests } from "../https/requests";
-import { logDebug, logError, logInfo, writeErrorFile } from "../logging/logging";
+import { REST } from "../https/requests";
+import { LOG, Level } from "../logging/logging";
 import { StringMap } from "../types/util";
 import { encode } from "../util/base64";
 import { dedent } from "../util/dedent";
@@ -109,22 +109,23 @@ export class JWTCredentials implements IHttpCredentials {
         if (!this.token) {
             try {
                 const progressInterval = startInterval((totalTime: number) => {
-                    logInfo(
+                    LOG.message(
+                        Level.INFO,
                         `Waiting for ${this.authenticationUrl} to respond... (${
                             totalTime / 1000
                         } seconds)`
                     );
                 });
                 try {
-                    logInfo(`Authenticating to: ${this.authenticationUrl}...`);
-                    const tokenResponse = await Requests.post(this.authenticationUrl, {
+                    LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
+                    const tokenResponse = await REST.post(this.authenticationUrl, {
                         client_id: this.clientId,
                         client_secret: this.clientSecret,
                     });
                     // A JWT token is expected: https://stackoverflow.com/a/74325712
                     const jwtRegex = /^[A-Za-z0-9_-]{2,}(?:\.[A-Za-z0-9_-]{2,}){2}$/;
                     if (jwtRegex.test(tokenResponse.data)) {
-                        logDebug("Authentication successful.");
+                        LOG.message(Level.DEBUG, "Authentication successful.");
                         this.token = tokenResponse.data;
                         return tokenResponse.data;
                     } else {
@@ -135,14 +136,15 @@ export class JWTCredentials implements IHttpCredentials {
                 }
             } catch (error: unknown) {
                 const message = errorMessage(error);
-                logError(
+                LOG.message(
+                    Level.ERROR,
                     dedent(`
                         Failed to authenticate to: ${this.authenticationUrl}
 
                         ${message}
                     `)
                 );
-                writeErrorFile(error, "authentication");
+                LOG.logErrorToFile(error, "authentication");
                 throw new LoggedError("Authentication failed");
             }
         }

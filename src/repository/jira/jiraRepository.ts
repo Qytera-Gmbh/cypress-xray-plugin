@@ -1,4 +1,4 @@
-import { logError } from "../../logging/logging";
+import { LOG, Level } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
@@ -81,7 +81,7 @@ export class CachingJiraRepository implements IJiraRepository {
         try {
             result = await this.mergeRemainingFields(
                 this.summaries,
-                this.jiraIssueFetcher.fetchSummaries,
+                this.jiraIssueFetcher.fetchSummaries.bind(this.jiraIssueFetcher),
                 ...issueKeys
             );
             const missingSummaries: string[] = issueKeys.filter(
@@ -91,13 +91,13 @@ export class CachingJiraRepository implements IJiraRepository {
                 throw new Error(
                     dedent(`
                         Make sure these issues exist:
-
                           ${missingSummaries.join("\n")}
                     `)
                 );
             }
         } catch (error: unknown) {
-            logError(
+            LOG.message(
+                Level.ERROR,
                 dedent(`
                     Failed to fetch issue summaries
                     ${errorMessage(error)}
@@ -112,7 +112,7 @@ export class CachingJiraRepository implements IJiraRepository {
         try {
             result = await this.mergeRemainingFields(
                 this.descriptions,
-                this.jiraIssueFetcher.fetchDescriptions,
+                this.jiraIssueFetcher.fetchDescriptions.bind(this.jiraIssueFetcher),
                 ...issueKeys
             );
             const missingDescriptions: string[] = issueKeys.filter(
@@ -122,13 +122,13 @@ export class CachingJiraRepository implements IJiraRepository {
                 throw new Error(
                     dedent(`
                         Make sure these issues exist:
-
                           ${missingDescriptions.join("\n")}
                     `)
                 );
             }
         } catch (error: unknown) {
-            logError(
+            LOG.message(
+                Level.ERROR,
                 dedent(`
                     Failed to fetch issue descriptions
                     ${errorMessage(error)}
@@ -143,7 +143,7 @@ export class CachingJiraRepository implements IJiraRepository {
         try {
             result = await this.mergeRemainingFields(
                 this.testTypes,
-                this.jiraIssueFetcher.fetchTestTypes,
+                this.jiraIssueFetcher.fetchTestTypes.bind(this.jiraIssueFetcher),
                 ...issueKeys
             );
             const missingTestTypes: string[] = issueKeys.filter(
@@ -153,13 +153,13 @@ export class CachingJiraRepository implements IJiraRepository {
                 throw new Error(
                     dedent(`
                         Make sure these issues exist and are test issues:
-
                           ${missingTestTypes.join("\n")}
                     `)
                 );
             }
         } catch (error: unknown) {
-            logError(
+            LOG.message(
+                Level.ERROR,
                 dedent(`
                     Failed to fetch issue test types
                     ${errorMessage(error)}
@@ -174,7 +174,7 @@ export class CachingJiraRepository implements IJiraRepository {
         try {
             result = await this.mergeRemainingFields(
                 this.labels,
-                this.jiraIssueFetcher.fetchLabels,
+                this.jiraIssueFetcher.fetchLabels.bind(this.jiraIssueFetcher),
                 ...issueKeys
             );
             const missingLabels: string[] = issueKeys.filter(
@@ -184,13 +184,13 @@ export class CachingJiraRepository implements IJiraRepository {
                 throw new Error(
                     dedent(`
                         Make sure these issues exist:
-
                           ${missingLabels.join("\n")}
                     `)
                 );
             }
         } catch (error: unknown) {
-            logError(
+            LOG.message(
+                Level.ERROR,
                 dedent(`
                     Failed to fetch issue labels
                     ${errorMessage(error)}

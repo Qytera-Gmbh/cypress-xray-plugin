@@ -1,14 +1,16 @@
 import FormData from "form-data";
 import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
 import { RequestConfigPost } from "../../https/requests";
-import { logDebug, logError } from "../../logging/logging";
+import { LOG, Level } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import {
+    ImportFeatureResponse,
     ImportFeatureResponseServer,
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
+import { dedent } from "../../util/dedent";
 import { XrayClient } from "./xrayClient";
 
 export class XrayClientServer extends XrayClient {
@@ -26,7 +28,7 @@ export class XrayClientServer extends XrayClient {
         return `${this.apiBaseUrl}/rest/raven/latest/import/execution`;
     }
 
-    public handleResponseImportExecution(response: ImportExecutionResponseServer): string {
+    protected handleResponseImportExecution(response: ImportExecutionResponseServer): string {
         return response.testExecIssue.key;
     }
 
@@ -50,33 +52,61 @@ export class XrayClientServer extends XrayClient {
         return `${this.apiBaseUrl}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
     }
 
-    public handleResponseImportFeature(response: ImportFeatureResponseServer): void {
+    protected handleResponseImportFeature(
+        serverResponse: ImportFeatureResponseServer
+    ): ImportFeatureResponse {
+        const response: ImportFeatureResponse = {
+            errors: [],
+            updatedOrCreatedIssues: [],
+        };
         // Happens when scenarios cause errors in Xray, e.g. typos in keywords ('Scenariot').
-        if (typeof response === "object" && "message" in response) {
-            if (response.message) {
-                logError("Encountered an error during import:", response.message);
-            }
-            if (response.testIssues && response.testIssues.length > 0) {
-                logDebug(
-                    "Successfully updated or created test issues:",
-                    response.testIssues.map((issue: IssueDetails) => issue.key).join(", ")
+        if (typeof serverResponse === "object" && "message" in serverResponse) {
+            if (serverResponse.message) {
+                response.errors.push(serverResponse.message);
+                LOG.message(
+                    Level.DEBUG,
+                    `Encountered an error during feature file import: ${serverResponse.message}`
                 );
             }
-            if (response.preconditionIssues && response.preconditionIssues.length > 0) {
-                logDebug(
-                    "Successfully updated or created precondition issues:",
-                    response.preconditionIssues.map((issue: IssueDetails) => issue.key).join(", ")
+            if (serverResponse.testIssues && serverResponse.testIssues.length > 0) {
+                const testKeys = serverResponse.testIssues.map((test: IssueDetails) => test.key);
+                response.updatedOrCreatedIssues.push(...testKeys);
+                LOG.message(
+                    Level.DEBUG,
+                    dedent(`
+                        Successfully updated or created test issues:
+                        ${testKeys.join(", ")}
+                    `)
                 );
             }
-        } else if (Array.isArray(response)) {
-            logDebug(
-                "Successfully updated or created issues:",
-                response.map((issue: IssueDetails) => issue.key).join(", ")
+            if (serverResponse.preconditionIssues && serverResponse.preconditionIssues.length > 0) {
+                const preconditionKeys = serverResponse.preconditionIssues.map(
+                    (test: IssueDetails) => test.key
+                );
+                response.updatedOrCreatedIssues.push(...preconditionKeys);
+                LOG.message(
+                    Level.DEBUG,
+                    dedent(`
+                        Successfully updated or created precondition issues:
+                        ${preconditionKeys.join(", ")}
+                    `)
+                );
+            }
+        } else if (Array.isArray(serverResponse)) {
+            const issueKeys = serverResponse.map((test: IssueDetails) => test.key);
+            response.updatedOrCreatedIssues.push(...issueKeys);
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Successfully updated or created issues:
+                    ${issueKeys.join(", ")}
+                `)
             );
         }
+        return response;
     }
 
-    public async prepareRequestImportExecutionCucumberMultipart(
+    protected async prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: ICucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>> {
@@ -102,7 +132,7 @@ export class XrayClientServer extends XrayClient {
         };
     }
 
-    public handleResponseImportExecutionCucumberMultipart(
+    protected handleResponseImportExecutionCucumberMultipart(
         response: ImportExecutionResponseServer
     ): string {
         return response.testExecIssue.key;

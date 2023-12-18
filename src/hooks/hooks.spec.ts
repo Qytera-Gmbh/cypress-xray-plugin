@@ -1,25 +1,25 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
-import path from "path";
 import { stub } from "sinon";
-import { stubLogging } from "../test/util";
-import { PATCredentials } from "./authentication/credentials";
-import { JiraClientServer } from "./client/jira/jiraClientServer";
-import { XrayClientServer } from "./client/xray/xrayClientServer";
+import { getMockedLogger } from "../../test/mocks";
+import { PATCredentials } from "../authentication/credentials";
+import { JiraClientServer } from "../client/jira/jiraClientServer";
+import { XrayClientServer } from "../client/xray/xrayClientServer";
 import {
     initCucumberOptions,
     initJiraOptions,
     initOpenSSLOptions,
     initPluginOptions,
     initXrayOptions,
-} from "./context";
-import { beforeRunHook, synchronizeFile } from "./hooks";
-import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
-import { JiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
-import { CachingJiraRepository } from "./repository/jira/jiraRepository";
-import { ClientCombination, InternalOptions } from "./types/plugin";
-import { dedent } from "./util/dedent";
+} from "../context";
+import { Level } from "../logging/logging";
+import { CachingJiraFieldRepository } from "../repository/jira/fields/jiraFieldRepository";
+import { JiraIssueFetcher } from "../repository/jira/fields/jiraIssueFetcher";
+import { CachingJiraRepository } from "../repository/jira/jiraRepository";
+import { ClientCombination, InternalOptions } from "../types/plugin";
+import { dedent } from "../util/dedent";
+import { beforeRunHook } from "./hooks";
 
 // Enable promise assertions.
 chai.use(chaiAsPromised);
@@ -74,7 +74,7 @@ describe("the hooks", () => {
         });
 
         it("should fetch xray issue type information to prepare for cucumber results upload", async () => {
-            const { stubbedInfo } = stubLogging();
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             );
@@ -100,25 +100,26 @@ describe("the hooks", () => {
                 },
             ]);
             await beforeRunHook(beforeRunDetails.specs, options, clients);
-            expect(stubbedInfo).to.have.been.calledWith(
-                "Fetching necessary Jira issue type information in preparation for Cucumber result uploads..."
-            );
             expect(options.jira.testExecutionIssueDetails).to.deep.eq({
                 name: "Test Execution",
                 id: "12345",
                 subtask: false,
             });
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Fetching necessary Jira issue type information in preparation for Cucumber result uploads..."
+            );
         });
 
         it("should not fetch xray issue type information for native results upload", async () => {
-            const { stubbedInfo } = stubLogging();
+            const logger = getMockedLogger();
             beforeRunDetails = JSON.parse(readFileSync("./test/resources/beforeRun.json", "utf-8"));
             await beforeRunHook(beforeRunDetails.specs, options, clients);
-            expect(stubbedInfo).to.not.have.been.called;
+            expect(logger.message).to.not.have.been.called;
         });
 
         it("should throw if xray test execution issue type information can not be fetched", async () => {
-            stubLogging();
+            getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             );
@@ -157,7 +158,7 @@ describe("the hooks", () => {
         });
 
         it("should throw if multiple xray test execution issue types are fetched", async () => {
-            stubLogging();
+            getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             );
@@ -201,7 +202,7 @@ describe("the hooks", () => {
         });
 
         it("should throw if jira issue type information cannot be fetched", async () => {
-            stubLogging();
+            getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             );
@@ -230,53 +231,6 @@ describe("the hooks", () => {
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
                 `)
             );
-        });
-    });
-
-    describe("the synchronize file hook", () => {
-        // Weird workaround.
-        const emitter = {} as Cypress.FileObject;
-        const file: Cypress.FileObject = {
-            ...emitter,
-            filePath: "./test/resources/features/taggedCloud.feature",
-            outputPath: "",
-            shouldWatch: false,
-        };
-
-        it("should display errors for invalid feature files", async () => {
-            file.filePath = "./test/resources/features/invalid.feature";
-            const { stubbedInfo, stubbedError } = stubLogging();
-            options.cucumber = {
-                featureFileExtension: ".feature",
-                downloadFeatures: false,
-                uploadFeatures: true,
-            };
-            await synchronizeFile(file, ".", options, clients);
-            expect(stubbedError).to.have.been.calledOnce;
-            expect(stubbedError).to.have.been.calledWith(
-                dedent(`
-                    Feature file invalid, skipping synchronization: ./test/resources/features/invalid.feature
-
-                    Parser errors:
-                    (9:3): expected: #EOF, #TableRow, #DocStringSeparator, #StepLine, #TagLine, #ScenarioLine, #RuleLine, #Comment, #Empty, got 'Invalid: Element'
-                `)
-            );
-            expect(stubbedInfo).to.have.been.calledOnce;
-            expect(stubbedInfo).to.have.been.calledWith(
-                `Preprocessing feature file ${path.join(
-                    "test",
-                    "resources",
-                    "features",
-                    "invalid.feature"
-                )}...`
-            );
-        });
-
-        it("should not try to parse mismatched feature files", async () => {
-            file.filePath = "./test/resources/greetings.txt";
-            const { stubbedError } = stubLogging();
-            await synchronizeFile(file, ".", options, clients);
-            expect(stubbedError).to.not.have.been.called;
         });
     });
 });

@@ -12,9 +12,9 @@ export interface IssueType {
  *
  * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
  */
-export interface ImportFeatureResponseServerSuccess extends IssueDetails {
+export type ImportFeatureResponseServerSuccess = (IssueDetails & {
     issueType: IssueType;
-}
+})[];
 /**
  * Cucumber feature import failed.
  *
@@ -37,4 +37,18 @@ export interface ImportFeatureResponseCloud {
     errors: string[];
     updatedOrCreatedTests: IssueDetails[];
     updatedOrCreatedPreconditions: IssueDetails[];
+}
+
+/**
+ * Models a summarized response when importing Cucumber feature files to Xray.
+ */
+export interface ImportFeatureResponse {
+    /**
+     * All errors which occurred during import.
+     */
+    errors: string[];
+    /**
+     * The Jira issue keys of issues created or updated during import.
+     */
+    updatedOrCreatedIssues: string[];
 }

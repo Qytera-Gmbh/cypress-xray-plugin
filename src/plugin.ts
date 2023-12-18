@@ -9,9 +9,10 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
-import { afterRunHook, beforeRunHook, synchronizeFile } from "./hooks";
-import { Requests } from "./https/requests";
-import { initLogging, logError, logInfo, logWarning } from "./logging/logging";
+import { afterRunHook, beforeRunHook } from "./hooks/hooks";
+import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
+import { REST } from "./https/requests";
+import { LOG, Level } from "./logging/logging";
 import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { HELP } from "./util/help";
@@ -49,12 +50,12 @@ export async function configureXrayPlugin(
     // Resolve these before all other options for correct enabledness.
     const pluginOptions: InternalPluginOptions = initPluginOptions(config.env, options.plugin);
     if (!pluginOptions.enabled) {
-        logInfo("Plugin disabled. Skipping further configuration");
+        LOG.message(Level.INFO, "Plugin disabled. Skipping further configuration");
         return;
     }
     // Init logging before all other configurations because they might require an initialized
     // logging module.
-    initLogging({
+    LOG.configure({
         debug: pluginOptions.debug,
         logDirectory: pluginOptions.logDirectory,
     });
@@ -65,7 +66,7 @@ export async function configureXrayPlugin(
         cucumber: await initCucumberOptions(config, options.cucumber),
         openSSL: initOpenSSLOptions(config.env, options.openSSL),
     };
-    Requests.init({
+    REST.init({
         debug: internalOptions.plugin.debug,
         openSSL: internalOptions.openSSL,
     });
@@ -94,11 +95,11 @@ export async function addXrayResultUpload(on: Cypress.PluginEvents): Promise<voi
             return;
         }
         if (!context.internal.plugin.enabled) {
-            logInfo("Plugin disabled. Skipping before:run hook");
+            LOG.message(Level.INFO, "Plugin disabled. Skipping before:run hook");
             return;
         }
         if (!runDetails.specs) {
-            logWarning("No specs about to be executed. Skipping before:run hook");
+            LOG.message(Level.WARNING, "No specs about to be executed. Skipping before:run hook");
             return;
         }
         await beforeRunHook(runDetails.specs, context.internal, context.clients);
@@ -116,16 +117,20 @@ export async function addXrayResultUpload(on: Cypress.PluginEvents): Promise<voi
                 return;
             }
             if (!context.internal.plugin.enabled) {
-                logInfo("Skipping after:run hook: Plugin disabled");
+                LOG.message(Level.INFO, "Skipping after:run hook: Plugin disabled");
                 return;
             }
             if (!context.internal.xray.uploadResults) {
-                logInfo("Skipping results upload: Plugin is configured to not upload test results");
+                LOG.message(
+                    Level.INFO,
+                    "Skipping results upload: Plugin is configured to not upload test results"
+                );
                 return;
             }
             if ("status" in results && results["status"] === "failed") {
                 const failedResult = results as CypressCommandLine.CypressFailedRunResult;
-                logError(
+                LOG.message(
+                    Level.ERROR,
                     dedent(`
                         Skipping after:run hook: Failed to run ${failedResult.failures} tests
 
@@ -160,12 +165,13 @@ export async function syncFeatureFile(file: Cypress.FileObject): Promise<string>
         return file.filePath;
     }
     if (!context.internal.plugin.enabled) {
-        logInfo(
+        LOG.message(
+            Level.INFO,
             `Plugin disabled. Skipping feature file synchronization triggered by: ${file.filePath}`
         );
         return file.filePath;
     }
-    return await synchronizeFile(
+    return await synchronizeFeatureFile(
         file,
         context.cypress.projectRoot,
         context.internal,
@@ -175,7 +181,8 @@ export async function syncFeatureFile(file: Cypress.FileObject): Promise<string>
 
 function logInitializationWarning(hook: "before:run" | "after:run" | "file:preprocessor"): void {
     // Do not throw in case someone does not want the plugin to run but forgot to remove a hook.
-    logWarning(
+    LOG.message(
+        Level.WARNING,
         dedent(`
             Skipping ${hook} hook: Plugin misconfigured: configureXrayPlugin() was not called
 

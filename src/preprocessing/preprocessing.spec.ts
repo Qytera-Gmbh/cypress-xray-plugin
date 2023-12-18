@@ -1,12 +1,14 @@
 import { Background, Scenario } from "@cucumber/messages";
 import { expect } from "chai";
 import fs from "fs";
-import { stubLogging } from "../../test/util";
+import { getMockedLogger } from "../../test/mocks";
+import { Level } from "../logging/logging";
 import { dedent } from "../util/dedent";
 import {
     containsCucumberTest,
     containsNativeTest,
     getCucumberIssueData,
+    getCucumberPreconditionIssueComments,
     getCucumberPreconditionIssueTags,
     getCucumberScenarioIssueTags,
     getNativeTestIssueKey,
@@ -31,65 +33,76 @@ describe("cypress preprocessing", () => {
 
         it("skips invalid or missing issue keys", () => {
             result = JSON.parse(fs.readFileSync("./test/resources/runResult.json", "utf-8"));
-            const { stubbedWarning } = stubLogging();
+            const logger = getMockedLogger();
+            logger.message
+                .withArgs(
+                    Level.WARNING,
+                    dedent(`
+                        Skipping test: xray upload demo should look for paragraph elements
+
+                        No test issue keys found in title of test: should look for paragraph elements
+                        You can target existing test issues by adding a corresponding issue key:
+
+                        it("CYP-123 should look for paragraph elements", () => {
+                          // ...
+                        });
+
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                    `)
+                )
+                .onFirstCall()
+                .returns();
+            logger.message
+                .withArgs(
+                    Level.WARNING,
+                    dedent(`
+                        Skipping test: xray upload demo should look for the anchor element
+
+                        No test issue keys found in title of test: should look for the anchor element
+                        You can target existing test issues by adding a corresponding issue key:
+
+                        it("CYP-123 should look for the anchor element", () => {
+                          // ...
+                        });
+
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                    `)
+                )
+                .onFirstCall()
+                .returns();
+            logger.message
+                .withArgs(
+                    Level.WARNING,
+                    dedent(`
+                        Skipping test: xray upload demo should fail
+
+                        No test issue keys found in title of test: should fail
+                        You can target existing test issues by adding a corresponding issue key:
+
+                        it("CYP-123 should fail", () => {
+                          // ...
+                        });
+
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                    `)
+                )
+                .onFirstCall()
+                .returns();
             const issueKeys = getNativeTestIssueKeys(result, "CYP");
             expect(issueKeys).to.deep.eq([]);
-            expect(stubbedWarning).to.have.been.called.with.callCount(3);
-            expect(stubbedWarning.getCall(0)).to.have.been.calledWithExactly(
-                dedent(`
-                    Skipping test: xray upload demo should look for paragraph elements
-
-                    No test issue keys found in title of test: should look for paragraph elements
-                    You can target existing test issues by adding a corresponding issue key:
-
-                    it("CYP-123 should look for paragraph elements", () => {
-                      // ...
-                    });
-
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                `)
-            );
-            expect(stubbedWarning.getCall(1)).to.have.been.calledWithExactly(
-                dedent(`
-                    Skipping test: xray upload demo should look for the anchor element
-
-                    No test issue keys found in title of test: should look for the anchor element
-                    You can target existing test issues by adding a corresponding issue key:
-
-                    it("CYP-123 should look for the anchor element", () => {
-                      // ...
-                    });
-
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                `)
-            );
-            expect(stubbedWarning.getCall(2)).to.have.been.calledWithExactly(
-                dedent(`
-                    Skipping test: xray upload demo should fail
-
-                    No test issue keys found in title of test: should fail
-                    You can target existing test issues by adding a corresponding issue key:
-
-                    it("CYP-123 should fail", () => {
-                      // ...
-                    });
-
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                `)
-            );
         });
 
         it("skips cucumber tests", () => {
-            const { stubbedWarning } = stubLogging();
+            const logger = getMockedLogger();
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
             );
             const issueKeys = getNativeTestIssueKeys(result, "CYP", ".feature");
             expect(issueKeys).to.deep.eq(["CYP-330", "CYP-268", "CYP-237", "CYP-332", "CYP-333"]);
-            expect(stubbedWarning).to.not.have.been.called;
+            expect(logger.message).to.not.have.been.called;
         });
     });
 
@@ -163,35 +176,188 @@ describe("cypress preprocessing", () => {
 });
 
 describe("cucumber preprocessing", () => {
-    describe("server", () => {
-        it("throws for missing scenario tags", () => {
-            expect(() =>
-                getCucumberIssueData(
-                    "./test/resources/features/taggedServerMissingScenario.feature",
-                    "CYP",
-                    false
-                )
-            ).to.throw(
-                dedent(`
-                    No test issue keys found in tags of scenario: A scenario
-                    You can target existing test issues by adding a corresponding tag:
+    it("throws for missing scenario tags", async () => {
+        expect(() =>
+            getCucumberIssueData(
+                "./test/resources/features/taggedPrefixMissingScenario.feature",
+                "CYP",
+                true,
+                { precondition: "Precondition:" }
+            )
+        ).to.throw(
+            dedent(`
+                No test issue keys found in tags of scenario: A scenario
 
-                    @CYP-123
+                You can target existing test issues by adding a corresponding tag:
+
+                  @CYP-123
+                  Scenario: A scenario
+                    Given an assumption
+                    ...
+
+                You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+                  Plugin configuration:
+
+                    {
+                      cucumber: {
+                        prefixes: {
+                          test: "TestName:"
+                        }
+                      }
+                    }
+
+                  Feature file:
+
+                    @TestName:CYP-123
                     Scenario: A scenario
                       Given an assumption
                       ...
 
-                    For more information, visit:
-                    - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                `)
-            );
-        });
+                For more information, visit:
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+            `)
+        );
+    });
 
+    it("throws for wrong scenario tags", async () => {
+        expect(() =>
+            getCucumberIssueData(
+                "./test/resources/features/taggedWrongScenarioTags.feature",
+                "CYP",
+                false
+            )
+        ).to.throw(
+            dedent(`
+                No test issue keys found in tags of scenario: A scenario
+
+                Available tags:
+                  @Test:CYP-123
+                  @Cool
+                  @Lucky:CYP-415
+
+                If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray
+
+                  For example, with the following plugin configuration:
+
+                    {
+                      cucumber: {
+                        prefixes: {
+                          test: "TestName:"
+                        }
+                      }
+                    }
+
+                  The following tag will be recognized as a test issue tag by the plugin:
+
+                    @TestName:CYP-123
+                    Scenario: A scenario
+                      Given an assumption
+                      ...
+
+                For more information, visit:
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+            `)
+        );
+    });
+
+    it("throws for missing background tags", async () => {
+        expect(() =>
+            getCucumberIssueData(
+                "./test/resources/features/taggedPrefixMissingBackground.feature",
+                "CYP",
+                true,
+                { test: "TestName:" }
+            )
+        ).to.throw(
+            dedent(`
+                No precondition issue keys found in comments of background: A background
+
+                You can target existing precondition issues by adding a corresponding comment:
+
+                  Background: A background
+                    #@CYP-123
+                    Given abc123
+                    ...
+
+                You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+                  Plugin configuration:
+
+                    {
+                      cucumber: {
+                        prefixes: {
+                          precondition: "Precondition:"
+                        }
+                      }
+                    }
+
+                  Feature file:
+
+                    Background: A background
+                      #@Precondition:CYP-123
+                      Given abc123
+                      ...
+
+                For more information, visit:
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+            `)
+        );
+    });
+
+    it("throws for wrong background tags", async () => {
+        expect(() =>
+            getCucumberIssueData(
+                "./test/resources/features/taggedWrongBackgroundTags.feature",
+                "CYP",
+                false
+            )
+        ).to.throw(
+            dedent(`
+                No precondition issue keys found in comments of background: A background
+
+                Available comments:
+                  #@HairConditioning:CYP-244
+                  #@PavlovConditioning:CYP-784
+
+                If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray
+
+                  For example, with the following plugin configuration:
+
+                    {
+                      cucumber: {
+                        prefixes: {
+                          precondition: "Precondition:"
+                        }
+                      }
+                    }
+
+                  The following comment will be recognized as a precondition issue tag by the plugin:
+
+                    Background: A background
+                      #@Precondition:CYP-123
+                      Given abc123
+                      ...
+
+                For more information, visit:
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+            `)
+        );
+    });
+
+    describe("no prefix", () => {
         it("throws for multiple scenario tags", async () => {
             expect(() =>
                 getCucumberIssueData(
-                    "./test/resources/features/taggedServerMultipleScenario.feature",
+                    "./test/resources/features/taggedNoPrefixMultipleScenario.feature",
                     "CYP",
                     false
                 )
@@ -213,34 +379,10 @@ describe("cucumber preprocessing", () => {
             );
         });
 
-        it("should throw for missing background tags", async () => {
-            expect(() =>
-                getCucumberIssueData(
-                    "./test/resources/features/taggedServerMissingBackground.feature",
-                    "CYP",
-                    false
-                )
-            ).to.throw(
-                dedent(`
-                    No precondition issue keys found in comments of background: A background
-                    You can target existing precondition issues by adding a corresponding comment:
-
-                    Background: A background
-                      #@CYP-123
-                      Given abc123
-                      ...
-
-                    For more information, visit:
-                    - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                `)
-            );
-        });
-
         it("should throw for multiple background tags", async () => {
             expect(() =>
                 getCucumberIssueData(
-                    "./test/resources/features/taggedServerMultipleBackground.feature",
+                    "./test/resources/features/taggedNoPrefixMultipleBackground.feature",
                     "CYP",
                     false
                 )
@@ -265,65 +407,56 @@ describe("cucumber preprocessing", () => {
             );
         });
 
-        it("extracts xray server background tags", () => {
+        it("extracts relevant comments without prefix", () => {
             const document = parseFeatureFile(
-                "./test/resources/features/taggedServerMultipleBackground.feature"
+                "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
             );
             // Cast because we know for certain it exists.
             const background: Background = document.feature?.children[0].background as Background;
-            const tag = getCucumberPreconditionIssueTags(
+            const comments = getCucumberPreconditionIssueComments(
                 background,
                 "CYP",
-                false,
                 document.comments
             );
-            expect(tag).to.deep.eq(["CYP-244", "CYP-262"]);
+            expect(comments).to.deep.eq(["#@CYP-244", "#@CYP-262"]);
         });
 
-        it("extracts xray server scenario tags", () => {
+        it("extracts background tags without prefix", () => {
+            const document = parseFeatureFile(
+                "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
+            );
+            // Cast because we know for certain it exists.
+            const background: Background = document.feature?.children[0].background as Background;
+            const comments = getCucumberPreconditionIssueComments(
+                background,
+                "CYP",
+                document.comments
+            );
+            const tags = getCucumberPreconditionIssueTags(background, "CYP", comments);
+            expect(tags).to.deep.eq(["CYP-244", "CYP-262"]);
+        });
+
+        it("extracts scenario tags without prefix", () => {
             const feature = parseFeatureFile(
-                "./test/resources/features/taggedServerMultipleScenario.feature"
+                "./test/resources/features/taggedNoPrefixMultipleScenario.feature"
             ).feature;
             // Cast because we know for certain it exists.
             const scenario: Scenario = feature?.children[1].scenario as Scenario;
-            expect(getCucumberScenarioIssueTags(scenario, "CYP", false)).to.deep.eq([
+            expect(getCucumberScenarioIssueTags(scenario, "CYP")).to.deep.eq([
                 "CYP-123",
                 "CYP-456",
             ]);
         });
     });
 
-    describe("cloud", () => {
-        it("throws for missing scenario tags", async () => {
-            expect(() =>
-                getCucumberIssueData(
-                    "./test/resources/features/taggedCloudMissingScenario.feature",
-                    "CYP",
-                    true
-                )
-            ).to.throw(
-                dedent(`
-                    No test issue keys found in tags of scenario: A scenario
-                    You can target existing test issues by adding a corresponding tag:
-
-                    @TestName:CYP-123
-                    Scenario: A scenario
-                      Given an assumption
-                      ...
-
-                    For more information, visit:
-                    - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                `)
-            );
-        });
-
+    describe("prefixed", () => {
         it("throws for multiple scenario tags", async () => {
             expect(() =>
                 getCucumberIssueData(
-                    "./test/resources/features/taggedCloudMultipleScenario.feature",
+                    "./test/resources/features/taggedPrefixMultipleScenario.feature",
                     "CYP",
-                    true
+                    true,
+                    { test: "TestName:", precondition: "Precondition:" }
                 )
             ).to.throw(
                 dedent(`
@@ -343,36 +476,13 @@ describe("cucumber preprocessing", () => {
             );
         });
 
-        it("throws for missing background tags", async () => {
-            expect(() =>
-                getCucumberIssueData(
-                    "./test/resources/features/taggedCloudMissingBackground.feature",
-                    "CYP",
-                    true
-                )
-            ).to.throw(
-                dedent(`
-                    No precondition issue keys found in comments of background: A background
-                    You can target existing precondition issues by adding a corresponding comment:
-
-                    Background: A background
-                      #@Precondition:CYP-123
-                      Given abc123
-                      ...
-
-                    For more information, visit:
-                    - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                `)
-            );
-        });
-
         it("throws for multiple background tags", async () => {
             expect(() =>
                 getCucumberIssueData(
-                    "./test/resources/features/taggedCloudMultipleBackground.feature",
+                    "./test/resources/features/taggedPrefixMultipleBackground.feature",
                     "CYP",
-                    true
+                    true,
+                    { precondition: "Precondition:" }
                 )
             ).to.throw(
                 dedent(`
@@ -395,28 +505,47 @@ describe("cucumber preprocessing", () => {
             );
         });
 
-        it("extracts xray cloud background tags", () => {
+        it("extracts relevant comments with prefix", () => {
             const document = parseFeatureFile(
-                "./test/resources/features/taggedCloudMultipleBackground.feature"
+                "./test/resources/features/taggedPrefixMultipleBackground.feature"
             );
             // Cast because we know for certain it exists.
             const background: Background = document.feature?.children[0].background as Background;
-            const tag = getCucumberPreconditionIssueTags(
+            const comments = getCucumberPreconditionIssueComments(
                 background,
                 "CYP",
-                true,
                 document.comments
             );
-            expect(tag).to.deep.eq(["CYP-244", "CYP-262"]);
+            expect(comments).to.deep.eq(["#@Precondition:CYP-244", "#@Precondition:CYP-262"]);
         });
 
-        it("extracts xray cloud scenario tags", () => {
+        it("extracts background tags with prefix", () => {
+            const document = parseFeatureFile(
+                "./test/resources/features/taggedPrefixMultipleBackground.feature"
+            );
+            // Cast because we know for certain it exists.
+            const background: Background = document.feature?.children[0].background as Background;
+            const comments = getCucumberPreconditionIssueComments(
+                background,
+                "CYP",
+                document.comments
+            );
+            const tags = getCucumberPreconditionIssueTags(
+                background,
+                "CYP",
+                comments,
+                "Precondition:"
+            );
+            expect(tags).to.deep.eq(["CYP-244", "CYP-262"]);
+        });
+
+        it("extracts scenario tags with prefix", () => {
             const feature = parseFeatureFile(
-                "./test/resources/features/taggedCloudMultipleScenario.feature"
+                "./test/resources/features/taggedPrefixMultipleScenario.feature"
             ).feature;
             // Cast because we know for certain it exists.
             const scenario: Scenario = feature?.children[1].scenario as Scenario;
-            expect(getCucumberScenarioIssueTags(scenario, "CYP", true)).to.deep.eq([
+            expect(getCucumberScenarioIssueTags(scenario, "CYP", "TestName:")).to.deep.eq([
                 "CYP-123",
                 "CYP-456",
             ]);

@@ -1,31 +1,17 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
+import { SinonStubbedInstance } from "sinon";
+import { getMockedJiraRepository } from "../../../test/mocks";
 import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
 import { IJiraRepository } from "../../repository/jira/jiraRepository";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ImportExecutionCucumberMultipartConverter } from "./importExecutionCucumberMultipartConverter";
 
 describe("the import execution cucumber multpart converter", () => {
-    let mockedJiraRepository: IJiraRepository;
+    let jiraRepository: SinonStubbedInstance<IJiraRepository>;
 
     beforeEach(() => {
-        mockedJiraRepository = {
-            getFieldId: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getSummaries: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getDescriptions: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getTestTypes: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-            getLabels: () => {
-                throw new Error("Mock called unexpectedly");
-            },
-        };
+        jiraRepository = getMockedJiraRepository();
     });
 
     describe("server", () => {
@@ -45,7 +31,7 @@ describe("the import execution cucumber multpart converter", () => {
                     xray: { uploadScreenshots: false },
                 },
                 false,
-                mockedJiraRepository
+                jiraRepository
             );
             const multipartJson = await converter.convert([cucumberReport[0]], {
                 browserName: "Firefox",
@@ -73,12 +59,9 @@ describe("the import execution cucumber multpart converter", () => {
                     "utf-8"
                 )
             );
-            mockedJiraRepository.getFieldId = async (fieldName: SupportedFields) => {
-                if (fieldName === SupportedFields.TEST_PLAN) {
-                    return "customfield_12345";
-                }
-                throw new Error(`Unexpected argument: ${fieldName}`);
-            };
+            jiraRepository.getFieldId
+                .withArgs(SupportedFields.TEST_PLAN)
+                .resolves("customfield_12345");
             const converter = new ImportExecutionCucumberMultipartConverter(
                 {
                     jira: {
@@ -89,7 +72,7 @@ describe("the import execution cucumber multpart converter", () => {
                     xray: { uploadScreenshots: false },
                 },
                 false,
-                mockedJiraRepository
+                jiraRepository
             );
             const multipartJson = await converter.convert([cucumberReport[0]], {
                 browserName: "Firefox",
@@ -107,12 +90,9 @@ describe("the import execution cucumber multpart converter", () => {
                     "utf-8"
                 )
             );
-            mockedJiraRepository.getFieldId = async (fieldName: SupportedFields) => {
-                if (fieldName === SupportedFields.TEST_ENVIRONMENTS) {
-                    return "customfield_45678";
-                }
-                throw new Error(`Unexpected argument: ${fieldName}`);
-            };
+            jiraRepository.getFieldId
+                .withArgs(SupportedFields.TEST_ENVIRONMENTS)
+                .resolves("customfield_45678");
             const converter = new ImportExecutionCucumberMultipartConverter(
                 {
                     jira: {
@@ -122,7 +102,7 @@ describe("the import execution cucumber multpart converter", () => {
                     xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                 },
                 false,
-                mockedJiraRepository
+                jiraRepository
             );
             const multipartJson = await converter.convert([cucumberReport[0]], {
                 browserName: "Firefox",
@@ -151,10 +131,11 @@ describe("the import execution cucumber multpart converter", () => {
                         projectKey: "CYP",
                         testExecutionIssueDetails: { subtask: false, id: "issue_1578" },
                     },
+                    cucumber: { prefixes: { test: "TestName:" } },
                     xray: { uploadScreenshots: false },
                 },
                 true,
-                mockedJiraRepository
+                jiraRepository
             );
             const multipartJson = await converter.convert([cucumberReport[0]], {
                 browserName: "Firefox",
@@ -186,12 +167,9 @@ describe("the import execution cucumber multpart converter", () => {
                     "utf-8"
                 )
             );
-            mockedJiraRepository.getFieldId = async (fieldName: SupportedFields) => {
-                if (fieldName === SupportedFields.TEST_PLAN) {
-                    return "customfield_12345";
-                }
-                throw new Error(`Unexpected argument: ${fieldName}`);
-            };
+            jiraRepository.getFieldId
+                .withArgs(SupportedFields.TEST_PLAN)
+                .resolves("customfield_12345");
             const converter = new ImportExecutionCucumberMultipartConverter(
                 {
                     jira: {
@@ -199,10 +177,11 @@ describe("the import execution cucumber multpart converter", () => {
                         testPlanIssueKey: "CYP-123",
                         testExecutionIssueDetails: { subtask: false },
                     },
+                    cucumber: { prefixes: { test: "TestName:" } },
                     xray: { uploadScreenshots: false },
                 },
                 true,
-                mockedJiraRepository
+                jiraRepository
             );
             const multipartJson = await converter.convert([cucumberReport[0]], {
                 browserName: "Firefox",
@@ -223,22 +202,20 @@ describe("the import execution cucumber multpart converter", () => {
                     "utf-8"
                 )
             );
-            mockedJiraRepository.getFieldId = async (fieldName: SupportedFields) => {
-                if (fieldName === SupportedFields.TEST_ENVIRONMENTS) {
-                    return "customfield_45678";
-                }
-                throw new Error(`Unexpected argument: ${fieldName}`);
-            };
+            jiraRepository.getFieldId
+                .withArgs(SupportedFields.TEST_ENVIRONMENTS)
+                .resolves("customfield_45678");
             const converter = new ImportExecutionCucumberMultipartConverter(
                 {
                     jira: {
                         projectKey: "CYP",
                         testExecutionIssueDetails: { subtask: false },
                     },
+                    cucumber: { prefixes: { test: "TestName:" } },
                     xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                 },
                 true,
-                mockedJiraRepository
+                jiraRepository
             );
             const multipartJson = await converter.convert([cucumberReport[0]], {
                 browserName: "Firefox",

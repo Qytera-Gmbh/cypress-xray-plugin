@@ -252,6 +252,65 @@ export interface CucumberOptions {
      */
     downloadFeatures?: boolean;
     /**
+     * These settings allow specifying tag prefixes used by Xray when exporting or importing feature
+     * files and Cucumber test results. The plugin will access these options to verify that your
+     * feature files are tagged correctly according to your Xray prefix scheme.
+     *
+     * @remarks
+     *
+     * Whenever Cucumber test results or entire feature files are imported, Xray tries to link
+     * existing test and precondition Jira issues with the executed/present Cucumber scenarios and
+     * backgrounds. The default matching is quite involved (see documentation for
+     * {@link https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST | Xray server}
+     * or {@link https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST | Xray cloud}),
+     * but luckily Xray also supports and uses
+     * {@link https://cucumber.io/docs/cucumber/api/?lang=java#tags | feature file tags}.
+     *
+     * The tags are of the form `@CYP-123` or `@Prefix:CYP-123`, containing an optional prefix and
+     * the issue key. The concrete prefix and whether a prefix is at all necessary depends on your
+     * configured prefix scheme in Xray.
+     *
+     * If any tag in a feature file (and thus the Cucumber JSON report used for importing test
+     * execution results) is not consistent with the scheme defined in Xray, Xray will reject the
+     * imported results altogether.
+     *
+     * More information:
+     * - {@link https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes | Plugin documentation for `prefixes`}
+     * - Xray feature tagging
+     *   - {@link https://docs.getxray.app/display/XRAY/Export+Cucumber+Features | Xray server}
+     *   - {@link https://docs.getxray.app/display/XRAYCLOUD/Generate+Cucumber+Features | Xray cloud}
+     * - Xray import behaviour
+     *   - {@link https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST | Xray server}
+     *   - {@link https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST | Xray cloud}
+     * - Xray Cucumber prefix schemes
+     *   - {@link https://docs.getxray.app/display/XRAY/Miscellaneous#Miscellaneous-CucumberExportPrefixes | Xray server}
+     *   - {@link https://docs.getxray.app/display/XRAYCLOUD/Global+Settings%3A+Cucumber | Xray cloud}
+     */
+    prefixes?: {
+        /**
+         * The prefix for Cucumber background tags.
+         *
+         * If left undefined, the plugin will assume that your Xray instance is able to properly
+         * parse issue tags _without_ any prefixes, e.g. background tags of the form `@CYP-123`
+         * instead of something like `@Precondition:CYP-123`.
+         *
+         * @example 'Precondition:'
+         * @example 'PRECOND_'
+         */
+        precondition?: string;
+        /**
+         * The prefix for Cucumber scenario tags.
+         *
+         * If left undefined, the plugin will assume that your Xray instance is able to properly
+         * parse issue tags _without_ any prefixes, e.g. scenario tags of the form `@CYP-123`
+         * instead of something like `@TestName:CYP-123`.
+         *
+         * @example 'TestName:'
+         * @example 'TEST_'
+         */
+        test?: string;
+    };
+    /**
      * Set it to true to automatically create or update existing Xray issues (summary, steps),
      * based on the feature file executed by Cypress.
      *
@@ -265,15 +324,12 @@ export interface CucumberOptions {
  * A more specific Cucumber options type with optional properties converted to required ones if
  * default/fallback values are used by the plugin.
  */
-export type InternalCucumberOptions = CucumberOptions &
-    Required<
-        Pick<CucumberOptions, "featureFileExtension" | "downloadFeatures" | "uploadFeatures">
-    > & {
-        /**
-         * The Cucumber preprocessor configuration.
-         */
-        preprocessor?: IPreprocessorConfiguration;
-    };
+export type InternalCucumberOptions = Required<CucumberOptions> & {
+    /**
+     * The Cucumber preprocessor configuration.
+     */
+    preprocessor?: IPreprocessorConfiguration;
+};
 
 export interface PluginOptions {
     /**

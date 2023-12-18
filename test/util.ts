@@ -1,94 +1,11 @@
-import { AxiosHeaders, HttpStatusCode } from "axios";
-import chai from "chai";
-import FormData from "form-data";
 import fs from "fs";
 import path from "path";
-import Sinon, { spy, stub } from "sinon";
-import sinonChai from "sinon-chai";
-import { JWTCredentials, PATCredentials } from "../src/authentication/credentials";
-import { JiraClient } from "../src/client/jira/jiraClient";
-import { XrayClient } from "../src/client/xray/xrayClient";
-import { RequestConfigPost, Requests } from "../src/https/requests";
-import * as logging from "../src/logging/logging";
-import { initLogging } from "../src/logging/logging";
 
-chai.use(sinonChai);
-
-/**
- * Stubs the logging module members. An optional list of spies can be provided, which will result
- * in the corresponding members being spied on instead of stubbing them completely.
- *
- * @param spies - the array of members to spy on only
- * @returns an object containing the logging module's stubs or spies
- */
-export const stubLogging = (...spies: (keyof typeof logging)[]) => {
-    return {
-        stubbedInit: spies.includes("initLogging")
-            ? spy(logging, "initLogging")
-            : stub(logging, "initLogging"),
-        stubbedWrite: spies.includes("writeFile")
-            ? spy(logging, "writeFile")
-            : stub(logging, "writeFile"),
-        stubbedWriteErrorFile: spies.includes("writeErrorFile")
-            ? spy(logging, "writeErrorFile")
-            : stub(logging, "writeErrorFile"),
-        stubbedInfo: spies.includes("logInfo") ? spy(logging, "logInfo") : stub(logging, "logInfo"),
-        stubbedError: spies.includes("logError")
-            ? spy(logging, "logError")
-            : stub(logging, "logError"),
-        stubbedSuccess: spies.includes("logSuccess")
-            ? spy(logging, "logSuccess")
-            : stub(logging, "logSuccess"),
-        stubbedWarning: spies.includes("logWarning")
-            ? spy(logging, "logWarning")
-            : stub(logging, "logWarning"),
-        stubbedDebug: spies.includes("logDebug")
-            ? spy(logging, "logDebug")
-            : stub(logging, "logDebug"),
-    };
-};
-
-export const stubRequests = () => {
-    return {
-        stubbedGet: stub(Requests, "get"),
-        stubbedPost: stub(Requests, "post"),
-        stubbedPut: stub(Requests, "put"),
-        stubbedInit: stub(Requests, "init"),
-    };
-};
-
-const TEST_TMP_DIR = "test/out";
+export const TEST_TMP_DIR = "test/out";
 
 export function resolveTestDirPath(...subPaths: string[]): string {
     return path.resolve(TEST_TMP_DIR, ...subPaths);
 }
-
-export const RESOLVED_JWT_CREDENTIALS: JWTCredentials = new JWTCredentials(
-    "user",
-    "token",
-    "https://example.org"
-);
-
-before(() => {
-    // Resolve credentials so that they don't have to dispatch POST requests again.
-    stubLogging("initLogging");
-    const { stubbedPost } = stubRequests();
-    stubbedPost.onFirstCall().resolves({
-        status: HttpStatusCode.Ok,
-        data: "ey.12345.Token",
-        headers: {},
-        statusText: HttpStatusCode[HttpStatusCode.Ok],
-        config: {
-            headers: new AxiosHeaders(),
-        },
-    });
-    RESOLVED_JWT_CREDENTIALS.getAuthorizationHeader();
-});
-
-beforeEach(() => {
-    Sinon.restore();
-    initLogging({ logDirectory: TEST_TMP_DIR });
-});
 
 // Clean up temporary directory at the end of all tests.
 after(async () => {
@@ -96,57 +13,6 @@ after(async () => {
         fs.rmSync(TEST_TMP_DIR, { recursive: true });
     }
 });
-
-export class DummyXrayClient extends XrayClient {
-    constructor() {
-        super("https://example.org", new PATCredentials("token"));
-    }
-    public getUrlImportExecution(): string {
-        throw new Error("Method not implemented.");
-    }
-    public handleResponseImportExecution(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlExportCucumber(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlImportFeature(): string {
-        throw new Error("Method not implemented.");
-    }
-    public handleResponseImportFeature(): void {
-        throw new Error("Method not implemented.");
-    }
-    public getTestTypes(): Promise<{ [key: string]: string }> {
-        throw new Error("Method not implemented.");
-    }
-    public prepareRequestImportExecutionCucumberMultipart(): Promise<RequestConfigPost<FormData>> {
-        throw new Error("Method not implemented.");
-    }
-    public handleResponseImportExecutionCucumberMultipart(): string {
-        throw new Error("Method not implemented.");
-    }
-}
-
-export class DummyJiraClient extends JiraClient {
-    constructor() {
-        super("https://example.org", new PATCredentials("token"));
-    }
-    public getUrlAddAttachment(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlGetFields(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlPostSearch(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlGetIssueTypes(): string {
-        throw new Error("Method not implemented.");
-    }
-    public getUrlEditIssue(): string {
-        throw new Error("Method not implemented.");
-    }
-}
 
 /**
  * Use in place of `expect(value).to.exist`

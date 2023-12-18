@@ -1,5 +1,5 @@
 import { IHttpCredentials } from "../authentication/credentials";
-import { logInfo } from "../logging/logging";
+import { LOG, Level } from "../logging/logging";
 import { startInterval } from "../util/time";
 
 /**
@@ -44,7 +44,10 @@ export abstract class Client {
      */
     protected startResponseInterval(url: string): NodeJS.Timer {
         return startInterval((totalTime: number) => {
-            logInfo(`Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
+            LOG.message(
+                Level.INFO,
+                `Waiting for ${url} to respond... (${totalTime / 1000} seconds)`
+            );
         });
     }
 }

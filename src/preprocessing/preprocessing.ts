@@ -1,7 +1,8 @@
 import { AstBuilder, GherkinClassicTokenMatcher, Parser } from "@cucumber/gherkin";
 import { Background, Comment, GherkinDocument, IdGenerator, Scenario } from "@cucumber/messages";
 import fs from "fs";
-import { logWarning } from "../logging/logging";
+import { LOG, Level } from "../logging/logging";
+import { CucumberOptions } from "../types/plugin";
 import {
     errorMessage,
     missingPreconditionKeyInCucumberBackgroundError,
@@ -52,7 +53,7 @@ export function getNativeTestIssueKeys(
                 keyedTests.push(testResult);
                 issueKeys.push(issueKey);
             } catch (error: unknown) {
-                logWarning(`Skipping test: ${title}\n\n${errorMessage(error)}`);
+                LOG.message(Level.WARNING, `Skipping test: ${title}\n\n${errorMessage(error)}`);
             }
         }
         runResult.tests = keyedTests;
@@ -115,7 +116,8 @@ export interface FeatureFileIssueDataPrecondition {
 export function getCucumberIssueData(
     filePath: string,
     projectKey: string,
-    isCloudClient: boolean
+    isCloudClient: boolean,
+    prefixes?: CucumberOptions["prefixes"]
 ): FeatureFileIssueData {
     const featureFileIssueKeys: FeatureFileIssueData = {
         tests: [],
@@ -130,7 +132,7 @@ export function getCucumberIssueData(
             const issueKeys = getCucumberScenarioIssueTags(
                 child.scenario,
                 projectKey,
-                isCloudClient
+                prefixes?.test
             );
             if (issueKeys.length === 0) {
                 throw missingTestKeyInCucumberScenarioError(
@@ -152,17 +154,23 @@ export function getCucumberIssueData(
                 tags: child.scenario.tags.map((tag) => tag.name.replace("@", "")),
             });
         } else if (child.background) {
+            const preconditionComments = getCucumberPreconditionIssueComments(
+                child.background,
+                projectKey,
+                document.comments
+            );
             const preconditionKeys = getCucumberPreconditionIssueTags(
                 child.background,
                 projectKey,
-                isCloudClient,
-                document.comments
+                preconditionComments,
+                prefixes?.precondition
             );
             if (preconditionKeys.length === 0) {
                 throw missingPreconditionKeyInCucumberBackgroundError(
                     child.background,
                     projectKey,
-                    isCloudClient
+                    isCloudClient,
+                    preconditionComments
                 );
             } else if (preconditionKeys.length > 1) {
                 throw multiplePreconditionKeysInCucumberBackgroundError(
@@ -206,11 +214,11 @@ export function parseFeatureFile(
 export function getCucumberScenarioIssueTags(
     scenario: Scenario,
     projectKey: string,
-    isCloudClient: boolean
+    testPrefix?: string
 ): string[] {
     const issueKeys: string[] = [];
     for (const tag of scenario.tags) {
-        const matches = tag.name.match(getScenarioTagRegex(projectKey, isCloudClient));
+        const matches = tag.name.match(getScenarioTagRegex(projectKey, testPrefix));
         if (!matches) {
             continue;
         } else if (matches.length === 2) {
@@ -220,43 +228,64 @@ export function getCucumberScenarioIssueTags(
     return issueKeys;
 }
 
-export function getScenarioTagRegex(projectKey: string, isCloudClient: boolean) {
-    if (isCloudClient) {
+export function getScenarioTagRegex(projectKey: string, testPrefix?: string) {
+    if (testPrefix) {
         // @TestName:CYP-123
-        return new RegExp(`@TestName:(${projectKey}-\\d+)`);
+        return new RegExp(`@${testPrefix}(${projectKey}-\\d+)`);
     }
     // @CYP-123
     return new RegExp(`@(${projectKey}-\\d+)`);
 }
 
+/**
+ * Extracts all comments which are relevant for linking a background to precondition issues.
+ *
+ * @param background - the background
+ * @param projectKey - the project key
+ * @param comments - the feature file comments
+ * @returns the relevant comments
+ */
+export function getCucumberPreconditionIssueComments(
+    background: Background,
+    projectKey: string,
+    comments: readonly Comment[]
+): string[] {
+    if (background.steps.length === 0) {
+        return [];
+    }
+    const backgroundLine = background.location.line;
+    const firstStepLine = background.steps[0].location.line;
+    return comments
+        .filter((comment: Comment) => comment.location.line > backgroundLine)
+        .filter((comment: Comment) => comment.location.line < firstStepLine)
+        .filter((comment: Comment) => new RegExp(`@\\S*${projectKey}-\\d+`).test(comment.text))
+        .map((comment: Comment) => comment.text.trim());
+}
+
 export function getCucumberPreconditionIssueTags(
     background: Background,
     projectKey: string,
-    isCloudClient: boolean,
-    comments: readonly Comment[]
+    comments: readonly string[],
+    preconditionPrefix?: string
 ): string[] {
     const preconditionKeys: string[] = [];
     if (background.steps.length > 0) {
-        const backgroundLine = background.location.line;
-        const firstStepLine = background.steps[0].location.line;
         for (const comment of comments) {
-            if (comment.location.line > backgroundLine && comment.location.line < firstStepLine) {
-                const matches = comment.text.match(backgroundRegex(projectKey, isCloudClient));
-                if (!matches) {
-                    continue;
-                } else if (matches.length === 2) {
-                    preconditionKeys.push(matches[1]);
-                }
+            const matches = comment.match(backgroundRegex(projectKey, preconditionPrefix));
+            if (!matches) {
+                continue;
+            } else if (matches.length === 2) {
+                preconditionKeys.push(matches[1]);
             }
         }
     }
     return preconditionKeys;
 }
 
-function backgroundRegex(projectKey: string, isCloudClient: boolean) {
-    if (isCloudClient) {
+function backgroundRegex(projectKey: string, preconditionPrefix?: string) {
+    if (preconditionPrefix) {
         // @Precondition:CYP-111
-        return new RegExp(`@Precondition:(${projectKey}-\\d+)`);
+        return new RegExp(`@${preconditionPrefix}(${projectKey}-\\d+)`);
     }
     // @CYP-111
     return new RegExp(`@(${projectKey}-\\d+)`);

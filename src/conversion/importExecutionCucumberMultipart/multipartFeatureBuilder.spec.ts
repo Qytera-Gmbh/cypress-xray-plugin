@@ -1,6 +1,8 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
-import { expectToExist, stubLogging } from "../../../test/util";
+import { getMockedLogger } from "../../../test/mocks";
+import { expectToExist } from "../../../test/util";
+import { Level } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "../../util/dedent";
 import { buildMultipartFeatures } from "./multipartFeatureBuilder";
@@ -16,6 +18,7 @@ describe("buildMultipartFeatures", () => {
         const features = buildMultipartFeatures(cucumberReport, {
             projectKey: "CYP",
             useCloudTags: true,
+            testPrefix: "TestName:",
         });
         expect(features).to.be.an("array").with.length(2);
         expect(features[0].elements).to.be.an("array").with.length(3);
@@ -33,6 +36,7 @@ describe("buildMultipartFeatures", () => {
             testExecutionIssueKey: "CYP-456",
             projectKey: "CYP",
             useCloudTags: true,
+            testPrefix: "TestName:",
         });
         expect(features[0].tags).to.deep.eq([{ name: "@CYP-456" }]);
         expect(features[1].tags).to.deep.eq([{ name: "@CYP-456" }]);
@@ -49,6 +53,7 @@ describe("buildMultipartFeatures", () => {
             includeScreenshots: true,
             projectKey: "CYP",
             useCloudTags: true,
+            testPrefix: "TestName:",
         });
         expectToExist(features[0].elements[2].steps[1].embeddings);
         expect(features[0].elements[2].steps[1].embeddings).to.have.length(1);
@@ -67,6 +72,7 @@ describe("buildMultipartFeatures", () => {
             includeScreenshots: false,
             projectKey: "CYP",
             useCloudTags: true,
+            testPrefix: "TestName:",
         });
         expect(features[0].elements[0].steps[0].embeddings).to.be.empty;
         expect(features[0].elements[0].steps[1].embeddings).to.be.empty;
@@ -77,69 +83,99 @@ describe("buildMultipartFeatures", () => {
     });
 
     it("skips untagged scenarios", async () => {
-        const { stubbedWarning } = stubLogging();
+        const logger = getMockedLogger();
         const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
             readFileSync(
                 "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartUntagged.json",
                 "utf-8"
             )
         );
+        logger.message
+            .withArgs(
+                Level.WARNING,
+                dedent(`
+                    Skipping result upload for scenario: Doing stuff
+
+                    No test issue keys found in tags of scenario: Doing stuff
+
+                    You can target existing test issues by adding a corresponding tag:
+
+                      @CYP-123
+                      Scenario: Doing stuff
+                        When I prepare something
+                        ...
+
+                    You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+                      Plugin configuration:
+
+                        {
+                          cucumber: {
+                            prefixes: {
+                              test: "TestName:"
+                            }
+                          }
+                        }
+
+                      Feature file:
+
+                        @TestName:CYP-123
+                        Scenario: Doing stuff
+                          When I prepare something
+                          ...
+
+                    For more information, visit:
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                    - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                `)
+            )
+            .onFirstCall()
+            .returns();
         const features = buildMultipartFeatures(cucumberReport, {
             includeScreenshots: false,
             projectKey: "CYP",
             useCloudTags: false,
         });
         expect(features).to.have.length(0);
-        expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-            dedent(`
-                Skipping result upload for scenario: Doing stuff
-
-                No test issue keys found in tags of scenario: Doing stuff
-                You can target existing test issues by adding a corresponding tag:
-
-                @CYP-123
-                Scenario: Doing stuff
-                  When I prepare something
-                  ...
-
-                For more information, visit:
-                - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-            `)
-        );
     });
 
     it("skips scenarios with multiple tags", async () => {
-        const { stubbedWarning } = stubLogging();
+        const logger = getMockedLogger();
         const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
             readFileSync(
                 "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartMultipleTags.json",
                 "utf-8"
             )
         );
+        logger.message
+            .withArgs(
+                Level.WARNING,
+                dedent(`
+                    Skipping result upload for scenario: Doing stuff
+
+                    Multiple test issue keys found in tags of scenario: Doing stuff
+                    The plugin cannot decide for you which one to use:
+
+                    @TestName:CYP-123 @TestName:CYP-456
+                    ^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^
+                    Scenario: Doing stuff
+                      When I prepare something
+                      ...
+
+                    For more information, visit:
+                    - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                `)
+            )
+            .onFirstCall()
+            .returns();
         const features = buildMultipartFeatures(cucumberReport, {
             includeScreenshots: false,
             projectKey: "CYP",
             useCloudTags: true,
+            testPrefix: "TestName:",
         });
         expect(features).to.have.length(0);
-        expect(stubbedWarning).to.have.been.calledOnceWithExactly(
-            dedent(`
-                Skipping result upload for scenario: Doing stuff
-
-                Multiple test issue keys found in tags of scenario: Doing stuff
-                The plugin cannot decide for you which one to use:
-
-                @TestName:CYP-123 @TestName:CYP-456
-                ^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^
-                Scenario: Doing stuff
-                  When I prepare something
-                  ...
-
-                For more information, visit:
-                - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-            `)
-        );
     });
 });

@@ -1,14 +1,14 @@
-import axios, { Axios, AxiosResponse, RawAxiosRequestConfig, isAxiosError } from "axios";
+import axios, { Axios, AxiosRequestConfig, AxiosResponse, isAxiosError } from "axios";
 import { readFileSync } from "fs";
 import { Agent } from "https";
-import { logDebug, writeFile } from "../logging/logging";
+import { LOG, Level } from "../logging/logging";
 import { InternalOpenSSLOptions } from "../types/plugin";
 import { normalizedFilename } from "../util/files";
 
 export type RequestConfigPost<D = unknown> = {
     url: string;
     data?: D;
-    config?: RawAxiosRequestConfig<D>;
+    config?: AxiosRequestConfig<D>;
 };
 
 /**
@@ -25,34 +25,34 @@ export interface RequestsOptions {
     openSSL?: InternalOpenSSLOptions;
 }
 
-export class Requests {
-    private static AGENT: Agent | undefined = undefined;
-    private static AXIOS: Axios | undefined = undefined;
+export class AxiosRestClient {
+    private httpAgent: Agent | undefined = undefined;
+    private axios: Axios | undefined = undefined;
 
-    private static options: RequestsOptions | undefined = undefined;
+    private options: RequestsOptions | undefined = undefined;
 
-    public static init(options: RequestsOptions): void {
-        Requests.options = options;
+    public init(options: RequestsOptions): void {
+        this.options = options;
     }
 
-    private static agent(): Agent {
-        if (!Requests.AGENT) {
-            Requests.AGENT = new Agent({
-                ca: Requests.readCertificate(Requests.options?.openSSL?.rootCAPath),
-                secureOptions: Requests.options?.openSSL?.secureOptions,
+    private getAgent(): Agent {
+        if (!this.httpAgent) {
+            this.httpAgent = new Agent({
+                ca: this.readCertificate(this.options?.openSSL?.rootCAPath),
+                secureOptions: this.options?.openSSL?.secureOptions,
             });
         }
-        return Requests.AGENT;
+        return this.httpAgent;
     }
 
-    private static axios(): Axios {
-        if (!Requests.options) {
+    private getAxios(): Axios {
+        if (!this.options) {
             throw new Error("Requests module has not been initialized");
         }
-        if (!Requests.AXIOS) {
-            Requests.AXIOS = axios;
-            if (Requests.options.debug) {
-                Requests.AXIOS.interceptors.request.use(
+        if (!this.axios) {
+            this.axios = axios;
+            if (this.options.debug) {
+                this.axios.interceptors.request.use(
                     (request) => {
                         const method = request.method?.toUpperCase();
                         const url = request.url;
@@ -60,7 +60,7 @@ export class Requests {
                         const filename = normalizedFilename(
                             `${timestamp}_${method}_${url}_request.json`
                         );
-                        const resolvedFilename = writeFile(
+                        const resolvedFilename = LOG.logToFile(
                             {
                                 url: url,
                                 headers: request.headers,
@@ -69,7 +69,7 @@ export class Requests {
                             },
                             filename
                         );
-                        logDebug(`Request:  ${resolvedFilename}`);
+                        LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
                         return request;
                     },
                     (error) => {
@@ -87,12 +87,12 @@ export class Requests {
                             filename = normalizedFilename(`${timestamp}_request.json`);
                             data = error;
                         }
-                        const resolvedFilename = writeFile(data, filename);
-                        logDebug(`Request:  ${resolvedFilename}`);
+                        const resolvedFilename = LOG.logToFile(data, filename);
+                        LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
                         return Promise.reject(error);
                     }
                 );
-                Requests.AXIOS.interceptors.response.use(
+                this.axios.interceptors.response.use(
                     (response) => {
                         const method = response.request.method.toUpperCase();
                         const url = response.config.url;
@@ -100,7 +100,7 @@ export class Requests {
                         const filename = normalizedFilename(
                             `${timestamp}_${method}_${url}_response.json`
                         );
-                        const resolvedFilename = writeFile(
+                        const resolvedFilename = LOG.logToFile(
                             {
                                 data: response.data,
                                 headers: response.headers,
@@ -109,7 +109,7 @@ export class Requests {
                             },
                             filename
                         );
-                        logDebug(`Response: ${resolvedFilename}`);
+                        LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
                         return response;
                     },
                     (error) => {
@@ -127,52 +127,51 @@ export class Requests {
                             filename = normalizedFilename(`${timestamp}_response.json`);
                             data = error;
                         }
-                        const resolvedFilename = writeFile(data, filename);
-                        logDebug(`Response: ${resolvedFilename}`);
+                        const resolvedFilename = LOG.logToFile(data, filename);
+                        LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
                         return Promise.reject(error);
                     }
                 );
             }
         }
-        return Requests.AXIOS;
+        return this.axios;
     }
 
-    private static readCertificate(path?: string): Buffer | undefined {
+    private readCertificate(path?: string): Buffer | undefined {
         if (!path) {
             return undefined;
         }
         return readFileSync(path);
     }
 
-    public static async get(
-        url: string,
-        config?: RawAxiosRequestConfig<undefined>
-    ): Promise<AxiosResponse> {
-        return Requests.axios().get(url, {
+    public async get(url: string, config?: AxiosRequestConfig<undefined>): Promise<AxiosResponse> {
+        return this.getAxios().get(url, {
             ...config,
-            httpsAgent: Requests.agent(),
+            httpsAgent: this.getAgent(),
         });
     }
 
-    public static async post<D = unknown>(
+    public async post<D>(
         url: string,
         data?: D,
-        config?: RawAxiosRequestConfig<D>
+        config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse> {
-        return Requests.axios().post(url, data, {
+        return this.getAxios().post(url, data, {
             ...config,
-            httpsAgent: Requests.agent(),
+            httpsAgent: this.getAgent(),
         });
     }
 
-    public static async put<D = unknown>(
+    public async put<D>(
         url: string,
         data?: D,
-        config?: RawAxiosRequestConfig<D>
+        config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse> {
-        return Requests.axios().put(url, data, {
+        return this.getAxios().put(url, data, {
             ...config,
-            httpsAgent: Requests.agent(),
+            httpsAgent: this.getAgent(),
         });
     }
 }
+
+export const REST: AxiosRestClient = new AxiosRestClient();

@@ -98,7 +98,7 @@ export function multipleTestKeysInNativeTestTitleError(
  *
  * @param scenario - the Cucumber scenario
  * @param projectKey - the project key
- * @param expectedCloudTags - whether Xray cloud tags were expected
+ * @param isCloudClient - whether Xray cloud is being used
  * @returns the error
  */
 export function missingTestKeyInCucumberScenarioError(
@@ -106,31 +106,95 @@ export function missingTestKeyInCucumberScenarioError(
         name: string;
         keyword: string;
         steps: readonly { keyword: string; text: string }[];
+        tags?: readonly { name: string }[];
     },
     projectKey: string,
-    expectedCloudTags: boolean
+    isCloudClient: boolean
 ): Error {
     const firstStepLine =
         scenario.steps.length > 0
             ? `${scenario.steps[0].keyword.trim()} ${scenario.steps[0].text}`
             : "Given A step";
+    if (scenario.tags && scenario.tags.length > 0) {
+        return new Error(
+            dedent(`
+                No test issue keys found in tags of scenario${
+                    scenario.name.length > 0 ? `: ${scenario.name}` : ""
+                }
+
+                Available tags:
+                  ${scenario.tags.map((tag) => tag.name).join("\n")}
+
+                If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray
+
+                  For example, with the following plugin configuration:
+
+                    {
+                      cucumber: {
+                        prefixes: {
+                          test: "TestName:"
+                        }
+                      }
+                    }
+
+                  The following tag will be recognized as a test issue tag by the plugin:
+
+                    @TestName:${projectKey}-123
+                    ${scenario.keyword}: ${scenario.name}
+                      ${firstStepLine}
+                      ...
+
+                For more information, visit:
+                - ${HELP.plugin.guides.targetingExistingIssues}
+                - ${HELP.plugin.configuration.cucumber.prefixes}
+                - ${
+                    isCloudClient
+                        ? HELP.xray.importCucumberTests.cloud
+                        : HELP.xray.importCucumberTests.server
+                }
+            `)
+        );
+    }
     return new Error(
         dedent(`
-            No test issue keys found in tags of scenario: ${scenario.name}
+            No test issue keys found in tags of scenario${
+                scenario.name.length > 0 ? `: ${scenario.name}` : ""
+            }
+
             You can target existing test issues by adding a corresponding tag:
 
-            ${expectedCloudTags ? `@TestName:${projectKey}-123` : `@${projectKey}-123`}
-            ${scenario.keyword}: ${scenario.name}
-              ${firstStepLine}
-              ...
+              @${projectKey}-123
+              ${scenario.keyword}: ${scenario.name}
+                ${firstStepLine}
+                ...
+
+            You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+              Plugin configuration:
+
+                {
+                  cucumber: {
+                    prefixes: {
+                      test: "TestName:"
+                    }
+                  }
+                }
+
+              Feature file:
+
+                @TestName:${projectKey}-123
+                ${scenario.keyword}: ${scenario.name}
+                  ${firstStepLine}
+                  ...
 
             For more information, visit:
+            - ${HELP.plugin.guides.targetingExistingIssues}
+            - ${HELP.plugin.configuration.cucumber.prefixes}
             - ${
-                expectedCloudTags
+                isCloudClient
                     ? HELP.xray.importCucumberTests.cloud
                     : HELP.xray.importCucumberTests.server
             }
-            - ${HELP.plugin.guides.targetingExistingIssues}
         `)
     );
 }
@@ -142,7 +206,8 @@ export function missingTestKeyInCucumberScenarioError(
  * @param scenario - the Cucumber scenario
  * @param tags - the scenario tags
  * @param issueKeys - the issue keys
- * @param expectedCloudTags - whether Xray cloud tags were expected
+ * @param isCloudClient - whether Xray cloud is being used
+ * @param testPrefix - the prefix of issues linked in scenario tags
  * @returns the error
  */
 export function multipleTestKeysInCucumberScenarioError(
@@ -153,7 +218,7 @@ export function multipleTestKeysInCucumberScenarioError(
     },
     tags: readonly { name: string }[],
     issueKeys: string[],
-    expectedCloudTags: boolean
+    isCloudClient: boolean
 ): Error {
     const firstStepLine =
         scenario.steps.length > 0
@@ -161,7 +226,9 @@ export function multipleTestKeysInCucumberScenarioError(
             : "Given A step";
     return new Error(
         dedent(`
-            Multiple test issue keys found in tags of scenario: ${scenario.name}
+            Multiple test issue keys found in tags of scenario${
+                scenario.name.length > 0 ? `: ${scenario.name}` : ""
+            }
             The plugin cannot decide for you which one to use:
 
             ${tags.map((tag) => tag.name).join(" ")}
@@ -180,7 +247,7 @@ export function multipleTestKeysInCucumberScenarioError(
 
             For more information, visit:
             - ${
-                expectedCloudTags
+                isCloudClient
                     ? HELP.xray.importCucumberTests.cloud
                     : HELP.xray.importCucumberTests.server
             }
@@ -195,35 +262,100 @@ export function multipleTestKeysInCucumberScenarioError(
  *
  * @param background - the Cucumber background
  * @param projectKey - the project key
- * @param expectedCloudTags - whether Xray cloud tags were expected
+ * @param isCloudClient - whether Xray cloud is being used
+ * @param comments - the comments containing precondition issue keys
  * @returns the error
  */
 export function missingPreconditionKeyInCucumberBackgroundError(
     background: Background,
     projectKey: string,
-    expectedCloudTags: boolean
+    isCloudClient: boolean,
+    comments?: readonly string[]
 ): Error {
     const firstStepLine =
         background.steps.length > 0
             ? `${background.steps[0].keyword.trim()} ${background.steps[0].text}`
             : "Given A step";
+    if (comments && comments.length > 0) {
+        return new Error(
+            dedent(`
+                No precondition issue keys found in comments of background${
+                    background.name.length > 0 ? `: ${background.name}` : ""
+                }
+
+                Available comments:
+                  ${comments.join("\n")}
+
+                If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray
+
+                  For example, with the following plugin configuration:
+
+                    {
+                      cucumber: {
+                        prefixes: {
+                          precondition: "Precondition:"
+                        }
+                      }
+                    }
+
+                  The following comment will be recognized as a precondition issue tag by the plugin:
+
+                    ${background.keyword}: ${background.name}
+                      #@Precondition:${projectKey}-123
+                      ${firstStepLine}
+                      ...
+
+                For more information, visit:
+                - ${HELP.plugin.guides.targetingExistingIssues}
+                - ${HELP.plugin.configuration.cucumber.prefixes}
+                - ${
+                    isCloudClient
+                        ? HELP.xray.importCucumberTests.cloud
+                        : HELP.xray.importCucumberTests.server
+                }
+            `)
+        );
+    }
     return new Error(
         dedent(`
-            No precondition issue keys found in comments of background: ${background.name}
+            No precondition issue keys found in comments of background${
+                background.name.length > 0 ? `: ${background.name}` : ""
+            }
+
             You can target existing precondition issues by adding a corresponding comment:
 
-            ${background.keyword}: ${background.name}
-              ${expectedCloudTags ? `#@Precondition:${projectKey}-123` : `#@${projectKey}-123`}
-              ${firstStepLine}
-              ...
+              ${background.keyword}: ${background.name}
+                #@${projectKey}-123
+                ${firstStepLine}
+                ...
+
+            You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+              Plugin configuration:
+
+                {
+                  cucumber: {
+                    prefixes: {
+                      precondition: "Precondition:"
+                    }
+                  }
+                }
+
+              Feature file:
+
+                ${background.keyword}: ${background.name}
+                  #@Precondition:${projectKey}-123
+                  ${firstStepLine}
+                  ...
 
             For more information, visit:
+            - ${HELP.plugin.guides.targetingExistingIssues}
+            - ${HELP.plugin.configuration.cucumber.prefixes}
             - ${
-                expectedCloudTags
+                isCloudClient
                     ? HELP.xray.importCucumberTests.cloud
                     : HELP.xray.importCucumberTests.server
             }
-            - ${HELP.plugin.guides.targetingExistingIssues}
         `)
     );
 }
@@ -235,25 +367,27 @@ export function missingPreconditionKeyInCucumberBackgroundError(
  * @param background - the Cucumber background
  * @param preconditionKeys - the issue keys
  * @param comments - the precondition comments
- * @param expectedCloudTags - whether Xray cloud tags were expected
+ * @param isCloudClient - whether Xray cloud is being used
  * @returns the error
  */
 export function multiplePreconditionKeysInCucumberBackgroundError(
     background: Background,
     preconditionKeys: readonly string[],
     comments: readonly Comment[],
-    expectedCloudTags: boolean
+    isCloudClient: boolean
 ): Error {
     return new Error(
         dedent(`
-            Multiple precondition issue keys found in comments of background: ${background.name}
+            Multiple precondition issue keys found in comments of background${
+                background.name.length > 0 ? `: ${background.name}` : ""
+            }
             The plugin cannot decide for you which one to use:
 
             ${reconstructMultipleTagsBackground(background, preconditionKeys, comments)}
 
             For more information, visit:
             - ${
-                expectedCloudTags
+                isCloudClient
                     ? HELP.xray.importCucumberTests.cloud
                     : HELP.xray.importCucumberTests.server
             }
