@@ -245,11 +245,13 @@ describe("the jira issue fetcher", () => {
     });
 
     it("handles search failures gracefully", async () => {
-        jiraClient.search.resolves(undefined);
+        jiraClient.search.rejects(new Error("Oh no"));
         const fetcher = new CachingJiraIssueFetcher(jiraClient, fieldRepository, {
             summary: "summary",
         });
-        expect(await fetcher.fetchSummaries("CYP-123", "CYP-456")).to.deep.eq({});
+        await expect(fetcher.fetchSummaries("CYP-123", "CYP-456")).to.eventually.be.rejectedWith(
+            "Oh no"
+        );
     });
 });
 

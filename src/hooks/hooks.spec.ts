@@ -207,12 +207,14 @@ describe("the hooks", () => {
             );
         });
 
-        it("should throw if jira issue type information cannot be fetched", async () => {
+        it("throws if jira issue type information cannot be fetched", async () => {
             getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             ) as Required<Cypress.BeforeRunDetails>;
-            stub(clients.jiraClient, "getIssueTypes").resolves(undefined);
+            stub(clients.jiraClient, "getIssueTypes").rejects(
+                new Error("Failed to fetch Jira issue types")
+            );
             options.cucumber = await initCucumberOptions(
                 {
                     testingType: "e2e",
@@ -226,17 +228,7 @@ describe("the hooks", () => {
             );
             await expect(
                 beforeRunHook(beforeRunDetails.specs, options, clients)
-            ).to.eventually.be.rejectedWith(
-                dedent(`
-                    Jira issue type information could not be fetched.
-
-                    Please make sure project CYP exists at https://example.org
-
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#projectkey
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
-                `)
-            );
+            ).to.eventually.be.rejectedWith("Failed to fetch Jira issue types");
         });
     });
 });

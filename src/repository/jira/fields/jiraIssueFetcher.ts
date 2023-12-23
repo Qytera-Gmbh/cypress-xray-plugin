@@ -155,36 +155,34 @@ export class CachingJiraIssueFetcher implements JiraIssueFetcher {
         ...issueKeys: string[]
     ): Promise<StringMap<T>> {
         const results: StringMap<T> = {};
-        const issues: Issue[] | undefined = await this.jiraClient.search({
+        const issues: Issue[] = await this.jiraClient.search({
             jql: `issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
         });
-        if (issues) {
-            const issuesWithUnparseableField: string[] = [];
-            for (const issue of issues) {
-                try {
-                    if (issue.key) {
-                        results[issue.key] = await extractor(issue, fieldId);
-                    } else {
-                        issuesWithUnparseableField.push(`Unknown: ${JSON.stringify(issue)}`);
-                    }
-                } catch (error: unknown) {
-                    issuesWithUnparseableField.push(
-                        `${issue.key ?? "Unknown issue"}: ${errorMessage(error)}`
-                    );
+        const issuesWithUnparseableField: string[] = [];
+        for (const issue of issues) {
+            try {
+                if (issue.key) {
+                    results[issue.key] = await extractor(issue, fieldId);
+                } else {
+                    issuesWithUnparseableField.push(`Unknown: ${JSON.stringify(issue)}`);
                 }
-            }
-            if (issuesWithUnparseableField.length > 0) {
-                issuesWithUnparseableField.sort();
-                throw new Error(
-                    dedent(`
-                        Failed to parse Jira field with ID: ${fieldId}
-                        Make sure the correct field is present on the following issues:
-
-                          ${issuesWithUnparseableField.join("\n")}
-                    `)
+            } catch (error: unknown) {
+                issuesWithUnparseableField.push(
+                    `${issue.key ?? "Unknown issue"}: ${errorMessage(error)}`
                 );
             }
+        }
+        if (issuesWithUnparseableField.length > 0) {
+            issuesWithUnparseableField.sort();
+            throw new Error(
+                dedent(`
+                    Failed to parse Jira field with ID: ${fieldId}
+                    Make sure the correct field is present on the following issues:
+
+                      ${issuesWithUnparseableField.join("\n")}
+                `)
+            );
         }
         return results;
     }

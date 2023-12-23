@@ -256,9 +256,9 @@ describe("the jira field repository", () => {
     });
 
     it("throws for total field fetch failures", async () => {
-        stub(jiraClient, "getFields").resolves(undefined);
+        stub(jiraClient, "getFields").rejects(new Error("Oh no"));
         await expect(repository.getFieldId(SupportedFields.SUMMARY)).to.eventually.be.rejectedWith(
-            "Failed to fetch Jira field ID for field with name: summary"
+            "Oh no"
         );
     });
 });

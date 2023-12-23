@@ -182,7 +182,9 @@ async function resetSummaries(
                 `)
             );
             const fields = { [summaryFieldId]: oldSummary };
-            if (!(await jiraClient.editIssue(issueKey, { fields: fields }))) {
+            try {
+                await jiraClient.editIssue(issueKey, { fields: fields });
+            } catch (error: unknown) {
                 LOG.message(
                     Level.ERROR,
                     dedent(`
@@ -238,7 +240,9 @@ async function resetLabels(
                 `)
             );
             const fields = { [labelFieldId]: oldLabels };
-            if (!(await jiraClient.editIssue(issueKey, { fields: fields }))) {
+            try {
+                await jiraClient.editIssue(issueKey, { fields: fields });
+            } catch (error: unknown) {
                 LOG.message(
                     Level.ERROR,
                     dedent(`

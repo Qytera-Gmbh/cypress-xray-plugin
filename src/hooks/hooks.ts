@@ -31,19 +31,6 @@ export async function beforeRunHook(
             "Fetching necessary Jira issue type information in preparation for Cucumber result uploads..."
         );
         const issueDetails = await clients.jiraClient.getIssueTypes();
-        if (!issueDetails) {
-            throw new Error(
-                dedent(`
-                    Jira issue type information could not be fetched.
-
-                    Please make sure project ${options.jira.projectKey} exists at ${options.jira.url}
-
-                    For more information, visit:
-                    - ${HELP.plugin.configuration.jira.projectKey}
-                    - ${HELP.plugin.configuration.jira.url}
-                `)
-            );
-        }
         options.jira.testExecutionIssueDetails = retrieveIssueTypeInformation(
             options.jira.testExecutionIssueType,
             issueDetails,

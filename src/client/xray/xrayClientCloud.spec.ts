@@ -85,23 +85,24 @@ describe("the xray cloud client", () => {
                 }
             );
             restClient.post.onFirstCall().rejects(error);
-            const response = await client.importExecution({
-                testExecutionKey: "CYP-42",
-                info: {
-                    startDate: "2022-11-28T17:41:12Z",
-                    finishDate: "2022-11-28T17:41:19Z",
-                    description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
-                    summary: "Test Execution Here",
-                },
-                tests: [
-                    {
-                        start: "2022-11-28T17:41:15Z",
-                        finish: "2022-11-28T17:41:15Z",
-                        status: "PASSED",
+            await expect(
+                client.importExecution({
+                    testExecutionKey: "CYP-42",
+                    info: {
+                        startDate: "2022-11-28T17:41:12Z",
+                        finishDate: "2022-11-28T17:41:19Z",
+                        description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
+                        summary: "Test Execution Here",
                     },
-                ],
-            });
-            expect(response).to.be.undefined;
+                    tests: [
+                        {
+                            start: "2022-11-28T17:41:15Z",
+                            finish: "2022-11-28T17:41:15Z",
+                            status: "PASSED",
+                        },
+                    ],
+                })
+            ).to.eventually.be.rejectedWith("Failed to import Cypress execution results");
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,
                 "Failed to import execution: Request failed with status code 400"
@@ -161,21 +162,22 @@ describe("the xray cloud client", () => {
                 }
             );
             restClient.post.onFirstCall().rejects(error);
-            const response = await client.importExecutionCucumberMultipart(
-                JSON.parse(
-                    fs.readFileSync(
-                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
-                        "utf-8"
-                    )
-                ) as CucumberMultipartFeature[],
-                JSON.parse(
-                    fs.readFileSync(
-                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
-                        "utf-8"
-                    )
-                ) as CucumberMultipartInfo
-            );
-            expect(response).to.be.undefined;
+            await expect(
+                client.importExecutionCucumberMultipart(
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
+                            "utf-8"
+                        )
+                    ) as CucumberMultipartFeature[],
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
+                            "utf-8"
+                        )
+                    ) as CucumberMultipartInfo
+                )
+            ).to.eventually.be.rejectedWith("Failed to import Cucumber execution results");
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,
                 "Failed to import Cucumber execution: Request failed with status code 400"

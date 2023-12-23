@@ -1,5 +1,6 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
-import { expect } from "chai";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import { SinonStubbedInstance } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
@@ -11,6 +12,8 @@ import { SearchResults } from "../../types/jira/responses/searchResults";
 import { JiraClient } from "./jiraClient";
 import { JiraClientCloud } from "./jiraClientCloud";
 import { JiraClientServer } from "./jiraClientServer";
+
+chai.use(chaiAsPromised);
 
 describe("the jira clients", () => {
     let restClient: SinonStubbedInstance<AxiosRestClient>;
@@ -214,11 +217,9 @@ describe("the jira clients", () => {
                         }
                     );
                     restClient.post.rejects(error);
-                    const response = await client.addAttachment(
-                        "CYP-123",
-                        "./test/resources/greetings.txt"
-                    );
-                    expect(response).to.be.undefined;
+                    await expect(
+                        client.addAttachment("CYP-123", "./test/resources/greetings.txt")
+                    ).to.eventually.be.rejectedWith("Failed to add attachments to issue");
                     expect(logger.message).to.have.been.calledWithExactly(
                         Level.ERROR,
                         "Failed to attach files: Request failed with status code 413"
@@ -269,8 +270,9 @@ describe("the jira clients", () => {
                         }
                     );
                     restClient.get.onFirstCall().rejects(error);
-                    const response = await client.getFields();
-                    expect(response).to.be.undefined;
+                    await expect(client.getFields()).to.eventually.be.rejectedWith(
+                        "Failed to fetch Jira fields"
+                    );
                     expect(logger.message).to.have.been.calledWithExactly(
                         Level.ERROR,
                         "Failed to get fields: Request failed with status code 409"
@@ -395,8 +397,9 @@ describe("the jira clients", () => {
                         }
                     );
                     restClient.post.onFirstCall().rejects(error);
-                    const response = await client.search({});
-                    expect(response).to.be.undefined;
+                    await expect(client.search({})).to.eventually.be.rejectedWith(
+                        "Failed to search for issues"
+                    );
                     expect(logger.message).to.have.been.calledWithExactly(
                         Level.ERROR,
                         "Failed to search issues: Request failed with status code 401"
@@ -427,10 +430,11 @@ describe("the jira clients", () => {
                         }
                     );
                     restClient.put.onFirstCall().rejects(error);
-                    const response = await client.editIssue("CYP-XYZ", {
-                        fields: { summary: "Hi" },
-                    });
-                    expect(response).to.be.undefined;
+                    await expect(
+                        client.editIssue("CYP-XYZ", {
+                            fields: { summary: "Hi" },
+                        })
+                    ).to.eventually.be.rejectedWith("Failed to edit issue");
                     expect(logger.message).to.have.been.calledWithExactly(
                         Level.ERROR,
                         "Failed to edit issue: Request failed with status code 400"

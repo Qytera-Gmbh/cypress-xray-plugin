@@ -43,21 +43,17 @@ export class CachingJiraFieldRepository implements JiraFieldRepository {
         const lowerCasedName = fieldName.toLowerCase();
         if (!(lowerCasedName in this.ids)) {
             const jiraFields = await this.jiraClient.getFields();
-            if (!jiraFields) {
-                throw new Error(`Failed to fetch Jira field ID for field with name: ${fieldName}`);
-            } else {
-                const matches = jiraFields.filter((field: FieldDetail) => {
-                    const lowerCasedField = field.name.toLowerCase();
-                    return lowerCasedField === lowerCasedName;
-                });
-                if (matches.length > 1) {
-                    throw this.multipleFieldsError(fieldName, matches);
-                }
-                jiraFields.forEach((jiraField) => {
-                    this.ids[jiraField.name.toLowerCase()] = jiraField.id;
-                    this.names[jiraField.name.toLowerCase()] = jiraField.name;
-                });
+            const matches = jiraFields.filter((field: FieldDetail) => {
+                const lowerCasedField = field.name.toLowerCase();
+                return lowerCasedField === lowerCasedName;
+            });
+            if (matches.length > 1) {
+                throw this.multipleFieldsError(fieldName, matches);
             }
+            jiraFields.forEach((jiraField) => {
+                this.ids[jiraField.name.toLowerCase()] = jiraField.id;
+                this.names[jiraField.name.toLowerCase()] = jiraField.name;
+            });
         }
         if (!(lowerCasedName in this.ids)) {
             throw this.missingFieldsError(fieldName);

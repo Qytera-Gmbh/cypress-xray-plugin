@@ -11,7 +11,7 @@ import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import { IssueUpdate } from "../../types/jira/responses/issueUpdate";
 import { SearchResults } from "../../types/jira/responses/searchResults";
 import { dedent } from "../../util/dedent";
-import { errorMessage } from "../../util/errors";
+import { LoggedError, errorMessage } from "../../util/errors";
 import { Client } from "../client";
 
 /**
@@ -23,19 +23,19 @@ export interface JiraClient {
      *
      * @param issueIdOrKey - issueIdOrKey the ID or key of the issue that attachments are added to
      * @param files - files the files to attach
-     * @returns a list of issue attachment responses or `undefined` in case of errors
+     * @returns a list of issue attachment responses
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
      */
-    addAttachment(issueIdOrKey: string, ...files: string[]): Promise<Attachment[] | undefined>;
+    addAttachment(issueIdOrKey: string, ...files: string[]): Promise<Attachment[]>;
     /**
      * Returns all issue types.
      *
-     * @returns the issue types or `undefined` in case of errors
+     * @returns the issue types
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/issuetype-getIssueAllTypes
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-rest-api-3-issuetype-get
      */
-    getIssueTypes(): Promise<IssueTypeDetails[] | undefined>;
+    getIssueTypes(): Promise<IssueTypeDetails[]>;
     /**
      * Returns system and custom issue fields according to the following rules:
      * - Fields that cannot be added to the issue navigator are always returned
@@ -46,20 +46,20 @@ export interface JiraClient {
      *   to view (that is, the field is used in at least one project that the user has *Browse
      *   Projects* project permission for)
      *
-     * @returns the fields or `undefined` in case of errors
+     * @returns the fields
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/field-getFields
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
      */
-    getFields(): Promise<FieldDetail[] | undefined>;
+    getFields(): Promise<FieldDetail[]>;
     /**
      * Searches for issues using JQL. Automatically performs pagination if necessary.
      *
      * @param request - the search request
-     * @returns the search results or `undefined` in case of errors
+     * @returns the search results
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
      */
-    search(request: SearchRequest): Promise<Issue[] | undefined>;
+    search(request: SearchRequest): Promise<Issue[]>;
     /**
      * Edits an issue. A transition may be applied and issue properties updated as part of the edit.
      * The edits to the issue's fields are defined using `update` and `fields`.
@@ -69,21 +69,18 @@ export interface JiraClient {
      *
      * @param issueIdOrKey - the ID or key of the issue
      * @param issueUpdateData - the edit data
-     * @returns the ID or key of the edited issue or `undefined` in case of errors
+     * @returns the ID or key of the edited issue
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-put
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.10.0/#api/2/issue-editIssue
      */
-    editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string | undefined>;
+    editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string>;
 }
 
 /**
  * A Jira client class for communicating with Jira instances.
  */
 export abstract class AbstractJiraClient extends Client implements JiraClient {
-    public async addAttachment(
-        issueIdOrKey: string,
-        ...files: string[]
-    ): Promise<Attachment[] | undefined> {
+    public async addAttachment(issueIdOrKey: string, ...files: string[]): Promise<Attachment[]> {
         if (files.length === 0) {
             LOG.message(
                 Level.WARNING,
@@ -138,10 +135,11 @@ export abstract class AbstractJiraClient extends Client implements JiraClient {
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to attach files: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "addAttachmentError");
+            throw new LoggedError("Failed to add attachments to issue");
         }
     }
 
-    public async getIssueTypes(): Promise<IssueTypeDetails[] | undefined> {
+    public async getIssueTypes(): Promise<IssueTypeDetails[]> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Getting issue types...");
@@ -175,10 +173,11 @@ export abstract class AbstractJiraClient extends Client implements JiraClient {
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to get issue types: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "getIssueTypesError");
+            throw new LoggedError("Failed to fetch Jira issue types");
         }
     }
 
-    public async getFields(): Promise<FieldDetail[] | undefined> {
+    public async getFields(): Promise<FieldDetail[]> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Getting fields...");
@@ -212,10 +211,11 @@ export abstract class AbstractJiraClient extends Client implements JiraClient {
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to get fields: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "getFieldsError");
+            throw new LoggedError("Failed to fetch Jira fields");
         }
     }
 
-    public async search(request: SearchRequest): Promise<Issue[] | undefined> {
+    public async search(request: SearchRequest): Promise<Issue[]> {
         try {
             const header = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Searching issues...");
@@ -255,13 +255,11 @@ export abstract class AbstractJiraClient extends Client implements JiraClient {
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to search issues: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "searchError");
+            throw new LoggedError("Failed to search for issues");
         }
     }
 
-    public async editIssue(
-        issueIdOrKey: string,
-        issueUpdateData: IssueUpdate
-    ): Promise<string | undefined> {
+    public async editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string> {
         try {
             const header = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Editing issue...");
@@ -280,6 +278,7 @@ export abstract class AbstractJiraClient extends Client implements JiraClient {
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to edit issue: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "editIssue");
+            throw new LoggedError("Failed to edit issue");
         }
     }
 

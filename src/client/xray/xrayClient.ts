@@ -26,11 +26,10 @@ export interface XrayClient {
      * Uploads test results to the Xray instance.
      *
      * @param results - the test results as provided by Cypress
-     * @returns the key of the test execution issue, `null` if the upload was skipped or `undefined`
-     * in case of errors
+     * @returns the key of the test execution issue or `null` if the upload was skipped
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
-    importExecution(execution: XrayTestExecutionResults): Promise<string | null | undefined>;
+    importExecution(execution: XrayTestExecutionResults): Promise<string | null>;
     /**
      * Downloads feature (file) specifications from corresponding Xray issues.
      *
@@ -62,24 +61,21 @@ export interface XrayClient {
      *
      * @param cucumberJson - the test results as provided by the `cypress-cucumber-preprocessor`
      * @param cucumberInfo - the test execution information
-     * @returns the key of the test execution issue, `null` if the upload was skipped or `undefined`
-     * in case of errors
+     * @returns the key of the test execution issue or `null` if the upload was skipped
      * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-CucumberJSONresultsMultipart
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
     importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: CucumberMultipartInfo
-    ): Promise<string | null | undefined>;
+    ): Promise<string | null>;
 }
 
 /**
  * An abstract Xray client class for communicating with Xray instances.
  */
 export abstract class AbstractXrayClient extends Client implements XrayClient {
-    public async importExecution(
-        execution: XrayTestExecutionResults
-    ): Promise<string | null | undefined> {
+    public async importExecution(execution: XrayTestExecutionResults): Promise<string | null> {
         try {
             if (!execution.tests || execution.tests.length === 0) {
                 LOG.message(
@@ -108,6 +104,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to import execution: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "importExecutionError");
+            throw new LoggedError("Failed to import Cypress execution results");
         }
     }
 
@@ -202,7 +199,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
     public async importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: CucumberMultipartInfo
-    ): Promise<string | null | undefined> {
+    ): Promise<string | null> {
         try {
             if (cucumberJson.length === 0) {
                 LOG.message(
@@ -233,8 +230,23 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to import Cucumber execution: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "importExecutionCucumberMultipartError");
+            throw new LoggedError("Failed to import Cucumber execution results");
         }
     }
+
+    /**
+     * Returns the endpoint to use for importing Cucumber feature files.
+     *
+     * @param projectKey - key of the project where the tests and pre-conditions are located
+     * @param projectId - id of the project where the tests and pre-conditions are located
+     * @param source - a name designating the source of the features being imported (e.g. the source project name)
+     * @returns the URL
+     */
+    public abstract getUrlImportFeature(
+        projectKey?: string,
+        projectId?: string,
+        source?: string
+    ): string;
 
     /**
      * Returns the endpoint to use for importing test execution results.
@@ -251,20 +263,6 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
      * @returns the URL
      */
     public abstract getUrlExportCucumber(issueKeys?: string[], filter?: number): string;
-
-    /**
-     * Returns the endpoint to use for importing Cucumber feature files.
-     *
-     * @param projectKey - key of the project where the tests and pre-conditions are located
-     * @param projectId - id of the project where the tests and pre-conditions are located
-     * @param source - a name designating the source of the features being imported (e.g. the source project name)
-     * @returns the URL
-     */
-    public abstract getUrlImportFeature(
-        projectKey?: string,
-        projectId?: string,
-        source?: string
-    ): string;
 
     /**
      * This method is called when a feature file was successfully imported to Xray.
