@@ -200,8 +200,8 @@ export class TestConverter {
         screenshot: ScreenshotInformation_V13,
         testRunData: ITestRunData[]
     ): boolean {
-        return testRunData.some((testRunData) => {
-            return testRunData.screenshots.some(({ filepath }) => {
+        return testRunData.some((testRun: ITestRunData) => {
+            return testRun.screenshots.some(({ filepath }) => {
                 return screenshot.path === filepath;
             });
         });

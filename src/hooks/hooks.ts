@@ -57,7 +57,7 @@ function retrieveIssueTypeInformation(
     issueDetails: IIssueTypeDetails[],
     projectKey: string
 ): IIssueTypeDetails {
-    const details = issueDetails.filter((details) => details.name === type);
+    const details = issueDetails.filter((issueDetail) => issueDetail.name === type);
     if (details.length === 0) {
         throw new Error(
             dedent(`

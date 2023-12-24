@@ -26,10 +26,10 @@ beforeEach(() => {
 });
 
 export function getMockedLogger(
-    options: { allowUnstubbedCalls?: boolean } = { allowUnstubbedCalls: false }
+    stubbingOptions: { allowUnstubbedCalls?: boolean } = { allowUnstubbedCalls: false }
 ): SinonStubbedInstance<ILogger> {
     const logger = Sinon.stub(logging.LOG);
-    if (!options.allowUnstubbedCalls) {
+    if (!stubbingOptions.allowUnstubbedCalls) {
         logger.configure.callsFake((options: logging.LoggingOptions) => {
             throw mockCalledUnexpectedlyError(options);
         });
