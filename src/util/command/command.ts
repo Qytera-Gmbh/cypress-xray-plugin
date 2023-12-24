@@ -55,7 +55,7 @@ export abstract class Command<R> implements Computable<R>, Executable {
     }
 
     public async getResult(): Promise<R> {
-        return this.result;
+        return await this.result;
     }
 
     public async execute(): Promise<void> {
