@@ -6,7 +6,7 @@ export class ConstantCommand<R> extends Command<R> {
         this.value = value;
     }
 
-    protected async computeResult(): Promise<R> {
+    protected computeResult(): R {
         return this.value;
     }
 }
