@@ -6,7 +6,11 @@ export class ConstantCommand<R> extends Command<R> {
         this.value = value;
     }
 
-    protected computeResult(): R {
+    public getValue(): R {
         return this.value;
+    }
+
+    protected computeResult(): R {
+        return this.getValue();
     }
 }
