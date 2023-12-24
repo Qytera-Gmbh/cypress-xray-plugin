@@ -6,7 +6,7 @@ import {
     getCucumberScenarioIssueTags,
 } from "../../preprocessing/preprocessing";
 import { CucumberOptions } from "../../types/plugin";
-import { Command } from "../../util/command/command";
+import { Command, Computable } from "../../util/command/command";
 import {
     missingPreconditionKeyInCucumberBackgroundError,
     missingTestKeyInCucumberScenarioError,
@@ -16,7 +16,7 @@ import {
 
 export class ExtractFeatureFileTagsCommand extends Command<FeatureFileIssueData> {
     constructor(
-        private readonly document: GherkinDocument,
+        private readonly document: Computable<GherkinDocument>,
         private readonly projectKey: string,
         private readonly prefixes: CucumberOptions["prefixes"],
         private readonly displayCloudHelp: boolean
@@ -29,12 +29,13 @@ export class ExtractFeatureFileTagsCommand extends Command<FeatureFileIssueData>
     }
 
     protected async computeResult(): Promise<FeatureFileIssueData> {
+        const parsedDocument = await this.document.getResult();
         const featureFileIssueKeys: FeatureFileIssueData = {
             tests: [],
             preconditions: [],
         };
-        if (this.document.feature?.children) {
-            for (const child of this.document.feature.children) {
+        if (parsedDocument.feature?.children) {
+            for (const child of parsedDocument.feature.children) {
                 if (child.scenario) {
                     const issueKeys = getCucumberScenarioIssueTags(
                         child.scenario,
@@ -64,7 +65,7 @@ export class ExtractFeatureFileTagsCommand extends Command<FeatureFileIssueData>
                     const preconditionComments = getCucumberPreconditionIssueComments(
                         child.background,
                         this.projectKey,
-                        this.document.comments
+                        parsedDocument.comments
                     );
                     const preconditionKeys = getCucumberPreconditionIssueTags(
                         child.background,
@@ -83,7 +84,7 @@ export class ExtractFeatureFileTagsCommand extends Command<FeatureFileIssueData>
                         throw multiplePreconditionKeysInCucumberBackgroundError(
                             child.background,
                             preconditionKeys,
-                            this.document.comments,
+                            parsedDocument.comments,
                             this.displayCloudHelp
                         );
                     }

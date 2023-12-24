@@ -1,11 +1,11 @@
 import { IXrayClient } from "../../client/xray/xrayClient";
 import { IXrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
-import { Command } from "../../util/command/command";
+import { Command, Computable } from "../../util/command/command";
 
 export class ImportExecutionCypressCommand extends Command<string | null> {
     constructor(
         private readonly xrayClient: IXrayClient,
-        private readonly results: IXrayTestExecutionResults
+        private readonly results: Computable<IXrayTestExecutionResults>
     ) {
         super();
         this.xrayClient = xrayClient;
@@ -13,6 +13,7 @@ export class ImportExecutionCypressCommand extends Command<string | null> {
     }
 
     protected async computeResult(): Promise<string | null> {
-        return await this.xrayClient.importExecution(this.results);
+        const results = await this.results.getResult();
+        return await this.xrayClient.importExecution(results);
     }
 }
