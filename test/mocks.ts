@@ -10,7 +10,7 @@ import { AxiosRestClient, REST } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { Logger } from "../src/logging/logging";
 import { JiraFieldRepository } from "../src/repository/jira/fields/jiraFieldRepository";
-import { JiraIssueFetcher, SupportedFields } from "../src/repository/jira/fields/jiraIssueFetcher";
+import { JiraIssueFetcher, SupportedField } from "../src/repository/jira/fields/jiraIssueFetcher";
 import { JiraRepository } from "../src/repository/jira/jiraRepository";
 import { SearchRequest } from "../src/types/jira/requests/search";
 import { IssueUpdate } from "../src/types/jira/responses/issueUpdate";
@@ -144,7 +144,7 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
 
 export function getMockedJiraFieldRepository(): SinonStubbedInstance<JiraFieldRepository> {
     const fieldRepository: JiraFieldRepository = {
-        getFieldId: function (fieldName: SupportedFields) {
+        getFieldId: function (fieldName: SupportedField) {
             throw mockCalledUnexpectedlyError(fieldName);
         },
     };
@@ -171,7 +171,7 @@ export function getMockedJiraIssueFetcher(): SinonStubbedInstance<JiraIssueFetch
 
 export function getMockedJiraRepository(): SinonStubbedInstance<JiraRepository> {
     const jiraRepository: JiraRepository = {
-        getFieldId: function (fieldName: SupportedFields) {
+        getFieldId: function (fieldName: SupportedField) {
             throw mockCalledUnexpectedlyError(fieldName);
         },
         getDescriptions: function (...issueKeys: string[]) {

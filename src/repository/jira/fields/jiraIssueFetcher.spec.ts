@@ -14,7 +14,7 @@ import { JiraFieldRepository } from "./jiraFieldRepository";
 import {
     CachingJiraIssueFetcher,
     CachingJiraIssueFetcherCloud,
-    SupportedFields,
+    SupportedField,
 } from "./jiraIssueFetcher";
 
 chai.use(chaiAsPromised);
@@ -44,7 +44,7 @@ describe("the jira issue fetcher", () => {
 
         it("fetches description IDs automatically", async () => {
             fieldRepository.getFieldId
-                .withArgs(SupportedFields.DESCRIPTION)
+                .withArgs(SupportedField.DESCRIPTION)
                 .resolves("customfield_456");
             jiraClient.search
                 .withArgs({
@@ -88,7 +88,7 @@ describe("the jira issue fetcher", () => {
             });
         });
         it("fetches label IDs automatically", async () => {
-            fieldRepository.getFieldId.withArgs(SupportedFields.LABELS).resolves("customfield_789");
+            fieldRepository.getFieldId.withArgs(SupportedField.LABELS).resolves("customfield_789");
             jiraClient.search
                 .withArgs({
                     fields: ["customfield_789"],
@@ -129,9 +129,7 @@ describe("the jira issue fetcher", () => {
             });
         });
         it("fetches summary IDs automatically", async () => {
-            fieldRepository.getFieldId
-                .withArgs(SupportedFields.SUMMARY)
-                .resolves("customfield_123");
+            fieldRepository.getFieldId.withArgs(SupportedField.SUMMARY).resolves("customfield_123");
             jiraClient.search
                 .withArgs({
                     fields: ["customfield_123"],
@@ -175,7 +173,7 @@ describe("the jira issue fetcher", () => {
         });
         it("fetches test type IDs automatically", async () => {
             fieldRepository.getFieldId
-                .withArgs(SupportedFields.TEST_TYPE)
+                .withArgs(SupportedField.TEST_TYPE)
                 .resolves("customfield_011");
             jiraClient.search
                 .withArgs({

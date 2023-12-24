@@ -11,7 +11,7 @@ import { JiraClient } from "../../client/jira/jiraClient";
 import { XrayClient } from "../../client/xray/xrayClient";
 import { initJiraOptions, initPluginOptions, initSslOptions, initXrayOptions } from "../../context";
 import { Level } from "../../logging/logging";
-import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
+import { SupportedField } from "../../repository/jira/fields/jiraIssueFetcher";
 import { JiraRepository } from "../../repository/jira/jiraRepository";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
@@ -118,8 +118,8 @@ describe("synchronizeFeatureFile", () => {
             errors: [],
             updatedOrCreatedIssues: ["CYP-222", "CYP-555"],
         });
-        jiraRepository.getFieldId.withArgs(SupportedFields.SUMMARY).resolves("summary");
-        jiraRepository.getFieldId.withArgs(SupportedFields.LABELS).resolves("label");
+        jiraRepository.getFieldId.withArgs(SupportedField.SUMMARY).resolves("summary");
+        jiraRepository.getFieldId.withArgs(SupportedField.LABELS).resolves("label");
         jiraClient.editIssue
             .withArgs("CYP-222", { fields: { summary: "Big" } })
             .resolves("CYP-222");

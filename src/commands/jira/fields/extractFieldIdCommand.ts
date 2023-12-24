@@ -1,4 +1,4 @@
-import { SupportedFields } from "../../../repository/jira/fields/jiraIssueFetcher";
+import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { FieldDetail } from "../../../types/jira/responses/fieldDetail";
 import { StringMap } from "../../../types/util";
 import { Command, Computable } from "../../../util/command/command";
@@ -7,14 +7,14 @@ import { missingFieldsError, multipleFieldsError } from "../../../util/errors";
 export class ExtractFieldIdCommand extends Command<string> {
     constructor(
         private readonly allFields: Computable<FieldDetail[]>,
-        private readonly field: SupportedFields
+        private readonly field: SupportedField
     ) {
         super();
         this.allFields = allFields;
         this.field = field;
     }
 
-    public getField(): SupportedFields {
+    public getField(): SupportedField {
         return this.field;
     }
 

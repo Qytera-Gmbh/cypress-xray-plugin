@@ -1,5 +1,5 @@
 import { Background, Comment } from "@cucumber/messages";
-import { SupportedFields } from "../repository/jira/fields/jiraIssueFetcher";
+import { SupportedField } from "../repository/jira/fields/jiraIssueFetcher";
 import { FieldDetail } from "../types/jira/responses/fieldDetail";
 import { JiraFieldIds } from "../types/plugin";
 import { StringMap } from "../types/util";
@@ -428,7 +428,7 @@ function reconstructMultipleTagsBackground(
     return example.join("\n");
 }
 
-export function multipleFieldsError(fieldName: SupportedFields, matches: FieldDetail[]): Error {
+export function multipleFieldsError(fieldName: SupportedField, matches: FieldDetail[]): Error {
     const nameDuplicates = prettyPadObjects(matches)
         .map((duplicate) =>
             Object.entries(duplicate)
@@ -457,7 +457,7 @@ export function multipleFieldsError(fieldName: SupportedFields, matches: FieldDe
     );
 }
 
-export function missingFieldsError(fieldName: SupportedFields, names: StringMap<string>): Error {
+export function missingFieldsError(fieldName: SupportedField, names: StringMap<string>): Error {
     if (Object.keys(names).length === 0) {
         throw new Error(
             dedent(`
@@ -497,19 +497,19 @@ export function missingFieldsError(fieldName: SupportedFields, names: StringMap<
     }
 }
 
-function getOptionName(fieldName: SupportedFields): keyof JiraFieldIds {
+function getOptionName(fieldName: SupportedField): keyof JiraFieldIds {
     switch (fieldName) {
-        case SupportedFields.DESCRIPTION:
+        case SupportedField.DESCRIPTION:
             return "description";
-        case SupportedFields.SUMMARY:
+        case SupportedField.SUMMARY:
             return "summary";
-        case SupportedFields.LABELS:
+        case SupportedField.LABELS:
             return "labels";
-        case SupportedFields.TEST_ENVIRONMENTS:
+        case SupportedField.TEST_ENVIRONMENTS:
             return "testEnvironments";
-        case SupportedFields.TEST_PLAN:
+        case SupportedField.TEST_PLAN:
             return "testPlan";
-        case SupportedFields.TEST_TYPE:
+        case SupportedField.TEST_TYPE:
             return "testType";
     }
 }

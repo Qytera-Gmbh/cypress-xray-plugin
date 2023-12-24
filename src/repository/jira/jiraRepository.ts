@@ -3,7 +3,7 @@ import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
 import { JiraFieldRepository } from "./fields/jiraFieldRepository";
-import { JiraIssueFetcher, SupportedFields } from "./fields/jiraIssueFetcher";
+import { JiraIssueFetcher, SupportedField } from "./fields/jiraIssueFetcher";
 
 /**
  * An interface describing a Jira repository, which provides methods for retrieving issue data such
@@ -17,7 +17,7 @@ export interface JiraRepository {
      * @returns the field ID
      * @see https://confluence.atlassian.com/jirakb/how-to-find-id-for-custom-field-s-744522503.html
      */
-    getFieldId(fieldName: SupportedFields): Promise<string>;
+    getFieldId(fieldName: SupportedField): Promise<string>;
     /**
      * Retrieve the descriptions of all provided issues, represented through their Jira issue keys.
      *
@@ -72,7 +72,7 @@ export class CachingJiraRepository implements JiraRepository {
         protected readonly jiraIssueFetcher: JiraIssueFetcher
     ) {}
 
-    public async getFieldId(fieldName: SupportedFields): Promise<string> {
+    public async getFieldId(fieldName: SupportedField): Promise<string> {
         return this.jiraFieldRepository.getFieldId(fieldName);
     }
 

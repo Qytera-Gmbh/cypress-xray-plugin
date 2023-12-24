@@ -2,7 +2,7 @@ import { JiraClient } from "../../../client/jira/jiraClient";
 import { FieldDetail } from "../../../types/jira/responses/fieldDetail";
 import { StringMap } from "../../../types/util";
 import { missingFieldsError, multipleFieldsError } from "../../../util/errors";
-import { SupportedFields } from "./jiraIssueFetcher";
+import { SupportedField } from "./jiraIssueFetcher";
 
 /**
  * An interface describing a Jira field repository, which provides methods for retrieving arbitrary
@@ -16,7 +16,7 @@ export interface JiraFieldRepository {
      * @returns the field's Jira ID
      * @throws if the field does not exist or if there are multiple fields with the given name
      */
-    getFieldId(fieldName: SupportedFields): Promise<string>;
+    getFieldId(fieldName: SupportedField): Promise<string>;
 }
 
 /**
@@ -35,7 +35,7 @@ export class CachingJiraFieldRepository implements JiraFieldRepository {
      */
     constructor(private readonly jiraClient: JiraClient) {}
 
-    public async getFieldId(fieldName: SupportedFields): Promise<string> {
+    public async getFieldId(fieldName: SupportedField): Promise<string> {
         // Lowercase everything to work around case sensitivities.
         // Jira sometimes returns field names capitalized, sometimes it doesn't (?).
         const lowerCasedName = fieldName.toLowerCase();

@@ -1,4 +1,4 @@
-import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
+import { SupportedField } from "../../repository/jira/fields/jiraIssueFetcher";
 import { JiraRepository } from "../../repository/jira/jiraRepository";
 import {
     InternalCucumberOptions,
@@ -107,13 +107,13 @@ export class ImportExecutionCucumberMultipartConverter {
         if (this.options.jira.testPlanIssueKey) {
             testExecutionIssueData.testPlan = {
                 issueKey: this.options.jira.testPlanIssueKey,
-                fieldId: await this.jiraRepository.getFieldId(SupportedFields.TEST_PLAN),
+                fieldId: await this.jiraRepository.getFieldId(SupportedField.TEST_PLAN),
             };
         }
         if (this.options.xray.testEnvironments) {
             testExecutionIssueData.testEnvironments = {
                 environments: this.options.xray.testEnvironments,
-                fieldId: await this.jiraRepository.getFieldId(SupportedFields.TEST_ENVIRONMENTS),
+                fieldId: await this.jiraRepository.getFieldId(SupportedField.TEST_ENVIRONMENTS),
             };
         }
         return {

@@ -12,7 +12,7 @@ import {
 } from "../../../util/extraction";
 import { JiraFieldRepository } from "./jiraFieldRepository";
 
-export enum SupportedFields {
+export enum SupportedField {
     DESCRIPTION = "description",
     SUMMARY = "summary",
     LABELS = "labels",
@@ -80,7 +80,7 @@ export class CachingJiraIssueFetcher implements JiraIssueFetcher {
     public async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
         let summaryId = this.fieldIds?.summary;
         if (!summaryId) {
-            summaryId = await this.jiraFieldRepository.getFieldId(SupportedFields.SUMMARY);
+            summaryId = await this.jiraFieldRepository.getFieldId(SupportedField.SUMMARY);
         }
         // Field property example:
         // summary: "Bug 12345"
@@ -97,7 +97,7 @@ export class CachingJiraIssueFetcher implements JiraIssueFetcher {
     public async fetchDescriptions(...issueKeys: string[]): Promise<StringMap<string>> {
         let descriptionId = this.fieldIds?.description;
         if (!descriptionId) {
-            descriptionId = await this.jiraFieldRepository.getFieldId(SupportedFields.DESCRIPTION);
+            descriptionId = await this.jiraFieldRepository.getFieldId(SupportedField.DESCRIPTION);
         }
         // Field property example:
         // description: "This is a description"
@@ -114,7 +114,7 @@ export class CachingJiraIssueFetcher implements JiraIssueFetcher {
     public async fetchLabels(...issueKeys: string[]): Promise<StringMap<string[]>> {
         let labelsId = this.fieldIds?.labels;
         if (!labelsId) {
-            labelsId = await this.jiraFieldRepository.getFieldId(SupportedFields.LABELS);
+            labelsId = await this.jiraFieldRepository.getFieldId(SupportedField.LABELS);
         }
         // Field property example:
         // labels: ["regression", "quality"]
@@ -131,7 +131,7 @@ export class CachingJiraIssueFetcher implements JiraIssueFetcher {
     public async fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>> {
         let testTypeId = this.fieldIds?.testType;
         if (!testTypeId) {
-            testTypeId = await this.jiraFieldRepository.getFieldId(SupportedFields.TEST_TYPE);
+            testTypeId = await this.jiraFieldRepository.getFieldId(SupportedField.TEST_TYPE);
         }
         // Field property example:
         // customfield_12100: {

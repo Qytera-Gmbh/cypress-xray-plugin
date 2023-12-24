@@ -7,7 +7,7 @@ import {
     FeatureFileIssueDataTest,
     getCucumberIssueData,
 } from "../../preprocessing/preprocessing";
-import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
+import { SupportedField } from "../../repository/jira/fields/jiraIssueFetcher";
 import { JiraRepository } from "../../repository/jira/jiraRepository";
 import { ClientCombination, InternalOptions } from "../../types/plugin";
 import { StringMap } from "../../types/util";
@@ -171,7 +171,7 @@ async function resetSummaries(
             continue;
         }
         if (oldSummary !== newSummary) {
-            const summaryFieldId = await jiraRepository.getFieldId(SupportedFields.SUMMARY);
+            const summaryFieldId = await jiraRepository.getFieldId(SupportedField.SUMMARY);
             LOG.message(
                 Level.DEBUG,
                 dedent(`
@@ -229,7 +229,7 @@ async function resetLabels(
         }
         const oldLabels = testLabels[issueKey];
         if (!newLabels.every((label) => oldLabels.includes(label))) {
-            const labelFieldId = await jiraRepository.getFieldId(SupportedFields.LABELS);
+            const labelFieldId = await jiraRepository.getFieldId(SupportedField.LABELS);
             LOG.message(
                 Level.DEBUG,
                 dedent(`
