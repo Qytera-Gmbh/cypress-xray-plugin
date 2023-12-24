@@ -1,6 +1,6 @@
-import { IJiraClient } from "../../../client/jira/jiraClient";
-import { IXrayClientCloud } from "../../../client/xray/xrayClientCloud";
-import { IIssue } from "../../../types/jira/responses/issue";
+import { JiraClient } from "../../../client/jira/jiraClient";
+import { XrayClientCloud } from "../../../client/xray/xrayClientCloud";
+import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
 import { Computable } from "../../../util/command/command";
 import { extractNestedString } from "../../../util/extraction";
@@ -10,7 +10,7 @@ export class GetTestTypeValuesCommandServer extends GetFieldValuesCommand<string
     constructor(
         fieldId: Computable<string>,
         issueKeys: Computable<string[]>,
-        private readonly jiraClient: IJiraClient
+        private readonly jiraClient: JiraClient
     ) {
         super(fieldId, issueKeys);
         this.jiraClient = jiraClient;
@@ -23,10 +23,8 @@ export class GetTestTypeValuesCommandServer extends GetFieldValuesCommand<string
         //   id: "12702",
         //   disabled: false
         // }
-        return await this.extractJiraFieldValues(
-            this.jiraClient,
-            (issue: IIssue, fieldId: string) =>
-                extractNestedString(issue.fields, [fieldId, "value"])
+        return await this.extractJiraFieldValues(this.jiraClient, (issue: Issue, fieldId: string) =>
+            extractNestedString(issue.fields, [fieldId, "value"])
         );
     }
 }
@@ -36,7 +34,7 @@ export class GetTestTypeValuesCommandCloud extends GetFieldValuesCommand<string>
         fieldId: Computable<string>,
         issueKeys: Computable<string[]>,
         private readonly projectKey: string,
-        private readonly xrayClient: IXrayClientCloud
+        private readonly xrayClient: XrayClientCloud
     ) {
         super(fieldId, issueKeys);
         this.projectKey = projectKey;

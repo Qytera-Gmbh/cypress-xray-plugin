@@ -13,6 +13,13 @@ describe("command", () => {
                 this.operands = operands;
             }
 
+            public async execute(): Promise<void> {
+                return new Promise((resolve) => {
+                    super.execute();
+                    resolve();
+                });
+            }
+
             protected async computeResult(): Promise<number> {
                 let result = this.x;
                 for (const operand of this.operands) {

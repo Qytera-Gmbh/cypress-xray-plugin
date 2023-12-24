@@ -1,5 +1,5 @@
-import { IJiraClient } from "../../../client/jira/jiraClient";
-import { IIssue } from "../../../types/jira/responses/issue";
+import { JiraClient } from "../../../client/jira/jiraClient";
+import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
 import { Command, Computable } from "../../../util/command/command";
 import { dedent } from "../../../util/dedent";
@@ -15,12 +15,12 @@ export abstract class GetFieldValuesCommand<R> extends Command<StringMap<R>> {
     }
 
     protected async extractJiraFieldValues(
-        jiraClient: IJiraClient,
-        extractor: (issue: IIssue, fieldId: string) => R | Promise<R>
+        jiraClient: JiraClient,
+        extractor: (issue: Issue, fieldId: string) => R | Promise<R>
     ): Promise<StringMap<R>> {
         const fieldId = await this.fieldId.getResult();
         const issueKeys = await this.issueKeys.getResult();
-        const issues: IIssue[] = await jiraClient.search({
+        const issues: Issue[] = await jiraClient.search({
             jql: `issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
         });

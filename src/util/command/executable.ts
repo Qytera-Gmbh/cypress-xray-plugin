@@ -1,5 +1,6 @@
 import { computeTopologicalOrder } from "../graph/algorithms/sort";
 import { SimpleDirectedGraph } from "../graph/graph";
+import { unknownToString } from "../string";
 
 /**
  * Models an entity which can be executed either synchronously or asynchronously.
@@ -26,11 +27,11 @@ export class ExecutableGraph<V extends Executable>
         vertices.sort((a: V, b: V) => {
             const d1 = distances.get(a);
             if (d1 === undefined) {
-                throw new Error(`Encountered vertex with unknown distance: ${a}`);
+                throw new Error(`Encountered vertex with unknown distance: ${unknownToString(a)}`);
             }
             const d2 = distances.get(b);
             if (d2 === undefined) {
-                throw new Error(`Encountered vertex with unknown distance: ${b}`);
+                throw new Error(`Encountered vertex with unknown distance: ${unknownToString(b)}`);
             }
             if (d1 < d2) {
                 return -1;

@@ -1,10 +1,10 @@
-import { IXrayClient } from "../../client/xray/xrayClient";
+import { XrayClient } from "../../client/xray/xrayClient";
 import { ImportFeatureResponse } from "../../types/xray/responses/importFeature";
 import { Command } from "../../util/command/command";
 
 export class ImportFeatureCommand extends Command<ImportFeatureResponse> {
     constructor(
-        private readonly xrayClient: IXrayClient,
+        private readonly xrayClient: XrayClient,
         private readonly file: string,
         private readonly projectKey?: string,
         private readonly projectId?: string,

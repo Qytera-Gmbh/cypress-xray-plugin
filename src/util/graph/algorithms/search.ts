@@ -43,17 +43,13 @@ export interface UnknownDestinationParameters<V> {
  */
 export function dfs<V, E extends DirectedEdge<V>>(
     graph: DirectedGraph<V, E>,
-    parameters: KnownDestinationParameters<V>
-): boolean;
-export function dfs<V, E extends DirectedEdge<V>>(
-    graph: DirectedGraph<V, E>,
-    parameters: UnknownDestinationParameters<V>
+    parameters: KnownDestinationParameters<V> | UnknownDestinationParameters<V>
 ): boolean;
 export function dfs<V, E extends DirectedEdge<V>>(
     graph: DirectedGraph<V, E>,
     parameters: KnownDestinationParameters<V> | UnknownDestinationParameters<V>
 ): boolean {
-    const stack: Stack<V> = new Stack();
+    const stack = new Stack<V>();
     return search(graph, parameters, {
         push: stack.push.bind(stack),
         pop: stack.pop.bind(stack),
@@ -70,17 +66,13 @@ export function dfs<V, E extends DirectedEdge<V>>(
  */
 export function bfs<V, E extends DirectedEdge<V>>(
     graph: DirectedGraph<V, E>,
-    parameters: KnownDestinationParameters<V>
-): boolean;
-export function bfs<V, E extends DirectedEdge<V>>(
-    graph: DirectedGraph<V, E>,
-    parameters: UnknownDestinationParameters<V>
+    parameters: KnownDestinationParameters<V> | UnknownDestinationParameters<V>
 ): boolean;
 export function bfs<V, E extends DirectedEdge<V>>(
     graph: DirectedGraph<V, E>,
     parameters: KnownDestinationParameters<V> | UnknownDestinationParameters<V>
 ): boolean {
-    const queue: Queue<V> = new Queue();
+    const queue = new Queue<V>();
     return search(graph, parameters, {
         push: queue.enqueue.bind(queue),
         pop: queue.dequeue.bind(queue),
@@ -121,7 +113,7 @@ function search<V, E extends DirectedEdge<V>>(
             }
         }
     }
-    const discoveredVertices: Set<V> = new Set();
+    const discoveredVertices = new Set<V>();
     while (!worklist.isEmpty()) {
         const currentVertex = worklist.pop();
         discoveredVertices.add(currentVertex);

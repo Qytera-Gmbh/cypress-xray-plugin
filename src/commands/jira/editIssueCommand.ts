@@ -1,12 +1,12 @@
-import { IJiraClient } from "../../client/jira/jiraClient";
-import { IIssueUpdate } from "../../types/jira/responses/issueUpdate";
+import { JiraClient } from "../../client/jira/jiraClient";
+import { IssueUpdate } from "../../types/jira/responses/issueUpdate";
 import { Command, Computable } from "../../util/command/command";
 
 export class EditissueCommand extends Command<string> {
     constructor(
-        private readonly jiraClient: IJiraClient,
+        private readonly jiraClient: JiraClient,
         private readonly issueKey: Computable<string>,
-        private readonly fields: Computable<IIssueUpdate["fields"]>
+        private readonly fields: Computable<IssueUpdate["fields"]>
     ) {
         super();
         this.jiraClient = jiraClient;

@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { Stack } from "./stack";
 
 describe("stack", () => {
-    let stack: Stack<number> = new Stack();
+    let stack = new Stack<number>();
 
     beforeEach(() => {
         stack = new Stack<number>();

@@ -1,11 +1,11 @@
-import { IXrayClient } from "../../client/xray/xrayClient";
-import { IXrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
+import { XrayClient } from "../../client/xray/xrayClient";
+import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { Command, Computable } from "../../util/command/command";
 
 export class ImportExecutionCypressCommand extends Command<string | null> {
     constructor(
-        private readonly xrayClient: IXrayClient,
-        private readonly results: Computable<IXrayTestExecutionResults>
+        private readonly xrayClient: XrayClient,
+        private readonly results: Computable<XrayTestExecutionResults>
     ) {
         super();
         this.xrayClient = xrayClient;

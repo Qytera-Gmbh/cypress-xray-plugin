@@ -1,3 +1,4 @@
+import { unknownToString } from "../string";
 import { dfs } from "./algorithms/search";
 
 /**
@@ -140,7 +141,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
 
     public place(vertex: V): void {
         if (this.outgoingEdges.has(vertex)) {
-            throw new Error(`Duplicate vertex detected: ${vertex}`);
+            throw new Error(`Duplicate vertex detected: ${unknownToString(vertex)}`);
         }
         this.initVertex(vertex);
     }
@@ -150,13 +151,17 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
         const destinationConnections = this.initVertex(destination);
         if (dfs(this, { source: destination, destination: source })) {
             throw new Error(
-                `Failed to connect vertices ${source} -> ${destination}: cycle detected`
+                `Failed to connect vertices ${unknownToString(source)} -> ${unknownToString(
+                    destination
+                )}: cycle detected`
             );
         }
         for (const outgoingEdge of sourceConnections.outgoing) {
             if (outgoingEdge.getDestination() === destination) {
                 throw new Error(
-                    `Failed to connect vertices ${source} -> ${destination}: duplicate edge detected: ${outgoingEdge}`
+                    `Failed to connect vertices ${unknownToString(source)} -> ${unknownToString(
+                        destination
+                    )}: duplicate edge detected: ${unknownToString(outgoingEdge)}`
                 );
             }
         }
@@ -202,7 +207,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
     public *getOutgoing(vertex: V): Generator<DirectedEdge<V>> {
         const outgoing = this.outgoingEdges.get(vertex);
         if (outgoing === undefined) {
-            throw new Error(`Unknown vertex: ${vertex}`);
+            throw new Error(`Unknown vertex: ${unknownToString(vertex)}`);
         }
         for (const edge of outgoing) {
             yield edge;
@@ -212,7 +217,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
     public *getIncoming(vertex: V): Generator<DirectedEdge<V>> {
         const incoming = this.incomingEdges.get(vertex);
         if (incoming == undefined) {
-            throw new Error(`Unknown vertex: ${vertex}`);
+            throw new Error(`Unknown vertex: ${unknownToString(vertex)}`);
         }
         for (const edge of incoming) {
             yield edge;
@@ -222,7 +227,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
     public hasOutgoing(vertex: V): boolean {
         const outgoing = this.outgoingEdges.get(vertex);
         if (outgoing === undefined) {
-            throw new Error(`Unknown vertex: ${vertex}`);
+            throw new Error(`Unknown vertex: ${unknownToString(vertex)}`);
         }
         return outgoing.size > 0;
     }
@@ -230,7 +235,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
     public hasIncoming(vertex: V): boolean {
         const incoming = this.incomingEdges.get(vertex);
         if (incoming === undefined) {
-            throw new Error(`Unknown vertex: ${vertex}`);
+            throw new Error(`Unknown vertex: ${unknownToString(vertex)}`);
         }
         return incoming.size > 0;
     }

@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { Queue } from "./queue";
 
 describe("queue", () => {
-    let queue: Queue<number> = new Queue();
+    let queue = new Queue<number>();
 
     beforeEach(() => {
         queue = new Queue<number>();

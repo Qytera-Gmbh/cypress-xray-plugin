@@ -1,10 +1,10 @@
-import { IJiraClient } from "../../client/jira/jiraClient";
-import { IAttachment } from "../../types/jira/responses/attachment";
+import { JiraClient } from "../../client/jira/jiraClient";
+import { Attachment } from "../../types/jira/responses/attachment";
 import { Command, Computable } from "../../util/command/command";
 
-export class AttachVideosCommand extends Command<IAttachment[]> {
+export class AttachVideosCommand extends Command<Attachment[]> {
     constructor(
-        private readonly jiraClient: IJiraClient,
+        private readonly jiraClient: JiraClient,
         private readonly files: string[],
         private readonly issueKey: Computable<string>
     ) {
@@ -14,7 +14,7 @@ export class AttachVideosCommand extends Command<IAttachment[]> {
         this.files = files;
     }
 
-    protected async computeResult(): Promise<IAttachment[]> {
+    protected async computeResult(): Promise<Attachment[]> {
         const executionIssueKey = await this.issueKey.getResult();
         return await this.jiraClient.addAttachment(executionIssueKey, ...this.files);
     }

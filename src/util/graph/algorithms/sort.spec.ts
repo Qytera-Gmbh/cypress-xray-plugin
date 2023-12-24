@@ -4,7 +4,7 @@ import { computeTopologicalOrder } from "./sort";
 
 describe("sort", () => {
     describe(computeTopologicalOrder.name, () => {
-        it("computes the order for directed graphs", async () => {
+        it("computes the order for directed graphs", () => {
             const graph = new SimpleDirectedGraph<number>();
             graph.connect(1, 2);
             graph.connect(1, 5);

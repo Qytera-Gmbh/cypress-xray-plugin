@@ -1,5 +1,5 @@
-import { IJiraClient } from "../../../client/jira/jiraClient";
-import { IIssue } from "../../../types/jira/responses/issue";
+import { JiraClient } from "../../../client/jira/jiraClient";
+import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
 import { Computable } from "../../../util/command/command";
 import { extractString } from "../../../util/extraction";
@@ -9,7 +9,7 @@ export class GetSummaryValuesCommand extends GetFieldValuesCommand<string> {
     constructor(
         fieldId: Computable<string>,
         issueKeys: Computable<string[]>,
-        private readonly jiraClient: IJiraClient
+        private readonly jiraClient: JiraClient
     ) {
         super(fieldId, issueKeys);
         this.jiraClient = jiraClient;
@@ -20,7 +20,7 @@ export class GetSummaryValuesCommand extends GetFieldValuesCommand<string> {
         // summary: "Bug 12345"
         return await super.extractJiraFieldValues(
             this.jiraClient,
-            (issue: IIssue, fieldId: string) => extractString(issue.fields, fieldId)
+            (issue: Issue, fieldId: string) => extractString(issue.fields, fieldId)
         );
     }
 }

@@ -20,7 +20,9 @@ describe("graph", () => {
 
         it("detects duplicates", () => {
             graph.place(5);
-            expect(() => graph.place(5)).to.throw("Duplicate vertex detected: 5");
+            expect(() => {
+                graph.place(5);
+            }).to.throw("Duplicate vertex detected: 5");
         });
     });
 
@@ -41,16 +43,16 @@ describe("graph", () => {
         });
 
         it("detects cycles", () => {
-            expect(() => graph.connect(4, 2)).to.throw(
-                "Failed to connect vertices 4 -> 2: cycle detected"
-            );
+            expect(() => {
+                graph.connect(4, 2);
+            }).to.throw("Failed to connect vertices 4 -> 2: cycle detected");
         });
 
         it("detects duplicates", () => {
             graph.connect(0, 8);
-            expect(() => graph.connect(0, 8)).to.throw(
-                "Failed to connect vertices 0 -> 8: duplicate edge detected"
-            );
+            expect(() => {
+                graph.connect(0, 8);
+            }).to.throw("Failed to connect vertices 0 -> 8: duplicate edge detected");
         });
     });
 

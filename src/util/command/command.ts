@@ -58,8 +58,8 @@ export abstract class Command<R> implements Computable<R>, Executable {
         return await this.result;
     }
 
-    public async execute(): Promise<void> {
-        if (this.state === "initial") {
+    public execute(): void {
+        if (this.state === CommandState.INITIAL) {
             this.state = CommandState.PENDING;
             this.executeEmitter.emit("execute");
         }

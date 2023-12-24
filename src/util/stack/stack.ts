@@ -18,7 +18,7 @@ export class Stack<T> {
      *
      * @param element - the element
      */
-    public push(element: T): Stack<T> {
+    public push(element: T): this {
         this.elements.push(element);
         return this;
     }

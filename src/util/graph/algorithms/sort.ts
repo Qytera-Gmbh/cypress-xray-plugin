@@ -13,8 +13,8 @@ import { DirectedEdge, DirectedGraph } from "../graph";
 export function computeTopologicalOrder<V, E extends DirectedEdge<V>>(
     graph: DirectedGraph<V, E>
 ): Map<V, number> {
-    const distances: Map<V, number> = new Map();
-    const queue: Queue<V> = new Queue();
+    const distances = new Map<V, number>();
+    const queue = new Queue<V>();
     for (const vertex of graph.getVertices()) {
         if (!graph.hasIncoming(vertex)) {
             queue.enqueue(vertex);
