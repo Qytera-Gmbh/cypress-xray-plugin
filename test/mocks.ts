@@ -1,35 +1,35 @@
 import { AxiosRequestConfig } from "axios";
 import chai from "chai";
-import Sinon, { SinonStubbedInstance } from "sinon";
+import { SinonStub, SinonStubbedInstance, restore, stub } from "sinon";
 import sinonChai from "sinon-chai";
-import { JWTCredentials } from "../src/authentication/credentials";
-import { IJiraClient } from "../src/client/jira/jiraClient";
-import { IXrayClient } from "../src/client/xray/xrayClient";
-import { IXrayClientCloud } from "../src/client/xray/xrayClientCloud";
+import { JwtCredentials } from "../src/authentication/credentials";
+import { JiraClient } from "../src/client/jira/jiraClient";
+import { XrayClient } from "../src/client/xray/xrayClient";
+import { HasTestTypes, XrayClientCloud } from "../src/client/xray/xrayClientCloud";
 import { AxiosRestClient, REST } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
-import { ILogger } from "../src/logging/logging";
-import { IJiraFieldRepository } from "../src/repository/jira/fields/jiraFieldRepository";
-import { IJiraIssueFetcher, SupportedFields } from "../src/repository/jira/fields/jiraIssueFetcher";
-import { IJiraRepository } from "../src/repository/jira/jiraRepository";
-import { ISearchRequest } from "../src/types/jira/requests/search";
-import { IIssueUpdate } from "../src/types/jira/responses/issueUpdate";
-import { IXrayTestExecutionResults } from "../src/types/xray/importTestExecutionResults";
+import { Logger } from "../src/logging/logging";
+import { JiraFieldRepository } from "../src/repository/jira/fields/jiraFieldRepository";
+import { JiraIssueFetcher, SupportedFields } from "../src/repository/jira/fields/jiraIssueFetcher";
+import { JiraRepository } from "../src/repository/jira/jiraRepository";
+import { SearchRequest } from "../src/types/jira/requests/search";
+import { IssueUpdate } from "../src/types/jira/responses/issueUpdate";
+import { XrayTestExecutionResults } from "../src/types/xray/importTestExecutionResults";
 import { CucumberMultipartFeature } from "../src/types/xray/requests/importExecutionCucumberMultipart";
-import { ICucumberMultipartInfo } from "../src/types/xray/requests/importExecutionCucumberMultipartInfo";
+import { CucumberMultipartInfo } from "../src/types/xray/requests/importExecutionCucumberMultipartInfo";
 import { dedent } from "../src/util/dedent";
 
 chai.use(sinonChai);
 
 beforeEach(() => {
-    Sinon.restore();
+    restore();
 });
 
 export function getMockedLogger(
-    options: { allowUnstubbedCalls?: boolean } = { allowUnstubbedCalls: false }
-): SinonStubbedInstance<ILogger> {
-    const logger = Sinon.stub(logging.LOG);
-    if (!options.allowUnstubbedCalls) {
+    stubbingOptions: { allowUnstubbedCalls?: boolean } = { allowUnstubbedCalls: false }
+): SinonStubbedInstance<Logger> {
+    const logger = stub(logging.LOG);
+    if (!stubbingOptions.allowUnstubbedCalls) {
         logger.configure.callsFake((options: logging.LoggingOptions) => {
             throw mockCalledUnexpectedlyError(options);
         });
@@ -47,8 +47,8 @@ export function getMockedLogger(
 }
 
 export function getMockedRestClient(): SinonStubbedInstance<AxiosRestClient> {
-    const client = Sinon.stub(REST);
-    client.get.callsFake((url: string, config?: AxiosRequestConfig<undefined>) => {
+    const client = stub(REST);
+    client.get.callsFake((url: string, config?: AxiosRequestConfig<unknown>) => {
         throw mockCalledUnexpectedlyError(url, config);
     });
     client.post.callsFake((url: string, data?: unknown, config?: AxiosRequestConfig<unknown>) => {
@@ -60,8 +60,8 @@ export function getMockedRestClient(): SinonStubbedInstance<AxiosRestClient> {
     return client;
 }
 
-export function getMockedJiraClient(): SinonStubbedInstance<IJiraClient> {
-    const client: IJiraClient = {
+export function getMockedJiraClient(): SinonStubbedInstance<JiraClient> {
+    const client: JiraClient = {
         addAttachment: function (issueIdOrKey: string, ...files: string[]) {
             throw mockCalledUnexpectedlyError(issueIdOrKey, files);
         },
@@ -71,27 +71,27 @@ export function getMockedJiraClient(): SinonStubbedInstance<IJiraClient> {
         getFields: function () {
             throw mockCalledUnexpectedlyError();
         },
-        search: function (request: ISearchRequest) {
+        search: function (request: SearchRequest) {
             throw mockCalledUnexpectedlyError(request);
         },
-        editIssue: function (issueIdOrKey: string, issueUpdateData: IIssueUpdate) {
+        editIssue: function (issueIdOrKey: string, issueUpdateData: IssueUpdate) {
             throw mockCalledUnexpectedlyError(issueIdOrKey, issueUpdateData);
         },
     };
-    return makeTransparent(Sinon.stub(client));
+    return makeTransparent(stub(client));
 }
 
 interface XrayClientMap {
-    server: SinonStubbedInstance<IXrayClient>;
-    cloud: SinonStubbedInstance<IXrayClientCloud>;
+    server: SinonStubbedInstance<XrayClient>;
+    cloud: SinonStubbedInstance<XrayClientCloud>;
 }
 export function getMockedXrayClient<T extends keyof XrayClientMap>(kind?: T): XrayClientMap[T];
 export function getMockedXrayClient<T extends keyof XrayClientMap>(
     kind?: T
-): SinonStubbedInstance<IXrayClient> {
+): SinonStubbedInstance<XrayClient> {
     if (kind !== "cloud") {
-        const client: IXrayClient = {
-            importExecution: function (execution: IXrayTestExecutionResults) {
+        const client: XrayClient = {
+            importExecution: function (execution: XrayTestExecutionResults) {
                 throw mockCalledUnexpectedlyError(execution);
             },
             exportCucumber: function (keys?: string[], filter?: number) {
@@ -107,15 +107,15 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             },
             importExecutionCucumberMultipart: function (
                 cucumberJson: CucumberMultipartFeature[],
-                cucumberInfo: ICucumberMultipartInfo
+                cucumberInfo: CucumberMultipartInfo
             ) {
                 throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
             },
         };
-        return makeTransparent(Sinon.stub(client));
+        return makeTransparent(stub(client));
     }
-    const client: IXrayClientCloud = {
-        importExecution: function (execution: IXrayTestExecutionResults) {
+    const client: XrayClient & HasTestTypes = {
+        importExecution: function (execution: XrayTestExecutionResults) {
             throw mockCalledUnexpectedlyError(execution);
         },
         exportCucumber: function (keys?: string[], filter?: number) {
@@ -131,7 +131,7 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
         },
         importExecutionCucumberMultipart: function (
             cucumberJson: CucumberMultipartFeature[],
-            cucumberInfo: ICucumberMultipartInfo
+            cucumberInfo: CucumberMultipartInfo
         ) {
             throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
         },
@@ -139,20 +139,20 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             throw mockCalledUnexpectedlyError(projectKey, issueKeys);
         },
     };
-    return makeTransparent(Sinon.stub(client));
+    return makeTransparent(stub(client));
 }
 
-export function getMockedJiraFieldRepository(): SinonStubbedInstance<IJiraFieldRepository> {
-    const fieldRepository: IJiraFieldRepository = {
+export function getMockedJiraFieldRepository(): SinonStubbedInstance<JiraFieldRepository> {
+    const fieldRepository: JiraFieldRepository = {
         getFieldId: function (fieldName: SupportedFields) {
             throw mockCalledUnexpectedlyError(fieldName);
         },
     };
-    return makeTransparent(Sinon.stub(fieldRepository));
+    return makeTransparent(stub(fieldRepository));
 }
 
-export function getMockedJiraIssueFetcher(): SinonStubbedInstance<IJiraIssueFetcher> {
-    const jiraIssueFetcher: IJiraIssueFetcher = {
+export function getMockedJiraIssueFetcher(): SinonStubbedInstance<JiraIssueFetcher> {
+    const jiraIssueFetcher: JiraIssueFetcher = {
         fetchDescriptions: function (...issueKeys: string[]) {
             throw mockCalledUnexpectedlyError(issueKeys);
         },
@@ -166,11 +166,11 @@ export function getMockedJiraIssueFetcher(): SinonStubbedInstance<IJiraIssueFetc
             throw mockCalledUnexpectedlyError(issueKeys);
         },
     };
-    return makeTransparent(Sinon.stub(jiraIssueFetcher));
+    return makeTransparent(stub(jiraIssueFetcher));
 }
 
-export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository> {
-    const jiraRepository: IJiraRepository = {
+export function getMockedJiraRepository(): SinonStubbedInstance<JiraRepository> {
+    const jiraRepository: JiraRepository = {
         getFieldId: function (fieldName: SupportedFields) {
             throw mockCalledUnexpectedlyError(fieldName);
         },
@@ -187,11 +187,11 @@ export function getMockedJiraRepository(): SinonStubbedInstance<IJiraRepository>
             throw mockCalledUnexpectedlyError(issueKeys);
         },
     };
-    return makeTransparent(Sinon.stub(jiraRepository));
+    return makeTransparent(stub(jiraRepository));
 }
 
-export function getMockedJWTCredentials(): SinonStubbedInstance<JWTCredentials> {
-    return makeTransparent(Sinon.stub(new JWTCredentials("abc", "xyz", "https://example.org")));
+export function getMockedJwtCredentials(): SinonStubbedInstance<JwtCredentials> {
+    return makeTransparent(stub(new JwtCredentials("abc", "xyz", "https://example.org")));
 }
 
 function mockCalledUnexpectedlyError(...args: unknown[]): Error {
@@ -209,16 +209,16 @@ function mockCalledUnexpectedlyError(...args: unknown[]): Error {
 /**
  * Forces stubs to call the real method unless overriden in tests.
  *
- * @param stub - the stub
+ * @param stubbedFunction - the stub
  * @returns the transparent stub
  */
-function makeTransparent<T>(stub: SinonStubbedInstance<T>): SinonStubbedInstance<T> {
-    Object.values(stub).forEach((value: unknown) => {
+function makeTransparent<T>(stubbedFunction: SinonStubbedInstance<T>): SinonStubbedInstance<T> {
+    Object.values(stubbedFunction).forEach((value: unknown) => {
         if (isStubbedFunction(value)) {
             value.callThrough();
         }
     });
-    return stub;
+    return stubbedFunction;
 }
 
 /**
@@ -229,11 +229,11 @@ function makeTransparent<T>(stub: SinonStubbedInstance<T>): SinonStubbedInstance
  *
  * @see https://github.com/sinonjs/sinon/issues/532
  */
-function isStubbedFunction<T extends unknown[], R>(f: unknown): f is Sinon.SinonStub<T, R> {
+function isStubbedFunction<T extends unknown[], R>(f: unknown): f is SinonStub<T, R> {
     if (f === null || typeof f !== "function" || !("restore" in f)) {
         return false;
     }
-    const wrappedMethod = f["restore"];
+    const wrappedMethod = f.restore;
     if (
         wrappedMethod === null ||
         typeof wrappedMethod !== "function" ||
@@ -241,5 +241,5 @@ function isStubbedFunction<T extends unknown[], R>(f: unknown): f is Sinon.Sinon
     ) {
         return false;
     }
-    return wrappedMethod["sinon"] === true;
+    return wrappedMethod.sinon === true;
 }

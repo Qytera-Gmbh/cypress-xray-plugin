@@ -1,17 +1,17 @@
 import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
-import { IJiraRepository } from "../../repository/jira/jiraRepository";
+import { JiraRepository } from "../../repository/jira/jiraRepository";
 import {
     InternalCucumberOptions,
     InternalJiraOptions,
     InternalXrayOptions,
 } from "../../types/plugin";
 import {
+    CucumberMultipart,
     CucumberMultipartFeature,
-    ICucumberMultipart,
 } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { buildMultipartFeatures } from "./multipartFeatureBuilder";
 import {
-    IRunData,
+    RunData,
     TestExecutionIssueData,
     TestExecutionIssueDataServer,
     buildMultipartInfoCloud,
@@ -54,7 +54,7 @@ export class ImportExecutionCucumberMultipartConverter {
     constructor(
         private readonly options: ImportExecutionCucumberMultipartConverterOptions,
         private readonly isCloudConverter: boolean,
-        private readonly jiraRepository: IJiraRepository
+        private readonly jiraRepository: JiraRepository
     ) {}
 
     /**
@@ -67,8 +67,8 @@ export class ImportExecutionCucumberMultipartConverter {
      */
     public async convert(
         input: CucumberMultipartFeature[],
-        runData: IRunData
-    ): Promise<ICucumberMultipart> {
+        runData: RunData
+    ): Promise<CucumberMultipart> {
         const features = buildMultipartFeatures(input, {
             testExecutionIssueKey: this.options.jira.testExecutionIssueKey,
             includeScreenshots: this.options.xray.uploadScreenshots,

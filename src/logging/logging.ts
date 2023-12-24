@@ -15,7 +15,7 @@ export enum Level {
 /**
  * A generic logging interface.
  */
-export interface ILogger {
+export interface Logger {
     /**
      * Logs a log message.
      *
@@ -56,7 +56,7 @@ export interface LoggingOptions {
 /**
  * A Chalk-based logger.
  */
-export class PluginLogger implements ILogger {
+export class PluginLogger implements Logger {
     private readonly prefixes: Record<Level, string>;
     private readonly colorizers: Record<Level, chalk.Chalk>;
     private readonly logFunctions: Record<Level, (...data: unknown[]) => void>;
@@ -128,7 +128,7 @@ export class PluginLogger implements ILogger {
             errorFileName = `${filename}.json`;
             errorData = {
                 error: error.toJSON(),
-                response: error.response?.data,
+                response: error.response?.data as unknown,
             };
         } else if (error instanceof Error) {
             errorFileName = `${filename}.json`;
@@ -156,4 +156,4 @@ export class PluginLogger implements ILogger {
 /**
  * The global logger instance.
  */
-export const LOG: ILogger = new PluginLogger();
+export const LOG: Logger = new PluginLogger();

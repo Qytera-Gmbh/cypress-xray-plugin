@@ -1,12 +1,12 @@
-import { DateTimeISO } from "../../util";
-import { IUser } from "./user";
+import { DateTimeIso } from "../../util";
+import { User } from "./user";
 
 /**
  * An attachment response.
  * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
  * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post*
  */
-export interface IAttachment {
+export interface Attachment {
     /**
      * The URL of the attachment details response.
      */
@@ -18,11 +18,11 @@ export interface IAttachment {
     /**
      * Details of the user who added the attachment.
      */
-    author?: IUser;
+    author?: User;
     /**
      * The datetime the attachment was created.
      */
-    created?: DateTimeISO;
+    created?: DateTimeIso;
     /**
      * The size of the attachment.
      */
@@ -34,9 +34,7 @@ export interface IAttachment {
     /**
      * Extra properties of any type may be provided to this object.
      */
-    properties?: {
-        [k: string]: unknown;
-    };
+    properties?: Record<string, unknown>;
     /**
      * The content of the attachment.
      */
@@ -50,7 +48,7 @@ export interface IAttachment {
  * An attachment response.
  * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
  */
-export interface AttachmentCloud extends IAttachment {
+export interface AttachmentCloud extends Attachment {
     /**
      * The ID of the attachment.
      */

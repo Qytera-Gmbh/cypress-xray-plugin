@@ -1,9 +1,9 @@
 import { AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import Sinon, { SinonStubbedInstance } from "sinon";
-import { getMockedJWTCredentials, getMockedLogger, getMockedRestClient } from "../../test/mocks";
-import { JWTCredentials, PATCredentials } from "../authentication/credentials";
+import { SinonStubbedInstance, useFakeTimers } from "sinon";
+import { getMockedJwtCredentials, getMockedLogger, getMockedRestClient } from "../../test/mocks";
+import { JwtCredentials, PatCredentials } from "../authentication/credentials";
 import { AxiosRestClient } from "../https/requests";
 import { Level } from "../logging/logging";
 import { dedent } from "./dedent";
@@ -20,11 +20,8 @@ describe("Jira instance ping", () => {
 
     it("returns true on success", async () => {
         restClient.get
-            .callsFake((...args: unknown[]) => {
-                throw new Error(`Cannot call GET stub with arguments: ${args}`);
-            })
             .withArgs("https://example.org/rest/api/latest/myself", {
-                headers: { Authorization: "Bearer token" },
+                headers: { ["Authorization"]: "Bearer token" },
             })
             .resolves({
                 status: HttpStatusCode.Ok,
@@ -36,7 +33,7 @@ describe("Jira instance ping", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-        await pingJiraInstance("https://example.org", new PATCredentials("token"));
+        await pingJiraInstance("https://example.org", new PatCredentials("token"));
     });
 
     it("returns false if no license data is returned", async () => {
@@ -48,7 +45,7 @@ describe("Jira instance ping", () => {
             config: { headers: new AxiosHeaders() },
         });
         await expect(
-            pingJiraInstance("https://example.org", new PATCredentials("token"))
+            pingJiraInstance("https://example.org", new PatCredentials("token"))
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Jira: https://example.org
@@ -75,7 +72,7 @@ describe("Jira instance ping", () => {
             config: { headers: new AxiosHeaders() },
         });
         await expect(
-            pingJiraInstance("https://example.org", new PATCredentials("token"))
+            pingJiraInstance("https://example.org", new PatCredentials("token"))
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Jira: https://example.org
@@ -93,13 +90,10 @@ describe("Jira instance ping", () => {
 
     it("logs progress", async () => {
         const logger = getMockedLogger();
-        const clock = Sinon.useFakeTimers();
+        const clock = useFakeTimers();
         restClient.get
-            .callsFake((...args: unknown[]) => {
-                throw new Error(`Cannot call GET stub with arguments: ${args}`);
-            })
             .withArgs("https://example.org/rest/api/latest/myself", {
-                headers: { Authorization: "Bearer token" },
+                headers: { ["Authorization"]: "Bearer token" },
             })
             .resolves({
                 status: HttpStatusCode.Ok,
@@ -126,7 +120,7 @@ describe("Jira instance ping", () => {
             )
             .onFirstCall()
             .returns();
-        const promise = pingJiraInstance("https://example.org", new PATCredentials("token"));
+        const promise = pingJiraInstance("https://example.org", new PatCredentials("token"));
         clock.tick(10000);
         await promise;
     });
@@ -140,11 +134,8 @@ describe("Xray server ping", () => {
     });
     it("returns true on success", async () => {
         restClient.get
-            .callsFake((...args: unknown[]) => {
-                throw new Error(`Cannot call GET stub with arguments: ${args}`);
-            })
             .withArgs("https://example.org/rest/raven/latest/api/xraylicense", {
-                headers: { Authorization: "Bearer token" },
+                headers: { ["Authorization"]: "Bearer token" },
             })
             .resolves({
                 status: HttpStatusCode.Ok,
@@ -156,7 +147,7 @@ describe("Xray server ping", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-        await pingXrayServer("https://example.org", new PATCredentials("token"));
+        await pingXrayServer("https://example.org", new PatCredentials("token"));
     });
 
     it("returns false if no license data is returned", async () => {
@@ -168,7 +159,7 @@ describe("Xray server ping", () => {
             config: { headers: new AxiosHeaders() },
         });
         await expect(
-            pingXrayServer("https://example.org", new PATCredentials("token"))
+            pingXrayServer("https://example.org", new PatCredentials("token"))
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Xray: https://example.org
@@ -197,7 +188,7 @@ describe("Xray server ping", () => {
             config: { headers: new AxiosHeaders() },
         });
         await expect(
-            pingXrayServer("https://example.org", new PATCredentials("token"))
+            pingXrayServer("https://example.org", new PatCredentials("token"))
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Xray: https://example.org
@@ -216,13 +207,10 @@ describe("Xray server ping", () => {
 
     it("logs progress", async () => {
         const logger = getMockedLogger();
-        const clock = Sinon.useFakeTimers();
+        const clock = useFakeTimers();
         restClient.get
-            .callsFake((...args: unknown[]) => {
-                throw new Error(`Cannot call GET stub with arguments: ${args}`);
-            })
             .withArgs("https://example.org/rest/raven/latest/api/xraylicense", {
-                headers: { Authorization: "Bearer token" },
+                headers: { ["Authorization"]: "Bearer token" },
             })
             .resolves({
                 status: HttpStatusCode.Ok,
@@ -252,7 +240,7 @@ describe("Xray server ping", () => {
             )
             .onFirstCall()
             .returns();
-        const promise = pingXrayServer("https://example.org", new PATCredentials("token"));
+        const promise = pingXrayServer("https://example.org", new PatCredentials("token"));
         clock.tick(10000);
         await promise;
     });
@@ -266,12 +254,9 @@ describe("Xray cloud ping", () => {
     });
     it("returns true on success", async () => {
         restClient.post
-            .callsFake((...args: unknown[]) => {
-                throw new Error(`Cannot call POST stub with arguments: ${args}`);
-            })
             .withArgs("https://example.org", {
-                client_id: "user",
-                client_secret: "token",
+                ["client_id"]: "user",
+                ["client_secret"]: "token",
             })
             .resolves({
                 status: HttpStatusCode.Ok,
@@ -280,8 +265,8 @@ describe("Xray cloud ping", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-        const credentials = getMockedJWTCredentials();
-        credentials.getAuthorizationHeader.resolves({ Authorization: "ey12345" });
+        const credentials = getMockedJwtCredentials();
+        credentials.getAuthorizationHeader.resolves({ ["Authorization"]: "ey12345" });
         await pingXrayCloud(credentials);
     });
 
@@ -295,7 +280,7 @@ describe("Xray cloud ping", () => {
             config: { headers: new AxiosHeaders() },
         });
         await expect(
-            pingXrayCloud(new JWTCredentials("id", "secret", "https://example.org"))
+            pingXrayCloud(new JwtCredentials("id", "secret", "https://example.org"))
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Xray: https://example.org

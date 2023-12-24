@@ -1,4 +1,5 @@
 import { StringMap } from "../types/util";
+import { unknownToString } from "./string";
 
 /**
  * Extracts a string property from an object.
@@ -12,7 +13,7 @@ export function extractString(data: unknown, propertyName: string): string {
     verifyIsObjectWithProperty(data, propertyName);
     const value = data[propertyName];
     if (typeof value !== "string") {
-        throw new Error(`Value is not of type string: ${value}`);
+        throw new Error(`Value is not of type string: ${unknownToString(value)}`);
     }
     return value;
 }
@@ -31,7 +32,7 @@ export function extractArrayOfStrings(data: unknown, propertyName: string): stri
     if (!Array.isArray(value) || value.some((element) => typeof element !== "string")) {
         throw new Error(`Value is not an array of type string: ${JSON.stringify(value)}`);
     }
-    return value;
+    return value as string[];
 }
 
 /**

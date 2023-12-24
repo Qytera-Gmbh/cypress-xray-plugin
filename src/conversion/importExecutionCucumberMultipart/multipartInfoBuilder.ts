@@ -1,25 +1,24 @@
-import { IIssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
+import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import {
+    CucumberMultipartInfo,
     CucumberMultipartInfoCloud,
-    ICucumberMultipartInfo,
 } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { dedent } from "../../util/dedent";
 
 /**
  * Interface containing general/minimal Cypress run data.
  */
-export interface IRunData
-    extends Pick<
-        CypressCommandLine.CypressRunResult,
-        "browserName" | "browserVersion" | "cypressVersion" | "startedTestsAt"
-    > {}
+export type RunData = Pick<
+    CypressCommandLine.CypressRunResult,
+    "browserName" | "browserVersion" | "cypressVersion" | "startedTestsAt"
+>;
 
 /**
  * Additional information used by test execution issues when uploading Cucumber results.
  */
 export interface TestExecutionIssueData {
     projectKey: string;
-    issuetype: IIssueTypeDetails;
+    issuetype: IssueTypeDetails;
     summary?: string;
     description?: string;
     testPlan?: {
@@ -54,10 +53,10 @@ export interface TestExecutionIssueDataServer extends TestExecutionIssueData {
  * @returns the Cucumber multipart information data for Xray server
  */
 export function buildMultipartInfoServer(
-    runData: IRunData,
+    runData: RunData,
     testExecutionIssueData: TestExecutionIssueDataServer
-): ICucumberMultipartInfo {
-    const multipartInfo: ICucumberMultipartInfo = {
+): CucumberMultipartInfo {
+    const multipartInfo: CucumberMultipartInfo = {
         fields: {
             project: {
                 key: testExecutionIssueData.projectKey,
@@ -95,7 +94,7 @@ export function buildMultipartInfoServer(
  * @returns the Cucumber multipart information data for Xray cloud
  */
 export function buildMultipartInfoCloud(
-    runData: IRunData,
+    runData: RunData,
     testExecutionIssueData: TestExecutionIssueData
 ): CucumberMultipartInfoCloud {
     return {

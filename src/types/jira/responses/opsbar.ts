@@ -1,8 +1,8 @@
-import { ILinkGroup } from "./linkGroup";
+import { LinkGroup } from "./linkGroup";
 
-export interface IOpsbar {
+export interface Opsbar {
     /**
      * Details of the link groups defining issue operations.
      */
-    linkGroups?: ILinkGroup[];
+    linkGroups?: LinkGroup[];
 }

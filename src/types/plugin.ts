@@ -1,18 +1,18 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
-import { IJiraClient } from "../client/jira/jiraClient";
-import { IXrayClient } from "../client/xray/xrayClient";
-import { IJiraRepository } from "../repository/jira/jiraRepository";
-import { IIssueTypeDetails } from "./jira/responses/issueTypeDetails";
+import { JiraClient } from "../client/jira/jiraClient";
+import { XrayClient } from "../client/xray/xrayClient";
+import { JiraRepository } from "../repository/jira/jiraRepository";
+import { IssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
 export interface Options {
     jira: JiraOptions;
     plugin?: PluginOptions;
     xray?: XrayOptions;
     cucumber?: CucumberOptions;
-    openSSL?: OpenSSLOptions;
+    ["openSSL"]?: OpenSSLOptions;
 }
 
-export type JiraFieldIds = {
+export interface JiraFieldIds {
     /**
      * The Jira issue description field ID.
      */
@@ -47,7 +47,7 @@ export type JiraFieldIds = {
      * retrieve test type field information independently of Jira.*
      */
     testType?: string;
-};
+}
 
 export interface JiraOptions {
     /**
@@ -165,7 +165,7 @@ export type InternalJiraOptions = JiraOptions &
         /**
          * The details of the test execution issue type.
          */
-        testExecutionIssueDetails: IIssueTypeDetails;
+        testExecutionIssueDetails: IssueTypeDetails;
     };
 
 export interface XrayOptions {
@@ -362,6 +362,7 @@ export type InternalPluginOptions = PluginOptions &
         Pick<PluginOptions, "debug" | "enabled" | "logDirectory" | "normalizeScreenshotNames">
     >;
 
+/* eslint-disable @typescript-eslint/naming-convention */
 export interface OpenSSLOptions {
     /**
      * Specify the path to a root CA in .pem format. This will then be used to authenticate against
@@ -389,12 +390,13 @@ export interface OpenSSLOptions {
      */
     secureOptions?: number;
 }
+/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * A more specific OpenSSL options type with optional properties converted to required ones if
  * default/fallback values are used by the plugin.
  */
-export type InternalOpenSSLOptions = OpenSSLOptions;
+export type InternalSslOptions = OpenSSLOptions;
 
 /**
  * Options only intended for internal plugin use.
@@ -404,7 +406,7 @@ export interface InternalOptions {
     plugin: InternalPluginOptions;
     xray: InternalXrayOptions;
     cucumber?: InternalCucumberOptions;
-    openSSL: InternalOpenSSLOptions;
+    ssl: InternalSslOptions;
 }
 
 /**
@@ -412,9 +414,9 @@ export interface InternalOptions {
  */
 export interface ClientCombination {
     kind: "server" | "cloud";
-    jiraClient: IJiraClient;
-    xrayClient: IXrayClient;
-    jiraRepository: IJiraRepository;
+    jiraClient: JiraClient;
+    xrayClient: XrayClient;
+    jiraRepository: JiraRepository;
 }
 
 export interface PluginContext {

@@ -5,8 +5,8 @@ import { getMockedLogger } from "../../../test/mocks";
 import {
     initCucumberOptions,
     initJiraOptions,
-    initOpenSSLOptions,
     initPluginOptions,
+    initSslOptions,
     initXrayOptions,
 } from "../../context";
 import { Level } from "../../logging/logging";
@@ -36,14 +36,14 @@ describe("the test converter", () => {
                 }
             ),
             plugin: initPluginOptions({}, {}),
-            openSSL: initOpenSSLOptions({}, {}),
+            ssl: initSslOptions({}, {}),
         };
     });
 
     it("warns about skipped screenshots", async () => {
         const result: CypressRunResult_V13 = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0_manualScreenshot.json", "utf-8")
-        );
+        ) as CypressRunResult_V13;
         const converter = new TestConverter(options, false);
         const logger = getMockedLogger();
         logger.message
@@ -71,7 +71,7 @@ describe("the test converter", () => {
     it("throws if the run results only contain Cucumber tests <13.0.0", async () => {
         const result: CypressRunResult_V12 = JSON.parse(
             readFileSync("./test/resources/runResultCucumber.json", "utf-8")
-        );
+        ) as CypressRunResult_V12;
         options.cucumber = await initCucumberOptions(
             {
                 testingType: "e2e",
@@ -92,7 +92,7 @@ describe("the test converter", () => {
     it("throws if the run results only contain Cucumber tests =13.0.0", async () => {
         const result: CypressRunResult_V13 = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-        );
+        ) as CypressRunResult_V13;
         options.cucumber = await initCucumberOptions(
             {
                 testingType: "e2e",
@@ -113,7 +113,7 @@ describe("the test converter", () => {
     it("converts server run results for Cypress <13.0.0", async () => {
         const result: CypressRunResult_V12 = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-        );
+        ) as CypressRunResult_V12;
         const converter = new TestConverter(options, false);
         const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
@@ -147,7 +147,7 @@ describe("the test converter", () => {
     it("converts server run results for Cypress =13.0.0", async () => {
         const result: CypressRunResult_V13 = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-        );
+        ) as CypressRunResult_V13;
         const converter = new TestConverter(options, false);
         const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
@@ -193,7 +193,7 @@ describe("the test converter", () => {
     it("converts cloud run results for Cypress <13.0.0", async () => {
         const result: CypressRunResult_V12 = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-        );
+        ) as CypressRunResult_V12;
         const converter = new TestConverter(options, true);
         const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
@@ -227,7 +227,7 @@ describe("the test converter", () => {
     it("converts cloud run results for Cypress =13.0.0", async () => {
         const result: CypressRunResult_V13 = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-        );
+        ) as CypressRunResult_V13;
         const converter = new TestConverter(options, true);
         const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([

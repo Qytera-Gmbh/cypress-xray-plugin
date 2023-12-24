@@ -1,23 +1,23 @@
 import { AxiosResponse } from "axios";
 import FormData from "form-data";
 import fs from "fs";
-import { HttpHeader, IHttpCredentials } from "../../authentication/credentials";
 import { REST } from "../../https/requests";
 import { LOG, Level } from "../../logging/logging";
-import { ISearchRequest } from "../../types/jira/requests/search";
-import { IAttachment } from "../../types/jira/responses/attachment";
-import { IFieldDetail } from "../../types/jira/responses/fieldDetail";
-import { IIssue } from "../../types/jira/responses/issue";
-import { IIssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
-import { IIssueUpdate } from "../../types/jira/responses/issueUpdate";
-import { ISearchResults } from "../../types/jira/responses/searchResults";
+import { SearchRequest } from "../../types/jira/requests/search";
+import { Attachment } from "../../types/jira/responses/attachment";
+import { FieldDetail } from "../../types/jira/responses/fieldDetail";
+import { Issue } from "../../types/jira/responses/issue";
+import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
+import { IssueUpdate } from "../../types/jira/responses/issueUpdate";
+import { SearchResults } from "../../types/jira/responses/searchResults";
 import { dedent } from "../../util/dedent";
+import { errorMessage } from "../../util/errors";
 import { Client } from "../client";
 
 /**
  * All methods a Jira client needs to implement.
  */
-export interface IJiraClient {
+export interface JiraClient {
     /**
      * Adds one or more attachments to an issue. Attachments are posted as multipart/form-data.
      *
@@ -27,7 +27,7 @@ export interface IJiraClient {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
      */
-    addAttachment(issueIdOrKey: string, ...files: string[]): Promise<IAttachment[] | undefined>;
+    addAttachment(issueIdOrKey: string, ...files: string[]): Promise<Attachment[] | undefined>;
     /**
      * Returns all issue types.
      *
@@ -35,7 +35,7 @@ export interface IJiraClient {
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/issuetype-getIssueAllTypes
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-rest-api-3-issuetype-get
      */
-    getIssueTypes(): Promise<IIssueTypeDetails[] | undefined>;
+    getIssueTypes(): Promise<IssueTypeDetails[] | undefined>;
     /**
      * Returns system and custom issue fields according to the following rules:
      * - Fields that cannot be added to the issue navigator are always returned
@@ -50,7 +50,7 @@ export interface IJiraClient {
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/field-getFields
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
      */
-    getFields(): Promise<IFieldDetail[] | undefined>;
+    getFields(): Promise<FieldDetail[] | undefined>;
     /**
      * Searches for issues using JQL. Automatically performs pagination if necessary.
      *
@@ -59,7 +59,7 @@ export interface IJiraClient {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
      */
-    search(request: ISearchRequest): Promise<IIssue[] | undefined>;
+    search(request: SearchRequest): Promise<Issue[] | undefined>;
     /**
      * Edits an issue. A transition may be applied and issue properties updated as part of the edit.
      * The edits to the issue's fields are defined using `update` and `fields`.
@@ -73,27 +73,17 @@ export interface IJiraClient {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-put
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.10.0/#api/2/issue-editIssue
      */
-    editIssue(issueIdOrKey: string, issueUpdateData: IIssueUpdate): Promise<string | undefined>;
+    editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string | undefined>;
 }
 
 /**
  * A Jira client class for communicating with Jira instances.
  */
-export abstract class JiraClient extends Client implements IJiraClient {
-    /**
-     * Construct a new Jira client using the provided credentials.
-     *
-     * @param apiBaseUrl - the Jira base endpoint
-     * @param credentials - the credentials to use during authentication
-     */
-    constructor(apiBaseUrl: string, credentials: IHttpCredentials) {
-        super(apiBaseUrl, credentials);
-    }
-
+export abstract class AbstractJiraClient extends Client implements JiraClient {
     public async addAttachment(
         issueIdOrKey: string,
         ...files: string[]
-    ): Promise<IAttachment[] | undefined> {
+    ): Promise<Attachment[] | undefined> {
         if (files.length === 0) {
             LOG.message(
                 Level.WARNING,
@@ -119,58 +109,45 @@ export abstract class JiraClient extends Client implements IJiraClient {
         }
 
         try {
-            return await this.credentials
-                .getAuthorizationHeader()
-                .then(async (header: HttpHeader) => {
-                    LOG.message(Level.DEBUG, "Attaching files:", ...files);
-                    const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-                    try {
-                        const response: AxiosResponse<IAttachment[]> = await REST.post(
-                            this.getUrlAddAttachment(issueIdOrKey),
-                            form,
-                            {
-                                headers: {
-                                    ...header,
-                                    ...form.getHeaders(),
-                                    "X-Atlassian-Token": "no-check",
-                                },
-                            }
-                        );
-                        LOG.message(
-                            Level.DEBUG,
-                            dedent(`
-                                Successfully attached files to issue: ${issueIdOrKey}
-                                  ${response.data
-                                      .map((attachment) => attachment.filename)
-                                      .join("\n")}
-                            `)
-                        );
-                        return response.data;
-                    } finally {
-                        clearInterval(progressInterval);
+            const header = await this.credentials.getAuthorizationHeader();
+            LOG.message(Level.DEBUG, "Attaching files:", ...files);
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
+            try {
+                const response: AxiosResponse<Attachment[]> = await REST.post(
+                    this.getUrlAddAttachment(issueIdOrKey),
+                    form,
+                    {
+                        headers: {
+                            ...header,
+                            ...form.getHeaders(),
+                            ["X-Atlassian-Token"]: "no-check",
+                        },
                     }
-                });
+                );
+                LOG.message(
+                    Level.DEBUG,
+                    dedent(`
+                        Successfully attached files to issue: ${issueIdOrKey}
+                          ${response.data.map((attachment) => attachment.filename).join("\n")}
+                    `)
+                );
+                return response.data;
+            } finally {
+                clearInterval(progressInterval);
+            }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to attach files: ${error}`);
+            LOG.message(Level.ERROR, `Failed to attach files: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "addAttachmentError");
         }
     }
 
-    /**
-     * Returns the endpoint to use for adding attchments to issues.
-     *
-     * @param issueIdOrKey - the ID or key of the issue that attachments are added to
-     * @returns the URL
-     */
-    public abstract getUrlAddAttachment(issueIdOrKey: string): string;
-
-    public async getIssueTypes(): Promise<IIssueTypeDetails[] | undefined> {
+    public async getIssueTypes(): Promise<IssueTypeDetails[] | undefined> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Getting issue types...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response: AxiosResponse<IIssueTypeDetails[]> = await REST.get(
+                const response: AxiosResponse<IssueTypeDetails[]> = await REST.get(
                     this.getUrlGetIssueTypes(),
                     {
                         headers: {
@@ -196,25 +173,18 @@ export abstract class JiraClient extends Client implements IJiraClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to get issue types: ${error}`);
+            LOG.message(Level.ERROR, `Failed to get issue types: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "getIssueTypesError");
         }
     }
 
-    /**
-     * Returns the endpoint to use for retrieving issue types.
-     *
-     * @returns the URL
-     */
-    public abstract getUrlGetIssueTypes(): string;
-
-    public async getFields(): Promise<IFieldDetail[] | undefined> {
+    public async getFields(): Promise<FieldDetail[] | undefined> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Getting fields...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response: AxiosResponse<IFieldDetail[]> = await REST.get(
+                const response: AxiosResponse<FieldDetail[]> = await REST.get(
                     this.getUrlGetFields(),
                     {
                         headers: {
@@ -240,10 +210,93 @@ export abstract class JiraClient extends Client implements IJiraClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to get fields: ${error}`);
+            LOG.message(Level.ERROR, `Failed to get fields: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "getFieldsError");
         }
     }
+
+    public async search(request: SearchRequest): Promise<Issue[] | undefined> {
+        try {
+            const header = await this.credentials.getAuthorizationHeader();
+            LOG.message(Level.DEBUG, "Searching issues...");
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
+            try {
+                let total = 0;
+                let startAt = request.startAt ?? 0;
+                const results: Issue[] = [];
+                do {
+                    const paginatedRequest = {
+                        ...request,
+                        startAt: startAt,
+                    };
+                    const response: AxiosResponse<SearchResults> = await REST.post(
+                        this.getUrlPostSearch(),
+                        paginatedRequest,
+                        {
+                            headers: {
+                                ...header,
+                            },
+                        }
+                    );
+                    total = response.data.total ?? total;
+                    if (response.data.issues) {
+                        results.push(...response.data.issues);
+                        // Explicit check because it could also be 0.
+                        if (typeof response.data.startAt === "number") {
+                            startAt = response.data.startAt + response.data.issues.length;
+                        }
+                    }
+                } while (startAt && startAt < total);
+                LOG.message(Level.DEBUG, `Found ${total} issues`);
+                return results;
+            } finally {
+                clearInterval(progressInterval);
+            }
+        } catch (error: unknown) {
+            LOG.message(Level.ERROR, `Failed to search issues: ${errorMessage(error)}`);
+            LOG.logErrorToFile(error, "searchError");
+        }
+    }
+
+    public async editIssue(
+        issueIdOrKey: string,
+        issueUpdateData: IssueUpdate
+    ): Promise<string | undefined> {
+        try {
+            const header = await this.credentials.getAuthorizationHeader();
+            LOG.message(Level.DEBUG, "Editing issue...");
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
+            try {
+                await REST.put(this.getUrlEditIssue(issueIdOrKey), issueUpdateData, {
+                    headers: {
+                        ...header,
+                    },
+                });
+                LOG.message(Level.DEBUG, `Successfully edited issue: ${issueIdOrKey}`);
+            } finally {
+                clearInterval(progressInterval);
+            }
+            return issueIdOrKey;
+        } catch (error: unknown) {
+            LOG.message(Level.ERROR, `Failed to edit issue: ${errorMessage(error)}`);
+            LOG.logErrorToFile(error, "editIssue");
+        }
+    }
+
+    /**
+     * Returns the endpoint to use for adding attchments to issues.
+     *
+     * @param issueIdOrKey - the ID or key of the issue that attachments are added to
+     * @returns the URL
+     */
+    public abstract getUrlAddAttachment(issueIdOrKey: string): string;
+
+    /**
+     * Returns the endpoint to use for retrieving issue types.
+     *
+     * @returns the URL
+     */
+    public abstract getUrlGetIssueTypes(): string;
 
     /**
      * Returns the endpoint to use for retrieving fields.
@@ -252,84 +305,12 @@ export abstract class JiraClient extends Client implements IJiraClient {
      */
     public abstract getUrlGetFields(): string;
 
-    public async search(request: ISearchRequest): Promise<IIssue[] | undefined> {
-        try {
-            return await this.credentials
-                .getAuthorizationHeader()
-                .then(async (header: HttpHeader) => {
-                    LOG.message(Level.DEBUG, "Searching issues...");
-                    const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-                    try {
-                        let total = 0;
-                        let startAt = request.startAt ?? 0;
-                        const results: IIssue[] = [];
-                        do {
-                            const paginatedRequest = {
-                                ...request,
-                                startAt: startAt,
-                            };
-                            const response: AxiosResponse<ISearchResults> = await REST.post(
-                                this.getUrlPostSearch(),
-                                paginatedRequest,
-                                {
-                                    headers: {
-                                        ...header,
-                                    },
-                                }
-                            );
-                            total = response.data.total ?? total;
-                            if (response.data.issues) {
-                                results.push(...response.data.issues);
-                                // Explicit check because it could also be 0.
-                                if (typeof response.data.startAt === "number") {
-                                    startAt = response.data.startAt + response.data.issues.length;
-                                }
-                            }
-                        } while (startAt && startAt < total);
-                        LOG.message(Level.DEBUG, `Found ${total} issues`);
-                        return results;
-                    } finally {
-                        clearInterval(progressInterval);
-                    }
-                });
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to search issues: ${error}`);
-            LOG.logErrorToFile(error, "searchError");
-        }
-    }
-
     /**
      * Returns the endpoint to use for searching issues.
      *
      * @returns the endpoint
      */
     public abstract getUrlPostSearch(): string;
-
-    public async editIssue(
-        issueIdOrKey: string,
-        issueUpdateData: IIssueUpdate
-    ): Promise<string | undefined> {
-        try {
-            await this.credentials.getAuthorizationHeader().then(async (header: HttpHeader) => {
-                LOG.message(Level.DEBUG, "Editing issue...");
-                const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-                try {
-                    await REST.put(this.getUrlEditIssue(issueIdOrKey), issueUpdateData, {
-                        headers: {
-                            ...header,
-                        },
-                    });
-                    LOG.message(Level.DEBUG, `Successfully edited issue: ${issueIdOrKey}`);
-                } finally {
-                    clearInterval(progressInterval);
-                }
-            });
-            return issueIdOrKey;
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to edit issue: ${error}`);
-            LOG.logErrorToFile(error, "editIssue");
-        }
-    }
 
     /**
      * Returns the endpoint to use for editing issues.

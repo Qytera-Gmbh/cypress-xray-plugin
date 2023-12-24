@@ -1,7 +1,7 @@
-import { IGroup } from "./group";
+import { Group } from "./group";
 
-export interface ISimpleListWrapper {
+export interface SimpleListWrapper {
     size: number;
-    "max-results"?: number;
-    items?: IGroup[];
+    ["max-results"]?: number;
+    items?: Group[];
 }

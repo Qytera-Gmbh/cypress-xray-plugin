@@ -1,4 +1,4 @@
-import { DateTimeISO } from "../util";
+import { DateTimeIso } from "../util";
 
 /**
  * Taken from:
@@ -9,7 +9,7 @@ import { DateTimeISO } from "../util";
  *
  * Schemes transformed into TypeScript using https://github.com/bcherny/json-schema-to-typescript.
  */
-export interface IXrayTestExecutionResults {
+export interface XrayTestExecutionResults {
     /**
      * The test execution key where to import the execution results.
      */
@@ -21,14 +21,14 @@ export interface IXrayTestExecutionResults {
     /**
      * The test run result details.
      */
-    tests?: [IXrayTest, ...IXrayTest[]];
+    tests?: [XrayTest, ...XrayTest[]];
 }
 
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22info%22object-TestExecutionissue
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22info%22object-TestExecutionissue
  */
-export type XrayTestExecutionInfo = {
+export interface XrayTestExecutionInfo {
     /**
      * The project key where the test execution will be created.
      */
@@ -56,11 +56,11 @@ export type XrayTestExecutionInfo = {
     /**
      * The start date for the test execution issue.
      */
-    startDate?: DateTimeISO;
+    startDate?: DateTimeIso;
     /**
      * The finish date for the test execution issue.
      */
-    finishDate?: DateTimeISO;
+    finishDate?: DateTimeIso;
     /**
      * The test plan key for associating the test execution issue.
      */
@@ -69,9 +69,9 @@ export type XrayTestExecutionInfo = {
      * The test environments for the test execution issue.
      */
     testEnvironments?: string[];
-};
+}
 
-export interface IXrayTest {
+export interface XrayTest {
     /**
      * The test issue key.
      */
@@ -79,15 +79,15 @@ export interface IXrayTest {
     /**
      * The test info element.
      */
-    testInfo?: IXrayTestInfo;
+    testInfo?: XrayTestInfo;
     /**
      * The start date for the test run.
      */
-    start?: DateTimeISO;
+    start?: DateTimeIso;
     /**
      * The finish date for the test run.
      */
-    finish?: DateTimeISO;
+    finish?: DateTimeIso;
     /**
      * The comment for the test run.
      */
@@ -107,7 +107,7 @@ export interface IXrayTest {
     /**
      * The step results.
      */
-    steps?: IXrayManualTestStepResult[];
+    steps?: XrayManualTestStepResult[];
     /**
      * The example results for BDD tests.
      */
@@ -115,7 +115,7 @@ export interface IXrayTest {
     /**
      * The iteration containing data-driven test results.
      */
-    iterations?: IXrayIterationResult[];
+    iterations?: XrayIterationResult[];
     /**
      * An array of defect issue keys to associate with the test run.
      */
@@ -127,20 +127,20 @@ export interface IXrayTest {
     /**
      * An array of custom fields for the test run.
      */
-    customFields?: IXrayCustomField[];
+    customFields?: XrayCustomField[];
 }
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22tests%22object-TestRundetails
  */
-export type XrayTestServer = IXrayTest;
+export type XrayTestServer = XrayTest;
 export type XrayExamplesTypeServer = "TODO" | "FAIL" | "PASS" | "EXECUTING";
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22test%22object-TestRundetails
  */
-export type XrayTestCloud = IXrayTest;
+export type XrayTestCloud = XrayTest;
 export type XrayExamplesTypeCloud = "TODO" | "FAILED" | "PASSED" | "EXECUTING";
 
-export interface IXrayTestInfo {
+export interface XrayTestInfo {
     /**
      * The summary for the test issue.
      */
@@ -186,7 +186,7 @@ export interface IXrayTestInfo {
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22testInfo%22object-CreatingTestissues
  */
-export interface XrayTestInfoServer extends IXrayTestInfo {
+export interface XrayTestInfoServer extends XrayTestInfo {
     /**
      * The description of the test issue.
      */
@@ -203,7 +203,7 @@ export interface XrayTestInfoServer extends IXrayTestInfo {
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22testInfo%22object-CreatingTestissues
  */
-export interface XrayTestInfoCloud extends IXrayTestInfo {
+export interface XrayTestInfoCloud extends XrayTestInfo {
     /**
      * The test type (e.g. Manual, Cucumber, Generic).
      */
@@ -213,17 +213,17 @@ export interface XrayTestInfoCloud extends IXrayTestInfo {
      */
     steps?: {
         /**
-         * The step action.
-         */
-        action: string;
-        /**
          * Any other step custom fields.
          */
         [k: string]: NonNullable<unknown>;
+        /**
+         * The step action.
+         */
+        action: string;
     }[];
 }
 
-export interface IXrayManualTestStepResult {
+export interface XrayManualTestStepResult {
     /**
      * The status for the test step.
      */
@@ -241,7 +241,7 @@ export interface IXrayManualTestStepResult {
      */
     actualResult?: string;
 }
-export interface XrayManualTestStepResultServer extends IXrayManualTestStepResult {
+export interface XrayManualTestStepResultServer extends XrayManualTestStepResult {
     /**
      * An array of evidence items of the test run.
      */
@@ -250,7 +250,7 @@ export interface XrayManualTestStepResultServer extends IXrayManualTestStepResul
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22stepresult%22object-stepresults
  */
-export interface XrayManualTestStepResultCloud extends IXrayManualTestStepResult {
+export interface XrayManualTestStepResultCloud extends XrayManualTestStepResult {
     /**
      * An array of evidence items of the test run.
      */
@@ -276,7 +276,7 @@ export interface XrayEvidenceItem {
     contentType?: string;
 }
 
-export interface IXrayIterationResult {
+export interface XrayIterationResult {
     /**
      * An array of parameters along with their values.
      */
@@ -293,12 +293,12 @@ export interface IXrayIterationResult {
     /**
      * An array of step results (for manual tests).
      */
-    steps?: IXrayManualTestStepResult[];
+    steps?: XrayManualTestStepResult[];
 }
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22iterations%22object-Data-driventestresults
  */
-export interface XrayIterationResultServer extends IXrayIterationResult {
+export interface XrayIterationResultServer extends XrayIterationResult {
     /**
      * An array of parameters along with their values.
      */
@@ -316,7 +316,7 @@ export interface XrayIterationResultServer extends IXrayIterationResult {
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22iteration%22object-Data-driventestresults
  */
-export interface XrayIterationResultCloud extends IXrayIterationResult {
+export interface XrayIterationResultCloud extends XrayIterationResult {
     /**
      * The iteration name.
      */
@@ -346,7 +346,7 @@ export interface XrayIterationResultCloud extends IXrayIterationResult {
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22customFields%22object-storetestruncustomfields
  */
-export interface IXrayCustomField {
+export interface XrayCustomField {
     /**
      * The test run custom field ID.
      */
@@ -359,7 +359,7 @@ export interface IXrayCustomField {
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22customField%22object-storetestruncustomfields
  */
-export interface XrayCustomFieldCloud extends IXrayCustomField {
+export interface XrayCustomFieldCloud extends XrayCustomField {
     /**
      * The test run custom field name.
      */

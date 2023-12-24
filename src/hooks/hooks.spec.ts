@@ -3,19 +3,19 @@ import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { stub } from "sinon";
 import { getMockedLogger } from "../../test/mocks";
-import { PATCredentials } from "../authentication/credentials";
+import { PatCredentials } from "../authentication/credentials";
 import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
 import {
     initCucumberOptions,
     initJiraOptions,
-    initOpenSSLOptions,
     initPluginOptions,
+    initSslOptions,
     initXrayOptions,
 } from "../context";
 import { Level } from "../logging/logging";
 import { CachingJiraFieldRepository } from "../repository/jira/fields/jiraFieldRepository";
-import { JiraIssueFetcher } from "../repository/jira/fields/jiraIssueFetcher";
+import { CachingJiraIssueFetcher } from "../repository/jira/fields/jiraIssueFetcher";
 import { CachingJiraRepository } from "../repository/jira/jiraRepository";
 import { ClientCombination, InternalOptions } from "../types/plugin";
 import { dedent } from "../util/dedent";
@@ -44,12 +44,12 @@ describe("the hooks", () => {
                 }
             ),
             plugin: initPluginOptions({}, {}),
-            openSSL: initOpenSSLOptions({}, {}),
+            ssl: initSslOptions({}, {}),
         };
-        const jiraClient = new JiraClientServer("https://example.org", new PATCredentials("token"));
-        const xrayClient = new XrayClientServer("https://example.org", new PATCredentials("token"));
+        const jiraClient = new JiraClientServer("https://example.org", new PatCredentials("token"));
+        const xrayClient = new XrayClientServer("https://example.org", new PatCredentials("token"));
         const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-        const jiraFieldFetcher = new JiraIssueFetcher(
+        const jiraFieldFetcher = new CachingJiraIssueFetcher(
             jiraClient,
             jiraFieldRepository,
             options.jira.fields
@@ -67,17 +67,21 @@ describe("the hooks", () => {
         let config: Cypress.PluginConfigOptions;
 
         beforeEach(() => {
-            beforeRunDetails = JSON.parse(readFileSync("./test/resources/beforeRun.json", "utf-8"));
-            config = JSON.parse(readFileSync("./test/resources/cypress.config.json", "utf-8"));
-            config.env["jsonEnabled"] = true;
-            config.env["jsonOutput"] = "logs";
+            beforeRunDetails = JSON.parse(
+                readFileSync("./test/resources/beforeRun.json", "utf-8")
+            ) as Required<Cypress.BeforeRunDetails>;
+            config = JSON.parse(
+                readFileSync("./test/resources/cypress.config.json", "utf-8")
+            ) as Cypress.PluginConfigOptions;
+            config.env.jsonEnabled = true;
+            config.env.jsonOutput = "logs";
         });
 
         it("should fetch xray issue type information to prepare for cucumber results upload", async () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-            );
+            ) as Required<Cypress.BeforeRunDetails>;
             options.jira.testPlanIssueKey = "CYP-456";
             options.cucumber = await initCucumberOptions(
                 {
@@ -113,7 +117,9 @@ describe("the hooks", () => {
 
         it("should not fetch xray issue type information for native results upload", async () => {
             const logger = getMockedLogger();
-            beforeRunDetails = JSON.parse(readFileSync("./test/resources/beforeRun.json", "utf-8"));
+            beforeRunDetails = JSON.parse(
+                readFileSync("./test/resources/beforeRun.json", "utf-8")
+            ) as Required<Cypress.BeforeRunDetails>;
             await beforeRunHook(beforeRunDetails.specs, options, clients);
             expect(logger.message).to.not.have.been.called;
         });
@@ -122,7 +128,7 @@ describe("the hooks", () => {
             getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-            );
+            ) as Required<Cypress.BeforeRunDetails>;
             options.jira.testExecutionIssueType = "Execution Issue";
             stub(clients.jiraClient, "getIssueTypes").resolves([
                 {
@@ -161,7 +167,7 @@ describe("the hooks", () => {
             getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-            );
+            ) as Required<Cypress.BeforeRunDetails>;
             options.cucumber = await initCucumberOptions(
                 {
                     testingType: "e2e",
@@ -205,7 +211,7 @@ describe("the hooks", () => {
             getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-            );
+            ) as Required<Cypress.BeforeRunDetails>;
             stub(clients.jiraClient, "getIssueTypes").resolves(undefined);
             options.cucumber = await initCucumberOptions(
                 {

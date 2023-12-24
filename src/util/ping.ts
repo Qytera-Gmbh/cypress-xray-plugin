@@ -1,11 +1,13 @@
+import { AxiosResponse } from "axios";
 import {
     BasicAuthCredentials,
-    JWTCredentials,
-    PATCredentials,
+    JwtCredentials,
+    PatCredentials,
 } from "../authentication/credentials";
 import { REST } from "../https/requests";
 import { LOG, Level } from "../logging/logging";
-import { IUser } from "../types/jira/responses/user";
+import { User } from "../types/jira/responses/user";
+import { XrayLicenseStatus } from "../types/xray/responses/license";
 import { dedent } from "./dedent";
 import { errorMessage } from "./errors";
 import { HELP } from "./help";
@@ -23,15 +25,15 @@ import { startInterval } from "./time";
  */
 export async function pingJiraInstance(
     url: string,
-    credentials: BasicAuthCredentials | PATCredentials
+    credentials: BasicAuthCredentials | PatCredentials
 ): Promise<void> {
     LOG.message(Level.DEBUG, "Pinging Jira instance...");
     const progressInterval = startInterval((totalTime: number) => {
         LOG.message(Level.INFO, `Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
     });
     try {
-        const header = await credentials.getAuthorizationHeader();
-        const userResponse = await REST.get(`${url}/rest/api/latest/myself`, {
+        const header = credentials.getAuthorizationHeader();
+        const userResponse: AxiosResponse<User> = await REST.get(`${url}/rest/api/latest/myself`, {
             headers: {
                 ...header,
             },
@@ -73,7 +75,7 @@ export async function pingJiraInstance(
     }
 }
 
-function getUserString(user: IUser): string | undefined {
+function getUserString(user: User): string | undefined {
     return user.displayName ?? user.emailAddress ?? user.name;
 }
 
@@ -88,19 +90,22 @@ function getUserString(user: IUser): string | undefined {
  */
 export async function pingXrayServer(
     url: string,
-    credentials: BasicAuthCredentials | PATCredentials
+    credentials: BasicAuthCredentials | PatCredentials
 ): Promise<void> {
     LOG.message(Level.DEBUG, "Pinging Xray server instance...");
     const progressInterval = startInterval((totalTime: number) => {
         LOG.message(Level.INFO, `Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
     });
     try {
-        const header = await credentials.getAuthorizationHeader();
-        const licenseResponse = await REST.get(`${url}/rest/raven/latest/api/xraylicense`, {
-            headers: {
-                ...header,
-            },
-        });
+        const header = credentials.getAuthorizationHeader();
+        const licenseResponse: AxiosResponse<XrayLicenseStatus> = await REST.get(
+            `${url}/rest/raven/latest/api/xraylicense`,
+            {
+                headers: {
+                    ...header,
+                },
+            }
+        );
         if (typeof licenseResponse.data === "object" && "active" in licenseResponse.data) {
             if (licenseResponse.data.active) {
                 LOG.message(
@@ -151,7 +156,7 @@ export async function pingXrayServer(
  * @param credentials - Xray cloud credentials
  * @see https://docs.getxray.app/display/XRAYCLOUD/Authentication+-+REST+v2
  */
-export async function pingXrayCloud(credentials: JWTCredentials): Promise<void> {
+export async function pingXrayCloud(credentials: JwtCredentials): Promise<void> {
     LOG.message(Level.DEBUG, "Pinging Xray cloud...");
     try {
         await credentials.getAuthorizationHeader();

@@ -16,7 +16,7 @@ describe("toCypressStatus", () => {
         expect(toCypressStatus("skipped")).to.eq(Status.SKIPPED);
     });
     it("throws for unknown statuses", () => {
-        expect(() => toCypressStatus(JSON.parse("5"))).to.throw("Unknown Cypress test status: 5");
+        expect(() => toCypressStatus("5")).to.throw("Unknown Cypress test status: 5");
     });
 });
 
@@ -76,8 +76,5 @@ describe("getXrayStatus", () => {
                 skipped: "SKIP",
             })
         ).to.eq("SKIP");
-    });
-    it("throws for unknown statuses", () => {
-        expect(() => getXrayStatus(JSON.parse("5"), false)).to.throw("Unknown status: 5");
     });
 });

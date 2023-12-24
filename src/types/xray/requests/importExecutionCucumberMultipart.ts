@@ -1,4 +1,4 @@
-import { ICucumberMultipartInfo } from "./importExecutionCucumberMultipartInfo";
+import { CucumberMultipartInfo } from "./importExecutionCucumberMultipartInfo";
 
 /*
  * There unfortunately is no official Cucumber JSON report scheme available anywhere, as stated
@@ -10,9 +10,9 @@ import { ICucumberMultipartInfo } from "./importExecutionCucumberMultipartInfo";
  * - https://github.com/cucumber/cucumber-json-converter/blob/main/src/CucumberJson.ts
  */
 
-export interface ICucumberMultipart {
+export interface CucumberMultipart {
     features: CucumberMultipartFeature[];
-    info: ICucumberMultipartInfo;
+    info: CucumberMultipartInfo;
 }
 export interface CucumberMultipartFeature {
     description: string;
@@ -37,7 +37,7 @@ export interface CucumberMultipartElement {
     tags?: CucumberMultipartTag[];
 }
 export interface CucumberMultipartStep {
-    doc_string?: CucumberMultipartDocString;
+    ["doc_string"]?: CucumberMultipartDocString;
     embeddings?: CucumberMultipartEmbedding[];
     keyword: string;
     line: number;
@@ -48,7 +48,7 @@ export interface CucumberMultipartStep {
     rows?: CucumberMultipartDataTableRow[];
 }
 export interface CucumberMultipartDocString {
-    content_type: string;
+    ["content_type"]: string;
     line: number;
     value: string;
 }
@@ -58,7 +58,7 @@ export interface CucumberMultipartDataTableRow {
 export interface CucumberMultipartStepResult {
     duration?: number;
     status: "passed" | "failed" | "skipped" | "undefined" | "pending" | "unknown";
-    error_message?: string;
+    ["error_message"]?: string;
 }
 export interface CucumberMultipartMatch {
     location: string;
@@ -78,5 +78,5 @@ export interface CucumberMultipartArgument {
 }
 export interface CucumberMultipartEmbedding {
     data: string;
-    mime_type: string;
+    ["mime_type"]: string;
 }

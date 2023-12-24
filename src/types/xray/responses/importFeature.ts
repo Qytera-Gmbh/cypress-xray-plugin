@@ -21,8 +21,8 @@ export type ImportFeatureResponseServerSuccess = (IssueDetails & {
  * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
  */
 export interface ImportFeatureResponseServerFailure {
-    testIssues: IssueDetails[];
-    preconditionIssues: IssueDetails[];
+    testIssues?: IssueDetails[];
+    preconditionIssues?: IssueDetails[];
     message: string;
 }
 export type ImportFeatureResponseServer =

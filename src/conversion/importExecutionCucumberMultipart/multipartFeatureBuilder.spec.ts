@@ -8,13 +8,13 @@ import { dedent } from "../../util/dedent";
 import { buildMultipartFeatures } from "./multipartFeatureBuilder";
 
 describe("buildMultipartFeatures", () => {
-    it("includes all tagged features and tests", async () => {
+    it("includes all tagged features and tests", () => {
         const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
             readFileSync(
                 "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                 "utf-8"
             )
-        );
+        ) as CucumberMultipartFeature[];
         const features = buildMultipartFeatures(cucumberReport, {
             projectKey: "CYP",
             useCloudTags: true,
@@ -25,13 +25,13 @@ describe("buildMultipartFeatures", () => {
         expect(features[1].elements).to.be.an("array").with.length(1);
     });
 
-    it("uses the configured test execution issue key", async () => {
+    it("uses the configured test execution issue key", () => {
         const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
             readFileSync(
                 "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                 "utf-8"
             )
-        );
+        ) as CucumberMultipartFeature[];
         const features = buildMultipartFeatures(cucumberReport, {
             testExecutionIssueKey: "CYP-456",
             projectKey: "CYP",
@@ -42,13 +42,13 @@ describe("buildMultipartFeatures", () => {
         expect(features[1].tags).to.deep.eq([{ name: "@CYP-456" }]);
     });
 
-    it("includes screenshots if enabled", async () => {
+    it("includes screenshots if enabled", () => {
         const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
             readFileSync(
                 "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                 "utf-8"
             )
-        );
+        ) as CucumberMultipartFeature[];
         const features = buildMultipartFeatures(cucumberReport, {
             includeScreenshots: true,
             projectKey: "CYP",
@@ -61,13 +61,13 @@ describe("buildMultipartFeatures", () => {
         expect(features[0].elements[2].steps[1].embeddings[0].mime_type).to.eq("image/png");
     });
 
-    it("skips embeddings if screenshots are disabled", async () => {
+    it("skips embeddings if screenshots are disabled", () => {
         const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
             readFileSync(
                 "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                 "utf-8"
             )
-        );
+        ) as CucumberMultipartFeature[];
         const features = buildMultipartFeatures(cucumberReport, {
             includeScreenshots: false,
             projectKey: "CYP",
@@ -82,14 +82,14 @@ describe("buildMultipartFeatures", () => {
         expect(features[0].elements[2].steps[1].embeddings).to.be.empty;
     });
 
-    it("skips untagged scenarios", async () => {
+    it("skips untagged scenarios", () => {
         const logger = getMockedLogger();
         const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
             readFileSync(
                 "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartUntagged.json",
                 "utf-8"
             )
-        );
+        ) as CucumberMultipartFeature[];
         logger.message
             .withArgs(
                 Level.WARNING,
@@ -140,14 +140,14 @@ describe("buildMultipartFeatures", () => {
         expect(features).to.have.length(0);
     });
 
-    it("skips scenarios with multiple tags", async () => {
+    it("skips scenarios with multiple tags", () => {
         const logger = getMockedLogger();
         const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
             readFileSync(
                 "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartMultipleTags.json",
                 "utf-8"
             )
-        );
+        ) as CucumberMultipartFeature[];
         logger.message
             .withArgs(
                 Level.WARNING,

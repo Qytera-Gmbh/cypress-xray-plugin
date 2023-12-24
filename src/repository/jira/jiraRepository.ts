@@ -2,14 +2,14 @@ import { LOG, Level } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
-import { IJiraFieldRepository } from "./fields/jiraFieldRepository";
-import { IJiraIssueFetcher, SupportedFields } from "./fields/jiraIssueFetcher";
+import { JiraFieldRepository } from "./fields/jiraFieldRepository";
+import { JiraIssueFetcher, SupportedFields } from "./fields/jiraIssueFetcher";
 
 /**
  * An interface describing a Jira repository, which provides methods for retrieving issue data such
  * as summaries, descriptions, labels or test types.
  */
-export interface IJiraRepository {
+export interface JiraRepository {
     /**
      * Retrieve the internal Jira ID of a field.
      *
@@ -54,7 +54,7 @@ export interface IJiraRepository {
  * A Jira repository which caches retrieved data. Caching means that live issue information is only
  * retrieved for the first request. All subsequent accesses will then return the cached value.
  */
-export class CachingJiraRepository implements IJiraRepository {
+export class CachingJiraRepository implements JiraRepository {
     private readonly summaries: StringMap<string> = {};
     private readonly descriptions: StringMap<string> = {};
     private readonly testTypes: StringMap<string> = {};
@@ -68,8 +68,8 @@ export class CachingJiraRepository implements IJiraRepository {
      * @param jiraIssueFetcher - the Jira issue fetcher
      */
     constructor(
-        protected readonly jiraFieldRepository: IJiraFieldRepository,
-        protected readonly jiraIssueFetcher: IJiraIssueFetcher
+        protected readonly jiraFieldRepository: JiraFieldRepository,
+        protected readonly jiraIssueFetcher: JiraIssueFetcher
     ) {}
 
     public async getFieldId(fieldName: SupportedFields): Promise<string> {

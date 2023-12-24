@@ -1,4 +1,4 @@
-export type IGroup = {
+export interface Group {
     name?: string;
     self?: string;
-};
+}

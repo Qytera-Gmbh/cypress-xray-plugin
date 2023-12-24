@@ -1,3 +1,4 @@
+import { AxiosResponse } from "axios";
 import { REST } from "../https/requests";
 import { LOG, Level } from "../logging/logging";
 import { StringMap } from "../types/util";
@@ -20,20 +21,20 @@ export type HttpHeader = StringMap<string>;
  * The interface which all credential classes must implement. All credentials must be usable in an
  * HTTP authorization request header.
  */
-export interface IHttpCredentials {
+export interface HttpCredentials {
     /**
      * Returns the HTTP authorization header value of the credentials.
      *
      * @returns the HTTP header value
      */
-    getAuthorizationHeader(): Promise<HttpHeader>;
+    getAuthorizationHeader(): HttpHeader | Promise<HttpHeader>;
 }
 
 /**
  * A basic authorization credentials class, storing base64 encoded credentials of usernames and
  * passwords.
  */
-export class BasicAuthCredentials implements IHttpCredentials {
+export class BasicAuthCredentials implements HttpCredentials {
     private readonly encodedCredentials: string;
     /**
      * Constructs new basic authorization credentials.
@@ -46,9 +47,9 @@ export class BasicAuthCredentials implements IHttpCredentials {
         this.encodedCredentials = encode(`${username}:${password}`);
     }
 
-    public async getAuthorizationHeader(): Promise<HttpHeader> {
+    public getAuthorizationHeader(): HttpHeader {
         return {
-            Authorization: `Basic ${this.encodedCredentials}`,
+            ["Authorization"]: `Basic ${this.encodedCredentials}`,
         };
     }
 }
@@ -57,7 +58,7 @@ export class BasicAuthCredentials implements IHttpCredentials {
  * A personal access token (_PAT_) credentials class, storing a secret token to use during HTTP
  * authorization.
  */
-export class PATCredentials implements IHttpCredentials {
+export class PatCredentials implements HttpCredentials {
     /**
      * Constructs new PAT credentials from the provided token.
      *
@@ -65,9 +66,9 @@ export class PATCredentials implements IHttpCredentials {
      */
     constructor(private readonly token: string) {}
 
-    public async getAuthorizationHeader(): Promise<HttpHeader> {
+    public getAuthorizationHeader(): HttpHeader {
         return {
-            Authorization: `Bearer ${this.token}`,
+            ["Authorization"]: `Bearer ${this.token}`,
         };
     }
 }
@@ -77,7 +78,7 @@ export class PATCredentials implements IHttpCredentials {
  * designed to retrieve fresh JWT tokens from an authentication URL/endpoint. Once retrieved, the
  * token will be stored and reused whenever necessary.
  */
-export class JWTCredentials implements IHttpCredentials {
+export class JwtCredentials implements HttpCredentials {
     private token?: string;
 
     /**
@@ -105,6 +106,12 @@ export class JWTCredentials implements IHttpCredentials {
         return this.authenticationUrl;
     }
 
+    public async getAuthorizationHeader(): Promise<HttpHeader> {
+        return {
+            ["Authorization"]: `Bearer ${await this.getToken()}`,
+        };
+    }
+
     private async getToken(): Promise<string> {
         if (!this.token) {
             try {
@@ -118,10 +125,13 @@ export class JWTCredentials implements IHttpCredentials {
                 });
                 try {
                     LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
-                    const tokenResponse = await REST.post(this.authenticationUrl, {
-                        client_id: this.clientId,
-                        client_secret: this.clientSecret,
-                    });
+                    const tokenResponse: AxiosResponse<string> = await REST.post(
+                        this.authenticationUrl,
+                        {
+                            ["client_id"]: this.clientId,
+                            ["client_secret"]: this.clientSecret,
+                        }
+                    );
                     // A JWT token is expected: https://stackoverflow.com/a/74325712
                     const jwtRegex = /^[A-Za-z0-9_-]{2,}(?:\.[A-Za-z0-9_-]{2,}){2}$/;
                     if (jwtRegex.test(tokenResponse.data)) {
@@ -149,11 +159,5 @@ export class JWTCredentials implements IHttpCredentials {
             }
         }
         return this.token;
-    }
-
-    public async getAuthorizationHeader(): Promise<HttpHeader> {
-        return {
-            Authorization: `Bearer ${await this.getToken()}`,
-        };
     }
 }

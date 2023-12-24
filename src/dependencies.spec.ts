@@ -7,9 +7,9 @@ chai.use(chaiAsPromised);
 
 describe("the optional dependency import", () => {
     it("throws if a package is not installed 2", async () => {
-        await expect(dependencies.importModule("nonexistent")).to.eventually.be.rejectedWith(
-            /Cannot find module 'nonexistent'/
-        );
+        await expect(
+            dependencies.importOptionalDependency("nonexistent")
+        ).to.eventually.be.rejectedWith(/Cannot find module 'nonexistent'/);
     });
 
     it("returns imported packages", async () => {

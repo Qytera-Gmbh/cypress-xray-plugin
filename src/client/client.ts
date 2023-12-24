@@ -1,4 +1,4 @@
-import { IHttpCredentials } from "../authentication/credentials";
+import { HttpCredentials } from "../authentication/credentials";
 import { LOG, Level } from "../logging/logging";
 import { startInterval } from "../util/time";
 
@@ -13,7 +13,7 @@ export abstract class Client {
     /**
      * The credentials to use for authentication.
      */
-    protected readonly credentials: IHttpCredentials;
+    protected readonly credentials: HttpCredentials;
 
     /**
      * Construct a new client using the provided credentials.
@@ -21,7 +21,7 @@ export abstract class Client {
      * @param apiBaseUrl - the base URL for all HTTP requests
      * @param credentials - the credentials to use during authentication
      */
-    constructor(apiBaseUrl: string, credentials: IHttpCredentials) {
+    constructor(apiBaseUrl: string, credentials: HttpCredentials) {
         this.apiBaseUrl = apiBaseUrl;
         this.credentials = credentials;
     }
@@ -31,7 +31,7 @@ export abstract class Client {
      *
      * @returns the credentials
      */
-    public getCredentials(): IHttpCredentials {
+    public getCredentials(): HttpCredentials {
         return this.credentials;
     }
 

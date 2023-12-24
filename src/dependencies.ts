@@ -21,7 +21,7 @@ export interface CucumberPreprocessorExports {
  * @returns the dependency
  */
 export async function importOptionalDependency<T>(packageName: string): Promise<T> {
-    const dependency: T = await importModule(packageName);
+    const dependency: T = await IMPORT(packageName);
     LOG.message(Level.DEBUG, `Successfully imported optional dependency: ${packageName}`);
     return dependency;
 }
@@ -36,6 +36,6 @@ export async function importOptionalDependency<T>(packageName: string): Promise<
  * @param packageName - the name of the package to import
  * @returns the package
  */
-export const importModule = async <T>(packageName: string): Promise<T> => {
-    return await import(packageName);
+export const IMPORT = async <T>(packageName: string): Promise<T> => {
+    return (await import(packageName)) as T;
 };

@@ -1,6 +1,6 @@
-import { IChangeHistory } from "./changeHistory";
+import { ChangeHistory } from "./changeHistory";
 
-export interface IChangelog {
+export interface Changelog {
     /**
      * The index of the first item returned on the page.
      */
@@ -16,5 +16,5 @@ export interface IChangelog {
     /**
      * The list of changelogs.
      */
-    histories?: IChangeHistory[];
+    histories?: ChangeHistory[];
 }

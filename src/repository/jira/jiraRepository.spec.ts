@@ -7,14 +7,14 @@ import {
 } from "../../../test/mocks";
 import { Level } from "../../logging/logging";
 import { dedent } from "../../util/dedent";
-import { IJiraFieldRepository } from "./fields/jiraFieldRepository";
-import { IJiraIssueFetcher } from "./fields/jiraIssueFetcher";
-import { CachingJiraRepository, IJiraRepository } from "./jiraRepository";
+import { JiraFieldRepository } from "./fields/jiraFieldRepository";
+import { JiraIssueFetcher } from "./fields/jiraIssueFetcher";
+import { CachingJiraRepository, JiraRepository } from "./jiraRepository";
 
 describe("the cloud issue repository", () => {
-    let jiraFieldRepository: SinonStubbedInstance<IJiraFieldRepository>;
-    let jiraIssueFetcher: SinonStubbedInstance<IJiraIssueFetcher>;
-    let repository: IJiraRepository;
+    let jiraFieldRepository: SinonStubbedInstance<JiraFieldRepository>;
+    let jiraIssueFetcher: SinonStubbedInstance<JiraIssueFetcher>;
+    let repository: JiraRepository;
 
     beforeEach(() => {
         jiraFieldRepository = getMockedJiraFieldRepository();
@@ -27,32 +27,32 @@ describe("the cloud issue repository", () => {
             jiraIssueFetcher.fetchSummaries
                 .withArgs(...["CYP-123", "CYP-456", "CYP-789"])
                 .resolves({
-                    "CYP-123": "Hello",
-                    "CYP-456": "Good Morning",
-                    "CYP-789": "Goodbye",
+                    ["CYP-123"]: "Hello",
+                    ["CYP-456"]: "Good Morning",
+                    ["CYP-789"]: "Goodbye",
                 });
             const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
             expect(summaries).to.deep.eq({
-                "CYP-123": "Hello",
-                "CYP-456": "Good Morning",
-                "CYP-789": "Goodbye",
+                ["CYP-123"]: "Hello",
+                ["CYP-456"]: "Good Morning",
+                ["CYP-789"]: "Goodbye",
             });
         });
 
         it("fetches summaries only for unknown issues", async () => {
             jiraIssueFetcher.fetchSummaries.withArgs(...["CYP-123", "CYP-789"]).resolves({
-                "CYP-123": "Hello",
-                "CYP-789": "Goodbye",
+                ["CYP-123"]: "Hello",
+                ["CYP-789"]: "Goodbye",
             });
             jiraIssueFetcher.fetchSummaries.withArgs(...["CYP-456"]).resolves({
-                "CYP-456": "Good Morning",
+                ["CYP-456"]: "Good Morning",
             });
             await repository.getSummaries("CYP-123", "CYP-789");
             const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
             expect(summaries).to.deep.eq({
-                "CYP-123": "Hello",
-                "CYP-456": "Good Morning",
-                "CYP-789": "Goodbye",
+                ["CYP-123"]: "Hello",
+                ["CYP-456"]: "Good Morning",
+                ["CYP-789"]: "Goodbye",
             });
             // Everything's fetched already, should not fetch anything again.
             await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
@@ -62,7 +62,7 @@ describe("the cloud issue repository", () => {
             jiraIssueFetcher.fetchSummaries
                 .withArgs(...["CYP-123", "CYP-456", "CYP-789"])
                 .resolves({
-                    "CYP-123": "Hello",
+                    ["CYP-123"]: "Hello",
                 });
             const logger = getMockedLogger();
             logger.message
@@ -79,7 +79,7 @@ describe("the cloud issue repository", () => {
                 .returns();
             const summaries = await repository.getSummaries("CYP-123", "CYP-456", "CYP-789");
             expect(summaries).to.deep.eq({
-                "CYP-123": "Hello",
+                ["CYP-123"]: "Hello",
             });
         });
 
@@ -106,32 +106,32 @@ describe("the cloud issue repository", () => {
             jiraIssueFetcher.fetchDescriptions
                 .withArgs(...["CYP-123", "CYP-456", "CYP-789"])
                 .resolves({
-                    "CYP-123": "Very informative",
-                    "CYP-456": "Even more informative",
-                    "CYP-789": "Not that informative",
+                    ["CYP-123"]: "Very informative",
+                    ["CYP-456"]: "Even more informative",
+                    ["CYP-789"]: "Not that informative",
                 });
             const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
             expect(descriptions).to.deep.eq({
-                "CYP-123": "Very informative",
-                "CYP-456": "Even more informative",
-                "CYP-789": "Not that informative",
+                ["CYP-123"]: "Very informative",
+                ["CYP-456"]: "Even more informative",
+                ["CYP-789"]: "Not that informative",
             });
         });
 
         it("fetches descriptions only for unknown issues", async () => {
             jiraIssueFetcher.fetchDescriptions.withArgs(...["CYP-123", "CYP-789"]).resolves({
-                "CYP-123": "Very informative",
-                "CYP-789": "Not that informative",
+                ["CYP-123"]: "Very informative",
+                ["CYP-789"]: "Not that informative",
             });
             jiraIssueFetcher.fetchDescriptions.withArgs(...["CYP-456"]).resolves({
-                "CYP-456": "Even more informative",
+                ["CYP-456"]: "Even more informative",
             });
             await repository.getDescriptions("CYP-123", "CYP-789");
             const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
             expect(descriptions).to.deep.eq({
-                "CYP-123": "Very informative",
-                "CYP-456": "Even more informative",
-                "CYP-789": "Not that informative",
+                ["CYP-123"]: "Very informative",
+                ["CYP-456"]: "Even more informative",
+                ["CYP-789"]: "Not that informative",
             });
             // Everything's fetched already, should not fetch anything again.
             await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
@@ -139,7 +139,7 @@ describe("the cloud issue repository", () => {
 
         it("displays an error for issues which do not exist", async () => {
             jiraIssueFetcher.fetchDescriptions.resolves({
-                "CYP-123": "I am a description",
+                ["CYP-123"]: "I am a description",
             });
             const logger = getMockedLogger();
             logger.message
@@ -156,7 +156,7 @@ describe("the cloud issue repository", () => {
                 .returns();
             const descriptions = await repository.getDescriptions("CYP-123", "CYP-456", "CYP-789");
             expect(descriptions).to.deep.eq({
-                "CYP-123": "I am a description",
+                ["CYP-123"]: "I am a description",
             });
         });
 
@@ -180,32 +180,32 @@ describe("the cloud issue repository", () => {
     describe("getTestTypes", () => {
         it("fetches test types", async () => {
             jiraIssueFetcher.fetchTestTypes.resolves({
-                "CYP-123": "Cucumber",
-                "CYP-456": "Generic",
-                "CYP-789": "Manual",
+                ["CYP-123"]: "Cucumber",
+                ["CYP-456"]: "Generic",
+                ["CYP-789"]: "Manual",
             });
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(testTypes).to.deep.eq({
-                "CYP-123": "Cucumber",
-                "CYP-456": "Generic",
-                "CYP-789": "Manual",
+                ["CYP-123"]: "Cucumber",
+                ["CYP-456"]: "Generic",
+                ["CYP-789"]: "Manual",
             });
         });
 
         it("fetches test types only for unknown issues", async () => {
             jiraIssueFetcher.fetchTestTypes.withArgs(...["CYP-123", "CYP-789"]).resolves({
-                "CYP-123": "Cucumber",
-                "CYP-789": "Manual",
+                ["CYP-123"]: "Cucumber",
+                ["CYP-789"]: "Manual",
             });
             jiraIssueFetcher.fetchTestTypes.withArgs(...["CYP-456"]).resolves({
-                "CYP-456": "Generic",
+                ["CYP-456"]: "Generic",
             });
             await repository.getTestTypes("CYP-123", "CYP-789");
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(testTypes).to.deep.eq({
-                "CYP-123": "Cucumber",
-                "CYP-456": "Generic",
-                "CYP-789": "Manual",
+                ["CYP-123"]: "Cucumber",
+                ["CYP-456"]: "Generic",
+                ["CYP-789"]: "Manual",
             });
             // Everything's fetched already, should not fetch anything again.
             await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
@@ -215,7 +215,7 @@ describe("the cloud issue repository", () => {
             jiraIssueFetcher.fetchTestTypes
                 .withArgs(...["CYP-123", "CYP-456", "CYP-789"])
                 .resolves({
-                    "CYP-123": "Cucumber",
+                    ["CYP-123"]: "Cucumber",
                 });
             const logger = getMockedLogger();
             logger.message
@@ -232,7 +232,7 @@ describe("the cloud issue repository", () => {
                 .returns();
             const testTypes = await repository.getTestTypes("CYP-123", "CYP-456", "CYP-789");
 
-            expect(testTypes).to.deep.eq({ "CYP-123": "Cucumber" });
+            expect(testTypes).to.deep.eq({ ["CYP-123"]: "Cucumber" });
         });
 
         it("handles failed test type requests gracefully", async () => {
@@ -256,32 +256,32 @@ describe("the cloud issue repository", () => {
     describe("getLabels", () => {
         it("fetches labels", async () => {
             jiraIssueFetcher.fetchLabels.withArgs("CYP-123", "CYP-456", "CYP-789").resolves({
-                "CYP-123": ["A", "B", "C"],
-                "CYP-456": [],
-                "CYP-789": ["D"],
+                ["CYP-123"]: ["A", "B", "C"],
+                ["CYP-456"]: [],
+                ["CYP-789"]: ["D"],
             });
             const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
             expect(labels).to.deep.eq({
-                "CYP-123": ["A", "B", "C"],
-                "CYP-456": [],
-                "CYP-789": ["D"],
+                ["CYP-123"]: ["A", "B", "C"],
+                ["CYP-456"]: [],
+                ["CYP-789"]: ["D"],
             });
         });
 
         it("fetches labels only for unknown issues", async () => {
             jiraIssueFetcher.fetchLabels.withArgs("CYP-123", "CYP-789").resolves({
-                "CYP-123": ["A", "B", "C"],
-                "CYP-789": ["E"],
+                ["CYP-123"]: ["A", "B", "C"],
+                ["CYP-789"]: ["E"],
             });
             jiraIssueFetcher.fetchLabels.withArgs(...["CYP-456"]).resolves({
-                "CYP-456": ["D"],
+                ["CYP-456"]: ["D"],
             });
             await repository.getLabels("CYP-123", "CYP-789");
             const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
             expect(labels).to.deep.eq({
-                "CYP-123": ["A", "B", "C"],
-                "CYP-456": ["D"],
-                "CYP-789": ["E"],
+                ["CYP-123"]: ["A", "B", "C"],
+                ["CYP-456"]: ["D"],
+                ["CYP-789"]: ["E"],
             });
             // Everything's fetched already, should not fetch anything again.
             await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
@@ -289,7 +289,7 @@ describe("the cloud issue repository", () => {
 
         it("displays an error for issues which do not exist", async () => {
             jiraIssueFetcher.fetchLabels.withArgs(...["CYP-123", "CYP-456", "CYP-789"]).resolves({
-                "CYP-123": ["X"],
+                ["CYP-123"]: ["X"],
             });
             const logger = getMockedLogger();
             logger.message
@@ -306,7 +306,7 @@ describe("the cloud issue repository", () => {
                 .returns();
             const labels = await repository.getLabels("CYP-123", "CYP-456", "CYP-789");
             expect(labels).to.deep.eq({
-                "CYP-123": ["X"],
+                ["CYP-123"]: ["X"],
             });
         });
 

@@ -7,8 +7,8 @@ import { expectToExist } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { AxiosRestClient } from "../../https/requests";
 import { Level } from "../../logging/logging";
-import { ISearchResults } from "../../types/jira/responses/searchResults";
-import { IJiraClient } from "./jiraClient";
+import { SearchResults } from "../../types/jira/responses/searchResults";
+import { JiraClient } from "./jiraClient";
 import { JiraClientCloud } from "./jiraClientCloud";
 import { JiraClientServer } from "./jiraClientServer";
 
@@ -22,7 +22,7 @@ describe("the jira clients", () => {
     ["server", "cloud"].forEach((clientType: string) => {
         // The concrete client implementation does not matter here. The methods here only test the
         // abstract base class's code.
-        let client: IJiraClient;
+        let client: JiraClient;
 
         describe(clientType, () => {
             beforeEach(() => {
@@ -69,7 +69,7 @@ describe("the jira clients", () => {
                                 "./test/resources/fixtures/jira/responses/singleAttachment.json",
                                 "utf-8"
                             )
-                        );
+                        ) as unknown;
                         restClient.post.resolves({
                             status: HttpStatusCode.Ok,
                             data: mockedData,
@@ -94,7 +94,7 @@ describe("the jira clients", () => {
                                 "./test/resources/fixtures/jira/responses/multipleAttachments.json",
                                 "utf-8"
                             )
-                        );
+                        ) as unknown;
                         restClient.post.resolves({
                             status: HttpStatusCode.Ok,
                             data: mockedData,
@@ -120,7 +120,7 @@ describe("the jira clients", () => {
                             "./test/resources/fixtures/jira/responses/singleAttachment.json",
                             "utf-8"
                         )
-                    );
+                    ) as unknown;
                     restClient.post.resolves({
                         status: HttpStatusCode.Ok,
                         data: mockedData,
@@ -150,7 +150,7 @@ describe("the jira clients", () => {
                             "./test/resources/fixtures/jira/responses/multipleAttachments.json",
                             "utf-8"
                         )
-                    );
+                    ) as unknown;
                     restClient.post.resolves({
                         status: HttpStatusCode.Ok,
                         data: mockedData,
@@ -221,7 +221,7 @@ describe("the jira clients", () => {
                     expect(response).to.be.undefined;
                     expect(logger.message).to.have.been.calledWithExactly(
                         Level.ERROR,
-                        "Failed to attach files: AxiosError: Request failed with status code 413"
+                        "Failed to attach files: Request failed with status code 413"
                     );
                     expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                         error,
@@ -237,7 +237,7 @@ describe("the jira clients", () => {
                             "./test/resources/fixtures/jira/responses/getFields.json",
                             "utf-8"
                         )
-                    );
+                    ) as unknown;
                     restClient.get.onFirstCall().resolves({
                         status: HttpStatusCode.Ok,
                         data: mockedData,
@@ -273,7 +273,7 @@ describe("the jira clients", () => {
                     expect(response).to.be.undefined;
                     expect(logger.message).to.have.been.calledWithExactly(
                         Level.ERROR,
-                        "Failed to get fields: AxiosError: Request failed with status code 409"
+                        "Failed to get fields: Request failed with status code 409"
                     );
                     expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                         error,
@@ -312,12 +312,12 @@ describe("the jira clients", () => {
                     expect(response[4].key).to.eq("CYP-237");
                 });
                 it("should return all issues with pagination", async () => {
-                    const mockedData: ISearchResults = JSON.parse(
+                    const mockedData: SearchResults = JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/search.json",
                             "utf-8"
                         )
-                    );
+                    ) as SearchResults;
                     restClient.post.onFirstCall().resolves({
                         status: HttpStatusCode.Ok,
                         data: {
@@ -399,7 +399,7 @@ describe("the jira clients", () => {
                     expect(response).to.be.undefined;
                     expect(logger.message).to.have.been.calledWithExactly(
                         Level.ERROR,
-                        "Failed to search issues: AxiosError: Request failed with status code 401"
+                        "Failed to search issues: Request failed with status code 401"
                     );
                     expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                         error,
@@ -433,7 +433,7 @@ describe("the jira clients", () => {
                     expect(response).to.be.undefined;
                     expect(logger.message).to.have.been.calledWithExactly(
                         Level.ERROR,
-                        "Failed to edit issue: AxiosError: Request failed with status code 400"
+                        "Failed to edit issue: Request failed with status code 400"
                     );
                     expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                         error,

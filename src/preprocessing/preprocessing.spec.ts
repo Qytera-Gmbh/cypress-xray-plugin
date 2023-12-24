@@ -22,7 +22,7 @@ describe("cypress preprocessing", () => {
     beforeEach(() => {
         result = JSON.parse(
             fs.readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-        );
+        ) as CypressCommandLine.CypressRunResult;
     });
 
     describe("getNativeTestIssueKeys", () => {
@@ -32,7 +32,9 @@ describe("cypress preprocessing", () => {
         });
 
         it("skips invalid or missing issue keys", () => {
-            result = JSON.parse(fs.readFileSync("./test/resources/runResult.json", "utf-8"));
+            result = JSON.parse(
+                fs.readFileSync("./test/resources/runResult.json", "utf-8")
+            ) as CypressCommandLine.CypressRunResult;
             const logger = getMockedLogger();
             logger.message
                 .withArgs(
@@ -99,7 +101,7 @@ describe("cypress preprocessing", () => {
             const logger = getMockedLogger();
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
-            );
+            ) as CypressCommandLine.CypressRunResult;
             const issueKeys = getNativeTestIssueKeys(result, "CYP", ".feature");
             expect(issueKeys).to.deep.eq(["CYP-330", "CYP-268", "CYP-237", "CYP-332", "CYP-333"]);
             expect(logger.message).to.not.have.been.called;
@@ -114,21 +116,21 @@ describe("cypress preprocessing", () => {
         it("returns true for mixed runs", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
-            );
+            ) as CypressCommandLine.CypressRunResult;
             expect(containsNativeTest(result, ".feature")).to.be.true;
         });
 
         it("returns false for cucumber runs", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
-            );
+            ) as CypressCommandLine.CypressRunResult;
             expect(containsNativeTest(result, ".feature")).to.be.false;
         });
 
         it("regards cucumber runs as native if cucumber was not configured", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
-            );
+            ) as CypressCommandLine.CypressRunResult;
             expect(containsNativeTest(result)).to.be.true;
         });
     });
@@ -176,7 +178,7 @@ describe("cypress preprocessing", () => {
 });
 
 describe("cucumber preprocessing", () => {
-    it("throws for missing scenario tags", async () => {
+    it("throws for missing scenario tags", () => {
         expect(() =>
             getCucumberIssueData(
                 "./test/resources/features/taggedPrefixMissingScenario.feature",
@@ -222,7 +224,7 @@ describe("cucumber preprocessing", () => {
         );
     });
 
-    it("throws for wrong scenario tags", async () => {
+    it("throws for wrong scenario tags", () => {
         expect(() =>
             getCucumberIssueData(
                 "./test/resources/features/taggedWrongScenarioTags.feature",
@@ -265,7 +267,7 @@ describe("cucumber preprocessing", () => {
         );
     });
 
-    it("throws for missing background tags", async () => {
+    it("throws for missing background tags", () => {
         expect(() =>
             getCucumberIssueData(
                 "./test/resources/features/taggedPrefixMissingBackground.feature",
@@ -311,7 +313,7 @@ describe("cucumber preprocessing", () => {
         );
     });
 
-    it("throws for wrong background tags", async () => {
+    it("throws for wrong background tags", () => {
         expect(() =>
             getCucumberIssueData(
                 "./test/resources/features/taggedWrongBackgroundTags.feature",
@@ -354,7 +356,7 @@ describe("cucumber preprocessing", () => {
     });
 
     describe("no prefix", () => {
-        it("throws for multiple scenario tags", async () => {
+        it("throws for multiple scenario tags", () => {
             expect(() =>
                 getCucumberIssueData(
                     "./test/resources/features/taggedNoPrefixMultipleScenario.feature",
@@ -379,7 +381,7 @@ describe("cucumber preprocessing", () => {
             );
         });
 
-        it("should throw for multiple background tags", async () => {
+        it("should throw for multiple background tags", () => {
             expect(() =>
                 getCucumberIssueData(
                     "./test/resources/features/taggedNoPrefixMultipleBackground.feature",
@@ -412,7 +414,7 @@ describe("cucumber preprocessing", () => {
                 "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
             );
             // Cast because we know for certain it exists.
-            const background: Background = document.feature?.children[0].background as Background;
+            const background = document.feature?.children[0].background as Background;
             const comments = getCucumberPreconditionIssueComments(
                 background,
                 "CYP",
@@ -426,7 +428,7 @@ describe("cucumber preprocessing", () => {
                 "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
             );
             // Cast because we know for certain it exists.
-            const background: Background = document.feature?.children[0].background as Background;
+            const background = document.feature?.children[0].background as Background;
             const comments = getCucumberPreconditionIssueComments(
                 background,
                 "CYP",
@@ -441,7 +443,7 @@ describe("cucumber preprocessing", () => {
                 "./test/resources/features/taggedNoPrefixMultipleScenario.feature"
             ).feature;
             // Cast because we know for certain it exists.
-            const scenario: Scenario = feature?.children[1].scenario as Scenario;
+            const scenario = feature?.children[1].scenario as Scenario;
             expect(getCucumberScenarioIssueTags(scenario, "CYP")).to.deep.eq([
                 "CYP-123",
                 "CYP-456",
@@ -450,7 +452,7 @@ describe("cucumber preprocessing", () => {
     });
 
     describe("prefixed", () => {
-        it("throws for multiple scenario tags", async () => {
+        it("throws for multiple scenario tags", () => {
             expect(() =>
                 getCucumberIssueData(
                     "./test/resources/features/taggedPrefixMultipleScenario.feature",
@@ -476,7 +478,7 @@ describe("cucumber preprocessing", () => {
             );
         });
 
-        it("throws for multiple background tags", async () => {
+        it("throws for multiple background tags", () => {
             expect(() =>
                 getCucumberIssueData(
                     "./test/resources/features/taggedPrefixMultipleBackground.feature",
@@ -556,26 +558,28 @@ describe("cucumber preprocessing", () => {
         it("returns true for Cucumber runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
-            );
+            ) as CypressCommandLine.CypressRunResult;
             expect(containsCucumberTest(result, ".feature")).to.be.true;
         });
 
         it("returns true for mixed runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
-            );
+            ) as CypressCommandLine.CypressRunResult;
             expect(containsCucumberTest(result, ".feature")).to.be.true;
         });
 
         it("returns false for native runs", () => {
-            const result = JSON.parse(fs.readFileSync("./test/resources/runResult.json", "utf-8"));
+            const result = JSON.parse(
+                fs.readFileSync("./test/resources/runResult.json", "utf-8")
+            ) as CypressCommandLine.CypressRunResult;
             expect(containsCucumberTest(result, ".feature")).to.be.false;
         });
 
         it("regards cucumber runs as native if cucumber was not configured", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
-            );
+            ) as CypressCommandLine.CypressRunResult;
             expect(containsCucumberTest(result)).to.be.false;
         });
     });

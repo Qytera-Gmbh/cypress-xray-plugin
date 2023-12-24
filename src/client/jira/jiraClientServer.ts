@@ -1,14 +1,9 @@
-import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
-import { JiraClient } from "./jiraClient";
+import { AbstractJiraClient } from "./jiraClient";
 
 /**
  * A Jira client class for communicating with Jira Server instances.
  */
-export class JiraClientServer extends JiraClient {
-    constructor(apiBaseUrl: string, credentials: BasicAuthCredentials | PATCredentials) {
-        super(apiBaseUrl, credentials);
-    }
-
+export class JiraClientServer extends AbstractJiraClient {
     public getUrlAddAttachment(issueIdOrKey: string): string {
         return `${this.apiBaseUrl}/rest/api/2/issue/${issueIdOrKey}/attachments`;
     }

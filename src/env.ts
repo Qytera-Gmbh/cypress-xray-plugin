@@ -5,7 +5,7 @@ import { Remapping } from "./types/util";
  * An interface containing all authentication options which can be provided via environment
  * variables.
  */
-interface IAuthentication {
+interface Authentication {
     authentication: {
         jira: {
             username: string;
@@ -22,7 +22,7 @@ interface IAuthentication {
 /**
  * Contains a mapping of all available options to their respective environment variable names.
  */
-export const ENV_NAMES: Remapping<Options & IAuthentication, string> = {
+export const ENV_NAMES: Remapping<Options & Authentication, string> = {
     authentication: {
         jira: {
             username: "JIRA_USERNAME",
@@ -79,8 +79,8 @@ export const ENV_NAMES: Remapping<Options & IAuthentication, string> = {
         },
         uploadFeatures: "CUCUMBER_UPLOAD_FEATURES",
     },
-    openSSL: {
-        rootCAPath: "OPENSSL_ROOT_CA_PATH",
+    ["openSSL"]: {
+        ["rootCAPath"]: "OPENSSL_ROOT_CA_PATH",
         secureOptions: "OPENSSL_SECURE_OPTIONS",
     },
 };

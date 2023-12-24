@@ -1,19 +1,19 @@
-import { IProjectDetails } from "./projectDetails";
+import { ProjectDetails } from "./projectDetails";
 
 /**
  * Details of the next-gen projects an issue type is available in.
  */
-export interface IScope {
-    /**
-     * The project the item has scope in.
-     */
-    project?: IProjectDetails;
-    /**
-     * The type of scope.
-     */
-    type?: string;
+export interface Scope {
     /**
      * Extra properties of any type provided to this object.
      */
     [key: string]: unknown;
+    /**
+     * The project the item has scope in.
+     */
+    project?: ProjectDetails;
+    /**
+     * The type of scope.
+     */
+    type?: string;
 }

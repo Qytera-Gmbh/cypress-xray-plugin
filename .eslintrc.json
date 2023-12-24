@@ -1,8 +1,15 @@
 {
     "parser": "@typescript-eslint/parser",
     "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc"],
-    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/strict-type-checked",
+      "plugin:@typescript-eslint/stylistic-type-checked"
+    ],
     "root": true,
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
     "rules": {
         "tsdoc/syntax": "error",
         "@typescript-eslint/parameter-properties": [
@@ -11,6 +18,49 @@
               "allow": ["public", "public readonly", "protected", "protected readonly"],
               "prefer": "parameter-property"
             }
-          ]
-    }
+        ],
+        "@typescript-eslint/non-nullable-type-assertion-style": "off",
+        "@typescript-eslint/member-ordering": "error",
+        "@typescript-eslint/prefer-readonly": "error",
+        "no-shadow": "off",
+        "@typescript-eslint/no-shadow": "error",
+        "@typescript-eslint/naming-convention": [
+          "error",
+          {
+            "selector": "default",
+            "format": ["strictCamelCase"]
+          },
+          {
+            "selector": "variable",
+            "modifiers": ["global", "const"],
+            "format": ["UPPER_CASE"]
+          },
+          {
+            "selector": "memberLike",
+            "modifiers": ["static", "readonly"],
+            "format": ["UPPER_CASE"]
+          },
+          {
+            "selector": "enumMember",
+            "format": ["UPPER_CASE"]
+          },
+          {
+            "selector": "typeLike",
+            "format": ["StrictPascalCase"]
+          },
+          {
+            "selector": "import",
+            "format": ["StrictPascalCase", "strictCamelCase"]
+          }
+        ]
+    },
+    "overrides": [
+      {
+        "files": ["*.spec.ts"],
+        "rules": {
+          // Clashes with sinon/chai assertions like: expect(method).to.not.have.been.called
+          "@typescript-eslint/unbound-method": "off"
+        }
+      }
+    ]
 }

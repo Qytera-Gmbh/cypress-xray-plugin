@@ -37,7 +37,7 @@ export function buildMultipartFeatures(
         const test: CucumberMultipartFeature = {
             ...result,
         };
-        if (options?.testExecutionIssueKey) {
+        if (options.testExecutionIssueKey) {
             const testExecutionIssueTag: CucumberMultipartTag = {
                 name: `@${options.testExecutionIssueKey}`,
             };
@@ -60,7 +60,7 @@ export function buildMultipartFeatures(
                     );
                     const modifiedElement: CucumberMultipartElement = {
                         ...element,
-                        steps: getSteps(element, options?.includeScreenshots),
+                        steps: getSteps(element, options.includeScreenshots),
                     };
                     elements.push(modifiedElement);
                 }

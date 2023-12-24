@@ -1,4 +1,4 @@
-export interface IIncludedFields {
+export interface IncludedFields {
     actuallyIncluded?: string[];
     excluded?: string[];
     included?: string[];

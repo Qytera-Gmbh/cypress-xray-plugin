@@ -1,9 +1,8 @@
 import FormData from "form-data";
-import { BasicAuthCredentials, PATCredentials } from "../../authentication/credentials";
 import { RequestConfigPost } from "../../https/requests";
 import { LOG, Level } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import {
     ImportFeatureResponse,
@@ -11,25 +10,11 @@ import {
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
-import { XrayClient } from "./xrayClient";
+import { AbstractXrayClient } from "./xrayClient";
 
-export class XrayClientServer extends XrayClient {
-    /**
-     * Construct a new Xray Server client using the provided credentials.
-     *
-     * @param apiBaseUrl - the base URL for all HTTP requests
-     * @param credentials - the credentials to use during authentication
-     */
-    constructor(apiBaseUrl: string, credentials: BasicAuthCredentials | PATCredentials) {
-        super(apiBaseUrl, credentials);
-    }
-
+export class XrayClientServer extends AbstractXrayClient {
     public getUrlImportExecution(): string {
         return `${this.apiBaseUrl}/rest/raven/latest/import/execution`;
-    }
-
-    protected handleResponseImportExecution(response: ImportExecutionResponseServer): string {
-        return response.testExecIssue.key;
     }
 
     public getUrlExportCucumber(issueKeys?: string[], filter?: number): string {
@@ -50,6 +35,10 @@ export class XrayClientServer extends XrayClient {
 
     public getUrlImportFeature(projectKey: string): string {
         return `${this.apiBaseUrl}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
+    }
+
+    protected handleResponseImportExecution(response: ImportExecutionResponseServer): string {
+        return response.testExecIssue.key;
     }
 
     protected handleResponseImportFeature(
@@ -108,7 +97,7 @@ export class XrayClientServer extends XrayClient {
 
     protected async prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: ICucumberMultipartInfo
+        cucumberInfo: CucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>> {
         const formData = new FormData();
         const resultString = JSON.stringify(cucumberJson);

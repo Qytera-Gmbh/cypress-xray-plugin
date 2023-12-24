@@ -1,10 +1,10 @@
 import fs from "fs";
-import { IJiraClient } from "../client/jira/jiraClient";
+import { JiraClient } from "../client/jira/jiraClient";
 import { ImportExecutionConverter } from "../conversion/importExecution/importExecutionConverter";
 import { ImportExecutionCucumberMultipartConverter } from "../conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverter";
 import { LOG, Level } from "../logging/logging";
 import { containsCucumberTest, containsNativeTest } from "../preprocessing/preprocessing";
-import { IIssueTypeDetails } from "../types/jira/responses/issueTypeDetails";
+import { IssueTypeDetails } from "../types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalOptions } from "../types/plugin";
 import { nonNull } from "../types/util";
 import { CucumberMultipartFeature } from "../types/xray/requests/importExecutionCucumberMultipart";
@@ -54,10 +54,10 @@ export async function beforeRunHook(
 
 function retrieveIssueTypeInformation(
     type: string,
-    issueDetails: IIssueTypeDetails[],
+    issueDetails: IssueTypeDetails[],
     projectKey: string
-): IIssueTypeDetails {
-    const details = issueDetails.filter((details) => details.name === type);
+): IssueTypeDetails {
+    const details = issueDetails.filter((issueDetail) => issueDetail.name === type);
     if (details.length === 0) {
         throw new Error(
             dedent(`
@@ -91,7 +91,7 @@ export async function afterRunHook(
     options: InternalOptions,
     clients: ClientCombination
 ) {
-    const runResult = results as CypressCommandLine.CypressRunResult;
+    const runResult = results;
     let issueKey: string | null | undefined = null;
     if (containsNativeTest(runResult, options.cucumber?.featureFileExtension)) {
         LOG.message(Level.INFO, "Uploading native Cypress test results...");
@@ -194,7 +194,7 @@ async function uploadCucumberResults(
     }
     const results: CucumberMultipartFeature[] = JSON.parse(
         fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
-    );
+    ) as CucumberMultipartFeature[];
     const converter = new ImportExecutionCucumberMultipartConverter(
         options,
         clients.kind === "cloud",
@@ -210,7 +210,7 @@ async function uploadCucumberResults(
 async function attachVideos(
     runResult: CypressCommandLine.CypressRunResult,
     issueKey: string,
-    jiraClient: IJiraClient
+    jiraClient: JiraClient
 ): Promise<void> {
     const videos: string[] = runResult.runs
         .map((result: CypressCommandLine.RunResult) => {

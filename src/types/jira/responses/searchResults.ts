@@ -1,12 +1,12 @@
-import { IIssue } from "./issue";
-import { IJsonType } from "./jsonType";
+import { Issue } from "./issue";
+import { JsonType } from "./jsonType";
 
 /**
  * An issue search response.
  * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
  * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
  */
-export interface ISearchResults {
+export interface SearchResults {
     /**
      * Expand options that include additional search result details in the response.
      */
@@ -26,7 +26,7 @@ export interface ISearchResults {
     /**
      * The list of issues found by the search.
      */
-    issues?: IIssue[];
+    issues?: Issue[];
     /**
      * Any warnings related to the JQL query.
      */
@@ -34,13 +34,9 @@ export interface ISearchResults {
     /**
      * The ID and name of each field in the search results.
      */
-    names?: {
-        [k: string]: string;
-    };
+    names?: Record<string, string>;
     /**
      * The schema describing the field types in the search results.
      */
-    schema?: {
-        [k: string]: IJsonType;
-    };
+    schema?: Record<string, JsonType>;
 }

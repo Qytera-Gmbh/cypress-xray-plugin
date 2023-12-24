@@ -3,9 +3,11 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import { SinonStubbedInstance } from "sinon";
-import { getMockedJWTCredentials, getMockedLogger, getMockedRestClient } from "../../../test/mocks";
+import { getMockedJwtCredentials, getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { AxiosRestClient } from "../../https/requests";
 import { Level } from "../../logging/logging";
+import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
+import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { dedent } from "../../util/dedent";
 import { XrayClientCloud } from "./xrayClientCloud";
@@ -17,8 +19,8 @@ describe("the xray cloud client", () => {
     let restClient: SinonStubbedInstance<AxiosRestClient>;
 
     beforeEach(() => {
-        const credentials = getMockedJWTCredentials();
-        credentials.getAuthorizationHeader.resolves({ Authorization: "ey12345" });
+        const credentials = getMockedJwtCredentials();
+        credentials.getAuthorizationHeader.resolves({ ["Authorization"]: "ey12345" });
         client = new XrayClientCloud(credentials);
         restClient = getMockedRestClient();
     });
@@ -102,7 +104,7 @@ describe("the xray cloud client", () => {
             expect(response).to.be.undefined;
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,
-                "Failed to import execution: AxiosError: Request failed with status code 400"
+                "Failed to import execution: Request failed with status code 400"
             );
             expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                 error,
@@ -130,13 +132,13 @@ describe("the xray cloud client", () => {
                         "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                         "utf-8"
                     )
-                ),
+                ) as CucumberMultipartFeature[],
                 JSON.parse(
                     fs.readFileSync(
                         "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
                         "utf-8"
                     )
-                )
+                ) as CucumberMultipartInfo
             );
             expect(response).to.eq("CYP-123");
         });
@@ -165,18 +167,18 @@ describe("the xray cloud client", () => {
                         "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                         "utf-8"
                     )
-                ),
+                ) as CucumberMultipartFeature[],
                 JSON.parse(
                     fs.readFileSync(
                         "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
                         "utf-8"
                     )
-                )
+                ) as CucumberMultipartInfo
             );
             expect(response).to.be.undefined;
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,
-                "Failed to import Cucumber execution: AxiosError: Request failed with status code 400"
+                "Failed to import Cucumber execution: Request failed with status code 400"
             );
             expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                 error,
@@ -339,7 +341,7 @@ describe("the xray cloud client", () => {
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,
                 dedent(`
-                    Failed to import Cucumber features: AxiosError: Request failed with status code 400
+                    Failed to import Cucumber features: Request failed with status code 400
 
                     The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
 
@@ -370,9 +372,9 @@ describe("the xray cloud client", () => {
             });
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
             expect(response).to.deep.eq({
-                "CYP-330": "Generic",
-                "CYP-331": "Cucumber",
-                "CYP-332": "Manual",
+                ["CYP-330"]: "Generic",
+                ["CYP-331"]: "Cucumber",
+                ["CYP-332"]: "Manual",
             });
         });
 
@@ -382,7 +384,7 @@ describe("the xray cloud client", () => {
                     "./test/resources/fixtures/xray/responses/getTestsTypes.json",
                     "utf-8"
                 )
-            );
+            ) as GetTestsResponse<unknown>;
             restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -429,9 +431,9 @@ describe("the xray cloud client", () => {
             });
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
             expect(response).to.deep.eq({
-                "CYP-330": "Generic",
-                "CYP-331": "Cucumber",
-                "CYP-332": "Manual",
+                ["CYP-330"]: "Generic",
+                ["CYP-331"]: "Cucumber",
+                ["CYP-332"]: "Manual",
             });
         });
 
@@ -442,7 +444,7 @@ describe("the xray cloud client", () => {
                     "./test/resources/fixtures/xray/responses/getTestsTypes.json",
                     "utf-8"
                 )
-            );
+            ) as GetTestsResponse<unknown>;
             restClient.post.onFirstCall().resolves({
                 status: HttpStatusCode.Ok,
                 data: {
@@ -463,7 +465,7 @@ describe("the xray cloud client", () => {
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,
                 dedent(`
-                    Failed to get test types: Error: Failed to retrieve test types for issues:
+                    Failed to get test types: Failed to retrieve test types for issues:
 
                       CYP-331
                       CYP-332
@@ -495,7 +497,7 @@ describe("the xray cloud client", () => {
             expect(response).to.deep.eq({});
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,
-                "Failed to get test types: AxiosError: Request failed with status code 400"
+                "Failed to get test types: Request failed with status code 400"
             );
             expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(error, "getTestTypes");
         });

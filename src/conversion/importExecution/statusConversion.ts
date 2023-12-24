@@ -52,7 +52,5 @@ export function getXrayStatus(
             return statusOptions?.pending ?? "TODO";
         case Status.SKIPPED:
             return statusOptions?.skipped ?? (useCloudStatus ? "FAILED" : "FAIL");
-        default:
-            throw new Error(`Unknown status: ${status}`);
     }
 }

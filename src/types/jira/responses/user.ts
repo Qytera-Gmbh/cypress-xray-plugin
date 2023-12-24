@@ -1,6 +1,6 @@
-import { ISimpleListWrapper } from "./simpleListWrapper";
+import { SimpleListWrapper } from "./simpleListWrapper";
 
-export interface IUser {
+export interface User {
     /**
      * The URL of the user.
      */
@@ -26,10 +26,10 @@ export interface IUser {
      * The avatars of the user.
      */
     avatarUrls?: {
-        "16x16"?: string;
-        "24x24"?: string;
-        "32x32"?: string;
-        "48x48"?: string;
+        ["16x16"]?: string;
+        ["24x24"]?: string;
+        ["32x32"]?: string;
+        ["48x48"]?: string;
     };
     /**
      * The display name of the user. Depending on the user’s privacy settings, this may return an
@@ -46,14 +46,14 @@ export interface IUser {
      */
     timeZone?: string;
 }
-export interface UserServer extends IUser {
+export interface UserServer extends User {
     locale?: string;
-    groups?: ISimpleListWrapper;
-    applicationRoles?: ISimpleListWrapper;
+    groups?: SimpleListWrapper;
+    applicationRoles?: SimpleListWrapper;
     expand?: string;
     deleted?: boolean;
 }
-export interface UserCloud extends IUser {
+export interface UserCloud extends User {
     /**
      * The account ID of the user, which uniquely identifies the user across all Atlassian products.
      * @example "5b10ac8d82e05b22cc7d4ef5"

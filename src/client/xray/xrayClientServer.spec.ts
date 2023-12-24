@@ -6,6 +6,8 @@ import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { AxiosRestClient } from "../../https/requests";
 import { Level } from "../../logging/logging";
+import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
+import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { dedent } from "../../util/dedent";
 import { XrayClientServer } from "./xrayClientServer";
 
@@ -87,13 +89,13 @@ describe("the xray server client", () => {
                         "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                         "utf-8"
                     )
-                ),
+                ) as CucumberMultipartFeature[],
                 JSON.parse(
                     fs.readFileSync(
                         "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
                         "utf-8"
                     )
-                )
+                ) as CucumberMultipartInfo
             );
             expect(response).to.eq("CYP-123");
         });
@@ -254,7 +256,7 @@ describe("the xray server client", () => {
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,
                 dedent(`
-                    Failed to import Cucumber features: AxiosError: Request failed with status code 400
+                    Failed to import Cucumber features: Request failed with status code 400
 
                     The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
 

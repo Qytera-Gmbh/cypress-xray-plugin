@@ -1,4 +1,4 @@
-export interface IChangeItem {
+export interface ChangeItem {
     /**
      * The name of the field changed.
      */

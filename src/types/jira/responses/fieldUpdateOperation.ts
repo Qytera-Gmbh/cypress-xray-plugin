@@ -1,4 +1,4 @@
-export interface IFieldUpdateOperation {
+export interface FieldUpdateOperation {
     /**
      * The value to add to the field.
      */

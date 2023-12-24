@@ -1,16 +1,11 @@
 import { AxiosResponse, HttpStatusCode, isAxiosError } from "axios";
 import FormData from "form-data";
 import fs from "fs";
-import {
-    BasicAuthCredentials,
-    JWTCredentials,
-    PATCredentials,
-} from "../../authentication/credentials";
 import { REST, RequestConfigPost } from "../../https/requests";
 import { LOG, Level } from "../../logging/logging";
-import { IXrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
+import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import {
     ImportExecutionResponseCloud,
@@ -22,11 +17,11 @@ import {
     ImportFeatureResponseServer,
 } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
-import { LoggedError } from "../../util/errors";
+import { LoggedError, errorMessage } from "../../util/errors";
 import { HELP } from "../../util/help";
 import { Client } from "../client";
 
-export interface IXrayClient {
+export interface XrayClient {
     /**
      * Uploads test results to the Xray instance.
      *
@@ -35,7 +30,7 @@ export interface IXrayClient {
      * in case of errors
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
-    importExecution(execution: IXrayTestExecutionResults): Promise<string | null | undefined>;
+    importExecution(execution: XrayTestExecutionResults): Promise<string | null | undefined>;
     /**
      * Downloads feature (file) specifications from corresponding Xray issues.
      *
@@ -74,29 +69,16 @@ export interface IXrayClient {
      */
     importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: ICucumberMultipartInfo
+        cucumberInfo: CucumberMultipartInfo
     ): Promise<string | null | undefined>;
 }
 
 /**
  * An abstract Xray client class for communicating with Xray instances.
  */
-export abstract class XrayClient extends Client implements IXrayClient {
-    /**
-     * Construct a new client using the provided credentials.
-     *
-     * @param apiBaseUrl - the base URL for all HTTP requests
-     * @param credentials - the credentials to use during authentication
-     */
-    constructor(
-        apiBaseUrl: string,
-        credentials: BasicAuthCredentials | PATCredentials | JWTCredentials
-    ) {
-        super(apiBaseUrl, credentials);
-    }
-
+export abstract class AbstractXrayClient extends Client implements XrayClient {
     public async importExecution(
-        execution: IXrayTestExecutionResults
+        execution: XrayTestExecutionResults
     ): Promise<string | null | undefined> {
         try {
             if (!execution.tests || execution.tests.length === 0) {
@@ -124,27 +106,10 @@ export abstract class XrayClient extends Client implements IXrayClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to import execution: ${error}`);
+            LOG.message(Level.ERROR, `Failed to import execution: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "importExecutionError");
         }
     }
-
-    /**
-     * Returns the endpoint to use for importing test execution results.
-     *
-     * @returns the URL
-     */
-    public abstract getUrlImportExecution(): string;
-
-    /**
-     * Returns the test execution key from the import execution response.
-     *
-     * @param response - the import execution response
-     * @returns the test execution issue key
-     */
-    protected abstract handleResponseImportExecution(
-        response: ImportExecutionResponseServer | ImportExecutionResponseCloud
-    ): string;
 
     public async exportCucumber(
         keys?: string[],
@@ -155,37 +120,33 @@ export abstract class XrayClient extends Client implements IXrayClient {
             LOG.message(Level.DEBUG, "Exporting Cucumber tests...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response = await REST.get(this.getUrlExportCucumber(keys, filter), {
-                    headers: {
-                        ...authorizationHeader,
-                    },
-                });
+                const response: AxiosResponse<string> = await REST.get(
+                    this.getUrlExportCucumber(keys, filter),
+                    {
+                        headers: {
+                            ...authorizationHeader,
+                        },
+                    }
+                );
                 // Extract filename from response.
-                const contentDisposition = response.headers["Content-Disposition"];
-                const filenameStart = contentDisposition.indexOf('"');
-                const filenameEnd = contentDisposition.lastIndexOf('"');
-                const filename = contentDisposition.substring(filenameStart, filenameEnd);
-                fs.writeFile(filename, response.data, (error: NodeJS.ErrnoException | null) => {
-                    throw new Error(`Failed to export cucumber feature files: "${error}"`);
-                });
+                if ("Content-Disposition" in response.headers) {
+                    const contentDisposition = response.headers["Content-Disposition"] as string;
+                    const filenameStart = contentDisposition.indexOf('"');
+                    const filenameEnd = contentDisposition.lastIndexOf('"');
+                    const filename = contentDisposition.substring(filenameStart, filenameEnd);
+                    fs.writeFileSync(filename, response.data);
+                } else {
+                    throw new Error("Content-Disposition header does not contain a filename");
+                }
             } finally {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to export Cucumber tests: ${error}`);
+            LOG.message(Level.ERROR, `Failed to export Cucumber tests: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "exportCucumberError");
         }
         throw new Error("Method not implemented.");
     }
-
-    /**
-     * Returns the endpoint to use for exporting Cucumber feature files.
-     *
-     * @param keys - a list of issue keys
-     * @param filter - an integer that represents the filter ID
-     * @returns the URL
-     */
-    public abstract getUrlExportCucumber(issueKeys?: string[], filter?: number): string;
 
     public async importFeature(
         file: string,
@@ -220,7 +181,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
                 LOG.message(
                     Level.ERROR,
                     dedent(`
-                        Failed to import Cucumber features: ${error}
+                        Failed to import Cucumber features: ${errorMessage(error)}
 
                         The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
 
@@ -229,38 +190,18 @@ export abstract class XrayClient extends Client implements IXrayClient {
                     `)
                 );
             } else {
-                LOG.message(Level.ERROR, `Failed to import Cucumber features: ${error}`);
+                LOG.message(
+                    Level.ERROR,
+                    `Failed to import Cucumber features: ${errorMessage(error)}`
+                );
             }
             throw new LoggedError("Feature file import failed");
         }
     }
 
-    /**
-     * Returns the endpoint to use for importing Cucumber feature files.
-     *
-     * @param projectKey - key of the project where the tests and pre-conditions are located
-     * @param projectId - id of the project where the tests and pre-conditions are located
-     * @param source - a name designating the source of the features being imported (e.g. the source project name)
-     * @returns the URL
-     */
-    public abstract getUrlImportFeature(
-        projectKey?: string,
-        projectId?: string,
-        source?: string
-    ): string;
-
-    /**
-     * This method is called when a feature file was successfully imported to Xray.
-     *
-     * @param response - the import feature response or `undefined` in case of errors
-     */
-    protected abstract handleResponseImportFeature(
-        response: ImportFeatureResponseServer | ImportFeatureResponseCloud
-    ): ImportFeatureResponse;
-
     public async importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: ICucumberMultipartInfo
+        cucumberInfo: CucumberMultipartInfo
     ): Promise<string | null | undefined> {
         try {
             if (cucumberJson.length === 0) {
@@ -290,10 +231,59 @@ export abstract class XrayClient extends Client implements IXrayClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to import Cucumber execution: ${error}`);
+            LOG.message(Level.ERROR, `Failed to import Cucumber execution: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "importExecutionCucumberMultipartError");
         }
     }
+
+    /**
+     * Returns the endpoint to use for importing test execution results.
+     *
+     * @returns the URL
+     */
+    public abstract getUrlImportExecution(): string;
+
+    /**
+     * Returns the endpoint to use for exporting Cucumber feature files.
+     *
+     * @param keys - a list of issue keys
+     * @param filter - an integer that represents the filter ID
+     * @returns the URL
+     */
+    public abstract getUrlExportCucumber(issueKeys?: string[], filter?: number): string;
+
+    /**
+     * Returns the endpoint to use for importing Cucumber feature files.
+     *
+     * @param projectKey - key of the project where the tests and pre-conditions are located
+     * @param projectId - id of the project where the tests and pre-conditions are located
+     * @param source - a name designating the source of the features being imported (e.g. the source project name)
+     * @returns the URL
+     */
+    public abstract getUrlImportFeature(
+        projectKey?: string,
+        projectId?: string,
+        source?: string
+    ): string;
+
+    /**
+     * This method is called when a feature file was successfully imported to Xray.
+     *
+     * @param response - the import feature response or `undefined` in case of errors
+     */
+    protected abstract handleResponseImportFeature(
+        response: ImportFeatureResponseServer | ImportFeatureResponseCloud
+    ): ImportFeatureResponse;
+
+    /**
+     * Returns the test execution key from the import execution response.
+     *
+     * @param response - the import execution response
+     * @returns the test execution issue key
+     */
+    protected abstract handleResponseImportExecution(
+        response: ImportExecutionResponseServer | ImportExecutionResponseCloud
+    ): string;
 
     /**
      * Prepares the Cucumber multipart import execution request.
@@ -304,7 +294,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
      */
     protected abstract prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: ICucumberMultipartInfo
+        cucumberInfo: CucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>>;
 
     /**

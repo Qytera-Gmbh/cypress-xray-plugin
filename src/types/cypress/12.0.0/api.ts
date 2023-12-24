@@ -1,42 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { ConfigOptions, ResolvedConfigOptions, TestingType } from "./cypress";
+/* eslint-disable @typescript-eslint/naming-convention */
+import { ResolvedConfigOptions } from "./cypress";
 
 type HookName = "before" | "beforeEach" | "afterEach" | "after";
 interface TestError {
     name: string;
     message: string;
     stack: string;
-}
-interface CypressRunOptions extends CypressCommonOptions {
-    browser: string;
-    ciBuildId: string;
-    group: string;
-    tag: string;
-    headed: boolean;
-    headless: boolean;
-    key: string;
-    noExit: boolean;
-    parallel: boolean;
-    port: number;
-    quiet: boolean;
-    record: boolean;
-    reporter: string;
-    reporterOptions: unknown;
-    spec: string;
-    autoCancelAfterFailures: number | false;
-}
-interface CypressOpenOptions extends CypressCommonOptions {
-    browser: string;
-    detached: boolean;
-    global: boolean;
-    port: number;
-}
-interface CypressCommonOptions {
-    config: ConfigOptions;
-    configFile: string;
-    env: object;
-    project: string;
-    testingType: TestingType;
 }
 type dateTimeISO = string;
 type ms = number;
@@ -116,12 +85,4 @@ export interface CypressRunResult {
     osVersion: string;
     cypressVersion: string;
     config: ResolvedConfigOptions;
-}
-interface CypressFailedRunResult {
-    status: "failed";
-    failures: number;
-    message: string;
-}
-interface CypressCliParser {
-    parseRunArguments(args: string[]): Promise<Partial<CypressRunOptions>>;
 }
