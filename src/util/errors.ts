@@ -1,6 +1,11 @@
 import { Background, Comment } from "@cucumber/messages";
+import { SupportedFields } from "../repository/jira/fields/jiraIssueFetcher";
+import { FieldDetail } from "../types/jira/responses/fieldDetail";
+import { JiraFieldIds } from "../types/plugin";
+import { StringMap } from "../types/util";
 import { dedent } from "./dedent";
 import { HELP } from "./help";
+import { prettyPadObjects, prettyPadValues } from "./pretty";
 import { unknownToString } from "./string";
 
 /**
@@ -421,4 +426,90 @@ function reconstructMultipleTagsBackground(
     );
     example.push("  ...");
     return example.join("\n");
+}
+
+export function multipleFieldsError(fieldName: SupportedFields, matches: FieldDetail[]): Error {
+    const nameDuplicates = prettyPadObjects(matches)
+        .map((duplicate) =>
+            Object.entries(duplicate)
+                .map((entry) => `${entry[0]}: ${entry[1]}`)
+                .join(", ")
+        )
+        .sort()
+        .join("\n");
+    const idSuggestions = matches.map((field: FieldDetail) => `"${field.id}"`).join(" or ");
+    return new Error(
+        dedent(`
+            Failed to fetch Jira field ID for field with name: ${fieldName}
+            There are multiple fields with this name
+
+            Duplicates:
+              ${nameDuplicates}
+
+            You can provide field IDs in the options:
+
+              jira: {
+                fields: {
+                  ${getOptionName(fieldName)}: // ${idSuggestions}
+                }
+              }
+        `)
+    );
+}
+
+export function missingFieldsError(fieldName: SupportedFields, names: StringMap<string>): Error {
+    if (Object.keys(names).length === 0) {
+        throw new Error(
+            dedent(`
+                Failed to fetch Jira field ID for field with name: ${fieldName}
+                Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                You can provide field IDs directly without relying on language settings:
+
+                  jira: {
+                    fields: {
+                      ${getOptionName(fieldName)}: // corresponding field ID
+                    }
+                  }
+            `)
+        );
+    } else {
+        const availableFields = Object.entries(prettyPadValues(names))
+            .map((entry) => `name: ${entry[1]} id: ${JSON.stringify(entry[0])}`)
+            .sort();
+        throw new Error(
+            dedent(`
+                Failed to fetch Jira field ID for field with name: ${fieldName}
+                Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                Available fields:
+                  ${availableFields.join("\n")}
+
+                You can provide field IDs directly without relying on language settings:
+
+                  jira: {
+                    fields: {
+                      ${getOptionName(fieldName)}: // corresponding field ID
+                    }
+                  }
+            `)
+        );
+    }
+}
+
+function getOptionName(fieldName: SupportedFields): keyof JiraFieldIds {
+    switch (fieldName) {
+        case SupportedFields.DESCRIPTION:
+            return "description";
+        case SupportedFields.SUMMARY:
+            return "summary";
+        case SupportedFields.LABELS:
+            return "labels";
+        case SupportedFields.TEST_ENVIRONMENTS:
+            return "testEnvironments";
+        case SupportedFields.TEST_PLAN:
+            return "testPlan";
+        case SupportedFields.TEST_TYPE:
+            return "testType";
+    }
 }
