@@ -60,10 +60,6 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         return `${this.apiBaseUrl}/import/execution`;
     }
 
-    protected handleResponseImportExecution(response: ImportExecutionResponseCloud): string {
-        return response.key;
-    }
-
     public getUrlExportCucumber(issueKeys?: string[], filter?: number): string {
         const query: string[] = [];
         if (issueKeys) {
@@ -87,52 +83,6 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
             query.push(`projectId=${projectId}`);
         }
         return `${this.apiBaseUrl}/import/feature?${query.join("&")}`;
-    }
-
-    protected handleResponseImportFeature(
-        cloudResponse: ImportFeatureResponseCloud
-    ): ImportFeatureResponse {
-        const response: ImportFeatureResponse = {
-            errors: [],
-            updatedOrCreatedIssues: [],
-        };
-        if (cloudResponse.errors.length > 0) {
-            response.errors.push(...cloudResponse.errors);
-            LOG.message(
-                Level.DEBUG,
-                dedent(`
-                    Encountered some errors during feature file import:
-                    ${cloudResponse.errors.map((error: string) => `- ${error}`).join("\n")}
-                `)
-            );
-        }
-        if (cloudResponse.updatedOrCreatedTests.length > 0) {
-            const testKeys = cloudResponse.updatedOrCreatedTests.map(
-                (test: IssueDetails) => test.key
-            );
-            response.updatedOrCreatedIssues.push(...testKeys);
-            LOG.message(
-                Level.DEBUG,
-                dedent(`
-                    Successfully updated or created test issues:
-                    ${testKeys.join("\n")}
-                `)
-            );
-        }
-        if (cloudResponse.updatedOrCreatedPreconditions.length > 0) {
-            const preconditionKeys = cloudResponse.updatedOrCreatedPreconditions.map(
-                (test: IssueDetails) => test.key
-            );
-            response.updatedOrCreatedIssues.push(...preconditionKeys);
-            LOG.message(
-                Level.DEBUG,
-                dedent(`
-                    Successfully updated or created precondition issues:
-                    ${preconditionKeys.join(", ")}
-                `)
-            );
-        }
-        return response;
     }
 
     public async getTestTypes(
@@ -226,6 +176,56 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
             LOG.logErrorToFile(error, "getTestTypes");
         }
         return {};
+    }
+
+    protected handleResponseImportExecution(response: ImportExecutionResponseCloud): string {
+        return response.key;
+    }
+
+    protected handleResponseImportFeature(
+        cloudResponse: ImportFeatureResponseCloud
+    ): ImportFeatureResponse {
+        const response: ImportFeatureResponse = {
+            errors: [],
+            updatedOrCreatedIssues: [],
+        };
+        if (cloudResponse.errors.length > 0) {
+            response.errors.push(...cloudResponse.errors);
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Encountered some errors during feature file import:
+                    ${cloudResponse.errors.map((error: string) => `- ${error}`).join("\n")}
+                `)
+            );
+        }
+        if (cloudResponse.updatedOrCreatedTests.length > 0) {
+            const testKeys = cloudResponse.updatedOrCreatedTests.map(
+                (test: IssueDetails) => test.key
+            );
+            response.updatedOrCreatedIssues.push(...testKeys);
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Successfully updated or created test issues:
+                    ${testKeys.join("\n")}
+                `)
+            );
+        }
+        if (cloudResponse.updatedOrCreatedPreconditions.length > 0) {
+            const preconditionKeys = cloudResponse.updatedOrCreatedPreconditions.map(
+                (test: IssueDetails) => test.key
+            );
+            response.updatedOrCreatedIssues.push(...preconditionKeys);
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Successfully updated or created precondition issues:
+                    ${preconditionKeys.join(", ")}
+                `)
+            );
+        }
+        return response;
     }
 
     protected async prepareRequestImportExecutionCucumberMultipart(

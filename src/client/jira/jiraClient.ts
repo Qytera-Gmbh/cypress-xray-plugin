@@ -141,14 +141,6 @@ export abstract class JiraClient extends Client implements IJiraClient {
         }
     }
 
-    /**
-     * Returns the endpoint to use for adding attchments to issues.
-     *
-     * @param issueIdOrKey - the ID or key of the issue that attachments are added to
-     * @returns the URL
-     */
-    public abstract getUrlAddAttachment(issueIdOrKey: string): string;
-
     public async getIssueTypes(): Promise<IIssueTypeDetails[] | undefined> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
@@ -186,13 +178,6 @@ export abstract class JiraClient extends Client implements IJiraClient {
         }
     }
 
-    /**
-     * Returns the endpoint to use for retrieving issue types.
-     *
-     * @returns the URL
-     */
-    public abstract getUrlGetIssueTypes(): string;
-
     public async getFields(): Promise<IFieldDetail[] | undefined> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
@@ -229,13 +214,6 @@ export abstract class JiraClient extends Client implements IJiraClient {
             LOG.logErrorToFile(error, "getFieldsError");
         }
     }
-
-    /**
-     * Returns the endpoint to use for retrieving fields.
-     *
-     * @returns the URL
-     */
-    public abstract getUrlGetFields(): string;
 
     public async search(request: ISearchRequest): Promise<IIssue[] | undefined> {
         try {
@@ -280,13 +258,6 @@ export abstract class JiraClient extends Client implements IJiraClient {
         }
     }
 
-    /**
-     * Returns the endpoint to use for searching issues.
-     *
-     * @returns the endpoint
-     */
-    public abstract getUrlPostSearch(): string;
-
     public async editIssue(
         issueIdOrKey: string,
         issueUpdateData: IIssueUpdate
@@ -311,6 +282,35 @@ export abstract class JiraClient extends Client implements IJiraClient {
             LOG.logErrorToFile(error, "editIssue");
         }
     }
+
+    /**
+     * Returns the endpoint to use for adding attchments to issues.
+     *
+     * @param issueIdOrKey - the ID or key of the issue that attachments are added to
+     * @returns the URL
+     */
+    public abstract getUrlAddAttachment(issueIdOrKey: string): string;
+
+    /**
+     * Returns the endpoint to use for retrieving issue types.
+     *
+     * @returns the URL
+     */
+    public abstract getUrlGetIssueTypes(): string;
+
+    /**
+     * Returns the endpoint to use for retrieving fields.
+     *
+     * @returns the URL
+     */
+    public abstract getUrlGetFields(): string;
+
+    /**
+     * Returns the endpoint to use for searching issues.
+     *
+     * @returns the endpoint
+     */
+    public abstract getUrlPostSearch(): string;
 
     /**
      * Returns the endpoint to use for editing issues.

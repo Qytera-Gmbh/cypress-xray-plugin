@@ -41,6 +41,38 @@ export class AxiosRestClient {
         this.options = options;
     }
 
+    public async get<R>(
+        url: string,
+        config?: AxiosRequestConfig<unknown>
+    ): Promise<AxiosResponse<R>> {
+        return this.getAxios().get(url, {
+            ...config,
+            httpsAgent: this.getAgent(),
+        });
+    }
+
+    public async post<D, R>(
+        url: string,
+        data?: D,
+        config?: AxiosRequestConfig<D>
+    ): Promise<AxiosResponse<R>> {
+        return this.getAxios().post(url, data, {
+            ...config,
+            httpsAgent: this.getAgent(),
+        });
+    }
+
+    public async put<D, R>(
+        url: string,
+        data?: D,
+        config?: AxiosRequestConfig<D>
+    ): Promise<AxiosResponse<R>> {
+        return this.getAxios().put(url, data, {
+            ...config,
+            httpsAgent: this.getAgent(),
+        });
+    }
+
     private getAgent(): Agent {
         if (!this.httpAgent) {
             this.httpAgent = new Agent({
@@ -149,38 +181,6 @@ export class AxiosRestClient {
             return undefined;
         }
         return readFileSync(path);
-    }
-
-    public async get<R>(
-        url: string,
-        config?: AxiosRequestConfig<unknown>
-    ): Promise<AxiosResponse<R>> {
-        return this.getAxios().get(url, {
-            ...config,
-            httpsAgent: this.getAgent(),
-        });
-    }
-
-    public async post<D, R>(
-        url: string,
-        data?: D,
-        config?: AxiosRequestConfig<D>
-    ): Promise<AxiosResponse<R>> {
-        return this.getAxios().post(url, data, {
-            ...config,
-            httpsAgent: this.getAgent(),
-        });
-    }
-
-    public async put<D, R>(
-        url: string,
-        data?: D,
-        config?: AxiosRequestConfig<D>
-    ): Promise<AxiosResponse<R>> {
-        return this.getAxios().put(url, data, {
-            ...config,
-            httpsAgent: this.getAgent(),
-        });
     }
 }
 

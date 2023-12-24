@@ -3,6 +3,7 @@ import { IIssueUpdate } from "../../jira/responses/issueUpdate";
 
 export interface ICucumberMultipartInfo extends IIssueUpdate {
     fields: {
+        [k: string]: unknown;
         project: {
             key: string;
         };
@@ -10,7 +11,6 @@ export interface ICucumberMultipartInfo extends IIssueUpdate {
         description?: string;
         issuetype: IIssueTypeDetails;
         labels?: string[];
-        [k: string]: unknown;
     };
 }
 export interface CucumberMultipartInfoCloud extends ICucumberMultipartInfo {

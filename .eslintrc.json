@@ -19,7 +19,8 @@
               "prefer": "parameter-property"
             }
         ],
-        "@typescript-eslint/non-nullable-type-assertion-style": "off"
+        "@typescript-eslint/non-nullable-type-assertion-style": "off",
+        "@typescript-eslint/member-ordering": "error"
     },
     "overrides": [
       {

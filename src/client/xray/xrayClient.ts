@@ -111,23 +111,6 @@ export abstract class XrayClient extends Client implements IXrayClient {
         }
     }
 
-    /**
-     * Returns the endpoint to use for importing test execution results.
-     *
-     * @returns the URL
-     */
-    public abstract getUrlImportExecution(): string;
-
-    /**
-     * Returns the test execution key from the import execution response.
-     *
-     * @param response - the import execution response
-     * @returns the test execution issue key
-     */
-    protected abstract handleResponseImportExecution(
-        response: ImportExecutionResponseServer | ImportExecutionResponseCloud
-    ): string;
-
     public async exportCucumber(
         keys?: string[],
         filter?: number
@@ -164,15 +147,6 @@ export abstract class XrayClient extends Client implements IXrayClient {
         }
         throw new Error("Method not implemented.");
     }
-
-    /**
-     * Returns the endpoint to use for exporting Cucumber feature files.
-     *
-     * @param keys - a list of issue keys
-     * @param filter - an integer that represents the filter ID
-     * @returns the URL
-     */
-    public abstract getUrlExportCucumber(issueKeys?: string[], filter?: number): string;
 
     public async importFeature(
         file: string,
@@ -225,29 +199,6 @@ export abstract class XrayClient extends Client implements IXrayClient {
         }
     }
 
-    /**
-     * Returns the endpoint to use for importing Cucumber feature files.
-     *
-     * @param projectKey - key of the project where the tests and pre-conditions are located
-     * @param projectId - id of the project where the tests and pre-conditions are located
-     * @param source - a name designating the source of the features being imported (e.g. the source project name)
-     * @returns the URL
-     */
-    public abstract getUrlImportFeature(
-        projectKey?: string,
-        projectId?: string,
-        source?: string
-    ): string;
-
-    /**
-     * This method is called when a feature file was successfully imported to Xray.
-     *
-     * @param response - the import feature response or `undefined` in case of errors
-     */
-    protected abstract handleResponseImportFeature(
-        response: ImportFeatureResponseServer | ImportFeatureResponseCloud
-    ): ImportFeatureResponse;
-
     public async importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: ICucumberMultipartInfo
@@ -284,6 +235,55 @@ export abstract class XrayClient extends Client implements IXrayClient {
             LOG.logErrorToFile(error, "importExecutionCucumberMultipartError");
         }
     }
+
+    /**
+     * Returns the endpoint to use for importing test execution results.
+     *
+     * @returns the URL
+     */
+    public abstract getUrlImportExecution(): string;
+
+    /**
+     * Returns the endpoint to use for exporting Cucumber feature files.
+     *
+     * @param keys - a list of issue keys
+     * @param filter - an integer that represents the filter ID
+     * @returns the URL
+     */
+    public abstract getUrlExportCucumber(issueKeys?: string[], filter?: number): string;
+
+    /**
+     * Returns the endpoint to use for importing Cucumber feature files.
+     *
+     * @param projectKey - key of the project where the tests and pre-conditions are located
+     * @param projectId - id of the project where the tests and pre-conditions are located
+     * @param source - a name designating the source of the features being imported (e.g. the source project name)
+     * @returns the URL
+     */
+    public abstract getUrlImportFeature(
+        projectKey?: string,
+        projectId?: string,
+        source?: string
+    ): string;
+
+    /**
+     * This method is called when a feature file was successfully imported to Xray.
+     *
+     * @param response - the import feature response or `undefined` in case of errors
+     */
+    protected abstract handleResponseImportFeature(
+        response: ImportFeatureResponseServer | ImportFeatureResponseCloud
+    ): ImportFeatureResponse;
+
+    /**
+     * Returns the test execution key from the import execution response.
+     *
+     * @param response - the import execution response
+     * @returns the test execution issue key
+     */
+    protected abstract handleResponseImportExecution(
+        response: ImportExecutionResponseServer | ImportExecutionResponseCloud
+    ): string;
 
     /**
      * Prepares the Cucumber multipart import execution request.

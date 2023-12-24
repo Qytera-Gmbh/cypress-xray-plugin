@@ -5,6 +5,10 @@ import { IProjectDetails } from "./projectDetails";
  */
 export interface IScope {
     /**
+     * Extra properties of any type provided to this object.
+     */
+    [key: string]: unknown;
+    /**
      * The project the item has scope in.
      */
     project?: IProjectDetails;
@@ -12,8 +16,4 @@ export interface IScope {
      * The type of scope.
      */
     type?: string;
-    /**
-     * Extra properties of any type provided to this object.
-     */
-    [key: string]: unknown;
 }

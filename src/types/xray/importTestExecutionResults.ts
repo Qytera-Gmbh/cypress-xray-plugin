@@ -213,13 +213,13 @@ export interface XrayTestInfoCloud extends IXrayTestInfo {
      */
     steps?: {
         /**
-         * The step action.
-         */
-        action: string;
-        /**
          * Any other step custom fields.
          */
         [k: string]: NonNullable<unknown>;
+        /**
+         * The step action.
+         */
+        action: string;
     }[];
 }
 

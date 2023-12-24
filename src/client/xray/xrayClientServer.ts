@@ -17,10 +17,6 @@ export class XrayClientServer extends XrayClient {
         return `${this.apiBaseUrl}/rest/raven/latest/import/execution`;
     }
 
-    protected handleResponseImportExecution(response: ImportExecutionResponseServer): string {
-        return response.testExecIssue.key;
-    }
-
     public getUrlExportCucumber(issueKeys?: string[], filter?: number): string {
         const query: string[] = [];
         if (issueKeys) {
@@ -39,6 +35,10 @@ export class XrayClientServer extends XrayClient {
 
     public getUrlImportFeature(projectKey: string): string {
         return `${this.apiBaseUrl}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
+    }
+
+    protected handleResponseImportExecution(response: ImportExecutionResponseServer): string {
+        return response.testExecIssue.key;
     }
 
     protected handleResponseImportFeature(

@@ -106,6 +106,12 @@ export class JWTCredentials implements IHttpCredentials {
         return this.authenticationUrl;
     }
 
+    public async getAuthorizationHeader(): Promise<HttpHeader> {
+        return {
+            Authorization: `Bearer ${await this.getToken()}`,
+        };
+    }
+
     private async getToken(): Promise<string> {
         if (!this.token) {
             try {
@@ -153,11 +159,5 @@ export class JWTCredentials implements IHttpCredentials {
             }
         }
         return this.token;
-    }
-
-    public async getAuthorizationHeader(): Promise<HttpHeader> {
-        return {
-            Authorization: `Bearer ${await this.getToken()}`,
-        };
     }
 }
