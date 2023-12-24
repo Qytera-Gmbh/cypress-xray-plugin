@@ -1,7 +1,7 @@
-import { IJsonType } from "./jsonType";
-import { IScope } from "./scope";
+import { JsonType } from "./jsonType";
+import { Scope } from "./scope";
 
-export interface IFieldDetail {
+export interface FieldDetail {
     /**
      * The ID of the field.
      */
@@ -33,9 +33,9 @@ export interface IFieldDetail {
     /**
      * The data schema for the field.
      */
-    schema: IJsonType;
+    schema: JsonType;
 }
-export interface FieldDetailCloud extends IFieldDetail {
+export interface FieldDetailCloud extends FieldDetail {
     /**
      * The key of the field.
      */
@@ -43,5 +43,5 @@ export interface FieldDetailCloud extends IFieldDetail {
     /**
      * The scope of the field.
      */
-    scope?: IScope;
+    scope?: Scope;
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { PublicBrowser, ResolvedConfigOptions } from "./cypress";
 
 type dateTimeISO = string;

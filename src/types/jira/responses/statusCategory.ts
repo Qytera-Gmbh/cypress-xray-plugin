@@ -1,4 +1,4 @@
-export interface IStatusCategory {
+export interface StatusCategory {
     /**
      * The URL of the status category.
      */

@@ -1,9 +1,9 @@
-import { JiraClient } from "./jiraClient";
+import { AbstractJiraClient } from "./jiraClient";
 
 /**
  * A Jira client class for communicating with Jira Cloud instances.
  */
-export class JiraClientCloud extends JiraClient {
+export class JiraClientCloud extends AbstractJiraClient {
     public getUrlAddAttachment(issueIdOrKey: string): string {
         return `${this.apiBaseUrl}/rest/api/3/issue/${issueIdOrKey}/attachments`;
     }

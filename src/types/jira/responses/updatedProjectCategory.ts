@@ -1,7 +1,7 @@
 /**
  * The project an item has scope in.
  */
-export interface IUpdatedProjectCategory {
+export interface UpdatedProjectCategory {
     /**
      * The name of the project category.
      */

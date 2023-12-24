@@ -1,8 +1,8 @@
-import { IChangeItem } from "./changeItem";
-import { IHistoryMetadata } from "./historyMetadata";
-import { IUser } from "./user";
+import { ChangeItem } from "./changeItem";
+import { HistoryMetadata } from "./historyMetadata";
+import { User } from "./user";
 
-export interface IChangeHistory {
+export interface ChangeHistory {
     /**
      * The ID of the changelog.
      */
@@ -10,7 +10,7 @@ export interface IChangeHistory {
     /**
      * The user who made the change.
      */
-    author?: IUser;
+    author?: User;
     /**
      * The date on which the change took place.
      */
@@ -18,9 +18,9 @@ export interface IChangeHistory {
     /**
      * The list of items changed.
      */
-    items?: IChangeItem[];
+    items?: ChangeItem[];
     /**
      * The history metadata associated with the changed.
      */
-    historyMetadata?: IHistoryMetadata;
+    historyMetadata?: HistoryMetadata;
 }

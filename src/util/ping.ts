@@ -1,12 +1,12 @@
 import { AxiosResponse } from "axios";
 import {
     BasicAuthCredentials,
-    JWTCredentials,
-    PATCredentials,
+    JwtCredentials,
+    PatCredentials,
 } from "../authentication/credentials";
 import { REST } from "../https/requests";
 import { LOG, Level } from "../logging/logging";
-import { IUser } from "../types/jira/responses/user";
+import { User } from "../types/jira/responses/user";
 import { XrayLicenseStatus } from "../types/xray/responses/license";
 import { dedent } from "./dedent";
 import { errorMessage } from "./errors";
@@ -25,7 +25,7 @@ import { startInterval } from "./time";
  */
 export async function pingJiraInstance(
     url: string,
-    credentials: BasicAuthCredentials | PATCredentials
+    credentials: BasicAuthCredentials | PatCredentials
 ): Promise<void> {
     LOG.message(Level.DEBUG, "Pinging Jira instance...");
     const progressInterval = startInterval((totalTime: number) => {
@@ -33,7 +33,7 @@ export async function pingJiraInstance(
     });
     try {
         const header = credentials.getAuthorizationHeader();
-        const userResponse: AxiosResponse<IUser> = await REST.get(`${url}/rest/api/latest/myself`, {
+        const userResponse: AxiosResponse<User> = await REST.get(`${url}/rest/api/latest/myself`, {
             headers: {
                 ...header,
             },
@@ -75,7 +75,7 @@ export async function pingJiraInstance(
     }
 }
 
-function getUserString(user: IUser): string | undefined {
+function getUserString(user: User): string | undefined {
     return user.displayName ?? user.emailAddress ?? user.name;
 }
 
@@ -90,7 +90,7 @@ function getUserString(user: IUser): string | undefined {
  */
 export async function pingXrayServer(
     url: string,
-    credentials: BasicAuthCredentials | PATCredentials
+    credentials: BasicAuthCredentials | PatCredentials
 ): Promise<void> {
     LOG.message(Level.DEBUG, "Pinging Xray server instance...");
     const progressInterval = startInterval((totalTime: number) => {
@@ -156,7 +156,7 @@ export async function pingXrayServer(
  * @param credentials - Xray cloud credentials
  * @see https://docs.getxray.app/display/XRAYCLOUD/Authentication+-+REST+v2
  */
-export async function pingXrayCloud(credentials: JWTCredentials): Promise<void> {
+export async function pingXrayCloud(credentials: JwtCredentials): Promise<void> {
     LOG.message(Level.DEBUG, "Pinging Xray cloud...");
     try {
         await credentials.getAuthorizationHeader();

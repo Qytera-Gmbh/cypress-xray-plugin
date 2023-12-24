@@ -1,19 +1,19 @@
 import { expect } from "chai";
-import { getMockedJWTCredentials, getMockedLogger } from "../../../test/mocks";
+import { getMockedJwtCredentials, getMockedLogger } from "../../../test/mocks";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { Level } from "../../logging/logging";
-import { IXrayClient } from "./xrayClient";
+import { AbstractXrayClient } from "./xrayClient";
 import { XrayClientCloud } from "./xrayClientCloud";
 import { XrayClientServer } from "./xrayClientServer";
 
 describe("the xray clients", () => {
-    let client: IXrayClient;
+    let client: AbstractXrayClient;
 
     ["server", "cloud"].forEach((clientType: string) => {
         describe(clientType, () => {
             beforeEach(() => {
-                const credentials = getMockedJWTCredentials();
-                credentials.getAuthorizationHeader.resolves({ Authorization: "ey12345" });
+                const credentials = getMockedJwtCredentials();
+                credentials.getAuthorizationHeader.resolves({ ["Authorization"]: "ey12345" });
                 client =
                     clientType === "server"
                         ? new XrayClientServer(

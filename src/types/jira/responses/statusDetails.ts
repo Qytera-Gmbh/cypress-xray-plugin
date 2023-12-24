@@ -1,6 +1,6 @@
-import { IStatusCategory } from "./statusCategory";
+import { StatusCategory } from "./statusCategory";
 
-export interface IStatusDetails {
+export interface StatusDetails {
     /**
      * The URL of the status.
      */
@@ -24,8 +24,8 @@ export interface IStatusDetails {
     /**
      * The category assigned to the status.
      */
-    statusCategory?: IStatusCategory;
+    statusCategory?: StatusCategory;
 }
-export interface StatusDetailsServer extends IStatusDetails {
+export interface StatusDetailsServer extends StatusDetails {
     statusColor?: string;
 }

@@ -3,12 +3,12 @@ import { readFileSync } from "fs";
 import { SinonStubbedInstance } from "sinon";
 import { getMockedJiraRepository } from "../../../test/mocks";
 import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
-import { IJiraRepository } from "../../repository/jira/jiraRepository";
+import { JiraRepository } from "../../repository/jira/jiraRepository";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ImportExecutionCucumberMultipartConverter } from "./importExecutionCucumberMultipartConverter";
 
 describe("the import execution cucumber multpart converter", () => {
-    let jiraRepository: SinonStubbedInstance<IJiraRepository>;
+    let jiraRepository: SinonStubbedInstance<JiraRepository>;
 
     beforeEach(() => {
         jiraRepository = getMockedJiraRepository();

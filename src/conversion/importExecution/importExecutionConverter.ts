@@ -1,9 +1,9 @@
 import { CypressRunResult as CypressRunResult_V_12 } from "../../types/cypress/12.0.0/api";
 import { CypressRunResult as CypressRunResult_V_13 } from "../../types/cypress/13.0.0/api";
 import { InternalOptions } from "../../types/plugin";
-import { IXrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
+import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { dedent } from "../../util/dedent";
-import { truncateISOTime } from "../../util/time";
+import { truncateIsoTime } from "../../util/time";
 import { TestConverter } from "./testConverter";
 
 type CypressRunResultType = CypressRunResult_V_12 | CypressRunResult_V_13;
@@ -31,14 +31,14 @@ export class ImportExecutionConverter {
         this.options = options;
     }
 
-    public async toXrayJson(results: CypressRunResultType): Promise<IXrayTestExecutionResults> {
+    public async toXrayJson(results: CypressRunResultType): Promise<XrayTestExecutionResults> {
         const testConverter: TestConverter = new TestConverter(this.options, this.isCloudConverter);
         return {
             testExecutionKey: this.options.jira.testExecutionIssueKey,
             info: {
                 project: this.options.jira.projectKey,
-                startDate: truncateISOTime(results.startedTestsAt),
-                finishDate: truncateISOTime(results.endedTestsAt),
+                startDate: truncateIsoTime(results.startedTestsAt),
+                finishDate: truncateIsoTime(results.endedTestsAt),
                 description: this.getDescription(results),
                 summary: this.getTextExecutionResultSummary(results),
                 testPlanKey: this.options.jira.testPlanIssueKey,

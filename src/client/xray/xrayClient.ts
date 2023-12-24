@@ -3,9 +3,9 @@ import FormData from "form-data";
 import fs from "fs";
 import { REST, RequestConfigPost } from "../../https/requests";
 import { LOG, Level } from "../../logging/logging";
-import { IXrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
+import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ExportCucumberTestsResponse } from "../../types/xray/responses/exportFeature";
 import {
     ImportExecutionResponseCloud,
@@ -21,7 +21,7 @@ import { LoggedError, errorMessage } from "../../util/errors";
 import { HELP } from "../../util/help";
 import { Client } from "../client";
 
-export interface IXrayClient {
+export interface XrayClient {
     /**
      * Uploads test results to the Xray instance.
      *
@@ -30,7 +30,7 @@ export interface IXrayClient {
      * in case of errors
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
-    importExecution(execution: IXrayTestExecutionResults): Promise<string | null | undefined>;
+    importExecution(execution: XrayTestExecutionResults): Promise<string | null | undefined>;
     /**
      * Downloads feature (file) specifications from corresponding Xray issues.
      *
@@ -69,16 +69,16 @@ export interface IXrayClient {
      */
     importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: ICucumberMultipartInfo
+        cucumberInfo: CucumberMultipartInfo
     ): Promise<string | null | undefined>;
 }
 
 /**
  * An abstract Xray client class for communicating with Xray instances.
  */
-export abstract class XrayClient extends Client implements IXrayClient {
+export abstract class AbstractXrayClient extends Client implements XrayClient {
     public async importExecution(
-        execution: IXrayTestExecutionResults
+        execution: XrayTestExecutionResults
     ): Promise<string | null | undefined> {
         try {
             if (!execution.tests || execution.tests.length === 0) {
@@ -201,7 +201,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
 
     public async importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: ICucumberMultipartInfo
+        cucumberInfo: CucumberMultipartInfo
     ): Promise<string | null | undefined> {
         try {
             if (cucumberJson.length === 0) {
@@ -294,7 +294,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
      */
     protected abstract prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: ICucumberMultipartInfo
+        cucumberInfo: CucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>>;
 
     /**

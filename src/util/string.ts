@@ -1,3 +1,9 @@
+/**
+ * Converts an unknown value to a string.
+ *
+ * @param value - the value
+ * @returns the string
+ */
 export function unknownToString(value: unknown): string {
     switch (typeof value) {
         case "string":

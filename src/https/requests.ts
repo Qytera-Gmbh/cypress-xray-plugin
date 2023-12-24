@@ -8,7 +8,7 @@ import axios, {
 import { readFileSync } from "fs";
 import { Agent } from "https";
 import { LOG, Level } from "../logging/logging";
-import { InternalOpenSSLOptions } from "../types/plugin";
+import { InternalSslOptions } from "../types/plugin";
 import { normalizedFilename } from "../util/files";
 
 export interface RequestConfigPost<D = unknown> {
@@ -28,7 +28,7 @@ export interface RequestsOptions {
     /**
      * Additional OpenSSL options for the underlying HTTP agent.
      */
-    openSSL?: InternalOpenSSLOptions;
+    ssl?: InternalSslOptions;
 }
 
 export class AxiosRestClient {
@@ -76,8 +76,8 @@ export class AxiosRestClient {
     private getAgent(): Agent {
         if (!this.httpAgent) {
             this.httpAgent = new Agent({
-                ca: this.readCertificate(this.options?.openSSL?.rootCAPath),
-                secureOptions: this.options?.openSSL?.secureOptions,
+                ca: this.readCertificate(this.options?.ssl?.rootCAPath),
+                secureOptions: this.options?.ssl?.secureOptions,
             });
         }
         return this.httpAgent;

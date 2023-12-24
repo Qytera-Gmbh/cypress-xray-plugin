@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { ResolvedConfigOptions } from "./cypress";
 
 type HookName = "before" | "beforeEach" | "afterEach" | "after";

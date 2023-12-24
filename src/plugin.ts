@@ -4,8 +4,8 @@ import {
     initClients,
     initCucumberOptions,
     initJiraOptions,
-    initOpenSSLOptions,
     initPluginOptions,
+    initSslOptions,
     initXrayOptions,
     setPluginContext,
 } from "./context";
@@ -64,11 +64,11 @@ export async function configureXrayPlugin(
         plugin: pluginOptions,
         xray: initXrayOptions(config.env, options.xray),
         cucumber: await initCucumberOptions(config, options.cucumber),
-        openSSL: initOpenSSLOptions(config.env, options.openSSL),
+        ssl: initSslOptions(config.env, options.openSSL),
     };
     REST.init({
         debug: internalOptions.plugin.debug,
-        openSSL: internalOptions.openSSL,
+        ssl: internalOptions.ssl,
     });
     setPluginContext({
         cypress: config,

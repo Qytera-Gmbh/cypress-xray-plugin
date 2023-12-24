@@ -1,11 +1,11 @@
 import { AxiosResponse } from "axios";
 import FormData from "form-data";
-import { JWTCredentials } from "../../authentication/credentials";
+import { JwtCredentials } from "../../authentication/credentials";
 import { RequestConfigPost, REST } from "../../https/requests";
 import { Level, LOG } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/importExecution";
 import {
@@ -15,13 +15,13 @@ import {
 } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
-import { IXrayClient, XrayClient } from "./xrayClient";
+import { AbstractXrayClient } from "./xrayClient";
 
 interface GetTestsJiraData {
     key: string;
 }
 
-export interface IXrayClientCloud extends IXrayClient {
+export interface HasTestTypes {
     /**
      * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
      * `Generic`.
@@ -33,7 +33,7 @@ export interface IXrayClientCloud extends IXrayClient {
     getTestTypes(projectKey: string, ...issueKeys: string[]): Promise<StringMap<string>>;
 }
 
-export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
+export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes {
     /**
      * The URLs of Xray's Cloud API.
      * Note: API v1 would also work, but let's stick to the more recent one.
@@ -52,7 +52,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
      *
      * @param credentials - the credentials to use during authentication
      */
-    constructor(credentials: JWTCredentials) {
+    constructor(credentials: JwtCredentials) {
         super(XrayClientCloud.URL, credentials);
     }
 
@@ -85,6 +85,14 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         return `${this.apiBaseUrl}/import/feature?${query.join("&")}`;
     }
 
+    /**
+     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
+     * `Generic`.
+     *
+     * @param projectKey - key of the project containing the test issues
+     * @param issueKeys - the keys of the test issues to retrieve test types for
+     * @returns a promise which will contain the mapping of issues to test types
+     */
     public async getTestTypes(
         projectKey: string,
         ...issueKeys: string[]
@@ -230,7 +238,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
 
     protected async prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: ICucumberMultipartInfo
+        cucumberInfo: CucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>> {
         const formData = new FormData();
         const resultString = JSON.stringify(cucumberJson);

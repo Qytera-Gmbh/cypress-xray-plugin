@@ -3,11 +3,11 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import { SinonStubbedInstance } from "sinon";
-import { getMockedJWTCredentials, getMockedLogger, getMockedRestClient } from "../../../test/mocks";
+import { getMockedJwtCredentials, getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { AxiosRestClient } from "../../https/requests";
 import { Level } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { dedent } from "../../util/dedent";
 import { XrayClientCloud } from "./xrayClientCloud";
@@ -19,8 +19,8 @@ describe("the xray cloud client", () => {
     let restClient: SinonStubbedInstance<AxiosRestClient>;
 
     beforeEach(() => {
-        const credentials = getMockedJWTCredentials();
-        credentials.getAuthorizationHeader.resolves({ Authorization: "ey12345" });
+        const credentials = getMockedJwtCredentials();
+        credentials.getAuthorizationHeader.resolves({ ["Authorization"]: "ey12345" });
         client = new XrayClientCloud(credentials);
         restClient = getMockedRestClient();
     });
@@ -138,7 +138,7 @@ describe("the xray cloud client", () => {
                         "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
                         "utf-8"
                     )
-                ) as ICucumberMultipartInfo
+                ) as CucumberMultipartInfo
             );
             expect(response).to.eq("CYP-123");
         });
@@ -173,7 +173,7 @@ describe("the xray cloud client", () => {
                         "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
                         "utf-8"
                     )
-                ) as ICucumberMultipartInfo
+                ) as CucumberMultipartInfo
             );
             expect(response).to.be.undefined;
             expect(logger.message).to.have.been.calledWithExactly(
@@ -372,9 +372,9 @@ describe("the xray cloud client", () => {
             });
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
             expect(response).to.deep.eq({
-                "CYP-330": "Generic",
-                "CYP-331": "Cucumber",
-                "CYP-332": "Manual",
+                ["CYP-330"]: "Generic",
+                ["CYP-331"]: "Cucumber",
+                ["CYP-332"]: "Manual",
             });
         });
 
@@ -431,9 +431,9 @@ describe("the xray cloud client", () => {
             });
             const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
             expect(response).to.deep.eq({
-                "CYP-330": "Generic",
-                "CYP-331": "Cucumber",
-                "CYP-332": "Manual",
+                ["CYP-330"]: "Generic",
+                ["CYP-331"]: "Cucumber",
+                ["CYP-332"]: "Manual",
             });
         });
 

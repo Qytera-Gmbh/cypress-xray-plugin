@@ -1,4 +1,4 @@
-export interface IJsonType {
+export interface JsonType {
     /**
      * The data type of the field.
      */
@@ -20,7 +20,7 @@ export interface IJsonType {
      */
     customId?: number;
 }
-export interface JsonTypeCloud extends IJsonType {
+export interface JsonTypeCloud extends JsonType {
     /**
      * If the field is a custom field, the configuration of the field.
      */

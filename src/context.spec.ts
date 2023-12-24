@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { stub } from "sinon";
 import { getMockedLogger } from "../test/mocks";
-import { BasicAuthCredentials, JWTCredentials, PATCredentials } from "./authentication/credentials";
+import { BasicAuthCredentials, JwtCredentials, PatCredentials } from "./authentication/credentials";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
@@ -11,8 +11,8 @@ import {
     initClients,
     initCucumberOptions,
     initJiraOptions,
-    initOpenSSLOptions,
     initPluginOptions,
+    initSslOptions,
     initXrayOptions,
 } from "./context";
 import * as dependencies from "./dependencies";
@@ -20,8 +20,8 @@ import { Level } from "./logging/logging";
 import {
     InternalCucumberOptions,
     InternalJiraOptions,
-    InternalOpenSSLOptions,
     InternalPluginOptions,
+    InternalSslOptions,
     InternalXrayOptions,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
@@ -161,12 +161,12 @@ describe("the plugin context configuration", () => {
             });
 
             describe("openSSL", () => {
-                const openSSLOptions: InternalOpenSSLOptions = initOpenSSLOptions({}, {});
+                const sslOptions: InternalSslOptions = initSslOptions({}, {});
                 it("openSSL", () => {
-                    expect(openSSLOptions.rootCAPath).to.eq(undefined);
+                    expect(sslOptions.rootCAPath).to.eq(undefined);
                 });
                 it("secureOptions", () => {
-                    expect(openSSLOptions.secureOptions).to.eq(undefined);
+                    expect(sslOptions.secureOptions).to.eq(undefined);
                 });
             });
         });
@@ -533,22 +533,22 @@ describe("the plugin context configuration", () => {
 
             describe("openSSL", () => {
                 it("rootCAPath", () => {
-                    const openSSLOptions = initOpenSSLOptions(
+                    const sslOptions = initSslOptions(
                         {},
                         {
-                            rootCAPath: "/path/to/cert.pem",
+                            ["rootCAPath"]: "/path/to/cert.pem",
                         }
                     );
-                    expect(openSSLOptions.rootCAPath).to.eq("/path/to/cert.pem");
+                    expect(sslOptions.rootCAPath).to.eq("/path/to/cert.pem");
                 });
                 it("secureOptions", () => {
-                    const openSSLOptions = initOpenSSLOptions(
+                    const sslOptions = initSslOptions(
                         {},
                         {
                             secureOptions: 42,
                         }
                     );
-                    expect(openSSLOptions.secureOptions).to.eq(42);
+                    expect(sslOptions.secureOptions).to.eq(42);
                 });
             });
         });
@@ -556,7 +556,7 @@ describe("the plugin context configuration", () => {
             describe("jira", () => {
                 it("JIRA_PROJECT_KEY", () => {
                     const env = {
-                        JIRA_PROJECT_KEY: "ABC",
+                        ["JIRA_PROJECT_KEY"]: "ABC",
                     };
                     const jiraOptions = initJiraOptions(env, {
                         projectKey: "CYP",
@@ -567,7 +567,7 @@ describe("the plugin context configuration", () => {
 
                 it("JIRA_ATTACH_VIDEOS", () => {
                     const env = {
-                        JIRA_ATTACH_VIDEOS: "true",
+                        ["JIRA_ATTACH_VIDEOS"]: "true",
                     };
                     const jiraOptions = initJiraOptions(env, {
                         projectKey: "CYP",
@@ -580,7 +580,7 @@ describe("the plugin context configuration", () => {
                 describe("fields", () => {
                     it("JIRA_FIELDS_DESCRIPTION", () => {
                         const env = {
-                            JIRA_FIELDS_DESCRIPTION: "customfield_98765",
+                            ["JIRA_FIELDS_DESCRIPTION"]: "customfield_98765",
                         };
                         const jiraOptions = initJiraOptions(env, {
                             projectKey: "PRJ",
@@ -593,7 +593,7 @@ describe("the plugin context configuration", () => {
                     });
                     it("JIRA_FIELDS_LABELS", () => {
                         const env = {
-                            JIRA_FIELDS_LABELS: "customfield_98765",
+                            ["JIRA_FIELDS_LABELS"]: "customfield_98765",
                         };
                         const jiraOptions = initJiraOptions(env, {
                             projectKey: "PRJ",
@@ -606,7 +606,7 @@ describe("the plugin context configuration", () => {
                     });
                     it("JIRA_FIELDS_SUMMARY", () => {
                         const env = {
-                            JIRA_FIELDS_SUMMARY: "customfield_98765",
+                            ["JIRA_FIELDS_SUMMARY"]: "customfield_98765",
                         };
                         const jiraOptions = initJiraOptions(env, {
                             projectKey: "PRJ",
@@ -619,7 +619,7 @@ describe("the plugin context configuration", () => {
                     });
                     it("JIRA_FIELDS_TEST_ENVIRONMENTS", () => {
                         const env = {
-                            JIRA_FIELDS_TEST_ENVIRONMENTS: "customfield_98765",
+                            ["JIRA_FIELDS_TEST_ENVIRONMENTS"]: "customfield_98765",
                         };
                         const jiraOptions = initJiraOptions(env, {
                             projectKey: "PRJ",
@@ -632,7 +632,7 @@ describe("the plugin context configuration", () => {
                     });
                     it("JIRA_FIELDS_TEST_PLAN", () => {
                         const env = {
-                            JIRA_FIELDS_TEST_PLAN: "customfield_98765",
+                            ["JIRA_FIELDS_TEST_PLAN"]: "customfield_98765",
                         };
                         const jiraOptions = initJiraOptions(env, {
                             projectKey: "PRJ",
@@ -645,7 +645,7 @@ describe("the plugin context configuration", () => {
                     });
                     it("JIRA_FIELDS_TEST_TYPE", () => {
                         const env = {
-                            JIRA_FIELDS_TEST_TYPE: "customfield_98765",
+                            ["JIRA_FIELDS_TEST_TYPE"]: "customfield_98765",
                         };
                         const jiraOptions = initJiraOptions(env, {
                             projectKey: "PRJ",
@@ -659,7 +659,7 @@ describe("the plugin context configuration", () => {
                 });
                 it("JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION", () => {
                     const env = {
-                        JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION: "Good morning",
+                        ["JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION"]: "Good morning",
                     };
                     const jiraOptions = initJiraOptions(env, {
                         projectKey: "CYP",
@@ -671,7 +671,7 @@ describe("the plugin context configuration", () => {
 
                 it("JIRA_TEST_EXECUTION_ISSUE_KEY", () => {
                     const env = {
-                        JIRA_TEST_EXECUTION_ISSUE_KEY: "CYP-123",
+                        ["JIRA_TEST_EXECUTION_ISSUE_KEY"]: "CYP-123",
                     };
                     const jiraOptions = initJiraOptions(env, {
                         projectKey: "CYP",
@@ -683,7 +683,7 @@ describe("the plugin context configuration", () => {
 
                 it("JIRA_TEST_EXECUTION_ISSUE_SUMMARY", () => {
                     const env = {
-                        JIRA_TEST_EXECUTION_ISSUE_SUMMARY: "Some test case",
+                        ["JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Some test case",
                     };
                     const jiraOptions = initJiraOptions(env, {
                         projectKey: "CYP",
@@ -695,7 +695,7 @@ describe("the plugin context configuration", () => {
 
                 it("JIRA_TEST_EXECUTION_ISSUE_TYPE", () => {
                     const env = {
-                        JIRA_TEST_EXECUTION_ISSUE_TYPE: "Execution Issue",
+                        ["JIRA_TEST_EXECUTION_ISSUE_TYPE"]: "Execution Issue",
                     };
                     const jiraOptions = initJiraOptions(env, {
                         projectKey: "CYP",
@@ -707,7 +707,7 @@ describe("the plugin context configuration", () => {
 
                 it("JIRA_TEST_PLAN_ISSUE_KEY", () => {
                     const env = {
-                        JIRA_TEST_PLAN_ISSUE_KEY: "CYP-456",
+                        ["JIRA_TEST_PLAN_ISSUE_KEY"]: "CYP-456",
                     };
                     const jiraOptions = initJiraOptions(env, {
                         projectKey: "CYP",
@@ -719,7 +719,7 @@ describe("the plugin context configuration", () => {
 
                 it("JIRA_TEST_PLAN_ISSUE_TYPE", () => {
                     const env = {
-                        JIRA_TEST_PLAN_ISSUE_TYPE: "Plan Issue",
+                        ["JIRA_TEST_PLAN_ISSUE_TYPE"]: "Plan Issue",
                     };
                     const jiraOptions = initJiraOptions(env, {
                         projectKey: "CYP",
@@ -731,7 +731,7 @@ describe("the plugin context configuration", () => {
 
                 it("JIRA_URL", () => {
                     const env = {
-                        JIRA_URL: "https://example.org",
+                        ["JIRA_URL"]: "https://example.org",
                     };
                     const jiraOptions = initJiraOptions(env, {
                         projectKey: "CYP",
@@ -743,7 +743,7 @@ describe("the plugin context configuration", () => {
             describe("xray", () => {
                 it("XRAY_STATUS_FAILED", () => {
                     const env = {
-                        XRAY_STATUS_FAILED: "no",
+                        ["XRAY_STATUS_FAILED"]: "no",
                     };
                     const xrayOptions = initXrayOptions(env, {
                         status: {
@@ -755,7 +755,7 @@ describe("the plugin context configuration", () => {
 
                 it("XRAY_STATUS_PASSED", () => {
                     const env = {
-                        XRAY_STATUS_PASSED: "ok",
+                        ["XRAY_STATUS_PASSED"]: "ok",
                     };
                     const xrayOptions = initXrayOptions(env, {
                         status: {
@@ -767,7 +767,7 @@ describe("the plugin context configuration", () => {
 
                 it("XRAY_STATUS_PENDING", () => {
                     const env = {
-                        XRAY_STATUS_PENDING: "pendulum",
+                        ["XRAY_STATUS_PENDING"]: "pendulum",
                     };
                     const xrayOptions = initXrayOptions(env, {
                         status: {
@@ -779,7 +779,7 @@ describe("the plugin context configuration", () => {
 
                 it("XRAY_STATUS_SKIPPED", () => {
                     const env = {
-                        XRAY_STATUS_SKIPPED: "ski-ba-bop-ba-dop-bop",
+                        ["XRAY_STATUS_SKIPPED"]: "ski-ba-bop-ba-dop-bop",
                     };
                     const xrayOptions = initXrayOptions(env, {
                         status: {
@@ -791,7 +791,7 @@ describe("the plugin context configuration", () => {
 
                 it("XRAY_TEST_ENVIRONMENTS", () => {
                     const env = {
-                        XRAY_TEST_ENVIRONMENTS: [false, "bonjour", 5],
+                        ["XRAY_TEST_ENVIRONMENTS"]: [false, "bonjour", 5],
                     };
                     const xrayOptions = initXrayOptions(env, {
                         testEnvironments: ["A", "B", "C"],
@@ -801,7 +801,7 @@ describe("the plugin context configuration", () => {
 
                 it("XRAY_UPLOAD_RESULTS", () => {
                     const env = {
-                        XRAY_UPLOAD_RESULTS: "false",
+                        ["XRAY_UPLOAD_RESULTS"]: "false",
                     };
                     const xrayOptions = initXrayOptions(env, {
                         uploadResults: true,
@@ -811,7 +811,7 @@ describe("the plugin context configuration", () => {
 
                 it("XRAY_UPLOAD_SCREENSHOTS", () => {
                     const env = {
-                        XRAY_UPLOAD_SCREENSHOTS: "false",
+                        ["XRAY_UPLOAD_SCREENSHOTS"]: "false",
                     };
                     const xrayOptions = initXrayOptions(env, {
                         uploadScreenshots: true,
@@ -829,7 +829,7 @@ describe("the plugin context configuration", () => {
                             specPattern: "",
                             excludeSpecPattern: "",
                             env: {
-                                CUCUMBER_FEATURE_FILE_EXTENSION: ".feature.file",
+                                ["CUCUMBER_FEATURE_FILE_EXTENSION"]: ".feature.file",
                                 jsonEnabled: true,
                             },
                         },
@@ -849,7 +849,7 @@ describe("the plugin context configuration", () => {
                             specPattern: "",
                             excludeSpecPattern: "",
                             env: {
-                                CUCUMBER_DOWNLOAD_FEATURES: "true",
+                                ["CUCUMBER_DOWNLOAD_FEATURES"]: "true",
                                 jsonEnabled: true,
                             },
                         },
@@ -870,7 +870,7 @@ describe("the plugin context configuration", () => {
                             specPattern: "",
                             excludeSpecPattern: "",
                             env: {
-                                CUCUMBER_PREFIXES_PRECONDITION: "BigPrecondition:",
+                                ["CUCUMBER_PREFIXES_PRECONDITION"]: "BigPrecondition:",
                                 jsonEnabled: true,
                             },
                         },
@@ -891,7 +891,7 @@ describe("the plugin context configuration", () => {
                             specPattern: "",
                             excludeSpecPattern: "",
                             env: {
-                                CUCUMBER_PREFIXES_TEST: "BigTest:",
+                                ["CUCUMBER_PREFIXES_TEST"]: "BigTest:",
                                 jsonEnabled: true,
                             },
                         },
@@ -912,7 +912,7 @@ describe("the plugin context configuration", () => {
                             specPattern: "",
                             excludeSpecPattern: "",
                             env: {
-                                CUCUMBER_UPLOAD_FEATURES: "true",
+                                ["CUCUMBER_UPLOAD_FEATURES"]: "true",
                                 jsonEnabled: true,
                             },
                         },
@@ -927,7 +927,7 @@ describe("the plugin context configuration", () => {
             describe("plugin", () => {
                 it("PLUGIN_DEBUG", () => {
                     const env = {
-                        PLUGIN_DEBUG: "true",
+                        ["PLUGIN_DEBUG"]: "true",
                     };
                     const pluginOptions = initPluginOptions(env, {
                         debug: false,
@@ -937,7 +937,7 @@ describe("the plugin context configuration", () => {
 
                 it("PLUGIN_ENABLED", () => {
                     const env = {
-                        PLUGIN_ENABLED: "false",
+                        ["PLUGIN_ENABLED"]: "false",
                     };
                     const pluginOptions = initPluginOptions(env, {
                         enabled: true,
@@ -947,7 +947,7 @@ describe("the plugin context configuration", () => {
 
                 it("PLUGIN_LOG_DIRECTORY", () => {
                     const env = {
-                        PLUGIN_LOG_DIRECTORY: "/home/logs/cypress-xray-plugin",
+                        ["PLUGIN_LOG_DIRECTORY"]: "/home/logs/cypress-xray-plugin",
                     };
                     const pluginOptions = initPluginOptions(env, {
                         logDirectory: "./logging/subdirectory",
@@ -957,7 +957,7 @@ describe("the plugin context configuration", () => {
 
                 it("PLUGIN_NORMALIZE_SCREENSHOT_NAMES", () => {
                     const env = {
-                        PLUGIN_NORMALIZE_SCREENSHOT_NAMES: "true",
+                        ["PLUGIN_NORMALIZE_SCREENSHOT_NAMES"]: "true",
                     };
                     const pluginOptions = initPluginOptions(env, {
                         normalizeScreenshotNames: false,
@@ -968,22 +968,22 @@ describe("the plugin context configuration", () => {
             describe("openSSL", () => {
                 it("OPENSSL_ROOT_CA_PATH ", () => {
                     const env = {
-                        OPENSSL_ROOT_CA_PATH: "/home/ssl/ca.pem",
+                        ["OPENSSL_ROOT_CA_PATH"]: "/home/ssl/ca.pem",
                     };
-                    const openSSLOptions = initOpenSSLOptions(env, {
-                        rootCAPath: "/a/b/c.pem",
+                    const sslOptions = initSslOptions(env, {
+                        ["rootCAPath"]: "/a/b/c.pem",
                     });
-                    expect(openSSLOptions.rootCAPath).to.eq("/home/ssl/ca.pem");
+                    expect(sslOptions.rootCAPath).to.eq("/home/ssl/ca.pem");
                 });
 
                 it("OPENSSL_SECURE_OPTIONS ", () => {
                     const env = {
-                        OPENSSL_SECURE_OPTIONS: 415,
+                        ["OPENSSL_SECURE_OPTIONS"]: 415,
                     };
-                    const openSSLOptions = initOpenSSLOptions(env, {
+                    const sslOptions = initSslOptions(env, {
                         secureOptions: 42,
                     });
-                    expect(openSSLOptions.secureOptions).to.eq(415);
+                    expect(sslOptions.secureOptions).to.eq(415);
                 });
             });
         });
@@ -1028,7 +1028,7 @@ describe("the plugin context configuration", () => {
                 );
             });
             it("throws if the cucumber preprocessor is not installed", async () => {
-                stub(dependencies, "importModule").rejects(new Error("Failed to import package"));
+                stub(dependencies, "IMPORT").rejects(new Error("Failed to import package"));
                 await expect(
                     initCucumberOptions(
                         {
@@ -1117,10 +1117,10 @@ describe("the plugin context configuration", () => {
 
         it("should detect cloud credentials", async () => {
             const env = {
-                JIRA_USERNAME: "user@somewhere.xyz",
-                JIRA_API_TOKEN: "1337",
-                XRAY_CLIENT_ID: "abc",
-                XRAY_CLIENT_SECRET: "xyz",
+                ["JIRA_USERNAME"]: "user@somewhere.xyz",
+                ["JIRA_API_TOKEN"]: "1337",
+                ["XRAY_CLIENT_ID"]: "abc",
+                ["XRAY_CLIENT_SECRET"]: "xyz",
             };
             const logger = getMockedLogger();
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
@@ -1148,7 +1148,7 @@ describe("the plugin context configuration", () => {
                 BasicAuthCredentials
             );
             expect((xrayClient as XrayClientCloud).getCredentials()).to.be.an.instanceof(
-                JWTCredentials
+                JwtCredentials
             );
             expect(stubbedJiraPing).to.have.been.calledOnce;
             expect(stubbedXrayPing).to.have.been.calledOnce;
@@ -1156,8 +1156,8 @@ describe("the plugin context configuration", () => {
 
         it("should throw for missing xray cloud credentials", async () => {
             const env = {
-                JIRA_USERNAME: "user@somewhere.xyz",
-                JIRA_API_TOKEN: "1337",
+                ["JIRA_USERNAME"]: "user@somewhere.xyz",
+                ["JIRA_API_TOKEN"]: "1337",
             };
             const logger = getMockedLogger();
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
@@ -1179,7 +1179,7 @@ describe("the plugin context configuration", () => {
 
         it("should detect PAT credentials", async () => {
             const env = {
-                JIRA_API_TOKEN: "1337",
+                ["JIRA_API_TOKEN"]: "1337",
             };
             const logger = getMockedLogger();
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
@@ -1198,10 +1198,10 @@ describe("the plugin context configuration", () => {
             expect(jiraClient).to.be.an.instanceof(JiraClientServer);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
             expect((jiraClient as JiraClientServer).getCredentials()).to.be.an.instanceof(
-                PATCredentials
+                PatCredentials
             );
             expect((xrayClient as XrayClientServer).getCredentials()).to.be.an.instanceof(
-                PATCredentials
+                PatCredentials
             );
             expect(stubbedJiraPing).to.have.been.calledOnce;
             expect(stubbedXrayPing).to.have.been.calledOnce;
@@ -1209,8 +1209,8 @@ describe("the plugin context configuration", () => {
 
         it("should detect basic auth credentials", async () => {
             const env = {
-                JIRA_USERNAME: "user",
-                JIRA_PASSWORD: "1337",
+                ["JIRA_USERNAME"]: "user",
+                ["JIRA_PASSWORD"]: "1337",
             };
             const logger = getMockedLogger();
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
@@ -1246,11 +1246,11 @@ describe("the plugin context configuration", () => {
 
         it("should choose cloud credentials over server credentials", async () => {
             const env = {
-                JIRA_USERNAME: "user",
-                JIRA_PASSWORD: "xyz",
-                JIRA_API_TOKEN: "1337",
-                XRAY_CLIENT_ID: "abc",
-                XRAY_CLIENT_SECRET: "xyz",
+                ["JIRA_USERNAME"]: "user",
+                ["JIRA_PASSWORD"]: "xyz",
+                ["JIRA_API_TOKEN"]: "1337",
+                ["XRAY_CLIENT_ID"]: "abc",
+                ["XRAY_CLIENT_SECRET"]: "xyz",
             };
             getMockedLogger({ allowUnstubbedCalls: true });
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
@@ -1264,7 +1264,7 @@ describe("the plugin context configuration", () => {
                 BasicAuthCredentials
             );
             expect((xrayClient as XrayClientCloud).getCredentials()).to.be.an.instanceof(
-                JWTCredentials
+                JwtCredentials
             );
         });
         it("should throw an error for missing jira urls", async () => {

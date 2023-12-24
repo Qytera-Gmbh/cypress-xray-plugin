@@ -1,12 +1,12 @@
-import { IFieldMeta } from "./fieldMeta";
-import { IStatusDetails } from "./statusDetails";
+import { FieldMeta } from "./fieldMeta";
+import { StatusDetails } from "./statusDetails";
 
-export interface IIssueTransition {
+export interface IssueTransition {
     /**
      * Details of the fields associated with the issue transition screen. Use this information to
      * populate `fields` and `update` in a transition request.
      */
-    fields?: Record<string, IFieldMeta>;
+    fields?: Record<string, FieldMeta>;
     /**
      * The ID of the issue transition. Required when specifying a transition to undertake.
      */
@@ -18,12 +18,12 @@ export interface IIssueTransition {
     /**
      * Details of the issue status after the transition.
      */
-    to?: IStatusDetails;
+    to?: StatusDetails;
 }
-export interface IssueTransitionServer extends IIssueTransition {
+export interface IssueTransitionServer extends IssueTransition {
     opsbarSequence?: number;
 }
-export interface IssueTransitionCloud extends IIssueTransition {
+export interface IssueTransitionCloud extends IssueTransition {
     /**
      * Expand options that include additional transition details in the response.
      */

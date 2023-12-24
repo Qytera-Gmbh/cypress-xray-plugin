@@ -1,5 +1,5 @@
-import { IJiraClient } from "../../../client/jira/jiraClient";
-import { IFieldDetail } from "../../../types/jira/responses/fieldDetail";
+import { JiraClient } from "../../../client/jira/jiraClient";
+import { FieldDetail } from "../../../types/jira/responses/fieldDetail";
 import { JiraFieldIds } from "../../../types/plugin";
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
@@ -10,7 +10,7 @@ import { SupportedFields } from "./jiraIssueFetcher";
  * An interface describing a Jira field repository, which provides methods for retrieving arbitrary
  * field IDs from Jira.
  */
-export interface IJiraFieldRepository {
+export interface JiraFieldRepository {
     /**
      * Returns the Jira field ID for the field with the provided name.
      *
@@ -25,7 +25,7 @@ export interface IJiraFieldRepository {
  * A Jira field repository which caches retrieved field IDs. After the first ID retrieval, all
  * subsequent accesses will return the cached value.
  */
-export class CachingJiraFieldRepository implements IJiraFieldRepository {
+export class CachingJiraFieldRepository implements JiraFieldRepository {
     private readonly names: StringMap<string> = {};
     private readonly ids: StringMap<string> = {};
 
@@ -35,7 +35,7 @@ export class CachingJiraFieldRepository implements IJiraFieldRepository {
      *
      * @param jiraClient - the Jira client
      */
-    constructor(private readonly jiraClient: IJiraClient) {}
+    constructor(private readonly jiraClient: JiraClient) {}
 
     public async getFieldId(fieldName: SupportedFields): Promise<string> {
         // Lowercase everything to work around case sensitivities.
@@ -46,7 +46,7 @@ export class CachingJiraFieldRepository implements IJiraFieldRepository {
             if (!jiraFields) {
                 throw new Error(`Failed to fetch Jira field ID for field with name: ${fieldName}`);
             } else {
-                const matches = jiraFields.filter((field) => {
+                const matches = jiraFields.filter((field: FieldDetail) => {
                     const lowerCasedField = field.name.toLowerCase();
                     return lowerCasedField === lowerCasedName;
                 });
@@ -65,7 +65,7 @@ export class CachingJiraFieldRepository implements IJiraFieldRepository {
         return this.ids[lowerCasedName];
     }
 
-    private multipleFieldsError(fieldName: SupportedFields, matches: IFieldDetail[]): Error {
+    private multipleFieldsError(fieldName: SupportedFields, matches: FieldDetail[]): Error {
         const nameDuplicates = prettyPadObjects(matches)
             .map((duplicate) =>
                 Object.entries(duplicate)
@@ -74,7 +74,7 @@ export class CachingJiraFieldRepository implements IJiraFieldRepository {
             )
             .sort()
             .join("\n");
-        const idSuggestions = matches.map((field: IFieldDetail) => `"${field.id}"`).join(" or ");
+        const idSuggestions = matches.map((field: FieldDetail) => `"${field.id}"`).join(" or ");
         return new Error(
             dedent(`
                 Failed to fetch Jira field ID for field with name: ${fieldName}

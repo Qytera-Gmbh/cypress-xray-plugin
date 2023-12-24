@@ -1,8 +1,8 @@
-import { IFieldMeta } from "./fieldMeta";
+import { FieldMeta } from "./fieldMeta";
 
-export interface IEditMeta {
+export interface EditMeta {
     /**
      * A list of editable field details.
      */
-    fields?: Record<string, IFieldMeta>;
+    fields?: Record<string, FieldMeta>;
 }

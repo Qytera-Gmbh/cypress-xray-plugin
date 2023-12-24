@@ -1,6 +1,6 @@
-import { IJsonType } from "./jsonType";
+import { JsonType } from "./jsonType";
 
-export interface IFieldMeta {
+export interface FieldMeta {
     /**
      * Whether the field is required.
      */
@@ -8,7 +8,7 @@ export interface IFieldMeta {
     /**
      * The data type of the field.
      */
-    schema?: IJsonType;
+    schema?: JsonType;
     /**
      * The name of the field.
      */
@@ -34,10 +34,10 @@ export interface IFieldMeta {
      */
     defaultValue?: unknown;
 }
-export interface FieldMetaServer extends IFieldMeta {
+export interface FieldMetaServer extends FieldMeta {
     fieldId?: string;
 }
-export interface FieldMetaCloud extends IFieldMeta {
+export interface FieldMetaCloud extends FieldMeta {
     /**
      * The configuration properties.
      */

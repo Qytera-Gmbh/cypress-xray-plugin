@@ -1,4 +1,4 @@
-export interface IHistoryMetadataParticipant {
+export interface HistoryMetadataParticipant {
     /**
      * The ID of the user or system associated with a history record.
      */

@@ -7,7 +7,7 @@ import { BasicAuthCredentials } from "../../authentication/credentials";
 import { AxiosRestClient } from "../../https/requests";
 import { Level } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { dedent } from "../../util/dedent";
 import { XrayClientServer } from "./xrayClientServer";
 
@@ -95,7 +95,7 @@ describe("the xray server client", () => {
                         "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
                         "utf-8"
                     )
-                ) as ICucumberMultipartInfo
+                ) as CucumberMultipartInfo
             );
             expect(response).to.eq("CYP-123");
         });

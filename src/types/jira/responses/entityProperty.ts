@@ -1,4 +1,4 @@
-export interface IEntityProperty {
+export interface EntityProperty {
     /**
      * The key of the property. Required on create and update.
      */

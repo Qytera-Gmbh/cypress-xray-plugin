@@ -16,7 +16,7 @@ import { toCypressStatus } from "./statusConversion";
 /**
  * Test data extracted from Cypress tests, ready to be converted into an Xray JSON test.
  */
-export interface ITestRunData {
+export interface TestRunData {
     /**
      * The duration of the test in milliseconds.
      */
@@ -54,7 +54,7 @@ export interface ITestRunData {
 }
 
 /**
- * Converts a Cypress v12 (or before) run result into several {@link ITestRunData} objects.
+ * Converts a Cypress v12 (or before) run result into several {@link TestRunData} objects.
  *
  * The function returns an array of promises because the conversion of the test results contained
  * within the run can fail for individual tests. This makes sure that a single failing conversion
@@ -76,8 +76,10 @@ export interface ITestRunData {
  * @param runResult - the run result
  * @returns an array of test data promises
  */
-export function getTestRunData_V12(runResult: RunResult_V12): Promise<ITestRunData>[] {
-    const testRuns: Promise<ITestRunData>[] = [];
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function getTestRunData_V12(runResult: RunResult_V12): Promise<TestRunData>[] {
+    const testRuns: Promise<TestRunData>[] = [];
     runResult.tests.forEach((test: TestResult_V12) => {
         testRuns.push(
             new Promise((resolve) => {
@@ -102,7 +104,7 @@ export function getTestRunData_V12(runResult: RunResult_V12): Promise<ITestRunDa
 }
 
 /**
- * Converts a Cypress v13 (and above) run result into several {@link ITestRunData | `ITestRunData`}
+ * Converts a Cypress v13 (and above) run result into several {@link TestRunData | `ITestRunData`}
  * objects. The project key is required for mapping screenshots to test cases.
  *
  * The function returns an array of promises because the conversion of the test results contained
@@ -126,11 +128,12 @@ export function getTestRunData_V12(runResult: RunResult_V12): Promise<ITestRunDa
  * @param projectKey - the project key
  * @returns an array of test data promises
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getTestRunData_V13(
     runResult: RunResult_V13,
     projectKey: string
-): Promise<ITestRunData>[] {
-    const testRuns: Promise<ITestRunData>[] = [];
+): Promise<TestRunData>[] {
+    const testRuns: Promise<TestRunData>[] = [];
     const testStarts: Map<string, Date> = startTimesByTest(runResult);
     const testScreenshots: StringMap<ScreenshotInformation_V13[]> = screenshotsByTest(
         runResult,

@@ -1,4 +1,4 @@
-export interface IProperties {
+export interface Properties {
     /**
      * Details of the issue properties identified in the request.
      */

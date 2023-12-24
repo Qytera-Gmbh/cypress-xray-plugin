@@ -23,7 +23,36 @@
         "@typescript-eslint/member-ordering": "error",
         "@typescript-eslint/prefer-readonly": "error",
         "no-shadow": "off",
-        "@typescript-eslint/no-shadow": "error"
+        "@typescript-eslint/no-shadow": "error",
+        "@typescript-eslint/naming-convention": [
+          "error",
+          {
+            "selector": "default",
+            "format": ["strictCamelCase"]
+          },
+          {
+            "selector": "variable",
+            "modifiers": ["global", "const"],
+            "format": ["UPPER_CASE"]
+          },
+          {
+            "selector": "memberLike",
+            "modifiers": ["static", "readonly"],
+            "format": ["UPPER_CASE"]
+          },
+          {
+            "selector": "enumMember",
+            "format": ["UPPER_CASE"]
+          },
+          {
+            "selector": "typeLike",
+            "format": ["StrictPascalCase"]
+          },
+          {
+            "selector": "import",
+            "format": ["StrictPascalCase", "strictCamelCase"]
+          }
+        ]
     },
     "overrides": [
       {

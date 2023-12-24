@@ -1,4 +1,4 @@
-import { BasicAuthCredentials, JWTCredentials, PATCredentials } from "./authentication/credentials";
+import { BasicAuthCredentials, JwtCredentials, PatCredentials } from "./authentication/credentials";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
@@ -11,14 +11,17 @@ import {
 import { ENV_NAMES } from "./env";
 import { LOG, Level } from "./logging/logging";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
-import { JiraIssueFetcher, JiraIssueFetcherCloud } from "./repository/jira/fields/jiraIssueFetcher";
+import {
+    CachingJiraIssueFetcher,
+    CachingJiraIssueFetcherCloud,
+} from "./repository/jira/fields/jiraIssueFetcher";
 import { CachingJiraRepository } from "./repository/jira/jiraRepository";
 import {
     ClientCombination,
     InternalCucumberOptions,
     InternalJiraOptions,
-    InternalOpenSSLOptions,
     InternalPluginOptions,
+    InternalSslOptions,
     InternalXrayOptions,
     Options,
     PluginContext,
@@ -262,7 +265,7 @@ export async function initCucumberOptions(
 }
 
 /**
- * Returns an {@link InternalOpenSSLOptions | `InternalOpenSSLOptions`} instance based on parsed
+ * Returns an {@link InternalSslOptions | `InternalOpenSSLOptions`} instance based on parsed
  * environment variables and a provided options object. Environment variables will take precedence
  * over the options set in the object.
  *
@@ -270,12 +273,12 @@ export async function initCucumberOptions(
  * @param options - an options object containing OpenSSL options
  * @returns the constructed internal OpenSSL options
  */
-export function initOpenSSLOptions(
+export function initSslOptions(
     env: Cypress.ObjectLike,
     options: Options["openSSL"]
-): InternalOpenSSLOptions {
+): InternalSslOptions {
     return {
-        rootCAPath: parse(env, ENV_NAMES.openSSL.rootCAPath, asString) ?? options?.rootCAPath,
+        ["rootCAPath"]: parse(env, ENV_NAMES.openSSL.rootCAPath, asString) ?? options?.rootCAPath,
         secureOptions: parse(env, ENV_NAMES.openSSL.secureOptions, asInt) ?? options?.secureOptions,
     };
 }
@@ -316,7 +319,7 @@ export async function initClients(
                 Level.INFO,
                 "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
             );
-            const xrayCredentials = new JWTCredentials(
+            const xrayCredentials = new JwtCredentials(
                 env[ENV_NAMES.authentication.xray.clientId] as string,
                 env[ENV_NAMES.authentication.xray.clientSecret] as string,
                 `${XrayClientCloud.URL}/authenticate`
@@ -324,7 +327,7 @@ export async function initClients(
             await pingXrayCloud(xrayCredentials);
             const xrayClient = new XrayClientCloud(xrayCredentials);
             const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-            const jiraFieldFetcher = new JiraIssueFetcherCloud(
+            const jiraFieldFetcher = new CachingJiraIssueFetcherCloud(
                 jiraClient,
                 jiraFieldRepository,
                 xrayClient,
@@ -347,7 +350,7 @@ export async function initClients(
     } else if (ENV_NAMES.authentication.jira.apiToken in env && jiraOptions.url) {
         // Jira server authentication: no username, only token.
         LOG.message(Level.INFO, "Jira PAT found. Setting up Jira server PAT credentials");
-        const credentials = new PATCredentials(
+        const credentials = new PatCredentials(
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
         await pingJiraInstance(jiraOptions.url, credentials);
@@ -357,7 +360,7 @@ export async function initClients(
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
         const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-        const jiraFieldFetcher = new JiraIssueFetcher(
+        const jiraFieldFetcher = new CachingJiraIssueFetcher(
             jiraClient,
             jiraFieldRepository,
             jiraOptions.fields
@@ -390,7 +393,7 @@ export async function initClients(
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
         const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-        const jiraFieldFetcher = new JiraIssueFetcher(
+        const jiraFieldFetcher = new CachingJiraIssueFetcher(
             jiraClient,
             jiraFieldRepository,
             jiraOptions.fields

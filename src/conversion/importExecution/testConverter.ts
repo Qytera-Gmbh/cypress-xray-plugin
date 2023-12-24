@@ -1,4 +1,4 @@
-import Path, { basename } from "path";
+import { basename, parse } from "path";
 import { gte, lt } from "semver";
 import { LOG, Level } from "../../logging/logging";
 import { getNativeTestIssueKey } from "../../preprocessing/preprocessing";
@@ -12,13 +12,13 @@ import {
     ScreenshotInformation as ScreenshotInformation_V13,
 } from "../../types/cypress/13.0.0/api";
 import { InternalOptions } from "../../types/plugin";
-import { IXrayTest, XrayEvidenceItem } from "../../types/xray/importTestExecutionResults";
+import { XrayEvidenceItem, XrayTest } from "../../types/xray/importTestExecutionResults";
 import { encodeFile } from "../../util/base64";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
 import { normalizedFilename } from "../../util/files";
-import { truncateISOTime } from "../../util/time";
-import { ITestRunData, getTestRunData_V12, getTestRunData_V13 } from "./runConversion";
+import { truncateIsoTime } from "../../util/time";
+import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./runConversion";
 import { getXrayStatus } from "./statusConversion";
 
 /**
@@ -43,16 +43,16 @@ export class TestConverter {
 
     public async toXrayTests(
         runResults: CypressRunResult_V12 | CypressRunResult_V13
-    ): Promise<[IXrayTest, ...IXrayTest[]]> {
+    ): Promise<[XrayTest, ...XrayTest[]]> {
         const testRunData = await this.getTestRunData(runResults);
-        const xrayTests: IXrayTest[] = [];
-        testRunData.forEach((testData: ITestRunData) => {
+        const xrayTests: XrayTest[] = [];
+        testRunData.forEach((testData: TestRunData) => {
             try {
                 const issueKey = getNativeTestIssueKey(
                     testData.title,
                     this.options.jira.projectKey
                 );
-                const test: IXrayTest = this.getTest(
+                const test: XrayTest = this.getTest(
                     testData,
                     issueKey,
                     this.getXrayEvidence(testData)
@@ -79,9 +79,9 @@ export class TestConverter {
 
     private async getTestRunData(
         runResults: CypressRunResult_V12 | CypressRunResult_V13
-    ): Promise<ITestRunData[]> {
-        const testRunData: ITestRunData[] = [];
-        const conversionPromises: [string, Promise<ITestRunData>][] = [];
+    ): Promise<TestRunData[]> {
+        const testRunData: TestRunData[] = [];
+        const conversionPromises: [string, Promise<TestRunData>][] = [];
         if (lt(runResults.cypressVersion, "13.0.0")) {
             const runs = runResults.runs as RunResult_V12[];
             if (
@@ -143,7 +143,7 @@ export class TestConverter {
                 for (const run of runResults.runs as RunResult_V13[]) {
                     for (const screenshot of run.screenshots) {
                         if (!this.willBeUploaded(screenshot, testRunData)) {
-                            const path = Path.parse(screenshot.path);
+                            const path = parse(screenshot.path);
                             LOG.message(
                                 Level.WARNING,
                                 dedent(`
@@ -163,12 +163,12 @@ export class TestConverter {
         return testRunData;
     }
 
-    private getTest(test: ITestRunData, issueKey: string, evidence: XrayEvidenceItem[]): IXrayTest {
+    private getTest(test: TestRunData, issueKey: string, evidence: XrayEvidenceItem[]): XrayTest {
         // TODO: Support multiple iterations.
-        const xrayTest: IXrayTest = {
+        const xrayTest: XrayTest = {
             testKey: issueKey,
-            start: truncateISOTime(test.startedAt.toISOString()),
-            finish: truncateISOTime(
+            start: truncateIsoTime(test.startedAt.toISOString()),
+            finish: truncateIsoTime(
                 new Date(test.startedAt.getTime() + test.duration).toISOString()
             ),
             status: getXrayStatus(test.status, this.isCloudConverter, this.options.xray.status),
@@ -179,7 +179,7 @@ export class TestConverter {
         return xrayTest;
     }
 
-    private getXrayEvidence(testRunData: ITestRunData): XrayEvidenceItem[] {
+    private getXrayEvidence(testRunData: TestRunData): XrayEvidenceItem[] {
         const evidence: XrayEvidenceItem[] = [];
         if (this.options.xray.uploadScreenshots) {
             for (const screenshot of testRunData.screenshots) {
@@ -198,9 +198,9 @@ export class TestConverter {
 
     private willBeUploaded(
         screenshot: ScreenshotInformation_V13,
-        testRunData: ITestRunData[]
+        testRunData: TestRunData[]
     ): boolean {
-        return testRunData.some((testRun: ITestRunData) => {
+        return testRunData.some((testRun: TestRunData) => {
             return testRun.screenshots.some(({ filepath }) => {
                 return screenshot.path === filepath;
             });

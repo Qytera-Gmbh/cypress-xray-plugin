@@ -2,7 +2,7 @@ import FormData from "form-data";
 import { RequestConfigPost } from "../../https/requests";
 import { LOG, Level } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { ICucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
 import {
     ImportFeatureResponse,
@@ -10,9 +10,9 @@ import {
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
-import { XrayClient } from "./xrayClient";
+import { AbstractXrayClient } from "./xrayClient";
 
-export class XrayClientServer extends XrayClient {
+export class XrayClientServer extends AbstractXrayClient {
     public getUrlImportExecution(): string {
         return `${this.apiBaseUrl}/rest/raven/latest/import/execution`;
     }
@@ -97,7 +97,7 @@ export class XrayClientServer extends XrayClient {
 
     protected async prepareRequestImportExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: ICucumberMultipartInfo
+        cucumberInfo: CucumberMultipartInfo
     ): Promise<RequestConfigPost<FormData>> {
         const formData = new FormData();
         const resultString = JSON.stringify(cucumberJson);

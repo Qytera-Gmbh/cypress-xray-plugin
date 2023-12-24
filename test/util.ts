@@ -62,21 +62,23 @@ type Action =
     | "task";
 
 interface ActionCallbacks {
-    "after:run": (
+    ["after:run"]: (
         results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
     ) => Promise<void>;
-    "after:screenshot": (
+    ["after:screenshot"]: (
         details: Cypress.ScreenshotDetails
     ) => Promise<Cypress.AfterScreenshotReturnObject>;
-    "after:spec": (spec: Cypress.Spec, results: CypressCommandLine.RunResult) => Promise<void>;
-    "before:run": (runDetails: Cypress.BeforeRunDetails) => Promise<void>;
-    "before:spec": (spec: Cypress.Spec) => Promise<void>;
-    "before:browser:launch": (
+    ["after:spec"]: (spec: Cypress.Spec, results: CypressCommandLine.RunResult) => Promise<void>;
+    ["before:run"]: (runDetails: Cypress.BeforeRunDetails) => Promise<void>;
+    ["before:spec"]: (spec: Cypress.Spec) => Promise<void>;
+    ["before:browser:launch"]: (
         browser: Cypress.Browser,
         browserLaunchOptions: Cypress.BrowserLaunchOptions
     ) => Promise<Cypress.BrowserLaunchOptions>;
-    "file:preprocessor": (file: Cypress.FileObject) => Promise<string>;
-    "dev-server:start": (file: Cypress.DevServerConfig) => Promise<Cypress.ResolvedDevServerConfig>;
+    ["file:preprocessor"]: (file: Cypress.FileObject) => Promise<string>;
+    ["dev-server:start"]: (
+        file: Cypress.DevServerConfig
+    ) => Promise<Cypress.ResolvedDevServerConfig>;
     task: (tasks: Cypress.Tasks) => void;
 }
 

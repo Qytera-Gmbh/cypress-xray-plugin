@@ -3,7 +3,7 @@ import { expect } from "chai";
 import chalk from "chalk";
 import fs from "fs";
 import path from "path";
-import Sinon from "sinon";
+import { stub } from "sinon";
 import { resolveTestDirPath } from "../../test/util";
 import { LoggedError } from "../util/errors";
 import { Level, PluginLogger } from "./logging";
@@ -12,7 +12,7 @@ describe("logging", () => {
     describe("the plugin logger", () => {
         describe("message", () => {
             it("handles single line messages", () => {
-                const stdout = Sinon.stub(console, "info");
+                const stdout = stub(console, "info");
                 const logger = new PluginLogger();
                 logger.message(Level.INFO, "hello");
                 expect(stdout).to.have.been.calledOnceWithExactly(
@@ -20,7 +20,7 @@ describe("logging", () => {
                 );
             });
             it("handles multi line messages", () => {
-                const stdout = Sinon.stub(console, "info");
+                const stdout = stub(console, "info");
                 const logger = new PluginLogger();
                 logger.message(Level.INFO, "hello\nbonjour");
                 expect(stdout).to.have.been.calledThrice;
@@ -63,7 +63,7 @@ describe("logging", () => {
 
             it("writes to non-existent directories", () => {
                 const timestamp = Date.now();
-                const stderr = Sinon.stub(console, "error");
+                const stderr = stub(console, "error");
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs", timestamp.toString()),
                 });
@@ -93,7 +93,7 @@ describe("logging", () => {
 
         describe("logErrorToFile", () => {
             it("writes to relative directories", () => {
-                const stderr = Sinon.stub(console, "error");
+                const stderr = stub(console, "error");
                 const logger = new PluginLogger({
                     logDirectory: path.relative(".", resolveTestDirPath("logs")),
                 });
@@ -117,7 +117,7 @@ describe("logging", () => {
             });
 
             it("writes to absolute directories", () => {
-                const stderr = Sinon.stub(console, "error");
+                const stderr = stub(console, "error");
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs"),
                 });
@@ -142,7 +142,7 @@ describe("logging", () => {
 
             it("writes to non-existent directories", () => {
                 const timestamp = Date.now();
-                const stderr = Sinon.stub(console, "error");
+                const stderr = stub(console, "error");
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs", timestamp.toString()),
                 });
@@ -171,7 +171,7 @@ describe("logging", () => {
 
             it("writes axios errors", () => {
                 const timestamp = Date.now();
-                const stderr = Sinon.stub(console, "error");
+                const stderr = stub(console, "error");
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs", timestamp.toString()),
                 });
@@ -185,7 +185,9 @@ describe("logging", () => {
                             status: 400,
                             statusText: "Bad Request",
                             config: {
-                                headers: new AxiosHeaders({ Authorization: "Bearer 123456790" }),
+                                headers: new AxiosHeaders({
+                                    ["Authorization"]: "Bearer 123456790",
+                                }),
                             },
                             headers: {},
                             data: {
@@ -220,7 +222,7 @@ describe("logging", () => {
 
             it("writes generic errors", () => {
                 const timestamp = Date.now();
-                const stderr = Sinon.stub(console, "error");
+                const stderr = stub(console, "error");
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs", timestamp.toString()),
                 });
@@ -241,7 +243,7 @@ describe("logging", () => {
 
             it("does not write already logged errors", () => {
                 const timestamp = Date.now();
-                const stderr = Sinon.stub(console, "error");
+                const stderr = stub(console, "error");
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs", timestamp.toString()),
                 });

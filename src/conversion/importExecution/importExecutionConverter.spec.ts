@@ -3,12 +3,7 @@ import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { getMockedLogger } from "../../../test/mocks";
 import { expectToExist } from "../../../test/util";
-import {
-    initJiraOptions,
-    initOpenSSLOptions,
-    initPluginOptions,
-    initXrayOptions,
-} from "../../context";
+import { initJiraOptions, initPluginOptions, initSslOptions, initXrayOptions } from "../../context";
 import { Level } from "../../logging/logging";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
@@ -35,7 +30,7 @@ describe("the import execution converter", () => {
                 }
             ),
             plugin: initPluginOptions({}, {}),
-            openSSL: initOpenSSLOptions({}, {}),
+            ssl: initSslOptions({}, {}),
         };
         converter = new ImportExecutionConverter(options, false);
     });

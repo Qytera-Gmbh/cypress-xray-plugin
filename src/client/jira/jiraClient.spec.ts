@@ -7,8 +7,8 @@ import { expectToExist } from "../../../test/util";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { AxiosRestClient } from "../../https/requests";
 import { Level } from "../../logging/logging";
-import { ISearchResults } from "../../types/jira/responses/searchResults";
-import { IJiraClient } from "./jiraClient";
+import { SearchResults } from "../../types/jira/responses/searchResults";
+import { JiraClient } from "./jiraClient";
 import { JiraClientCloud } from "./jiraClientCloud";
 import { JiraClientServer } from "./jiraClientServer";
 
@@ -22,7 +22,7 @@ describe("the jira clients", () => {
     ["server", "cloud"].forEach((clientType: string) => {
         // The concrete client implementation does not matter here. The methods here only test the
         // abstract base class's code.
-        let client: IJiraClient;
+        let client: JiraClient;
 
         describe(clientType, () => {
             beforeEach(() => {
@@ -312,12 +312,12 @@ describe("the jira clients", () => {
                     expect(response[4].key).to.eq("CYP-237");
                 });
                 it("should return all issues with pagination", async () => {
-                    const mockedData: ISearchResults = JSON.parse(
+                    const mockedData: SearchResults = JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/search.json",
                             "utf-8"
                         )
-                    ) as ISearchResults;
+                    ) as SearchResults;
                     restClient.post.onFirstCall().resolves({
                         status: HttpStatusCode.Ok,
                         data: {

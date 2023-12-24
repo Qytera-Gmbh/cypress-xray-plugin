@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 export interface ResolvedConfigOptions<ComponentDevServerOpts = unknown> {
     baseUrl: string | null;
     env: Record<string, unknown>;

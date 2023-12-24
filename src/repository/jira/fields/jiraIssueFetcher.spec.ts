@@ -6,18 +6,22 @@ import {
     getMockedJiraFieldRepository,
     getMockedXrayClient,
 } from "../../../../test/mocks";
-import { IJiraClient } from "../../../client/jira/jiraClient";
-import { IXrayClientCloud } from "../../../client/xray/xrayClientCloud";
+import { JiraClient } from "../../../client/jira/jiraClient";
+import { XrayClientCloud } from "../../../client/xray/xrayClientCloud";
 import { initJiraOptions } from "../../../context";
 import { dedent } from "../../../util/dedent";
-import { IJiraFieldRepository } from "./jiraFieldRepository";
-import { JiraIssueFetcher, JiraIssueFetcherCloud, SupportedFields } from "./jiraIssueFetcher";
+import { JiraFieldRepository } from "./jiraFieldRepository";
+import {
+    CachingJiraIssueFetcher,
+    CachingJiraIssueFetcherCloud,
+    SupportedFields,
+} from "./jiraIssueFetcher";
 
 chai.use(chaiAsPromised);
 
 describe("the jira issue fetcher", () => {
-    let fieldRepository: SinonStubbedInstance<IJiraFieldRepository>;
-    let jiraClient: SinonStubbedInstance<IJiraClient>;
+    let fieldRepository: SinonStubbedInstance<JiraFieldRepository>;
+    let jiraClient: SinonStubbedInstance<JiraClient>;
 
     beforeEach(() => {
         fieldRepository = getMockedJiraFieldRepository();
@@ -28,13 +32,13 @@ describe("the jira issue fetcher", () => {
         it("uses provided description IDs", async () => {
             jiraClient.search
                 .withArgs({ fields: ["customfield_456"], jql: "issue in (CYP-789)" })
-                .resolves([{ key: "CYP-789", fields: { customfield_456: "orange juice" } }]);
-            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
+                .resolves([{ key: "CYP-789", fields: { ["customfield_456"]: "orange juice" } }]);
+            const fetcher = new CachingJiraIssueFetcher(jiraClient, fieldRepository, {
                 description: "customfield_456",
             });
             const descriptions = await fetcher.fetchDescriptions("CYP-789");
             expect(descriptions).to.deep.eq({
-                "CYP-789": "orange juice",
+                ["CYP-789"]: "orange juice",
             });
         });
 
@@ -48,16 +52,16 @@ describe("the jira issue fetcher", () => {
                     jql: "issue in (CYP-123,CYP-456,CYP-789)",
                 })
                 .resolves([
-                    { key: "CYP-123", fields: { customfield_456: "I" } },
-                    { key: "CYP-456", fields: { customfield_456: "like" } },
-                    { key: "CYP-789", fields: { customfield_456: "orange juice" } },
+                    { key: "CYP-123", fields: { ["customfield_456"]: "I" } },
+                    { key: "CYP-456", fields: { ["customfield_456"]: "like" } },
+                    { key: "CYP-789", fields: { ["customfield_456"]: "orange juice" } },
                 ]);
-            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository);
+            const fetcher = new CachingJiraIssueFetcher(jiraClient, fieldRepository);
             const descriptions = await fetcher.fetchDescriptions("CYP-123", "CYP-456", "CYP-789");
             expect(descriptions).to.deep.eq({
-                "CYP-123": "I",
-                "CYP-456": "like",
-                "CYP-789": "orange juice",
+                ["CYP-123"]: "I",
+                ["CYP-456"]: "like",
+                ["CYP-789"]: "orange juice",
             });
         });
     });
@@ -72,15 +76,15 @@ describe("the jira issue fetcher", () => {
                 .resolves([
                     {
                         key: "CYP-789",
-                        fields: { customfield_789: ["orange juice", "grape juice"] },
+                        fields: { ["customfield_789"]: ["orange juice", "grape juice"] },
                     },
                 ]);
-            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
+            const fetcher = new CachingJiraIssueFetcher(jiraClient, fieldRepository, {
                 labels: "customfield_789",
             });
             const labels = await fetcher.fetchLabels("CYP-789");
             expect(labels).to.deep.eq({
-                "CYP-789": ["orange juice", "grape juice"],
+                ["CYP-789"]: ["orange juice", "grape juice"],
             });
         });
         it("fetches label IDs automatically", async () => {
@@ -91,19 +95,19 @@ describe("the jira issue fetcher", () => {
                     jql: "issue in (CYP-123,CYP-456,CYP-789)",
                 })
                 .resolves([
-                    { key: "CYP-123", fields: { customfield_789: ["I"] } },
-                    { key: "CYP-456", fields: { customfield_789: ["like"] } },
+                    { key: "CYP-123", fields: { ["customfield_789"]: ["I"] } },
+                    { key: "CYP-456", fields: { ["customfield_789"]: ["like"] } },
                     {
                         key: "CYP-789",
-                        fields: { customfield_789: ["orange juice", "grape juice"] },
+                        fields: { ["customfield_789"]: ["orange juice", "grape juice"] },
                     },
                 ]);
-            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository);
+            const fetcher = new CachingJiraIssueFetcher(jiraClient, fieldRepository);
             const labels = await fetcher.fetchLabels("CYP-123", "CYP-456", "CYP-789");
             expect(labels).to.deep.eq({
-                "CYP-123": ["I"],
-                "CYP-456": ["like"],
-                "CYP-789": ["orange juice", "grape juice"],
+                ["CYP-123"]: ["I"],
+                ["CYP-456"]: ["like"],
+                ["CYP-789"]: ["orange juice", "grape juice"],
             });
         });
     });
@@ -115,13 +119,13 @@ describe("the jira issue fetcher", () => {
                     fields: ["customfield_123"],
                     jql: "issue in (CYP-789)",
                 })
-                .resolves([{ key: "CYP-789", fields: { customfield_123: "apple juice" } }]);
-            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
+                .resolves([{ key: "CYP-789", fields: { ["customfield_123"]: "apple juice" } }]);
+            const fetcher = new CachingJiraIssueFetcher(jiraClient, fieldRepository, {
                 summary: "customfield_123",
             });
             const summaries = await fetcher.fetchSummaries("CYP-789");
             expect(summaries).to.deep.eq({
-                "CYP-789": "apple juice",
+                ["CYP-789"]: "apple juice",
             });
         });
         it("fetches summary IDs automatically", async () => {
@@ -134,16 +138,16 @@ describe("the jira issue fetcher", () => {
                     jql: "issue in (CYP-123,CYP-456,CYP-789)",
                 })
                 .resolves([
-                    { key: "CYP-123", fields: { customfield_123: "I" } },
-                    { key: "CYP-456", fields: { customfield_123: "like" } },
-                    { key: "CYP-789", fields: { customfield_123: "apple juice" } },
+                    { key: "CYP-123", fields: { ["customfield_123"]: "I" } },
+                    { key: "CYP-456", fields: { ["customfield_123"]: "like" } },
+                    { key: "CYP-789", fields: { ["customfield_123"]: "apple juice" } },
                 ]);
-            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository);
+            const fetcher = new CachingJiraIssueFetcher(jiraClient, fieldRepository);
             const summaries = await fetcher.fetchSummaries("CYP-123", "CYP-456", "CYP-789");
             expect(summaries).to.deep.eq({
-                "CYP-123": "I",
-                "CYP-456": "like",
-                "CYP-789": "apple juice",
+                ["CYP-123"]: "I",
+                ["CYP-456"]: "like",
+                ["CYP-789"]: "apple juice",
             });
         });
     });
@@ -158,15 +162,15 @@ describe("the jira issue fetcher", () => {
                 .resolves([
                     {
                         key: "CYP-789",
-                        fields: { customfield_011: { value: "cherry" } },
+                        fields: { ["customfield_011"]: { value: "cherry" } },
                     },
                 ]);
-            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
+            const fetcher = new CachingJiraIssueFetcher(jiraClient, fieldRepository, {
                 testType: "customfield_011",
             });
             const testTypes = await fetcher.fetchTestTypes("CYP-789");
             expect(testTypes).to.deep.eq({
-                "CYP-789": "cherry",
+                ["CYP-789"]: "cherry",
             });
         });
         it("fetches test type IDs automatically", async () => {
@@ -179,16 +183,16 @@ describe("the jira issue fetcher", () => {
                     jql: "issue in (CYP-123,CYP-456,CYP-789)",
                 })
                 .resolves([
-                    { key: "CYP-123", fields: { customfield_011: { value: "banana" } } },
-                    { key: "CYP-456", fields: { customfield_011: { value: "pineapple" } } },
-                    { key: "CYP-789", fields: { customfield_011: { value: "cherry" } } },
+                    { key: "CYP-123", fields: { ["customfield_011"]: { value: "banana" } } },
+                    { key: "CYP-456", fields: { ["customfield_011"]: { value: "pineapple" } } },
+                    { key: "CYP-789", fields: { ["customfield_011"]: { value: "cherry" } } },
                 ]);
-            const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository);
+            const fetcher = new CachingJiraIssueFetcher(jiraClient, fieldRepository);
             const testTypes = await fetcher.fetchTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(testTypes).to.deep.eq({
-                "CYP-123": "banana",
-                "CYP-456": "pineapple",
-                "CYP-789": "cherry",
+                ["CYP-123"]: "banana",
+                ["CYP-456"]: "pineapple",
+                ["CYP-789"]: "cherry",
             });
         });
     });
@@ -203,7 +207,7 @@ describe("the jira issue fetcher", () => {
                 { key: "CYP-123", fields: { summary: "banana" } },
                 { fields: { summary: "cherry" } },
             ]);
-        const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
+        const fetcher = new CachingJiraIssueFetcher(jiraClient, fieldRepository, {
             summary: "summary",
         });
         await expect(fetcher.fetchSummaries("CYP-123", "CYP-456")).to.eventually.be.rejectedWith(
@@ -226,7 +230,7 @@ describe("the jira issue fetcher", () => {
                 { key: "CYP-456", fields: { jeff: "cherry" } },
                 { key: "CYP-123", fields: { george: "banana" } },
             ]);
-        const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
+        const fetcher = new CachingJiraIssueFetcher(jiraClient, fieldRepository, {
             summary: "summary",
         });
         await expect(fetcher.fetchSummaries("CYP-123", "CYP-456")).to.eventually.be.rejectedWith(
@@ -242,7 +246,7 @@ describe("the jira issue fetcher", () => {
 
     it("handles search failures gracefully", async () => {
         jiraClient.search.resolves(undefined);
-        const fetcher = new JiraIssueFetcher(jiraClient, fieldRepository, {
+        const fetcher = new CachingJiraIssueFetcher(jiraClient, fieldRepository, {
             summary: "summary",
         });
         expect(await fetcher.fetchSummaries("CYP-123", "CYP-456")).to.deep.eq({});
@@ -250,9 +254,9 @@ describe("the jira issue fetcher", () => {
 });
 
 describe("the jira cloud issue fetcher", () => {
-    let fieldRepository: IJiraFieldRepository;
-    let jiraClient: IJiraClient;
-    let mockedXrayClient: SinonStubbedInstance<IXrayClientCloud>;
+    let fieldRepository: JiraFieldRepository;
+    let jiraClient: JiraClient;
+    let mockedXrayClient: SinonStubbedInstance<XrayClientCloud>;
 
     beforeEach(() => {
         fieldRepository = getMockedJiraFieldRepository();
@@ -265,11 +269,11 @@ describe("the jira cloud issue fetcher", () => {
             mockedXrayClient.getTestTypes
                 .withArgs("CYP", ...["CYP-123", "CYP-456", "CYP-789"])
                 .resolves({
-                    "CYP-123": "apple",
-                    "CYP-456": "orange",
-                    "CYP-789": "pear",
+                    ["CYP-123"]: "apple",
+                    ["CYP-456"]: "orange",
+                    ["CYP-789"]: "pear",
                 });
-            const fetcher = new JiraIssueFetcherCloud(
+            const fetcher = new CachingJiraIssueFetcherCloud(
                 jiraClient,
                 fieldRepository,
                 mockedXrayClient,
@@ -277,9 +281,9 @@ describe("the jira cloud issue fetcher", () => {
             );
             const testTypes = await fetcher.fetchTestTypes("CYP-123", "CYP-456", "CYP-789");
             expect(testTypes).to.deep.eq({
-                "CYP-123": "apple",
-                "CYP-456": "orange",
-                "CYP-789": "pear",
+                ["CYP-123"]: "apple",
+                ["CYP-456"]: "orange",
+                ["CYP-789"]: "pear",
             });
         });
     });

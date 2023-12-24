@@ -5,8 +5,8 @@ import { getMockedLogger } from "../../../test/mocks";
 import {
     initCucumberOptions,
     initJiraOptions,
-    initOpenSSLOptions,
     initPluginOptions,
+    initSslOptions,
     initXrayOptions,
 } from "../../context";
 import { Level } from "../../logging/logging";
@@ -36,7 +36,7 @@ describe("the test converter", () => {
                 }
             ),
             plugin: initPluginOptions({}, {}),
-            openSSL: initOpenSSLOptions({}, {}),
+            ssl: initSslOptions({}, {}),
         };
     });
 

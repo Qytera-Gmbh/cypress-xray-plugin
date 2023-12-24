@@ -70,7 +70,7 @@ describe("the plugin exports should work", () => {
                     projectKey: "CYP-123",
                     url: "https://example.org",
                 },
-                openSSL: {},
+                ["openSSL"]: {},
             };
             expect(options.openSSL).to.exist;
         });

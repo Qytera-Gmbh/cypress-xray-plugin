@@ -1,6 +1,6 @@
-import { IJiraClient } from "../../../client/jira/jiraClient";
-import { IXrayClientCloud } from "../../../client/xray/xrayClientCloud";
-import { IIssue } from "../../../types/jira/responses/issue";
+import { JiraClient } from "../../../client/jira/jiraClient";
+import { XrayClientCloud } from "../../../client/xray/xrayClientCloud";
+import { Issue } from "../../../types/jira/responses/issue";
 import { InternalJiraOptions, JiraFieldIds } from "../../../types/plugin";
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
@@ -10,7 +10,7 @@ import {
     extractNestedString,
     extractString,
 } from "../../../util/extraction";
-import { IJiraFieldRepository } from "./jiraFieldRepository";
+import { JiraFieldRepository } from "./jiraFieldRepository";
 
 export enum SupportedFields {
     DESCRIPTION = "description",
@@ -25,7 +25,7 @@ export enum SupportedFields {
  * An interface describing classes which can fetch Jira issue data such as descriptions, labels or
  * summaries.
  */
-export interface IJiraIssueFetcher {
+export interface JiraIssueFetcher {
     /**
      * Fetches the descriptions of issues specified by their Jira issue keys.
      *
@@ -60,7 +60,7 @@ export interface IJiraIssueFetcher {
  * A generic Jira issue data fetcher which fetches issue data for every call, i.e. does not perform
  * any caching.
  */
-export class JiraIssueFetcher implements IJiraIssueFetcher {
+export class CachingJiraIssueFetcher implements JiraIssueFetcher {
     /**
      * Constructs a new Jira issue fetcher. The Jira client is necessary for accessing Jira. The
      * field repository is required because issue data can only be retrieved through Jira fields,
@@ -72,8 +72,8 @@ export class JiraIssueFetcher implements IJiraIssueFetcher {
      * @param fieldIds - an optional mapping of known field IDs
      */
     constructor(
-        private readonly jiraClient: IJiraClient,
-        private readonly jiraFieldRepository: IJiraFieldRepository,
+        private readonly jiraClient: JiraClient,
+        private readonly jiraFieldRepository: JiraFieldRepository,
         private readonly fieldIds?: JiraFieldIds
     ) {}
 
@@ -151,11 +151,11 @@ export class JiraIssueFetcher implements IJiraIssueFetcher {
 
     private async fetchFieldData<T>(
         fieldId: string,
-        extractor: (issue: IIssue, fieldId: string) => T | Promise<T>,
+        extractor: (issue: Issue, fieldId: string) => T | Promise<T>,
         ...issueKeys: string[]
     ): Promise<StringMap<T>> {
         const results: StringMap<T> = {};
-        const issues: IIssue[] | undefined = await this.jiraClient.search({
+        const issues: Issue[] | undefined = await this.jiraClient.search({
             jql: `issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
         });
@@ -190,11 +190,11 @@ export class JiraIssueFetcher implements IJiraIssueFetcher {
     }
 }
 
-export class JiraIssueFetcherCloud extends JiraIssueFetcher {
+export class CachingJiraIssueFetcherCloud extends CachingJiraIssueFetcher {
     constructor(
-        jiraClient: IJiraClient,
-        jiraFieldRepository: IJiraFieldRepository,
-        private readonly xrayClient: IXrayClientCloud,
+        jiraClient: JiraClient,
+        jiraFieldRepository: JiraFieldRepository,
+        private readonly xrayClient: XrayClientCloud,
         private readonly jiraOptions: InternalJiraOptions
     ) {
         super(jiraClient, jiraFieldRepository, jiraOptions.fields);

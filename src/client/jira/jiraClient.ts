@@ -3,13 +3,13 @@ import FormData from "form-data";
 import fs from "fs";
 import { REST } from "../../https/requests";
 import { LOG, Level } from "../../logging/logging";
-import { ISearchRequest } from "../../types/jira/requests/search";
-import { IAttachment } from "../../types/jira/responses/attachment";
-import { IFieldDetail } from "../../types/jira/responses/fieldDetail";
-import { IIssue } from "../../types/jira/responses/issue";
-import { IIssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
-import { IIssueUpdate } from "../../types/jira/responses/issueUpdate";
-import { ISearchResults } from "../../types/jira/responses/searchResults";
+import { SearchRequest } from "../../types/jira/requests/search";
+import { Attachment } from "../../types/jira/responses/attachment";
+import { FieldDetail } from "../../types/jira/responses/fieldDetail";
+import { Issue } from "../../types/jira/responses/issue";
+import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
+import { IssueUpdate } from "../../types/jira/responses/issueUpdate";
+import { SearchResults } from "../../types/jira/responses/searchResults";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
 import { Client } from "../client";
@@ -17,7 +17,7 @@ import { Client } from "../client";
 /**
  * All methods a Jira client needs to implement.
  */
-export interface IJiraClient {
+export interface JiraClient {
     /**
      * Adds one or more attachments to an issue. Attachments are posted as multipart/form-data.
      *
@@ -27,7 +27,7 @@ export interface IJiraClient {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-attachments/#api-rest-api-3-issue-issueidorkey-attachments-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.7.0/#api/2/issue/\{issueIdOrKey\}/attachments-addAttachment
      */
-    addAttachment(issueIdOrKey: string, ...files: string[]): Promise<IAttachment[] | undefined>;
+    addAttachment(issueIdOrKey: string, ...files: string[]): Promise<Attachment[] | undefined>;
     /**
      * Returns all issue types.
      *
@@ -35,7 +35,7 @@ export interface IJiraClient {
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/issuetype-getIssueAllTypes
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-rest-api-3-issuetype-get
      */
-    getIssueTypes(): Promise<IIssueTypeDetails[] | undefined>;
+    getIssueTypes(): Promise<IssueTypeDetails[] | undefined>;
     /**
      * Returns system and custom issue fields according to the following rules:
      * - Fields that cannot be added to the issue navigator are always returned
@@ -50,7 +50,7 @@ export interface IJiraClient {
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/field-getFields
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
      */
-    getFields(): Promise<IFieldDetail[] | undefined>;
+    getFields(): Promise<FieldDetail[] | undefined>;
     /**
      * Searches for issues using JQL. Automatically performs pagination if necessary.
      *
@@ -59,7 +59,7 @@ export interface IJiraClient {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-post
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
      */
-    search(request: ISearchRequest): Promise<IIssue[] | undefined>;
+    search(request: SearchRequest): Promise<Issue[] | undefined>;
     /**
      * Edits an issue. A transition may be applied and issue properties updated as part of the edit.
      * The edits to the issue's fields are defined using `update` and `fields`.
@@ -73,17 +73,17 @@ export interface IJiraClient {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-put
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.10.0/#api/2/issue-editIssue
      */
-    editIssue(issueIdOrKey: string, issueUpdateData: IIssueUpdate): Promise<string | undefined>;
+    editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string | undefined>;
 }
 
 /**
  * A Jira client class for communicating with Jira instances.
  */
-export abstract class JiraClient extends Client implements IJiraClient {
+export abstract class AbstractJiraClient extends Client implements JiraClient {
     public async addAttachment(
         issueIdOrKey: string,
         ...files: string[]
-    ): Promise<IAttachment[] | undefined> {
+    ): Promise<Attachment[] | undefined> {
         if (files.length === 0) {
             LOG.message(
                 Level.WARNING,
@@ -113,14 +113,14 @@ export abstract class JiraClient extends Client implements IJiraClient {
             LOG.message(Level.DEBUG, "Attaching files:", ...files);
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response: AxiosResponse<IAttachment[]> = await REST.post(
+                const response: AxiosResponse<Attachment[]> = await REST.post(
                     this.getUrlAddAttachment(issueIdOrKey),
                     form,
                     {
                         headers: {
                             ...header,
                             ...form.getHeaders(),
-                            "X-Atlassian-Token": "no-check",
+                            ["X-Atlassian-Token"]: "no-check",
                         },
                     }
                 );
@@ -141,13 +141,13 @@ export abstract class JiraClient extends Client implements IJiraClient {
         }
     }
 
-    public async getIssueTypes(): Promise<IIssueTypeDetails[] | undefined> {
+    public async getIssueTypes(): Promise<IssueTypeDetails[] | undefined> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Getting issue types...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response: AxiosResponse<IIssueTypeDetails[]> = await REST.get(
+                const response: AxiosResponse<IssueTypeDetails[]> = await REST.get(
                     this.getUrlGetIssueTypes(),
                     {
                         headers: {
@@ -178,13 +178,13 @@ export abstract class JiraClient extends Client implements IJiraClient {
         }
     }
 
-    public async getFields(): Promise<IFieldDetail[] | undefined> {
+    public async getFields(): Promise<FieldDetail[] | undefined> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Getting fields...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response: AxiosResponse<IFieldDetail[]> = await REST.get(
+                const response: AxiosResponse<FieldDetail[]> = await REST.get(
                     this.getUrlGetFields(),
                     {
                         headers: {
@@ -215,7 +215,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
         }
     }
 
-    public async search(request: ISearchRequest): Promise<IIssue[] | undefined> {
+    public async search(request: SearchRequest): Promise<Issue[] | undefined> {
         try {
             const header = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Searching issues...");
@@ -223,13 +223,13 @@ export abstract class JiraClient extends Client implements IJiraClient {
             try {
                 let total = 0;
                 let startAt = request.startAt ?? 0;
-                const results: IIssue[] = [];
+                const results: Issue[] = [];
                 do {
                     const paginatedRequest = {
                         ...request,
                         startAt: startAt,
                     };
-                    const response: AxiosResponse<ISearchResults> = await REST.post(
+                    const response: AxiosResponse<SearchResults> = await REST.post(
                         this.getUrlPostSearch(),
                         paginatedRequest,
                         {
@@ -260,7 +260,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
 
     public async editIssue(
         issueIdOrKey: string,
-        issueUpdateData: IIssueUpdate
+        issueUpdateData: IssueUpdate
     ): Promise<string | undefined> {
         try {
             const header = await this.credentials.getAuthorizationHeader();

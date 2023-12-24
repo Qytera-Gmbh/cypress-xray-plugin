@@ -1,5 +1,5 @@
 // small utility types to better express meaning of other types
-export type DateTimeISO = string;
+export type DateTimeIso = string;
 
 /**
  * Utility function which asserts that a value is neither `null` nor `undefined`.

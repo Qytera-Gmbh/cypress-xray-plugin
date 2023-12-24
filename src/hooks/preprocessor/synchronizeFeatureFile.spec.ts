@@ -7,17 +7,12 @@ import {
     getMockedLogger,
     getMockedXrayClient,
 } from "../../../test/mocks";
-import { IJiraClient } from "../../client/jira/jiraClient";
-import { IXrayClient } from "../../client/xray/xrayClient";
-import {
-    initJiraOptions,
-    initOpenSSLOptions,
-    initPluginOptions,
-    initXrayOptions,
-} from "../../context";
+import { JiraClient } from "../../client/jira/jiraClient";
+import { XrayClient } from "../../client/xray/xrayClient";
+import { initJiraOptions, initPluginOptions, initSslOptions, initXrayOptions } from "../../context";
 import { Level } from "../../logging/logging";
 import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
-import { IJiraRepository } from "../../repository/jira/jiraRepository";
+import { JiraRepository } from "../../repository/jira/jiraRepository";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
 import { importKnownFeature, synchronizeFeatureFile } from "./synchronizeFeatureFile";
@@ -25,9 +20,9 @@ import { importKnownFeature, synchronizeFeatureFile } from "./synchronizeFeature
 describe("synchronizeFeatureFile", () => {
     let file: Cypress.FileObject;
     let options: InternalOptions;
-    let jiraClient: SinonStubbedInstance<IJiraClient>;
-    let xrayClient: SinonStubbedInstance<IXrayClient>;
-    let jiraRepository: SinonStubbedInstance<IJiraRepository>;
+    let jiraClient: SinonStubbedInstance<JiraClient>;
+    let xrayClient: SinonStubbedInstance<XrayClient>;
+    let jiraRepository: SinonStubbedInstance<JiraRepository>;
 
     beforeEach(() => {
         options = {
@@ -45,7 +40,7 @@ describe("synchronizeFeatureFile", () => {
                 }
             ),
             plugin: initPluginOptions({}, {}),
-            openSSL: initOpenSSLOptions({}, {}),
+            ssl: initSslOptions({}, {}),
         };
         jiraClient = getMockedJiraClient();
         xrayClient = getMockedXrayClient();
@@ -110,14 +105,14 @@ describe("synchronizeFeatureFile", () => {
             prefixes: { test: "TestName:", precondition: "Precondition:" },
         };
         jiraRepository.getSummaries.resolves({
-            "CYP-222": "Big",
-            "CYP-333": "Backup",
-            "CYP-555": "Yo",
+            ["CYP-222"]: "Big",
+            ["CYP-333"]: "Backup",
+            ["CYP-555"]: "Yo",
         });
         jiraRepository.getLabels.resolves({
-            "CYP-222": ["Some"],
-            "CYP-333": ["Labels", "Here"],
-            "CYP-555": [],
+            ["CYP-222"]: ["Some"],
+            ["CYP-333"]: ["Labels", "Here"],
+            ["CYP-555"]: [],
         });
         xrayClient.importFeature.resolves({
             errors: [],
@@ -155,7 +150,7 @@ describe("synchronizeFeatureFile", () => {
 });
 
 describe("importKnownFeature", () => {
-    let xrayClient: SinonStubbedInstance<IXrayClient>;
+    let xrayClient: SinonStubbedInstance<XrayClient>;
     beforeEach(() => {
         xrayClient = getMockedXrayClient();
     });
