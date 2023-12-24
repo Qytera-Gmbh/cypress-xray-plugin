@@ -12,7 +12,7 @@ export interface Options {
     openSSL?: OpenSSLOptions;
 }
 
-export type JiraFieldIds = {
+export interface JiraFieldIds {
     /**
      * The Jira issue description field ID.
      */
@@ -47,7 +47,7 @@ export type JiraFieldIds = {
      * retrieve test type field information independently of Jira.*
      */
     testType?: string;
-};
+}
 
 export interface JiraOptions {
     /**

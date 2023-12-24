@@ -1,3 +1,4 @@
+import { AxiosResponse } from "axios";
 import FormData from "form-data";
 import { JWTCredentials } from "../../authentication/credentials";
 import { RequestConfigPost, REST } from "../../https/requests";
@@ -13,11 +14,12 @@ import {
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
+import { errorMessage } from "../../util/errors";
 import { IXrayClient, XrayClient } from "./xrayClient";
 
-type GetTestsJiraData = {
+interface GetTestsJiraData {
     key: string;
-};
+}
 
 export interface IXrayClientCloud extends IXrayClient {
     /**
@@ -138,7 +140,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
         ...issueKeys: string[]
     ): Promise<StringMap<string>> {
         try {
-            if (!issueKeys || issueKeys.length === 0) {
+            if (issueKeys.length === 0) {
                 LOG.message(Level.WARNING, "No issue keys provided. Skipping test type retrieval");
                 return {};
             }
@@ -174,21 +176,20 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
                             limit: XrayClientCloud.GRAPHQL_LIMITS.getTests,
                         },
                     };
-                    const response: GetTestsResponse<GetTestsJiraData> = (
+                    const response: AxiosResponse<GetTestsResponse<GetTestsJiraData>> =
                         await REST.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
                             headers: {
                                 ...authorizationHeader,
                             },
-                        })
-                    ).data;
-                    total = response.data.getTests.total ?? total;
-                    if (response.data.getTests.results) {
-                        if (typeof response.data.getTests.start === "number") {
+                        });
+                    total = response.data.data.getTests.total ?? total;
+                    if (response.data.data.getTests.results) {
+                        if (typeof response.data.data.getTests.start === "number") {
                             start =
-                                response.data.getTests.start +
-                                response.data.getTests.results.length;
+                                response.data.data.getTests.start +
+                                response.data.data.getTests.results.length;
                         }
-                        for (const test of response.data.getTests.results) {
+                        for (const test of response.data.data.getTests.results) {
                             if (test?.jira.key && test.testType?.name) {
                                 types[test.jira.key] = test.testType.name;
                             }
@@ -221,7 +222,7 @@ export class XrayClientCloud extends XrayClient implements IXrayClientCloud {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to get test types: ${error}`);
+            LOG.message(Level.ERROR, `Failed to get test types: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "getTestTypes");
         }
         return {};

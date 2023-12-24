@@ -91,7 +91,7 @@ export async function afterRunHook(
     options: InternalOptions,
     clients: ClientCombination
 ) {
-    const runResult = results as CypressCommandLine.CypressRunResult;
+    const runResult = results;
     let issueKey: string | null | undefined = null;
     if (containsNativeTest(runResult, options.cucumber?.featureFileExtension)) {
         LOG.message(Level.INFO, "Uploading native Cypress test results...");
@@ -194,7 +194,7 @@ async function uploadCucumberResults(
     }
     const results: CucumberMultipartFeature[] = JSON.parse(
         fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
-    );
+    ) as CucumberMultipartFeature[];
     const converter = new ImportExecutionCucumberMultipartConverter(
         options,
         clients.kind === "cloud",

@@ -3,7 +3,7 @@ import { dedent } from "../../util/dedent";
 import { buildMultipartInfoCloud, buildMultipartInfoServer } from "./multipartInfoBuilder";
 
 describe("buildMultipartInfoCloud", () => {
-    it("adds default information", async () => {
+    it("adds default information", () => {
         const info = buildMultipartInfoCloud(
             {
                 startedTestsAt: "2023-09-28T15:51:36.000Z",
@@ -41,7 +41,7 @@ describe("buildMultipartInfoCloud", () => {
         });
     });
 
-    it("uses provided summaries", async () => {
+    it("uses provided summaries", () => {
         const info = buildMultipartInfoCloud(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
@@ -60,7 +60,7 @@ describe("buildMultipartInfoCloud", () => {
         expect(info.fields.summary).to.eq("Hello");
     });
 
-    it("uses provided descriptions", async () => {
+    it("uses provided descriptions", () => {
         const info = buildMultipartInfoCloud(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
@@ -79,7 +79,7 @@ describe("buildMultipartInfoCloud", () => {
         expect(info.fields.description).to.eq("Hello There");
     });
 
-    it("uses provided test plans", async () => {
+    it("uses provided test plans", () => {
         const info = buildMultipartInfoCloud(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
@@ -102,7 +102,7 @@ describe("buildMultipartInfoCloud", () => {
 });
 
 describe("buildMultipartInfoServer", () => {
-    it("adds default information", async () => {
+    it("adds default information", () => {
         const info = buildMultipartInfoServer(
             {
                 startedTestsAt: "2023-09-28T15:51:36.000Z",
@@ -134,7 +134,7 @@ describe("buildMultipartInfoServer", () => {
         });
     });
 
-    it("uses provided summaries", async () => {
+    it("uses provided summaries", () => {
         const info = buildMultipartInfoServer(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
@@ -153,7 +153,7 @@ describe("buildMultipartInfoServer", () => {
         expect(info.fields.summary).to.eq("Hello");
     });
 
-    it("uses provided descriptions", async () => {
+    it("uses provided descriptions", () => {
         const info = buildMultipartInfoServer(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
@@ -172,7 +172,7 @@ describe("buildMultipartInfoServer", () => {
         expect(info.fields.description).to.eq("Hello There");
     });
 
-    it("uses provided test plans", async () => {
+    it("uses provided test plans", () => {
         const info = buildMultipartInfoServer(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
@@ -191,10 +191,10 @@ describe("buildMultipartInfoServer", () => {
                 },
             }
         );
-        expect(info.fields["customField_12345"]).to.eq("CYP-123");
+        expect(info.fields.customField_12345).to.eq("CYP-123");
     });
 
-    it("uses provided test environments", async () => {
+    it("uses provided test environments", () => {
         const info = buildMultipartInfoServer(
             {
                 startedTestsAt: "2023-09-28 17:51:36",
@@ -213,6 +213,6 @@ describe("buildMultipartInfoServer", () => {
                 },
             }
         );
-        expect(info.fields["customField_12345"]).to.deep.eq(["DEV"]);
+        expect(info.fields.customField_12345).to.deep.eq(["DEV"]);
     });
 });

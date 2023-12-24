@@ -209,9 +209,8 @@ describe("the run conversion", () => {
             const promises = getTestRunData_V12(invalidResult);
             const resolvedTestData = await Promise.allSettled(promises);
             expect(resolvedTestData[0].status).to.eq("rejected");
-            expect((resolvedTestData[0] as PromiseRejectedResult).reason.message).to.eq(
-                "Unknown Cypress test status: broken"
-            );
+            const reason = (resolvedTestData[0] as PromiseRejectedResult).reason as Error;
+            expect(reason.message).to.eq("Unknown Cypress test status: broken");
         });
     });
 
@@ -423,9 +422,8 @@ describe("the run conversion", () => {
             const promises = getTestRunData_V13(invalidResult, "CYP");
             const resolvedTestData = await Promise.allSettled(promises);
             expect(resolvedTestData[0].status).to.eq("rejected");
-            expect((resolvedTestData[0] as PromiseRejectedResult).reason.message).to.eq(
-                "Unknown Cypress test status: broken"
-            );
+            const reason = (resolvedTestData[0] as PromiseRejectedResult).reason as Error;
+            expect(reason.message).to.eq("Unknown Cypress test status: broken");
         });
     });
 });

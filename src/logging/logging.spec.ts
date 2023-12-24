@@ -1,4 +1,4 @@
-import { AxiosError, AxiosHeaders } from "axios";
+import { AxiosError, AxiosHeaders, AxiosResponse } from "axios";
 import { expect } from "chai";
 import chalk from "chalk";
 import fs from "fs";
@@ -46,7 +46,7 @@ describe("logging", () => {
                 const actualPath = logger.logToFile([1, 2, 3], "logToFileRelative.json");
                 const expectedPath = resolveTestDirPath("logs", "logToFileRelative.json");
                 expect(actualPath).to.eq(expectedPath);
-                const parsedFile = JSON.parse(fs.readFileSync(expectedPath, "utf8"));
+                const parsedFile = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
                 expect(parsedFile).to.deep.eq([1, 2, 3]);
             });
 
@@ -57,7 +57,7 @@ describe("logging", () => {
                 const actualPath = logger.logToFile([4, 5, 6], "logToFileAbsolute.json");
                 const expectedPath = resolveTestDirPath("logs", "logToFileAbsolute.json");
                 expect(actualPath).to.eq(expectedPath);
-                const parsedFile = JSON.parse(fs.readFileSync(expectedPath, "utf8"));
+                const parsedFile = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
                 expect(parsedFile).to.deep.eq([4, 5, 6]);
             });
 
@@ -80,7 +80,7 @@ describe("logging", () => {
                     timestamp.toString(),
                     "logErrorToFileNonExistent.json"
                 );
-                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8"));
+                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
                 expect(parsedError).to.have.property("error");
                 expect(parsedError).to.have.property("stacktrace");
                 expect(stderr).to.have.been.calledOnceWith(
@@ -106,7 +106,7 @@ describe("logging", () => {
                     "logErrorToFileRelative"
                 );
                 const expectedPath = resolveTestDirPath("logs", "logErrorToFileRelative.json");
-                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8"));
+                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
                 expect(parsedError).to.have.property("error");
                 expect(parsedError).to.have.property("stacktrace");
                 expect(stderr).to.have.been.calledOnceWith(
@@ -130,7 +130,7 @@ describe("logging", () => {
                     "logErrorToFileAbsolute"
                 );
                 const expectedPath = resolveTestDirPath("logs", "logErrorToFileAbsolute.json");
-                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8"));
+                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
                 expect(parsedError).to.have.property("error");
                 expect(parsedError).to.have.property("stacktrace");
                 expect(stderr).to.have.been.calledOnceWith(
@@ -159,7 +159,7 @@ describe("logging", () => {
                     timestamp.toString(),
                     "logErrorToFileNonExistent.json"
                 );
-                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8"));
+                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
                 expect(parsedError).to.have.property("error");
                 expect(parsedError).to.have.property("stacktrace");
                 expect(stderr).to.have.been.calledOnceWith(
@@ -205,7 +205,10 @@ describe("logging", () => {
                         `Complete error logs have been written to: ${expectedPath}`
                     )}`
                 );
-                const parsedData = JSON.parse(fs.readFileSync(expectedPath, "utf-8"));
+                const parsedData = JSON.parse(fs.readFileSync(expectedPath, "utf-8")) as {
+                    error: AxiosError;
+                    response: AxiosResponse;
+                };
                 expect(parsedData.error.message).to.eq("Request failed with status code 400");
                 expect(parsedData.error.name).to.eq("AxiosError");
                 expect(parsedData.error.code).to.eq("400");
@@ -227,7 +230,7 @@ describe("logging", () => {
                     timestamp.toString(),
                     "logErrorToFileGeneric.log"
                 );
-                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8"));
+                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
                 expect(parsedError).to.deep.eq({ good: "morning" });
                 expect(stderr).to.have.been.calledOnceWith(
                     `${chalk.white("│ Cypress Xray Plugin │ ERROR   │")} ${chalk.red(

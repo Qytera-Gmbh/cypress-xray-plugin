@@ -128,7 +128,7 @@ export class PluginLogger implements ILogger {
             errorFileName = `${filename}.json`;
             errorData = {
                 error: error.toJSON(),
-                response: error.response?.data,
+                response: error.response?.data as unknown,
             };
         } else if (error instanceof Error) {
             errorFileName = `${filename}.json`;

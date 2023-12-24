@@ -1,6 +1,7 @@
 import { Background, Comment } from "@cucumber/messages";
 import { dedent } from "./dedent";
 import { HELP } from "./help";
+import { unknownToString } from "./string";
 
 /**
  * Returns an error message of any error.
@@ -12,7 +13,7 @@ export function errorMessage(error: unknown): string {
     if (error instanceof Error) {
         return error.message;
     }
-    return `${error}`;
+    return unknownToString(error);
 }
 
 /**

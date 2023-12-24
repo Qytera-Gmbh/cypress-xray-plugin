@@ -14,9 +14,7 @@ export function nonNull<T>(value: T | null | undefined): value is T {
 /**
  * Type describing mappings of string keys to arbitrary values.
  */
-export type StringMap<T> = {
-    [key: string]: T;
-};
+export type StringMap<T> = Record<string, T>;
 
 /**
  * A type which recursively remaps _all_ properties of an object (including optional ones) to a new
@@ -49,7 +47,7 @@ export type StringMap<T> = {
  */
 export type Remapping<T extends object, V> = {
     [K in keyof Required<T>]: Required<T>[K] extends object
-        ? Required<T>[K] extends Array<unknown>
+        ? Required<T>[K] extends unknown[]
             ? V
             : Remapping<Required<T>[K], V>
         : V;

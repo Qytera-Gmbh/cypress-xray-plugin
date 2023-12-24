@@ -48,7 +48,7 @@ export function getMockedLogger(
 
 export function getMockedRestClient(): SinonStubbedInstance<AxiosRestClient> {
     const client = Sinon.stub(REST);
-    client.get.callsFake((url: string, config?: AxiosRequestConfig<undefined>) => {
+    client.get.callsFake((url: string, config?: AxiosRequestConfig<unknown>) => {
         throw mockCalledUnexpectedlyError(url, config);
     });
     client.post.callsFake((url: string, data?: unknown, config?: AxiosRequestConfig<unknown>) => {
@@ -233,7 +233,7 @@ function isStubbedFunction<T extends unknown[], R>(f: unknown): f is Sinon.Sinon
     if (f === null || typeof f !== "function" || !("restore" in f)) {
         return false;
     }
-    const wrappedMethod = f["restore"];
+    const wrappedMethod = f.restore;
     if (
         wrappedMethod === null ||
         typeof wrappedMethod !== "function" ||
@@ -241,5 +241,5 @@ function isStubbedFunction<T extends unknown[], R>(f: unknown): f is Sinon.Sinon
     ) {
         return false;
     }
-    return wrappedMethod["sinon"] === true;
+    return wrappedMethod.sinon === true;
 }

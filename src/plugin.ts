@@ -17,7 +17,7 @@ import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin"
 import { dedent } from "./util/dedent";
 import { HELP } from "./util/help";
 
-let canShowInitializationWarning: boolean = true;
+let canShowInitializationWarning = true;
 
 /**
  * Resets the plugin including its context.
@@ -85,7 +85,7 @@ export async function configureXrayPlugin(
  *
  * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadTestResults/
  */
-export async function addXrayResultUpload(on: Cypress.PluginEvents): Promise<void> {
+export function addXrayResultUpload(on: Cypress.PluginEvents): void {
     on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
         const context = getPluginContext();
         if (!context) {
@@ -127,8 +127,10 @@ export async function addXrayResultUpload(on: Cypress.PluginEvents): Promise<voi
                 );
                 return;
             }
-            if ("status" in results && results["status"] === "failed") {
-                const failedResult = results as CypressCommandLine.CypressFailedRunResult;
+            // Cypress's status types are incomplete, there is also "finished".
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            if ("status" in results && results.status === "failed") {
+                const failedResult = results;
                 LOG.message(
                     Level.ERROR,
                     dedent(`

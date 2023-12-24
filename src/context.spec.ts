@@ -126,7 +126,7 @@ describe("the plugin context configuration", () => {
                 });
             });
 
-            describe("cucumber", async () => {
+            describe("cucumber", () => {
                 let cucumberOptions: InternalCucumberOptions | undefined = undefined;
                 beforeEach(async () => {
                     cucumberOptions = await initCucumberOptions(
@@ -149,10 +149,10 @@ describe("the plugin context configuration", () => {
 
                 describe("prefixes", () => {
                     it("precondition", () => {
-                        expect(cucumberOptions?.prefixes?.precondition).to.eq(undefined);
+                        expect(cucumberOptions?.prefixes.precondition).to.eq(undefined);
                     });
                     it("test", () => {
-                        expect(cucumberOptions?.prefixes?.test).to.eq(undefined);
+                        expect(cucumberOptions?.prefixes.test).to.eq(undefined);
                     });
                 });
                 it("uploadFeatures", () => {
@@ -492,7 +492,7 @@ describe("the plugin context configuration", () => {
                                 prefixes: { precondition: "PreconditionYeah_" },
                             }
                         );
-                        expect(cucumberOptions?.prefixes?.precondition).to.eq("PreconditionYeah_");
+                        expect(cucumberOptions?.prefixes.precondition).to.eq("PreconditionYeah_");
                     });
                     it("test", async () => {
                         const cucumberOptions = await initCucumberOptions(
@@ -509,7 +509,7 @@ describe("the plugin context configuration", () => {
                                 prefixes: { test: "TestSomething_" },
                             }
                         );
-                        expect(cucumberOptions?.prefixes?.test).to.eq("TestSomething_");
+                        expect(cucumberOptions?.prefixes.test).to.eq("TestSomething_");
                     });
                 });
                 it("uploadFeatures", async () => {
@@ -879,7 +879,7 @@ describe("the plugin context configuration", () => {
                             prefixes: { precondition: "SmallPrecondition:" },
                         }
                     );
-                    expect(cucumberOptions?.prefixes?.precondition).to.eq("BigPrecondition:");
+                    expect(cucumberOptions?.prefixes.precondition).to.eq("BigPrecondition:");
                 });
 
                 it("CUCUMBER_PREFIXES_TEST", async () => {
@@ -900,7 +900,7 @@ describe("the plugin context configuration", () => {
                             prefixes: { test: "SmallTest:" },
                         }
                     );
-                    expect(cucumberOptions?.prefixes?.test).to.eq("BigTest:");
+                    expect(cucumberOptions?.prefixes.test).to.eq("BigTest:");
                 });
 
                 it("CUCUMBER_UPLOAD_FEATURES", async () => {
@@ -988,7 +988,7 @@ describe("the plugin context configuration", () => {
             });
         });
         describe("detects invalid configurations", () => {
-            it("detects unset project keys", async () => {
+            it("detects unset project keys", () => {
                 expect(() =>
                     initJiraOptions(
                         {},
@@ -1047,7 +1047,7 @@ describe("the plugin context configuration", () => {
                     dedent(`
                         Plugin dependency misconfigured: @badeball/cypress-cucumber-preprocessor
 
-                        Error: Failed to import package
+                        Failed to import package
 
                         The plugin depends on the package and should automatically download it during installation, but might have failed to do so because of conflicting Node versions
 

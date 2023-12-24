@@ -20,9 +20,6 @@ describe("Jira instance ping", () => {
 
     it("returns true on success", async () => {
         restClient.get
-            .callsFake((...args: unknown[]) => {
-                throw new Error(`Cannot call GET stub with arguments: ${args}`);
-            })
             .withArgs("https://example.org/rest/api/latest/myself", {
                 headers: { Authorization: "Bearer token" },
             })
@@ -95,9 +92,6 @@ describe("Jira instance ping", () => {
         const logger = getMockedLogger();
         const clock = Sinon.useFakeTimers();
         restClient.get
-            .callsFake((...args: unknown[]) => {
-                throw new Error(`Cannot call GET stub with arguments: ${args}`);
-            })
             .withArgs("https://example.org/rest/api/latest/myself", {
                 headers: { Authorization: "Bearer token" },
             })
@@ -140,9 +134,6 @@ describe("Xray server ping", () => {
     });
     it("returns true on success", async () => {
         restClient.get
-            .callsFake((...args: unknown[]) => {
-                throw new Error(`Cannot call GET stub with arguments: ${args}`);
-            })
             .withArgs("https://example.org/rest/raven/latest/api/xraylicense", {
                 headers: { Authorization: "Bearer token" },
             })
@@ -218,9 +209,6 @@ describe("Xray server ping", () => {
         const logger = getMockedLogger();
         const clock = Sinon.useFakeTimers();
         restClient.get
-            .callsFake((...args: unknown[]) => {
-                throw new Error(`Cannot call GET stub with arguments: ${args}`);
-            })
             .withArgs("https://example.org/rest/raven/latest/api/xraylicense", {
                 headers: { Authorization: "Bearer token" },
             })
@@ -266,9 +254,6 @@ describe("Xray cloud ping", () => {
     });
     it("returns true on success", async () => {
         restClient.post
-            .callsFake((...args: unknown[]) => {
-                throw new Error(`Cannot call POST stub with arguments: ${args}`);
-            })
             .withArgs("https://example.org", {
                 client_id: "user",
                 client_secret: "token",

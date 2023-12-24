@@ -6,11 +6,9 @@ import {
     getMockedJiraFieldRepository,
     getMockedXrayClient,
 } from "../../../../test/mocks";
-import { arrayEquals } from "../../../../test/util";
 import { IJiraClient } from "../../../client/jira/jiraClient";
 import { IXrayClientCloud } from "../../../client/xray/xrayClientCloud";
 import { initJiraOptions } from "../../../context";
-import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
 import { IJiraFieldRepository } from "./jiraFieldRepository";
 import { JiraIssueFetcher, JiraIssueFetcherCloud, SupportedFields } from "./jiraIssueFetcher";
@@ -254,7 +252,7 @@ describe("the jira issue fetcher", () => {
 describe("the jira cloud issue fetcher", () => {
     let fieldRepository: IJiraFieldRepository;
     let jiraClient: IJiraClient;
-    let mockedXrayClient: IXrayClientCloud;
+    let mockedXrayClient: SinonStubbedInstance<IXrayClientCloud>;
 
     beforeEach(() => {
         fieldRepository = getMockedJiraFieldRepository();
@@ -264,22 +262,13 @@ describe("the jira cloud issue fetcher", () => {
 
     describe("fetchTestTypes", () => {
         it("fetches test types automatically", async () => {
-            mockedXrayClient.getTestTypes = async (
-                projectKey: string,
-                ...issueKeys: string[]
-            ): Promise<StringMap<string>> => {
-                if (
-                    projectKey === "CYP" &&
-                    arrayEquals(["CYP-123", "CYP-456", "CYP-789"], issueKeys)
-                ) {
-                    return {
-                        "CYP-123": "apple",
-                        "CYP-456": "orange",
-                        "CYP-789": "pear",
-                    };
-                }
-                throw new Error(`Unexpected arguments:\n${projectKey}\n${issueKeys}`);
-            };
+            mockedXrayClient.getTestTypes
+                .withArgs("CYP", ...["CYP-123", "CYP-456", "CYP-789"])
+                .resolves({
+                    "CYP-123": "apple",
+                    "CYP-456": "orange",
+                    "CYP-789": "pear",
+                });
             const fetcher = new JiraIssueFetcherCloud(
                 jiraClient,
                 fieldRepository,

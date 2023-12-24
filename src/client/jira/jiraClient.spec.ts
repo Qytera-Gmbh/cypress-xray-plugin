@@ -69,7 +69,7 @@ describe("the jira clients", () => {
                                 "./test/resources/fixtures/jira/responses/singleAttachment.json",
                                 "utf-8"
                             )
-                        );
+                        ) as unknown;
                         restClient.post.resolves({
                             status: HttpStatusCode.Ok,
                             data: mockedData,
@@ -94,7 +94,7 @@ describe("the jira clients", () => {
                                 "./test/resources/fixtures/jira/responses/multipleAttachments.json",
                                 "utf-8"
                             )
-                        );
+                        ) as unknown;
                         restClient.post.resolves({
                             status: HttpStatusCode.Ok,
                             data: mockedData,
@@ -120,7 +120,7 @@ describe("the jira clients", () => {
                             "./test/resources/fixtures/jira/responses/singleAttachment.json",
                             "utf-8"
                         )
-                    );
+                    ) as unknown;
                     restClient.post.resolves({
                         status: HttpStatusCode.Ok,
                         data: mockedData,
@@ -150,7 +150,7 @@ describe("the jira clients", () => {
                             "./test/resources/fixtures/jira/responses/multipleAttachments.json",
                             "utf-8"
                         )
-                    );
+                    ) as unknown;
                     restClient.post.resolves({
                         status: HttpStatusCode.Ok,
                         data: mockedData,
@@ -221,7 +221,7 @@ describe("the jira clients", () => {
                     expect(response).to.be.undefined;
                     expect(logger.message).to.have.been.calledWithExactly(
                         Level.ERROR,
-                        "Failed to attach files: AxiosError: Request failed with status code 413"
+                        "Failed to attach files: Request failed with status code 413"
                     );
                     expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                         error,
@@ -237,7 +237,7 @@ describe("the jira clients", () => {
                             "./test/resources/fixtures/jira/responses/getFields.json",
                             "utf-8"
                         )
-                    );
+                    ) as unknown;
                     restClient.get.onFirstCall().resolves({
                         status: HttpStatusCode.Ok,
                         data: mockedData,
@@ -273,7 +273,7 @@ describe("the jira clients", () => {
                     expect(response).to.be.undefined;
                     expect(logger.message).to.have.been.calledWithExactly(
                         Level.ERROR,
-                        "Failed to get fields: AxiosError: Request failed with status code 409"
+                        "Failed to get fields: Request failed with status code 409"
                     );
                     expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                         error,
@@ -317,7 +317,7 @@ describe("the jira clients", () => {
                             "./test/resources/fixtures/jira/responses/search.json",
                             "utf-8"
                         )
-                    );
+                    ) as ISearchResults;
                     restClient.post.onFirstCall().resolves({
                         status: HttpStatusCode.Ok,
                         data: {
@@ -399,7 +399,7 @@ describe("the jira clients", () => {
                     expect(response).to.be.undefined;
                     expect(logger.message).to.have.been.calledWithExactly(
                         Level.ERROR,
-                        "Failed to search issues: AxiosError: Request failed with status code 401"
+                        "Failed to search issues: Request failed with status code 401"
                     );
                     expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                         error,
@@ -433,7 +433,7 @@ describe("the jira clients", () => {
                     expect(response).to.be.undefined;
                     expect(logger.message).to.have.been.calledWithExactly(
                         Level.ERROR,
-                        "Failed to edit issue: AxiosError: Request failed with status code 400"
+                        "Failed to edit issue: Request failed with status code 400"
                     );
                     expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                         error,

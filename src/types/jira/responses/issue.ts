@@ -26,15 +26,11 @@ export interface IIssue {
     /**
      * The fields returned for the issue.
      */
-    fields?: {
-        [k: string]: unknown;
-    };
+    fields?: Record<string, unknown>;
     /**
      * The rendered value of each field present on the issue.
      */
-    renderedFields?: {
-        [k: string]: unknown;
-    };
+    renderedFields?: Record<string, unknown>;
     /**
      * Details of the issue properties identified in the request.
      */
@@ -42,15 +38,11 @@ export interface IIssue {
     /**
      * The ID and name of each field present on the issue.
      */
-    names?: {
-        [k: string]: string;
-    };
+    names?: Record<string, string>;
     /**
      * The schema describing each field present on the issue.
      */
-    schema?: {
-        [k: string]: IJsonType;
-    };
+    schema?: Record<string, IJsonType>;
     /**
      * The transitions that can be performed on the issue.
      */
@@ -70,11 +62,7 @@ export interface IIssue {
     /**
      * The versions of each field on the issue.
      */
-    versionedRepresentations?: {
-        [k: string]: {
-            [k: string]: unknown;
-        };
-    };
+    versionedRepresentations?: Record<string, Record<string, unknown>>;
     /**
      * The parsed and queried fields or similar query parameters.
      */

@@ -47,7 +47,5 @@ export interface IHistoryMetadata {
     /**
      * Additional arbitrary information about the history record.
      */
-    extraData?: {
-        [k: string]: string;
-    };
+    extraData?: Record<string, string>;
 }

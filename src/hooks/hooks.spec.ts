@@ -67,17 +67,21 @@ describe("the hooks", () => {
         let config: Cypress.PluginConfigOptions;
 
         beforeEach(() => {
-            beforeRunDetails = JSON.parse(readFileSync("./test/resources/beforeRun.json", "utf-8"));
-            config = JSON.parse(readFileSync("./test/resources/cypress.config.json", "utf-8"));
-            config.env["jsonEnabled"] = true;
-            config.env["jsonOutput"] = "logs";
+            beforeRunDetails = JSON.parse(
+                readFileSync("./test/resources/beforeRun.json", "utf-8")
+            ) as Required<Cypress.BeforeRunDetails>;
+            config = JSON.parse(
+                readFileSync("./test/resources/cypress.config.json", "utf-8")
+            ) as Cypress.PluginConfigOptions;
+            config.env.jsonEnabled = true;
+            config.env.jsonOutput = "logs";
         });
 
         it("should fetch xray issue type information to prepare for cucumber results upload", async () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-            );
+            ) as Required<Cypress.BeforeRunDetails>;
             options.jira.testPlanIssueKey = "CYP-456";
             options.cucumber = await initCucumberOptions(
                 {
@@ -113,7 +117,9 @@ describe("the hooks", () => {
 
         it("should not fetch xray issue type information for native results upload", async () => {
             const logger = getMockedLogger();
-            beforeRunDetails = JSON.parse(readFileSync("./test/resources/beforeRun.json", "utf-8"));
+            beforeRunDetails = JSON.parse(
+                readFileSync("./test/resources/beforeRun.json", "utf-8")
+            ) as Required<Cypress.BeforeRunDetails>;
             await beforeRunHook(beforeRunDetails.specs, options, clients);
             expect(logger.message).to.not.have.been.called;
         });
@@ -122,7 +128,7 @@ describe("the hooks", () => {
             getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-            );
+            ) as Required<Cypress.BeforeRunDetails>;
             options.jira.testExecutionIssueType = "Execution Issue";
             stub(clients.jiraClient, "getIssueTypes").resolves([
                 {
@@ -161,7 +167,7 @@ describe("the hooks", () => {
             getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-            );
+            ) as Required<Cypress.BeforeRunDetails>;
             options.cucumber = await initCucumberOptions(
                 {
                     testingType: "e2e",
@@ -205,7 +211,7 @@ describe("the hooks", () => {
             getMockedLogger({ allowUnstubbedCalls: true });
             beforeRunDetails = JSON.parse(
                 readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-            );
+            ) as Required<Cypress.BeforeRunDetails>;
             stub(clients.jiraClient, "getIssueTypes").resolves(undefined);
             options.cucumber = await initCucumberOptions(
                 {

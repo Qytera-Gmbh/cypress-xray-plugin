@@ -25,7 +25,7 @@ export async function synchronizeFeatureFile(
     if (
         !options.cucumber ||
         !file.filePath.endsWith(options.cucumber.featureFileExtension) ||
-        !options.cucumber?.uploadFeatures
+        !options.cucumber.uploadFeatures
     ) {
         return file.filePath;
     }
@@ -154,10 +154,10 @@ async function resetSummaries(
     jiraRepository: IJiraRepository
 ) {
     const allIssues = [...issueData.tests, ...issueData.preconditions];
-    for (let i = 0; i < allIssues.length; i++) {
-        const issueKey = allIssues[i].key;
+    for (const issue of allIssues) {
+        const issueKey = issue.key;
         const oldSummary = testSummaries[issueKey];
-        const newSummary = allIssues[i].summary;
+        const newSummary = issue.summary;
         if (!oldSummary) {
             LOG.message(
                 Level.ERROR,
@@ -210,22 +210,22 @@ async function resetLabels(
     jiraClient: IJiraClient,
     jiraRepository: IJiraRepository
 ) {
-    for (let i = 0; i < issueData.length; i++) {
-        const issueKey = issueData[i].key;
-        const oldLabels = testLabels[issueKey];
-        const newLabels = issueData[i].tags;
-        if (!oldLabels) {
+    for (const issue of issueData) {
+        const issueKey = issue.key;
+        const newLabels = issue.tags;
+        if (!(issueKey in testLabels)) {
             LOG.message(
                 Level.ERROR,
                 dedent(`
                     Failed to reset issue labels of issue to its old labels: ${issueKey}
                     The issue's old labels could not be fetched, make sure to restore them manually if needed
 
-                    Labels post sync: ${newLabels}
+                    Labels post sync: ${newLabels.join(",")}
                 `)
             );
             continue;
         }
+        const oldLabels = testLabels[issueKey];
         if (!newLabels.every((label) => oldLabels.includes(label))) {
             const labelFieldId = await jiraRepository.getFieldId(SupportedFields.LABELS);
             LOG.message(
@@ -233,8 +233,8 @@ async function resetLabels(
                 dedent(`
                     Resetting issue labels of issue: ${issueKey}
 
-                    Labels pre sync:  ${oldLabels}
-                    Labels post sync: ${newLabels}
+                    Labels pre sync:  ${oldLabels.join(",")}
+                    Labels post sync: ${newLabels.join(",")}
                 `)
             );
             const fields = { [labelFieldId]: oldLabels };
@@ -244,8 +244,8 @@ async function resetLabels(
                     dedent(`
                         Failed to reset issue labels of issue to its old labels: ${issueKey}
 
-                        Labels pre sync:  ${oldLabels}
-                        Labels post sync: ${newLabels}
+                        Labels pre sync:  ${oldLabels.join(",")}
+                        Labels post sync: ${newLabels.join(",")}
 
                         Make sure to reset them manually if needed
                     `)
@@ -254,7 +254,9 @@ async function resetLabels(
         } else {
             LOG.message(
                 Level.DEBUG,
-                `Issue labels are identical to scenario (outline) labels already: ${issueKey} (${oldLabels})`
+                `Issue labels are identical to scenario (outline) labels already: ${issueKey} (${oldLabels.join(
+                    ","
+                )})`
             );
         }
     }

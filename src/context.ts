@@ -24,6 +24,7 @@ import {
     PluginContext,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
+import { errorMessage } from "./util/errors";
 import { HELP } from "./util/help";
 import { asArrayOfStrings, asBoolean, asInt, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
@@ -201,7 +202,7 @@ export async function initCucumberOptions(
                 dedent(`
                     Plugin dependency misconfigured: @badeball/cypress-cucumber-preprocessor
 
-                    ${error}
+                    ${errorMessage(error)}
 
                     The plugin depends on the package and should automatically download it during installation, but might have failed to do so because of conflicting Node versions
 
@@ -301,8 +302,8 @@ export async function initClients(
             "Jira username and API token found. Setting up Jira cloud basic auth credentials"
         );
         const credentials = new BasicAuthCredentials(
-            env[ENV_NAMES.authentication.jira.username],
-            env[ENV_NAMES.authentication.jira.apiToken]
+            env[ENV_NAMES.authentication.jira.username] as string,
+            env[ENV_NAMES.authentication.jira.apiToken] as string
         );
         await pingJiraInstance(jiraOptions.url, credentials);
         const jiraClient = new JiraClientCloud(jiraOptions.url, credentials);
@@ -316,8 +317,8 @@ export async function initClients(
                 "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
             );
             const xrayCredentials = new JWTCredentials(
-                env[ENV_NAMES.authentication.xray.clientId],
-                env[ENV_NAMES.authentication.xray.clientSecret],
+                env[ENV_NAMES.authentication.xray.clientId] as string,
+                env[ENV_NAMES.authentication.xray.clientSecret] as string,
                 `${XrayClientCloud.URL}/authenticate`
             );
             await pingXrayCloud(xrayCredentials);
@@ -346,7 +347,9 @@ export async function initClients(
     } else if (ENV_NAMES.authentication.jira.apiToken in env && jiraOptions.url) {
         // Jira server authentication: no username, only token.
         LOG.message(Level.INFO, "Jira PAT found. Setting up Jira server PAT credentials");
-        const credentials = new PATCredentials(env[ENV_NAMES.authentication.jira.apiToken]);
+        const credentials = new PATCredentials(
+            env[ENV_NAMES.authentication.jira.apiToken] as string
+        );
         await pingJiraInstance(jiraOptions.url, credentials);
         const jiraClient = new JiraClientServer(jiraOptions.url, credentials);
         // Xray server authentication: no username, only token.
@@ -375,8 +378,8 @@ export async function initClients(
             "Jira username and password found. Setting up Jira server basic auth credentials"
         );
         const credentials = new BasicAuthCredentials(
-            env[ENV_NAMES.authentication.jira.username],
-            env[ENV_NAMES.authentication.jira.password]
+            env[ENV_NAMES.authentication.jira.username] as string,
+            env[ENV_NAMES.authentication.jira.password] as string
         );
         await pingJiraInstance(jiraOptions.url, credentials);
         const jiraClient = new JiraClientServer(jiraOptions.url, credentials);

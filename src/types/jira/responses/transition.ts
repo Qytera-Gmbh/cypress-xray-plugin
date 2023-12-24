@@ -18,9 +18,7 @@ export interface ITransition {
      * Details of the fields associated with the issue transition screen. Use this information to
      * populate `fields` and `update` in a transition request.
      */
-    fields?: {
-        [k: string]: IFieldMeta;
-    };
+    fields?: Record<string, IFieldMeta>;
     /**
      * Expand options that include additional transition details in the response.
      */

@@ -1,7 +1,6 @@
 import { AxiosResponse } from "axios";
 import FormData from "form-data";
 import fs from "fs";
-import { HttpHeader, IHttpCredentials } from "../../authentication/credentials";
 import { REST } from "../../https/requests";
 import { LOG, Level } from "../../logging/logging";
 import { ISearchRequest } from "../../types/jira/requests/search";
@@ -12,6 +11,7 @@ import { IIssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import { IIssueUpdate } from "../../types/jira/responses/issueUpdate";
 import { ISearchResults } from "../../types/jira/responses/searchResults";
 import { dedent } from "../../util/dedent";
+import { errorMessage } from "../../util/errors";
 import { Client } from "../client";
 
 /**
@@ -80,16 +80,6 @@ export interface IJiraClient {
  * A Jira client class for communicating with Jira instances.
  */
 export abstract class JiraClient extends Client implements IJiraClient {
-    /**
-     * Construct a new Jira client using the provided credentials.
-     *
-     * @param apiBaseUrl - the Jira base endpoint
-     * @param credentials - the credentials to use during authentication
-     */
-    constructor(apiBaseUrl: string, credentials: IHttpCredentials) {
-        super(apiBaseUrl, credentials);
-    }
-
     public async addAttachment(
         issueIdOrKey: string,
         ...files: string[]
@@ -119,39 +109,34 @@ export abstract class JiraClient extends Client implements IJiraClient {
         }
 
         try {
-            return await this.credentials
-                .getAuthorizationHeader()
-                .then(async (header: HttpHeader) => {
-                    LOG.message(Level.DEBUG, "Attaching files:", ...files);
-                    const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-                    try {
-                        const response: AxiosResponse<IAttachment[]> = await REST.post(
-                            this.getUrlAddAttachment(issueIdOrKey),
-                            form,
-                            {
-                                headers: {
-                                    ...header,
-                                    ...form.getHeaders(),
-                                    "X-Atlassian-Token": "no-check",
-                                },
-                            }
-                        );
-                        LOG.message(
-                            Level.DEBUG,
-                            dedent(`
-                                Successfully attached files to issue: ${issueIdOrKey}
-                                  ${response.data
-                                      .map((attachment) => attachment.filename)
-                                      .join("\n")}
-                            `)
-                        );
-                        return response.data;
-                    } finally {
-                        clearInterval(progressInterval);
+            const header = await this.credentials.getAuthorizationHeader();
+            LOG.message(Level.DEBUG, "Attaching files:", ...files);
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
+            try {
+                const response: AxiosResponse<IAttachment[]> = await REST.post(
+                    this.getUrlAddAttachment(issueIdOrKey),
+                    form,
+                    {
+                        headers: {
+                            ...header,
+                            ...form.getHeaders(),
+                            "X-Atlassian-Token": "no-check",
+                        },
                     }
-                });
+                );
+                LOG.message(
+                    Level.DEBUG,
+                    dedent(`
+                        Successfully attached files to issue: ${issueIdOrKey}
+                          ${response.data.map((attachment) => attachment.filename).join("\n")}
+                    `)
+                );
+                return response.data;
+            } finally {
+                clearInterval(progressInterval);
+            }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to attach files: ${error}`);
+            LOG.message(Level.ERROR, `Failed to attach files: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "addAttachmentError");
         }
     }
@@ -196,7 +181,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to get issue types: ${error}`);
+            LOG.message(Level.ERROR, `Failed to get issue types: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "getIssueTypesError");
         }
     }
@@ -240,7 +225,7 @@ export abstract class JiraClient extends Client implements IJiraClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to get fields: ${error}`);
+            LOG.message(Level.ERROR, `Failed to get fields: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "getFieldsError");
         }
     }
@@ -254,46 +239,43 @@ export abstract class JiraClient extends Client implements IJiraClient {
 
     public async search(request: ISearchRequest): Promise<IIssue[] | undefined> {
         try {
-            return await this.credentials
-                .getAuthorizationHeader()
-                .then(async (header: HttpHeader) => {
-                    LOG.message(Level.DEBUG, "Searching issues...");
-                    const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-                    try {
-                        let total = 0;
-                        let startAt = request.startAt ?? 0;
-                        const results: IIssue[] = [];
-                        do {
-                            const paginatedRequest = {
-                                ...request,
-                                startAt: startAt,
-                            };
-                            const response: AxiosResponse<ISearchResults> = await REST.post(
-                                this.getUrlPostSearch(),
-                                paginatedRequest,
-                                {
-                                    headers: {
-                                        ...header,
-                                    },
-                                }
-                            );
-                            total = response.data.total ?? total;
-                            if (response.data.issues) {
-                                results.push(...response.data.issues);
-                                // Explicit check because it could also be 0.
-                                if (typeof response.data.startAt === "number") {
-                                    startAt = response.data.startAt + response.data.issues.length;
-                                }
-                            }
-                        } while (startAt && startAt < total);
-                        LOG.message(Level.DEBUG, `Found ${total} issues`);
-                        return results;
-                    } finally {
-                        clearInterval(progressInterval);
+            const header = await this.credentials.getAuthorizationHeader();
+            LOG.message(Level.DEBUG, "Searching issues...");
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
+            try {
+                let total = 0;
+                let startAt = request.startAt ?? 0;
+                const results: IIssue[] = [];
+                do {
+                    const paginatedRequest = {
+                        ...request,
+                        startAt: startAt,
+                    };
+                    const response: AxiosResponse<ISearchResults> = await REST.post(
+                        this.getUrlPostSearch(),
+                        paginatedRequest,
+                        {
+                            headers: {
+                                ...header,
+                            },
+                        }
+                    );
+                    total = response.data.total ?? total;
+                    if (response.data.issues) {
+                        results.push(...response.data.issues);
+                        // Explicit check because it could also be 0.
+                        if (typeof response.data.startAt === "number") {
+                            startAt = response.data.startAt + response.data.issues.length;
+                        }
                     }
-                });
+                } while (startAt && startAt < total);
+                LOG.message(Level.DEBUG, `Found ${total} issues`);
+                return results;
+            } finally {
+                clearInterval(progressInterval);
+            }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to search issues: ${error}`);
+            LOG.message(Level.ERROR, `Failed to search issues: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "searchError");
         }
     }
@@ -310,23 +292,22 @@ export abstract class JiraClient extends Client implements IJiraClient {
         issueUpdateData: IIssueUpdate
     ): Promise<string | undefined> {
         try {
-            await this.credentials.getAuthorizationHeader().then(async (header: HttpHeader) => {
-                LOG.message(Level.DEBUG, "Editing issue...");
-                const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-                try {
-                    await REST.put(this.getUrlEditIssue(issueIdOrKey), issueUpdateData, {
-                        headers: {
-                            ...header,
-                        },
-                    });
-                    LOG.message(Level.DEBUG, `Successfully edited issue: ${issueIdOrKey}`);
-                } finally {
-                    clearInterval(progressInterval);
-                }
-            });
+            const header = await this.credentials.getAuthorizationHeader();
+            LOG.message(Level.DEBUG, "Editing issue...");
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
+            try {
+                await REST.put(this.getUrlEditIssue(issueIdOrKey), issueUpdateData, {
+                    headers: {
+                        ...header,
+                    },
+                });
+                LOG.message(Level.DEBUG, `Successfully edited issue: ${issueIdOrKey}`);
+            } finally {
+                clearInterval(progressInterval);
+            }
             return issueIdOrKey;
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to edit issue: ${error}`);
+            LOG.message(Level.ERROR, `Failed to edit issue: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "editIssue");
         }
     }

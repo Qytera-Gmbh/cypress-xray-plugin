@@ -1,11 +1,6 @@
 import { AxiosResponse, HttpStatusCode, isAxiosError } from "axios";
 import FormData from "form-data";
 import fs from "fs";
-import {
-    BasicAuthCredentials,
-    JWTCredentials,
-    PATCredentials,
-} from "../../authentication/credentials";
 import { REST, RequestConfigPost } from "../../https/requests";
 import { LOG, Level } from "../../logging/logging";
 import { IXrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
@@ -22,7 +17,7 @@ import {
     ImportFeatureResponseServer,
 } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
-import { LoggedError } from "../../util/errors";
+import { LoggedError, errorMessage } from "../../util/errors";
 import { HELP } from "../../util/help";
 import { Client } from "../client";
 
@@ -82,19 +77,6 @@ export interface IXrayClient {
  * An abstract Xray client class for communicating with Xray instances.
  */
 export abstract class XrayClient extends Client implements IXrayClient {
-    /**
-     * Construct a new client using the provided credentials.
-     *
-     * @param apiBaseUrl - the base URL for all HTTP requests
-     * @param credentials - the credentials to use during authentication
-     */
-    constructor(
-        apiBaseUrl: string,
-        credentials: BasicAuthCredentials | PATCredentials | JWTCredentials
-    ) {
-        super(apiBaseUrl, credentials);
-    }
-
     public async importExecution(
         execution: IXrayTestExecutionResults
     ): Promise<string | null | undefined> {
@@ -124,7 +106,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to import execution: ${error}`);
+            LOG.message(Level.ERROR, `Failed to import execution: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "importExecutionError");
         }
     }
@@ -155,24 +137,29 @@ export abstract class XrayClient extends Client implements IXrayClient {
             LOG.message(Level.DEBUG, "Exporting Cucumber tests...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response = await REST.get(this.getUrlExportCucumber(keys, filter), {
-                    headers: {
-                        ...authorizationHeader,
-                    },
-                });
+                const response: AxiosResponse<string> = await REST.get(
+                    this.getUrlExportCucumber(keys, filter),
+                    {
+                        headers: {
+                            ...authorizationHeader,
+                        },
+                    }
+                );
                 // Extract filename from response.
-                const contentDisposition = response.headers["Content-Disposition"];
-                const filenameStart = contentDisposition.indexOf('"');
-                const filenameEnd = contentDisposition.lastIndexOf('"');
-                const filename = contentDisposition.substring(filenameStart, filenameEnd);
-                fs.writeFile(filename, response.data, (error: NodeJS.ErrnoException | null) => {
-                    throw new Error(`Failed to export cucumber feature files: "${error}"`);
-                });
+                if ("Content-Disposition" in response.headers) {
+                    const contentDisposition = response.headers["Content-Disposition"] as string;
+                    const filenameStart = contentDisposition.indexOf('"');
+                    const filenameEnd = contentDisposition.lastIndexOf('"');
+                    const filename = contentDisposition.substring(filenameStart, filenameEnd);
+                    fs.writeFileSync(filename, response.data);
+                } else {
+                    throw new Error("Content-Disposition header does not contain a filename");
+                }
             } finally {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to export Cucumber tests: ${error}`);
+            LOG.message(Level.ERROR, `Failed to export Cucumber tests: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "exportCucumberError");
         }
         throw new Error("Method not implemented.");
@@ -220,7 +207,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
                 LOG.message(
                     Level.ERROR,
                     dedent(`
-                        Failed to import Cucumber features: ${error}
+                        Failed to import Cucumber features: ${errorMessage(error)}
 
                         The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
 
@@ -229,7 +216,10 @@ export abstract class XrayClient extends Client implements IXrayClient {
                     `)
                 );
             } else {
-                LOG.message(Level.ERROR, `Failed to import Cucumber features: ${error}`);
+                LOG.message(
+                    Level.ERROR,
+                    `Failed to import Cucumber features: ${errorMessage(error)}`
+                );
             }
             throw new LoggedError("Feature file import failed");
         }
@@ -290,7 +280,7 @@ export abstract class XrayClient extends Client implements IXrayClient {
                 clearInterval(progressInterval);
             }
         } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to import Cucumber execution: ${error}`);
+            LOG.message(Level.ERROR, `Failed to import Cucumber execution: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "importExecutionCucumberMultipartError");
         }
     }

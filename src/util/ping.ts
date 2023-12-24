@@ -1,3 +1,4 @@
+import { AxiosResponse } from "axios";
 import {
     BasicAuthCredentials,
     JWTCredentials,
@@ -6,6 +7,7 @@ import {
 import { REST } from "../https/requests";
 import { LOG, Level } from "../logging/logging";
 import { IUser } from "../types/jira/responses/user";
+import { XrayLicenseStatus } from "../types/xray/responses/license";
 import { dedent } from "./dedent";
 import { errorMessage } from "./errors";
 import { HELP } from "./help";
@@ -30,8 +32,8 @@ export async function pingJiraInstance(
         LOG.message(Level.INFO, `Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
     });
     try {
-        const header = await credentials.getAuthorizationHeader();
-        const userResponse = await REST.get(`${url}/rest/api/latest/myself`, {
+        const header = credentials.getAuthorizationHeader();
+        const userResponse: AxiosResponse<IUser> = await REST.get(`${url}/rest/api/latest/myself`, {
             headers: {
                 ...header,
             },
@@ -95,12 +97,15 @@ export async function pingXrayServer(
         LOG.message(Level.INFO, `Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
     });
     try {
-        const header = await credentials.getAuthorizationHeader();
-        const licenseResponse = await REST.get(`${url}/rest/raven/latest/api/xraylicense`, {
-            headers: {
-                ...header,
-            },
-        });
+        const header = credentials.getAuthorizationHeader();
+        const licenseResponse: AxiosResponse<XrayLicenseStatus> = await REST.get(
+            `${url}/rest/raven/latest/api/xraylicense`,
+            {
+                headers: {
+                    ...header,
+                },
+            }
+        );
         if (typeof licenseResponse.data === "object" && "active" in licenseResponse.data) {
             if (licenseResponse.data.active) {
                 LOG.message(

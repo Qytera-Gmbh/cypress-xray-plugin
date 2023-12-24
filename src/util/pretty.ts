@@ -27,18 +27,23 @@ import { StringMap } from "../types/util";
  */
 export function prettyPadObjects(objects: object[]): StringMap<string>[] {
     const maxPropertyLengths: StringMap<number> = {};
-    for (let i = 0; i < objects.length; i++) {
-        Object.entries(objects[i]).forEach((entry) => {
+    for (const obj of objects) {
+        Object.entries(obj).forEach((entry) => {
             const valueLength = JSON.stringify(entry[1]).length;
             if (!(entry[0] in maxPropertyLengths) || valueLength > maxPropertyLengths[entry[0]]) {
                 maxPropertyLengths[entry[0]] = valueLength;
             }
         });
     }
-    const paddedObjects: StringMap<string>[] = objects.map((element) => {
-        const prettiedEntries = Object.entries(element).map((entry) => {
-            return [entry[0], JSON.stringify(entry[1]).padEnd(maxPropertyLengths[entry[0]], " ")];
-        });
+    const paddedObjects: StringMap<string>[] = objects.map((element: object) => {
+        const prettiedEntries: [string, string][] = Object.entries(element).map(
+            (entry: [string, unknown]) => {
+                return [
+                    entry[0],
+                    JSON.stringify(entry[1]).padEnd(maxPropertyLengths[entry[0]], " "),
+                ];
+            }
+        );
         return Object.fromEntries(prettiedEntries);
     });
     return paddedObjects;
@@ -63,15 +68,17 @@ export function prettyPadObjects(objects: object[]): StringMap<string>[] {
  * @returns the pretty padded object
  */
 export function prettyPadValues(value: object): StringMap<string> {
-    let maxPropertyLength: number = 0;
+    let maxPropertyLength = 0;
     Object.entries(value).forEach((entry) => {
         const valueLength = JSON.stringify(entry[1]).length;
         if (valueLength > maxPropertyLength) {
             maxPropertyLength = valueLength;
         }
     });
-    const prettiedEntries = Object.entries(value).map((entry) => {
-        return [entry[0], JSON.stringify(entry[1]).padEnd(maxPropertyLength, " ")];
-    });
+    const prettiedEntries: [string, string][] = Object.entries(value).map(
+        (entry: [string, unknown]) => {
+            return [entry[0], JSON.stringify(entry[1]).padEnd(maxPropertyLength, " ")];
+        }
+    );
     return Object.fromEntries(prettiedEntries);
 }

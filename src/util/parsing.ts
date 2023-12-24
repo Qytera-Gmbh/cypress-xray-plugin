@@ -1,4 +1,5 @@
 import { dedent } from "./dedent";
+import { unknownToString } from "./string";
 
 /**
  * Parses and returns a boolean value from a string.
@@ -60,7 +61,7 @@ export function asArrayOfStrings(value: unknown): [string, ...string[]] {
         throw new Error(
             dedent(`
                 Failed to parse as array of strings: ${JSON.stringify(value)}
-                Expected an array of primitives, but got: ${value}
+                Expected an array of primitives, but got: ${unknownToString(value)}
             `)
         );
     }
@@ -105,5 +106,8 @@ export function parse<T>(
     variable: string,
     parser: (parameter: string) => T
 ): T | undefined {
-    return variable in env ? parser(env[variable]) : undefined;
+    if (variable in env) {
+        return parser(env[variable] as string);
+    }
+    return undefined;
 }

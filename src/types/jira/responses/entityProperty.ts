@@ -1,4 +1,4 @@
-export type IEntityProperty = {
+export interface IEntityProperty {
     /**
      * The key of the property. Required on create and update.
      */
@@ -7,4 +7,4 @@ export type IEntityProperty = {
      * The value of the property. Required on create and update.
      */
     value: unknown;
-};
+}

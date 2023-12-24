@@ -1,8 +1,15 @@
 {
     "parser": "@typescript-eslint/parser",
     "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc"],
-    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/strict-type-checked",
+      "plugin:@typescript-eslint/stylistic-type-checked"
+    ],
     "root": true,
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
     "rules": {
         "tsdoc/syntax": "error",
         "@typescript-eslint/parameter-properties": [
@@ -11,6 +18,16 @@
               "allow": ["public", "public readonly", "protected", "protected readonly"],
               "prefer": "parameter-property"
             }
-          ]
-    }
+        ],
+        "@typescript-eslint/non-nullable-type-assertion-style": "off"
+    },
+    "overrides": [
+      {
+        "files": ["*.spec.ts"],
+        "rules": {
+          // Clashes with sinon/chai assertions like: expect(method).to.not.have.been.called
+          "@typescript-eslint/unbound-method": "off"
+        }
+      }
+    ]
 }

@@ -24,7 +24,5 @@ export interface JsonTypeCloud extends IJsonType {
     /**
      * If the field is a custom field, the configuration of the field.
      */
-    configuration?: {
-        [k: string]: unknown;
-    };
+    configuration?: Record<string, unknown>;
 }

@@ -34,13 +34,9 @@ export interface ISearchResults {
     /**
      * The ID and name of each field in the search results.
      */
-    names?: {
-        [k: string]: string;
-    };
+    names?: Record<string, string>;
     /**
      * The schema describing the field types in the search results.
      */
-    schema?: {
-        [k: string]: IJsonType;
-    };
+    schema?: Record<string, IJsonType>;
 }

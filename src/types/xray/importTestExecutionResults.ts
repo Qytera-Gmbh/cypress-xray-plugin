@@ -28,7 +28,7 @@ export interface IXrayTestExecutionResults {
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22info%22object-TestExecutionissue
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22info%22object-TestExecutionissue
  */
-export type XrayTestExecutionInfo = {
+export interface XrayTestExecutionInfo {
     /**
      * The project key where the test execution will be created.
      */
@@ -69,7 +69,7 @@ export type XrayTestExecutionInfo = {
      * The test environments for the test execution issue.
      */
     testEnvironments?: string[];
-};
+}
 
 export interface IXrayTest {
     /**

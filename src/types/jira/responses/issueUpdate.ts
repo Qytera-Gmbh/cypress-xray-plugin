@@ -15,19 +15,12 @@ export interface IIssueUpdate {
      * multiple sub-fields or other operations are required, use {@link update}. Fields included in
      * here cannot be included in {@link update}.
      */
-    fields?: {
-        /**
-         * Fields to set and the values to set them to.
-         */
-        [k: string]: unknown;
-    };
+    fields?: Record<string, unknown>;
     /**
      * A Map containing the field field name and a list of operations to perform on the issue screen
      * field. Note that fields included in here cannot be included in {@link fields}.
      */
-    update?: {
-        [k: string]: IFieldUpdateOperation[];
-    };
+    update?: Record<string, IFieldUpdateOperation[]>;
     /**
      * Additional issue history details.
      */

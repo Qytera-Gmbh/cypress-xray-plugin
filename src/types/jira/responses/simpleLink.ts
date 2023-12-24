@@ -6,7 +6,5 @@ export interface ISimpleLink {
     title?: string;
     href?: string;
     weight?: number;
-    params?: {
-        [k: string]: string;
-    };
+    params?: Record<string, string>;
 }

@@ -1,3 +1,4 @@
+import { AxiosResponse } from "axios";
 import { REST } from "../https/requests";
 import { LOG, Level } from "../logging/logging";
 import { StringMap } from "../types/util";
@@ -26,7 +27,7 @@ export interface IHttpCredentials {
      *
      * @returns the HTTP header value
      */
-    getAuthorizationHeader(): Promise<HttpHeader>;
+    getAuthorizationHeader(): HttpHeader | Promise<HttpHeader>;
 }
 
 /**
@@ -46,9 +47,9 @@ export class BasicAuthCredentials implements IHttpCredentials {
         this.encodedCredentials = encode(`${username}:${password}`);
     }
 
-    public async getAuthorizationHeader(): Promise<HttpHeader> {
+    public getAuthorizationHeader(): HttpHeader {
         return {
-            Authorization: `Basic ${this.encodedCredentials}`,
+            ["Authorization"]: `Basic ${this.encodedCredentials}`,
         };
     }
 }
@@ -65,9 +66,9 @@ export class PATCredentials implements IHttpCredentials {
      */
     constructor(private readonly token: string) {}
 
-    public async getAuthorizationHeader(): Promise<HttpHeader> {
+    public getAuthorizationHeader(): HttpHeader {
         return {
-            Authorization: `Bearer ${this.token}`,
+            ["Authorization"]: `Bearer ${this.token}`,
         };
     }
 }
@@ -118,10 +119,13 @@ export class JWTCredentials implements IHttpCredentials {
                 });
                 try {
                     LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
-                    const tokenResponse = await REST.post(this.authenticationUrl, {
-                        client_id: this.clientId,
-                        client_secret: this.clientSecret,
-                    });
+                    const tokenResponse: AxiosResponse<string> = await REST.post(
+                        this.authenticationUrl,
+                        {
+                            client_id: this.clientId,
+                            client_secret: this.clientSecret,
+                        }
+                    );
                     // A JWT token is expected: https://stackoverflow.com/a/74325712
                     const jwtRegex = /^[A-Za-z0-9_-]{2,}(?:\.[A-Za-z0-9_-]{2,}){2}$/;
                     if (jwtRegex.test(tokenResponse.data)) {

@@ -138,7 +138,7 @@ export function getTestRunData_V13(
     );
     runResult.tests.forEach((test: TestResult_V13) => {
         const title = test.title.join(" ");
-        const screenshots = testScreenshots[title] ?? [];
+        const screenshots = title in testScreenshots ? testScreenshots[title] : [];
         testRuns.push(
             new Promise((resolve) => {
                 resolve({

@@ -37,5 +37,5 @@ export async function importOptionalDependency<T>(packageName: string): Promise<
  * @returns the package
  */
 export const importModule = async <T>(packageName: string): Promise<T> => {
-    return await import(packageName);
+    return (await import(packageName)) as T;
 };

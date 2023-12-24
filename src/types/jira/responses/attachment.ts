@@ -34,9 +34,7 @@ export interface IAttachment {
     /**
      * Extra properties of any type may be provided to this object.
      */
-    properties?: {
-        [k: string]: unknown;
-    };
+    properties?: Record<string, unknown>;
     /**
      * The content of the attachment.
      */

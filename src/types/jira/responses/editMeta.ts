@@ -4,7 +4,5 @@ export interface IEditMeta {
     /**
      * A list of editable field details.
      */
-    fields?: {
-        [k: string]: IFieldMeta;
-    };
+    fields?: Record<string, IFieldMeta>;
 }

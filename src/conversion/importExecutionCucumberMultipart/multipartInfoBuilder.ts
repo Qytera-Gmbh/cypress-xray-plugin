@@ -8,11 +8,10 @@ import { dedent } from "../../util/dedent";
 /**
  * Interface containing general/minimal Cypress run data.
  */
-export interface IRunData
-    extends Pick<
-        CypressCommandLine.CypressRunResult,
-        "browserName" | "browserVersion" | "cypressVersion" | "startedTestsAt"
-    > {}
+export type IRunData = Pick<
+    CypressCommandLine.CypressRunResult,
+    "browserName" | "browserVersion" | "cypressVersion" | "startedTestsAt"
+>;
 
 /**
  * Additional information used by test execution issues when uploading Cucumber results.

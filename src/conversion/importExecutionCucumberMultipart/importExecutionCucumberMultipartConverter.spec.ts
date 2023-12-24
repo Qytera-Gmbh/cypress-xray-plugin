@@ -21,7 +21,7 @@ describe("the import execution cucumber multpart converter", () => {
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                     "utf-8"
                 )
-            );
+            ) as CucumberMultipartFeature[];
             const converter = new ImportExecutionCucumberMultipartConverter(
                 {
                     jira: {
@@ -58,7 +58,7 @@ describe("the import execution cucumber multpart converter", () => {
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                     "utf-8"
                 )
-            );
+            ) as CucumberMultipartFeature[];
             jiraRepository.getFieldId
                 .withArgs(SupportedFields.TEST_PLAN)
                 .resolves("customfield_12345");
@@ -89,7 +89,7 @@ describe("the import execution cucumber multpart converter", () => {
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                     "utf-8"
                 )
-            );
+            ) as CucumberMultipartFeature[];
             jiraRepository.getFieldId
                 .withArgs(SupportedFields.TEST_ENVIRONMENTS)
                 .resolves("customfield_45678");
@@ -124,7 +124,7 @@ describe("the import execution cucumber multpart converter", () => {
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                     "utf-8"
                 )
-            );
+            ) as CucumberMultipartFeature[];
             const converter = new ImportExecutionCucumberMultipartConverter(
                 {
                     jira: {
@@ -166,7 +166,7 @@ describe("the import execution cucumber multpart converter", () => {
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                     "utf-8"
                 )
-            );
+            ) as CucumberMultipartFeature[];
             jiraRepository.getFieldId
                 .withArgs(SupportedFields.TEST_PLAN)
                 .resolves("customfield_12345");
@@ -201,7 +201,7 @@ describe("the import execution cucumber multpart converter", () => {
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                     "utf-8"
                 )
-            );
+            ) as CucumberMultipartFeature[];
             jiraRepository.getFieldId
                 .withArgs(SupportedFields.TEST_ENVIRONMENTS)
                 .resolves("customfield_45678");

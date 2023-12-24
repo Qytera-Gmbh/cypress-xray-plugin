@@ -41,7 +41,5 @@ export interface FieldMetaCloud extends IFieldMeta {
     /**
      * The configuration properties.
      */
-    configuration?: {
-        [k: string]: unknown;
-    };
+    configuration?: Record<string, unknown>;
 }
