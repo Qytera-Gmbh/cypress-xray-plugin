@@ -163,6 +163,13 @@ async function uploadCypressResults(
     const converter = new ImportExecutionConverter(options, clients.kind === "cloud");
     try {
         const cypressExecution = await converter.toXrayJson(runResult);
+        if (!cypressExecution.tests || cypressExecution.tests.length === 0) {
+            LOG.message(
+                Level.WARNING,
+                "No native Cypress tests were executed. Skipping native upload."
+            );
+            return null;
+        }
         return await clients.xrayClient.importExecution(cypressExecution);
     } catch (error: unknown) {
         LOG.message(Level.ERROR, errorMessage(error));
@@ -187,11 +194,22 @@ async function uploadCucumberResults(
         clients.kind === "cloud",
         clients.jiraRepository
     );
-    const cucumberMultipart = await converter.convert(results, runResult);
-    return await clients.xrayClient.importExecutionCucumberMultipart(
-        cucumberMultipart.features,
-        cucumberMultipart.info
-    );
+    try {
+        const cucumberMultipart = await converter.convert(results, runResult);
+        if (cucumberMultipart.features.length === 0) {
+            LOG.message(
+                Level.WARNING,
+                "No Cucumber tests were executed. Skipping Cucumber upload."
+            );
+            return null;
+        }
+        return await clients.xrayClient.importExecutionCucumberMultipart(
+            cucumberMultipart.features,
+            cucumberMultipart.info
+        );
+    } catch (error: unknown) {
+        LOG.message(Level.ERROR, errorMessage(error));
+    }
 }
 
 async function attachVideos(

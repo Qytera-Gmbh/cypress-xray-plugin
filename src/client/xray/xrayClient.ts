@@ -26,10 +26,10 @@ export interface XrayClient {
      * Uploads test results to the Xray instance.
      *
      * @param results - the test results as provided by Cypress
-     * @returns the key of the test execution issue or `null` if the upload was skipped
+     * @returns the key of the test execution issue
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
-    importExecution(execution: XrayTestExecutionResults): Promise<string | null>;
+    importExecution(execution: XrayTestExecutionResults): Promise<string>;
     /**
      * Downloads feature (file) specifications from corresponding Xray issues.
      *
@@ -61,29 +61,22 @@ export interface XrayClient {
      *
      * @param cucumberJson - the test results as provided by the `cypress-cucumber-preprocessor`
      * @param cucumberInfo - the test execution information
-     * @returns the key of the test execution issue or `null` if the upload was skipped
+     * @returns the key of the test execution issue
      * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-CucumberJSONresultsMultipart
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
     importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: CucumberMultipartInfo
-    ): Promise<string | null>;
+    ): Promise<string>;
 }
 
 /**
  * An abstract Xray client class for communicating with Xray instances.
  */
 export abstract class AbstractXrayClient extends Client implements XrayClient {
-    public async importExecution(execution: XrayTestExecutionResults): Promise<string | null> {
+    public async importExecution(execution: XrayTestExecutionResults): Promise<string> {
         try {
-            if (!execution.tests || execution.tests.length === 0) {
-                LOG.message(
-                    Level.WARNING,
-                    "No native Cypress tests were executed. Skipping native upload."
-                );
-                return null;
-            }
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Importing execution...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
@@ -199,15 +192,8 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
     public async importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: CucumberMultipartInfo
-    ): Promise<string | null> {
+    ): Promise<string> {
         try {
-            if (cucumberJson.length === 0) {
-                LOG.message(
-                    Level.WARNING,
-                    "No Cucumber tests were executed. Skipping Cucumber upload."
-                );
-                return null;
-            }
             LOG.message(Level.DEBUG, "Importing execution (Cucumber)...");
             const request = await this.prepareRequestImportExecutionCucumberMultipart(
                 cucumberJson,
