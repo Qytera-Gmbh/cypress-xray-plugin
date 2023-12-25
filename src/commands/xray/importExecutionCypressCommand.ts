@@ -12,7 +12,7 @@ export class ImportExecutionCypressCommand extends Command<string | null> {
     }
 
     protected async computeResult(): Promise<string | null> {
-        const results = await this.results.getResult();
+        const results = await this.results.compute();
         return await this.xrayClient.importExecution(results);
     }
 }

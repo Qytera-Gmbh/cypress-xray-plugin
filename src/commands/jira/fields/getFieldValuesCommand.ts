@@ -32,8 +32,8 @@ export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> exten
     protected async extractJiraFieldValues(
         extractor: (issue: Issue, fieldId: string) => FieldValueMap[F] | Promise<FieldValueMap[F]>
     ): Promise<StringMap<FieldValueMap[F]>> {
-        const fieldId = await this.fieldId.getResult();
-        const issueKeys = await this.issueKeys.getResult();
+        const fieldId = await this.fieldId.compute();
+        const issueKeys = await this.issueKeys.compute();
         const issues: Issue[] = await this.jiraClient.search({
             jql: `issue in (${issueKeys.join(",")})`,
             fields: [fieldId],

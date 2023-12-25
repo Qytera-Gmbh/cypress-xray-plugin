@@ -35,10 +35,10 @@ export class ResetIssueFieldCommand<F extends SupportedField> extends Command<vo
     }
 
     protected async computeResult(): Promise<void> {
-        const issueKeys = await this.issueKeys.getResult();
-        const oldValues = await this.oldValues.getResult();
-        const newValues = await this.newValues.getResult();
-        const fieldId = await this.fieldId.getResult();
+        const issueKeys = await this.issueKeys.compute();
+        const oldValues = await this.oldValues.compute();
+        const newValues = await this.newValues.compute();
+        const fieldId = await this.fieldId.compute();
         for (const issueKey of issueKeys) {
             const newValue = newValues[issueKey];
             if (!(issueKey in oldValues)) {

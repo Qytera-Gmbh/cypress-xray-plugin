@@ -14,8 +14,8 @@ export class AttachVideosCommand extends Command<Attachment[]> {
     }
 
     protected async computeResult(): Promise<Attachment[]> {
-        const executionIssueKey = await this.issueKey.getResult();
-        const files = await this.files.getResult();
+        const executionIssueKey = await this.issueKey.compute();
+        const files = await this.files.compute();
         return await this.jiraClient.addAttachment(executionIssueKey, ...files);
     }
 }

@@ -6,11 +6,11 @@ import { Executable } from "../util/command/executable";
  */
 export interface Computable<R> {
     /**
-     * Retrieves the computed result.
+     * Computes the result.
      *
      * @returns the result
      */
-    getResult: () => R | Promise<R>;
+    compute: () => R | Promise<R>;
 }
 
 /**
@@ -83,7 +83,7 @@ export abstract class Command<R> implements Computable<R>, Executable {
         return this.state;
     }
 
-    public async getResult(): Promise<R> {
+    public async compute(): Promise<R> {
         if (this.state === CommandState.REJECTED) {
             throw new Error("The command failed");
         }

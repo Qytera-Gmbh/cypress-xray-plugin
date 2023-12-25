@@ -37,8 +37,8 @@ export class ConvertCypressResultsCommand extends Command<XrayTestExecutionResul
     }
 
     protected async computeResult(): Promise<XrayTestExecutionResults> {
-        const results = await this.results.getResult();
-        const tests = await this.tests.getResult();
+        const results = await this.results.compute();
+        const tests = await this.tests.compute();
         return {
             testExecutionKey: this.parameters.jira.testExecutionIssueKey,
             info: {

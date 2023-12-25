@@ -41,7 +41,7 @@ export class ExtractFeatureFileTagsCommand extends Command<FeatureFileIssueData>
     }
 
     protected async computeResult(): Promise<FeatureFileIssueData> {
-        const parsedDocument = await this.document.getResult();
+        const parsedDocument = await this.document.compute();
         const featureFileIssueKeys: FeatureFileIssueData = {
             tests: [],
             preconditions: [],

@@ -12,7 +12,7 @@ export class ImportExecutionCucumberCommand extends Command<string | null> {
     }
 
     protected async computeResult(): Promise<string | null> {
-        const cucumberMultipart = await this.cucumberMultipart.getResult();
+        const cucumberMultipart = await this.cucumberMultipart.compute();
         return await this.xrayClient.importExecutionCucumberMultipart(
             cucumberMultipart.features,
             cucumberMultipart.info

@@ -82,7 +82,7 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
     let result = "pending";
     let color = "khaki";
     if (command.getState() === CommandState.RESOLVED) {
-        result = escapeHtmlLabel(unknownToString(await command.getResult(), true));
+        result = escapeHtmlLabel(unknownToString(await command.compute(), true));
         color = "darkolivegreen3";
     } else if (command.getState() === CommandState.REJECTED) {
         result = escapeHtmlLabel(errorMessage(command.getFailure()));

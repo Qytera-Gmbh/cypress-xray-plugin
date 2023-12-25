@@ -14,7 +14,7 @@ export class MergeCommand<T extends Computable<unknown>[], R> extends Command<R>
     }
 
     protected async computeResult(): Promise<R> {
-        const inputs = await Promise.all(this.inputs.map((computable) => computable.getResult()));
+        const inputs = await Promise.all(this.inputs.map((computable) => computable.compute()));
         return await this.merger(inputs as ComputedTypes<T>);
     }
 }

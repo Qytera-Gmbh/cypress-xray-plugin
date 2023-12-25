@@ -54,7 +54,7 @@ export abstract class ConvertCypressResultsCommand extends Command<[XrayTest, ..
     }
 
     protected async computeResult(): Promise<[XrayTest, ...XrayTest[]]> {
-        const results = await this.results.getResult();
+        const results = await this.results.compute();
         const testRunData = await this.getTestRunData(results);
         const xrayTests: XrayTest[] = [];
         testRunData.forEach((testData: TestRunData) => {

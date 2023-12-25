@@ -44,7 +44,7 @@ export class ImportFeatureCommand extends Command<string[]> {
     }
 
     protected async computeResult(): Promise<string[]> {
-        const expectedAffectedIssues = await this.expectedAffectedIssues.getResult();
+        const expectedAffectedIssues = await this.expectedAffectedIssues.compute();
         const importResponse = await this.xrayClient.importFeature(
             this.importParameters.file,
             this.importParameters.projectKey,

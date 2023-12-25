@@ -18,7 +18,7 @@ export class ExtractFieldIdCommand extends Command<string> {
     }
 
     protected async computeResult(): Promise<string> {
-        const jiraFields = await this.allFields.getResult();
+        const jiraFields = await this.allFields.compute();
         // Lowercase everything to work around case sensitivities.
         // Jira sometimes returns field names capitalized, sometimes it doesn't (?).
         const lowerCasedName = this.field.toLowerCase();

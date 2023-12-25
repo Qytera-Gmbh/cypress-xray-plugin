@@ -32,7 +32,7 @@ export class GetTestTypeValuesCommandCloud extends Command<StringMap<string>> {
     }
 
     protected async computeResult(): Promise<StringMap<string>> {
-        const issueKeys = await this.issueKeys.getResult();
+        const issueKeys = await this.issueKeys.compute();
         return await this.xrayClient.getTestTypes(this.projectKey, ...issueKeys);
     }
 }

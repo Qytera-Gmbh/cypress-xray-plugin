@@ -23,7 +23,7 @@ describe("command", () => {
             protected async computeResult(): Promise<number> {
                 let result = this.x;
                 for (const operand of this.operands) {
-                    result = result + (await operand.getResult());
+                    result = result + (await operand.compute());
                 }
                 return result;
             }
@@ -32,7 +32,7 @@ describe("command", () => {
         const a = new ArithmeticCommand(50);
         const b = new ArithmeticCommand(40);
         const sum = new ArithmeticCommand(10, a, b);
-        const resultPromise = sum.getResult();
+        const resultPromise = sum.compute();
         await Promise.all([sum.execute(), a.execute(), b.execute()]);
         expect(await resultPromise).to.eq(100);
     });

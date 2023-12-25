@@ -52,8 +52,8 @@ export abstract class ConvertCucumberResultsCommand extends Command<CucumberMult
     }
 
     protected async computeResult(): Promise<CucumberMultipart> {
-        const input = await this.input.getResult();
-        const runInformation = await this.runInformation.getResult();
+        const input = await this.input.compute();
+        const runInformation = await this.runInformation.compute();
         return {
             features: await this.modifyFeatures(input),
             info: await this.buildInfo(runInformation),
@@ -108,14 +108,14 @@ export class ConvertCucumberResultsServerCommand extends ConvertCucumberResultsC
             issuetype: this.parameters.jira.testExecutionIssueDetails,
         };
         if (this.parameters.jira.testPlanIssueKey && this.testPlanId) {
-            const testPlandId = await this.testPlanId.getResult();
+            const testPlandId = await this.testPlanId.compute();
             testExecutionIssueData.testPlan = {
                 issueKey: this.parameters.jira.testPlanIssueKey,
                 fieldId: testPlandId,
             };
         }
         if (this.parameters.xray.testEnvironments && this.testEnvironmentsId) {
-            const testEnvironmentsId = await this.testEnvironmentsId.getResult();
+            const testEnvironmentsId = await this.testEnvironmentsId.compute();
             testExecutionIssueData.testEnvironments = {
                 environments: this.parameters.xray.testEnvironments,
                 fieldId: testEnvironmentsId,
