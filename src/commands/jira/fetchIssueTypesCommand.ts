@@ -1,6 +1,6 @@
 import { JiraClient } from "../../client/jira/jiraClient";
 import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
-import { Command } from "../../util/command/command";
+import { Command } from "../command";
 
 export class FetchIssueTypes extends Command<IssueTypeDetails[]> {
     private readonly jiraClient: JiraClient;

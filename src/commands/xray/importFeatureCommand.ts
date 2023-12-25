@@ -1,9 +1,9 @@
 import { XrayClient } from "../../client/xray/xrayClient";
 import { LOG, Level } from "../../logging/logging";
-import { Command, Computable } from "../../util/command/command";
 import { dedent } from "../../util/dedent";
 import { HELP } from "../../util/help";
 import { computeOverlap } from "../../util/set";
+import { Command, Computable } from "../command";
 
 export interface ImportParameters {
     file: string;

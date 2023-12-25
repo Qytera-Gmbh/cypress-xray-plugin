@@ -2,8 +2,8 @@ import { XrayClientCloud } from "../../../client/xray/xrayClientCloud";
 import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
-import { Command, Computable } from "../../../util/command/command";
 import { extractNestedString } from "../../../util/extraction";
+import { Command, Computable } from "../../command";
 import { GetFieldValuesCommand } from "./getFieldValuesCommand";
 
 export class GetTestTypeValuesCommandServer extends GetFieldValuesCommand<SupportedField.TEST_TYPE> {

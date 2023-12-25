@@ -1,4 +1,4 @@
-import { Command } from "../util/command/command";
+import { Command } from "./command";
 
 export class ConstantCommand<R> extends Command<R> {
     private readonly value: R;

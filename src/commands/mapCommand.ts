@@ -1,4 +1,4 @@
-import { Command, Computable } from "../util/command/command";
+import { Command, Computable } from "./command";
 
 export class MapCommand<U, V> extends Command<V> {
     private readonly mapper: (input: U) => V | Promise<V>;

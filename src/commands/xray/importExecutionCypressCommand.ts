@@ -1,6 +1,6 @@
 import { XrayClient } from "../../client/xray/xrayClient";
 import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
-import { Command, Computable } from "../../util/command/command";
+import { Command, Computable } from "../command";
 
 export class ImportExecutionCypressCommand extends Command<string | null> {
     private readonly xrayClient: XrayClient;

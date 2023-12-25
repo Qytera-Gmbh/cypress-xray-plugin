@@ -2,9 +2,9 @@ import { JiraClient } from "../../../client/jira/jiraClient";
 import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
-import { Command, Computable } from "../../../util/command/command";
 import { dedent } from "../../../util/dedent";
 import { errorMessage } from "../../../util/errors";
+import { Command, Computable } from "../../command";
 
 export interface FieldValueMap {
     [SupportedField.SUMMARY]: string;

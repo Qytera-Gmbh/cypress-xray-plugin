@@ -6,13 +6,13 @@ import {
     getCucumberScenarioIssueTags,
 } from "../../preprocessing/preprocessing";
 import { CucumberOptions } from "../../types/plugin";
-import { Command, Computable } from "../../util/command/command";
 import {
     missingPreconditionKeyInCucumberBackgroundError,
     missingTestKeyInCucumberScenarioError,
     multiplePreconditionKeysInCucumberBackgroundError,
     multipleTestKeysInCucumberScenarioError,
 } from "../../util/errors";
+import { Command, Computable } from "../command";
 
 export class ExtractFeatureFileTagsCommand extends Command<FeatureFileIssueData> {
     private readonly projectKey: string;

@@ -1,8 +1,8 @@
 import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { FieldDetail } from "../../../types/jira/responses/fieldDetail";
 import { StringMap } from "../../../types/util";
-import { Command, Computable } from "../../../util/command/command";
 import { missingFieldsError, multipleFieldsError } from "../../../util/errors";
+import { Command, Computable } from "../../command";
 
 export class ExtractFieldIdCommand extends Command<string> {
     private readonly field: SupportedField;

@@ -27,11 +27,11 @@ import {
 import { Status } from "../../../types/testStatus";
 import { XrayEvidenceItem, XrayTest } from "../../../types/xray/importTestExecutionResults";
 import { encodeFile } from "../../../util/base64";
-import { Command, Computable } from "../../../util/command/command";
 import { dedent } from "../../../util/dedent";
 import { errorMessage } from "../../../util/errors";
 import { normalizedFilename } from "../../../util/files";
 import { truncateIsoTime } from "../../../util/time";
+import { Command, Computable } from "../../command";
 
 interface Parameters {
     jira: Pick<InternalJiraOptions, "projectKey">;

@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import { Executable } from "./executable";
+import { Executable } from "../util/command/executable";
 
 /**
  * Models an entity which can compute a result.

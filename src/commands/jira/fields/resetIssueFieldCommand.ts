@@ -2,9 +2,9 @@ import { JiraClient } from "../../../client/jira/jiraClient";
 import { LOG, Level } from "../../../logging/logging";
 import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { StringMap } from "../../../types/util";
-import { Command, Computable } from "../../../util/command/command";
 import { dedent } from "../../../util/dedent";
 import { unknownToString } from "../../../util/string";
+import { Command, Computable } from "../../command";
 
 export class ResetIssueFieldCommand<F extends SupportedField> extends Command<void> {
     private readonly jiraClient: JiraClient;

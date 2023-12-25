@@ -1,6 +1,6 @@
 import { GherkinDocument } from "@cucumber/messages";
 import { parseFeatureFile } from "../../preprocessing/preprocessing";
-import { Command } from "../../util/command/command";
+import { Command } from "../command";
 
 export class ParseFeatureFileCommand extends Command<GherkinDocument> {
     private readonly filePath: string;

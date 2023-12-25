@@ -1,8 +1,8 @@
+import { Command, CommandState } from "../../../commands/command";
 import { ExtractFeatureFileTagsCommand } from "../../../commands/cucumber/extractFeatureFileIssuesCommand";
 import { ParseFeatureFileCommand } from "../../../commands/cucumber/parseFeatureFileCommand";
 import { ExtractFieldIdCommand } from "../../../commands/jira/fields/extractFieldIdCommand";
 import { ImportFeatureCommand } from "../../../commands/xray/importFeatureCommand";
-import { Command, CommandState } from "../../command/command";
 import { dedent } from "../../dedent";
 import { errorMessage } from "../../errors";
 import { unknownToString } from "../../string";

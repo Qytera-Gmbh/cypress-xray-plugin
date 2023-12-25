@@ -16,7 +16,7 @@ import {
     CucumberMultipartFeature,
 } from "../../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfo } from "../../../types/xray/requests/importExecutionCucumberMultipartInfo";
-import { Command, Computable } from "../../../util/command/command";
+import { Command, Computable } from "../../command";
 
 interface Parameters {
     jira: Pick<

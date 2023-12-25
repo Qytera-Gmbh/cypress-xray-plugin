@@ -1,4 +1,4 @@
-import { Command, Computable } from "../util/command/command";
+import { Command, Computable } from "./command";
 
 type ComputedTypes<T extends [...Computable<unknown>[]]> = {
     [K in keyof T]: T[K] extends Computable<infer V> ? V : never;

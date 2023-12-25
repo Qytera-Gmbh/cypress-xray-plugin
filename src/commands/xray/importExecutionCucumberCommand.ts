@@ -1,6 +1,6 @@
 import { XrayClient } from "../../client/xray/xrayClient";
 import { CucumberMultipart } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { Command, Computable } from "../../util/command/command";
+import { Command, Computable } from "../command";
 
 export class ImportExecutionCucumberCommand extends Command<string | null> {
     private readonly xrayClient: XrayClient;
