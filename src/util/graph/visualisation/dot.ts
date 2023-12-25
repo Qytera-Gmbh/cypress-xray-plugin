@@ -1,4 +1,3 @@
-import { ConstantCommand } from "../../../commands/constantCommand";
 import { ExtractFeatureFileTagsCommand } from "../../../commands/cucumber/extractFeatureFileIssuesCommand";
 import { ParseFeatureFileCommand } from "../../../commands/cucumber/parseFeatureFileCommand";
 import { ExtractFieldIdCommand } from "../../../commands/jira/fields/extractFieldIdCommand";
@@ -45,75 +44,60 @@ export async function graphToDot<V>(
 export async function commandToDot<R>(command: Command<R>): Promise<string> {
     let vertexDataRows: string | null = null;
     if (command instanceof ExtractFeatureFileTagsCommand) {
+        const prefixes = escapeHtmlLabel(unknownToString(command.getPrefixes(), true));
         vertexDataRows = dedent(`
             <TR>
-              <TD ALIGN="RIGHT" VALIGN="TOP">Project key</TD><TD ALIGN="LEFT">${command.getProjectKey()}</TD>
+              ${td("Project key", "right")}${td(command.getProjectKey(), "left")}
             </TR>
             <TR>
-              <TD ALIGN="RIGHT" VALIGN="TOP">Prefixes</TD><TD ALIGN="LEFT">${JSON.stringify(
-                  command.getPrefixes()
-              )}</TD>
+              ${td("Prefixes", "right")}${td(prefixes, "left")}
             </TR>
         `);
     } else if (command instanceof ParseFeatureFileCommand) {
         vertexDataRows = dedent(`
             <TR>
-              <TD ALIGN="RIGHT" VALIGN="TOP">File path</TD><TD ALIGN="LEFT">${command.getFilePath()}</TD>
+              ${td("File path", "right")}${td(command.getFilePath(), "left")}
             </TR>
         `);
     } else if (command instanceof ExtractFieldIdCommand) {
         vertexDataRows = dedent(`
             <TR>
-              <TD ALIGN="RIGHT" VALIGN="TOP">Field</TD><TD ALIGN="LEFT">${command.getField()}</TD>
+              ${td("Field", "right")}${td(command.getField(), "left")}
             </TR>
         `);
     } else if (command instanceof GetFieldValuesCommand) {
         vertexDataRows = dedent(`
             <TR>
-              <TD ALIGN="RIGHT" VALIGN="TOP">Field</TD><TD ALIGN="LEFT">${command.getField()}</TD>
+              ${td("Field", "right")}${td(command.getField(), "left")}
             </TR>
         `);
     } else if (command instanceof ImportFeatureCommand) {
         vertexDataRows = dedent(`
             <TR>
-              <TD ALIGN="RIGHT" VALIGN="TOP">File path</TD><TD ALIGN="LEFT">${command.getFilePath()}</TD>
+              ${td("File path", "right")}${td(command.getFilePath(), "left")}
             </TR>
             <TR>
-              <TD ALIGN="RIGHT" VALIGN="TOP">Project key</TD><TD ALIGN="LEFT">${command.getProjectKey()}</TD>
+              ${td("Project key", "right")}${td(unknownToString(command.getProjectKey()), "left")}
             </TR>
             <TR>
-              <TD ALIGN="RIGHT" VALIGN="TOP">Project ID</TD><TD ALIGN="LEFT">${command.getProjectId()}</TD>
+              ${td("Project ID", "right")}${td(unknownToString(command.getProjectId()), "left")}
             </TR>
             <TR>
-              <TD ALIGN="RIGHT" VALIGN="TOP">Source</TD><TD ALIGN="LEFT">${command.getSource()}</TD>
-            </TR>
-        `);
-    } else if (command instanceof ConstantCommand) {
-        vertexDataRows = dedent(`
-            <TR>
-              <TD ALIGN="RIGHT" VALIGN="TOP">Value</TD><TD ALIGN="LEFT">${command.getValue()}</TD>
+              ${td("Source", "right")}${td(unknownToString(command.getSource()), "left")}
             </TR>
         `);
     } else if (command instanceof ReduceCommand) {
+        const initialValue = escapeHtmlLabel(unknownToString(command.getInitialValue(), true));
         vertexDataRows = dedent(`
             <TR>
-              <TD ALIGN="RIGHT" VALIGN="TOP">Initial value</TD><TD ALIGN="LEFT">${command.getInitialValue()}</TD>
+              ${td("Initial value", "right")}${td(initialValue, "left")}
             </TR>
         `);
     }
     let result = "pending";
     let color = "khaki";
     if (command.getState() === CommandState.RESOLVED) {
-        result = unknownToString(await command.getResult(), true)
-            .concat("\n")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll(" ", "&nbsp;")
-            .replaceAll("[", "&#91;")
-            .replaceAll("]", "&#93;")
-            .replaceAll("\n", '<BR ALIGN="LEFT"/>');
+        result = escapeHtmlLabel(unknownToString(await command.getResult(), true));
         color = "darkolivegreen3";
     } else if (command.getState() === CommandState.REJECTED) {
         result = errorMessage(command.getFailure());
@@ -128,7 +112,7 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
                 </TR>
                 ${vertexDataRows}
                 <TR>
-                  <TD ALIGN="RIGHT" VALIGN="TOP">Result</TD><TD ALIGN="LEFT">${result}</TD>
+                  ${td("Result", "right")}${td(result, "left")}
                 </TR>
               </TABLE>
             >
@@ -141,9 +125,30 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
               <TD COLSPAN="2">${command.constructor.name}</TD>
             </TR>
             <TR>
-              <TD ALIGN="RIGHT" VALIGN="TOP">Result</TD><TD ALIGN="LEFT">${result}</TD>
+              ${td("Result", "right")}${td(result, "left")}
             </TR>
           </TABLE>
         >
     `);
+}
+
+function td(
+    content: string,
+    alignHorizontal: "left" | "right",
+    alignVertical: "top" | "middle" = "top"
+): string {
+    return `<TD ALIGN="${alignHorizontal.toUpperCase()}" VALIGN="${alignVertical.toUpperCase()}">${content}</TD>`;
+}
+
+function escapeHtmlLabel(value: string, alignHorizontal: "left" | "right" = "left"): string {
+    return value
+        .concat("\n")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll(" ", "&nbsp;")
+        .replaceAll("[", "&#91;")
+        .replaceAll("]", "&#93;")
+        .replaceAll("\n", `<BR ALIGN="${alignHorizontal.toUpperCase()}"/>`);
 }
