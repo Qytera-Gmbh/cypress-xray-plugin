@@ -24,7 +24,7 @@ export async function graphToDot<V>(
         vertexLabels.set(vertex, await labeller(vertex));
     }
     return dedent(`
-        digraph PluginExecutionGraph {
+        digraph "Plugin Execution Graph" {
           rankdir=TD;
           node[shape=none];
           ${[...graph.getVertices()]
@@ -107,7 +107,7 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
             <
               <TABLE BORDER="0" CELLSPACING="0" CELLBORDER="1" BGCOLOR="${color}">
                 <TR>
-                  <TD COLSPAN="2">${command.constructor.name}</TD>
+                  <TD COLSPAN="2" ALIGN="LEFT">${command.constructor.name}</TD>
                 </TR>
                 ${vertexDataRows}
                 <TR>
@@ -121,7 +121,7 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
         <
           <TABLE BORDER="0" CELLSPACING="0" CELLBORDER="1" BGCOLOR="${color}">
             <TR>
-              <TD COLSPAN="2">${command.constructor.name}</TD>
+              <TD COLSPAN="2" ALIGN="LEFT">${command.constructor.name}</TD>
             </TR>
             <TR>
               ${td("Result", "right")}${td(result, "left")}
@@ -141,6 +141,14 @@ function td(
 
 function escapeHtmlLabel(value: string, alignHorizontal: "left" | "right" = "left"): string {
     return value
+        .split("\n")
+        .map((line) => {
+            if (line.length >= 200) {
+                return `${line.substring(0, 196)} [...]`;
+            }
+            return line;
+        })
+        .join("\n")
         .concat("\n")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
