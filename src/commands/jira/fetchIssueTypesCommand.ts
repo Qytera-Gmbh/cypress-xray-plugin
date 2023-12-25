@@ -2,7 +2,7 @@ import { JiraClient } from "../../client/jira/jiraClient";
 import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import { Command } from "../command";
 
-export class FetchIssueTypes extends Command<IssueTypeDetails[]> {
+export class FetchIssueTypesCommand extends Command<IssueTypeDetails[]> {
     private readonly jiraClient: JiraClient;
     constructor(jiraClient: JiraClient) {
         super();

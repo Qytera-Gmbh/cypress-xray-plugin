@@ -14,7 +14,7 @@ import {
 } from "../../util/errors";
 import { Command, Computable } from "../command";
 
-export class ExtractFeatureFileTagsCommand extends Command<FeatureFileIssueData> {
+export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueData> {
     private readonly projectKey: string;
     private readonly prefixes: CucumberOptions["prefixes"];
     private readonly displayCloudHelp: boolean;

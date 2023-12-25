@@ -1,5 +1,5 @@
 import { Command, CommandState } from "../../../commands/command";
-import { ExtractFeatureFileTagsCommand } from "../../../commands/cucumber/extractFeatureFileIssuesCommand";
+import { ExtractFeatureFileIssuesCommand } from "../../../commands/cucumber/extractFeatureFileIssuesCommand";
 import { ParseFeatureFileCommand } from "../../../commands/cucumber/parseFeatureFileCommand";
 import { ExtractFieldIdCommand } from "../../../commands/jira/fields/extractFieldIdCommand";
 import { ConvertCucumberResultsCommand } from "../../../commands/plugin/conversion/convertCucumberResultsCommand";
@@ -44,7 +44,7 @@ export async function graphToDot<V>(
 
 export async function commandToDot<R>(command: Command<R>): Promise<string> {
     let vertexDataRows: string | null = null;
-    if (command instanceof ExtractFeatureFileTagsCommand) {
+    if (command instanceof ExtractFeatureFileIssuesCommand) {
         const prefixes = escapeHtmlLabel(unknownToString(command.getPrefixes(), true));
         vertexDataRows = dedent(`
             <TR>

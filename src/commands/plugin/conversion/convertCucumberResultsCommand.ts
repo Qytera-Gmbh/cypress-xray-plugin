@@ -6,6 +6,7 @@ import {
     buildMultipartInfoCloud,
     buildMultipartInfoServer,
 } from "../../../conversion/importExecutionCucumberMultipart/multipartInfoBuilder";
+import { IssueTypeDetails } from "../../../types/jira/responses/issueTypeDetails";
 import {
     InternalCucumberOptions,
     InternalJiraOptions,
@@ -23,7 +24,6 @@ interface Parameters {
         InternalJiraOptions,
         | "projectKey"
         | "testExecutionIssueDescription"
-        | "testExecutionIssueDetails"
         | "testExecutionIssueKey"
         | "testExecutionIssueSummary"
         | "testPlanIssueKey"
@@ -35,15 +35,18 @@ interface Parameters {
 export abstract class ConvertCucumberResultsCommand extends Command<CucumberMultipart> {
     protected readonly parameters: Parameters;
     private readonly input: Computable<CucumberMultipartFeature[]>;
+    private readonly testExecutionIssueDetails: Computable<IssueTypeDetails>;
     private readonly runInformation: Computable<RunData>;
     constructor(
         parameters: Parameters,
         input: Computable<CucumberMultipartFeature[]>,
+        testExecutionIssueDetails: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>
     ) {
         super();
         this.parameters = parameters;
         this.input = input;
+        this.testExecutionIssueDetails = testExecutionIssueDetails;
         this.runInformation = runInformation;
     }
 
@@ -53,10 +56,11 @@ export abstract class ConvertCucumberResultsCommand extends Command<CucumberMult
 
     protected async computeResult(): Promise<CucumberMultipart> {
         const input = await this.input.compute();
+        const testExecutionIssueDetails = await this.testExecutionIssueDetails.compute();
         const runInformation = await this.runInformation.compute();
         return {
             features: await this.modifyFeatures(input),
-            info: await this.buildInfo(runInformation),
+            info: await this.buildInfo(testExecutionIssueDetails, runInformation),
         };
     }
 
@@ -65,6 +69,7 @@ export abstract class ConvertCucumberResultsCommand extends Command<CucumberMult
     ): CucumberMultipartFeature[] | Promise<CucumberMultipartFeature[]>;
 
     protected abstract buildInfo(
+        testExecutionIssueDetails: IssueTypeDetails,
         runInformation: RunData
     ): CucumberMultipartInfo | Promise<CucumberMultipartInfo>;
 }
@@ -75,11 +80,12 @@ export class ConvertCucumberResultsServerCommand extends ConvertCucumberResultsC
     constructor(
         options: Parameters,
         input: Computable<CucumberMultipartFeature[]>,
+        testExecutionIssueDetails: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>,
         testPlanId?: Computable<string>,
         testEnvironmentsId?: Computable<string>
     ) {
-        super(options, input, runInformation);
+        super(options, input, testExecutionIssueDetails, runInformation);
         if (this.parameters.jira.testPlanIssueKey && !testPlanId) {
             throw new Error("A test plan key was supplied without the test plan Jira field ID");
         }
@@ -100,12 +106,15 @@ export class ConvertCucumberResultsServerCommand extends ConvertCucumberResultsC
         });
     }
 
-    protected async buildInfo(runInformation: RunData): Promise<CucumberMultipartInfo> {
+    protected async buildInfo(
+        testExecutionIssueDetails: IssueTypeDetails,
+        runInformation: RunData
+    ): Promise<CucumberMultipartInfo> {
         const testExecutionIssueData: TestExecutionIssueDataServer = {
             projectKey: this.parameters.jira.projectKey,
             summary: this.parameters.jira.testExecutionIssueSummary,
             description: this.parameters.jira.testExecutionIssueDescription,
-            issuetype: this.parameters.jira.testExecutionIssueDetails,
+            issuetype: testExecutionIssueDetails,
         };
         if (this.parameters.jira.testPlanIssueKey && this.testPlanId) {
             const testPlandId = await this.testPlanId.compute();
@@ -136,12 +145,15 @@ export class ConvertCucumberResultsCloudCommand extends ConvertCucumberResultsCo
         });
     }
 
-    protected buildInfo(runInformation: RunData): CucumberMultipartInfo {
+    protected buildInfo(
+        testExecutionIssueDetails: IssueTypeDetails,
+        runInformation: RunData
+    ): CucumberMultipartInfo {
         const testExecutionIssueData: TestExecutionIssueData = {
             projectKey: this.parameters.jira.projectKey,
             summary: this.parameters.jira.testExecutionIssueSummary,
             description: this.parameters.jira.testExecutionIssueDescription,
-            issuetype: this.parameters.jira.testExecutionIssueDetails,
+            issuetype: testExecutionIssueDetails,
         };
         if (this.parameters.jira.testPlanIssueKey) {
             testExecutionIssueData.testPlan = {
