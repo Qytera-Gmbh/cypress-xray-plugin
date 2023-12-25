@@ -32,19 +32,23 @@ interface Parameters {
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 
-export abstract class ConvertCucumberMultipartCommand extends Command<CucumberMultipart> {
-    protected readonly options: Parameters;
+export abstract class ConvertCucumberResultsCommand extends Command<CucumberMultipart> {
+    protected readonly parameters: Parameters;
     private readonly input: Computable<CucumberMultipartFeature[]>;
     private readonly runInformation: Computable<RunData>;
     constructor(
-        options: Parameters,
+        parameters: Parameters,
         input: Computable<CucumberMultipartFeature[]>,
         runInformation: Computable<RunData>
     ) {
         super();
-        this.options = options;
+        this.parameters = parameters;
         this.input = input;
         this.runInformation = runInformation;
+    }
+
+    public getParameters(): Parameters {
+        return this.parameters;
     }
 
     protected async computeResult(): Promise<CucumberMultipart> {
@@ -65,7 +69,7 @@ export abstract class ConvertCucumberMultipartCommand extends Command<CucumberMu
     ): CucumberMultipartInfo | Promise<CucumberMultipartInfo>;
 }
 
-export class ConvertCucumberMultipartServerCommand extends ConvertCucumberMultipartCommand {
+export class ConvertCucumberResultsServerCommand extends ConvertCucumberResultsCommand {
     private readonly testPlanId?: Computable<string>;
     private readonly testEnvironmentsId?: Computable<string>;
     constructor(
@@ -76,10 +80,10 @@ export class ConvertCucumberMultipartServerCommand extends ConvertCucumberMultip
         testEnvironmentsId?: Computable<string>
     ) {
         super(options, input, runInformation);
-        if (this.options.jira.testPlanIssueKey && !testPlanId) {
+        if (this.parameters.jira.testPlanIssueKey && !testPlanId) {
             throw new Error("A test plan key was supplied without the test plan Jira field ID");
         }
-        if (this.options.xray.testEnvironments && !testEnvironmentsId) {
+        if (this.parameters.xray.testEnvironments && !testEnvironmentsId) {
             throw new Error(
                 "Test environments were supplied without the test environments Jira field ID"
             );
@@ -88,32 +92,32 @@ export class ConvertCucumberMultipartServerCommand extends ConvertCucumberMultip
 
     protected modifyFeatures(input: CucumberMultipartFeature[]): CucumberMultipartFeature[] {
         return buildMultipartFeatures(input, {
-            testExecutionIssueKey: this.options.jira.testExecutionIssueKey,
-            includeScreenshots: this.options.xray.uploadScreenshots,
-            projectKey: this.options.jira.projectKey,
+            testExecutionIssueKey: this.parameters.jira.testExecutionIssueKey,
+            includeScreenshots: this.parameters.xray.uploadScreenshots,
+            projectKey: this.parameters.jira.projectKey,
             useCloudTags: false,
-            testPrefix: this.options.cucumber?.prefixes.test,
+            testPrefix: this.parameters.cucumber?.prefixes.test,
         });
     }
 
     protected async buildInfo(runInformation: RunData): Promise<CucumberMultipartInfo> {
         const testExecutionIssueData: TestExecutionIssueDataServer = {
-            projectKey: this.options.jira.projectKey,
-            summary: this.options.jira.testExecutionIssueSummary,
-            description: this.options.jira.testExecutionIssueDescription,
-            issuetype: this.options.jira.testExecutionIssueDetails,
+            projectKey: this.parameters.jira.projectKey,
+            summary: this.parameters.jira.testExecutionIssueSummary,
+            description: this.parameters.jira.testExecutionIssueDescription,
+            issuetype: this.parameters.jira.testExecutionIssueDetails,
         };
-        if (this.options.jira.testPlanIssueKey && this.testPlanId) {
+        if (this.parameters.jira.testPlanIssueKey && this.testPlanId) {
             const testPlandId = await this.testPlanId.getResult();
             testExecutionIssueData.testPlan = {
-                issueKey: this.options.jira.testPlanIssueKey,
+                issueKey: this.parameters.jira.testPlanIssueKey,
                 fieldId: testPlandId,
             };
         }
-        if (this.options.xray.testEnvironments && this.testEnvironmentsId) {
+        if (this.parameters.xray.testEnvironments && this.testEnvironmentsId) {
             const testEnvironmentsId = await this.testEnvironmentsId.getResult();
             testExecutionIssueData.testEnvironments = {
-                environments: this.options.xray.testEnvironments,
+                environments: this.parameters.xray.testEnvironments,
                 fieldId: testEnvironmentsId,
             };
         }
@@ -121,32 +125,32 @@ export class ConvertCucumberMultipartServerCommand extends ConvertCucumberMultip
     }
 }
 
-export class ConvertCucumberMultipartCloudCommand extends ConvertCucumberMultipartCommand {
+export class ConvertCucumberResultsCloudCommand extends ConvertCucumberResultsCommand {
     protected modifyFeatures(input: CucumberMultipartFeature[]): CucumberMultipartFeature[] {
         return buildMultipartFeatures(input, {
-            testExecutionIssueKey: this.options.jira.testExecutionIssueKey,
-            includeScreenshots: this.options.xray.uploadScreenshots,
-            projectKey: this.options.jira.projectKey,
+            testExecutionIssueKey: this.parameters.jira.testExecutionIssueKey,
+            includeScreenshots: this.parameters.xray.uploadScreenshots,
+            projectKey: this.parameters.jira.projectKey,
             useCloudTags: true,
-            testPrefix: this.options.cucumber?.prefixes.test,
+            testPrefix: this.parameters.cucumber?.prefixes.test,
         });
     }
 
     protected buildInfo(runInformation: RunData): CucumberMultipartInfo {
         const testExecutionIssueData: TestExecutionIssueData = {
-            projectKey: this.options.jira.projectKey,
-            summary: this.options.jira.testExecutionIssueSummary,
-            description: this.options.jira.testExecutionIssueDescription,
-            issuetype: this.options.jira.testExecutionIssueDetails,
+            projectKey: this.parameters.jira.projectKey,
+            summary: this.parameters.jira.testExecutionIssueSummary,
+            description: this.parameters.jira.testExecutionIssueDescription,
+            issuetype: this.parameters.jira.testExecutionIssueDetails,
         };
-        if (this.options.jira.testPlanIssueKey) {
+        if (this.parameters.jira.testPlanIssueKey) {
             testExecutionIssueData.testPlan = {
-                issueKey: this.options.jira.testPlanIssueKey,
+                issueKey: this.parameters.jira.testPlanIssueKey,
             };
         }
-        if (this.options.xray.testEnvironments) {
+        if (this.parameters.xray.testEnvironments) {
             testExecutionIssueData.testEnvironments = {
-                environments: this.options.xray.testEnvironments,
+                environments: this.parameters.xray.testEnvironments,
             };
         }
         return buildMultipartInfoCloud(runInformation, testExecutionIssueData);
