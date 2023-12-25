@@ -2,6 +2,9 @@ import { Command, CommandState } from "../../../commands/command";
 import { ExtractFeatureFileTagsCommand } from "../../../commands/cucumber/extractFeatureFileIssuesCommand";
 import { ParseFeatureFileCommand } from "../../../commands/cucumber/parseFeatureFileCommand";
 import { ExtractFieldIdCommand } from "../../../commands/jira/fields/extractFieldIdCommand";
+import { ConvertCucumberResultsCommand } from "../../../commands/plugin/conversion/convertCucumberResultsCommand";
+import { ConvertCypressResultsCommand } from "../../../commands/plugin/conversion/convertCypressResultsCommand";
+import { ConvertCypressTestsCommand } from "../../../commands/plugin/conversion/convertCypressTestsCommand";
 import { ImportFeatureCommand } from "../../../commands/xray/importFeatureCommand";
 import { dedent } from "../../dedent";
 import { errorMessage } from "../../errors";
@@ -61,6 +64,17 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
         vertexDataRows = dedent(`
             <TR>
               ${td("Field", "right")}${td(command.getField(), "left")}
+            </TR>
+        `);
+    } else if (
+        command instanceof ConvertCucumberResultsCommand ||
+        command instanceof ConvertCypressResultsCommand ||
+        command instanceof ConvertCypressTestsCommand
+    ) {
+        const parameters = escapeHtmlLabel(unknownToString(command.getParameters(), true));
+        vertexDataRows = dedent(`
+            <TR>
+              ${td("Parameters", "right")}${td(parameters, "left")}
             </TR>
         `);
     } else if (command instanceof ImportFeatureCommand) {
