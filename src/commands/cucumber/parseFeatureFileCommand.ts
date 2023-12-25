@@ -8,7 +8,13 @@ export class ParseFeatureFileCommand extends Command<GherkinDocument> {
         this.filePath = filePath;
     }
 
-    protected computeResult(): GherkinDocument {
-        return parseFeatureFile(this.filePath);
+    public getFilePath(): string {
+        return this.filePath;
+    }
+
+    protected computeResult(): Promise<GherkinDocument> {
+        return new Promise((resolve) => {
+            resolve(parseFeatureFile(this.filePath));
+        });
     }
 }

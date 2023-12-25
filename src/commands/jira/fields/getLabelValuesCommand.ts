@@ -1,4 +1,5 @@
 import { JiraClient } from "../../../client/jira/jiraClient";
+import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
 import { Computable } from "../../../util/command/command";
@@ -13,6 +14,10 @@ export class GetLabelValuesCommand extends GetFieldValuesCommand<string[]> {
     ) {
         super(fieldId, issueKeys);
         this.jiraClient = jiraClient;
+    }
+
+    public getField(): SupportedField {
+        return SupportedField.LABELS;
     }
 
     protected async computeResult(): Promise<StringMap<string[]>> {

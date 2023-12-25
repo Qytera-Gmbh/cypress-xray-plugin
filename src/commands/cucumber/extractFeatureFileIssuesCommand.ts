@@ -28,6 +28,14 @@ export class ExtractFeatureFileTagsCommand extends Command<FeatureFileIssueData>
         this.displayCloudHelp = displayCloudHelp;
     }
 
+    public getProjectKey(): string {
+        return this.projectKey;
+    }
+
+    public getPrefixes(): CucumberOptions["prefixes"] {
+        return this.prefixes;
+    }
+
     protected async computeResult(): Promise<FeatureFileIssueData> {
         const parsedDocument = await this.document.getResult();
         const featureFileIssueKeys: FeatureFileIssueData = {

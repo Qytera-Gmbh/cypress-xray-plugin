@@ -28,7 +28,11 @@ export enum CommandState {
     /**
      * The command has been told to compute and is done computing.
      */
-    SETTLED = "settled",
+    RESOLVED = "resolved",
+    /**
+     * The command has been told to compute and encountered problems during execution.
+     */
+    REJECTED = "rejected",
 }
 
 /**
@@ -40,22 +44,27 @@ export abstract class Command<R> implements Computable<R>, Executable {
     private readonly result: Promise<R>;
     private readonly executeEmitter: EventEmitter;
     private state: CommandState = CommandState.INITIAL;
+    private failure?: unknown = null;
 
     /**
      * Constructs a new command.
      */
     constructor() {
         this.executeEmitter = new EventEmitter();
-        this.result = new Promise((resolve) => {
+        this.result = new Promise((resolve, reject) => {
             this.executeEmitter.on("execute", () => {
-                this.state = CommandState.SETTLED;
-                resolve(this.computeResult());
+                this.computeResult()
+                    .then((result: R) => {
+                        this.state = CommandState.RESOLVED;
+                        resolve(result);
+                    })
+                    .catch((error: unknown) => {
+                        this.state = CommandState.REJECTED;
+                        this.failure = error;
+                        reject(error);
+                    });
             });
         });
-    }
-
-    public async getResult(): Promise<R> {
-        return await this.result;
     }
 
     public execute(): void {
@@ -74,10 +83,24 @@ export abstract class Command<R> implements Computable<R>, Executable {
         return this.state;
     }
 
+    public async getResult(): Promise<R> {
+        if (this.state === CommandState.REJECTED) {
+            throw new Error("The command failed");
+        }
+        return await this.result;
+    }
+
+    public getFailure(): unknown {
+        if (this.state !== CommandState.REJECTED) {
+            throw new Error("The command did not fail");
+        }
+        return this.failure;
+    }
+
     /**
      * Computes the command's result.
      *
      * @returns the result
      */
-    protected abstract computeResult(): R | Promise<R>;
+    protected abstract computeResult(): Promise<R>;
 }

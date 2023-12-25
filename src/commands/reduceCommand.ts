@@ -14,6 +14,10 @@ export class ReduceCommand<U, V, R> extends Command<R> {
         this.initialValue = initialValue;
     }
 
+    public getInitialValue(): R | undefined {
+        return this.initialValue;
+    }
+
     protected async computeResult(): Promise<R> {
         const inputs = await Promise.all([this.left.getResult(), this.right.getResult()]);
         return await this.reducer(inputs[0], inputs[1], this.initialValue);

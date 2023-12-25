@@ -1,4 +1,5 @@
 import { JiraClient } from "../../../client/jira/jiraClient";
+import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
 import { Command, Computable } from "../../../util/command/command";
@@ -52,4 +53,6 @@ export abstract class GetFieldValuesCommand<R> extends Command<StringMap<R>> {
         }
         return results;
     }
+
+    public abstract getField(): SupportedField;
 }

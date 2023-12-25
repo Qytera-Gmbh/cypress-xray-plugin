@@ -18,6 +18,22 @@ export class ImportFeatureCommand extends Command<ImportFeatureResponse> {
         this.source = source;
     }
 
+    public getFilePath(): string {
+        return this.file;
+    }
+
+    public getProjectKey(): string | undefined {
+        return this.projectKey;
+    }
+
+    public getProjectId(): string | undefined {
+        return this.projectId;
+    }
+
+    public getSource(): string | undefined {
+        return this.source;
+    }
+
     protected async computeResult(): Promise<ImportFeatureResponse> {
         return await this.xrayClient.importFeature(
             this.file,

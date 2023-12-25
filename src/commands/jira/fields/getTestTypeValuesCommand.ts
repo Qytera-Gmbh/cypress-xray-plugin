@@ -1,5 +1,6 @@
 import { JiraClient } from "../../../client/jira/jiraClient";
 import { XrayClientCloud } from "../../../client/xray/xrayClientCloud";
+import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
 import { Computable } from "../../../util/command/command";
@@ -14,6 +15,10 @@ export class GetTestTypeValuesCommandServer extends GetFieldValuesCommand<string
     ) {
         super(fieldId, issueKeys);
         this.jiraClient = jiraClient;
+    }
+
+    public getField(): SupportedField {
+        return SupportedField.TEST_TYPE;
     }
 
     protected async computeResult(): Promise<StringMap<string>> {
@@ -39,6 +44,10 @@ export class GetTestTypeValuesCommandCloud extends GetFieldValuesCommand<string>
         super(fieldId, issueKeys);
         this.projectKey = projectKey;
         this.xrayClient = xrayClient;
+    }
+
+    public getField(): SupportedField {
+        return SupportedField.TEST_TYPE;
     }
 
     protected async computeResult(): Promise<StringMap<string>> {
