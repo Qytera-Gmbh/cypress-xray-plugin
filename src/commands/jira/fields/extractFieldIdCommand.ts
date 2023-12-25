@@ -6,12 +6,12 @@ import { missingFieldsError, multipleFieldsError } from "../../../util/errors";
 
 export class ExtractFieldIdCommand extends Command<string> {
     constructor(
-        private readonly allFields: Computable<FieldDetail[]>,
-        private readonly field: SupportedField
+        private readonly field: SupportedField,
+        private readonly allFields: Computable<FieldDetail[]>
     ) {
         super();
-        this.allFields = allFields;
         this.field = field;
+        this.allFields = allFields;
     }
 
     public getField(): SupportedField {

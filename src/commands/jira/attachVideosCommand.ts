@@ -10,8 +10,8 @@ export class AttachVideosCommand extends Command<Attachment[]> {
     ) {
         super();
         this.jiraClient = jiraClient;
-        this.issueKey = issueKey;
         this.files = files;
+        this.issueKey = issueKey;
     }
 
     protected async computeResult(): Promise<Attachment[]> {

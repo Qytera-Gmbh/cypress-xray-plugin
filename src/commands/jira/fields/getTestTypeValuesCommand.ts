@@ -1,26 +1,12 @@
-import { JiraClient } from "../../../client/jira/jiraClient";
 import { XrayClientCloud } from "../../../client/xray/xrayClientCloud";
 import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
-import { Computable } from "../../../util/command/command";
+import { Command, Computable } from "../../../util/command/command";
 import { extractNestedString } from "../../../util/extraction";
 import { GetFieldValuesCommand } from "./getFieldValuesCommand";
 
-export class GetTestTypeValuesCommandServer extends GetFieldValuesCommand<string> {
-    constructor(
-        fieldId: Computable<string>,
-        issueKeys: Computable<string[]>,
-        private readonly jiraClient: JiraClient
-    ) {
-        super(fieldId, issueKeys);
-        this.jiraClient = jiraClient;
-    }
-
-    public getField(): SupportedField {
-        return SupportedField.TEST_TYPE;
-    }
-
+export class GetTestTypeValuesCommandServer extends GetFieldValuesCommand<SupportedField.TEST_TYPE> {
     protected async computeResult(): Promise<StringMap<string>> {
         // Field property example:
         // customfield_12100: {
@@ -28,26 +14,22 @@ export class GetTestTypeValuesCommandServer extends GetFieldValuesCommand<string
         //   id: "12702",
         //   disabled: false
         // }
-        return await this.extractJiraFieldValues(this.jiraClient, (issue: Issue, fieldId: string) =>
+        return await this.extractJiraFieldValues((issue: Issue, fieldId: string) =>
             extractNestedString(issue.fields, [fieldId, "value"])
         );
     }
 }
 
-export class GetTestTypeValuesCommandCloud extends GetFieldValuesCommand<string> {
+export class GetTestTypeValuesCommandCloud extends Command<StringMap<string>> {
     constructor(
-        fieldId: Computable<string>,
-        issueKeys: Computable<string[]>,
         private readonly projectKey: string,
-        private readonly xrayClient: XrayClientCloud
+        private readonly xrayClient: XrayClientCloud,
+        private readonly issueKeys: Computable<string[]>
     ) {
-        super(fieldId, issueKeys);
+        super();
         this.projectKey = projectKey;
         this.xrayClient = xrayClient;
-    }
-
-    public getField(): SupportedField {
-        return SupportedField.TEST_TYPE;
+        this.issueKeys = issueKeys;
     }
 
     protected async computeResult(): Promise<StringMap<string>> {

@@ -6,26 +6,39 @@ import { Command, Computable } from "../../../util/command/command";
 import { dedent } from "../../../util/dedent";
 import { errorMessage } from "../../../util/errors";
 
-export abstract class GetFieldValuesCommand<R> extends Command<StringMap<R>> {
+export interface FieldValueMap {
+    [SupportedField.SUMMARY]: string;
+    [SupportedField.LABELS]: string[];
+    [SupportedField.TEST_TYPE]: string;
+}
+
+export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> extends Command<
+    StringMap<FieldValueMap[F]>
+> {
+    protected readonly jiraClient: JiraClient;
     protected readonly fieldId: Computable<string>;
     protected readonly issueKeys: Computable<string[]>;
-    constructor(fieldId: Computable<string>, issueKeys: Computable<string[]>) {
+    constructor(
+        jiraClient: JiraClient,
+        fieldId: Computable<string>,
+        issueKeys: Computable<string[]>
+    ) {
         super();
+        this.jiraClient = jiraClient;
         this.fieldId = fieldId;
         this.issueKeys = issueKeys;
     }
 
     protected async extractJiraFieldValues(
-        jiraClient: JiraClient,
-        extractor: (issue: Issue, fieldId: string) => R | Promise<R>
-    ): Promise<StringMap<R>> {
+        extractor: (issue: Issue, fieldId: string) => FieldValueMap[F] | Promise<FieldValueMap[F]>
+    ): Promise<StringMap<FieldValueMap[F]>> {
         const fieldId = await this.fieldId.getResult();
         const issueKeys = await this.issueKeys.getResult();
-        const issues: Issue[] = await jiraClient.search({
+        const issues: Issue[] = await this.jiraClient.search({
             jql: `issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
         });
-        const results: StringMap<R> = {};
+        const results: StringMap<FieldValueMap[F]> = {};
         const issuesWithUnparseableField: string[] = [];
         for (const issue of issues) {
             try {
@@ -53,6 +66,4 @@ export abstract class GetFieldValuesCommand<R> extends Command<StringMap<R>> {
         }
         return results;
     }
-
-    public abstract getField(): SupportedField;
 }

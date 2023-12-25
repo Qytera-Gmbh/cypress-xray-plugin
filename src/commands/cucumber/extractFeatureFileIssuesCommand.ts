@@ -16,16 +16,16 @@ import {
 
 export class ExtractFeatureFileTagsCommand extends Command<FeatureFileIssueData> {
     constructor(
-        private readonly document: Computable<GherkinDocument>,
         private readonly projectKey: string,
         private readonly prefixes: CucumberOptions["prefixes"],
-        private readonly displayCloudHelp: boolean
+        private readonly displayCloudHelp: boolean,
+        private readonly document: Computable<GherkinDocument>
     ) {
         super();
-        this.document = document;
         this.projectKey = projectKey;
         this.prefixes = prefixes;
         this.displayCloudHelp = displayCloudHelp;
+        this.document = document;
     }
 
     public getProjectKey(): string {

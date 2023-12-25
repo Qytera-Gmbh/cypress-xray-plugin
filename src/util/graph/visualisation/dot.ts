@@ -1,8 +1,6 @@
 import { ExtractFeatureFileTagsCommand } from "../../../commands/cucumber/extractFeatureFileIssuesCommand";
 import { ParseFeatureFileCommand } from "../../../commands/cucumber/parseFeatureFileCommand";
 import { ExtractFieldIdCommand } from "../../../commands/jira/fields/extractFieldIdCommand";
-import { GetFieldValuesCommand } from "../../../commands/jira/fields/getFieldValuesCommand";
-import { ReduceCommand } from "../../../commands/reduceCommand";
 import { ImportFeatureCommand } from "../../../commands/xray/importFeatureCommand";
 import { Command, CommandState } from "../../command/command";
 import { dedent } from "../../dedent";
@@ -65,12 +63,6 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
               ${td("Field", "right")}${td(command.getField(), "left")}
             </TR>
         `);
-    } else if (command instanceof GetFieldValuesCommand) {
-        vertexDataRows = dedent(`
-            <TR>
-              ${td("Field", "right")}${td(command.getField(), "left")}
-            </TR>
-        `);
     } else if (command instanceof ImportFeatureCommand) {
         vertexDataRows = dedent(`
             <TR>
@@ -86,13 +78,6 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
               ${td("Source", "right")}${td(unknownToString(command.getSource()), "left")}
             </TR>
         `);
-    } else if (command instanceof ReduceCommand) {
-        const initialValue = escapeHtmlLabel(unknownToString(command.getInitialValue(), true));
-        vertexDataRows = dedent(`
-            <TR>
-              ${td("Initial value", "right")}${td(initialValue, "left")}
-            </TR>
-        `);
     }
     let result = "pending";
     let color = "khaki";
@@ -100,7 +85,7 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
         result = escapeHtmlLabel(unknownToString(await command.getResult(), true));
         color = "darkolivegreen3";
     } else if (command.getState() === CommandState.REJECTED) {
-        result = errorMessage(command.getFailure());
+        result = escapeHtmlLabel(errorMessage(command.getFailure()));
         color = "salmon";
     }
     if (vertexDataRows) {

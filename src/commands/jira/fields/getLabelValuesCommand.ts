@@ -1,29 +1,14 @@
-import { JiraClient } from "../../../client/jira/jiraClient";
 import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
-import { Computable } from "../../../util/command/command";
 import { extractArrayOfStrings } from "../../../util/extraction";
 import { GetFieldValuesCommand } from "./getFieldValuesCommand";
 
-export class GetLabelValuesCommand extends GetFieldValuesCommand<string[]> {
-    constructor(
-        fieldId: Computable<string>,
-        issueKeys: Computable<string[]>,
-        private readonly jiraClient: JiraClient
-    ) {
-        super(fieldId, issueKeys);
-        this.jiraClient = jiraClient;
-    }
-
-    public getField(): SupportedField {
-        return SupportedField.LABELS;
-    }
-
+export class GetLabelValuesCommand extends GetFieldValuesCommand<SupportedField.LABELS> {
     protected async computeResult(): Promise<StringMap<string[]>> {
         // Field property example:
         // labels: ["regression", "quality"]
-        return await this.extractJiraFieldValues(this.jiraClient, (issue: Issue, fieldId: string) =>
+        return await this.extractJiraFieldValues((issue: Issue, fieldId: string) =>
             extractArrayOfStrings(issue.fields, fieldId)
         );
     }
