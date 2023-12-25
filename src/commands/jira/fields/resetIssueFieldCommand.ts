@@ -7,13 +7,19 @@ import { dedent } from "../../../util/dedent";
 import { unknownToString } from "../../../util/string";
 
 export class ResetIssueFieldCommand<F extends SupportedField> extends Command<void> {
+    private readonly jiraClient: JiraClient;
+    private readonly field: F;
+    private readonly fieldId: Computable<string>;
+    private readonly issueKeys: Computable<string[]>;
+    private readonly oldValues: Computable<StringMap<F>>;
+    private readonly newValues: Computable<StringMap<F>>;
     constructor(
-        private readonly jiraClient: JiraClient,
-        private readonly field: F,
-        private readonly fieldId: Computable<string>,
-        private readonly issueKeys: Computable<string[]>,
-        private readonly oldValues: Computable<StringMap<F>>,
-        private readonly newValues: Computable<StringMap<F>>
+        jiraClient: JiraClient,
+        field: F,
+        fieldId: Computable<string>,
+        issueKeys: Computable<string[]>,
+        oldValues: Computable<StringMap<F>>,
+        newValues: Computable<StringMap<F>>
     ) {
         super();
         this.jiraClient = jiraClient;

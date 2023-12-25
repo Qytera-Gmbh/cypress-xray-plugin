@@ -3,10 +3,9 @@ import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionRe
 import { Command, Computable } from "../../util/command/command";
 
 export class ImportExecutionCypressCommand extends Command<string | null> {
-    constructor(
-        private readonly xrayClient: XrayClient,
-        private readonly results: Computable<XrayTestExecutionResults>
-    ) {
+    private readonly xrayClient: XrayClient;
+    private readonly results: Computable<XrayTestExecutionResults>;
+    constructor(xrayClient: XrayClient, results: Computable<XrayTestExecutionResults>) {
         super();
         this.xrayClient = xrayClient;
         this.results = results;

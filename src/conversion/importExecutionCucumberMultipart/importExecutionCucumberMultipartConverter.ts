@@ -42,6 +42,9 @@ export interface ImportExecutionCucumberMultipartConverterOptions {
  * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-CucumberJSONresultsMultipart
  */
 export class ImportExecutionCucumberMultipartConverter {
+    private readonly options: ImportExecutionCucumberMultipartConverterOptions;
+    private readonly isCloudConverter: boolean;
+    private readonly jiraRepository: JiraRepository;
     /**
      * Construct a new converter with access to the provided options. The cloud converter flag is
      * used to deduce the output format. When set to `true`, Xray cloud JSONs will be created, if
@@ -52,10 +55,14 @@ export class ImportExecutionCucumberMultipartConverter {
      * @param jiraRepository - the Jira repository for fetching issue data
      */
     constructor(
-        private readonly options: ImportExecutionCucumberMultipartConverterOptions,
-        private readonly isCloudConverter: boolean,
-        private readonly jiraRepository: JiraRepository
-    ) {}
+        options: ImportExecutionCucumberMultipartConverterOptions,
+        isCloudConverter: boolean,
+        jiraRepository: JiraRepository
+    ) {
+        this.options = options;
+        this.isCloudConverter = isCloudConverter;
+        this.jiraRepository = jiraRepository;
+    }
 
     /**
      * Converts Cucumber JSON results into Xray Cucumber multipart JSON. Additional Cypress run data

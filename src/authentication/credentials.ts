@@ -59,12 +59,15 @@ export class BasicAuthCredentials implements HttpCredentials {
  * authorization.
  */
 export class PatCredentials implements HttpCredentials {
+    private readonly token: string;
     /**
      * Constructs new PAT credentials from the provided token.
      *
      * @param token - the token
      */
-    constructor(private readonly token: string) {}
+    constructor(token: string) {
+        this.token = token;
+    }
 
     public getAuthorizationHeader(): HttpHeader {
         return {
@@ -80,6 +83,9 @@ export class PatCredentials implements HttpCredentials {
  */
 export class JwtCredentials implements HttpCredentials {
     private token?: string;
+    private readonly clientId: string;
+    private readonly clientSecret: string;
+    private readonly authenticationUrl: string;
 
     /**
      * Constructs new JWT credentials. The client ID and client secret will be used to retrieve a
@@ -89,12 +95,11 @@ export class JwtCredentials implements HttpCredentials {
      * @param clientSecret - the client secret
      * @param authenticationUrl - the authentication URL/token endpoint
      */
-    constructor(
-        private readonly clientId: string,
-        private readonly clientSecret: string,
-        private readonly authenticationUrl: string
-    ) {
+    constructor(clientId: string, clientSecret: string, authenticationUrl: string) {
         this.token = undefined;
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.authenticationUrl = authenticationUrl;
     }
 
     /**

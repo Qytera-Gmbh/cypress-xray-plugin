@@ -3,7 +3,8 @@ import { FieldDetail } from "../../../types/jira/responses/fieldDetail";
 import { Command } from "../../../util/command/command";
 
 export class FetchAllFieldsCommand extends Command<FieldDetail[]> {
-    constructor(private readonly jiraClient: JiraClient) {
+    private readonly jiraClient: JiraClient;
+    constructor(jiraClient: JiraClient) {
         super();
         this.jiraClient = jiraClient;
     }

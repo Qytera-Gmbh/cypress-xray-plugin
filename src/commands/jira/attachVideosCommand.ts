@@ -3,11 +3,10 @@ import { Attachment } from "../../types/jira/responses/attachment";
 import { Command, Computable } from "../../util/command/command";
 
 export class AttachVideosCommand extends Command<Attachment[]> {
-    constructor(
-        private readonly jiraClient: JiraClient,
-        private readonly files: Computable<string[]>,
-        private readonly issueKey: Computable<string>
-    ) {
+    private readonly jiraClient: JiraClient;
+    private readonly files: Computable<string[]>;
+    private readonly issueKey: Computable<string>;
+    constructor(jiraClient: JiraClient, files: Computable<string[]>, issueKey: Computable<string>) {
         super();
         this.jiraClient = jiraClient;
         this.files = files;

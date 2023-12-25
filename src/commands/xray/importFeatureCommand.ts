@@ -13,10 +13,13 @@ export interface ImportParameters {
 }
 
 export class ImportFeatureCommand extends Command<string[]> {
+    private readonly xrayClient: XrayClient;
+    private readonly importParameters: ImportParameters;
+    private readonly expectedAffectedIssues: Computable<string[]>;
     constructor(
-        private readonly xrayClient: XrayClient,
-        private readonly importParameters: ImportParameters,
-        private readonly expectedAffectedIssues: Computable<string[]>
+        xrayClient: XrayClient,
+        importParameters: ImportParameters,
+        expectedAffectedIssues: Computable<string[]>
     ) {
         super();
         this.xrayClient = xrayClient;

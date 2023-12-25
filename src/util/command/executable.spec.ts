@@ -4,10 +4,9 @@ import { Executable, ExecutableGraph } from "./executable";
 describe("ExecutableGraph", () => {
     it("executes vertices in post-order", async () => {
         class ExecutableVertex implements Executable {
-            constructor(
-                private readonly message: string,
-                private readonly logger: (message: string) => void
-            ) {
+            private readonly message: string;
+            private readonly logger: (message: string) => void;
+            constructor(message: string, logger: (message: string) => void) {
                 this.message = message;
                 this.logger = logger;
             }

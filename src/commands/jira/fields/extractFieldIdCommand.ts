@@ -5,10 +5,9 @@ import { Command, Computable } from "../../../util/command/command";
 import { missingFieldsError, multipleFieldsError } from "../../../util/errors";
 
 export class ExtractFieldIdCommand extends Command<string> {
-    constructor(
-        private readonly field: SupportedField,
-        private readonly allFields: Computable<FieldDetail[]>
-    ) {
+    private readonly field: SupportedField;
+    private readonly allFields: Computable<FieldDetail[]>;
+    constructor(field: SupportedField, allFields: Computable<FieldDetail[]>) {
         super();
         this.field = field;
         this.allFields = allFields;

@@ -3,10 +3,9 @@ import { CucumberMultipart } from "../../types/xray/requests/importExecutionCucu
 import { Command, Computable } from "../../util/command/command";
 
 export class ImportExecutionCucumberCommand extends Command<string | null> {
-    constructor(
-        private readonly xrayClient: XrayClient,
-        private readonly cucumberMultipart: Computable<CucumberMultipart>
-    ) {
+    private readonly xrayClient: XrayClient;
+    private readonly cucumberMultipart: Computable<CucumberMultipart>;
+    constructor(xrayClient: XrayClient, cucumberMultipart: Computable<CucumberMultipart>) {
         super();
         this.xrayClient = xrayClient;
         this.cucumberMultipart = cucumberMultipart;

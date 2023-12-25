@@ -15,11 +15,15 @@ import {
 } from "../../util/errors";
 
 export class ExtractFeatureFileTagsCommand extends Command<FeatureFileIssueData> {
+    private readonly projectKey: string;
+    private readonly prefixes: CucumberOptions["prefixes"];
+    private readonly displayCloudHelp: boolean;
+    private readonly document: Computable<GherkinDocument>;
     constructor(
-        private readonly projectKey: string,
-        private readonly prefixes: CucumberOptions["prefixes"],
-        private readonly displayCloudHelp: boolean,
-        private readonly document: Computable<GherkinDocument>
+        projectKey: string,
+        prefixes: CucumberOptions["prefixes"],
+        displayCloudHelp: boolean,
+        document: Computable<GherkinDocument>
     ) {
         super();
         this.projectKey = projectKey;

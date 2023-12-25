@@ -24,6 +24,7 @@ export interface JiraFieldRepository {
  * subsequent accesses will return the cached value.
  */
 export class CachingJiraFieldRepository implements JiraFieldRepository {
+    private readonly jiraClient: JiraClient;
     private readonly names: StringMap<string> = {};
     private readonly ids: StringMap<string> = {};
 
@@ -33,7 +34,9 @@ export class CachingJiraFieldRepository implements JiraFieldRepository {
      *
      * @param jiraClient - the Jira client
      */
-    constructor(private readonly jiraClient: JiraClient) {}
+    constructor(jiraClient: JiraClient) {
+        this.jiraClient = jiraClient;
+    }
 
     public async getFieldId(fieldName: SupportedField): Promise<string> {
         // Lowercase everything to work around case sensitivities.

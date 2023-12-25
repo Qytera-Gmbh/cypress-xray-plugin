@@ -1,7 +1,8 @@
 import { Command } from "../util/command/command";
 
 export class ConstantCommand<R> extends Command<R> {
-    constructor(private readonly value: R) {
+    private readonly value: R;
+    constructor(value: R) {
         super();
         this.value = value;
     }

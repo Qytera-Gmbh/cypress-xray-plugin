@@ -3,7 +3,8 @@ import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import { Command } from "../../util/command/command";
 
 export class FetchIssueTypes extends Command<IssueTypeDetails[]> {
-    constructor(private readonly jiraClient: JiraClient) {
+    private readonly jiraClient: JiraClient;
+    constructor(jiraClient: JiraClient) {
         super();
         this.jiraClient = jiraClient;
     }

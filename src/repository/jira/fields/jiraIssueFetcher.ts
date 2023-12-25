@@ -61,6 +61,9 @@ export interface JiraIssueFetcher {
  * any caching.
  */
 export class CachingJiraIssueFetcher implements JiraIssueFetcher {
+    private readonly jiraClient: JiraClient;
+    private readonly jiraFieldRepository: JiraFieldRepository;
+    private readonly fieldIds?: JiraFieldIds;
     /**
      * Constructs a new Jira issue fetcher. The Jira client is necessary for accessing Jira. The
      * field repository is required because issue data can only be retrieved through Jira fields,
@@ -72,10 +75,14 @@ export class CachingJiraIssueFetcher implements JiraIssueFetcher {
      * @param fieldIds - an optional mapping of known field IDs
      */
     constructor(
-        private readonly jiraClient: JiraClient,
-        private readonly jiraFieldRepository: JiraFieldRepository,
-        private readonly fieldIds?: JiraFieldIds
-    ) {}
+        jiraClient: JiraClient,
+        jiraFieldRepository: JiraFieldRepository,
+        fieldIds?: JiraFieldIds
+    ) {
+        this.jiraClient = jiraClient;
+        this.jiraFieldRepository = jiraFieldRepository;
+        this.fieldIds = fieldIds;
+    }
 
     public async fetchSummaries(...issueKeys: string[]): Promise<StringMap<string>> {
         let summaryId = this.fieldIds?.summary;
@@ -189,13 +196,17 @@ export class CachingJiraIssueFetcher implements JiraIssueFetcher {
 }
 
 export class CachingJiraIssueFetcherCloud extends CachingJiraIssueFetcher {
+    private readonly xrayClient: XrayClientCloud;
+    private readonly jiraOptions: InternalJiraOptions;
     constructor(
         jiraClient: JiraClient,
         jiraFieldRepository: JiraFieldRepository,
-        private readonly xrayClient: XrayClientCloud,
-        private readonly jiraOptions: InternalJiraOptions
+        xrayClient: XrayClientCloud,
+        jiraOptions: InternalJiraOptions
     ) {
         super(jiraClient, jiraFieldRepository, jiraOptions.fields);
+        this.xrayClient = xrayClient;
+        this.jiraOptions = jiraOptions;
     }
 
     public async fetchTestTypes(...issueKeys: string[]): Promise<StringMap<string>> {

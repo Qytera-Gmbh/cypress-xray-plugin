@@ -21,11 +21,10 @@ export class GetTestTypeValuesCommandServer extends GetFieldValuesCommand<Suppor
 }
 
 export class GetTestTypeValuesCommandCloud extends Command<StringMap<string>> {
-    constructor(
-        private readonly projectKey: string,
-        private readonly xrayClient: XrayClientCloud,
-        private readonly issueKeys: Computable<string[]>
-    ) {
+    private readonly projectKey: string;
+    private readonly xrayClient: XrayClientCloud;
+    private readonly issueKeys: Computable<string[]>;
+    constructor(projectKey: string, xrayClient: XrayClientCloud, issueKeys: Computable<string[]>) {
         super();
         this.projectKey = projectKey;
         this.xrayClient = xrayClient;

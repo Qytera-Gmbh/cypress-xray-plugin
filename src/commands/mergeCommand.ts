@@ -5,18 +5,16 @@ type ComputedTypes<T extends [...Computable<unknown>[]]> = {
 };
 
 export class MergeCommand<T extends Computable<unknown>[], R> extends Command<R> {
+    private readonly merger: (inputs: ComputedTypes<T>) => R | Promise<R>;
     private readonly inputs: T;
-    constructor(
-        private readonly reducer: (inputs: ComputedTypes<T>) => R | Promise<R>,
-        ...inputs: T
-    ) {
+    constructor(merger: (inputs: ComputedTypes<T>) => R | Promise<R>, ...inputs: T) {
         super();
-        this.reducer = reducer;
+        this.merger = merger;
         this.inputs = inputs;
     }
 
     protected async computeResult(): Promise<R> {
         const inputs = await Promise.all(this.inputs.map((computable) => computable.getResult()));
-        return await this.reducer(inputs as ComputedTypes<T>);
+        return await this.merger(inputs as ComputedTypes<T>);
     }
 }

@@ -55,6 +55,8 @@ export interface JiraRepository {
  * retrieved for the first request. All subsequent accesses will then return the cached value.
  */
 export class CachingJiraRepository implements JiraRepository {
+    protected readonly jiraFieldRepository: JiraFieldRepository;
+    protected readonly jiraIssueFetcher: JiraIssueFetcher;
     private readonly summaries: StringMap<string> = {};
     private readonly descriptions: StringMap<string> = {};
     private readonly testTypes: StringMap<string> = {};
@@ -67,10 +69,10 @@ export class CachingJiraRepository implements JiraRepository {
      * @param jiraFieldRepository - the Jira field repository
      * @param jiraIssueFetcher - the Jira issue fetcher
      */
-    constructor(
-        protected readonly jiraFieldRepository: JiraFieldRepository,
-        protected readonly jiraIssueFetcher: JiraIssueFetcher
-    ) {}
+    constructor(jiraFieldRepository: JiraFieldRepository, jiraIssueFetcher: JiraIssueFetcher) {
+        this.jiraFieldRepository = jiraFieldRepository;
+        this.jiraIssueFetcher = jiraIssueFetcher;
+    }
 
     public async getFieldId(fieldName: SupportedField): Promise<string> {
         return this.jiraFieldRepository.getFieldId(fieldName);

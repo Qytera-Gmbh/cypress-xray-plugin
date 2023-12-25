@@ -29,6 +29,15 @@ export interface DirectedGraph<V, E extends DirectedEdge<V>> {
      */
     find(filter: (vertex: V) => boolean): V | null;
     /**
+     * Searches for a specific vertex in the graph. If no matching vertex can be found, a new one
+     * will be created and inserted into the graph.
+     *
+     * @param filter - the filter function
+     * @param newVertex - a function which returns the new vertex
+     * @returns the first matching vertex or the new one post placement
+     */
+    findOrPlace(filter: (vertex: V) => boolean, newVertex: () => V): V;
+    /**
      * Returns a generator which iterates through all vertices.
      *
      * @returns the generator
@@ -104,13 +113,15 @@ export interface DirectedEdge<V> {
  * A basic implementation of a directed edge.
  */
 export class SimpleDirectedEdge<V> implements DirectedEdge<V> {
+    private readonly source: V;
+    private readonly destination: V;
     /**
      * Constructs a new directed edge.
      *
      * @param source - the source vertex
      * @param destination - the destination vertex
      */
-    constructor(private readonly source: V, private readonly destination: V) {
+    constructor(source: V, destination: V) {
         this.source = source;
         this.destination = destination;
     }
@@ -177,6 +188,16 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
             }
         }
         return null;
+    }
+
+    public findOrPlace(filter: (vertex: V) => boolean, newVertex: () => V): V {
+        const existingVertex = this.find(filter);
+        if (existingVertex) {
+            return existingVertex;
+        }
+        const vertex = newVertex();
+        this.place(vertex);
+        return vertex;
     }
 
     public *getVertices(): Generator<V> {

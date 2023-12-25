@@ -3,7 +3,8 @@ import { parseFeatureFile } from "../../preprocessing/preprocessing";
 import { Command } from "../../util/command/command";
 
 export class ParseFeatureFileCommand extends Command<GherkinDocument> {
-    constructor(private readonly filePath: string) {
+    private readonly filePath: string;
+    constructor(filePath: string) {
         super();
         this.filePath = filePath;
     }
