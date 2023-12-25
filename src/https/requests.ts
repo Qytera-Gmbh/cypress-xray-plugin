@@ -51,7 +51,7 @@ export class AxiosRestClient {
         });
     }
 
-    public async post<D, R>(
+    public async post<R, D = unknown>(
         url: string,
         data?: D,
         config?: AxiosRequestConfig<D>
@@ -62,7 +62,7 @@ export class AxiosRestClient {
         });
     }
 
-    public async put<D, R>(
+    public async put<R, D = unknown>(
         url: string,
         data?: D,
         config?: AxiosRequestConfig<D>

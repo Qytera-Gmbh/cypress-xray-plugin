@@ -82,7 +82,7 @@ export class PatCredentials implements HttpCredentials {
  * token will be stored and reused whenever necessary.
  */
 export class JwtCredentials implements HttpCredentials {
-    private token?: string;
+    private token?: Promise<string>;
     private readonly clientId: string;
     private readonly clientSecret: string;
     private readonly authenticationUrl: string;
@@ -112,57 +112,56 @@ export class JwtCredentials implements HttpCredentials {
     }
 
     public async getAuthorizationHeader(): Promise<HttpHeader> {
+        if (!this.token) {
+            this.fetchToken();
+        }
         return {
-            ["Authorization"]: `Bearer ${await this.getToken()}`,
+            ["Authorization"]: `Bearer ${await this.token}`,
         };
     }
 
-    private async getToken(): Promise<string> {
-        if (!this.token) {
-            try {
-                const progressInterval = startInterval((totalTime: number) => {
-                    LOG.message(
-                        Level.INFO,
-                        `Waiting for ${this.authenticationUrl} to respond... (${
-                            totalTime / 1000
-                        } seconds)`
-                    );
-                });
-                try {
-                    LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
-                    const tokenResponse: AxiosResponse<string> = await REST.post(
-                        this.authenticationUrl,
-                        {
-                            ["client_id"]: this.clientId,
-                            ["client_secret"]: this.clientSecret,
-                        }
-                    );
+    private fetchToken(): void {
+        this.token = new Promise((resolve, reject) => {
+            const progressInterval = startInterval((totalTime: number) => {
+                LOG.message(
+                    Level.INFO,
+                    `Waiting for ${this.authenticationUrl} to respond... (${
+                        totalTime / 1000
+                    } seconds)`
+                );
+            });
+            LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
+            const body = {
+                ["client_id"]: this.clientId,
+                ["client_secret"]: this.clientSecret,
+            };
+            REST.post<string>(this.authenticationUrl, body)
+                .then((response: AxiosResponse<string>) => {
                     // A JWT token is expected: https://stackoverflow.com/a/74325712
                     const jwtRegex = /^[A-Za-z0-9_-]{2,}(?:\.[A-Za-z0-9_-]{2,}){2}$/;
-                    if (jwtRegex.test(tokenResponse.data)) {
+                    if (jwtRegex.test(response.data)) {
                         LOG.message(Level.DEBUG, "Authentication successful.");
-                        this.token = tokenResponse.data;
-                        return tokenResponse.data;
+                        resolve(response.data);
                     } else {
-                        throw new Error("Expected to receive a JWT token, but did not");
+                        reject(new Error("Expected to receive a JWT token, but did not"));
                     }
-                } finally {
-                    clearInterval(progressInterval);
-                }
-            } catch (error: unknown) {
-                const message = errorMessage(error);
-                LOG.message(
-                    Level.ERROR,
-                    dedent(`
-                        Failed to authenticate to: ${this.authenticationUrl}
+                })
+                .catch((error: unknown) => {
+                    const message = errorMessage(error);
+                    LOG.message(
+                        Level.ERROR,
+                        dedent(`
+                            Failed to authenticate to: ${this.authenticationUrl}
 
-                        ${message}
-                    `)
-                );
-                LOG.logErrorToFile(error, "authentication");
-                throw new LoggedError("Authentication failed");
-            }
-        }
-        return this.token;
+                            ${message}
+                        `)
+                    );
+                    LOG.logErrorToFile(error, "authentication");
+                    reject(new LoggedError("Authentication failed"));
+                })
+                .finally(() => {
+                    clearInterval(progressInterval);
+                });
+        });
     }
 }
