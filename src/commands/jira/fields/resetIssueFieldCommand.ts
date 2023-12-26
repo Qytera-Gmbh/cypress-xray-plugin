@@ -1,25 +1,25 @@
 import { JiraClient } from "../../../client/jira/jiraClient";
 import { LOG, Level } from "../../../logging/logging";
-import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
 import { unknownToString } from "../../../util/string";
 import { Command, Computable } from "../../command";
+import { FieldValueMap } from "./getFieldValuesCommand";
 
-export class ResetIssueFieldCommand<F extends SupportedField> extends Command<void> {
+export class ResetIssueFieldCommand<F extends keyof FieldValueMap> extends Command<void> {
     private readonly jiraClient: JiraClient;
     private readonly field: F;
     private readonly fieldId: Computable<string>;
     private readonly issueKeys: Computable<string[]>;
-    private readonly oldValues: Computable<StringMap<F>>;
-    private readonly newValues: Computable<StringMap<F>>;
+    private readonly oldValues: Computable<StringMap<FieldValueMap[F]>>;
+    private readonly newValues: Computable<StringMap<FieldValueMap[F]>>;
     constructor(
         jiraClient: JiraClient,
         field: F,
         fieldId: Computable<string>,
         issueKeys: Computable<string[]>,
-        oldValues: Computable<StringMap<F>>,
-        newValues: Computable<StringMap<F>>
+        oldValues: Computable<StringMap<FieldValueMap[F]>>,
+        newValues: Computable<StringMap<FieldValueMap[F]>>
     ) {
         super();
         this.jiraClient = jiraClient;

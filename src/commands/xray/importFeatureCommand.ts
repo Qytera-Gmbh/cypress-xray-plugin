@@ -5,7 +5,7 @@ import { HELP } from "../../util/help";
 import { computeOverlap } from "../../util/set";
 import { Command, Computable } from "../command";
 
-export interface ImportParameters {
+export interface Parameters {
     file: string;
     projectKey?: string;
     projectId?: string;
@@ -14,42 +14,42 @@ export interface ImportParameters {
 
 export class ImportFeatureCommand extends Command<string[]> {
     private readonly xrayClient: XrayClient;
-    private readonly importParameters: ImportParameters;
+    private readonly parameters: Parameters;
     private readonly expectedAffectedIssues: Computable<string[]>;
     constructor(
         xrayClient: XrayClient,
-        importParameters: ImportParameters,
+        importParameters: Parameters,
         expectedAffectedIssues: Computable<string[]>
     ) {
         super();
         this.xrayClient = xrayClient;
-        this.importParameters = importParameters;
+        this.parameters = importParameters;
         this.expectedAffectedIssues = expectedAffectedIssues;
     }
 
     public getFilePath(): string {
-        return this.importParameters.file;
+        return this.parameters.file;
     }
 
     public getProjectKey(): string | undefined {
-        return this.importParameters.projectKey;
+        return this.parameters.projectKey;
     }
 
     public getProjectId(): string | undefined {
-        return this.importParameters.projectId;
+        return this.parameters.projectId;
     }
 
     public getSource(): string | undefined {
-        return this.importParameters.source;
+        return this.parameters.source;
     }
 
     protected async computeResult(): Promise<string[]> {
         const expectedAffectedIssues = await this.expectedAffectedIssues.compute();
         const importResponse = await this.xrayClient.importFeature(
-            this.importParameters.file,
-            this.importParameters.projectKey,
-            this.importParameters.projectId,
-            this.importParameters.source
+            this.parameters.file,
+            this.parameters.projectKey,
+            this.parameters.projectId,
+            this.parameters.source
         );
         if (importResponse.errors.length > 0) {
             LOG.message(
