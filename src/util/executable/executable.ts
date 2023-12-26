@@ -1,16 +1,7 @@
+import { Executable } from "../../types/executable";
 import { computeTopologicalOrder } from "../graph/algorithms/sort";
 import { SimpleDirectedGraph } from "../graph/graph";
 import { unknownToString } from "../string";
-
-/**
- * Models an entity which can be executed either synchronously or asynchronously.
- */
-export interface Executable {
-    /**
-     * Triggers the execution.
-     */
-    execute: () => void | Promise<void>;
-}
 
 /**
  * Models a graph which can be executed in a top-down fashion, i.e. starting at vertices without

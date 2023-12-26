@@ -1,5 +1,6 @@
 import { expect } from "chai";
-import { Executable, ExecutableGraph } from "./executable";
+import { Executable } from "../../types/executable";
+import { ExecutableGraph } from "./executable";
 
 describe("ExecutableGraph", () => {
     it("executes vertices in post-order", async () => {

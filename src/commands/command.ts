@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import { Executable } from "../util/command/executable";
+import { Executable } from "../types/executable";
 
 /**
  * Models an entity which can compute a result.
@@ -40,7 +40,7 @@ export enum CommandState {
  * doing something when {@link Command.execute | `execute`} is triggered. All attempts to retrieve
  * the result prior to that will result in a pending promise being returned.
  */
-export abstract class Command<R> implements Computable<R>, Executable {
+export abstract class Command<R = unknown> implements Computable<R>, Executable {
     private readonly result: Promise<R>;
     private readonly executeEmitter: EventEmitter;
     private state: CommandState = CommandState.INITIAL;

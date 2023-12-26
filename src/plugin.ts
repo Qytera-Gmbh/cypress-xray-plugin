@@ -19,6 +19,7 @@ import {
     InternalPluginOptions,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
+import { ExecutableGraph } from "./util/executable/executable";
 import { HELP } from "./util/help";
 
 let canShowInitializationWarning = true;
@@ -78,6 +79,7 @@ export async function configureXrayPlugin(
         cypress: config,
         options: internalOptions,
         clients: await initClients(internalOptions.jira, config.env),
+        graph: new ExecutableGraph(),
     });
 }
 

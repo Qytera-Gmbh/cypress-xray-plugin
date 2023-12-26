@@ -1,7 +1,9 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import { JiraClient } from "../client/jira/jiraClient";
 import { XrayClient } from "../client/xray/xrayClient";
+import { Command } from "../commands/command";
 import { JiraRepository } from "../repository/jira/jiraRepository";
+import { ExecutableGraph } from "../util/executable/executable";
 import { IssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
 export interface CypressXrayPluginOptions {
@@ -423,4 +425,5 @@ export interface PluginContext {
     cypress: Cypress.PluginConfigOptions;
     options: InternalCypressXrayPluginOptions;
     clients: ClientCombination;
+    graph: ExecutableGraph<Command>;
 }
