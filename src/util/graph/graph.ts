@@ -27,16 +27,16 @@ export interface DirectedGraph<V, E extends DirectedEdge<V>> {
      * @param filter - the filter function
      * @returns the first matching vertex or `null` if no vertex matches the filter function
      */
-    find(filter: (vertex: V) => boolean): V | null;
+    find(filter: (vertex: V) => V): V | null;
     /**
-     * Searches for a specific vertex in the graph. If no matching vertex can be found, a new one
-     * will be created and inserted into the graph.
+     * Searches for a specific vertex in the graph. If not matching vertex can be found the fallback
+     * function will be called instead. Every vertex will be visited exactly once.
      *
-     * @param filter - the filter function
-     * @param newVertex - a function which returns the new vertex
-     * @returns the first matching vertex or the new one post placement
+     * @param filter - the vertex filter
+     * @param fallback - the fallback function
+     * @returns the first matching vertex or the result of the fallback function
      */
-    findOrPlace(filter: (vertex: V) => boolean, newVertex: () => V): V;
+    findOrDefault<T extends V>(filter: (vertex: V) => vertex is T, fallback: () => T): T;
     /**
      * Returns a generator which iterates through all vertices.
      *
@@ -181,7 +181,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
         destinationConnections.incoming.add(edge);
     }
 
-    public find(filter: (vertex: V) => boolean): V | null {
+    public find(filter: (vertex: V) => V): V | null {
         for (const vertex of this.getVertices()) {
             if (filter(vertex)) {
                 return vertex;
@@ -190,14 +190,13 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
         return null;
     }
 
-    public findOrPlace(filter: (vertex: V) => boolean, newVertex: () => V): V {
-        const existingVertex = this.find(filter);
-        if (existingVertex) {
-            return existingVertex;
+    public findOrDefault<T extends V>(filter: (vertex: V) => vertex is T, fallback: () => T): T {
+        for (const vertex of this.getVertices()) {
+            if (filter(vertex)) {
+                return vertex;
+            }
         }
-        const vertex = newVertex();
-        this.place(vertex);
-        return vertex;
+        return fallback();
     }
 
     public *getVertices(): Generator<V> {

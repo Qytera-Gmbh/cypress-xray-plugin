@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import { Executable } from "../../types/executable";
+import { Computable } from "../../commands/command";
 import { ExecutableGraph } from "./executable";
 
 describe("ExecutableGraph", () => {
     it("executes vertices in post-order", async () => {
-        class ExecutableVertex implements Executable {
+        class ComputableVertex implements Computable<unknown> {
             private readonly message: string;
             private readonly logger: (message: string) => void;
             constructor(message: string, logger: (message: string) => void) {
@@ -12,7 +12,7 @@ describe("ExecutableGraph", () => {
                 this.logger = logger;
             }
 
-            public execute(): void | Promise<void> {
+            public compute(): void | Promise<void> {
                 this.logger(this.message);
             }
 
@@ -24,10 +24,10 @@ describe("ExecutableGraph", () => {
         const messages: string[] = [];
         const logger = (message: string) => messages.push(message);
 
-        const v1 = new ExecutableVertex("vertex 1", logger);
-        const v2 = new ExecutableVertex("vertex 2", logger);
-        const v3 = new ExecutableVertex("vertex 3", logger);
-        const v4 = new ExecutableVertex("vertex 4", logger);
+        const v1 = new ComputableVertex("vertex 1", logger);
+        const v2 = new ComputableVertex("vertex 2", logger);
+        const v3 = new ComputableVertex("vertex 3", logger);
+        const v4 = new ComputableVertex("vertex 4", logger);
 
         const g = new ExecutableGraph();
         g.connect(v2, v1);

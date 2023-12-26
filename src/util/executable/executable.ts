@@ -1,36 +1,67 @@
-import { Executable } from "../../types/executable";
-import { computeTopologicalOrder } from "../graph/algorithms/sort";
+import { Computable } from "../../commands/command";
+import { LOG, Level } from "../../logging/logging";
+import { errorMessage } from "../errors";
 import { SimpleDirectedGraph } from "../graph/graph";
-import { unknownToString } from "../string";
 
 /**
  * Models a graph which can be executed in a top-down fashion, i.e. starting at vertices without
  * incoming edges and progressing towards leaf vertices without outgoing edges.
  */
-export class ExecutableGraph<V extends Executable>
-    extends SimpleDirectedGraph<V>
-    implements Executable
-{
+export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirectedGraph<V> {
+    /**
+     * Stores vertices which computed their results successfully.
+     */
+    private readonly computedVertices = new Set<Computable<unknown>>();
+    /**
+     * Stores vertices which cannot/must not be computed anymore because of failures.
+     */
+    private readonly forbiddenVertices = new Set<Computable<unknown>>();
+
+    /**
+     * Triggers the graph's execution.
+     */
     public async execute(): Promise<void> {
-        // Post-order is achieved using the vertices' distances from leaves (topological sort).
-        const distances: Map<V, number> = computeTopologicalOrder(this);
-        const vertices = [...distances.keys()];
-        vertices.sort((a: V, b: V) => {
-            const d1 = distances.get(a);
-            if (d1 === undefined) {
-                throw new Error(`Encountered vertex with unknown distance: ${unknownToString(a)}`);
+        const roots = [...this.getVertices()].filter((vertex) => !this.hasIncoming(vertex));
+        await Promise.all(roots.map((root) => this.executeFollowedBySuccessors(root)));
+    }
+
+    private async executeFollowedBySuccessors(vertex: V): Promise<void> {
+        if (!this.computedVertices.has(vertex)) {
+            try {
+                await vertex.compute();
+                this.computedVertices.add(vertex);
+                await Promise.all(
+                    [...this.getOutgoing(vertex)]
+                        .map((edge) => edge.getDestination())
+                        .filter((successor) => {
+                            // Skip vertices marked as failed/forbidden due to (propagated) errors.
+                            if (this.forbiddenVertices.has(successor)) {
+                                return false;
+                            }
+                            // Only allow computation when all predecessors are done.
+                            // Otherwise we might end up skipping in line.
+                            for (const edge of this.getIncoming(successor)) {
+                                if (!this.computedVertices.has(edge.getSource())) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        })
+                        .map((successor) => this.executeFollowedBySuccessors(successor))
+                );
+            } catch (error: unknown) {
+                LOG.message(Level.ERROR, errorMessage(error));
+                this.markForbidden(vertex);
             }
-            const d2 = distances.get(b);
-            if (d2 === undefined) {
-                throw new Error(`Encountered vertex with unknown distance: ${unknownToString(b)}`);
+        }
+    }
+
+    private markForbidden(vertex: V): void {
+        if (!this.forbiddenVertices.has(vertex)) {
+            this.forbiddenVertices.add(vertex);
+            for (const edge of this.getOutgoing(vertex)) {
+                this.markForbidden(edge.getDestination());
             }
-            if (d1 < d2) {
-                return -1;
-            } else if (d1 > d2) {
-                return 1;
-            }
-            return 0;
-        });
-        await Promise.all(vertices.map((vertex) => vertex.execute()));
+        }
     }
 }

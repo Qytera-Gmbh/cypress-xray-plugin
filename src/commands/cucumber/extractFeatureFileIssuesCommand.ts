@@ -76,7 +76,6 @@ export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueDat
                 } else if (child.background) {
                     const preconditionComments = getCucumberPreconditionIssueComments(
                         child.background,
-                        this.projectKey,
                         parsedDocument.comments
                     );
                     const preconditionKeys = getCucumberPreconditionIssueTags(

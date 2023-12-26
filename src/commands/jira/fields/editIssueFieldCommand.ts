@@ -1,5 +1,6 @@
 import { JiraClient } from "../../../client/jira/jiraClient";
 import { LOG, Level } from "../../../logging/logging";
+import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
 import { unknownToString } from "../../../util/string";
@@ -8,7 +9,7 @@ import { FieldValueMap } from "./getFieldValuesCommand";
 
 export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Command<string[]> {
     private readonly jiraClient: JiraClient;
-    private readonly field: F;
+    private readonly field: SupportedField;
     private readonly fieldId: Computable<string>;
     private readonly fieldValues: Computable<StringMap<FieldValueMap[F]>>;
     constructor(
@@ -24,7 +25,7 @@ export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Comman
         this.fieldValues = fieldValues;
     }
 
-    public getField(): F {
+    public getField(): SupportedField {
         return this.field;
     }
 

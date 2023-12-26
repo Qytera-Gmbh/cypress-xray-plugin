@@ -1,6 +1,7 @@
 import { Command, CommandState } from "../../../commands/command";
 import { ExtractFeatureFileIssuesCommand } from "../../../commands/cucumber/extractFeatureFileIssuesCommand";
 import { ParseFeatureFileCommand } from "../../../commands/cucumber/parseFeatureFileCommand";
+import { EditIssueFieldCommand } from "../../../commands/jira/fields/editIssueFieldCommand";
 import { ExtractFieldIdCommand } from "../../../commands/jira/fields/extractFieldIdCommand";
 import { ConvertCucumberResultsCommand } from "../../../commands/plugin/conversion/convertCucumberResultsCommand";
 import { ConvertCypressResultsCommand } from "../../../commands/plugin/conversion/convertCypressResultsCommand";
@@ -60,7 +61,10 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
               ${td("File path", "right")}${td(command.getFilePath(), "left")}
             </TR>
         `);
-    } else if (command instanceof ExtractFieldIdCommand) {
+    } else if (
+        command instanceof ExtractFieldIdCommand ||
+        command instanceof EditIssueFieldCommand
+    ) {
         vertexDataRows = dedent(`
             <TR>
               ${td("Field", "right")}${td(command.getField(), "left")}
