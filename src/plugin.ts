@@ -1,3 +1,4 @@
+import fs from "fs";
 import {
     clearPluginContext,
     getPluginContext,
@@ -20,6 +21,7 @@ import {
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/executable/executable";
+import { commandToDot, graphToDot } from "./util/graph/visualisation/dot";
 import { HELP } from "./util/help";
 
 let canShowInitializationWarning = true;
@@ -48,6 +50,7 @@ export function resetPlugin(): void {
  * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadTestResults/#setup
  */
 export async function configureXrayPlugin(
+    on: Cypress.PluginEvents,
     config: Cypress.PluginConfigOptions,
     options: CypressXrayPluginOptions
 ): Promise<void> {
@@ -81,6 +84,55 @@ export async function configureXrayPlugin(
         clients: await initClients(internalOptions.jira, config.env),
         graph: new ExecutableGraph(),
     });
+    on(
+        "after:run",
+        async (
+            results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
+        ) => {
+            const context = getPluginContext();
+            if (!context) {
+                if (canShowInitializationWarning) {
+                    logInitializationWarning("after:run");
+                }
+                return;
+            }
+            if (!context.options.plugin.enabled) {
+                LOG.message(Level.INFO, "Skipping after:run hook: Plugin disabled");
+                return;
+            }
+            try {
+                await context.graph.execute();
+            } finally {
+                fs.writeFileSync("graph-post.vz", await graphToDot(context.graph, commandToDot));
+            }
+            if (context.options.xray.uploadResults) {
+                // Cypress's status types are incomplete, there is also "finished".
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                if ("status" in results && results.status === "failed") {
+                    const failedResult = results;
+                    LOG.message(
+                        Level.ERROR,
+                        dedent(`
+                            Skipping after:run hook: Failed to run ${failedResult.failures} tests
+
+                            ${failedResult.message}
+                        `)
+                    );
+                    return;
+                }
+                await afterRunHook(
+                    results as CypressCommandLine.CypressRunResult,
+                    context.options,
+                    context.clients
+                );
+            } else {
+                LOG.message(
+                    Level.INFO,
+                    "Skipping results upload: Plugin is configured to not upload test results"
+                );
+            }
+        }
+    );
 }
 
 /**
@@ -110,50 +162,6 @@ export function addXrayResultUpload(on: Cypress.PluginEvents): void {
         }
         await beforeRunHook(runDetails.specs, context.options, context.clients);
     });
-    on(
-        "after:run",
-        async (
-            results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
-        ) => {
-            const context = getPluginContext();
-            if (!context) {
-                if (canShowInitializationWarning) {
-                    logInitializationWarning("after:run");
-                }
-                return;
-            }
-            if (!context.options.plugin.enabled) {
-                LOG.message(Level.INFO, "Skipping after:run hook: Plugin disabled");
-                return;
-            }
-            if (!context.options.xray.uploadResults) {
-                LOG.message(
-                    Level.INFO,
-                    "Skipping results upload: Plugin is configured to not upload test results"
-                );
-                return;
-            }
-            // Cypress's status types are incomplete, there is also "finished".
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            if ("status" in results && results.status === "failed") {
-                const failedResult = results;
-                LOG.message(
-                    Level.ERROR,
-                    dedent(`
-                        Skipping after:run hook: Failed to run ${failedResult.failures} tests
-
-                        ${failedResult.message}
-                    `)
-                );
-                return;
-            }
-            await afterRunHook(
-                results as CypressCommandLine.CypressRunResult,
-                context.options,
-                context.clients
-            );
-        }
-    );
 }
 
 /**
@@ -164,7 +172,7 @@ export function addXrayResultUpload(on: Cypress.PluginEvents): void {
  * @param file - the Cypress file object
  * @returns the unmodified file's path
  */
-export async function syncFeatureFile(file: Cypress.FileObject): Promise<string> {
+export function syncFeatureFile(file: Cypress.FileObject): string {
     const context = getPluginContext();
     if (!context) {
         if (canShowInitializationWarning) {
@@ -179,12 +187,20 @@ export async function syncFeatureFile(file: Cypress.FileObject): Promise<string>
         );
         return file.filePath;
     }
-    return await synchronizeFeatureFile(
-        file,
-        context.cypress.projectRoot,
-        context.options,
-        context.clients
-    );
+    if (
+        context.options.cucumber &&
+        file.filePath.endsWith(context.options.cucumber.featureFileExtension) &&
+        context.options.cucumber.uploadFeatures
+    ) {
+        synchronizeFeatureFile(
+            file,
+            context.cypress.projectRoot,
+            context.options,
+            context.clients,
+            context.graph
+        );
+    }
+    return file.filePath;
 }
 
 function logInitializationWarning(hook: "before:run" | "after:run" | "file:preprocessor"): void {
