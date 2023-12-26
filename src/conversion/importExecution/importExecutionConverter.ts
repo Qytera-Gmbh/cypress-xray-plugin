@@ -1,6 +1,6 @@
 import { CypressRunResult as CypressRunResult_V_12 } from "../../types/cypress/12.0.0/api";
 import { CypressRunResult as CypressRunResult_V_13 } from "../../types/cypress/13.0.0/api";
-import { InternalOptions } from "../../types/plugin";
+import { InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { dedent } from "../../util/dedent";
 import { truncateIsoTime } from "../../util/time";
@@ -16,7 +16,7 @@ export class ImportExecutionConverter {
     /**
      * The configured plugin options.
      */
-    protected readonly options: InternalOptions;
+    protected readonly options: InternalCypressXrayPluginOptions;
     private readonly isCloudConverter: boolean;
     /**
      * Construct a new converter with access to the provided options. The cloud converter flag is
@@ -27,7 +27,7 @@ export class ImportExecutionConverter {
      * @param options - the options
      * @param isCloudConverter - whether Xray cloud JSONs should be created
      */
-    constructor(options: InternalOptions, isCloudConverter: boolean) {
+    constructor(options: InternalCypressXrayPluginOptions, isCloudConverter: boolean) {
         this.options = options;
         this.isCloudConverter = isCloudConverter;
     }

@@ -5,7 +5,7 @@ import { ImportExecutionCucumberMultipartConverter } from "../conversion/importE
 import { LOG, Level } from "../logging/logging";
 import { containsCucumberTest, containsNativeTest } from "../preprocessing/preprocessing";
 import { IssueTypeDetails } from "../types/jira/responses/issueTypeDetails";
-import { ClientCombination, InternalOptions } from "../types/plugin";
+import { ClientCombination, InternalCypressXrayPluginOptions } from "../types/plugin";
 import { nonNull } from "../types/util";
 import { CucumberMultipartFeature } from "../types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "../util/dedent";
@@ -14,7 +14,7 @@ import { HELP } from "../util/help";
 
 export async function beforeRunHook(
     specs: Cypress.Spec[],
-    options: InternalOptions,
+    options: InternalCypressXrayPluginOptions,
     clients: ClientCombination
 ) {
     // Cucumber upload requires additional test execution issue information.
@@ -75,7 +75,7 @@ function retrieveIssueTypeInformation(
 
 export async function afterRunHook(
     results: CypressCommandLine.CypressRunResult,
-    options: InternalOptions,
+    options: InternalCypressXrayPluginOptions,
     clients: ClientCombination
 ) {
     const runResult = results;
@@ -157,7 +157,7 @@ export async function afterRunHook(
 
 async function uploadCypressResults(
     runResult: CypressCommandLine.CypressRunResult,
-    options: InternalOptions,
+    options: InternalCypressXrayPluginOptions,
     clients: ClientCombination
 ) {
     const converter = new ImportExecutionConverter(options, clients.kind === "cloud");
@@ -178,7 +178,7 @@ async function uploadCypressResults(
 
 async function uploadCucumberResults(
     runResult: CypressCommandLine.CypressRunResult,
-    options: InternalOptions,
+    options: InternalCypressXrayPluginOptions,
     clients: ClientCombination
 ) {
     if (!options.cucumber?.preprocessor?.json.output) {

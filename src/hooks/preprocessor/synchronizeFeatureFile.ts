@@ -9,7 +9,7 @@ import {
 } from "../../preprocessing/preprocessing";
 import { SupportedField } from "../../repository/jira/fields/jiraIssueFetcher";
 import { JiraRepository } from "../../repository/jira/jiraRepository";
-import { ClientCombination, InternalOptions } from "../../types/plugin";
+import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
 import { errorMessage } from "../../util/errors";
@@ -19,7 +19,7 @@ import { computeOverlap } from "../../util/set";
 export async function synchronizeFeatureFile(
     file: Cypress.FileObject,
     projectRoot: string,
-    options: InternalOptions,
+    options: InternalCypressXrayPluginOptions,
     clients: ClientCombination
 ): Promise<string> {
     if (

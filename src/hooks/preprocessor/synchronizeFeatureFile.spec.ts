@@ -13,13 +13,13 @@ import { initJiraOptions, initPluginOptions, initSslOptions, initXrayOptions } f
 import { Level } from "../../logging/logging";
 import { SupportedField } from "../../repository/jira/fields/jiraIssueFetcher";
 import { JiraRepository } from "../../repository/jira/jiraRepository";
-import { InternalOptions } from "../../types/plugin";
+import { InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
 import { importKnownFeature, synchronizeFeatureFile } from "./synchronizeFeatureFile";
 
 describe("synchronizeFeatureFile", () => {
     let file: Cypress.FileObject;
-    let options: InternalOptions;
+    let options: InternalCypressXrayPluginOptions;
     let jiraClient: SinonStubbedInstance<JiraClient>;
     let xrayClient: SinonStubbedInstance<XrayClient>;
     let jiraRepository: SinonStubbedInstance<JiraRepository>;

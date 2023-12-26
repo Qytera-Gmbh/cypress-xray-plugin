@@ -17,7 +17,7 @@ import { Level } from "../logging/logging";
 import { CachingJiraFieldRepository } from "../repository/jira/fields/jiraFieldRepository";
 import { CachingJiraIssueFetcher } from "../repository/jira/fields/jiraIssueFetcher";
 import { CachingJiraRepository } from "../repository/jira/jiraRepository";
-import { ClientCombination, InternalOptions } from "../types/plugin";
+import { ClientCombination, InternalCypressXrayPluginOptions } from "../types/plugin";
 import { dedent } from "../util/dedent";
 import { beforeRunHook } from "./hooks";
 
@@ -25,7 +25,7 @@ import { beforeRunHook } from "./hooks";
 chai.use(chaiAsPromised);
 
 describe("the hooks", () => {
-    let options: InternalOptions;
+    let options: InternalCypressXrayPluginOptions;
     let clients: ClientCombination;
 
     beforeEach(() => {

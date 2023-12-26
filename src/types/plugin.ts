@@ -4,7 +4,7 @@ import { XrayClient } from "../client/xray/xrayClient";
 import { JiraRepository } from "../repository/jira/jiraRepository";
 import { IssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
-export interface Options {
+export interface CypressXrayPluginOptions {
     jira: JiraOptions;
     plugin?: PluginOptions;
     xray?: XrayOptions;
@@ -401,7 +401,7 @@ export type InternalSslOptions = OpenSSLOptions;
 /**
  * Options only intended for internal plugin use.
  */
-export interface InternalOptions {
+export interface InternalCypressXrayPluginOptions {
     jira: InternalJiraOptions;
     plugin: InternalPluginOptions;
     xray: InternalXrayOptions;
@@ -421,6 +421,6 @@ export interface ClientCombination {
 
 export interface PluginContext {
     cypress: Cypress.PluginConfigOptions;
-    internal: InternalOptions;
+    options: InternalCypressXrayPluginOptions;
     clients: ClientCombination;
 }

@@ -11,7 +11,7 @@ import {
     RunResult as RunResult_V13,
     ScreenshotInformation as ScreenshotInformation_V13,
 } from "../../types/cypress/13.0.0/api";
-import { InternalOptions } from "../../types/plugin";
+import { InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { XrayEvidenceItem, XrayTest } from "../../types/xray/importTestExecutionResults";
 import { encodeFile } from "../../util/base64";
 import { dedent } from "../../util/dedent";
@@ -28,7 +28,7 @@ import { getXrayStatus } from "./statusConversion";
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22test%22object-TestRundetails
  */
 export class TestConverter {
-    private readonly options: InternalOptions;
+    private readonly options: InternalCypressXrayPluginOptions;
     private readonly isCloudConverter: boolean;
     /**
      * Construct a new converter with access to the provided options. The cloud converter flag is
@@ -38,7 +38,7 @@ export class TestConverter {
      * @param options - the options
      * @param isCloudConverter - whether Xray cloud JSONs should be created
      */
-    constructor(options: InternalOptions, isCloudConverter: boolean) {
+    constructor(options: InternalCypressXrayPluginOptions, isCloudConverter: boolean) {
         this.options = options;
         this.isCloudConverter = isCloudConverter;
     }

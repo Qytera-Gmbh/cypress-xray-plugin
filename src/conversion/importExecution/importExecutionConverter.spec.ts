@@ -5,14 +5,14 @@ import { getMockedLogger } from "../../../test/mocks";
 import { expectToExist } from "../../../test/util";
 import { initJiraOptions, initPluginOptions, initSslOptions, initXrayOptions } from "../../context";
 import { Level } from "../../logging/logging";
-import { InternalOptions } from "../../types/plugin";
+import { InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
 import { ImportExecutionConverter } from "./importExecutionConverter";
 
 chai.use(chaiAsPromised);
 
 describe("the import execution converter", () => {
-    let options: InternalOptions;
+    let options: InternalCypressXrayPluginOptions;
     let converter: ImportExecutionConverter;
     beforeEach(() => {
         options = {

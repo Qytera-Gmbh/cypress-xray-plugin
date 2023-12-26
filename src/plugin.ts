@@ -13,7 +13,11 @@ import { afterRunHook, beforeRunHook } from "./hooks/hooks";
 import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
 import { REST } from "./https/requests";
 import { LOG, Level } from "./logging/logging";
-import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
+import {
+    CypressXrayPluginOptions,
+    InternalCypressXrayPluginOptions,
+    InternalPluginOptions,
+} from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { HELP } from "./util/help";
 
@@ -44,7 +48,7 @@ export function resetPlugin(): void {
  */
 export async function configureXrayPlugin(
     config: Cypress.PluginConfigOptions,
-    options: Options
+    options: CypressXrayPluginOptions
 ): Promise<void> {
     canShowInitializationWarning = false;
     // Resolve these before all other options for correct enabledness.
@@ -59,7 +63,7 @@ export async function configureXrayPlugin(
         debug: pluginOptions.debug,
         logDirectory: pluginOptions.logDirectory,
     });
-    const internalOptions: InternalOptions = {
+    const internalOptions: InternalCypressXrayPluginOptions = {
         jira: initJiraOptions(config.env, options.jira),
         plugin: pluginOptions,
         xray: initXrayOptions(config.env, options.xray),
@@ -72,7 +76,7 @@ export async function configureXrayPlugin(
     });
     setPluginContext({
         cypress: config,
-        internal: internalOptions,
+        options: internalOptions,
         clients: await initClients(internalOptions.jira, config.env),
     });
 }
@@ -94,7 +98,7 @@ export function addXrayResultUpload(on: Cypress.PluginEvents): void {
             }
             return;
         }
-        if (!context.internal.plugin.enabled) {
+        if (!context.options.plugin.enabled) {
             LOG.message(Level.INFO, "Plugin disabled. Skipping before:run hook");
             return;
         }
@@ -102,7 +106,7 @@ export function addXrayResultUpload(on: Cypress.PluginEvents): void {
             LOG.message(Level.WARNING, "No specs about to be executed. Skipping before:run hook");
             return;
         }
-        await beforeRunHook(runDetails.specs, context.internal, context.clients);
+        await beforeRunHook(runDetails.specs, context.options, context.clients);
     });
     on(
         "after:run",
@@ -116,11 +120,11 @@ export function addXrayResultUpload(on: Cypress.PluginEvents): void {
                 }
                 return;
             }
-            if (!context.internal.plugin.enabled) {
+            if (!context.options.plugin.enabled) {
                 LOG.message(Level.INFO, "Skipping after:run hook: Plugin disabled");
                 return;
             }
-            if (!context.internal.xray.uploadResults) {
+            if (!context.options.xray.uploadResults) {
                 LOG.message(
                     Level.INFO,
                     "Skipping results upload: Plugin is configured to not upload test results"
@@ -143,7 +147,7 @@ export function addXrayResultUpload(on: Cypress.PluginEvents): void {
             }
             await afterRunHook(
                 results as CypressCommandLine.CypressRunResult,
-                context.internal,
+                context.options,
                 context.clients
             );
         }
@@ -166,7 +170,7 @@ export async function syncFeatureFile(file: Cypress.FileObject): Promise<string>
         }
         return file.filePath;
     }
-    if (!context.internal.plugin.enabled) {
+    if (!context.options.plugin.enabled) {
         LOG.message(
             Level.INFO,
             `Plugin disabled. Skipping feature file synchronization triggered by: ${file.filePath}`
@@ -176,7 +180,7 @@ export async function syncFeatureFile(file: Cypress.FileObject): Promise<string>
     return await synchronizeFeatureFile(
         file,
         context.cypress.projectRoot,
-        context.internal,
+        context.options,
         context.clients
     );
 }

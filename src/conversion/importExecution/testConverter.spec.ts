@@ -12,14 +12,14 @@ import {
 import { Level } from "../../logging/logging";
 import { CypressRunResult as CypressRunResult_V12 } from "../../types/cypress/12.0.0/api";
 import { CypressRunResult as CypressRunResult_V13 } from "../../types/cypress/13.0.0/api";
-import { InternalOptions } from "../../types/plugin";
+import { InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
 import { TestConverter } from "./testConverter";
 
 chai.use(chaiAsPromised);
 
 describe("the test converter", () => {
-    let options: InternalOptions;
+    let options: InternalCypressXrayPluginOptions;
     beforeEach(() => {
         options = {
             jira: initJiraOptions(
