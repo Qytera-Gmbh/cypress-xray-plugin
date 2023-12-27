@@ -10,7 +10,7 @@ import { XrayClientServer } from "./client/xray/xrayClientServer";
 import * as context from "./context";
 import * as afterRunHook from "./hooks/after/afterRun";
 import * as hooks from "./hooks/hooks";
-import * as synchronizeFeatureFileHook from "./hooks/preprocessor/synchronizeFeatureFile";
+import * as synchronizeFeatureFileHook from "./hooks/preprocessor/filePreprocessor";
 import { Level } from "./logging/logging";
 import { addXrayResultUpload, configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
@@ -441,7 +441,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("calls the synchronizeFile hook", () => {
-            const stubbedHook = stub(synchronizeFeatureFileHook, "synchronizeFeatureFile");
+            const stubbedHook = stub(synchronizeFeatureFileHook, "addSynchronizationCommands");
             pluginContext.options.cucumber = {
                 featureFileExtension: ".feature",
                 uploadFeatures: true,

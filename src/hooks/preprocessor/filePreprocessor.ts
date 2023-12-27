@@ -20,7 +20,7 @@ import {
     getSummariesToReset,
 } from "./commands";
 
-export function synchronizeFeatureFile(
+export function addSynchronizationCommands(
     file: Cypress.FileObject,
     projectRoot: string,
     options: InternalCypressXrayPluginOptions,
@@ -134,8 +134,8 @@ export function synchronizeFeatureFile(
         getCurrentLabelsCommand,
         getNewLabelsCommand
     );
-    graph.connect(getCurrentSummariesCommand, getLabelsToResetCommand);
-    graph.connect(getNewSummariesCommand, getLabelsToResetCommand);
+    graph.connect(getCurrentLabelsCommand, getLabelsToResetCommand);
+    graph.connect(getNewLabelsCommand, getLabelsToResetCommand);
     const editSummariesCommand = new EditIssueFieldCommand(
         clients.jiraClient,
         SupportedField.SUMMARY,

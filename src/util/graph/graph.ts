@@ -89,6 +89,22 @@ export interface DirectedGraph<V, E extends DirectedEdge<V>> {
      * @returns `true` if the vertex has at least one incoming edge, otherwise `false`
      */
     hasIncoming(vertex: V): boolean;
+    /**
+     * Returns a generator which iterates through all predecessors of a vertex, i.e. the source
+     * vertices of all incoming edges.
+     *
+     * @param vertex - the vertex
+     * @returns the generator
+     */
+    getPredecessors(vertex: V): Generator<V>;
+    /**
+     * Returns a generator which iterates through all successors of a vertex, i.e. the destination
+     * vertices of all outgoing edges.
+     *
+     * @param vertex - the vertex
+     * @returns the generator
+     */
+    getSuccessors(vertex: V): Generator<V>;
 }
 
 /**
@@ -258,6 +274,18 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
             throw new Error(`Unknown vertex: ${unknownToString(vertex)}`);
         }
         return incoming.size > 0;
+    }
+
+    public *getPredecessors(vertex: V): Generator<V> {
+        for (const edge of this.getIncoming(vertex)) {
+            yield edge.getSource();
+        }
+    }
+
+    public *getSuccessors(vertex: V): Generator<V> {
+        for (const edge of this.getOutgoing(vertex)) {
+            yield edge.getSource();
+        }
     }
 
     private initVertex(vertex: V): {

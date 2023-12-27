@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { unknownToString } from "../src/util/string";
 
 export const TEST_TMP_DIR = "test/out";
 
@@ -15,15 +16,33 @@ after(() => {
 });
 
 /**
- * Use in place of `expect(value).to.exist`
+ * Use in place of `expect(value).to.exist`.
  *
  * Work-around for Chai assertions not being recognized by TypeScript's control flow analysis.
+ *
  * @param value - the value
  * @see https://stackoverflow.com/a/65099907
  */
 export function expectToExist<T>(value: T): asserts value is NonNullable<T> {
     if (value === null || value === undefined) {
         throw new Error("Expected value to exist");
+    }
+}
+
+/**
+ * Use in place of `expect(value).to.be.an.instanceOf(class)`.
+ *
+ * Work-around for Chai assertions not being recognized by TypeScript's control flow analysis.
+ *
+ * @param value - the value
+ * @param className - the instance type
+ */
+export function assertIsInstanceOf<T, V extends unknown[]>(
+    value: unknown,
+    className: new (...args: V) => T
+): asserts value is T {
+    if (!(value instanceof className)) {
+        throw new Error(`Value is not an instance of ${className.name}: ${unknownToString(value)}`);
     }
 }
 

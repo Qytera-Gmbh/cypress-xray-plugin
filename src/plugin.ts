@@ -11,7 +11,7 @@ import {
 } from "./context";
 import { onAfterRun } from "./hooks/after/afterRun";
 import { beforeRunHook } from "./hooks/hooks";
-import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
+import { addSynchronizationCommands } from "./hooks/preprocessor/filePreprocessor";
 import { REST } from "./https/requests";
 import { LOG, Level } from "./logging/logging";
 import {
@@ -158,7 +158,7 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
         file.filePath.endsWith(context.options.cucumber.featureFileExtension) &&
         context.options.cucumber.uploadFeatures
     ) {
-        synchronizeFeatureFile(
+        addSynchronizationCommands(
             file,
             context.cypress.projectRoot,
             context.options,
