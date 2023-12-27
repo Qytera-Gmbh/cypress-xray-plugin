@@ -204,4 +204,54 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(editLabelsCommand.getField()).to.eq(SupportedField.LABELS);
         });
     });
+
+    it("reuses existing commands", () => {
+        const file = {
+            ...({} as Cypress.FileObject),
+            filePath: "./path/to/file.feature",
+            outputPath: "no.idea",
+            shouldWatch: false,
+        };
+        const graph = new ExecutableGraph<Command>();
+        const fetchAllFieldsCommand = new FetchAllFieldsCommand(clients.jiraClient);
+        const getSummaryFieldIdCommand = new ExtractFieldIdCommand(
+            SupportedField.SUMMARY,
+            fetchAllFieldsCommand
+        );
+        const getLabelsFieldIdCommand = new ExtractFieldIdCommand(
+            SupportedField.LABELS,
+            fetchAllFieldsCommand
+        );
+        graph.connect(fetchAllFieldsCommand, getSummaryFieldIdCommand);
+        graph.connect(fetchAllFieldsCommand, getLabelsFieldIdCommand);
+        addSynchronizationCommands(file, ".", options, clients, graph);
+        const commands = [...graph.getVertices()];
+        const getCurrentSummariesCommand = commands[6];
+        const getCurrentLabelsCommand = commands[7];
+        const getNewSummariesCommand = commands[10];
+        const getNewLabelsCommand = commands[11];
+        const editSummariesCommand = commands[14];
+        const editLabelsCommand = commands[15];
+        expect([...graph.getPredecessors(fetchAllFieldsCommand)]).to.deep.eq([]);
+        expect([...graph.getSuccessors(fetchAllFieldsCommand)]).to.deep.eq([
+            getSummaryFieldIdCommand,
+            getLabelsFieldIdCommand,
+        ]);
+        expect([...graph.getPredecessors(getSummaryFieldIdCommand)]).to.deep.eq([
+            fetchAllFieldsCommand,
+        ]);
+        expect([...graph.getSuccessors(getSummaryFieldIdCommand)]).to.deep.eq([
+            getCurrentSummariesCommand,
+            getNewSummariesCommand,
+            editSummariesCommand,
+        ]);
+        expect([...graph.getPredecessors(getLabelsFieldIdCommand)]).to.deep.eq([
+            fetchAllFieldsCommand,
+        ]);
+        expect([...graph.getSuccessors(getLabelsFieldIdCommand)]).to.deep.eq([
+            getCurrentLabelsCommand,
+            getNewLabelsCommand,
+            editLabelsCommand,
+        ]);
+    });
 });

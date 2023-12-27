@@ -284,7 +284,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
 
     public *getSuccessors(vertex: V): Generator<V> {
         for (const edge of this.getOutgoing(vertex)) {
-            yield edge.getSource();
+            yield edge.getDestination();
         }
     }
 
