@@ -9,6 +9,10 @@ export class MapCommand<U, V> extends Command<V> {
         this.input = input;
     }
 
+    public getMapper(): (input: U) => V | Promise<V> {
+        return this.mapper;
+    }
+
     protected async computeResult(): Promise<V> {
         const input = await this.input.compute();
         return await this.mapper(input);

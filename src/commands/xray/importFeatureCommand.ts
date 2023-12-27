@@ -1,9 +1,8 @@
 import { XrayClient } from "../../client/xray/xrayClient";
 import { LOG, Level } from "../../logging/logging";
+import { ImportFeatureResponse } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
-import { HELP } from "../../util/help";
-import { computeOverlap } from "../../util/set";
-import { Command, Computable } from "../command";
+import { Command } from "../command";
 
 export interface Parameters {
     file: string;
@@ -12,19 +11,13 @@ export interface Parameters {
     source?: string;
 }
 
-export class ImportFeatureCommand extends Command<string[]> {
+export class ImportFeatureCommand extends Command<ImportFeatureResponse> {
     private readonly xrayClient: XrayClient;
     private readonly parameters: Parameters;
-    private readonly expectedAffectedIssues: Computable<string[]>;
-    constructor(
-        xrayClient: XrayClient,
-        importParameters: Parameters,
-        expectedAffectedIssues: Computable<string[]>
-    ) {
+    constructor(xrayClient: XrayClient, importParameters: Parameters) {
         super();
         this.xrayClient = xrayClient;
         this.parameters = importParameters;
-        this.expectedAffectedIssues = expectedAffectedIssues;
     }
 
     public getFilePath(): string {
@@ -43,8 +36,7 @@ export class ImportFeatureCommand extends Command<string[]> {
         return this.parameters.source;
     }
 
-    protected async computeResult(): Promise<string[]> {
-        const expectedAffectedIssues = await this.expectedAffectedIssues.compute();
+    protected async computeResult(): Promise<ImportFeatureResponse> {
         LOG.message(Level.INFO, `Importing feature file to Xray: ${this.getFilePath()}`);
         const importResponse = await this.xrayClient.importFeature(
             this.parameters.file,
@@ -61,41 +53,6 @@ export class ImportFeatureCommand extends Command<string[]> {
                 `)
             );
         }
-        const setOverlap = computeOverlap(
-            expectedAffectedIssues,
-            importResponse.updatedOrCreatedIssues
-        );
-        if (setOverlap.leftOnly.length > 0 || setOverlap.rightOnly.length > 0) {
-            const mismatchLines: string[] = [];
-            if (setOverlap.leftOnly.length > 0) {
-                mismatchLines.push(
-                    "Issues contained in feature file tags which were not updated by Jira and might not exist:"
-                );
-                mismatchLines.push(...setOverlap.leftOnly.map((issueKey) => `  ${issueKey}`));
-            }
-            if (setOverlap.rightOnly.length > 0) {
-                mismatchLines.push(
-                    "Issues updated by Jira which are not present in feature file tags and might have been created:"
-                );
-                mismatchLines.push(...setOverlap.rightOnly.map((issueKey) => `  ${issueKey}`));
-            }
-            LOG.message(
-                Level.WARNING,
-                dedent(`
-                    Mismatch between feature file issue tags and updated Jira issues detected
-
-                    ${mismatchLines.join("\n")}
-
-                    Make sure that:
-                    - All issues present in feature file tags belong to existing issues
-                    - Your plugin tag prefix settings are consistent with the ones defined in Xray
-
-                    More information:
-                    - ${HELP.plugin.guides.targetingExistingIssues}
-                    - ${HELP.plugin.configuration.cucumber.prefixes}
-                `)
-            );
-        }
-        return setOverlap.intersection;
+        return importResponse;
     }
 }

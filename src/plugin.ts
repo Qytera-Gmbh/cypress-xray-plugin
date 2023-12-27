@@ -1,4 +1,3 @@
-import fs from "fs";
 import {
     clearPluginContext,
     getPluginContext,
@@ -10,7 +9,8 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
-import { afterRunHook, beforeRunHook } from "./hooks/hooks";
+import { onAfterRun } from "./hooks/after/afterRun";
+import { beforeRunHook } from "./hooks/hooks";
 import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
 import { REST } from "./https/requests";
 import { LOG, Level } from "./logging/logging";
@@ -21,7 +21,6 @@ import {
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/executable/executable";
-import { commandToDot, graphToDot } from "./util/graph/visualisation/dot";
 import { HELP } from "./util/help";
 
 let canShowInitializationWarning = true;
@@ -96,41 +95,7 @@ export async function configureXrayPlugin(
                 }
                 return;
             }
-            if (!context.options.plugin.enabled) {
-                LOG.message(Level.INFO, "Skipping after:run hook: Plugin disabled");
-                return;
-            }
-            try {
-                await context.graph.execute();
-            } finally {
-                fs.writeFileSync("graph-post.vz", await graphToDot(context.graph, commandToDot));
-            }
-            if (context.options.xray.uploadResults) {
-                // Cypress's status types are incomplete, there is also "finished".
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                if ("status" in results && results.status === "failed") {
-                    const failedResult = results;
-                    LOG.message(
-                        Level.ERROR,
-                        dedent(`
-                            Skipping after:run hook: Failed to run ${failedResult.failures} tests
-
-                            ${failedResult.message}
-                        `)
-                    );
-                    return;
-                }
-                await afterRunHook(
-                    results as CypressCommandLine.CypressRunResult,
-                    context.options,
-                    context.clients
-                );
-            } else {
-                LOG.message(
-                    Level.INFO,
-                    "Skipping results upload: Plugin is configured to not upload test results"
-                );
-            }
+            await onAfterRun(results, context);
         }
     );
 }

@@ -10,14 +10,15 @@ import { GetSummaryValuesCommand } from "../../commands/jira/fields/getSummaryVa
 import { MapCommand } from "../../commands/mapCommand";
 import { MergeCommand } from "../../commands/mergeCommand";
 import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
-import { LOG, Level } from "../../logging/logging";
-import { FeatureFileIssueData } from "../../preprocessing/preprocessing";
 import { SupportedField } from "../../repository/jira/fields/jiraIssueFetcher";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
-import { StringMap } from "../../types/util";
-import { dedent } from "../../util/dedent";
 import { ExecutableGraph } from "../../util/executable/executable";
-import { unknownToString } from "../../util/string";
+import {
+    gatherAllIssueKeys,
+    getActualAffectedIssueKeys,
+    getLabelsToReset,
+    getSummariesToReset,
+} from "./commands";
 
 export function synchronizeFeatureFile(
     file: Cypress.FileObject,
@@ -34,12 +35,7 @@ export function synchronizeFeatureFile(
         parseFeatureFileCommand
     );
     graph.connect(parseFeatureFileCommand, extractIssueDataCommand);
-    const gatherIssueKeysCommand = new MapCommand((issueData: FeatureFileIssueData): string[] => {
-        return [
-            ...issueData.tests.map((data) => data.key),
-            ...issueData.preconditions.map((data) => data.key),
-        ];
-    }, extractIssueDataCommand);
+    const gatherIssueKeysCommand = new MapCommand(gatherAllIssueKeys, extractIssueDataCommand);
     graph.connect(extractIssueDataCommand, gatherIssueKeysCommand);
     const fetchAllFieldsCommand = graph.findOrDefault(
         (vertex): vertex is FetchAllFieldsCommand => {
@@ -95,18 +91,21 @@ export function synchronizeFeatureFile(
     );
     graph.connect(getLabelsFieldIdCommand, getCurrentLabelsCommand);
     graph.connect(gatherIssueKeysCommand, getCurrentLabelsCommand);
-    const importFeatureCommand = new ImportFeatureCommand(
-        clients.xrayClient,
-        {
-            file: path.relative(projectRoot, file.filePath),
-            projectKey: options.jira.projectKey,
-        },
-        gatherIssueKeysCommand
-    );
-    graph.connect(gatherIssueKeysCommand, importFeatureCommand);
     // Only import the feature once the backups have been created.
+    const importFeatureCommand = new ImportFeatureCommand(clients.xrayClient, {
+        file: path.relative(projectRoot, file.filePath),
+        projectKey: options.jira.projectKey,
+    });
     graph.connect(getCurrentSummariesCommand, importFeatureCommand);
     graph.connect(getCurrentLabelsCommand, importFeatureCommand);
+    // Check which issues will need to have their backups restored.
+    const getKnownAffectedIssuesCommand = new MergeCommand(
+        getActualAffectedIssueKeys,
+        gatherIssueKeysCommand,
+        importFeatureCommand
+    );
+    graph.connect(gatherIssueKeysCommand, getKnownAffectedIssuesCommand);
+    graph.connect(importFeatureCommand, getKnownAffectedIssuesCommand);
     const getNewSummariesCommand = new GetSummaryValuesCommand(
         clients.jiraClient,
         getSummaryFieldIdCommand,
@@ -114,7 +113,7 @@ export function synchronizeFeatureFile(
     );
     graph.connect(getSummaryFieldIdCommand, getNewSummariesCommand);
     graph.connect(gatherIssueKeysCommand, getNewSummariesCommand);
-    graph.connect(importFeatureCommand, getNewSummariesCommand);
+    graph.connect(getKnownAffectedIssuesCommand, getNewSummariesCommand);
     const getNewLabelsCommand = new GetLabelValuesCommand(
         clients.jiraClient,
         getLabelsFieldIdCommand,
@@ -122,79 +121,16 @@ export function synchronizeFeatureFile(
     );
     graph.connect(getLabelsFieldIdCommand, getNewLabelsCommand);
     graph.connect(gatherIssueKeysCommand, getNewLabelsCommand);
-    graph.connect(importFeatureCommand, getNewLabelsCommand);
+    graph.connect(getKnownAffectedIssuesCommand, getNewLabelsCommand);
     const getSummariesToResetCommand = new MergeCommand(
-        ([oldValues, newValues]) => {
-            const toReset: StringMap<string> = {};
-            for (const [issueKey, newSummary] of Object.entries(newValues)) {
-                if (!(issueKey in oldValues)) {
-                    LOG.message(
-                        Level.WARNING,
-                        dedent(`
-                            Skipping resetting summary of issue: ${issueKey}
-                            The previous summary could not be fetched, make sure to manually restore it if needed
-                        `)
-                    );
-                    continue;
-                }
-                const oldSummary = oldValues[issueKey];
-                if (oldSummary === newSummary) {
-                    LOG.message(
-                        Level.DEBUG,
-                        dedent(`
-                            Skipping resetting summary of issue: ${issueKey}
-                            The current summary is identical to the previous one:
-
-                            Previous summary: ${unknownToString(oldSummary)}
-                            Current summary:  ${unknownToString(newSummary)}
-                        `)
-                    );
-                    continue;
-                }
-                toReset[issueKey] = oldSummary;
-            }
-            return toReset;
-        },
+        getSummariesToReset,
         getCurrentSummariesCommand,
         getNewSummariesCommand
     );
     graph.connect(getCurrentSummariesCommand, getSummariesToResetCommand);
     graph.connect(getNewSummariesCommand, getSummariesToResetCommand);
     const getLabelsToResetCommand = new MergeCommand(
-        ([oldValues, newValues]) => {
-            const toReset: StringMap<string[]> = {};
-            for (const [issueKey, newLabels] of Object.entries(newValues)) {
-                if (!(issueKey in oldValues)) {
-                    LOG.message(
-                        Level.WARNING,
-                        dedent(`
-                            Skipping resetting labels of issue: ${issueKey}
-                            The previous labels could not be fetched, make sure to manually restore them if needed
-                        `)
-                    );
-                    continue;
-                }
-                const oldLabels = oldValues[issueKey];
-                if (
-                    oldLabels.length === newLabels.length &&
-                    newLabels.every((label) => oldLabels.includes(label))
-                ) {
-                    LOG.message(
-                        Level.DEBUG,
-                        dedent(`
-                            Skipping resetting labels of issue: ${issueKey}
-                            The current labels are identical to the previous ones:
-
-                            Previous labels: ${unknownToString(oldLabels)}
-                            Current labels:  ${unknownToString(newLabels)}
-                        `)
-                    );
-                    continue;
-                }
-                toReset[issueKey] = oldLabels;
-            }
-            return toReset;
-        },
+        getLabelsToReset,
         getCurrentLabelsCommand,
         getNewLabelsCommand
     );

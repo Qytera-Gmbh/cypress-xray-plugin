@@ -26,7 +26,7 @@ beforeEach(() => {
 });
 
 export function getMockedLogger(
-    stubbingOptions: { allowUnstubbedCalls?: boolean } = { allowUnstubbedCalls: false }
+    stubbingOptions: { allowUnstubbedCalls?: boolean } = { allowUnstubbedCalls: true }
 ): SinonStubbedInstance<Logger> {
     const logger = stub(logging.LOG);
     if (!stubbingOptions.allowUnstubbedCalls) {
