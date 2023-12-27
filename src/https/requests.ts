@@ -99,12 +99,12 @@ export class AxiosRestClient {
                             `${timestamp}_${method}_${url}_request.json`
                         );
                         const resolvedFilename = LOG.logToFile(
-                            {
+                            JSON.stringify({
                                 url: url,
                                 headers: request.headers,
                                 params: request.params as unknown,
                                 body: request.data,
-                            },
+                            }),
                             filename
                         );
                         LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
@@ -125,7 +125,7 @@ export class AxiosRestClient {
                             filename = normalizedFilename(`${timestamp}_request.json`);
                             data = error;
                         }
-                        const resolvedFilename = LOG.logToFile(data, filename);
+                        const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
                         LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
                         return Promise.reject(error);
                     }
@@ -140,12 +140,12 @@ export class AxiosRestClient {
                             `${timestamp}_${method}_${url}_response.json`
                         );
                         const resolvedFilename = LOG.logToFile(
-                            {
+                            JSON.stringify({
                                 data: response.data,
                                 headers: response.headers,
                                 status: response.status,
                                 statusText: response.statusText,
-                            },
+                            }),
                             filename
                         );
                         LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
@@ -166,7 +166,7 @@ export class AxiosRestClient {
                             filename = normalizedFilename(`${timestamp}_response.json`);
                             data = error;
                         }
-                        const resolvedFilename = LOG.logToFile(data, filename);
+                        const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
                         LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
                         return Promise.reject(error);
                     }

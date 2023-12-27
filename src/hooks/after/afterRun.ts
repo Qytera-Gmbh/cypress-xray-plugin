@@ -26,7 +26,28 @@ export async function onAfterRun(
     try {
         await context.graph.execute();
     } finally {
-        fs.writeFileSync("graph-post.vz", await graphToDot(context.graph, commandToDot));
+        if (context.options.plugin.debug) {
+            const executionGraphFile = LOG.logToFile(
+                await graphToDot(context.graph, commandToDot),
+                "execution-graph.vz"
+            );
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Plugin execution graph saved to: ${executionGraphFile}
+
+                    You can view it using Graphviz DOT (https://graphviz.org/docs/layouts/dot/):
+
+                      dot -o execution-graph.svg -Tsvg ${executionGraphFile}
+
+                    Alternatively, you can view it online under any of the following websites:
+                    - https://dreampuf.github.io/GraphvizOnline
+                    - https://edotor.net/
+                    - https://www.devtoolsdaily.com/graphviz/
+
+                `)
+            );
+        }
     }
     if (context.options.xray.uploadResults) {
         // Cypress's status types are incomplete, there is also "finished".

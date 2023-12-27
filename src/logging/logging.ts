@@ -30,7 +30,7 @@ export interface Logger {
      * @param filename - the filename to use for the file
      * @returns the file path
      */
-    logToFile<T>(data: T, filename: string): string;
+    logToFile(data: string, filename: string): string;
     /**
      * Writes an error to a file under the log path configured in
      * {@link configure | `configure`}.
@@ -110,11 +110,11 @@ export class PluginLogger implements Logger {
         });
     }
 
-    public logToFile<T>(data: T, filename: string): string {
+    public logToFile(data: string, filename: string): string {
         const logDirectoryPath = path.resolve(this.loggingOptions.logDirectory);
         fs.mkdirSync(logDirectoryPath, { recursive: true });
         const filepath = path.resolve(logDirectoryPath, filename);
-        fs.writeFileSync(filepath, JSON.stringify(data));
+        fs.writeFileSync(filepath, data);
         return filepath;
     }
 
@@ -140,7 +140,7 @@ export class PluginLogger implements Logger {
             errorFileName = `${filename}.log`;
             errorData = error;
         }
-        const filepath = this.logToFile(errorData, errorFileName);
+        const filepath = this.logToFile(JSON.stringify(errorData), errorFileName);
         this.message(Level.ERROR, `Complete error logs have been written to: ${filepath}`);
     }
 
