@@ -23,25 +23,38 @@ export function getActualAffectedIssueKeys([expectedAffectedIssues, importRespon
         importResponse.updatedOrCreatedIssues
     );
     if (setOverlap.leftOnly.length > 0 || setOverlap.rightOnly.length > 0) {
-        const mismatchLines: string[] = [];
+        const mismatchLinesFeatures: string[] = [];
+        const mismatchLinesJira: string[] = [];
         if (setOverlap.leftOnly.length > 0) {
-            mismatchLines.push(
+            mismatchLinesFeatures.push(
                 "Issues contained in feature file tags which were not updated by Jira and might not exist:"
             );
-            mismatchLines.push(...setOverlap.leftOnly.map((issueKey) => `  ${issueKey}`));
+            mismatchLinesFeatures.push(...setOverlap.leftOnly.map((issueKey) => `  ${issueKey}`));
         }
         if (setOverlap.rightOnly.length > 0) {
-            mismatchLines.push(
+            mismatchLinesJira.push(
                 "Issues updated by Jira which are not present in feature file tags and might have been created:"
             );
-            mismatchLines.push(...setOverlap.rightOnly.map((issueKey) => `  ${issueKey}`));
+            mismatchLinesJira.push(...setOverlap.rightOnly.map((issueKey) => `  ${issueKey}`));
+        }
+        let mismatchLines: string;
+        if (mismatchLinesFeatures.length > 0 && mismatchLinesJira.length > 0) {
+            mismatchLines = dedent(`
+                ${mismatchLinesFeatures.join("\n")}
+
+                ${mismatchLinesJira.join("\n")}
+            `);
+        } else if (mismatchLinesFeatures.length > 0) {
+            mismatchLines = mismatchLinesFeatures.join("\n");
+        } else {
+            mismatchLines = mismatchLinesJira.join("\n");
         }
         LOG.message(
             Level.WARNING,
             dedent(`
                 Mismatch between feature file issue tags and updated Jira issues detected
 
-                ${mismatchLines.join("\n")}
+                ${mismatchLines}
 
                 Make sure that:
                 - All issues present in feature file tags belong to existing issues

@@ -43,6 +43,7 @@ export function resetPlugin(): void {
  * Other Cypress configuration values which the plugin typically accesses are the Cypress version or
  * the project root directory.
  *
+ * @param on - the Cypress event registration functon
  * @param config - the Cypress configuration
  * @param options - the plugin options
  *
