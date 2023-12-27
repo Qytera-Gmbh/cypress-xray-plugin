@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import fs from "fs";
+import path from "path";
 import { stub } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
@@ -19,7 +20,7 @@ import { CypressXrayPluginOptions, PluginContext } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/executable/executable";
 
-describe(__filename, () => {
+describe(path.relative(process.cwd(), __filename), () => {
     let config: Cypress.PluginConfigOptions;
     let pluginContext: PluginContext;
 

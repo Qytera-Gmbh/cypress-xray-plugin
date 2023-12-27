@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import path from "path";
 import { getMockedLogger, getMockedXrayClient } from "../../../test/mocks";
 import { Level } from "../../logging/logging";
 import { FeatureFileIssueData } from "../../preprocessing/preprocessing";
@@ -6,7 +7,7 @@ import { ImportFeatureResponse } from "../../types/xray/responses/importFeature"
 import { dedent } from "../../util/dedent";
 import { gatherAllIssueKeys, getActualAffectedIssueKeys } from "./commands";
 
-describe(__filename, () => {
+describe(path.relative(process.cwd(), __filename), () => {
     describe(gatherAllIssueKeys.name, () => {
         it("merges all issue keys into one array", () => {
             const data: FeatureFileIssueData = {

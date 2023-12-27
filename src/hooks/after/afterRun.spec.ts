@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import fs from "fs";
+import path from "path";
 import { getMockedLogger } from "../../../test/mocks";
 import { PatCredentials } from "../../authentication/credentials";
 import { JiraClientServer } from "../../client/jira/jiraClientServer";
@@ -15,7 +16,7 @@ import { dedent } from "../../util/dedent";
 import { ExecutableGraph } from "../../util/executable/executable";
 import { onAfterRun } from "./afterRun";
 
-describe(__filename, () => {
+describe(path.relative(process.cwd(), __filename), () => {
     describe(onAfterRun.name, () => {
         let config: Cypress.PluginConfigOptions;
         let pluginContext: PluginContext;

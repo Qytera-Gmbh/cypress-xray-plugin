@@ -1,7 +1,8 @@
 import { expect } from "chai";
+import path from "path";
 import { Command } from "./command";
 
-describe(__filename, () => {
+describe(path.relative(process.cwd(), __filename), () => {
     describe(Command.name, () => {
         it("computes the result on compute call", async () => {
             class ArithmeticCommand extends Command<number> {
