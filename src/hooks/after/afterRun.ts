@@ -173,10 +173,6 @@ export function addUploadCommands(
                     );
                     return issueKeyCypress;
                 }
-                LOG.message(
-                    Level.SUCCESS,
-                    `Uploaded test results to issue: ${issueKeyCypress} (${options.jira.url}/browse/${issueKeyCypress})`
-                );
                 return issueKeyCypress;
             },
             importCypressExecutionCommand,
@@ -195,6 +191,13 @@ export function addUploadCommands(
         );
         return;
     }
+    const printSuccessCommand = new FunctionCommand((issueKey: string) => {
+        LOG.message(
+            Level.SUCCESS,
+            `Uploaded test results to issue: ${issueKey} (${options.jira.url}/browse/${issueKey})`
+        );
+    }, getExecutionIssueKeyCommand);
+    graph.connect(printSuccessCommand, printSuccessCommand);
     if (options.jira.attachVideos) {
         const extractVideoFilesCommand = new MapCommand(
             (result: CypressCommandLine.CypressRunResult) => {
