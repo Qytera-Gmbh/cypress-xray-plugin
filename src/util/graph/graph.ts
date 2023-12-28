@@ -18,9 +18,10 @@ export interface DirectedGraph<V, E extends DirectedEdge<V>> {
      *
      * @param source - the source vertex
      * @param destination - the destination vertex
+     * @returns the new edge
      * @throws if the connection would introduce a duplicate edge or a cycle
      */
-    connect(source: V, destination: V): void;
+    connect(source: V, destination: V): E;
     /**
      * Searches for a specific vertex in the graph. Every vertex will be visited exactly once.
      *
@@ -173,7 +174,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
         this.initVertex(vertex);
     }
 
-    public connect(source: V, destination: V): void {
+    public connect(source: V, destination: V): SimpleDirectedEdge<V> {
         const sourceConnections = this.initVertex(source);
         const destinationConnections = this.initVertex(destination);
         if (dfs(this, { source: destination, destination: source })) {
@@ -195,6 +196,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
         const edge = new SimpleDirectedEdge(source, destination);
         sourceConnections.outgoing.add(edge);
         destinationConnections.incoming.add(edge);
+        return edge;
     }
 
     public find(filter: (vertex: V) => boolean): V | null {

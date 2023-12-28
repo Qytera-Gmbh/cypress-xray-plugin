@@ -20,6 +20,11 @@ export class ImportFeatureCommand extends Command<ImportFeatureResponse> {
         this.parameters = importParameters;
     }
 
+    /**
+     * Returns the feature file's path relative to the project root.
+     *
+     * @returns the path
+     */
     public getFilePath(): string {
         return this.parameters.file;
     }

@@ -1,7 +1,7 @@
 import { Computable, isSkippedError } from "../../commands/command";
 import { LOG, Level } from "../../logging/logging";
 import { errorMessage } from "../errors";
-import { SimpleDirectedGraph } from "../graph/graph";
+import { DirectedEdge, SimpleDirectedEdge, SimpleDirectedGraph } from "../graph/graph";
 
 /**
  * Models a graph which can be executed in a top-down fashion, i.e. starting at vertices without
@@ -16,6 +16,11 @@ export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirect
      * Stores vertices which cannot/must not be computed anymore because of failures or skips.
      */
     private readonly forbiddenVertices = new Set<Computable<unknown>>();
+    /**
+     * Stores edges which are optional, i.e. that the destination vertex should still compute even
+     * if the predecessor failed to compute its result.
+     */
+    private readonly optionalEdges = new Set<DirectedEdge<V>>();
 
     /**
      * Triggers the graph's execution.
@@ -23,6 +28,24 @@ export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirect
     public async execute(): Promise<void> {
         const roots = [...this.getVertices()].filter((vertex) => !this.hasIncoming(vertex));
         await Promise.all(roots.map((root) => this.executeFollowedBySuccessors(root)));
+    }
+
+    /**
+     * Connects two vertices in the graph with an edge. If the graph does not yet contain the
+     * vertices, they will automatically be inserted prior to the connection.
+     *
+     * @param source - the source vertex
+     * @param destination - the destination vertex
+     * @param optional - `true` to mark the edge optional, `false` otherwise
+     * @returns the new edge
+     * @throws if the connection would introduce a duplicate edge or a cycle
+     */
+    public connect(source: V, destination: V, optional = false): SimpleDirectedEdge<V> {
+        const edge = super.connect(source, destination);
+        if (optional) {
+            this.optionalEdges.add(edge);
+        }
+        return edge;
     }
 
     private async executeFollowedBySuccessors(vertex: V): Promise<void> {
@@ -41,6 +64,9 @@ export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirect
                             // Only allow computation when all predecessors are done.
                             // Otherwise we might end up skipping in line.
                             for (const edge of this.getIncoming(successor)) {
+                                if (this.optionalEdges.has(edge)) {
+                                    continue;
+                                }
                                 if (!this.computedVertices.has(edge.getSource())) {
                                     return false;
                                 }
@@ -61,8 +87,8 @@ export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirect
     }
 
     /**
-     * Marks a vertex and all its successors as forbidden, meaning that both the vertex and its
-     * successors will not be computed anymore.
+     * Marks a vertex and its successors as potentially forbidden, meaning that both the vertex and
+     * its successors might not be computed anymore.
      *
      * @param vertex - the vertex
      */
@@ -70,7 +96,9 @@ export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirect
         if (!this.forbiddenVertices.has(vertex)) {
             this.forbiddenVertices.add(vertex);
             for (const edge of this.getOutgoing(vertex)) {
-                this.markForbidden(edge.getDestination());
+                if (!this.optionalEdges.has(edge)) {
+                    this.markForbidden(edge.getDestination());
+                }
             }
         }
     }

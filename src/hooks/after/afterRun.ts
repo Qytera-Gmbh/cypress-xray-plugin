@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import { Command, SkippedError } from "../../commands/command";
 import { ConstantCommand } from "../../commands/constantCommand";
 import { ApplyFunctionCommand } from "../../commands/functionCommand";
@@ -16,6 +17,7 @@ import {
 } from "../../commands/plugin/conversion/convertCypressTestsCommand";
 import { ImportExecutionCucumberCommand } from "../../commands/xray/importExecutionCucumberCommand";
 import { ImportExecutionCypressCommand } from "../../commands/xray/importExecutionCypressCommand";
+import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
 import { LOG, Level } from "../../logging/logging";
 import { containsCucumberTest, containsNativeTest } from "../../preprocessing/preprocessing";
 import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
@@ -30,6 +32,7 @@ import { ExecutableGraph } from "../../util/executable/executable";
 
 export function addUploadCommands(
     runResult: CypressCommandLine.CypressRunResult,
+    projectRoot: string,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>
@@ -136,8 +139,25 @@ export function addUploadCommands(
             clients.xrayClient,
             convertCucumberResultsCommand
         );
-        // TODO: make sure to add an edge from any feature file imports to the execution.
-        // Otherwise the execution will display old results.
+        // Make sure to add an edge from any feature file imports to the execution. Otherwise, the
+        // execution will contain old steps (those which were there prior to feature import).
+        if (options.cucumber.uploadFeatures) {
+            for (const command of graph.getVertices()) {
+                if (command instanceof ImportFeatureCommand) {
+                    if (
+                        runResult.runs.some(
+                            (run) =>
+                                path.relative(projectRoot, run.spec.relative) ===
+                                command.getFilePath()
+                        )
+                    ) {
+                        // We can still upload results even if the feature file import fails. It's
+                        // better to upload mismatched results than none at all.
+                        graph.connect(command, importCucumberExecutionCommand, true);
+                    }
+                }
+            }
+        }
         graph.connect(convertCucumberResultsCommand, importCucumberExecutionCommand);
         if (options.jira.testExecutionIssueKey) {
             const compareIssueKeysCommand = new ApplyFunctionCommand((issueKey: string) => {

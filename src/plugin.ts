@@ -117,6 +117,7 @@ export async function configureXrayPlugin(
                 } else {
                     addUploadCommands(
                         results as CypressCommandLine.CypressRunResult,
+                        context.cypress.projectRoot,
                         context.options,
                         context.clients,
                         context.graph
