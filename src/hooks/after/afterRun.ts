@@ -1,5 +1,5 @@
 import fs from "fs";
-import { Command } from "../../commands/command";
+import { Command, SkippedError } from "../../commands/command";
 import { ConstantCommand } from "../../commands/constantCommand";
 import { ApplyFunctionCommand } from "../../commands/functionCommand";
 import { AttachFilesCommand } from "../../commands/jira/attachFilesCommand";
@@ -53,12 +53,10 @@ export function addUploadCommands(
         const assertConversionValidCommand = new ApplyFunctionCommand(
             (input: XrayTestExecutionResults) => {
                 if (!input.tests || input.tests.length === 0) {
-                    LOG.message(
-                        Level.WARNING,
+                    throw new SkippedError(
                         "No native Cypress tests were executed. Skipping native upload."
                     );
                 }
-                throw new Error("TODO: skipping");
             },
             convertCypressResultsCommand
         );
@@ -126,12 +124,10 @@ export function addUploadCommands(
         const assertConversionValidCommand = new ApplyFunctionCommand(
             (input: CucumberMultipart) => {
                 if (input.features.length === 0) {
-                    LOG.message(
-                        Level.WARNING,
+                    throw new SkippedError(
                         "No Cucumber tests were executed. Skipping Cucumber upload."
                     );
                 }
-                throw new Error("TODO: skipping");
             },
             convertCucumberResultsCommand
         );
@@ -199,7 +195,7 @@ export function addUploadCommands(
             `Uploaded test results to issue: ${issueKey} (${options.jira.url}/browse/${issueKey})`
         );
     }, getExecutionIssueKeyCommand);
-    graph.connect(printSuccessCommand, printSuccessCommand);
+    graph.connect(getExecutionIssueKeyCommand, printSuccessCommand);
     if (options.jira.attachVideos) {
         const extractVideoFilesCommand = new ApplyFunctionCommand(
             (result: CypressCommandLine.CypressRunResult) => {
@@ -214,9 +210,8 @@ export function addUploadCommands(
         graph.connect(resultsCommand, extractVideoFilesCommand);
         const assertVideosExistCommand = new ApplyFunctionCommand((videos: string[]) => {
             if (videos.length === 0) {
-                LOG.message(Level.WARNING, "No videos to upload: No videos have been captured");
+                throw new SkippedError("No videos to upload: No videos have been captured");
             }
-            throw new Error("TODO: skipping");
         }, extractVideoFilesCommand);
         graph.connect(extractVideoFilesCommand, assertVideosExistCommand);
         const attachVideosCommand = new AttachFilesCommand(

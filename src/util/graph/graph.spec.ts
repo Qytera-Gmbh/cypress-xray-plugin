@@ -56,6 +56,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     graph.connect(0, 8);
                 }).to.throw("Failed to connect vertices 0 -> 8: duplicate edge detected");
             });
+
+            it("detects self loops", () => {
+                expect(() => {
+                    graph.connect(0, 0);
+                }).to.throw("Failed to connect vertices 0 -> 0: cycle detected");
+            });
         });
 
         describe(graph.find.name, () => {

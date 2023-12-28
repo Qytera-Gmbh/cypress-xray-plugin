@@ -1,4 +1,4 @@
-import { Computable } from "../../commands/command";
+import { Computable, isSkippedError } from "../../commands/command";
 import { LOG, Level } from "../../logging/logging";
 import { errorMessage } from "../errors";
 import { SimpleDirectedGraph } from "../graph/graph";
@@ -13,7 +13,7 @@ export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirect
      */
     private readonly computedVertices = new Set<Computable<unknown>>();
     /**
-     * Stores vertices which cannot/must not be computed anymore because of failures.
+     * Stores vertices which cannot/must not be computed anymore because of failures or skips.
      */
     private readonly forbiddenVertices = new Set<Computable<unknown>>();
 
@@ -26,7 +26,7 @@ export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirect
     }
 
     private async executeFollowedBySuccessors(vertex: V): Promise<void> {
-        if (!this.computedVertices.has(vertex)) {
+        if (!this.computedVertices.has(vertex) && !this.forbiddenVertices.has(vertex)) {
             try {
                 await vertex.compute();
                 this.computedVertices.add(vertex);
@@ -50,12 +50,22 @@ export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirect
                         .map((successor) => this.executeFollowedBySuccessors(successor))
                 );
             } catch (error: unknown) {
-                LOG.message(Level.ERROR, errorMessage(error));
+                if (isSkippedError(error)) {
+                    LOG.message(Level.WARNING, errorMessage(error));
+                } else {
+                    LOG.message(Level.ERROR, errorMessage(error));
+                }
                 this.markForbidden(vertex);
             }
         }
     }
 
+    /**
+     * Marks a vertex and all its successors as forbidden, meaning that both the vertex and its
+     * successors will not be computed anymore.
+     *
+     * @param vertex - the vertex
+     */
     private markForbidden(vertex: V): void {
         if (!this.forbiddenVertices.has(vertex)) {
             this.forbiddenVertices.add(vertex);

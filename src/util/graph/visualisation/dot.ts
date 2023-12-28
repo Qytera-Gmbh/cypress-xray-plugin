@@ -98,12 +98,15 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
         `);
     }
     let result = "pending";
-    let color = "khaki";
+    let color = "silver";
     if (command.getState() === CommandState.RESOLVED) {
         result = escapeHtmlLabel(unknownToString(await command.compute(), true));
         color = "darkolivegreen3";
+    } else if (command.getState() === CommandState.SKIPPED) {
+        result = escapeHtmlLabel(errorMessage(command.getFailureOrSkipReason()));
+        color = "khaki";
     } else if (command.getState() === CommandState.REJECTED) {
-        result = escapeHtmlLabel(errorMessage(command.getFailure()));
+        result = escapeHtmlLabel(errorMessage(command.getFailureOrSkipReason()));
         color = "salmon";
     }
     if (vertexDataRows) {

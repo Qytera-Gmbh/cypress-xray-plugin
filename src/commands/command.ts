@@ -25,13 +25,32 @@ export enum CommandState {
      */
     PENDING = "pending",
     /**
-     * The command has been told to compute and is done computing.
+     * The command is done computing.
      */
     RESOLVED = "resolved",
     /**
-     * The command has been told to compute and encountered problems during execution.
+     * The command encountered problems during execution.
      */
     REJECTED = "rejected",
+    /**
+     * The command was skipped.
+     */
+    SKIPPED = "skipped",
+}
+
+/**
+ * An error which is thrown when a command is skipped.
+ */
+export class SkippedError extends Error {}
+
+/**
+ * Assesses whether the given error is an instance of a {@link SkippedError | `SkippedError`}.
+ *
+ * @param error - the error
+ * @returns `true` if the error is a {@link SkippedError | `SkippedError`}, otherwise `false`
+ */
+export function isSkippedError(error: unknown): error is SkippedError {
+    return error instanceof SkippedError;
 }
 
 /**
@@ -42,7 +61,7 @@ export abstract class Command<R = unknown> implements Computable<R> {
     private readonly result: Promise<R>;
     private readonly executeEmitter: EventEmitter;
     private state: CommandState = CommandState.INITIAL;
-    private failure?: unknown = null;
+    private reason?: unknown = null;
 
     /**
      * Constructs a new command.
@@ -57,8 +76,12 @@ export abstract class Command<R = unknown> implements Computable<R> {
                         resolve(result);
                     })
                     .catch((error: unknown) => {
-                        this.state = CommandState.REJECTED;
-                        this.failure = error;
+                        if (isSkippedError(error)) {
+                            this.state = CommandState.SKIPPED;
+                        } else {
+                            this.state = CommandState.REJECTED;
+                        }
+                        this.reason = error;
                         reject(error);
                     });
             });
@@ -82,11 +105,11 @@ export abstract class Command<R = unknown> implements Computable<R> {
         return await this.result;
     }
 
-    public getFailure(): unknown {
-        if (this.state !== CommandState.REJECTED) {
-            throw new Error("The command did not fail");
+    public getFailureOrSkipReason(): unknown {
+        if (this.state !== CommandState.REJECTED && this.state !== CommandState.SKIPPED) {
+            throw new Error("The command was neither skipped, nor did it fail");
         }
-        return this.failure;
+        return this.reason;
     }
 
     /**
