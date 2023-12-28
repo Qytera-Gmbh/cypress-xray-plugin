@@ -2,7 +2,7 @@ import fs from "fs";
 import { Command } from "../../commands/command";
 import { ConstantCommand } from "../../commands/constantCommand";
 import { FunctionCommand } from "../../commands/functionCommand";
-import { AttachVideosCommand } from "../../commands/jira/attachVideosCommand";
+import { AttachFilesCommand } from "../../commands/jira/attachFilesCommand";
 import { FetchIssueTypesCommand } from "../../commands/jira/fetchIssueTypesCommand";
 import { MapCommand } from "../../commands/mapCommand";
 import { MergeCommand } from "../../commands/mergeCommand";
@@ -217,7 +217,7 @@ export function addUploadCommands(
             throw new Error("TODO: skipping");
         }, extractVideoFilesCommand);
         graph.connect(extractVideoFilesCommand, assertVideosExistCommand);
-        const attachVideosCommand = new AttachVideosCommand(
+        const attachVideosCommand = new AttachFilesCommand(
             clients.jiraClient,
             extractVideoFilesCommand,
             getExecutionIssueKeyCommand

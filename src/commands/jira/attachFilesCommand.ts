@@ -2,7 +2,7 @@ import { JiraClient } from "../../client/jira/jiraClient";
 import { Attachment } from "../../types/jira/responses/attachment";
 import { Command, Computable } from "../command";
 
-export class AttachVideosCommand extends Command<Attachment[]> {
+export class AttachFilesCommand extends Command<Attachment[]> {
     private readonly jiraClient: JiraClient;
     private readonly files: Computable<string[]>;
     private readonly issueKey: Computable<string>;
