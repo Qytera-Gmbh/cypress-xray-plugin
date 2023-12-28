@@ -10,15 +10,17 @@ import { GetLabelValuesCommand } from "../../commands/jira/fields/getLabelValues
 import { GetSummaryValuesCommand } from "../../commands/jira/fields/getSummaryValuesCommand";
 import { MergeCommand } from "../../commands/mergeCommand";
 import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
+import { LOG, Level } from "../../logging/logging";
+import { FeatureFileIssueData } from "../../preprocessing/preprocessing";
 import { SupportedField } from "../../repository/jira/fields/jiraIssueFetcher";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
+import { StringMap } from "../../types/util";
+import { ImportFeatureResponse } from "../../types/xray/responses/importFeature";
+import { dedent } from "../../util/dedent";
 import { ExecutableGraph } from "../../util/executable/executable";
-import {
-    gatherAllIssueKeys,
-    getActualAffectedIssueKeys,
-    getLabelsToReset,
-    getSummariesToReset,
-} from "./commands";
+import { HELP } from "../../util/help";
+import { computeOverlap } from "../../util/set";
+import { unknownToString } from "../../util/string";
 
 export function addSynchronizationCommands(
     file: Cypress.FileObject,
@@ -36,7 +38,10 @@ export function addSynchronizationCommands(
     );
     graph.connect(parseFeatureFileCommand, extractIssueDataCommand);
     const gatherIssueKeysCommand = new ApplyFunctionCommand(
-        gatherAllIssueKeys,
+        (issueData: FeatureFileIssueData) => [
+            ...issueData.tests.map((data) => data.key),
+            ...issueData.preconditions.map((data) => data.key),
+        ],
         extractIssueDataCommand
     );
     graph.connect(extractIssueDataCommand, gatherIssueKeysCommand);
@@ -103,7 +108,61 @@ export function addSynchronizationCommands(
     graph.connect(getCurrentLabelsCommand, importFeatureCommand);
     // Check which issues will need to have their backups restored.
     const getKnownAffectedIssuesCommand = new MergeCommand(
-        getActualAffectedIssueKeys,
+        ([expectedAffectedIssues, importResponse]: [string[], ImportFeatureResponse]) => {
+            const setOverlap = computeOverlap(
+                expectedAffectedIssues,
+                importResponse.updatedOrCreatedIssues
+            );
+            if (setOverlap.leftOnly.length > 0 || setOverlap.rightOnly.length > 0) {
+                const mismatchLinesFeatures: string[] = [];
+                const mismatchLinesJira: string[] = [];
+                if (setOverlap.leftOnly.length > 0) {
+                    mismatchLinesFeatures.push(
+                        "Issues contained in feature file tags which were not updated by Jira and might not exist:"
+                    );
+                    mismatchLinesFeatures.push(
+                        ...setOverlap.leftOnly.map((issueKey) => `  ${issueKey}`)
+                    );
+                }
+                if (setOverlap.rightOnly.length > 0) {
+                    mismatchLinesJira.push(
+                        "Issues updated by Jira which are not present in feature file tags and might have been created:"
+                    );
+                    mismatchLinesJira.push(
+                        ...setOverlap.rightOnly.map((issueKey) => `  ${issueKey}`)
+                    );
+                }
+                let mismatchLines: string;
+                if (mismatchLinesFeatures.length > 0 && mismatchLinesJira.length > 0) {
+                    mismatchLines = dedent(`
+                        ${mismatchLinesFeatures.join("\n")}
+
+                        ${mismatchLinesJira.join("\n")}
+                    `);
+                } else if (mismatchLinesFeatures.length > 0) {
+                    mismatchLines = mismatchLinesFeatures.join("\n");
+                } else {
+                    mismatchLines = mismatchLinesJira.join("\n");
+                }
+                LOG.message(
+                    Level.WARNING,
+                    dedent(`
+                        Mismatch between feature file issue tags and updated Jira issues detected
+
+                        ${mismatchLines}
+
+                        Make sure that:
+                        - All issues present in feature file tags belong to existing issues
+                        - Your plugin tag prefix settings are consistent with the ones defined in Xray
+
+                        More information:
+                        - ${HELP.plugin.guides.targetingExistingIssues}
+                        - ${HELP.plugin.configuration.cucumber.prefixes}
+                    `)
+                );
+            }
+            return setOverlap.intersection;
+        },
         gatherIssueKeysCommand,
         importFeatureCommand
     );
@@ -126,14 +185,77 @@ export function addSynchronizationCommands(
     graph.connect(gatherIssueKeysCommand, getNewLabelsCommand);
     graph.connect(getKnownAffectedIssuesCommand, getNewLabelsCommand);
     const getSummariesToResetCommand = new MergeCommand(
-        getSummariesToReset,
+        ([oldValues, newValues]: [StringMap<string>, StringMap<string>]) => {
+            const toReset: StringMap<string> = {};
+            for (const [issueKey, newSummary] of Object.entries(newValues)) {
+                if (!(issueKey in oldValues)) {
+                    LOG.message(
+                        Level.WARNING,
+                        dedent(`
+                            Skipping resetting summary of issue: ${issueKey}
+                            The previous summary could not be fetched, make sure to manually restore it if needed
+                        `)
+                    );
+                    continue;
+                }
+                const oldSummary = oldValues[issueKey];
+                if (oldSummary === newSummary) {
+                    LOG.message(
+                        Level.DEBUG,
+                        dedent(`
+                            Skipping resetting summary of issue: ${issueKey}
+                            The current summary is identical to the previous one:
+
+                            Previous summary: ${unknownToString(oldSummary)}
+                            Current summary:  ${unknownToString(newSummary)}
+                        `)
+                    );
+                    continue;
+                }
+                toReset[issueKey] = oldSummary;
+            }
+            return toReset;
+        },
         getCurrentSummariesCommand,
         getNewSummariesCommand
     );
     graph.connect(getCurrentSummariesCommand, getSummariesToResetCommand);
     graph.connect(getNewSummariesCommand, getSummariesToResetCommand);
     const getLabelsToResetCommand = new MergeCommand(
-        getLabelsToReset,
+        ([oldValues, newValues]: [StringMap<string[]>, StringMap<string[]>]) => {
+            const toReset: StringMap<string[]> = {};
+            for (const [issueKey, newLabels] of Object.entries(newValues)) {
+                if (!(issueKey in oldValues)) {
+                    LOG.message(
+                        Level.WARNING,
+                        dedent(`
+                            Skipping resetting labels of issue: ${issueKey}
+                            The previous labels could not be fetched, make sure to manually restore them if needed
+                        `)
+                    );
+                    continue;
+                }
+                const oldLabels = oldValues[issueKey];
+                if (
+                    oldLabels.length === newLabels.length &&
+                    newLabels.every((label) => oldLabels.includes(label))
+                ) {
+                    LOG.message(
+                        Level.DEBUG,
+                        dedent(`
+                            Skipping resetting labels of issue: ${issueKey}
+                            The current labels are identical to the previous ones:
+
+                            Previous labels: ${unknownToString(oldLabels)}
+                            Current labels:  ${unknownToString(newLabels)}
+                        `)
+                    );
+                    continue;
+                }
+                toReset[issueKey] = oldLabels;
+            }
+            return toReset;
+        },
         getCurrentLabelsCommand,
         getNewLabelsCommand
     );

@@ -229,6 +229,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             expect(stubbedHook).to.have.been.calledOnceWithExactly(
                 afterRunResult,
+                pluginContext.cypress.projectRoot,
                 pluginContext.options,
                 pluginContext.clients,
                 pluginContext.graph
