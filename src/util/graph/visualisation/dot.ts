@@ -10,6 +10,7 @@ import { ImportFeatureCommand } from "../../../commands/xray/importFeatureComman
 import { dedent } from "../../dedent";
 import { errorMessage } from "../../errors";
 import { unknownToString } from "../../string";
+import { computeTopologicalOrder } from "../algorithms/sort";
 import { DirectedEdge, DirectedGraph } from "../graph";
 
 export async function graphToDot<V>(
@@ -23,6 +24,16 @@ export async function graphToDot<V>(
         const id = `v${i++}`;
         ids.set(vertex, id);
         vertexLabels.set(vertex, await labeller(vertex));
+    }
+    const sameRanks: Record<number, string[]> = {};
+    for (const [vertex, depth] of computeTopologicalOrder(graph).entries()) {
+        if (!(depth in sameRanks)) {
+            sameRanks[depth] = [];
+        }
+        const id = ids.get(vertex);
+        if (id) {
+            sameRanks[depth].push(id);
+        }
     }
     return dedent(`
         digraph "Plugin Execution Graph" {
@@ -38,6 +49,9 @@ export async function graphToDot<V>(
                           edge.getDestination()
                       )}[arrowhead="vee",arrowsize="0.75"];`
               )
+              .join("\n")}
+          ${Object.values(sameRanks)
+              .map((vertices) => `{ rank=same; ${vertices.join("; ")}; }`)
               .join("\n")}
         }
     `);
