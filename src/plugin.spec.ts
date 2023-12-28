@@ -221,13 +221,35 @@ describe(path.relative(process.cwd(), __filename), () => {
             const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressCommandLine.CypressRunResult;
-            const stubbedHook = stub(afterRunHook, "onAfterRun");
+            const stubbedHook = stub(afterRunHook, "addUploadCommands");
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", afterRunResult),
                 config,
                 pluginContext.options
             );
             expect(stubbedHook).to.have.been.calledOnceWithExactly(afterRunResult, pluginContext);
+        });
+
+        it("displays an error for failed runs", async () => {
+            const failedResults: CypressCommandLine.CypressFailedRunResult = {
+                status: "failed",
+                failures: 47,
+                message: "Pretty messed up",
+            };
+            const logger = getMockedLogger();
+            await configureXrayPlugin(
+                mockedCypressEventEmitter("after:run", failedResults),
+                config,
+                pluginContext.options
+            );
+            expect(logger.message).to.have.been.calledOnceWithExactly(
+                Level.ERROR,
+                dedent(`
+                    Skipping results upload: Failed to run 47 tests
+
+                    Pretty messed up
+                `)
+            );
         });
     });
 

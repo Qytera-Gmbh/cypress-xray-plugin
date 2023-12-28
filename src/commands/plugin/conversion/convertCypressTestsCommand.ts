@@ -221,13 +221,13 @@ export abstract class ConvertCypressTestsCommand extends Command<[XrayTest, ...X
     protected abstract getTestStatus(status: Status): string;
 }
 
-export abstract class ConvertCypressTestsServerCommand extends ConvertCypressTestsCommand {
+export class ConvertCypressTestsServerCommand extends ConvertCypressTestsCommand {
     protected getTestStatus(status: Status): string {
         return getXrayStatus(status, false, this.parameters.xray.status);
     }
 }
 
-export abstract class ConvertCypressTestsCloudCommand extends ConvertCypressTestsCommand {
+export class ConvertCypressTestsCloudCommand extends ConvertCypressTestsCommand {
     protected getTestStatus(status: Status): string {
         return getXrayStatus(status, true, this.parameters.xray.status);
     }

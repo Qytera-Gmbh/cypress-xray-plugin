@@ -2,7 +2,7 @@ import { XrayClient } from "../../client/xray/xrayClient";
 import { CucumberMultipart } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { Command, Computable } from "../command";
 
-export class ImportExecutionCucumberCommand extends Command<string | null> {
+export class ImportExecutionCucumberCommand extends Command<string> {
     private readonly xrayClient: XrayClient;
     private readonly cucumberMultipart: Computable<CucumberMultipart>;
     constructor(xrayClient: XrayClient, cucumberMultipart: Computable<CucumberMultipart>) {
@@ -11,7 +11,7 @@ export class ImportExecutionCucumberCommand extends Command<string | null> {
         this.cucumberMultipart = cucumberMultipart;
     }
 
-    protected async computeResult(): Promise<string | null> {
+    protected async computeResult(): Promise<string> {
         const cucumberMultipart = await this.cucumberMultipart.compute();
         return await this.xrayClient.importExecutionCucumberMultipart(
             cucumberMultipart.features,

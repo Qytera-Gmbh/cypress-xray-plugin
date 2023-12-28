@@ -9,7 +9,7 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
-import { onAfterRun } from "./hooks/after/afterRun";
+import { addUploadCommands } from "./hooks/after/afterRun";
 import { beforeRunHook } from "./hooks/hooks";
 import { addSynchronizationCommands } from "./hooks/preprocessor/filePreprocessor";
 import { REST } from "./https/requests";
@@ -21,6 +21,7 @@ import {
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/executable/executable";
+import { commandToDot, graphToDot } from "./util/graph/visualisation/dot";
 import { HELP } from "./util/help";
 
 let canShowInitializationWarning = true;
@@ -96,7 +97,62 @@ export async function configureXrayPlugin(
                 }
                 return;
             }
-            await onAfterRun(results, context);
+            if (!context.options.plugin.enabled) {
+                LOG.message(Level.INFO, "Skipping after:run hook: Plugin disabled");
+                return;
+            }
+            if (context.options.xray.uploadResults) {
+                // Cypress's status types are incomplete, there is also "finished".
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                if ("status" in results && results.status === "failed") {
+                    const failedResult = results;
+                    LOG.message(
+                        Level.ERROR,
+                        dedent(`
+                            Skipping results upload: Failed to run ${failedResult.failures} tests
+
+                            ${failedResult.message}
+                        `)
+                    );
+                } else {
+                    addUploadCommands(
+                        results as CypressCommandLine.CypressRunResult,
+                        context.options,
+                        context.clients,
+                        context.graph
+                    );
+                }
+            } else {
+                LOG.message(
+                    Level.INFO,
+                    "Skipping results upload: Plugin is configured to not upload test results"
+                );
+            }
+            try {
+                await context.graph.execute();
+            } finally {
+                if (context.options.plugin.debug) {
+                    const executionGraphFile = LOG.logToFile(
+                        await graphToDot(context.graph, commandToDot),
+                        "execution-graph.vz"
+                    );
+                    LOG.message(
+                        Level.DEBUG,
+                        dedent(`
+                            Plugin execution graph saved to: ${executionGraphFile}
+
+                            You can view it using Graphviz (https://graphviz.org/):
+
+                              dot -o execution-graph.svg -Tsvg ${executionGraphFile}
+
+                            Alternatively, you can view it online under any of the following websites:
+                            - https://dreampuf.github.io/GraphvizOnline
+                            - https://edotor.net/
+                            - https://www.devtoolsdaily.com/graphviz/
+                        `)
+                    );
+                }
+            }
         }
     );
 }

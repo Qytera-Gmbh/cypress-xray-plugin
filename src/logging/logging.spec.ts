@@ -43,22 +43,22 @@ describe("logging", () => {
                 const logger = new PluginLogger({
                     logDirectory: path.relative(".", resolveTestDirPath("logs")),
                 });
-                const actualPath = logger.logToFile([1, 2, 3], "logToFileRelative.json");
+                const actualPath = logger.logToFile("[1, 2, 3]", "logToFileRelative.json");
                 const expectedPath = resolveTestDirPath("logs", "logToFileRelative.json");
                 expect(actualPath).to.eq(expectedPath);
-                const parsedFile = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
-                expect(parsedFile).to.deep.eq([1, 2, 3]);
+                const parsedFile = fs.readFileSync(expectedPath, "utf8");
+                expect(parsedFile).to.deep.eq("[1, 2, 3]");
             });
 
             it("writes to absolute directories", () => {
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs"),
                 });
-                const actualPath = logger.logToFile([4, 5, 6], "logToFileAbsolute.json");
+                const actualPath = logger.logToFile("[4, 5, 6]", "logToFileAbsolute.json");
                 const expectedPath = resolveTestDirPath("logs", "logToFileAbsolute.json");
                 expect(actualPath).to.eq(expectedPath);
-                const parsedFile = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
-                expect(parsedFile).to.deep.eq([4, 5, 6]);
+                const parsedFile = fs.readFileSync(expectedPath, "utf8");
+                expect(parsedFile).to.deep.eq("[4, 5, 6]");
             });
 
             it("writes to non-existent directories", () => {
