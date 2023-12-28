@@ -215,7 +215,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
         });
 
-        it("attaches the afterRun hook", async () => {
+        it("adds upload commands", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
             stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
             const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
@@ -227,10 +227,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                 config,
                 pluginContext.options
             );
-            expect(stubbedHook).to.have.been.calledOnceWithExactly(afterRunResult, pluginContext);
+            expect(stubbedHook).to.have.been.calledOnceWithExactly(
+                afterRunResult,
+                pluginContext.options,
+                pluginContext.clients,
+                pluginContext.graph
+            );
         });
 
         it("displays an error for failed runs", async () => {
+            stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
+            stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
             const failedResults: CypressCommandLine.CypressFailedRunResult = {
                 status: "failed",
                 failures: 47,

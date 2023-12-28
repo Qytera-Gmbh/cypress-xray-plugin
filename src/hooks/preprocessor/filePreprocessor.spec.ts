@@ -9,12 +9,12 @@ import { assertIsInstanceOf } from "../../../test/util";
 import { Command } from "../../commands/command";
 import { ExtractFeatureFileIssuesCommand } from "../../commands/cucumber/extractFeatureFileIssuesCommand";
 import { ParseFeatureFileCommand } from "../../commands/cucumber/parseFeatureFileCommand";
+import { ApplyFunctionCommand } from "../../commands/functionCommand";
 import { EditIssueFieldCommand } from "../../commands/jira/fields/editIssueFieldCommand";
 import { ExtractFieldIdCommand } from "../../commands/jira/fields/extractFieldIdCommand";
 import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
 import { GetLabelValuesCommand } from "../../commands/jira/fields/getLabelValuesCommand";
 import { GetSummaryValuesCommand } from "../../commands/jira/fields/getSummaryValuesCommand";
-import { MapCommand } from "../../commands/mapCommand";
 import { MergeCommand } from "../../commands/mergeCommand";
 import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
 import {
@@ -110,7 +110,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             ] = [...graph.getVertices()];
             assertIsInstanceOf(parseFeatureFileCommand, ParseFeatureFileCommand);
             assertIsInstanceOf(extractIssueDataCommand, ExtractFeatureFileIssuesCommand);
-            assertIsInstanceOf(gatherIssueKeysCommand, MapCommand);
+            assertIsInstanceOf(gatherIssueKeysCommand, ApplyFunctionCommand);
             assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
             assertIsInstanceOf(getSummaryFieldIdCommand, ExtractFieldIdCommand);
             assertIsInstanceOf(getLabelsFieldIdCommand, ExtractFieldIdCommand);
@@ -188,7 +188,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 test: "TestName:",
                 precondition: "Precondition:",
             });
-            expect(gatherIssueKeysCommand.getMapper()).to.eq(gatherAllIssueKeys);
+            expect(gatherIssueKeysCommand.getFunction()).to.eq(gatherAllIssueKeys);
             expect(getSummaryFieldIdCommand.getField()).to.eq(SupportedField.SUMMARY);
             expect(getLabelsFieldIdCommand.getField()).to.eq(SupportedField.LABELS);
             expect(importFeatureCommand.getFilePath()).to.eq(

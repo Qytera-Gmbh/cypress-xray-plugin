@@ -2,12 +2,12 @@ import path from "path";
 import { Command } from "../../commands/command";
 import { ExtractFeatureFileIssuesCommand } from "../../commands/cucumber/extractFeatureFileIssuesCommand";
 import { ParseFeatureFileCommand } from "../../commands/cucumber/parseFeatureFileCommand";
+import { ApplyFunctionCommand } from "../../commands/functionCommand";
 import { EditIssueFieldCommand } from "../../commands/jira/fields/editIssueFieldCommand";
 import { ExtractFieldIdCommand } from "../../commands/jira/fields/extractFieldIdCommand";
 import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
 import { GetLabelValuesCommand } from "../../commands/jira/fields/getLabelValuesCommand";
 import { GetSummaryValuesCommand } from "../../commands/jira/fields/getSummaryValuesCommand";
-import { MapCommand } from "../../commands/mapCommand";
 import { MergeCommand } from "../../commands/mergeCommand";
 import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
 import { SupportedField } from "../../repository/jira/fields/jiraIssueFetcher";
@@ -35,7 +35,10 @@ export function addSynchronizationCommands(
         parseFeatureFileCommand
     );
     graph.connect(parseFeatureFileCommand, extractIssueDataCommand);
-    const gatherIssueKeysCommand = new MapCommand(gatherAllIssueKeys, extractIssueDataCommand);
+    const gatherIssueKeysCommand = new ApplyFunctionCommand(
+        gatherAllIssueKeys,
+        extractIssueDataCommand
+    );
     graph.connect(extractIssueDataCommand, gatherIssueKeysCommand);
     const fetchAllFieldsCommand = graph.findOrDefault(
         (vertex): vertex is FetchAllFieldsCommand => {

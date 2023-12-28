@@ -1,10 +1,9 @@
 import fs from "fs";
 import { Command } from "../../commands/command";
 import { ConstantCommand } from "../../commands/constantCommand";
-import { FunctionCommand } from "../../commands/functionCommand";
+import { ApplyFunctionCommand } from "../../commands/functionCommand";
 import { AttachFilesCommand } from "../../commands/jira/attachFilesCommand";
 import { FetchIssueTypesCommand } from "../../commands/jira/fetchIssueTypesCommand";
-import { MapCommand } from "../../commands/mapCommand";
 import { MergeCommand } from "../../commands/mergeCommand";
 import {
     ConvertCucumberResultsCloudCommand,
@@ -51,7 +50,7 @@ export function addUploadCommands(
         );
         graph.connect(resultsCommand, convertCypressResultsCommand);
         graph.connect(convertCypressTestsCommand, convertCypressResultsCommand);
-        const assertConversionValidCommand = new FunctionCommand(
+        const assertConversionValidCommand = new ApplyFunctionCommand(
             (input: XrayTestExecutionResults) => {
                 if (!input.tests || input.tests.length === 0) {
                     LOG.message(
@@ -70,7 +69,7 @@ export function addUploadCommands(
         );
         graph.connect(assertConversionValidCommand, importCypressExecutionCommand);
         if (options.jira.testExecutionIssueKey) {
-            const compareIssueKeysCommand = new FunctionCommand((issueKey: string) => {
+            const compareIssueKeysCommand = new ApplyFunctionCommand((issueKey: string) => {
                 if (issueKey !== options.jira.testExecutionIssueKey) {
                     LOG.message(
                         Level.WARNING,
@@ -100,7 +99,7 @@ export function addUploadCommands(
                 command instanceof FetchIssueTypesCommand,
             () => new FetchIssueTypesCommand(clients.jiraClient)
         );
-        const extractExecutionIssueDetailsCommand = new MapCommand(
+        const extractExecutionIssueDetailsCommand = new ApplyFunctionCommand(
             (issueDetails: IssueTypeDetails[]): IssueTypeDetails => {
                 return issueDetails[0];
             },
@@ -124,15 +123,18 @@ export function addUploadCommands(
         graph.connect(cucumberResultsCommand, convertCucumberResultsCommand);
         graph.connect(extractExecutionIssueDetailsCommand, convertCucumberResultsCommand);
         graph.connect(resultsCommand, convertCucumberResultsCommand);
-        const assertConversionValidCommand = new FunctionCommand((input: CucumberMultipart) => {
-            if (input.features.length === 0) {
-                LOG.message(
-                    Level.WARNING,
-                    "No Cucumber tests were executed. Skipping Cucumber upload."
-                );
-            }
-            throw new Error("TODO: skipping");
-        }, convertCucumberResultsCommand);
+        const assertConversionValidCommand = new ApplyFunctionCommand(
+            (input: CucumberMultipart) => {
+                if (input.features.length === 0) {
+                    LOG.message(
+                        Level.WARNING,
+                        "No Cucumber tests were executed. Skipping Cucumber upload."
+                    );
+                }
+                throw new Error("TODO: skipping");
+            },
+            convertCucumberResultsCommand
+        );
         graph.connect(convertCucumberResultsCommand, assertConversionValidCommand);
         importCucumberExecutionCommand = new ImportExecutionCucumberCommand(
             clients.xrayClient,
@@ -142,7 +144,7 @@ export function addUploadCommands(
         // Otherwise the execution will display old results.
         graph.connect(convertCucumberResultsCommand, importCucumberExecutionCommand);
         if (options.jira.testExecutionIssueKey) {
-            const compareIssueKeysCommand = new FunctionCommand((issueKey: string) => {
+            const compareIssueKeysCommand = new ApplyFunctionCommand((issueKey: string) => {
                 if (issueKey !== options.jira.testExecutionIssueKey) {
                     LOG.message(
                         Level.WARNING,
@@ -191,7 +193,7 @@ export function addUploadCommands(
         );
         return;
     }
-    const printSuccessCommand = new FunctionCommand((issueKey: string) => {
+    const printSuccessCommand = new ApplyFunctionCommand((issueKey: string) => {
         LOG.message(
             Level.SUCCESS,
             `Uploaded test results to issue: ${issueKey} (${options.jira.url}/browse/${issueKey})`
@@ -199,7 +201,7 @@ export function addUploadCommands(
     }, getExecutionIssueKeyCommand);
     graph.connect(printSuccessCommand, printSuccessCommand);
     if (options.jira.attachVideos) {
-        const extractVideoFilesCommand = new MapCommand(
+        const extractVideoFilesCommand = new ApplyFunctionCommand(
             (result: CypressCommandLine.CypressRunResult) => {
                 return result.runs
                     .map((run: CypressCommandLine.RunResult) => {
@@ -210,7 +212,7 @@ export function addUploadCommands(
             resultsCommand
         );
         graph.connect(resultsCommand, extractVideoFilesCommand);
-        const assertVideosExistCommand = new FunctionCommand((videos: string[]) => {
+        const assertVideosExistCommand = new ApplyFunctionCommand((videos: string[]) => {
             if (videos.length === 0) {
                 LOG.message(Level.WARNING, "No videos to upload: No videos have been captured");
             }
