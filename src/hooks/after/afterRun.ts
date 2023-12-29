@@ -231,29 +231,35 @@ export function addUploadCommands(
     }, getExecutionIssueKeyCommand);
     graph.connect(getExecutionIssueKeyCommand, printSuccessCommand);
     if (options.jira.attachVideos) {
-        const extractVideoFilesCommand = new ApplyFunctionCommand(
-            (result: CypressCommandLine.CypressRunResult) => {
-                return result.runs
+        const extractVideoFilesCommand = new MergeCommand(
+            ([results, testExecutionIssueKey]) => {
+                const videos = results.runs
                     .map((run: CypressCommandLine.RunResult) => {
                         return run.video;
                     })
                     .filter((value): value is string => typeof value === "string");
+                if (videos.length === 0) {
+                    throw new SkippedError(
+                        `Skipping attaching videos to test execution issue ${testExecutionIssueKey}: No videos were captured`
+                    );
+                } else {
+                    LOG.message(
+                        Level.INFO,
+                        `Attaching videos to text execution issue ${testExecutionIssueKey}`
+                    );
+                }
+                return videos;
             },
-            resultsCommand
+            resultsCommand,
+            getExecutionIssueKeyCommand
         );
         graph.connect(resultsCommand, extractVideoFilesCommand);
-        const assertVideosExistCommand = new ApplyFunctionCommand((videos: string[]) => {
-            if (videos.length === 0) {
-                throw new SkippedError("No videos to upload: No videos have been captured");
-            }
-        }, extractVideoFilesCommand);
-        graph.connect(extractVideoFilesCommand, assertVideosExistCommand);
+        graph.connect(getExecutionIssueKeyCommand, extractVideoFilesCommand);
         const attachVideosCommand = new AttachFilesCommand(
             clients.jiraClient,
             extractVideoFilesCommand,
             getExecutionIssueKeyCommand
         );
-        graph.connect(assertVideosExistCommand, attachVideosCommand);
         graph.connect(extractVideoFilesCommand, attachVideosCommand);
         graph.connect(getExecutionIssueKeyCommand, attachVideosCommand);
     }
