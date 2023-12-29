@@ -1,30 +1,21 @@
 import { expect } from "chai";
-import fs from "fs";
 import path from "path";
-import { CucumberMultipartFeature } from "../../../../types/xray/requests/importExecutionCucumberMultipart";
 import { ConstantCommand } from "../../../constantCommand";
 import {
-    ConvertCucumberResultsCloudCommand,
-    ConvertCucumberResultsServerCommand,
-} from "./convertCucumberResultsCommand";
+    ConvertCucumberInfoCloudCommand,
+    ConvertCucumberInfoServerCommand,
+} from "./convertCucumberInfoCommand";
 
 describe(path.relative(process.cwd(), __filename), () => {
-    describe(ConvertCucumberResultsServerCommand.name, () => {
-        it("converts cucumber results into cucumber multipart data", async () => {
-            const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
-                    "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
-                    "utf-8"
-                )
-            ) as CucumberMultipartFeature[];
-            const command = new ConvertCucumberResultsServerCommand(
+    describe(ConvertCucumberInfoServerCommand.name, () => {
+        it("converts cucumber results into server cucumber info data", async () => {
+            const command = new ConvertCucumberInfoServerCommand(
                 {
                     jira: {
                         projectKey: "CYP",
                     },
                     xray: { uploadScreenshots: false },
                 },
-                new ConstantCommand(cucumberReport.slice(0, 1)),
                 new ConstantCommand({ subtask: false, id: "issue_1578" }),
                 new ConstantCommand({
                     browserName: "Firefox",
@@ -33,9 +24,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 })
             );
-            const multipart = await command.compute();
-            expect(multipart.features).to.be.an("array").with.length(1);
-            expect(multipart.info).to.deep.eq({
+            const info = await command.compute();
+            expect(info).to.deep.eq({
                 fields: {
                     project: {
                         key: "CYP",
@@ -48,13 +38,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("includes configured test plan issue keys", async () => {
-            const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
-                    "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
-                    "utf-8"
-                )
-            ) as CucumberMultipartFeature[];
-            const command = new ConvertCucumberResultsServerCommand(
+            const command = new ConvertCucumberInfoServerCommand(
                 {
                     jira: {
                         projectKey: "CYP",
@@ -62,7 +46,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     xray: { uploadScreenshots: false },
                 },
-                new ConstantCommand(cucumberReport.slice(0, 1)),
                 new ConstantCommand({ subtask: false }),
                 new ConstantCommand({
                     browserName: "Firefox",
@@ -72,25 +55,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                 }),
                 { testPlanId: new ConstantCommand("customfield_12345") }
             );
-            const multipart = await command.compute();
-            expect(multipart.info.fields).to.have.property("customfield_12345", "CYP-123");
+            const info = await command.compute();
+            expect(info.fields).to.have.property("customfield_12345", "CYP-123");
         });
 
         it("includes configured test environments", async () => {
-            const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
-                    "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
-                    "utf-8"
-                )
-            ) as CucumberMultipartFeature[];
-            const command = new ConvertCucumberResultsServerCommand(
+            const command = new ConvertCucumberInfoServerCommand(
                 {
                     jira: {
                         projectKey: "CYP",
                     },
                     xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                 },
-                new ConstantCommand(cucumberReport.slice(0, 1)),
                 new ConstantCommand({ subtask: false }),
                 new ConstantCommand({
                     browserName: "Firefox",
@@ -100,23 +76,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 }),
                 { testEnvironmentsId: new ConstantCommand("customfield_45678") }
             );
-            const multipart = await command.compute();
-            expect(multipart.info.fields).to.have.deep.property("customfield_45678", [
-                "DEV",
-                "PROD",
-            ]);
+            const info = await command.compute();
+            expect(info.fields).to.have.deep.property("customfield_45678", ["DEV", "PROD"]);
         });
 
         it("throws if no test plan id is supplied", () => {
-            const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
-                    "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
-                    "utf-8"
-                )
-            ) as CucumberMultipartFeature[];
             expect(
                 () =>
-                    new ConvertCucumberResultsServerCommand(
+                    new ConvertCucumberInfoServerCommand(
                         {
                             jira: {
                                 projectKey: "CYP",
@@ -124,7 +91,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             },
                             xray: { uploadScreenshots: false },
                         },
-                        new ConstantCommand(cucumberReport.slice(0, 1)),
                         new ConstantCommand({ subtask: false }),
                         new ConstantCommand({
                             browserName: "Firefox",
@@ -137,22 +103,15 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws if no test environments id is supplied", () => {
-            const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
-                    "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
-                    "utf-8"
-                )
-            ) as CucumberMultipartFeature[];
             expect(
                 () =>
-                    new ConvertCucumberResultsServerCommand(
+                    new ConvertCucumberInfoServerCommand(
                         {
                             jira: {
                                 projectKey: "CYP",
                             },
                             xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                         },
-                        new ConstantCommand(cucumberReport.slice(0, 1)),
                         new ConstantCommand({ subtask: false }),
                         new ConstantCommand({
                             browserName: "Firefox",
@@ -167,20 +126,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("returns parameters", () => {
-            const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
-                    "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
-                    "utf-8"
-                )
-            ) as CucumberMultipartFeature[];
-            const command = new ConvertCucumberResultsServerCommand(
+            const command = new ConvertCucumberInfoServerCommand(
                 {
                     jira: {
                         projectKey: "CYP",
                     },
                     xray: { uploadScreenshots: false },
                 },
-                new ConstantCommand(cucumberReport.slice(0, 1)),
                 new ConstantCommand({ subtask: false }),
                 new ConstantCommand({
                     browserName: "Firefox",
@@ -198,15 +150,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
     });
 
-    describe(ConvertCucumberResultsCloudCommand.name, () => {
-        it("converts cucumber results into cucumber multipart data", async () => {
-            const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
-                    "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
-                    "utf-8"
-                )
-            ) as CucumberMultipartFeature[];
-            const command = new ConvertCucumberResultsCloudCommand(
+    describe(ConvertCucumberInfoCloudCommand.name, () => {
+        it("converts cucumber results into cucumber info data", async () => {
+            const command = new ConvertCucumberInfoCloudCommand(
                 {
                     jira: {
                         projectKey: "CYP",
@@ -214,7 +160,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     cucumber: { prefixes: { test: "TestName:" } },
                     xray: { uploadScreenshots: false },
                 },
-                new ConstantCommand(cucumberReport.slice(0, 1)),
                 new ConstantCommand({ subtask: false, id: "issue_1578" }),
                 new ConstantCommand({
                     browserName: "Firefox",
@@ -223,9 +168,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 })
             );
-            const multipart = await command.compute();
-            expect(multipart.features).to.be.an("array").with.length(1);
-            expect(multipart.info).to.deep.eq({
+            const info = await command.compute();
+            expect(info).to.deep.eq({
                 fields: {
                     project: {
                         key: "CYP",
@@ -242,13 +186,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("includes configured test plan issue keys", async () => {
-            const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
-                    "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
-                    "utf-8"
-                )
-            ) as CucumberMultipartFeature[];
-            const command = new ConvertCucumberResultsCloudCommand(
+            const command = new ConvertCucumberInfoCloudCommand(
                 {
                     jira: {
                         projectKey: "CYP",
@@ -257,7 +195,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     cucumber: { prefixes: { test: "TestName:" } },
                     xray: { uploadScreenshots: false },
                 },
-                new ConstantCommand(cucumberReport.slice(0, 1)),
                 new ConstantCommand({ subtask: false }),
                 new ConstantCommand({
                     browserName: "Firefox",
@@ -266,21 +203,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 })
             );
-            const multipart = await command.compute();
-            expect(multipart.info).to.have.deep.property("xrayFields", {
+            const info = await command.compute();
+            expect(info).to.have.deep.property("xrayFields", {
                 testPlanKey: "CYP-123",
                 environments: undefined,
             });
         });
 
         it("includes configured test environments", async () => {
-            const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
-                    "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
-                    "utf-8"
-                )
-            ) as CucumberMultipartFeature[];
-            const command = new ConvertCucumberResultsCloudCommand(
+            const command = new ConvertCucumberInfoCloudCommand(
                 {
                     jira: {
                         projectKey: "CYP",
@@ -288,7 +219,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     cucumber: { prefixes: { test: "TestName:" } },
                     xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                 },
-                new ConstantCommand(cucumberReport.slice(0, 1)),
                 new ConstantCommand({ subtask: false }),
                 new ConstantCommand({
                     browserName: "Firefox",
@@ -297,8 +227,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 })
             );
-            const multipart = await command.compute();
-            expect(multipart.info).to.have.deep.property("xrayFields", {
+            const info = await command.compute();
+            expect(info).to.have.deep.property("xrayFields", {
                 testPlanKey: undefined,
                 environments: ["DEV", "PROD"],
             });

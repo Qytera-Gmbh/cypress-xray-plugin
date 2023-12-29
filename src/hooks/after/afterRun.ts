@@ -6,10 +6,11 @@ import { ApplyFunctionCommand } from "../../commands/functionCommand";
 import { AttachFilesCommand } from "../../commands/jira/attachFilesCommand";
 import { FetchIssueTypesCommand } from "../../commands/jira/fetchIssueTypesCommand";
 import { MergeCommand } from "../../commands/mergeCommand";
+import { ConvertCucumberFeaturesCommand } from "../../commands/plugin/conversion/cucumber/convertCucumberFeaturesCommand";
 import {
-    ConvertCucumberResultsCloudCommand,
-    ConvertCucumberResultsServerCommand,
-} from "../../commands/plugin/conversion/cucumber/convertCucumberResultsCommand";
+    ConvertCucumberInfoCloudCommand,
+    ConvertCucumberInfoServerCommand,
+} from "../../commands/plugin/conversion/cucumber/convertCucumberInfoCommand";
 import { ConvertCypressInfoCommand } from "../../commands/plugin/conversion/cypress/convertCypressInfoCommand";
 import { ConvertCypressTestsCommand } from "../../commands/plugin/conversion/cypress/convertCypressTestsCommand";
 import { ImportExecutionCucumberCommand } from "../../commands/xray/importExecutionCucumberCommand";
@@ -114,24 +115,38 @@ export function addUploadCommands(
             fetchIssueTypeDetailsCommand
         );
         graph.connect(fetchIssueTypeDetailsCommand, extractExecutionIssueDetailsCommand);
-        // TODO: add test plan and test environment field IDs
-        const convertCucumberResultsCommand =
+        const convertCucumberInfoCommand =
             clients.kind === "server"
-                ? new ConvertCucumberResultsServerCommand(
+                ? new ConvertCucumberInfoServerCommand(
                       options,
-                      cucumberResultsCommand,
                       extractExecutionIssueDetailsCommand,
                       resultsCommand
+                      // TODO: add test plan and test environment field IDs
                   )
-                : new ConvertCucumberResultsCloudCommand(
+                : new ConvertCucumberInfoCloudCommand(
                       options,
-                      cucumberResultsCommand,
                       extractExecutionIssueDetailsCommand,
                       resultsCommand
                   );
-        graph.connect(cucumberResultsCommand, convertCucumberResultsCommand);
-        graph.connect(extractExecutionIssueDetailsCommand, convertCucumberResultsCommand);
-        graph.connect(resultsCommand, convertCucumberResultsCommand);
+        graph.connect(extractExecutionIssueDetailsCommand, convertCucumberInfoCommand);
+        graph.connect(resultsCommand, convertCucumberInfoCommand);
+        const convertCucumberFeaturesCommand = new ConvertCucumberFeaturesCommand(
+            { ...options, useCloudTags: clients.kind === "cloud" },
+            cucumberResultsCommand
+        );
+        graph.connect(cucumberResultsCommand, convertCucumberFeaturesCommand);
+        const mergeCucumberMultipartCommand = new MergeCommand(
+            ([info, features]): CucumberMultipart => {
+                return {
+                    info: info,
+                    features: features,
+                };
+            },
+            convertCucumberInfoCommand,
+            convertCucumberFeaturesCommand
+        );
+        graph.connect(convertCucumberFeaturesCommand, mergeCucumberMultipartCommand);
+        graph.connect(convertCucumberInfoCommand, mergeCucumberMultipartCommand);
         const assertConversionValidCommand = new ApplyFunctionCommand(
             (input: CucumberMultipart) => {
                 if (input.features.length === 0) {
@@ -140,12 +155,12 @@ export function addUploadCommands(
                     );
                 }
             },
-            convertCucumberResultsCommand
+            mergeCucumberMultipartCommand
         );
-        graph.connect(convertCucumberResultsCommand, assertConversionValidCommand);
+        graph.connect(mergeCucumberMultipartCommand, assertConversionValidCommand);
         importCucumberExecutionCommand = new ImportExecutionCucumberCommand(
             clients.xrayClient,
-            convertCucumberResultsCommand
+            mergeCucumberMultipartCommand
         );
         // Make sure to add an edge from any feature file imports to the execution. Otherwise, the
         // execution will contain old steps (those which were there prior to feature import).
@@ -166,7 +181,7 @@ export function addUploadCommands(
                 }
             }
         }
-        graph.connect(convertCucumberResultsCommand, importCucumberExecutionCommand);
+        graph.connect(convertCucumberInfoCommand, importCucumberExecutionCommand);
         if (options.jira.testExecutionIssueKey) {
             const compareIssueKeysCommand = new ApplyFunctionCommand((issueKey: string) => {
                 if (issueKey !== options.jira.testExecutionIssueKey) {

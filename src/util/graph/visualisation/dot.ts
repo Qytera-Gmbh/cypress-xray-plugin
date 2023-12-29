@@ -3,7 +3,7 @@ import { ExtractFeatureFileIssuesCommand } from "../../../commands/cucumber/extr
 import { ParseFeatureFileCommand } from "../../../commands/cucumber/parseFeatureFileCommand";
 import { EditIssueFieldCommand } from "../../../commands/jira/fields/editIssueFieldCommand";
 import { ExtractFieldIdCommand } from "../../../commands/jira/fields/extractFieldIdCommand";
-import { ConvertCucumberResultsCommand } from "../../../commands/plugin/conversion/cucumber/convertCucumberResultsCommand";
+import { ConvertCucumberFeaturesCommand } from "../../../commands/plugin/conversion/cucumber/convertCucumberFeaturesCommand";
 import { ConvertCypressInfoCommand } from "../../../commands/plugin/conversion/cypress/convertCypressInfoCommand";
 import { ConvertCypressTestsCommand } from "../../../commands/plugin/conversion/cypress/convertCypressTestsCommand";
 import { ImportFeatureCommand } from "../../../commands/xray/importFeatureCommand";
@@ -85,7 +85,7 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
             </TR>
         `);
     } else if (
-        command instanceof ConvertCucumberResultsCommand ||
+        command instanceof ConvertCucumberFeaturesCommand ||
         command instanceof ConvertCypressInfoCommand ||
         command instanceof ConvertCypressTestsCommand
     ) {
