@@ -64,10 +64,13 @@ export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirect
                             // Only allow computation when all predecessors are done.
                             // Otherwise we might end up skipping in line.
                             for (const edge of this.getIncoming(successor)) {
-                                if (this.optionalEdges.has(edge)) {
-                                    continue;
-                                }
                                 if (!this.computedVertices.has(edge.getSource())) {
+                                    if (
+                                        this.forbiddenVertices.has(edge.getSource()) &&
+                                        this.optionalEdges.has(edge)
+                                    ) {
+                                        continue;
+                                    }
                                     return false;
                                 }
                             }
