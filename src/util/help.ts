@@ -1,4 +1,4 @@
-export const BASE_URL = "https://qytera-gmbh.github.io/projects/cypress-xray-plugin";
+const BASE_URL = "https://qytera-gmbh.github.io/projects/cypress-xray-plugin";
 
 export const HELP = {
     plugin: {

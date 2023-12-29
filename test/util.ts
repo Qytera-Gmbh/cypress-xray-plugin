@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { unknownToString } from "../src/util/string";
 
-export const TEST_TMP_DIR = "test/out";
+const TEST_TMP_DIR = "test/out";
 
 export function resolveTestDirPath(...subPaths: string[]): string {
     return path.resolve(TEST_TMP_DIR, ...subPaths);
@@ -44,26 +44,6 @@ export function assertIsInstanceOf<T, V extends unknown[]>(
     if (!(value instanceof className)) {
         throw new Error(`Value is not an instance of ${className.name}: ${unknownToString(value)}`);
     }
-}
-
-/**
- * Utility function returning environment variable values as strings and throwing errors
- * if they are not defined.
- *
- * @param key - the key of the environment variable whose value to retrieve
- * @returns the environment variable value
- * @throws if the environment variable is not defined
- */
-export function env(key: string): string {
-    const value = process.env[key];
-    if (!value) {
-        throw new Error(`Expected environment variable ${key} to not be undefined, which it was`);
-    }
-    return value;
-}
-
-export function arrayEquals(a: unknown[], b: unknown[]) {
-    return a.length === b.length && a.every((val, index) => val === b[index]);
 }
 
 // ============================================================================================== //
