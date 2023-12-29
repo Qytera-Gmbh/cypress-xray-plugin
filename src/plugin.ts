@@ -10,7 +10,6 @@ import {
     setPluginContext,
 } from "./context";
 import { addUploadCommands } from "./hooks/after/afterRun";
-import { beforeRunHook } from "./hooks/hooks";
 import { addSynchronizationCommands } from "./hooks/preprocessor/filePreprocessor";
 import { REST } from "./https/requests";
 import { LOG, Level } from "./logging/logging";
@@ -156,35 +155,6 @@ export async function configureXrayPlugin(
             }
         }
     );
-}
-
-/**
- * Enables Cypress test results upload to Xray. This method will register several upload hooks under
- * the passed plugin events.
- *
- * @param on - the Cypress plugin events
- *
- * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadTestResults/
- */
-export function addXrayResultUpload(on: Cypress.PluginEvents): void {
-    on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
-        const context = getPluginContext();
-        if (!context) {
-            if (canShowInitializationWarning) {
-                logInitializationWarning("before:run");
-            }
-            return;
-        }
-        if (!context.options.plugin.enabled) {
-            LOG.message(Level.INFO, "Plugin disabled. Skipping before:run hook");
-            return;
-        }
-        if (!runDetails.specs) {
-            LOG.message(Level.WARNING, "No specs about to be executed. Skipping before:run hook");
-            return;
-        }
-        await beforeRunHook(runDetails.specs, context.options, context.clients);
-    });
 }
 
 /**

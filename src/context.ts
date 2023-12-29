@@ -98,7 +98,6 @@ export function initJiraOptions(
         testExecutionIssueDescription:
             parse(env, ENV_NAMES.jira.testExecutionIssueDescription, asString) ??
             options.testExecutionIssueDescription,
-        testExecutionIssueDetails: { subtask: false },
         testExecutionIssueKey: testExecutionIssueKey,
         testExecutionIssueSummary:
             parse(env, ENV_NAMES.jira.testExecutionIssueSummary, asString) ??

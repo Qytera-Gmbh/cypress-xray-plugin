@@ -4,7 +4,6 @@ import { XrayClient } from "../client/xray/xrayClient";
 import { Command } from "../commands/command";
 import { JiraRepository } from "../repository/jira/jiraRepository";
 import { ExecutableGraph } from "../util/executable/executable";
-import { IssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
 export interface CypressXrayPluginOptions {
     jira: JiraOptions;
@@ -163,12 +162,7 @@ export type InternalJiraOptions = JiraOptions &
             | "testPlanIssueType"
             | "url"
         >
-    > & {
-        /**
-         * The details of the test execution issue type.
-         */
-        testExecutionIssueDetails: IssueTypeDetails;
-    };
+    >;
 
 export interface XrayOptions {
     /**

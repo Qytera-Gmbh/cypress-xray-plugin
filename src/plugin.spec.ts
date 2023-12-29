@@ -2,20 +2,19 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import { stub } from "sinon";
-import { getMockedLogger, getMockedRestClient } from "../test/mocks";
+import {
+    getMockedJiraClient,
+    getMockedJiraRepository,
+    getMockedLogger,
+    getMockedRestClient,
+    getMockedXrayClient,
+} from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
-import { PatCredentials } from "./authentication/credentials";
-import { JiraClientServer } from "./client/jira/jiraClientServer";
-import { XrayClientServer } from "./client/xray/xrayClientServer";
 import * as context from "./context";
 import * as afterRunHook from "./hooks/after/afterRun";
-import * as hooks from "./hooks/hooks";
 import * as synchronizeFeatureFileHook from "./hooks/preprocessor/filePreprocessor";
 import { Level } from "./logging/logging";
-import { addXrayResultUpload, configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
-import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
-import { CachingJiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
-import { CachingJiraRepository } from "./repository/jira/jiraRepository";
+import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CypressXrayPluginOptions, PluginContext } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/executable/executable";
@@ -28,8 +27,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         config = JSON.parse(
             fs.readFileSync("./test/resources/cypress.config.json", "utf-8")
         ) as Cypress.PluginConfigOptions;
-        const jiraClient = new JiraClientServer("https://example.org", new PatCredentials("token"));
-        const xrayClient = new XrayClientServer("https://example.org", new PatCredentials("token"));
+        const jiraClient = getMockedJiraClient();
+        const xrayClient = getMockedXrayClient();
         const jiraOptions = context.initJiraOptions(
             {},
             {
@@ -37,13 +36,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 url: "https://example.org",
             }
         );
-        const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-        const jiraFieldFetcher = new CachingJiraIssueFetcher(
-            jiraClient,
-            jiraFieldRepository,
-            jiraOptions.fields
-        );
-        const jiraRepository = new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher);
+        const jiraRepository = getMockedJiraRepository();
         pluginContext = {
             cypress: config,
             options: {
@@ -151,9 +144,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
                 projectKey: "ABC",
                 testExecutionIssueDescription: "description",
-                testExecutionIssueDetails: {
-                    subtask: false,
-                },
                 testExecutionIssueKey: "ABC-2",
                 testExecutionIssueSummary: "summary",
                 testExecutionIssueType: "QA-1",
@@ -259,157 +249,83 @@ describe(path.relative(process.cwd(), __filename), () => {
                 `)
             );
         });
-    });
 
-    describe(addXrayResultUpload.name, () => {
-        describe("on before:run", () => {
-            it("displays warnings if the plugin was not configured", () => {
-                const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
-                    fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-                ) as Cypress.BeforeRunDetails;
-                const logger = getMockedLogger();
-                logger.message
-                    .withArgs(
-                        Level.WARNING,
-                        dedent(`
-                            Skipping before:run hook: Plugin misconfigured: configureXrayPlugin() was not called
+        it("displays warnings if the plugin was not configured", async () => {
+            stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
+            const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
+                fs.readFileSync("./test/resources/runResult.json", "utf-8")
+            ) as CypressCommandLine.CypressRunResult;
+            const logger = getMockedLogger();
+            logger.message
+                .withArgs(
+                    Level.WARNING,
+                    dedent(`
+                        Skipping after:run hook: Plugin misconfigured: configureXrayPlugin() was not called
 
-                            Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
-                        `)
-                    )
-                    .onFirstCall()
-                    .returns();
-                addXrayResultUpload(mockedCypressEventEmitter("before:run", beforeRunDetails));
-            });
+                        Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
+                    `)
+                )
+                .onFirstCall()
+                .returns();
+            await configureXrayPlugin(
+                mockedCypressEventEmitter("after:run", afterRunResult),
+                config,
+                pluginContext.options
+            );
+        });
 
-            it("does not display a warning if the plugin was configured but disabled", async () => {
-                const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
-                    fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-                ) as Cypress.BeforeRunDetails;
-                const logger = getMockedLogger();
-                logger.message
-                    .withArgs(Level.INFO, "Plugin disabled. Skipping further configuration")
-                    .returns();
-                await configureXrayPlugin(mockedCypressEventEmitter, config, {
-                    jira: { projectKey: "CYP", url: "https://example.org" },
-                    plugin: { enabled: false },
-                });
-                addXrayResultUpload(mockedCypressEventEmitter("before:run", beforeRunDetails));
-            });
-
-            it("does nothing if disabled", () => {
-                const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
-                    fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-                ) as Cypress.BeforeRunDetails;
-                const logger = getMockedLogger();
-                pluginContext.options.plugin.enabled = false;
-                context.setPluginContext(pluginContext);
-                logger.message
-                    .withArgs(Level.INFO, "Plugin disabled. Skipping before:run hook")
-                    .onFirstCall()
-                    .returns();
-                addXrayResultUpload(mockedCypressEventEmitter("before:run", beforeRunDetails));
-            });
-
-            it("warns about empty specs", () => {
-                const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
-                    fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-                ) as Cypress.BeforeRunDetails;
-                const logger = getMockedLogger();
-                context.setPluginContext(pluginContext);
-                beforeRunDetails.specs = undefined;
-                logger.message
-                    .withArgs(
-                        Level.WARNING,
-                        "No specs about to be executed. Skipping before:run hook"
-                    )
-                    .onFirstCall()
-                    .returns();
-                addXrayResultUpload(mockedCypressEventEmitter("before:run", beforeRunDetails));
-            });
-
-            it("calls the beforeRun hook", () => {
-                const beforeRunDetails: Cypress.BeforeRunDetails = JSON.parse(
-                    fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
-                ) as Cypress.BeforeRunDetails;
-                const stubbedHook = stub(hooks, "beforeRunHook");
-                context.setPluginContext(pluginContext);
-                addXrayResultUpload(mockedCypressEventEmitter("before:run", beforeRunDetails));
-                expect(stubbedHook).to.have.been.calledOnceWithExactly(
-                    beforeRunDetails.specs,
-                    pluginContext.options,
-                    pluginContext.clients
-                );
+        it("does not display a warning if the plugin was configured but disabled", async () => {
+            const logger = getMockedLogger();
+            logger.message
+                .withArgs(Level.INFO, "Plugin disabled. Skipping further configuration")
+                .returns();
+            await configureXrayPlugin(mockedCypressEventEmitter, config, {
+                jira: { projectKey: "CYP", url: "https://example.org" },
+                plugin: { enabled: false },
             });
         });
 
-        describe("on after:run", () => {
-            it("displays warnings if the plugin was not configured", () => {
-                const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
-                    fs.readFileSync("./test/resources/runResult.json", "utf-8")
-                ) as CypressCommandLine.CypressRunResult;
-                const logger = getMockedLogger();
-                logger.message
-                    .withArgs(
-                        Level.WARNING,
-                        dedent(`
-                            Skipping after:run hook: Plugin misconfigured: configureXrayPlugin() was not called
+        it("does not display an error for failed runs if disabled", async () => {
+            const failedResults: CypressCommandLine.CypressFailedRunResult = {
+                status: "failed",
+                failures: 47,
+                message: "Pretty messed up",
+            };
+            const logger = getMockedLogger();
+            pluginContext.options.plugin.enabled = false;
+            context.setPluginContext(pluginContext);
+            logger.message
+                .withArgs(Level.INFO, "Skipping after:run hook: Plugin disabled")
+                .onFirstCall()
+                .returns();
+            await configureXrayPlugin(
+                mockedCypressEventEmitter("after:run", failedResults),
+                config,
+                pluginContext.options
+            );
+        });
 
-                            Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
-                        `)
-                    )
-                    .onFirstCall()
-                    .returns();
-                addXrayResultUpload(mockedCypressEventEmitter("after:run", afterRunResult));
-            });
-
-            it("does not display a warning if the plugin was configured but disabled", async () => {
-                const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
-                    fs.readFileSync("./test/resources/runResult.json", "utf-8")
-                ) as CypressCommandLine.CypressRunResult;
-                const logger = getMockedLogger();
-                logger.message
-                    .withArgs(Level.INFO, "Plugin disabled. Skipping further configuration")
-                    .returns();
-                await configureXrayPlugin(mockedCypressEventEmitter, config, {
-                    jira: { projectKey: "CYP", url: "https://example.org" },
-                    plugin: { enabled: false },
-                });
-                addXrayResultUpload(mockedCypressEventEmitter("after:run", afterRunResult));
-            });
-
-            it("does not display an error for failed runs if disabled", () => {
-                const failedResults: CypressCommandLine.CypressFailedRunResult = {
-                    status: "failed",
-                    failures: 47,
-                    message: "Pretty messed up",
-                };
-                const logger = getMockedLogger();
-                pluginContext.options.plugin.enabled = false;
-                context.setPluginContext(pluginContext);
-                logger.message
-                    .withArgs(Level.INFO, "Skipping after:run hook: Plugin disabled")
-                    .onFirstCall()
-                    .returns();
-                addXrayResultUpload(mockedCypressEventEmitter("after:run", failedResults));
-            });
-
-            it("should skip the results upload if disabled", () => {
-                const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
-                    fs.readFileSync("./test/resources/runResult.json", "utf-8")
-                ) as CypressCommandLine.CypressRunResult;
-                const logger = getMockedLogger();
-                pluginContext.options.xray.uploadResults = false;
-                context.setPluginContext(pluginContext);
-                logger.message
-                    .withArgs(
-                        Level.INFO,
-                        "Skipping results upload: Plugin is configured to not upload test results"
-                    )
-                    .onFirstCall()
-                    .returns();
-                addXrayResultUpload(mockedCypressEventEmitter("after:run", afterRunResult));
-            });
+        it("should skip the results upload if disabled", async () => {
+            stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
+            stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
+            const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
+                fs.readFileSync("./test/resources/runResult.json", "utf-8")
+            ) as CypressCommandLine.CypressRunResult;
+            const logger = getMockedLogger();
+            pluginContext.options.xray.uploadResults = false;
+            context.setPluginContext(pluginContext);
+            logger.message
+                .withArgs(
+                    Level.INFO,
+                    "Skipping results upload: Plugin is configured to not upload test results"
+                )
+                .onFirstCall()
+                .returns();
+            await configureXrayPlugin(
+                mockedCypressEventEmitter("after:run", afterRunResult),
+                config,
+                pluginContext.options
+            );
         });
     });
 
