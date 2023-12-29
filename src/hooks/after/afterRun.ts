@@ -65,8 +65,6 @@ export function addUploadCommands(
         );
         graph.connect(convertCypressTestsCommand, mergeResultsJsonCommand);
         graph.connect(convertCypressInfoCommand, mergeResultsJsonCommand);
-        graph.connect(resultsCommand, mergeResultsJsonCommand);
-        graph.connect(convertCypressTestsCommand, mergeResultsJsonCommand);
         const assertConversionValidCommand = new ApplyFunctionCommand(
             (input: XrayTestExecutionResults) => {
                 if (!input.tests || input.tests.length === 0) {

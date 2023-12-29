@@ -189,7 +189,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
                 throw new Error(
                     `Failed to connect vertices ${unknownToString(source)} -> ${unknownToString(
                         destination
-                    )}: duplicate edge detected: ${unknownToString(outgoingEdge)}`
+                    )}: duplicate edge detected`
                 );
             }
         }
