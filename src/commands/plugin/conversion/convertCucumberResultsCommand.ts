@@ -82,18 +82,24 @@ export class ConvertCucumberResultsServerCommand extends ConvertCucumberResultsC
         input: Computable<CucumberMultipartFeature[]>,
         testExecutionIssueDetails: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>,
-        testPlanId?: Computable<string>,
-        testEnvironmentsId?: Computable<string>
+        fieldIds?: {
+            testPlanId?: Computable<string>;
+            testEnvironmentsId?: Computable<string>;
+        }
     ) {
         super(options, input, testExecutionIssueDetails, runInformation);
-        if (this.parameters.jira.testPlanIssueKey && !testPlanId) {
-            throw new Error("A test plan key was supplied without the test plan Jira field ID");
+        if (this.parameters.jira.testPlanIssueKey && !fieldIds?.testPlanId) {
+            throw new Error(
+                "A test plan issue key was supplied without the test plan Jira field ID"
+            );
         }
-        if (this.parameters.xray.testEnvironments && !testEnvironmentsId) {
+        if (this.parameters.xray.testEnvironments && !fieldIds?.testEnvironmentsId) {
             throw new Error(
                 "Test environments were supplied without the test environments Jira field ID"
             );
         }
+        this.testPlanId = fieldIds?.testPlanId;
+        this.testEnvironmentsId = fieldIds?.testEnvironmentsId;
     }
 
     protected modifyFeatures(input: CucumberMultipartFeature[]): CucumberMultipartFeature[] {

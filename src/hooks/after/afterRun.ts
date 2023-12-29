@@ -107,6 +107,7 @@ export function addUploadCommands(
             fetchIssueTypeDetailsCommand
         );
         graph.connect(fetchIssueTypeDetailsCommand, extractExecutionIssueDetailsCommand);
+        // TODO: add test plan and test environment field IDs
         const convertCucumberResultsCommand =
             clients.kind === "server"
                 ? new ConvertCucumberResultsServerCommand(
