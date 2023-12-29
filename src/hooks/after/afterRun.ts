@@ -10,11 +10,8 @@ import {
     ConvertCucumberResultsCloudCommand,
     ConvertCucumberResultsServerCommand,
 } from "../../commands/plugin/conversion/cucumber/convertCucumberResultsCommand";
-import { ConvertCypressResultsCommand } from "../../commands/plugin/conversion/cypress/convertCypressResultsCommand";
-import {
-    ConvertCypressTestsCloudCommand,
-    ConvertCypressTestsServerCommand,
-} from "../../commands/plugin/conversion/cypress/convertCypressTestsCommand";
+import { ConvertCypressInfoCommand } from "../../commands/plugin/conversion/cypress/convertCypressInfoCommand";
+import { ConvertCypressTestsCommand } from "../../commands/plugin/conversion/cypress/convertCypressTestsCommand";
 import { ImportExecutionCucumberCommand } from "../../commands/xray/importExecutionCucumberCommand";
 import { ImportExecutionCypressCommand } from "../../commands/xray/importExecutionCypressCommand";
 import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
@@ -41,18 +38,28 @@ export function addUploadCommands(
     let importCucumberExecutionCommand: ImportExecutionCucumberCommand | null = null;
     const resultsCommand = new ConstantCommand(runResult);
     if (containsNativeTest(runResult, options.cucumber?.featureFileExtension)) {
-        const convertCypressTestsCommand =
-            clients.kind === "server"
-                ? new ConvertCypressTestsServerCommand(options, resultsCommand)
-                : new ConvertCypressTestsCloudCommand(options, resultsCommand);
-        graph.connect(resultsCommand, convertCypressTestsCommand);
-        const convertCypressResultsCommand = new ConvertCypressResultsCommand(
-            options,
-            resultsCommand,
-            convertCypressTestsCommand
+        const convertCypressTestsCommand = new ConvertCypressTestsCommand(
+            { ...options, useCloudStatusFallback: clients.kind === "cloud" },
+            resultsCommand
         );
-        graph.connect(resultsCommand, convertCypressResultsCommand);
-        graph.connect(convertCypressTestsCommand, convertCypressResultsCommand);
+        graph.connect(resultsCommand, convertCypressTestsCommand);
+        const convertCypressInfoCommand = new ConvertCypressInfoCommand(options, resultsCommand);
+        graph.connect(resultsCommand, convertCypressInfoCommand);
+        const mergeResultsJsonCommand = new MergeCommand(
+            ([tests, info]): XrayTestExecutionResults => {
+                return {
+                    info: info,
+                    tests: tests,
+                    testExecutionKey: options.jira.testExecutionIssueKey,
+                };
+            },
+            convertCypressTestsCommand,
+            convertCypressInfoCommand
+        );
+        graph.connect(convertCypressTestsCommand, mergeResultsJsonCommand);
+        graph.connect(convertCypressInfoCommand, mergeResultsJsonCommand);
+        graph.connect(resultsCommand, mergeResultsJsonCommand);
+        graph.connect(convertCypressTestsCommand, mergeResultsJsonCommand);
         const assertConversionValidCommand = new ApplyFunctionCommand(
             (input: XrayTestExecutionResults) => {
                 if (!input.tests || input.tests.length === 0) {
@@ -61,12 +68,12 @@ export function addUploadCommands(
                     );
                 }
             },
-            convertCypressResultsCommand
+            mergeResultsJsonCommand
         );
-        graph.connect(convertCypressResultsCommand, assertConversionValidCommand);
+        graph.connect(mergeResultsJsonCommand, assertConversionValidCommand);
         importCypressExecutionCommand = new ImportExecutionCypressCommand(
             clients.xrayClient,
-            convertCypressResultsCommand
+            mergeResultsJsonCommand
         );
         graph.connect(assertConversionValidCommand, importCypressExecutionCommand);
         if (options.jira.testExecutionIssueKey) {

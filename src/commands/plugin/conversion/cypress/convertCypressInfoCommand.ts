@@ -1,12 +1,9 @@
+import { CypressRunResultType } from "../../../../types/cypress/runResult";
 import { InternalJiraOptions, InternalXrayOptions } from "../../../../types/plugin";
-import {
-    XrayTest,
-    XrayTestExecutionResults,
-} from "../../../../types/xray/importTestExecutionResults";
+import { XrayTestExecutionInfo } from "../../../../types/xray/importTestExecutionResults";
 import { dedent } from "../../../../util/dedent";
 import { truncateIsoTime } from "../../../../util/time";
 import { Command, Computable } from "../../../command";
-import { CypressRunResultType } from "./util/importExecutionConverter";
 
 interface Parameters {
     jira: Pick<
@@ -20,40 +17,29 @@ interface Parameters {
     xray: Pick<InternalXrayOptions, "testEnvironments">;
 }
 
-export class ConvertCypressResultsCommand extends Command<XrayTestExecutionResults> {
+export class ConvertCypressInfoCommand extends Command<XrayTestExecutionInfo> {
     protected readonly parameters: Parameters;
     private readonly results: Computable<CypressRunResultType>;
-    private readonly tests: Computable<[XrayTest, ...XrayTest[]]>;
-    constructor(
-        parameters: Parameters,
-        results: Computable<CypressRunResultType>,
-        tests: Computable<[XrayTest, ...XrayTest[]]>
-    ) {
+    constructor(parameters: Parameters, results: Computable<CypressRunResultType>) {
         super();
         this.parameters = parameters;
         this.results = results;
-        this.tests = tests;
     }
 
     public getParameters(): Parameters {
         return this.parameters;
     }
 
-    protected async computeResult(): Promise<XrayTestExecutionResults> {
+    protected async computeResult(): Promise<XrayTestExecutionInfo> {
         const results = await this.results.compute();
-        const tests = await this.tests.compute();
         return {
-            testExecutionKey: this.parameters.jira.testExecutionIssueKey,
-            info: {
-                project: this.parameters.jira.projectKey,
-                startDate: truncateIsoTime(results.startedTestsAt),
-                finishDate: truncateIsoTime(results.endedTestsAt),
-                description: this.getDescription(results),
-                summary: this.getTextExecutionResultSummary(results),
-                testPlanKey: this.parameters.jira.testPlanIssueKey,
-                testEnvironments: this.parameters.xray.testEnvironments,
-            },
-            tests: tests,
+            project: this.parameters.jira.projectKey,
+            startDate: truncateIsoTime(results.startedTestsAt),
+            finishDate: truncateIsoTime(results.endedTestsAt),
+            description: this.getDescription(results),
+            summary: this.getTextExecutionResultSummary(results),
+            testPlanKey: this.parameters.jira.testPlanIssueKey,
+            testEnvironments: this.parameters.xray.testEnvironments,
         };
     }
 

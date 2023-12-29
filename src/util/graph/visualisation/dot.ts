@@ -4,7 +4,7 @@ import { ParseFeatureFileCommand } from "../../../commands/cucumber/parseFeature
 import { EditIssueFieldCommand } from "../../../commands/jira/fields/editIssueFieldCommand";
 import { ExtractFieldIdCommand } from "../../../commands/jira/fields/extractFieldIdCommand";
 import { ConvertCucumberResultsCommand } from "../../../commands/plugin/conversion/cucumber/convertCucumberResultsCommand";
-import { ConvertCypressResultsCommand } from "../../../commands/plugin/conversion/cypress/convertCypressResultsCommand";
+import { ConvertCypressInfoCommand } from "../../../commands/plugin/conversion/cypress/convertCypressInfoCommand";
 import { ConvertCypressTestsCommand } from "../../../commands/plugin/conversion/cypress/convertCypressTestsCommand";
 import { ImportFeatureCommand } from "../../../commands/xray/importFeatureCommand";
 import { dedent } from "../../dedent";
@@ -86,7 +86,7 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
         `);
     } else if (
         command instanceof ConvertCucumberResultsCommand ||
-        command instanceof ConvertCypressResultsCommand ||
+        command instanceof ConvertCypressInfoCommand ||
         command instanceof ConvertCypressTestsCommand
     ) {
         const parameters = escapeHtmlLabel(unknownToString(command.getParameters(), true));

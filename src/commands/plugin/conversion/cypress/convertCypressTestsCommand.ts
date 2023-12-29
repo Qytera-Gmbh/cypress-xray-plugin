@@ -11,13 +11,13 @@ import {
     RunResult as RunResult_V13,
     ScreenshotInformation as ScreenshotInformation_V13,
 } from "../../../../types/cypress/13.0.0/api";
+import { CypressRunResultType } from "../../../../types/cypress/runResult";
 import {
     InternalCucumberOptions,
     InternalJiraOptions,
     InternalPluginOptions,
     InternalXrayOptions,
 } from "../../../../types/plugin";
-import { Status } from "../../../../types/testStatus";
 import { XrayEvidenceItem, XrayTest } from "../../../../types/xray/importTestExecutionResults";
 import { encodeFile } from "../../../../util/base64";
 import { dedent } from "../../../../util/dedent";
@@ -25,7 +25,6 @@ import { errorMessage } from "../../../../util/errors";
 import { normalizedFilename } from "../../../../util/files";
 import { truncateIsoTime } from "../../../../util/time";
 import { Command, Computable } from "../../../command";
-import { CypressRunResultType } from "./util/importExecutionConverter";
 import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./util/runConversion";
 import { getXrayStatus } from "./util/statusConversion";
 
@@ -34,9 +33,10 @@ interface Parameters {
     xray: Pick<InternalXrayOptions, "status" | "uploadScreenshots">;
     plugin: Pick<InternalPluginOptions, "normalizeScreenshotNames">;
     cucumber?: Pick<InternalCucumberOptions, "featureFileExtension">;
+    useCloudStatusFallback?: boolean;
 }
 
-export abstract class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]]> {
+export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]]> {
     protected readonly parameters: Parameters;
     private readonly results: Computable<CypressRunResultType>;
     constructor(parameters: Parameters, results: Computable<CypressRunResultType>) {
@@ -178,7 +178,11 @@ export abstract class ConvertCypressTestsCommand extends Command<[XrayTest, ...X
             finish: truncateIsoTime(
                 new Date(test.startedAt.getTime() + test.duration).toISOString()
             ),
-            status: this.getTestStatus(test.status),
+            status: getXrayStatus(
+                test.status,
+                this.parameters.useCloudStatusFallback === true,
+                this.parameters.xray.status
+            ),
         };
         if (evidence.length > 0) {
             xrayTest.evidence = evidence;
@@ -212,19 +216,5 @@ export abstract class ConvertCypressTestsCommand extends Command<[XrayTest, ...X
                 return screenshot.path === filepath;
             });
         });
-    }
-
-    protected abstract getTestStatus(status: Status): string;
-}
-
-export class ConvertCypressTestsServerCommand extends ConvertCypressTestsCommand {
-    protected getTestStatus(status: Status): string {
-        return getXrayStatus(status, false, this.parameters.xray.status);
-    }
-}
-
-export class ConvertCypressTestsCloudCommand extends ConvertCypressTestsCommand {
-    protected getTestStatus(status: Status): string {
-        return getXrayStatus(status, true, this.parameters.xray.status);
     }
 }
