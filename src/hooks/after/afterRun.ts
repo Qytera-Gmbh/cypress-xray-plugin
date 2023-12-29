@@ -1,16 +1,20 @@
 import fs from "fs";
 import path from "path";
-import { Command, SkippedError } from "../../commands/command";
+import { Command, Computable, SkippedError } from "../../commands/command";
 import { ConstantCommand } from "../../commands/constantCommand";
 import { ApplyFunctionCommand } from "../../commands/functionCommand";
 import { AttachFilesCommand } from "../../commands/jira/attachFilesCommand";
 import { FetchIssueTypesCommand } from "../../commands/jira/fetchIssueTypesCommand";
+import { ExtractFieldIdCommand } from "../../commands/jira/fields/extractFieldIdCommand";
+import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
 import { MergeCommand } from "../../commands/mergeCommand";
 import { ConvertCucumberFeaturesCommand } from "../../commands/plugin/conversion/cucumber/convertCucumberFeaturesCommand";
 import {
     ConvertCucumberInfoCloudCommand,
+    ConvertCucumberInfoCommand,
     ConvertCucumberInfoServerCommand,
 } from "../../commands/plugin/conversion/cucumber/convertCucumberInfoCommand";
+import { RunData } from "../../commands/plugin/conversion/cucumber/util/multipartInfo";
 import { ConvertCypressInfoCommand } from "../../commands/plugin/conversion/cypress/convertCypressInfoCommand";
 import { ConvertCypressTestsCommand } from "../../commands/plugin/conversion/cypress/convertCypressTestsCommand";
 import { ImportExecutionCucumberCommand } from "../../commands/xray/importExecutionCucumberCommand";
@@ -18,6 +22,7 @@ import { ImportExecutionCypressCommand } from "../../commands/xray/importExecuti
 import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
 import { LOG, Level } from "../../logging/logging";
 import { containsCucumberTest, containsNativeTest } from "../../preprocessing/preprocessing";
+import { SupportedField } from "../../repository/jira/fields/jiraIssueFetcher";
 import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
@@ -115,19 +120,13 @@ export function addUploadCommands(
             fetchIssueTypeDetailsCommand
         );
         graph.connect(fetchIssueTypeDetailsCommand, extractExecutionIssueDetailsCommand);
-        const convertCucumberInfoCommand =
-            clients.kind === "server"
-                ? new ConvertCucumberInfoServerCommand(
-                      options,
-                      extractExecutionIssueDetailsCommand,
-                      resultsCommand
-                      // TODO: add test plan and test environment field IDs
-                  )
-                : new ConvertCucumberInfoCloudCommand(
-                      options,
-                      extractExecutionIssueDetailsCommand,
-                      resultsCommand
-                  );
+        const convertCucumberInfoCommand = getConvertCucumberInfoCommand(
+            options,
+            clients,
+            graph,
+            extractExecutionIssueDetailsCommand,
+            resultsCommand
+        );
         graph.connect(extractExecutionIssueDetailsCommand, convertCucumberInfoCommand);
         graph.connect(resultsCommand, convertCucumberInfoCommand);
         const convertCucumberFeaturesCommand = new ConvertCucumberFeaturesCommand(
@@ -266,4 +265,70 @@ export function addUploadCommands(
         graph.connect(extractVideoFilesCommand, attachVideosCommand);
         graph.connect(getExecutionIssueKeyCommand, attachVideosCommand);
     }
+}
+
+function getConvertCucumberInfoCommand(
+    options: InternalCypressXrayPluginOptions,
+    clients: ClientCombination,
+    graph: ExecutableGraph<Command>,
+    executionIssueDetails: Computable<IssueTypeDetails>,
+    results: Computable<RunData>
+): ConvertCucumberInfoCommand {
+    if (clients.kind === "cloud") {
+        return new ConvertCucumberInfoCloudCommand(options, executionIssueDetails, results);
+    }
+    let testPlanIdCommand: ExtractFieldIdCommand | undefined = undefined;
+    let testEnvironmentsIdCommand: ExtractFieldIdCommand | undefined = undefined;
+    if (
+        options.jira.testPlanIssueKey !== undefined ||
+        options.xray.testEnvironments !== undefined
+    ) {
+        const fetchAllFieldsCommand = graph.findOrDefault(
+            (command): command is FetchAllFieldsCommand => command instanceof FetchAllFieldsCommand,
+            () => new FetchAllFieldsCommand(clients.jiraClient)
+        );
+        if (options.jira.testPlanIssueKey) {
+            testPlanIdCommand = graph.findOrDefault(
+                (command): command is ExtractFieldIdCommand =>
+                    command instanceof ExtractFieldIdCommand &&
+                    command.getField() === SupportedField.TEST_PLAN,
+                () => {
+                    const command = new ExtractFieldIdCommand(
+                        SupportedField.TEST_PLAN,
+                        fetchAllFieldsCommand
+                    );
+                    graph.connect(fetchAllFieldsCommand, command);
+                    return command;
+                }
+            );
+        }
+        if (options.xray.testEnvironments) {
+            testEnvironmentsIdCommand = graph.findOrDefault(
+                (command): command is ExtractFieldIdCommand =>
+                    command instanceof ExtractFieldIdCommand &&
+                    command.getField() === SupportedField.TEST_ENVIRONMENTS,
+                () => {
+                    const command = new ExtractFieldIdCommand(
+                        SupportedField.TEST_ENVIRONMENTS,
+                        fetchAllFieldsCommand
+                    );
+                    graph.connect(fetchAllFieldsCommand, command);
+                    return command;
+                }
+            );
+        }
+    }
+    const convertCucumberInfoCommand = new ConvertCucumberInfoServerCommand(
+        options,
+        executionIssueDetails,
+        results,
+        { testPlanId: testPlanIdCommand, testEnvironmentsId: testEnvironmentsIdCommand }
+    );
+    if (testPlanIdCommand) {
+        graph.connect(testPlanIdCommand, convertCucumberInfoCommand);
+    }
+    if (testEnvironmentsIdCommand) {
+        graph.connect(testEnvironmentsIdCommand, convertCucumberInfoCommand);
+    }
+    return convertCucumberInfoCommand;
 }
