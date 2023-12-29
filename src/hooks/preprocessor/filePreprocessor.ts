@@ -5,15 +5,13 @@ import { ExtractFeatureFileIssuesCommand } from "../../commands/cucumber/extract
 import { ParseFeatureFileCommand } from "../../commands/cucumber/parseFeatureFileCommand";
 import { FunctionCommand } from "../../commands/functionCommand";
 import { EditIssueFieldCommand } from "../../commands/jira/fields/editIssueFieldCommand";
-import { ExtractFieldIdCommand, JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
-import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
+import { JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
 import { GetLabelValuesCommand } from "../../commands/jira/fields/getLabelValuesCommand";
 import { GetSummaryValuesCommand } from "../../commands/jira/fields/getSummaryValuesCommand";
 import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
 import { LOG, Level } from "../../logging/logging";
 import { FeatureFileIssueData } from "../../preprocessing/preprocessing";
 
-import { JiraClient } from "../../client/jira/jiraClient";
 import { ConstantCommand } from "../../commands/constantCommand";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { StringMap } from "../../types/util";
@@ -23,6 +21,7 @@ import { ExecutableGraph } from "../../util/executable/executable";
 import { HELP } from "../../util/help";
 import { computeOverlap } from "../../util/set";
 import { unknownToString } from "../../util/string";
+import { createExtractFieldIdCommand } from "../util";
 
 export function addSynchronizationCommands(
     file: Cypress.FileObject,
@@ -47,18 +46,12 @@ export function addSynchronizationCommands(
         extractIssueDataCommand
     );
     graph.connect(extractIssueDataCommand, gatherIssueKeysCommand);
-    const getSummaryFieldIdCommand = getExtractFieldIdCommand(
-        JiraField.SUMMARY,
-        options,
-        clients.jiraClient,
-        graph
-    );
-    const getLabelsFieldIdCommand = getExtractFieldIdCommand(
-        JiraField.LABELS,
-        options,
-        clients.jiraClient,
-        graph
-    );
+    const getSummaryFieldIdCommand = options.jira.fields.summary
+        ? new ConstantCommand(options.jira.fields.summary)
+        : createExtractFieldIdCommand(JiraField.SUMMARY, clients.jiraClient, graph);
+    const getLabelsFieldIdCommand = options.jira.fields.labels
+        ? new ConstantCommand(options.jira.fields.labels)
+        : createExtractFieldIdCommand(JiraField.LABELS, clients.jiraClient, graph);
     // Xray currently (almost) always overwrites issue data when importing feature files to
     // existing issues. Therefore, we manually need to backup and reset the data once the
     // import is done.
@@ -256,35 +249,4 @@ export function addSynchronizationCommands(
     );
     graph.connect(getLabelsFieldIdCommand, editLabelsCommand);
     graph.connect(getLabelsToResetCommand, editLabelsCommand);
-}
-
-function getExtractFieldIdCommand(
-    field: JiraField.SUMMARY | JiraField.LABELS,
-    options: InternalCypressXrayPluginOptions,
-    jiraClient: JiraClient,
-    graph: ExecutableGraph<Command>
-): Command<string> {
-    if (options.jira.fields.summary && field === JiraField.SUMMARY) {
-        return new ConstantCommand(options.jira.fields.summary);
-    }
-    if (options.jira.fields.labels && field === JiraField.LABELS) {
-        return new ConstantCommand(options.jira.fields.labels);
-    }
-    const fetchAllFieldsCommand = graph.findOrDefault(
-        (vertex): vertex is FetchAllFieldsCommand => {
-            return vertex instanceof FetchAllFieldsCommand;
-        },
-        () => new FetchAllFieldsCommand(jiraClient)
-    );
-    const extractFieldIdCommand = graph.findOrDefault(
-        (command): command is ExtractFieldIdCommand => {
-            return command instanceof ExtractFieldIdCommand && command.getField() === field;
-        },
-        () => {
-            const command = new ExtractFieldIdCommand(field, fetchAllFieldsCommand);
-            graph.connect(fetchAllFieldsCommand, command);
-            return command;
-        }
-    );
-    return extractFieldIdCommand;
 }

@@ -1,14 +1,12 @@
 import fs from "fs";
 import path from "path";
-import { JiraClient } from "../../client/jira/jiraClient";
 import { CombineCommand } from "../../commands/combineCommand";
 import { Command, Computable, SkippedError } from "../../commands/command";
 import { ConstantCommand } from "../../commands/constantCommand";
 import { FunctionCommand } from "../../commands/functionCommand";
 import { AttachFilesCommand } from "../../commands/jira/attachFilesCommand";
 import { FetchIssueTypesCommand } from "../../commands/jira/fetchIssueTypesCommand";
-import { ExtractFieldIdCommand, JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
-import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
+import { JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
 import { ConvertCucumberFeaturesCommand } from "../../commands/plugin/conversion/cucumber/convertCucumberFeaturesCommand";
 import {
     ConvertCucumberInfoCloudCommand,
@@ -33,6 +31,7 @@ import {
 import { dedent } from "../../util/dedent";
 import { ExecutableGraph } from "../../util/executable/executable";
 import { HELP } from "../../util/help";
+import { createExtractFieldIdCommand } from "../util";
 
 export function addUploadCommands(
     runResult: CypressCommandLine.CypressRunResult,
@@ -326,20 +325,18 @@ function getConvertCucumberInfoCommand(
         options.xray.testEnvironments !== undefined
     ) {
         if (options.jira.testPlanIssueKey) {
-            testPlanIdCommand = getExtractFieldIdCommand(
-                JiraField.TEST_PLAN,
-                options,
-                clients.jiraClient,
-                graph
-            );
+            testPlanIdCommand = options.jira.fields.testPlan
+                ? new ConstantCommand(options.jira.fields.testPlan)
+                : createExtractFieldIdCommand(JiraField.TEST_PLAN, clients.jiraClient, graph);
         }
         if (options.xray.testEnvironments) {
-            testEnvironmentsIdCommand = getExtractFieldIdCommand(
-                JiraField.TEST_ENVIRONMENTS,
-                options,
-                clients.jiraClient,
-                graph
-            );
+            testEnvironmentsIdCommand = options.jira.fields.testEnvironments
+                ? new ConstantCommand(options.jira.fields.testEnvironments)
+                : createExtractFieldIdCommand(
+                      JiraField.TEST_ENVIRONMENTS,
+                      clients.jiraClient,
+                      graph
+                  );
         }
     }
     const convertCucumberInfoCommand = new ConvertCucumberInfoServerCommand(
@@ -355,35 +352,4 @@ function getConvertCucumberInfoCommand(
         graph.connect(testEnvironmentsIdCommand, convertCucumberInfoCommand);
     }
     return convertCucumberInfoCommand;
-}
-
-function getExtractFieldIdCommand(
-    field: JiraField.TEST_PLAN | JiraField.TEST_ENVIRONMENTS,
-    options: InternalCypressXrayPluginOptions,
-    jiraClient: JiraClient,
-    graph: ExecutableGraph<Command>
-): Command<string> {
-    if (options.jira.fields.testPlan && field === JiraField.TEST_PLAN) {
-        return new ConstantCommand(options.jira.fields.testPlan);
-    }
-    if (options.jira.fields.testEnvironments && field === JiraField.TEST_ENVIRONMENTS) {
-        return new ConstantCommand(options.jira.fields.testEnvironments);
-    }
-    const fetchAllFieldsCommand = graph.findOrDefault(
-        (vertex): vertex is FetchAllFieldsCommand => {
-            return vertex instanceof FetchAllFieldsCommand;
-        },
-        () => new FetchAllFieldsCommand(jiraClient)
-    );
-    const extractFieldIdCommand = graph.findOrDefault(
-        (command): command is ExtractFieldIdCommand => {
-            return command instanceof ExtractFieldIdCommand && command.getField() === field;
-        },
-        () => {
-            const command = new ExtractFieldIdCommand(field, fetchAllFieldsCommand);
-            graph.connect(fetchAllFieldsCommand, command);
-            return command;
-        }
-    );
-    return extractFieldIdCommand;
 }
