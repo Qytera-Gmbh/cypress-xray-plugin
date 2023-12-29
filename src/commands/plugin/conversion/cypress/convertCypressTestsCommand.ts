@@ -25,8 +25,8 @@ import { errorMessage } from "../../../../util/errors";
 import { normalizedFilename } from "../../../../util/files";
 import { truncateIsoTime } from "../../../../util/time";
 import { Command, Computable } from "../../../command";
-import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./util/runConversion";
-import { getXrayStatus } from "./util/statusConversion";
+import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./util/run";
+import { getXrayStatus } from "./util/status";
 
 interface Parameters {
     jira: Pick<InternalJiraOptions, "projectKey">;

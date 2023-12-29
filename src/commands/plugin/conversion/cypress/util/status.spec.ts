@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { Status } from "../../../../../types/testStatus";
-import { getXrayStatus, toCypressStatus } from "./statusConversion";
+import { getXrayStatus, toCypressStatus } from "./status";
 
 describe("toCypressStatus", () => {
     it("parses passed statuses", () => {

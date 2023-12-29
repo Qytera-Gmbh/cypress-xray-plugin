@@ -11,7 +11,7 @@ import {
 } from "../../../../../types/cypress/13.0.0/api";
 import { Status } from "../../../../../types/testStatus";
 import { StringMap } from "../../../../../types/util";
-import { toCypressStatus } from "./statusConversion";
+import { toCypressStatus } from "./status";
 
 /**
  * Test data extracted from Cypress tests, ready to be converted into an Xray JSON test.
