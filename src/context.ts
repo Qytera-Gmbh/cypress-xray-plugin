@@ -10,12 +10,6 @@ import {
 } from "./dependencies";
 import { ENV_NAMES } from "./env";
 import { LOG, Level } from "./logging/logging";
-import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
-import {
-    CachingJiraIssueFetcher,
-    CachingJiraIssueFetcherCloud,
-} from "./repository/jira/fields/jiraIssueFetcher";
-import { CachingJiraRepository } from "./repository/jira/jiraRepository";
 import {
     ClientCombination,
     CypressXrayPluginOptions,
@@ -325,18 +319,10 @@ export async function initClients(
             );
             await pingXrayCloud(xrayCredentials);
             const xrayClient = new XrayClientCloud(xrayCredentials);
-            const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-            const jiraFieldFetcher = new CachingJiraIssueFetcherCloud(
-                jiraClient,
-                jiraFieldRepository,
-                xrayClient,
-                jiraOptions
-            );
             return {
                 kind: "cloud",
                 jiraClient: jiraClient,
                 xrayClient: xrayClient,
-                jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
             };
         } else {
             throw new Error(
@@ -358,17 +344,10 @@ export async function initClients(
         LOG.message(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials");
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
-        const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-        const jiraFieldFetcher = new CachingJiraIssueFetcher(
-            jiraClient,
-            jiraFieldRepository,
-            jiraOptions.fields
-        );
         return {
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
         };
     } else if (
         ENV_NAMES.authentication.jira.username in env &&
@@ -391,17 +370,10 @@ export async function initClients(
         );
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
-        const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-        const jiraFieldFetcher = new CachingJiraIssueFetcher(
-            jiraClient,
-            jiraFieldRepository,
-            jiraOptions.fields
-        );
         return {
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
         };
     } else {
         throw new Error(
