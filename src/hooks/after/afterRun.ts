@@ -32,6 +32,7 @@ import {
 } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "../../util/dedent";
 import { ExecutableGraph } from "../../util/executable/executable";
+import { HELP } from "../../util/help";
 
 export function addUploadCommands(
     runResult: CypressCommandLine.CypressRunResult,
@@ -108,18 +109,11 @@ export function addUploadCommands(
             fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
         ) as CucumberMultipartFeature[];
         const cucumberResultsCommand = new ConstantCommand(results);
-        const fetchIssueTypeDetailsCommand = graph.findOrDefault(
-            (command): command is FetchIssueTypesCommand =>
-                command instanceof FetchIssueTypesCommand,
-            () => new FetchIssueTypesCommand(clients.jiraClient)
+        const extractExecutionIssueDetailsCommand = getTestExecutionIssueDetailsCommand(
+            options,
+            clients,
+            graph
         );
-        const extractExecutionIssueDetailsCommand = new ApplyFunctionCommand(
-            (issueDetails: IssueTypeDetails[]): IssueTypeDetails => {
-                return issueDetails[0];
-            },
-            fetchIssueTypeDetailsCommand
-        );
-        graph.connect(fetchIssueTypeDetailsCommand, extractExecutionIssueDetailsCommand);
         const convertCucumberInfoCommand = getConvertCucumberInfoCommand(
             options,
             clients,
@@ -265,6 +259,53 @@ export function addUploadCommands(
         graph.connect(extractVideoFilesCommand, attachVideosCommand);
         graph.connect(getExecutionIssueKeyCommand, attachVideosCommand);
     }
+}
+
+function getTestExecutionIssueDetailsCommand(
+    options: InternalCypressXrayPluginOptions,
+    clients: ClientCombination,
+    graph: ExecutableGraph<Command>
+): Command<IssueTypeDetails> {
+    const fetchIssueTypesCommand = graph.findOrDefault(
+        (command): command is FetchIssueTypesCommand => command instanceof FetchIssueTypesCommand,
+        () => new FetchIssueTypesCommand(clients.jiraClient)
+    );
+    const getExecutionIssueDetailsCommand = new ApplyFunctionCommand(
+        (issueDetails: IssueTypeDetails[]) => {
+            const details = issueDetails.filter(
+                (issueDetail) => issueDetail.name === options.jira.testExecutionIssueType
+            );
+            if (details.length === 0) {
+                throw new Error(
+                    dedent(`
+                        Failed to retrieve issue type information for issue type: ${options.jira.testExecutionIssueType}
+
+                        Make sure you have Xray installed.
+
+                        For more information, visit:
+                        - ${HELP.plugin.configuration.jira.testExecutionIssueType}
+                        - ${HELP.plugin.configuration.jira.testPlanIssueType}
+                    `)
+                );
+            } else if (details.length > 1) {
+                throw new Error(
+                    dedent(`
+                        Found multiple issue types named: ${options.jira.testExecutionIssueType}
+
+                        Make sure to only make a single one available in project ${options.jira.projectKey}.
+
+                        For more information, visit:
+                        - ${HELP.plugin.configuration.jira.testExecutionIssueType}
+                        - ${HELP.plugin.configuration.jira.testPlanIssueType}
+                    `)
+                );
+            }
+            return details[0];
+        },
+        fetchIssueTypesCommand
+    );
+    graph.connect(fetchIssueTypesCommand, getExecutionIssueDetailsCommand);
+    return getExecutionIssueDetailsCommand;
 }
 
 function getConvertCucumberInfoCommand(
