@@ -3,9 +3,9 @@ import chaiAsPromised from "chai-as-promised";
 import { stub } from "sinon";
 import { BasicAuthCredentials } from "../../../authentication/credentials";
 import { JiraClientServer } from "../../../client/jira/jiraClientServer";
+import { JiraField } from "../../../commands/jira/fields/extractFieldIdCommand";
 import { dedent } from "../../../util/dedent";
 import { CachingJiraFieldRepository } from "./jiraFieldRepository";
-import { SupportedField } from "./jiraIssueFetcher";
 
 chai.use(chaiAsPromised);
 
@@ -37,7 +37,7 @@ describe("the jira field repository", () => {
                 },
             },
         ]);
-        const id = await repository.getFieldId(SupportedField.SUMMARY);
+        const id = await repository.getFieldId(JiraField.SUMMARY);
         expect(id).to.eq("customfield_12345");
     });
 
@@ -70,17 +70,15 @@ describe("the jira field repository", () => {
                 },
             },
         ]);
-        await repository.getFieldId(SupportedField.DESCRIPTION);
-        const id = await repository.getFieldId(SupportedField.SUMMARY);
+        await repository.getFieldId(JiraField.DESCRIPTION);
+        const id = await repository.getFieldId(JiraField.SUMMARY);
         expect(id).to.eq("customfield_12345");
         expect(stubbedGetFields).to.have.been.calledOnce;
     });
 
     it("throws for missing descriptions", async () => {
         stub(jiraClient, "getFields").resolves([]);
-        await expect(
-            repository.getFieldId(SupportedField.DESCRIPTION)
-        ).to.eventually.be.rejectedWith(
+        await expect(repository.getFieldId(JiraField.DESCRIPTION)).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to fetch Jira field ID for field with name: description
                 Make sure the field actually exists and that your Jira language settings did not modify the field's name
@@ -98,7 +96,7 @@ describe("the jira field repository", () => {
 
     it("throws for missing labels", async () => {
         stub(jiraClient, "getFields").resolves([]);
-        await expect(repository.getFieldId(SupportedField.LABELS)).to.eventually.be.rejectedWith(
+        await expect(repository.getFieldId(JiraField.LABELS)).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to fetch Jira field ID for field with name: labels
                 Make sure the field actually exists and that your Jira language settings did not modify the field's name
@@ -117,7 +115,7 @@ describe("the jira field repository", () => {
     it("throws for missing test environments", async () => {
         stub(jiraClient, "getFields").resolves([]);
         await expect(
-            repository.getFieldId(SupportedField.TEST_ENVIRONMENTS)
+            repository.getFieldId(JiraField.TEST_ENVIRONMENTS)
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to fetch Jira field ID for field with name: test environments
@@ -136,7 +134,7 @@ describe("the jira field repository", () => {
 
     it("throws for missing test types", async () => {
         stub(jiraClient, "getFields").resolves([]);
-        await expect(repository.getFieldId(SupportedField.TEST_TYPE)).to.eventually.be.rejectedWith(
+        await expect(repository.getFieldId(JiraField.TEST_TYPE)).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to fetch Jira field ID for field with name: test type
                 Make sure the field actually exists and that your Jira language settings did not modify the field's name
@@ -181,7 +179,7 @@ describe("the jira field repository", () => {
                 },
             },
         ]);
-        await expect(repository.getFieldId(SupportedField.TEST_PLAN)).to.eventually.be.rejectedWith(
+        await expect(repository.getFieldId(JiraField.TEST_PLAN)).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to fetch Jira field ID for field with name: test plan
                 Make sure the field actually exists and that your Jira language settings did not modify the field's name
@@ -231,7 +229,7 @@ describe("the jira field repository", () => {
             },
         ];
         stub(jiraClient, "getFields").resolves(fields);
-        await expect(repository.getFieldId(SupportedField.SUMMARY)).to.eventually.be.rejectedWith(
+        await expect(repository.getFieldId(JiraField.SUMMARY)).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to fetch Jira field ID for field with name: summary
                 There are multiple fields with this name
@@ -253,7 +251,7 @@ describe("the jira field repository", () => {
 
     it("throws for total field fetch failures", async () => {
         stub(jiraClient, "getFields").rejects(new Error("Oh no"));
-        await expect(repository.getFieldId(SupportedField.SUMMARY)).to.eventually.be.rejectedWith(
+        await expect(repository.getFieldId(JiraField.SUMMARY)).to.eventually.be.rejectedWith(
             "Oh no"
         );
     });

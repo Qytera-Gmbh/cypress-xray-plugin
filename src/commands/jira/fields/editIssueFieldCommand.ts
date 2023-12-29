@@ -1,15 +1,15 @@
 import { JiraClient } from "../../../client/jira/jiraClient";
 import { LOG, Level } from "../../../logging/logging";
-import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
 import { unknownToString } from "../../../util/string";
 import { Command, Computable } from "../../command";
+import { JiraField } from "./extractFieldIdCommand";
 import { FieldValueMap } from "./getFieldValuesCommand";
 
 export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Command<string[]> {
     private readonly jiraClient: JiraClient;
-    private readonly field: SupportedField;
+    private readonly field: JiraField;
     private readonly fieldId: Computable<string>;
     private readonly fieldValues: Computable<StringMap<FieldValueMap[F]>>;
     constructor(
@@ -25,7 +25,7 @@ export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Comman
         this.fieldValues = fieldValues;
     }
 
-    public getField(): SupportedField {
+    public getField(): JiraField {
         return this.field;
     }
 

@@ -5,7 +5,7 @@ import { ConstantCommand } from "../../commands/constantCommand";
 import { ApplyFunctionCommand } from "../../commands/functionCommand";
 import { AttachFilesCommand } from "../../commands/jira/attachFilesCommand";
 import { FetchIssueTypesCommand } from "../../commands/jira/fetchIssueTypesCommand";
-import { ExtractFieldIdCommand } from "../../commands/jira/fields/extractFieldIdCommand";
+import { ExtractFieldIdCommand, JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
 import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
 import { MergeCommand } from "../../commands/mergeCommand";
 import { ConvertCucumberFeaturesCommand } from "../../commands/plugin/conversion/cucumber/convertCucumberFeaturesCommand";
@@ -22,7 +22,6 @@ import { ImportExecutionCypressCommand } from "../../commands/xray/importExecuti
 import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
 import { LOG, Level } from "../../logging/logging";
 import { containsCucumberTest, containsNativeTest } from "../../preprocessing/preprocessing";
-import { SupportedField } from "../../repository/jira/fields/jiraIssueFetcher";
 import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
@@ -332,10 +331,10 @@ function getConvertCucumberInfoCommand(
             testPlanIdCommand = graph.findOrDefault(
                 (command): command is ExtractFieldIdCommand =>
                     command instanceof ExtractFieldIdCommand &&
-                    command.getField() === SupportedField.TEST_PLAN,
+                    command.getField() === JiraField.TEST_PLAN,
                 () => {
                     const command = new ExtractFieldIdCommand(
-                        SupportedField.TEST_PLAN,
+                        JiraField.TEST_PLAN,
                         fetchAllFieldsCommand
                     );
                     graph.connect(fetchAllFieldsCommand, command);
@@ -347,10 +346,10 @@ function getConvertCucumberInfoCommand(
             testEnvironmentsIdCommand = graph.findOrDefault(
                 (command): command is ExtractFieldIdCommand =>
                     command instanceof ExtractFieldIdCommand &&
-                    command.getField() === SupportedField.TEST_ENVIRONMENTS,
+                    command.getField() === JiraField.TEST_ENVIRONMENTS,
                 () => {
                     const command = new ExtractFieldIdCommand(
-                        SupportedField.TEST_ENVIRONMENTS,
+                        JiraField.TEST_ENVIRONMENTS,
                         fetchAllFieldsCommand
                     );
                     graph.connect(fetchAllFieldsCommand, command);

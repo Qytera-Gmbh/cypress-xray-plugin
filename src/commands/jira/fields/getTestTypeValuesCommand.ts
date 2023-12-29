@@ -1,14 +1,14 @@
 import { XrayClientCloud } from "../../../client/xray/xrayClientCloud";
 import { LOG, Level } from "../../../logging/logging";
-import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
 import { extractNestedString } from "../../../util/extraction";
 import { Command, Computable } from "../../command";
+import { JiraField } from "./extractFieldIdCommand";
 import { GetFieldValuesCommand } from "./getFieldValuesCommand";
 
-export class GetTestTypeValuesCommandServer extends GetFieldValuesCommand<SupportedField.TEST_TYPE> {
+export class GetTestTypeValuesCommandServer extends GetFieldValuesCommand<JiraField.TEST_TYPE> {
     protected async computeResult(): Promise<StringMap<string>> {
         // Field property example:
         // customfield_12100: {

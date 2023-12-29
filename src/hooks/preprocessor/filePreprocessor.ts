@@ -4,7 +4,7 @@ import { ExtractFeatureFileIssuesCommand } from "../../commands/cucumber/extract
 import { ParseFeatureFileCommand } from "../../commands/cucumber/parseFeatureFileCommand";
 import { ApplyFunctionCommand } from "../../commands/functionCommand";
 import { EditIssueFieldCommand } from "../../commands/jira/fields/editIssueFieldCommand";
-import { ExtractFieldIdCommand } from "../../commands/jira/fields/extractFieldIdCommand";
+import { ExtractFieldIdCommand, JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
 import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
 import { GetLabelValuesCommand } from "../../commands/jira/fields/getLabelValuesCommand";
 import { GetSummaryValuesCommand } from "../../commands/jira/fields/getSummaryValuesCommand";
@@ -12,7 +12,7 @@ import { MergeCommand } from "../../commands/mergeCommand";
 import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
 import { LOG, Level } from "../../logging/logging";
 import { FeatureFileIssueData } from "../../preprocessing/preprocessing";
-import { SupportedField } from "../../repository/jira/fields/jiraIssueFetcher";
+
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { ImportFeatureResponse } from "../../types/xray/responses/importFeature";
@@ -54,15 +54,11 @@ export function addSynchronizationCommands(
     const getSummaryFieldIdCommand = graph.findOrDefault(
         (command): command is ExtractFieldIdCommand => {
             return (
-                command instanceof ExtractFieldIdCommand &&
-                command.getField() === SupportedField.SUMMARY
+                command instanceof ExtractFieldIdCommand && command.getField() === JiraField.SUMMARY
             );
         },
         () => {
-            const command = new ExtractFieldIdCommand(
-                SupportedField.SUMMARY,
-                fetchAllFieldsCommand
-            );
+            const command = new ExtractFieldIdCommand(JiraField.SUMMARY, fetchAllFieldsCommand);
             graph.connect(fetchAllFieldsCommand, command);
             return command;
         }
@@ -70,12 +66,11 @@ export function addSynchronizationCommands(
     const getLabelsFieldIdCommand = graph.findOrDefault(
         (command): command is ExtractFieldIdCommand => {
             return (
-                command instanceof ExtractFieldIdCommand &&
-                command.getField() === SupportedField.LABELS
+                command instanceof ExtractFieldIdCommand && command.getField() === JiraField.LABELS
             );
         },
         () => {
-            const command = new ExtractFieldIdCommand(SupportedField.LABELS, fetchAllFieldsCommand);
+            const command = new ExtractFieldIdCommand(JiraField.LABELS, fetchAllFieldsCommand);
             graph.connect(fetchAllFieldsCommand, command);
             return command;
         }
@@ -263,7 +258,7 @@ export function addSynchronizationCommands(
     graph.connect(getNewLabelsCommand, getLabelsToResetCommand);
     const editSummariesCommand = new EditIssueFieldCommand(
         clients.jiraClient,
-        SupportedField.SUMMARY,
+        JiraField.SUMMARY,
         getSummaryFieldIdCommand,
         getSummariesToResetCommand
     );
@@ -271,7 +266,7 @@ export function addSynchronizationCommands(
     graph.connect(getSummariesToResetCommand, editSummariesCommand);
     const editLabelsCommand = new EditIssueFieldCommand(
         clients.jiraClient,
-        SupportedField.LABELS,
+        JiraField.LABELS,
         getLabelsFieldIdCommand,
         getLabelsToResetCommand
     );

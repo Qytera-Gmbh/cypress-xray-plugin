@@ -1,19 +1,27 @@
-import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { FieldDetail } from "../../../types/jira/responses/fieldDetail";
 import { StringMap } from "../../../types/util";
 import { missingFieldsError, multipleFieldsError } from "../../../util/errors";
 import { Command, Computable } from "../../command";
 
+export enum JiraField {
+    DESCRIPTION = "description",
+    SUMMARY = "summary",
+    LABELS = "labels",
+    TEST_ENVIRONMENTS = "test environments",
+    TEST_PLAN = "test plan",
+    TEST_TYPE = "test type",
+}
+
 export class ExtractFieldIdCommand extends Command<string> {
-    private readonly field: SupportedField;
+    private readonly field: JiraField;
     private readonly allFields: Computable<FieldDetail[]>;
-    constructor(field: SupportedField, allFields: Computable<FieldDetail[]>) {
+    constructor(field: JiraField, allFields: Computable<FieldDetail[]>) {
         super();
         this.field = field;
         this.allFields = allFields;
     }
 
-    public getField(): SupportedField {
+    public getField(): JiraField {
         return this.field;
     }
 

@@ -9,8 +9,6 @@ import { HasTestTypes, XrayClientCloud } from "../src/client/xray/xrayClientClou
 import { AxiosRestClient, REST } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { Logger } from "../src/logging/logging";
-import { JiraFieldRepository } from "../src/repository/jira/fields/jiraFieldRepository";
-import { JiraIssueFetcher, SupportedField } from "../src/repository/jira/fields/jiraIssueFetcher";
 import { SearchRequest } from "../src/types/jira/requests/search";
 import { IssueUpdate } from "../src/types/jira/responses/issueUpdate";
 import { XrayTestExecutionResults } from "../src/types/xray/importTestExecutionResults";
@@ -139,33 +137,6 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
         },
     };
     return makeTransparent(stub(client));
-}
-
-export function getMockedJiraFieldRepository(): SinonStubbedInstance<JiraFieldRepository> {
-    const fieldRepository: JiraFieldRepository = {
-        getFieldId: function (fieldName: SupportedField) {
-            throw mockCalledUnexpectedlyError(fieldName);
-        },
-    };
-    return makeTransparent(stub(fieldRepository));
-}
-
-export function getMockedJiraIssueFetcher(): SinonStubbedInstance<JiraIssueFetcher> {
-    const jiraIssueFetcher: JiraIssueFetcher = {
-        fetchDescriptions: function (...issueKeys: string[]) {
-            throw mockCalledUnexpectedlyError(issueKeys);
-        },
-        fetchLabels: function (...issueKeys: string[]) {
-            throw mockCalledUnexpectedlyError(issueKeys);
-        },
-        fetchSummaries: function (...issueKeys: string[]) {
-            throw mockCalledUnexpectedlyError(issueKeys);
-        },
-        fetchTestTypes: function (...issueKeys: string[]) {
-            throw mockCalledUnexpectedlyError(issueKeys);
-        },
-    };
-    return makeTransparent(stub(jiraIssueFetcher));
 }
 
 export function getMockedJwtCredentials(): SinonStubbedInstance<JwtCredentials> {

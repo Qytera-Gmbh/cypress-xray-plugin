@@ -1,16 +1,16 @@
 import { JiraClient } from "../../../client/jira/jiraClient";
 import { LOG, Level } from "../../../logging/logging";
-import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
 import { errorMessage } from "../../../util/errors";
 import { Command, Computable } from "../../command";
+import { JiraField } from "./extractFieldIdCommand";
 
 export interface FieldValueMap {
-    [SupportedField.SUMMARY]: string;
-    [SupportedField.LABELS]: string[];
-    [SupportedField.TEST_TYPE]: string;
+    [JiraField.SUMMARY]: string;
+    [JiraField.LABELS]: string[];
+    [JiraField.TEST_TYPE]: string;
 }
 
 export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> extends Command<

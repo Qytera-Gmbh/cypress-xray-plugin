@@ -1,5 +1,5 @@
 import { Background, Comment } from "@cucumber/messages";
-import { SupportedField } from "../repository/jira/fields/jiraIssueFetcher";
+import { JiraField } from "../commands/jira/fields/extractFieldIdCommand";
 import { FieldDetail } from "../types/jira/responses/fieldDetail";
 import { JiraFieldIds } from "../types/plugin";
 import { StringMap } from "../types/util";
@@ -428,7 +428,7 @@ function reconstructMultipleTagsBackground(
     return example.join("\n");
 }
 
-export function multipleFieldsError(fieldName: SupportedField, matches: FieldDetail[]): Error {
+export function multipleFieldsError(fieldName: JiraField, matches: FieldDetail[]): Error {
     const nameDuplicates = prettyPadObjects(matches)
         .map((duplicate) =>
             Object.entries(duplicate)
@@ -457,7 +457,7 @@ export function multipleFieldsError(fieldName: SupportedField, matches: FieldDet
     );
 }
 
-export function missingFieldsError(fieldName: SupportedField, names: StringMap<string>): Error {
+export function missingFieldsError(fieldName: JiraField, names: StringMap<string>): Error {
     if (Object.keys(names).length === 0) {
         throw new Error(
             dedent(`
@@ -497,19 +497,19 @@ export function missingFieldsError(fieldName: SupportedField, names: StringMap<s
     }
 }
 
-function getOptionName(fieldName: SupportedField): keyof JiraFieldIds {
+function getOptionName(fieldName: JiraField): keyof JiraFieldIds {
     switch (fieldName) {
-        case SupportedField.DESCRIPTION:
+        case JiraField.DESCRIPTION:
             return "description";
-        case SupportedField.SUMMARY:
+        case JiraField.SUMMARY:
             return "summary";
-        case SupportedField.LABELS:
+        case JiraField.LABELS:
             return "labels";
-        case SupportedField.TEST_ENVIRONMENTS:
+        case JiraField.TEST_ENVIRONMENTS:
             return "testEnvironments";
-        case SupportedField.TEST_PLAN:
+        case JiraField.TEST_PLAN:
             return "testPlan";
-        case SupportedField.TEST_TYPE:
+        case JiraField.TEST_TYPE:
             return "testType";
     }
 }

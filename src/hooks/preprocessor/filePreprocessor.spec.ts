@@ -7,7 +7,7 @@ import { ExtractFeatureFileIssuesCommand } from "../../commands/cucumber/extract
 import { ParseFeatureFileCommand } from "../../commands/cucumber/parseFeatureFileCommand";
 import { ApplyFunctionCommand } from "../../commands/functionCommand";
 import { EditIssueFieldCommand } from "../../commands/jira/fields/editIssueFieldCommand";
-import { ExtractFieldIdCommand } from "../../commands/jira/fields/extractFieldIdCommand";
+import { ExtractFieldIdCommand, JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
 import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
 import { GetLabelValuesCommand } from "../../commands/jira/fields/getLabelValuesCommand";
 import { GetSummaryValuesCommand } from "../../commands/jira/fields/getSummaryValuesCommand";
@@ -22,7 +22,6 @@ import {
 } from "../../context";
 import { Level } from "../../logging/logging";
 import { FeatureFileIssueData } from "../../preprocessing/preprocessing";
-import { SupportedField } from "../../repository/jira/fields/jiraIssueFetcher";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { StringMap } from "../../types/util";
 import { ImportFeatureResponse } from "../../types/xray/responses/importFeature";
@@ -216,12 +215,12 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it(`${ExtractFieldIdCommand.name} (summary ID)`, () => {
                 assertIsInstanceOf(commands[4], ExtractFieldIdCommand);
-                expect(commands[4].getField()).to.eq(SupportedField.SUMMARY);
+                expect(commands[4].getField()).to.eq(JiraField.SUMMARY);
             });
 
             it(`${ExtractFieldIdCommand.name} (labels ID)`, () => {
                 assertIsInstanceOf(commands[5], ExtractFieldIdCommand);
-                expect(commands[5].getField()).to.eq(SupportedField.LABELS);
+                expect(commands[5].getField()).to.eq(JiraField.LABELS);
             });
 
             it(`${GetSummaryValuesCommand.name} (current summaries)`, () => {
@@ -470,12 +469,12 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it(`${EditIssueFieldCommand.name} (edit summaries)`, () => {
                 assertIsInstanceOf(commands[14], EditIssueFieldCommand);
-                expect(commands[14].getField()).to.eq(SupportedField.SUMMARY);
+                expect(commands[14].getField()).to.eq(JiraField.SUMMARY);
             });
 
             it(`${EditIssueFieldCommand.name} (edit labels)`, () => {
                 assertIsInstanceOf(commands[15], EditIssueFieldCommand);
-                expect(commands[15].getField()).to.eq(SupportedField.LABELS);
+                expect(commands[15].getField()).to.eq(JiraField.LABELS);
             });
         });
     });
@@ -490,11 +489,11 @@ describe(path.relative(process.cwd(), __filename), () => {
         const graph = new ExecutableGraph<Command>();
         const fetchAllFieldsCommand = new FetchAllFieldsCommand(clients.jiraClient);
         const getSummaryFieldIdCommand = new ExtractFieldIdCommand(
-            SupportedField.SUMMARY,
+            JiraField.SUMMARY,
             fetchAllFieldsCommand
         );
         const getLabelsFieldIdCommand = new ExtractFieldIdCommand(
-            SupportedField.LABELS,
+            JiraField.LABELS,
             fetchAllFieldsCommand
         );
         graph.connect(fetchAllFieldsCommand, getSummaryFieldIdCommand);
