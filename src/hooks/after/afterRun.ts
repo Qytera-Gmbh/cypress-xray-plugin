@@ -180,7 +180,7 @@ export function addUploadCommands(
                 }
             }
         }
-        graph.connect(convertCucumberInfoCommand, importCucumberExecutionCommand);
+        graph.connect(mergeCucumberMultipartCommand, importCucumberExecutionCommand);
         if (options.jira.testExecutionIssueKey) {
             const compareIssueKeysCommand = new ApplyFunctionCommand((issueKey: string) => {
                 if (issueKey !== options.jira.testExecutionIssueKey) {
