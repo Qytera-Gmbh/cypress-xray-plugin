@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { JiraClient } from "../../client/jira/jiraClient";
 import { Command, Computable, SkippedError } from "../../commands/command";
 import { ConstantCommand } from "../../commands/constantCommand";
 import { ApplyFunctionCommand } from "../../commands/functionCommand";
@@ -317,44 +318,26 @@ function getConvertCucumberInfoCommand(
     if (clients.kind === "cloud") {
         return new ConvertCucumberInfoCloudCommand(options, executionIssueDetails, results);
     }
-    let testPlanIdCommand: ExtractFieldIdCommand | undefined = undefined;
-    let testEnvironmentsIdCommand: ExtractFieldIdCommand | undefined = undefined;
+    let testPlanIdCommand: Command<string> | undefined = undefined;
+    let testEnvironmentsIdCommand: Command<string> | undefined = undefined;
     if (
         options.jira.testPlanIssueKey !== undefined ||
         options.xray.testEnvironments !== undefined
     ) {
-        const fetchAllFieldsCommand = graph.findOrDefault(
-            (command): command is FetchAllFieldsCommand => command instanceof FetchAllFieldsCommand,
-            () => new FetchAllFieldsCommand(clients.jiraClient)
-        );
         if (options.jira.testPlanIssueKey) {
-            testPlanIdCommand = graph.findOrDefault(
-                (command): command is ExtractFieldIdCommand =>
-                    command instanceof ExtractFieldIdCommand &&
-                    command.getField() === JiraField.TEST_PLAN,
-                () => {
-                    const command = new ExtractFieldIdCommand(
-                        JiraField.TEST_PLAN,
-                        fetchAllFieldsCommand
-                    );
-                    graph.connect(fetchAllFieldsCommand, command);
-                    return command;
-                }
+            testPlanIdCommand = getExtractFieldIdCommand(
+                JiraField.TEST_PLAN,
+                options,
+                clients.jiraClient,
+                graph
             );
         }
         if (options.xray.testEnvironments) {
-            testEnvironmentsIdCommand = graph.findOrDefault(
-                (command): command is ExtractFieldIdCommand =>
-                    command instanceof ExtractFieldIdCommand &&
-                    command.getField() === JiraField.TEST_ENVIRONMENTS,
-                () => {
-                    const command = new ExtractFieldIdCommand(
-                        JiraField.TEST_ENVIRONMENTS,
-                        fetchAllFieldsCommand
-                    );
-                    graph.connect(fetchAllFieldsCommand, command);
-                    return command;
-                }
+            testEnvironmentsIdCommand = getExtractFieldIdCommand(
+                JiraField.TEST_ENVIRONMENTS,
+                options,
+                clients.jiraClient,
+                graph
             );
         }
     }
@@ -371,4 +354,35 @@ function getConvertCucumberInfoCommand(
         graph.connect(testEnvironmentsIdCommand, convertCucumberInfoCommand);
     }
     return convertCucumberInfoCommand;
+}
+
+function getExtractFieldIdCommand(
+    field: JiraField.TEST_PLAN | JiraField.TEST_ENVIRONMENTS,
+    options: InternalCypressXrayPluginOptions,
+    jiraClient: JiraClient,
+    graph: ExecutableGraph<Command>
+): Command<string> {
+    if (options.jira.fields.testPlan && field === JiraField.TEST_PLAN) {
+        return new ConstantCommand(options.jira.fields.testPlan);
+    }
+    if (options.jira.fields.testEnvironments && field === JiraField.TEST_ENVIRONMENTS) {
+        return new ConstantCommand(options.jira.fields.testEnvironments);
+    }
+    const fetchAllFieldsCommand = graph.findOrDefault(
+        (vertex): vertex is FetchAllFieldsCommand => {
+            return vertex instanceof FetchAllFieldsCommand;
+        },
+        () => new FetchAllFieldsCommand(jiraClient)
+    );
+    const extractFieldIdCommand = graph.findOrDefault(
+        (command): command is ExtractFieldIdCommand => {
+            return command instanceof ExtractFieldIdCommand && command.getField() === field;
+        },
+        () => {
+            const command = new ExtractFieldIdCommand(field, fetchAllFieldsCommand);
+            graph.connect(fetchAllFieldsCommand, command);
+            return command;
+        }
+    );
+    return extractFieldIdCommand;
 }
