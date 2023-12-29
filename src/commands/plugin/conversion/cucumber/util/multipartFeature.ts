@@ -1,17 +1,17 @@
-import { LOG, Level } from "../../logging/logging";
-import { getScenarioTagRegex } from "../../preprocessing/preprocessing";
+import { LOG, Level } from "../../../../../logging/logging";
+import { getScenarioTagRegex } from "../../../../../preprocessing/preprocessing";
 import {
     CucumberMultipartElement,
     CucumberMultipartFeature,
     CucumberMultipartStep,
     CucumberMultipartTag,
-} from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { dedent } from "../../util/dedent";
+} from "../../../../../types/xray/requests/importExecutionCucumberMultipart";
+import { dedent } from "../../../../../util/dedent";
 import {
     errorMessage,
     missingTestKeyInCucumberScenarioError,
     multipleTestKeysInCucumberScenarioError,
-} from "../../util/errors";
+} from "../../../../../util/errors";
 
 /**
  * Modifies the input Cucumber JSON results by adding test execution issue tags and filtering

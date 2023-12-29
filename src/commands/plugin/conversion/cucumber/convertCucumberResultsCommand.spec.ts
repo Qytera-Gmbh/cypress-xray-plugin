@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import fs from "fs";
 import path from "path";
-import { CucumberMultipartFeature } from "../../../types/xray/requests/importExecutionCucumberMultipart";
-import { ConstantCommand } from "../../constantCommand";
+import { CucumberMultipartFeature } from "../../../../types/xray/requests/importExecutionCucumberMultipart";
+import { ConstantCommand } from "../../../constantCommand";
 import {
     ConvertCucumberResultsCloudCommand,
     ConvertCucumberResultsServerCommand,

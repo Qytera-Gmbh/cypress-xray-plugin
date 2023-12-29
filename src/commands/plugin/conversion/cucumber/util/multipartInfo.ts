@@ -1,9 +1,9 @@
-import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
+import { IssueTypeDetails } from "../../../../../types/jira/responses/issueTypeDetails";
 import {
     CucumberMultipartInfo,
     CucumberMultipartInfoCloud,
-} from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
-import { dedent } from "../../util/dedent";
+} from "../../../../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { dedent } from "../../../../../util/dedent";
 
 /**
  * Interface containing general/minimal Cypress run data.

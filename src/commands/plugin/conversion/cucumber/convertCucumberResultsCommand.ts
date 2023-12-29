@@ -1,23 +1,23 @@
-import { buildMultipartFeatures } from "../../../conversion/importExecutionCucumberMultipart/multipartFeatureBuilder";
+import { IssueTypeDetails } from "../../../../types/jira/responses/issueTypeDetails";
+import {
+    InternalCucumberOptions,
+    InternalJiraOptions,
+    InternalXrayOptions,
+} from "../../../../types/plugin";
+import {
+    CucumberMultipart,
+    CucumberMultipartFeature,
+} from "../../../../types/xray/requests/importExecutionCucumberMultipart";
+import { CucumberMultipartInfo } from "../../../../types/xray/requests/importExecutionCucumberMultipartInfo";
+import { Command, Computable } from "../../../command";
+import { buildMultipartFeatures } from "./util/multipartFeature";
 import {
     RunData,
     TestExecutionIssueData,
     TestExecutionIssueDataServer,
     buildMultipartInfoCloud,
     buildMultipartInfoServer,
-} from "../../../conversion/importExecutionCucumberMultipart/multipartInfoBuilder";
-import { IssueTypeDetails } from "../../../types/jira/responses/issueTypeDetails";
-import {
-    InternalCucumberOptions,
-    InternalJiraOptions,
-    InternalXrayOptions,
-} from "../../../types/plugin";
-import {
-    CucumberMultipart,
-    CucumberMultipartFeature,
-} from "../../../types/xray/requests/importExecutionCucumberMultipart";
-import { CucumberMultipartInfo } from "../../../types/xray/requests/importExecutionCucumberMultipartInfo";
-import { Command, Computable } from "../../command";
+} from "./util/multipartInfo";
 
 interface Parameters {
     jira: Pick<
