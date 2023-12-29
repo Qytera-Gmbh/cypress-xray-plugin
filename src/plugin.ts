@@ -196,7 +196,7 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
     return file.filePath;
 }
 
-function logInitializationWarning(hook: "before:run" | "after:run" | "file:preprocessor"): void {
+function logInitializationWarning(hook: "after:run" | "file:preprocessor"): void {
     // Do not throw in case someone does not want the plugin to run but forgot to remove a hook.
     LOG.message(
         Level.WARNING,

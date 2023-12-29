@@ -121,14 +121,6 @@ export function mockedCypressEventEmitter<A extends Action>(
                 });
                 break;
             }
-            case "before:run": {
-                const f = fn as ActionCallbacks["before:run"];
-                const parameters = args as Parameters<ActionCallbacks["before:run"]>;
-                f(...parameters).catch((error: unknown) => {
-                    throw error;
-                });
-                break;
-            }
             default:
         }
     };
