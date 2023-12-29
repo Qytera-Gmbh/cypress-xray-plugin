@@ -1,16 +1,16 @@
-import { getNativeTestIssueKey } from "../../preprocessing/preprocessing";
+import { getNativeTestIssueKey } from "../../../../../preprocessing/preprocessing";
 import {
     RunResult as RunResult_V12,
     ScreenshotInformation as ScreenshotInformation_V12,
     TestResult as TestResult_V12,
-} from "../../types/cypress/12.0.0/api";
+} from "../../../../../types/cypress/12.0.0/api";
 import {
     RunResult as RunResult_V13,
     ScreenshotInformation as ScreenshotInformation_V13,
     TestResult as TestResult_V13,
-} from "../../types/cypress/13.0.0/api";
-import { Status } from "../../types/testStatus";
-import { StringMap } from "../../types/util";
+} from "../../../../../types/cypress/13.0.0/api";
+import { Status } from "../../../../../types/testStatus";
+import { StringMap } from "../../../../../types/util";
 import { toCypressStatus } from "./statusConversion";
 
 /**

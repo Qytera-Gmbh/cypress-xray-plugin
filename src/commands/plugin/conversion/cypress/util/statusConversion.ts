@@ -1,5 +1,5 @@
-import { XrayOptions } from "../../types/plugin";
-import { Status } from "../../types/testStatus";
+import { XrayOptions } from "../../../../../types/plugin";
+import { Status } from "../../../../../types/testStatus";
 
 /**
  * Converts the given status text string to a valid Cypress attempt status.

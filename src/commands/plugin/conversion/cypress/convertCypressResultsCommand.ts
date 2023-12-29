@@ -1,9 +1,12 @@
-import { CypressRunResultType } from "../../../conversion/importExecution/importExecutionConverter";
-import { InternalJiraOptions, InternalXrayOptions } from "../../../types/plugin";
-import { XrayTest, XrayTestExecutionResults } from "../../../types/xray/importTestExecutionResults";
-import { dedent } from "../../../util/dedent";
-import { truncateIsoTime } from "../../../util/time";
-import { Command, Computable } from "../../command";
+import { InternalJiraOptions, InternalXrayOptions } from "../../../../types/plugin";
+import {
+    XrayTest,
+    XrayTestExecutionResults,
+} from "../../../../types/xray/importTestExecutionResults";
+import { dedent } from "../../../../util/dedent";
+import { truncateIsoTime } from "../../../../util/time";
+import { Command, Computable } from "../../../command";
+import { CypressRunResultType } from "./util/importExecutionConverter";
 
 interface Parameters {
     jira: Pick<

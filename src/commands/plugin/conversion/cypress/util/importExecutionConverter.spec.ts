@@ -1,12 +1,17 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
-import { getMockedLogger } from "../../../test/mocks";
-import { expectToExist } from "../../../test/util";
-import { initJiraOptions, initPluginOptions, initSslOptions, initXrayOptions } from "../../context";
-import { Level } from "../../logging/logging";
-import { InternalCypressXrayPluginOptions } from "../../types/plugin";
-import { dedent } from "../../util/dedent";
+import { getMockedLogger } from "../../../../../../test/mocks";
+import { expectToExist } from "../../../../../../test/util";
+import {
+    initJiraOptions,
+    initPluginOptions,
+    initSslOptions,
+    initXrayOptions,
+} from "../../../../../context";
+import { Level } from "../../../../../logging/logging";
+import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
+import { dedent } from "../../../../../util/dedent";
 import { ImportExecutionConverter } from "./importExecutionConverter";
 
 chai.use(chaiAsPromised);

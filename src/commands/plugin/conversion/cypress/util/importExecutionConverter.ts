@@ -1,9 +1,9 @@
-import { CypressRunResult as CypressRunResult_V_12 } from "../../types/cypress/12.0.0/api";
-import { CypressRunResult as CypressRunResult_V_13 } from "../../types/cypress/13.0.0/api";
-import { InternalCypressXrayPluginOptions } from "../../types/plugin";
-import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
-import { dedent } from "../../util/dedent";
-import { truncateIsoTime } from "../../util/time";
+import { CypressRunResult as CypressRunResult_V_12 } from "../../../../../types/cypress/12.0.0/api";
+import { CypressRunResult as CypressRunResult_V_13 } from "../../../../../types/cypress/13.0.0/api";
+import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
+import { XrayTestExecutionResults } from "../../../../../types/xray/importTestExecutionResults";
+import { dedent } from "../../../../../util/dedent";
+import { truncateIsoTime } from "../../../../../util/time";
 import { TestConverter } from "./testConverter";
 
 export type CypressRunResultType = CypressRunResult_V_12 | CypressRunResult_V_13;

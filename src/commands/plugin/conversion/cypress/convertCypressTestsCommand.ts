@@ -1,37 +1,33 @@
 import { basename, parse } from "path";
 import { gte, lt } from "semver";
-import { CypressRunResultType } from "../../../conversion/importExecution/importExecutionConverter";
-import {
-    TestRunData,
-    getTestRunData_V12,
-    getTestRunData_V13,
-} from "../../../conversion/importExecution/runConversion";
-import { getXrayStatus } from "../../../conversion/importExecution/statusConversion";
-import { LOG, Level } from "../../../logging/logging";
-import { getNativeTestIssueKey } from "../../../preprocessing/preprocessing";
+import { LOG, Level } from "../../../../logging/logging";
+import { getNativeTestIssueKey } from "../../../../preprocessing/preprocessing";
 import {
     CypressRunResult as CypressRunResult_V12,
     RunResult as RunResult_V12,
-} from "../../../types/cypress/12.0.0/api";
+} from "../../../../types/cypress/12.0.0/api";
 import {
     CypressRunResult as CypressRunResult_V13,
     RunResult as RunResult_V13,
     ScreenshotInformation as ScreenshotInformation_V13,
-} from "../../../types/cypress/13.0.0/api";
+} from "../../../../types/cypress/13.0.0/api";
 import {
     InternalCucumberOptions,
     InternalJiraOptions,
     InternalPluginOptions,
     InternalXrayOptions,
-} from "../../../types/plugin";
-import { Status } from "../../../types/testStatus";
-import { XrayEvidenceItem, XrayTest } from "../../../types/xray/importTestExecutionResults";
-import { encodeFile } from "../../../util/base64";
-import { dedent } from "../../../util/dedent";
-import { errorMessage } from "../../../util/errors";
-import { normalizedFilename } from "../../../util/files";
-import { truncateIsoTime } from "../../../util/time";
-import { Command, Computable } from "../../command";
+} from "../../../../types/plugin";
+import { Status } from "../../../../types/testStatus";
+import { XrayEvidenceItem, XrayTest } from "../../../../types/xray/importTestExecutionResults";
+import { encodeFile } from "../../../../util/base64";
+import { dedent } from "../../../../util/dedent";
+import { errorMessage } from "../../../../util/errors";
+import { normalizedFilename } from "../../../../util/files";
+import { truncateIsoTime } from "../../../../util/time";
+import { Command, Computable } from "../../../command";
+import { CypressRunResultType } from "./util/importExecutionConverter";
+import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./util/runConversion";
+import { getXrayStatus } from "./util/statusConversion";
 
 interface Parameters {
     jira: Pick<InternalJiraOptions, "projectKey">;

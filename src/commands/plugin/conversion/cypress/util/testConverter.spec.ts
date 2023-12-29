@@ -1,19 +1,19 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
-import { getMockedLogger } from "../../../test/mocks";
+import { getMockedLogger } from "../../../../../../test/mocks";
 import {
     initCucumberOptions,
     initJiraOptions,
     initPluginOptions,
     initSslOptions,
     initXrayOptions,
-} from "../../context";
-import { Level } from "../../logging/logging";
-import { CypressRunResult as CypressRunResult_V12 } from "../../types/cypress/12.0.0/api";
-import { CypressRunResult as CypressRunResult_V13 } from "../../types/cypress/13.0.0/api";
-import { InternalCypressXrayPluginOptions } from "../../types/plugin";
-import { dedent } from "../../util/dedent";
+} from "../../../../../context";
+import { Level } from "../../../../../logging/logging";
+import { CypressRunResult as CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
+import { CypressRunResult as CypressRunResult_V13 } from "../../../../../types/cypress/13.0.0/api";
+import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
+import { dedent } from "../../../../../util/dedent";
 import { TestConverter } from "./testConverter";
 
 chai.use(chaiAsPromised);

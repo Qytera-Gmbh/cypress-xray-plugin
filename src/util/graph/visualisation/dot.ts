@@ -3,9 +3,9 @@ import { ExtractFeatureFileIssuesCommand } from "../../../commands/cucumber/extr
 import { ParseFeatureFileCommand } from "../../../commands/cucumber/parseFeatureFileCommand";
 import { EditIssueFieldCommand } from "../../../commands/jira/fields/editIssueFieldCommand";
 import { ExtractFieldIdCommand } from "../../../commands/jira/fields/extractFieldIdCommand";
-import { ConvertCypressResultsCommand } from "../../../commands/plugin/conversion/convertCypressResultsCommand";
-import { ConvertCypressTestsCommand } from "../../../commands/plugin/conversion/convertCypressTestsCommand";
 import { ConvertCucumberResultsCommand } from "../../../commands/plugin/conversion/cucumber/convertCucumberResultsCommand";
+import { ConvertCypressResultsCommand } from "../../../commands/plugin/conversion/cypress/convertCypressResultsCommand";
+import { ConvertCypressTestsCommand } from "../../../commands/plugin/conversion/cypress/convertCypressTestsCommand";
 import { ImportFeatureCommand } from "../../../commands/xray/importFeatureCommand";
 import { dedent } from "../../dedent";
 import { errorMessage } from "../../errors";

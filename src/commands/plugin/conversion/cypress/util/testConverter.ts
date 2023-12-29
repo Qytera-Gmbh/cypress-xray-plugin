@@ -1,23 +1,23 @@
 import { basename, parse } from "path";
 import { gte, lt } from "semver";
-import { LOG, Level } from "../../logging/logging";
-import { getNativeTestIssueKey } from "../../preprocessing/preprocessing";
+import { LOG, Level } from "../../../../../logging/logging";
+import { getNativeTestIssueKey } from "../../../../../preprocessing/preprocessing";
 import {
     CypressRunResult as CypressRunResult_V12,
     RunResult as RunResult_V12,
-} from "../../types/cypress/12.0.0/api";
+} from "../../../../../types/cypress/12.0.0/api";
 import {
     CypressRunResult as CypressRunResult_V13,
     RunResult as RunResult_V13,
     ScreenshotInformation as ScreenshotInformation_V13,
-} from "../../types/cypress/13.0.0/api";
-import { InternalCypressXrayPluginOptions } from "../../types/plugin";
-import { XrayEvidenceItem, XrayTest } from "../../types/xray/importTestExecutionResults";
-import { encodeFile } from "../../util/base64";
-import { dedent } from "../../util/dedent";
-import { errorMessage } from "../../util/errors";
-import { normalizedFilename } from "../../util/files";
-import { truncateIsoTime } from "../../util/time";
+} from "../../../../../types/cypress/13.0.0/api";
+import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
+import { XrayEvidenceItem, XrayTest } from "../../../../../types/xray/importTestExecutionResults";
+import { encodeFile } from "../../../../../util/base64";
+import { dedent } from "../../../../../util/dedent";
+import { errorMessage } from "../../../../../util/errors";
+import { normalizedFilename } from "../../../../../util/files";
+import { truncateIsoTime } from "../../../../../util/time";
 import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./runConversion";
 import { getXrayStatus } from "./statusConversion";
 

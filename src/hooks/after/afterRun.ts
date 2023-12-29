@@ -6,15 +6,15 @@ import { ApplyFunctionCommand } from "../../commands/functionCommand";
 import { AttachFilesCommand } from "../../commands/jira/attachFilesCommand";
 import { FetchIssueTypesCommand } from "../../commands/jira/fetchIssueTypesCommand";
 import { MergeCommand } from "../../commands/mergeCommand";
-import { ConvertCypressResultsCommand } from "../../commands/plugin/conversion/convertCypressResultsCommand";
-import {
-    ConvertCypressTestsCloudCommand,
-    ConvertCypressTestsServerCommand,
-} from "../../commands/plugin/conversion/convertCypressTestsCommand";
 import {
     ConvertCucumberResultsCloudCommand,
     ConvertCucumberResultsServerCommand,
 } from "../../commands/plugin/conversion/cucumber/convertCucumberResultsCommand";
+import { ConvertCypressResultsCommand } from "../../commands/plugin/conversion/cypress/convertCypressResultsCommand";
+import {
+    ConvertCypressTestsCloudCommand,
+    ConvertCypressTestsServerCommand,
+} from "../../commands/plugin/conversion/cypress/convertCypressTestsCommand";
 import { ImportExecutionCucumberCommand } from "../../commands/xray/importExecutionCucumberCommand";
 import { ImportExecutionCypressCommand } from "../../commands/xray/importExecutionCypressCommand";
 import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
