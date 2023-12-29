@@ -1,14 +1,14 @@
 import path from "path";
+import { CombineCommand } from "../../commands/combineCommand";
 import { Command } from "../../commands/command";
 import { ExtractFeatureFileIssuesCommand } from "../../commands/cucumber/extractFeatureFileIssuesCommand";
 import { ParseFeatureFileCommand } from "../../commands/cucumber/parseFeatureFileCommand";
-import { ApplyFunctionCommand } from "../../commands/functionCommand";
+import { FunctionCommand } from "../../commands/functionCommand";
 import { EditIssueFieldCommand } from "../../commands/jira/fields/editIssueFieldCommand";
 import { ExtractFieldIdCommand, JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
 import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
 import { GetLabelValuesCommand } from "../../commands/jira/fields/getLabelValuesCommand";
 import { GetSummaryValuesCommand } from "../../commands/jira/fields/getSummaryValuesCommand";
-import { MergeCommand } from "../../commands/mergeCommand";
 import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
 import { LOG, Level } from "../../logging/logging";
 import { FeatureFileIssueData } from "../../preprocessing/preprocessing";
@@ -39,7 +39,7 @@ export function addSynchronizationCommands(
         parseFeatureFileCommand
     );
     graph.connect(parseFeatureFileCommand, extractIssueDataCommand);
-    const gatherIssueKeysCommand = new ApplyFunctionCommand(
+    const gatherIssueKeysCommand = new FunctionCommand(
         (issueData: FeatureFileIssueData) => [
             ...issueData.tests.map((data) => data.key),
             ...issueData.preconditions.map((data) => data.key),
@@ -86,7 +86,7 @@ export function addSynchronizationCommands(
     graph.connect(getCurrentSummariesCommand, importFeatureCommand);
     graph.connect(getCurrentLabelsCommand, importFeatureCommand);
     // Check which issues will need to have their backups restored.
-    const getKnownAffectedIssuesCommand = new MergeCommand(
+    const getKnownAffectedIssuesCommand = new CombineCommand(
         ([expectedAffectedIssues, importResponse]: [string[], ImportFeatureResponse]) => {
             const setOverlap = computeOverlap(
                 expectedAffectedIssues,
@@ -163,7 +163,7 @@ export function addSynchronizationCommands(
     graph.connect(getLabelsFieldIdCommand, getNewLabelsCommand);
     graph.connect(gatherIssueKeysCommand, getNewLabelsCommand);
     graph.connect(getKnownAffectedIssuesCommand, getNewLabelsCommand);
-    const getSummariesToResetCommand = new MergeCommand(
+    const getSummariesToResetCommand = new CombineCommand(
         ([oldValues, newValues]: [StringMap<string>, StringMap<string>]) => {
             const toReset: StringMap<string> = {};
             for (const [issueKey, newSummary] of Object.entries(newValues)) {
@@ -200,7 +200,7 @@ export function addSynchronizationCommands(
     );
     graph.connect(getCurrentSummariesCommand, getSummariesToResetCommand);
     graph.connect(getNewSummariesCommand, getSummariesToResetCommand);
-    const getLabelsToResetCommand = new MergeCommand(
+    const getLabelsToResetCommand = new CombineCommand(
         ([oldValues, newValues]: [StringMap<string[]>, StringMap<string[]>]) => {
             const toReset: StringMap<string[]> = {};
             for (const [issueKey, newLabels] of Object.entries(newValues)) {

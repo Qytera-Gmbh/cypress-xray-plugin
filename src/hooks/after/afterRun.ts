@@ -1,14 +1,14 @@
 import fs from "fs";
 import path from "path";
 import { JiraClient } from "../../client/jira/jiraClient";
+import { CombineCommand } from "../../commands/combineCommand";
 import { Command, Computable, SkippedError } from "../../commands/command";
 import { ConstantCommand } from "../../commands/constantCommand";
-import { ApplyFunctionCommand } from "../../commands/functionCommand";
+import { FunctionCommand } from "../../commands/functionCommand";
 import { AttachFilesCommand } from "../../commands/jira/attachFilesCommand";
 import { FetchIssueTypesCommand } from "../../commands/jira/fetchIssueTypesCommand";
 import { ExtractFieldIdCommand, JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
 import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
-import { MergeCommand } from "../../commands/mergeCommand";
 import { ConvertCucumberFeaturesCommand } from "../../commands/plugin/conversion/cucumber/convertCucumberFeaturesCommand";
 import {
     ConvertCucumberInfoCloudCommand,
@@ -52,7 +52,7 @@ export function addUploadCommands(
         graph.connect(resultsCommand, convertCypressTestsCommand);
         const convertCypressInfoCommand = new ConvertCypressInfoCommand(options, resultsCommand);
         graph.connect(resultsCommand, convertCypressInfoCommand);
-        const mergeResultsJsonCommand = new MergeCommand(
+        const combineResultsJsonCommand = new CombineCommand(
             ([tests, info]): XrayTestExecutionResults => {
                 return {
                     info: info,
@@ -63,9 +63,9 @@ export function addUploadCommands(
             convertCypressTestsCommand,
             convertCypressInfoCommand
         );
-        graph.connect(convertCypressTestsCommand, mergeResultsJsonCommand);
-        graph.connect(convertCypressInfoCommand, mergeResultsJsonCommand);
-        const assertConversionValidCommand = new ApplyFunctionCommand(
+        graph.connect(convertCypressTestsCommand, combineResultsJsonCommand);
+        graph.connect(convertCypressInfoCommand, combineResultsJsonCommand);
+        const assertConversionValidCommand = new FunctionCommand(
             (input: XrayTestExecutionResults) => {
                 if (!input.tests || input.tests.length === 0) {
                     throw new SkippedError(
@@ -73,16 +73,16 @@ export function addUploadCommands(
                     );
                 }
             },
-            mergeResultsJsonCommand
+            combineResultsJsonCommand
         );
-        graph.connect(mergeResultsJsonCommand, assertConversionValidCommand);
+        graph.connect(combineResultsJsonCommand, assertConversionValidCommand);
         importCypressExecutionCommand = new ImportExecutionCypressCommand(
             clients.xrayClient,
-            mergeResultsJsonCommand
+            combineResultsJsonCommand
         );
         graph.connect(assertConversionValidCommand, importCypressExecutionCommand);
         if (options.jira.testExecutionIssueKey) {
-            const compareIssueKeysCommand = new ApplyFunctionCommand((issueKey: string) => {
+            const compareIssueKeysCommand = new FunctionCommand((issueKey: string) => {
                 if (issueKey !== options.jira.testExecutionIssueKey) {
                     LOG.message(
                         Level.WARNING,
@@ -126,7 +126,7 @@ export function addUploadCommands(
             cucumberResultsCommand
         );
         graph.connect(cucumberResultsCommand, convertCucumberFeaturesCommand);
-        const mergeCucumberMultipartCommand = new MergeCommand(
+        const combineCucumberMultipartCommand = new CombineCommand(
             ([info, features]): CucumberMultipart => {
                 return {
                     info: info,
@@ -136,22 +136,19 @@ export function addUploadCommands(
             convertCucumberInfoCommand,
             convertCucumberFeaturesCommand
         );
-        graph.connect(convertCucumberFeaturesCommand, mergeCucumberMultipartCommand);
-        graph.connect(convertCucumberInfoCommand, mergeCucumberMultipartCommand);
-        const assertConversionValidCommand = new ApplyFunctionCommand(
-            (input: CucumberMultipart) => {
-                if (input.features.length === 0) {
-                    throw new SkippedError(
-                        "No Cucumber tests were executed. Skipping Cucumber upload."
-                    );
-                }
-            },
-            mergeCucumberMultipartCommand
-        );
-        graph.connect(mergeCucumberMultipartCommand, assertConversionValidCommand);
+        graph.connect(convertCucumberFeaturesCommand, combineCucumberMultipartCommand);
+        graph.connect(convertCucumberInfoCommand, combineCucumberMultipartCommand);
+        const assertConversionValidCommand = new FunctionCommand((input: CucumberMultipart) => {
+            if (input.features.length === 0) {
+                throw new SkippedError(
+                    "No Cucumber tests were executed. Skipping Cucumber upload."
+                );
+            }
+        }, combineCucumberMultipartCommand);
+        graph.connect(combineCucumberMultipartCommand, assertConversionValidCommand);
         importCucumberExecutionCommand = new ImportExecutionCucumberCommand(
             clients.xrayClient,
-            mergeCucumberMultipartCommand
+            combineCucumberMultipartCommand
         );
         // Make sure to add an edge from any feature file imports to the execution. Otherwise, the
         // execution will contain old steps (those which were there prior to feature import).
@@ -172,9 +169,9 @@ export function addUploadCommands(
                 }
             }
         }
-        graph.connect(mergeCucumberMultipartCommand, importCucumberExecutionCommand);
+        graph.connect(combineCucumberMultipartCommand, importCucumberExecutionCommand);
         if (options.jira.testExecutionIssueKey) {
-            const compareIssueKeysCommand = new ApplyFunctionCommand((issueKey: string) => {
+            const compareIssueKeysCommand = new FunctionCommand((issueKey: string) => {
                 if (issueKey !== options.jira.testExecutionIssueKey) {
                     LOG.message(
                         Level.WARNING,
@@ -192,7 +189,7 @@ export function addUploadCommands(
     // Retrieve the test execution issue key for further attachment uploads.
     let getExecutionIssueKeyCommand: Command<string>;
     if (importCypressExecutionCommand && importCucumberExecutionCommand) {
-        getExecutionIssueKeyCommand = new MergeCommand(
+        getExecutionIssueKeyCommand = new CombineCommand(
             ([issueKeyCypress, issueKeyCucumber]) => {
                 if (issueKeyCypress !== issueKeyCucumber) {
                     LOG.message(
@@ -223,7 +220,7 @@ export function addUploadCommands(
         );
         return;
     }
-    const printSuccessCommand = new ApplyFunctionCommand((issueKey: string) => {
+    const printSuccessCommand = new FunctionCommand((issueKey: string) => {
         LOG.message(
             Level.SUCCESS,
             `Uploaded test results to issue: ${issueKey} (${options.jira.url}/browse/${issueKey})`
@@ -231,7 +228,7 @@ export function addUploadCommands(
     }, getExecutionIssueKeyCommand);
     graph.connect(getExecutionIssueKeyCommand, printSuccessCommand);
     if (options.jira.attachVideos) {
-        const extractVideoFilesCommand = new MergeCommand(
+        const extractVideoFilesCommand = new CombineCommand(
             ([results, testExecutionIssueKey]) => {
                 const videos = results.runs
                     .map((run: CypressCommandLine.RunResult) => {
@@ -274,7 +271,7 @@ function getTestExecutionIssueDetailsCommand(
         (command): command is FetchIssueTypesCommand => command instanceof FetchIssueTypesCommand,
         () => new FetchIssueTypesCommand(clients.jiraClient)
     );
-    const getExecutionIssueDetailsCommand = new ApplyFunctionCommand(
+    const getExecutionIssueDetailsCommand = new FunctionCommand(
         (issueDetails: IssueTypeDetails[]) => {
             const details = issueDetails.filter(
                 (issueDetail) => issueDetail.name === options.jira.testExecutionIssueType

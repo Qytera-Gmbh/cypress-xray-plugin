@@ -2,16 +2,16 @@ import { expect } from "chai";
 import path from "path";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks";
 import { assertIsInstanceOf } from "../../../test/util";
+import { CombineCommand } from "../../commands/combineCommand";
 import { Command } from "../../commands/command";
 import { ExtractFeatureFileIssuesCommand } from "../../commands/cucumber/extractFeatureFileIssuesCommand";
 import { ParseFeatureFileCommand } from "../../commands/cucumber/parseFeatureFileCommand";
-import { ApplyFunctionCommand } from "../../commands/functionCommand";
+import { FunctionCommand } from "../../commands/functionCommand";
 import { EditIssueFieldCommand } from "../../commands/jira/fields/editIssueFieldCommand";
 import { ExtractFieldIdCommand, JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
 import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
 import { GetLabelValuesCommand } from "../../commands/jira/fields/getLabelValuesCommand";
 import { GetSummaryValuesCommand } from "../../commands/jira/fields/getSummaryValuesCommand";
-import { MergeCommand } from "../../commands/mergeCommand";
 import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
 import {
     initCucumberOptions,
@@ -185,9 +185,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 });
             });
 
-            describe(`${ApplyFunctionCommand.name} (gathering issues)`, () => {
+            describe(`${FunctionCommand.name} (gathering issues)`, () => {
                 it("merges all issue keys into one array", () => {
-                    assertIsInstanceOf(commands[2], ApplyFunctionCommand);
+                    assertIsInstanceOf(commands[2], FunctionCommand);
                     const data: FeatureFileIssueData = {
                         tests: [
                             { key: "CYP-123", summary: "Hello", tags: [] },
@@ -241,10 +241,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(commands[8].getSource()).to.be.undefined;
             });
 
-            describe(`${MergeCommand.name} (merge affected issues)`, () => {
+            describe(`${CombineCommand.name} (combine affected issues)`, () => {
                 it("returns all affected issues", () => {
-                    assertIsInstanceOf(commands[9], MergeCommand);
-                    const mergeFunction = commands[9].getMerger();
+                    assertIsInstanceOf(commands[9], CombineCommand);
+                    const mergeFunction = commands[9].getFunction();
                     const data: ImportFeatureResponse = {
                         errors: [],
                         updatedOrCreatedIssues: ["CYP-123", "CYP-456", "CYP-789", "CYP-001"],
@@ -255,8 +255,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 });
 
                 it("warns about unknown updated issues", () => {
-                    assertIsInstanceOf(commands[9], MergeCommand);
-                    const mergeFunction = commands[9].getMerger();
+                    assertIsInstanceOf(commands[9], CombineCommand);
+                    const mergeFunction = commands[9].getFunction();
                     const logger = getMockedLogger();
                     const xrayClient = getMockedXrayClient();
                     xrayClient.importFeature.onFirstCall().resolves({
@@ -293,8 +293,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 });
 
                 it("warns about issues not updated by Jira", () => {
-                    assertIsInstanceOf(commands[9], MergeCommand);
-                    const mergeFunction = commands[9].getMerger();
+                    assertIsInstanceOf(commands[9], CombineCommand);
+                    const mergeFunction = commands[9].getFunction();
                     const logger = getMockedLogger();
                     const xrayClient = getMockedXrayClient();
                     xrayClient.importFeature.onFirstCall().resolves({
@@ -331,8 +331,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 });
 
                 it("warns about issue key mismatches", () => {
-                    assertIsInstanceOf(commands[9], MergeCommand);
-                    const mergeFunction = commands[9].getMerger();
+                    assertIsInstanceOf(commands[9], CombineCommand);
+                    const mergeFunction = commands[9].getFunction();
                     const logger = getMockedLogger();
                     const xrayClient = getMockedXrayClient();
                     xrayClient.importFeature.onFirstCall().resolves({
@@ -381,10 +381,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 assertIsInstanceOf(commands[11], GetLabelValuesCommand);
             });
 
-            describe(`${MergeCommand.name} (merge old/new summaries)`, () => {
+            describe(`${CombineCommand.name} (combine old/new summaries)`, () => {
                 it("returns summaries of issues to reset", () => {
-                    assertIsInstanceOf(commands[12], MergeCommand);
-                    const mergeFunction = commands[12].getMerger();
+                    assertIsInstanceOf(commands[12], CombineCommand);
+                    const mergeFunction = commands[12].getFunction();
                     const oldSummaries: StringMap<string> = {
                         ["CYP-123"]: "Old Summary",
                         ["CYP-456"]: "Old Summary Too",
@@ -399,8 +399,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 });
 
                 it("warns about unknown old summaries", () => {
-                    assertIsInstanceOf(commands[12], MergeCommand);
-                    const mergeFunction = commands[12].getMerger();
+                    assertIsInstanceOf(commands[12], CombineCommand);
+                    const mergeFunction = commands[12].getFunction();
                     const logger = getMockedLogger();
                     const oldSummaries: StringMap<string> = {};
                     const newSummaries: StringMap<string> = {
@@ -417,10 +417,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 });
             });
 
-            describe(`${MergeCommand.name} (merge old/new labels)`, () => {
+            describe(`${CombineCommand.name} (combine old/new labels)`, () => {
                 it("returns labels of issues to reset", () => {
-                    assertIsInstanceOf(commands[13], MergeCommand);
-                    const mergeFunction = commands[13].getMerger();
+                    assertIsInstanceOf(commands[13], CombineCommand);
+                    const mergeFunction = commands[13].getFunction();
                     const oldLabels: StringMap<string[]> = {
                         ["CYP-123"]: ["a tag"],
                         ["CYP-456"]: ["tag 1", "tag 2"],
@@ -438,8 +438,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 });
 
                 it("warns about unknown old labels", () => {
-                    assertIsInstanceOf(commands[13], MergeCommand);
-                    const mergeFunction = commands[13].getMerger();
+                    assertIsInstanceOf(commands[13], CombineCommand);
+                    const mergeFunction = commands[13].getFunction();
                     const logger = getMockedLogger();
                     const oldLabels: StringMap<string[]> = {
                         ["CYP-789"]: ["another tag"],
