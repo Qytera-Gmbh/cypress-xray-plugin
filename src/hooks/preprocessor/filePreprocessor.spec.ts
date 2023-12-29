@@ -1,11 +1,6 @@
 import { expect } from "chai";
 import path from "path";
-import {
-    getMockedJiraClient,
-    getMockedJiraRepository,
-    getMockedLogger,
-    getMockedXrayClient,
-} from "../../../test/mocks";
+import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks";
 import { assertIsInstanceOf } from "../../../test/util";
 import { Command } from "../../commands/command";
 import { ExtractFeatureFileIssuesCommand } from "../../commands/cucumber/extractFeatureFileIssuesCommand";
@@ -74,7 +69,6 @@ describe(path.relative(process.cwd(), __filename), () => {
             kind: "server",
             jiraClient: getMockedJiraClient(),
             xrayClient: getMockedXrayClient(),
-            jiraRepository: getMockedJiraRepository(),
         };
     });
 

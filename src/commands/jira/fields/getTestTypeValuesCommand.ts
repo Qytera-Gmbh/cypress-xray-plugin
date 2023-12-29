@@ -1,7 +1,9 @@
 import { XrayClientCloud } from "../../../client/xray/xrayClientCloud";
+import { LOG, Level } from "../../../logging/logging";
 import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
+import { dedent } from "../../../util/dedent";
 import { extractNestedString } from "../../../util/extraction";
 import { Command, Computable } from "../../command";
 import { GetFieldValuesCommand } from "./getFieldValuesCommand";
@@ -33,6 +35,19 @@ export class GetTestTypeValuesCommandCloud extends Command<StringMap<string>> {
 
     protected async computeResult(): Promise<StringMap<string>> {
         const issueKeys = await this.issueKeys.compute();
-        return await this.xrayClient.getTestTypes(this.projectKey, ...issueKeys);
+        const testTypes = await this.xrayClient.getTestTypes(this.projectKey, ...issueKeys);
+        const missingTypes = issueKeys.filter((key) => !(key in testTypes));
+        if (missingTypes.length > 0) {
+            missingTypes.sort();
+            LOG.message(
+                Level.WARNING,
+                dedent(`
+                    Failed to retrieve test types of issues:
+
+                      ${missingTypes.join("\n")}
+                `)
+            );
+        }
+        return testTypes;
     }
 }

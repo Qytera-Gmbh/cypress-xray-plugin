@@ -1,4 +1,5 @@
 import { JiraClient } from "../../../client/jira/jiraClient";
+import { LOG, Level } from "../../../logging/logging";
 import { SupportedField } from "../../../repository/jira/fields/jiraIssueFetcher";
 import { Issue } from "../../../types/jira/responses/issue";
 import { StringMap } from "../../../types/util";
@@ -38,6 +39,18 @@ export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> exten
             jql: `issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
         });
+        const unknownIssues = issueKeys.filter((key) => issues.every((issue) => issue.key !== key));
+        if (unknownIssues.length > 0) {
+            unknownIssues.sort();
+            LOG.message(
+                Level.WARNING,
+                dedent(`
+                    Failed to find Jira issues:
+
+                      ${unknownIssues.join("\n")}
+                `)
+            );
+        }
         const results: StringMap<FieldValueMap[F]> = {};
         const issuesWithUnparseableField: string[] = [];
         for (const issue of issues) {
@@ -48,17 +61,15 @@ export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> exten
                     issuesWithUnparseableField.push(`Unknown: ${JSON.stringify(issue)}`);
                 }
             } catch (error: unknown) {
-                issuesWithUnparseableField.push(
-                    `${issue.key ?? "Unknown issue"}: ${errorMessage(error)}`
-                );
+                issuesWithUnparseableField.push(`${issue.key}: ${errorMessage(error)}`);
             }
         }
         if (issuesWithUnparseableField.length > 0) {
             issuesWithUnparseableField.sort();
-            throw new Error(
+            LOG.message(
+                Level.WARNING,
                 dedent(`
-                    Failed to parse Jira field with ID: ${fieldId}
-                    Make sure the correct field is present on the following issues:
+                    Failed to parse Jira field with ID ${fieldId} in issues:
 
                       ${issuesWithUnparseableField.join("\n")}
                 `)

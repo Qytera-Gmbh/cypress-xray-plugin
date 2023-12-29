@@ -439,44 +439,6 @@ describe("the xray cloud client", () => {
             });
         });
 
-        it("should throw for missing test types", async () => {
-            const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            const mockedData: GetTestsResponse<unknown> = JSON.parse(
-                fs.readFileSync(
-                    "./test/resources/fixtures/xray/responses/getTestsTypes.json",
-                    "utf-8"
-                )
-            ) as GetTestsResponse<unknown>;
-            restClient.post.onFirstCall().resolves({
-                status: HttpStatusCode.Ok,
-                data: {
-                    data: {
-                        getTests: {
-                            ...mockedData.data.getTests,
-                            total: 1,
-                            results: mockedData.data.getTests.results?.slice(1, 2),
-                        },
-                    },
-                },
-                headers: {},
-                statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
-            });
-            const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
-            expect(response).to.deep.eq({});
-            expect(logger.message).to.have.been.calledWithExactly(
-                Level.ERROR,
-                dedent(`
-                    Failed to get test types: Failed to retrieve test types for issues:
-
-                      CYP-331
-                      CYP-332
-
-                    Make sure these issues exist and are actually test issues
-                `)
-            );
-        });
-
         it("should handle bad responses", async () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const error = new AxiosError(
@@ -495,23 +457,14 @@ describe("the xray cloud client", () => {
                 }
             );
             restClient.post.onFirstCall().rejects(error);
-            const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
-            expect(response).to.deep.eq({});
+            await expect(
+                client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332")
+            ).to.eventually.be.rejectedWith("Failed to get test types");
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,
                 "Failed to get test types: Request failed with status code 400"
             );
             expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(error, "getTestTypes");
-        });
-
-        it("should skip empty issues", async () => {
-            const logger = getMockedLogger();
-            logger.message
-                .withArgs(Level.WARNING, "No issue keys provided. Skipping test type retrieval")
-                .onFirstCall()
-                .returns();
-            const response = await client.getTestTypes("CYP");
-            expect(response).to.deep.eq({});
         });
     });
 

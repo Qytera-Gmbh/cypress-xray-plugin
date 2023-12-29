@@ -14,7 +14,7 @@ import {
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
-import { errorMessage } from "../../util/errors";
+import { errorMessage, LoggedError } from "../../util/errors";
 import { AbstractXrayClient } from "./xrayClient";
 
 interface GetTestsJiraData {
@@ -98,10 +98,6 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
         ...issueKeys: string[]
     ): Promise<StringMap<string>> {
         try {
-            if (issueKeys.length === 0) {
-                LOG.message(Level.WARNING, "No issue keys provided. Skipping test type retrieval");
-                return {};
-            }
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Retrieving test types...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
@@ -154,23 +150,6 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                         }
                     }
                 } while (start && start < total);
-                const missingTypes: string[] = [];
-                for (const issueKey of issueKeys) {
-                    if (!(issueKey in types)) {
-                        missingTypes.push(issueKey);
-                    }
-                }
-                if (missingTypes.length > 0) {
-                    throw new Error(
-                        dedent(`
-                            Failed to retrieve test types for issues:
-
-                              ${missingTypes.join("\n")}
-
-                            Make sure these issues exist and are actually test issues
-                        `)
-                    );
-                }
                 LOG.message(
                     Level.DEBUG,
                     `Successfully retrieved test types for ${issueKeys.length} issues`
@@ -182,8 +161,8 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to get test types: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "getTestTypes");
+            throw new LoggedError("Failed to get test types");
         }
-        return {};
     }
 
     protected handleResponseImportExecution(response: ImportExecutionResponseCloud): string {

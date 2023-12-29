@@ -4,7 +4,6 @@ import path from "path";
 import { stub } from "sinon";
 import {
     getMockedJiraClient,
-    getMockedJiraRepository,
     getMockedLogger,
     getMockedRestClient,
     getMockedXrayClient,
@@ -36,7 +35,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 url: "https://example.org",
             }
         );
-        const jiraRepository = getMockedJiraRepository();
         pluginContext = {
             cypress: config,
             options: {
@@ -49,7 +47,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 kind: "server",
                 jiraClient: jiraClient,
                 xrayClient: xrayClient,
-                jiraRepository: jiraRepository,
             },
             graph: new ExecutableGraph(),
         };

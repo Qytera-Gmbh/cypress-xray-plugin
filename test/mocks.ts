@@ -11,7 +11,6 @@ import * as logging from "../src/logging/logging";
 import { Logger } from "../src/logging/logging";
 import { JiraFieldRepository } from "../src/repository/jira/fields/jiraFieldRepository";
 import { JiraIssueFetcher, SupportedField } from "../src/repository/jira/fields/jiraIssueFetcher";
-import { JiraRepository } from "../src/repository/jira/jiraRepository";
 import { SearchRequest } from "../src/types/jira/requests/search";
 import { IssueUpdate } from "../src/types/jira/responses/issueUpdate";
 import { XrayTestExecutionResults } from "../src/types/xray/importTestExecutionResults";
@@ -167,27 +166,6 @@ export function getMockedJiraIssueFetcher(): SinonStubbedInstance<JiraIssueFetch
         },
     };
     return makeTransparent(stub(jiraIssueFetcher));
-}
-
-export function getMockedJiraRepository(): SinonStubbedInstance<JiraRepository> {
-    const jiraRepository: JiraRepository = {
-        getFieldId: function (fieldName: SupportedField) {
-            throw mockCalledUnexpectedlyError(fieldName);
-        },
-        getDescriptions: function (...issueKeys: string[]) {
-            throw mockCalledUnexpectedlyError(issueKeys);
-        },
-        getLabels: function (...issueKeys: string[]) {
-            throw mockCalledUnexpectedlyError(issueKeys);
-        },
-        getSummaries: function (...issueKeys: string[]) {
-            throw mockCalledUnexpectedlyError(issueKeys);
-        },
-        getTestTypes: function (...issueKeys: string[]) {
-            throw mockCalledUnexpectedlyError(issueKeys);
-        },
-    };
-    return makeTransparent(stub(jiraRepository));
 }
 
 export function getMockedJwtCredentials(): SinonStubbedInstance<JwtCredentials> {
