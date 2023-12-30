@@ -1,9 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { CombineCommand } from "../../commands/combineCommand";
-import { Command, Computable, SkippedError } from "../../commands/command";
+import { Command, Computable } from "../../commands/command";
 import { ConstantCommand } from "../../commands/constantCommand";
-import { FunctionCommand } from "../../commands/functionCommand";
 import { AttachFilesCommand } from "../../commands/jira/attachFilesCommand";
 import { FetchIssueTypesCommand } from "../../commands/jira/fetchIssueTypesCommand";
 import { JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
@@ -23,15 +21,20 @@ import { LOG, Level } from "../../logging/logging";
 import { containsCucumberTest, containsNativeTest } from "../../preprocessing/preprocessing";
 import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
-import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
-import {
-    CucumberMultipart,
-    CucumberMultipartFeature,
-} from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { dedent } from "../../util/dedent";
+import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExecutableGraph } from "../../util/executable/executable";
-import { HELP } from "../../util/help";
 import { createExtractFieldIdCommand } from "../util";
+import {
+    AssertCucumberConversionValidCommand,
+    AssertCypressConversionValidCommand,
+    CombineCucumberMultipartCommand,
+    CombineCypressJsonCommand,
+    CompareCypressCucumberKeysCommand,
+    ExtractVideoFilesCommand,
+    FetchExecutionIssueDetailsCommand,
+    PrintUploadSuccessCommand,
+    VerifyExecutionIssueKeyCommand,
+} from "./commands";
 
 export function addUploadCommands(
     runResult: CypressCommandLine.CypressRunResult,
@@ -51,27 +54,14 @@ export function addUploadCommands(
         graph.connect(resultsCommand, convertCypressTestsCommand);
         const convertCypressInfoCommand = new ConvertCypressInfoCommand(options, resultsCommand);
         graph.connect(resultsCommand, convertCypressInfoCommand);
-        const combineResultsJsonCommand = new CombineCommand(
-            ([tests, info]): XrayTestExecutionResults => {
-                return {
-                    info: info,
-                    tests: tests,
-                    testExecutionKey: options.jira.testExecutionIssueKey,
-                };
-            },
+        const combineResultsJsonCommand = new CombineCypressJsonCommand(
+            { testExecutionIssueKey: options.jira.testExecutionIssueKey },
             convertCypressTestsCommand,
             convertCypressInfoCommand
         );
         graph.connect(convertCypressTestsCommand, combineResultsJsonCommand);
         graph.connect(convertCypressInfoCommand, combineResultsJsonCommand);
-        const assertConversionValidCommand = new FunctionCommand(
-            (input: XrayTestExecutionResults) => {
-                if (!input.tests || input.tests.length === 0) {
-                    throw new SkippedError(
-                        "No native Cypress tests were executed. Skipping native upload."
-                    );
-                }
-            },
+        const assertConversionValidCommand = new AssertCypressConversionValidCommand(
             combineResultsJsonCommand
         );
         graph.connect(combineResultsJsonCommand, assertConversionValidCommand);
@@ -81,19 +71,15 @@ export function addUploadCommands(
         );
         graph.connect(assertConversionValidCommand, importCypressExecutionCommand);
         if (options.jira.testExecutionIssueKey) {
-            const compareIssueKeysCommand = new FunctionCommand((issueKey: string) => {
-                if (issueKey !== options.jira.testExecutionIssueKey) {
-                    LOG.message(
-                        Level.WARNING,
-                        dedent(`
-                            Cypress execution results were imported to test execution ${issueKey}, which is different from the configured one: ${options.jira.testExecutionIssueKey}
-
-                            Make sure issue ${options.jira.testExecutionIssueKey} actually exists and is of type: ${options.jira.testExecutionIssueType}
-                        `)
-                    );
-                }
-            }, importCypressExecutionCommand);
-            graph.connect(importCypressExecutionCommand, compareIssueKeysCommand);
+            const verifyIssueKeysCommand = new VerifyExecutionIssueKeyCommand(
+                {
+                    testExecutionIssueKey: options.jira.testExecutionIssueKey,
+                    testExecutionIssueType: options.jira.testExecutionIssueType,
+                    importType: "cypress",
+                },
+                importCypressExecutionCommand
+            );
+            graph.connect(importCypressExecutionCommand, verifyIssueKeysCommand);
         }
     }
     if (containsCucumberTest(runResult, options.cucumber?.featureFileExtension)) {
@@ -106,44 +92,42 @@ export function addUploadCommands(
             fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
         ) as CucumberMultipartFeature[];
         const cucumberResultsCommand = new ConstantCommand(results);
-        const extractExecutionIssueDetailsCommand = getTestExecutionIssueDetailsCommand(
-            options,
-            clients,
-            graph
+        const fetchIssueTypesCommand = graph.findOrDefault(
+            (command): command is FetchIssueTypesCommand =>
+                command instanceof FetchIssueTypesCommand,
+            () => new FetchIssueTypesCommand(clients.jiraClient)
         );
+        const fetchExecutionIssueDetailsCommand = new FetchExecutionIssueDetailsCommand(
+            {
+                projectKey: options.jira.projectKey,
+                testExecutionIssueType: options.jira.testExecutionIssueType,
+            },
+            fetchIssueTypesCommand
+        );
+        graph.connect(fetchIssueTypesCommand, fetchExecutionIssueDetailsCommand);
         const convertCucumberInfoCommand = getConvertCucumberInfoCommand(
             options,
             clients,
             graph,
-            extractExecutionIssueDetailsCommand,
+            fetchExecutionIssueDetailsCommand,
             resultsCommand
         );
-        graph.connect(extractExecutionIssueDetailsCommand, convertCucumberInfoCommand);
+        graph.connect(fetchExecutionIssueDetailsCommand, convertCucumberInfoCommand);
         graph.connect(resultsCommand, convertCucumberInfoCommand);
         const convertCucumberFeaturesCommand = new ConvertCucumberFeaturesCommand(
             { ...options, useCloudTags: clients.kind === "cloud" },
             cucumberResultsCommand
         );
         graph.connect(cucumberResultsCommand, convertCucumberFeaturesCommand);
-        const combineCucumberMultipartCommand = new CombineCommand(
-            ([info, features]): CucumberMultipart => {
-                return {
-                    info: info,
-                    features: features,
-                };
-            },
+        const combineCucumberMultipartCommand = new CombineCucumberMultipartCommand(
             convertCucumberInfoCommand,
             convertCucumberFeaturesCommand
         );
-        graph.connect(convertCucumberFeaturesCommand, combineCucumberMultipartCommand);
         graph.connect(convertCucumberInfoCommand, combineCucumberMultipartCommand);
-        const assertConversionValidCommand = new FunctionCommand((input: CucumberMultipart) => {
-            if (input.features.length === 0) {
-                throw new SkippedError(
-                    "No Cucumber tests were executed. Skipping Cucumber upload."
-                );
-            }
-        }, combineCucumberMultipartCommand);
+        graph.connect(convertCucumberFeaturesCommand, combineCucumberMultipartCommand);
+        const assertConversionValidCommand = new AssertCucumberConversionValidCommand(
+            combineCucumberMultipartCommand
+        );
         graph.connect(combineCucumberMultipartCommand, assertConversionValidCommand);
         importCucumberExecutionCommand = new ImportExecutionCucumberCommand(
             clients.xrayClient,
@@ -170,39 +154,21 @@ export function addUploadCommands(
         }
         graph.connect(combineCucumberMultipartCommand, importCucumberExecutionCommand);
         if (options.jira.testExecutionIssueKey) {
-            const compareIssueKeysCommand = new FunctionCommand((issueKey: string) => {
-                if (issueKey !== options.jira.testExecutionIssueKey) {
-                    LOG.message(
-                        Level.WARNING,
-                        dedent(`
-                            Cucumber execution results were imported to test execution ${issueKey}, which is different from the configured one: ${options.jira.testExecutionIssueKey}
-
-                            Make sure issue ${options.jira.testExecutionIssueKey} actually exists and is of type: ${options.jira.testExecutionIssueType}
-                        `)
-                    );
-                }
-            }, importCucumberExecutionCommand);
-            graph.connect(importCucumberExecutionCommand, compareIssueKeysCommand);
+            const verifyIssueKeysCommand = new VerifyExecutionIssueKeyCommand(
+                {
+                    testExecutionIssueKey: options.jira.testExecutionIssueKey,
+                    testExecutionIssueType: options.jira.testExecutionIssueType,
+                    importType: "cucumber",
+                },
+                importCucumberExecutionCommand
+            );
+            graph.connect(importCucumberExecutionCommand, verifyIssueKeysCommand);
         }
     }
     // Retrieve the test execution issue key for further attachment uploads.
     let getExecutionIssueKeyCommand: Command<string>;
     if (importCypressExecutionCommand && importCucumberExecutionCommand) {
-        getExecutionIssueKeyCommand = new CombineCommand(
-            ([issueKeyCypress, issueKeyCucumber]) => {
-                if (issueKeyCypress !== issueKeyCucumber) {
-                    LOG.message(
-                        Level.WARNING,
-                        dedent(`
-                            Cucumber execution results were imported to test execution issue ${issueKeyCucumber}, which is different than the one of the Cypress execution results: ${issueKeyCypress}
-
-                            This might be a bug, please report it at: https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues
-                        `)
-                    );
-                    return issueKeyCypress;
-                }
-                return issueKeyCypress;
-            },
+        getExecutionIssueKeyCommand = new CompareCypressCucumberKeysCommand(
             importCypressExecutionCommand,
             importCucumberExecutionCommand
         );
@@ -219,33 +185,13 @@ export function addUploadCommands(
         );
         return;
     }
-    const printSuccessCommand = new FunctionCommand((issueKey: string) => {
-        LOG.message(
-            Level.SUCCESS,
-            `Uploaded test results to issue: ${issueKey} (${options.jira.url}/browse/${issueKey})`
-        );
-    }, getExecutionIssueKeyCommand);
+    const printSuccessCommand = new PrintUploadSuccessCommand(
+        { url: options.jira.url },
+        getExecutionIssueKeyCommand
+    );
     graph.connect(getExecutionIssueKeyCommand, printSuccessCommand);
     if (options.jira.attachVideos) {
-        const extractVideoFilesCommand = new CombineCommand(
-            ([results, testExecutionIssueKey]) => {
-                const videos = results.runs
-                    .map((run: CypressCommandLine.RunResult) => {
-                        return run.video;
-                    })
-                    .filter((value): value is string => typeof value === "string");
-                if (videos.length === 0) {
-                    throw new SkippedError(
-                        `Skipping attaching videos to test execution issue ${testExecutionIssueKey}: No videos were captured`
-                    );
-                } else {
-                    LOG.message(
-                        Level.INFO,
-                        `Attaching videos to text execution issue ${testExecutionIssueKey}`
-                    );
-                }
-                return videos;
-            },
+        const extractVideoFilesCommand = new ExtractVideoFilesCommand(
             resultsCommand,
             getExecutionIssueKeyCommand
         );
@@ -259,53 +205,6 @@ export function addUploadCommands(
         graph.connect(extractVideoFilesCommand, attachVideosCommand);
         graph.connect(getExecutionIssueKeyCommand, attachVideosCommand);
     }
-}
-
-function getTestExecutionIssueDetailsCommand(
-    options: InternalCypressXrayPluginOptions,
-    clients: ClientCombination,
-    graph: ExecutableGraph<Command>
-): Command<IssueTypeDetails> {
-    const fetchIssueTypesCommand = graph.findOrDefault(
-        (command): command is FetchIssueTypesCommand => command instanceof FetchIssueTypesCommand,
-        () => new FetchIssueTypesCommand(clients.jiraClient)
-    );
-    const getExecutionIssueDetailsCommand = new FunctionCommand(
-        (issueDetails: IssueTypeDetails[]) => {
-            const details = issueDetails.filter(
-                (issueDetail) => issueDetail.name === options.jira.testExecutionIssueType
-            );
-            if (details.length === 0) {
-                throw new Error(
-                    dedent(`
-                        Failed to retrieve issue type information for issue type: ${options.jira.testExecutionIssueType}
-
-                        Make sure you have Xray installed.
-
-                        For more information, visit:
-                        - ${HELP.plugin.configuration.jira.testExecutionIssueType}
-                        - ${HELP.plugin.configuration.jira.testPlanIssueType}
-                    `)
-                );
-            } else if (details.length > 1) {
-                throw new Error(
-                    dedent(`
-                        Found multiple issue types named: ${options.jira.testExecutionIssueType}
-
-                        Make sure to only make a single one available in project ${options.jira.projectKey}.
-
-                        For more information, visit:
-                        - ${HELP.plugin.configuration.jira.testExecutionIssueType}
-                        - ${HELP.plugin.configuration.jira.testPlanIssueType}
-                    `)
-                );
-            }
-            return details[0];
-        },
-        fetchIssueTypesCommand
-    );
-    graph.connect(fetchIssueTypesCommand, getExecutionIssueDetailsCommand);
-    return getExecutionIssueDetailsCommand;
 }
 
 function getConvertCucumberInfoCommand(
