@@ -17,7 +17,7 @@ import { dedent } from "../../util/dedent";
 import { HELP } from "../../util/help";
 
 export class CombineCypressJsonCommand extends CombineCommand<
-    [Computable<[XrayTest, ...XrayTest[]]>, Computable<XrayTestExecutionInfo>],
+    [[XrayTest, ...XrayTest[]], XrayTestExecutionInfo],
     XrayTestExecutionResults
 > {
     constructor(
@@ -88,7 +88,7 @@ export class VerifyExecutionIssueKeyCommand extends FunctionCommand<string, stri
 }
 
 export class CombineCucumberMultipartCommand extends CombineCommand<
-    [Computable<CucumberMultipartInfo>, Computable<CucumberMultipartFeature[]>],
+    [CucumberMultipartInfo, CucumberMultipartFeature[]],
     CucumberMultipart
 > {
     constructor(
@@ -120,10 +120,7 @@ export class AssertCucumberConversionValidCommand extends FunctionCommand<Cucumb
     }
 }
 
-export class CompareCypressCucumberKeysCommand extends CombineCommand<
-    [Computable<string>, Computable<string>],
-    string
-> {
+export class CompareCypressCucumberKeysCommand extends CombineCommand<[string, string], string> {
     constructor(
         resolvedCypressIssueKey: Computable<string>,
         resolvedCucumberIssueKey: Computable<string>
@@ -161,7 +158,7 @@ export class PrintUploadSuccessCommand extends FunctionCommand<string, void> {
 }
 
 export class ExtractVideoFilesCommand extends CombineCommand<
-    [Computable<CypressCommandLine.CypressRunResult>, Computable<string>],
+    [CypressCommandLine.CypressRunResult, string],
     string[]
 > {
     constructor(

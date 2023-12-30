@@ -1,24 +1,24 @@
 import { Command, Computable } from "./command";
 
-type ComputedTypes<T extends [...Computable<unknown>[]]> = {
-    [K in keyof T]: T[K] extends Computable<infer V> ? V : never;
+type ComputedTypes<T extends [...unknown[]]> = {
+    [K in keyof T]: T[K] extends infer V ? Computable<V> : never;
 };
 
-export class CombineCommand<T extends Computable<unknown>[], R> extends Command<R> {
-    private readonly f: (inputs: ComputedTypes<T>) => R | Promise<R>;
-    private readonly inputs: T;
-    constructor(f: (inputs: ComputedTypes<T>) => R | Promise<R>, ...inputs: T) {
+export class CombineCommand<T extends [...unknown[]], R> extends Command<R> {
+    private readonly f: (inputs: T) => R | Promise<R>;
+    private readonly inputs: ComputedTypes<T>;
+    constructor(f: (inputs: T) => R | Promise<R>, ...inputs: ComputedTypes<T>) {
         super();
         this.f = f;
         this.inputs = inputs;
     }
 
-    public getFunction(): (inputs: ComputedTypes<T>) => R | Promise<R> {
+    public getFunction(): (inputs: T) => R | Promise<R> {
         return this.f;
     }
 
     protected async computeResult(): Promise<R> {
         const inputs = await Promise.all(this.inputs.map((computable) => computable.compute()));
-        return await this.f(inputs as ComputedTypes<T>);
+        return await this.f(inputs as T);
     }
 }
