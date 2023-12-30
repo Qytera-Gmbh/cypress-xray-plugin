@@ -12,7 +12,6 @@ interface Parameters {
         InternalJiraOptions,
         | "projectKey"
         | "testExecutionIssueDescription"
-        | "testExecutionIssueKey"
         | "testExecutionIssueSummary"
         | "testPlanIssueKey"
     >;
@@ -24,10 +23,16 @@ interface Parameters {
 export class ConvertCucumberFeaturesCommand extends Command<CucumberMultipartFeature[]> {
     protected readonly parameters: Parameters;
     private readonly input: Computable<CucumberMultipartFeature[]>;
-    constructor(parameters: Parameters, input: Computable<CucumberMultipartFeature[]>) {
+    private readonly testExecutionIssueKey?: Computable<string>;
+    constructor(
+        parameters: Parameters,
+        input: Computable<CucumberMultipartFeature[]>,
+        testExecutionIssueKey?: Computable<string>
+    ) {
         super();
         this.parameters = parameters;
         this.input = input;
+        this.testExecutionIssueKey = testExecutionIssueKey;
     }
 
     public getParameters(): Parameters {
@@ -36,8 +41,9 @@ export class ConvertCucumberFeaturesCommand extends Command<CucumberMultipartFea
 
     protected async computeResult(): Promise<CucumberMultipartFeature[]> {
         const input = await this.input.compute();
+        const testExecutionIssueKey = await this.testExecutionIssueKey?.compute();
         return buildMultipartFeatures(input, {
-            testExecutionIssueKey: this.parameters.jira.testExecutionIssueKey,
+            testExecutionIssueKey: testExecutionIssueKey,
             includeScreenshots: this.parameters.xray.uploadScreenshots,
             projectKey: this.parameters.jira.projectKey,
             useCloudTags: this.parameters.useCloudTags === true,

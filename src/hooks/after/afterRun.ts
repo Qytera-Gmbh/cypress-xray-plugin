@@ -114,11 +114,21 @@ export function addUploadCommands(
         );
         graph.connect(fetchExecutionIssueDetailsCommand, convertCucumberInfoCommand);
         graph.connect(resultsCommand, convertCucumberInfoCommand);
+        let testExecutionIssueKeyCommand: Command<string> | undefined = undefined;
+        if (options.jira.testExecutionIssueKey) {
+            testExecutionIssueKeyCommand = new ConstantCommand(options.jira.testExecutionIssueKey);
+        } else if (importCypressExecutionCommand) {
+            testExecutionIssueKeyCommand = importCypressExecutionCommand;
+        }
         const convertCucumberFeaturesCommand = new ConvertCucumberFeaturesCommand(
             { ...options, useCloudTags: clients.kind === "cloud" },
-            cucumberResultsCommand
+            cucumberResultsCommand,
+            testExecutionIssueKeyCommand
         );
         graph.connect(cucumberResultsCommand, convertCucumberFeaturesCommand);
+        if (testExecutionIssueKeyCommand) {
+            graph.connect(testExecutionIssueKeyCommand, convertCucumberFeaturesCommand);
+        }
         const combineCucumberMultipartCommand = new CombineCucumberMultipartCommand(
             convertCucumberInfoCommand,
             convertCucumberFeaturesCommand
