@@ -89,39 +89,24 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
     ): Promise<TestRunData[]> {
         const testRunData: TestRunData[] = [];
         const conversionPromises: [string, Promise<TestRunData>][] = [];
+        const cypressRuns = runResults.runs.filter((run: RunResult_V12 | RunResult_V13) => {
+            return (
+                !this.parameters.cucumber ||
+                !run.spec.relative.endsWith(this.parameters.cucumber.featureFileExtension)
+            );
+        });
+        if (cypressRuns.length === 0) {
+            throw new Error("Failed to extract test run data: Only Cucumber tests were executed");
+        }
         if (lt(runResults.cypressVersion, "13.0.0")) {
-            const runs = runResults.runs as RunResult_V12[];
-            if (
-                runs.every((run: RunResult_V12) => {
-                    return (
-                        this.parameters.cucumber &&
-                        run.spec.relative.endsWith(this.parameters.cucumber.featureFileExtension)
-                    );
-                })
-            ) {
-                throw new Error(
-                    "Failed to extract test run data: Only Cucumber tests were executed"
-                );
-            }
+            const runs = cypressRuns as RunResult_V12[];
             for (const run of runs) {
                 getTestRunData_V12(run).forEach((promise, index) =>
                     conversionPromises.push([run.tests[index].title.join(" "), promise])
                 );
             }
         } else {
-            const runs = runResults.runs as RunResult_V13[];
-            if (
-                runs.every((run: RunResult_V13) => {
-                    return (
-                        this.parameters.cucumber &&
-                        run.spec.relative.endsWith(this.parameters.cucumber.featureFileExtension)
-                    );
-                })
-            ) {
-                throw new Error(
-                    "Failed to extract test run data: Only Cucumber tests were executed"
-                );
-            }
+            const runs = cypressRuns as RunResult_V13[];
             for (const run of runs) {
                 getTestRunData_V13(run, this.parameters.jira.projectKey).forEach((promise, index) =>
                     conversionPromises.push([run.tests[index].title.join(" "), promise])
@@ -147,7 +132,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         });
         if (this.parameters.xray.uploadScreenshots) {
             if (gte(runResults.cypressVersion, "13.0.0")) {
-                for (const run of runResults.runs as RunResult_V13[]) {
+                for (const run of cypressRuns as RunResult_V13[]) {
                     for (const screenshot of run.screenshots) {
                         if (!this.willBeUploaded(screenshot, testRunData)) {
                             const path = parse(screenshot.path);
