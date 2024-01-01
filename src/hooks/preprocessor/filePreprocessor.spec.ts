@@ -1,12 +1,10 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks";
+import { getMockedJiraClient, getMockedXrayClient } from "../../../test/mocks";
 import { assertIsInstanceOf } from "../../../test/util";
-import { CombineCommand } from "../../commands/combineCommand";
 import { Command } from "../../commands/command";
 import { ExtractFeatureFileIssuesCommand } from "../../commands/cucumber/extractFeatureFileIssuesCommand";
 import { ParseFeatureFileCommand } from "../../commands/cucumber/parseFeatureFileCommand";
-import { FunctionCommand } from "../../commands/functionCommand";
 import { EditIssueFieldCommand } from "../../commands/jira/fields/editIssueFieldCommand";
 import { ExtractFieldIdCommand, JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
 import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
@@ -20,13 +18,12 @@ import {
     initSslOptions,
     initXrayOptions,
 } from "../../context";
-import { Level } from "../../logging/logging";
-import { FeatureFileIssueData } from "../../preprocessing/preprocessing";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
-import { StringMap } from "../../types/util";
-import { ImportFeatureResponse } from "../../types/xray/responses/importFeature";
-import { dedent } from "../../util/dedent";
 import { ExecutableGraph } from "../../util/executable/executable";
+import { ExtractIssueKeysCommand } from "./commands/extractIssueKeysCommand";
+import { GetLabelsToResetCommand } from "./commands/getLabelsToResetCommand";
+import { GetSummariesToResetCommand } from "./commands/getSummariesToResetCommand";
+import { GetUpdatedIssuesCommand } from "./commands/getUpdatedIssuesCommand";
 import { addSynchronizationCommands } from "./filePreprocessor";
 
 describe(path.relative(process.cwd(), __filename), () => {
@@ -82,7 +79,43 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("adds all commands necessary for feature file upload", () => {
             const graph = new ExecutableGraph<Command>();
             addSynchronizationCommands(file, ".", options, clients, graph);
-            expect(graph.size("vertices")).to.eq(16);
+            const commands = [...graph.getVertices()];
+            expect(commands).to.have.length(16);
+            assertIsInstanceOf(commands[0], ParseFeatureFileCommand);
+            expect(commands[0].getFilePath()).to.eq("./path/to/file.feature");
+            assertIsInstanceOf(commands[1], ExtractFeatureFileIssuesCommand);
+            expect(commands[1].getProjectKey()).to.eq("CYP");
+            expect(commands[1].getPrefixes()).to.deep.eq({
+                test: "TestName:",
+                precondition: "Precondition:",
+            });
+            assertIsInstanceOf(commands[2], ExtractIssueKeysCommand);
+            assertIsInstanceOf(commands[3], FetchAllFieldsCommand);
+            assertIsInstanceOf(commands[4], ExtractFieldIdCommand);
+            expect(commands[4].getField()).to.eq(JiraField.SUMMARY);
+            assertIsInstanceOf(commands[5], ExtractFieldIdCommand);
+            expect(commands[5].getField()).to.eq(JiraField.LABELS);
+            assertIsInstanceOf(commands[6], GetSummaryValuesCommand);
+            assertIsInstanceOf(commands[7], GetLabelValuesCommand);
+            assertIsInstanceOf(commands[8], ImportFeatureCommand);
+            expect(commands[8].getFilePath()).to.eq(path.relative(".", "./path/to/file.feature"));
+            expect(commands[8].getProjectKey()).to.eq("CYP");
+            expect(commands[8].getProjectId()).to.be.undefined;
+            expect(commands[8].getSource()).to.be.undefined;
+            assertIsInstanceOf(commands[9], GetUpdatedIssuesCommand);
+            assertIsInstanceOf(commands[10], GetSummaryValuesCommand);
+            assertIsInstanceOf(commands[11], GetLabelValuesCommand);
+            assertIsInstanceOf(commands[12], GetSummariesToResetCommand);
+            assertIsInstanceOf(commands[13], GetLabelsToResetCommand);
+            assertIsInstanceOf(commands[14], EditIssueFieldCommand);
+            expect(commands[14].getField()).to.eq(JiraField.SUMMARY);
+            assertIsInstanceOf(commands[15], EditIssueFieldCommand);
+            expect(commands[15].getField()).to.eq(JiraField.LABELS);
+        });
+
+        it("correctly connects all commands", () => {
+            const graph = new ExecutableGraph<Command>();
+            addSynchronizationCommands(file, ".", options, clients, graph);
             expect(graph.size("edges")).to.eq(26);
             const [
                 parseFeatureFileCommand,
@@ -102,7 +135,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 editSummariesCommand,
                 editLabelsCommand,
             ] = [...graph.getVertices()];
-            // Incoming command connections.
             expect([...graph.getPredecessors(parseFeatureFileCommand)]).to.deep.eq([]);
             expect([...graph.getPredecessors(extractIssueDataCommand)]).to.deep.eq([
                 parseFeatureFileCommand,
@@ -161,371 +193,48 @@ describe(path.relative(process.cwd(), __filename), () => {
             ]);
         });
 
-        describe("command values", () => {
-            let graph = new ExecutableGraph<Command>();
-            let commands: Command[] = [];
-
-            beforeEach(() => {
-                graph = new ExecutableGraph<Command>();
-                addSynchronizationCommands(file, ".", options, clients, graph);
-                commands = [...graph.getVertices()];
-            });
-
-            it(ParseFeatureFileCommand.name, () => {
-                assertIsInstanceOf(commands[0], ParseFeatureFileCommand);
-                expect(commands[0].getFilePath()).to.eq("./path/to/file.feature");
-            });
-
-            it(ExtractFeatureFileIssuesCommand.name, () => {
-                assertIsInstanceOf(commands[1], ExtractFeatureFileIssuesCommand);
-                expect(commands[1].getProjectKey()).to.eq("CYP");
-                expect(commands[1].getPrefixes()).to.deep.eq({
-                    test: "TestName:",
-                    precondition: "Precondition:",
-                });
-            });
-
-            describe(`${FunctionCommand.name} (gathering issues)`, () => {
-                it("merges all issue keys into one array", () => {
-                    assertIsInstanceOf(commands[2], FunctionCommand);
-                    const data: FeatureFileIssueData = {
-                        tests: [
-                            { key: "CYP-123", summary: "Hello", tags: [] },
-                            { key: "CYP-456", summary: "There", tags: ["some tag"] },
-                            {
-                                key: "CYP-789",
-                                summary: "Guys",
-                                tags: ["another tag", "and another one"],
-                            },
-                        ],
-                        preconditions: [{ key: "CYP-001", summary: "Background" }],
-                    };
-                    expect(commands[2].getFunction()(data)).to.deep.eq([
-                        "CYP-123",
-                        "CYP-456",
-                        "CYP-789",
-                        "CYP-001",
-                    ]);
-                });
-            });
-
-            it(FetchAllFieldsCommand.name, () => {
-                assertIsInstanceOf(commands[3], FetchAllFieldsCommand);
-            });
-
-            it(`${ExtractFieldIdCommand.name} (summary ID)`, () => {
-                assertIsInstanceOf(commands[4], ExtractFieldIdCommand);
-                expect(commands[4].getField()).to.eq(JiraField.SUMMARY);
-            });
-
-            it(`${ExtractFieldIdCommand.name} (labels ID)`, () => {
-                assertIsInstanceOf(commands[5], ExtractFieldIdCommand);
-                expect(commands[5].getField()).to.eq(JiraField.LABELS);
-            });
-
-            it(`${GetSummaryValuesCommand.name} (current summaries)`, () => {
-                assertIsInstanceOf(commands[6], GetSummaryValuesCommand);
-            });
-
-            it(`${GetLabelValuesCommand.name} (current labels)`, () => {
-                assertIsInstanceOf(commands[7], GetLabelValuesCommand);
-            });
-
-            it(ImportFeatureCommand.name, () => {
-                assertIsInstanceOf(commands[8], ImportFeatureCommand);
-                expect(commands[8].getFilePath()).to.eq(
-                    path.relative(".", "./path/to/file.feature")
-                );
-                expect(commands[8].getProjectKey()).to.eq("CYP");
-                expect(commands[8].getProjectId()).to.be.undefined;
-                expect(commands[8].getSource()).to.be.undefined;
-            });
-
-            describe(`${CombineCommand.name} (combine affected issues)`, () => {
-                it("returns all affected issues", () => {
-                    assertIsInstanceOf(commands[9], CombineCommand);
-                    const mergeFunction = commands[9].getFunction();
-                    const data: ImportFeatureResponse = {
-                        errors: [],
-                        updatedOrCreatedIssues: ["CYP-123", "CYP-456", "CYP-789", "CYP-001"],
-                    };
-                    expect(
-                        mergeFunction([["CYP-123", "CYP-456", "CYP-789", "CYP-001"], data])
-                    ).to.deep.eq(["CYP-123", "CYP-456", "CYP-789", "CYP-001"]);
-                });
-
-                it("warns about unknown updated issues", () => {
-                    assertIsInstanceOf(commands[9], CombineCommand);
-                    const mergeFunction = commands[9].getFunction();
-                    const logger = getMockedLogger();
-                    const xrayClient = getMockedXrayClient();
-                    xrayClient.importFeature.onFirstCall().resolves({
-                        errors: [],
-                        updatedOrCreatedIssues: ["CYP-536", "CYP-552"],
-                    });
-                    expect(
-                        mergeFunction([
-                            [],
-                            {
-                                errors: [],
-                                updatedOrCreatedIssues: ["CYP-536", "CYP-552"],
-                            },
-                        ])
-                    ).to.deep.eq([]);
-                    expect(logger.message).to.have.been.calledWithExactly(
-                        Level.WARNING,
-                        dedent(`
-                            Mismatch between feature file issue tags and updated Jira issues detected
-
-                            Issues updated by Jira which are not present in feature file tags and might have been created:
-                              CYP-536
-                              CYP-552
-
-                            Make sure that:
-                            - All issues present in feature file tags belong to existing issues
-                            - Your plugin tag prefix settings are consistent with the ones defined in Xray
-
-                            More information:
-                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                        `)
-                    );
-                });
-
-                it("warns about issues not updated by Jira", () => {
-                    assertIsInstanceOf(commands[9], CombineCommand);
-                    const mergeFunction = commands[9].getFunction();
-                    const logger = getMockedLogger();
-                    const xrayClient = getMockedXrayClient();
-                    xrayClient.importFeature.onFirstCall().resolves({
-                        errors: [],
-                        updatedOrCreatedIssues: [],
-                    });
-                    expect(
-                        mergeFunction([
-                            ["CYP-123", "CYP-756"],
-                            {
-                                errors: [],
-                                updatedOrCreatedIssues: [],
-                            },
-                        ])
-                    ).to.deep.eq([]);
-                    expect(logger.message).to.have.been.calledWithExactly(
-                        Level.WARNING,
-                        dedent(`
-                            Mismatch between feature file issue tags and updated Jira issues detected
-
-                            Issues contained in feature file tags which were not updated by Jira and might not exist:
-                              CYP-123
-                              CYP-756
-
-                            Make sure that:
-                            - All issues present in feature file tags belong to existing issues
-                            - Your plugin tag prefix settings are consistent with the ones defined in Xray
-
-                            More information:
-                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                        `)
-                    );
-                });
-
-                it("warns about issue key mismatches", () => {
-                    assertIsInstanceOf(commands[9], CombineCommand);
-                    const mergeFunction = commands[9].getFunction();
-                    const logger = getMockedLogger();
-                    const xrayClient = getMockedXrayClient();
-                    xrayClient.importFeature.onFirstCall().resolves({
-                        errors: [],
-                        updatedOrCreatedIssues: ["CYP-536", "CYP-552", "CYP-756"],
-                    });
-                    expect(
-                        mergeFunction([
-                            ["CYP-123", "CYP-756", "CYP-42"],
-                            {
-                                errors: [],
-                                updatedOrCreatedIssues: ["CYP-536", "CYP-552", "CYP-756"],
-                            },
-                        ])
-                    ).to.deep.eq(["CYP-756"]);
-                    expect(logger.message).to.have.been.calledWithExactly(
-                        Level.WARNING,
-                        dedent(`
-                            Mismatch between feature file issue tags and updated Jira issues detected
-
-                            Issues contained in feature file tags which were not updated by Jira and might not exist:
-                              CYP-123
-                              CYP-42
-
-                            Issues updated by Jira which are not present in feature file tags and might have been created:
-                              CYP-536
-                              CYP-552
-
-                            Make sure that:
-                            - All issues present in feature file tags belong to existing issues
-                            - Your plugin tag prefix settings are consistent with the ones defined in Xray
-
-                            More information:
-                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                        `)
-                    );
-                });
-            });
-
-            it(`${GetSummaryValuesCommand.name} (new summaries)`, () => {
-                assertIsInstanceOf(commands[10], GetSummaryValuesCommand);
-            });
-
-            it(`${GetLabelValuesCommand.name} (new labels)`, () => {
-                assertIsInstanceOf(commands[11], GetLabelValuesCommand);
-            });
-
-            describe(`${CombineCommand.name} (combine old/new summaries)`, () => {
-                it("returns summaries of issues to reset", () => {
-                    assertIsInstanceOf(commands[12], CombineCommand);
-                    const mergeFunction = commands[12].getFunction();
-                    const oldSummaries: StringMap<string> = {
-                        ["CYP-123"]: "Old Summary",
-                        ["CYP-456"]: "Old Summary Too",
-                    };
-                    const newSummaries: StringMap<string> = {
-                        ["CYP-123"]: "New Summary",
-                        ["CYP-456"]: "Old Summary Too",
-                    };
-                    expect(mergeFunction([oldSummaries, newSummaries])).to.deep.eq({
-                        ["CYP-123"]: "Old Summary",
-                    });
-                });
-
-                it("warns about unknown old summaries", () => {
-                    assertIsInstanceOf(commands[12], CombineCommand);
-                    const mergeFunction = commands[12].getFunction();
-                    const logger = getMockedLogger();
-                    const oldSummaries: StringMap<string> = {};
-                    const newSummaries: StringMap<string> = {
-                        ["CYP-123"]: "New Summary",
-                    };
-                    expect(mergeFunction([oldSummaries, newSummaries])).to.deep.eq({});
-                    expect(logger.message).to.have.been.calledWithExactly(
-                        Level.WARNING,
-                        dedent(`
-                            Skipping resetting summary of issue: CYP-123
-                            The previous summary could not be fetched, make sure to manually restore it if needed
-                        `)
-                    );
-                });
-            });
-
-            describe(`${CombineCommand.name} (combine old/new labels)`, () => {
-                it("returns labels of issues to reset", () => {
-                    assertIsInstanceOf(commands[13], CombineCommand);
-                    const mergeFunction = commands[13].getFunction();
-                    const oldLabels: StringMap<string[]> = {
-                        ["CYP-123"]: ["a tag"],
-                        ["CYP-456"]: ["tag 1", "tag 2"],
-                        ["CYP-789"]: ["another tag"],
-                    };
-                    const newLabels: StringMap<string[]> = {
-                        ["CYP-123"]: ["a tag"],
-                        ["CYP-456"]: ["tag 2"],
-                        ["CYP-789"]: [],
-                    };
-                    expect(mergeFunction([oldLabels, newLabels])).to.deep.eq({
-                        ["CYP-456"]: ["tag 1", "tag 2"],
-                        ["CYP-789"]: ["another tag"],
-                    });
-                });
-
-                it("warns about unknown old labels", () => {
-                    assertIsInstanceOf(commands[13], CombineCommand);
-                    const mergeFunction = commands[13].getFunction();
-                    const logger = getMockedLogger();
-                    const oldLabels: StringMap<string[]> = {
-                        ["CYP-789"]: ["another tag"],
-                    };
-                    const newLabels: StringMap<string[]> = {
-                        ["CYP-123"]: ["a tag"],
-                        ["CYP-456"]: ["tag 1", "tag 2"],
-                        ["CYP-789"]: ["another tag"],
-                    };
-                    expect(mergeFunction([oldLabels, newLabels])).to.deep.eq({});
-                    expect(logger.message).to.have.been.calledWithExactly(
-                        Level.WARNING,
-                        dedent(`
-                            Skipping resetting labels of issue: CYP-123
-                            The previous labels could not be fetched, make sure to manually restore them if needed
-                        `)
-                    );
-                    expect(logger.message).to.have.been.calledWithExactly(
-                        Level.WARNING,
-                        dedent(`
-                            Skipping resetting labels of issue: CYP-456
-                            The previous labels could not be fetched, make sure to manually restore them if needed
-                        `)
-                    );
-                });
-            });
-
-            it(`${EditIssueFieldCommand.name} (edit summaries)`, () => {
-                assertIsInstanceOf(commands[14], EditIssueFieldCommand);
-                expect(commands[14].getField()).to.eq(JiraField.SUMMARY);
-            });
-
-            it(`${EditIssueFieldCommand.name} (edit labels)`, () => {
-                assertIsInstanceOf(commands[15], EditIssueFieldCommand);
-                expect(commands[15].getField()).to.eq(JiraField.LABELS);
-            });
+        it("reuses existing commands", () => {
+            const graph = new ExecutableGraph<Command>();
+            const fetchAllFieldsCommand = new FetchAllFieldsCommand(clients.jiraClient);
+            const getSummaryFieldIdCommand = new ExtractFieldIdCommand(
+                JiraField.SUMMARY,
+                fetchAllFieldsCommand
+            );
+            const getLabelsFieldIdCommand = new ExtractFieldIdCommand(
+                JiraField.LABELS,
+                fetchAllFieldsCommand
+            );
+            graph.connect(fetchAllFieldsCommand, getSummaryFieldIdCommand);
+            graph.connect(fetchAllFieldsCommand, getLabelsFieldIdCommand);
+            addSynchronizationCommands(file, ".", options, clients, graph);
+            const commands = [...graph.getVertices()];
+            const getCurrentSummariesCommand = commands[6];
+            const getCurrentLabelsCommand = commands[7];
+            const getNewSummariesCommand = commands[10];
+            const getNewLabelsCommand = commands[11];
+            const editSummariesCommand = commands[14];
+            const editLabelsCommand = commands[15];
+            expect([...graph.getPredecessors(fetchAllFieldsCommand)]).to.deep.eq([]);
+            expect([...graph.getSuccessors(fetchAllFieldsCommand)]).to.deep.eq([
+                getSummaryFieldIdCommand,
+                getLabelsFieldIdCommand,
+            ]);
+            expect([...graph.getPredecessors(getSummaryFieldIdCommand)]).to.deep.eq([
+                fetchAllFieldsCommand,
+            ]);
+            expect([...graph.getSuccessors(getSummaryFieldIdCommand)]).to.deep.eq([
+                getCurrentSummariesCommand,
+                getNewSummariesCommand,
+                editSummariesCommand,
+            ]);
+            expect([...graph.getPredecessors(getLabelsFieldIdCommand)]).to.deep.eq([
+                fetchAllFieldsCommand,
+            ]);
+            expect([...graph.getSuccessors(getLabelsFieldIdCommand)]).to.deep.eq([
+                getCurrentLabelsCommand,
+                getNewLabelsCommand,
+                editLabelsCommand,
+            ]);
         });
-    });
-
-    it("reuses existing commands", () => {
-        const file = {
-            ...({} as Cypress.FileObject),
-            filePath: "./path/to/file.feature",
-            outputPath: "no.idea",
-            shouldWatch: false,
-        };
-        const graph = new ExecutableGraph<Command>();
-        const fetchAllFieldsCommand = new FetchAllFieldsCommand(clients.jiraClient);
-        const getSummaryFieldIdCommand = new ExtractFieldIdCommand(
-            JiraField.SUMMARY,
-            fetchAllFieldsCommand
-        );
-        const getLabelsFieldIdCommand = new ExtractFieldIdCommand(
-            JiraField.LABELS,
-            fetchAllFieldsCommand
-        );
-        graph.connect(fetchAllFieldsCommand, getSummaryFieldIdCommand);
-        graph.connect(fetchAllFieldsCommand, getLabelsFieldIdCommand);
-        addSynchronizationCommands(file, ".", options, clients, graph);
-        const commands = [...graph.getVertices()];
-        const getCurrentSummariesCommand = commands[6];
-        const getCurrentLabelsCommand = commands[7];
-        const getNewSummariesCommand = commands[10];
-        const getNewLabelsCommand = commands[11];
-        const editSummariesCommand = commands[14];
-        const editLabelsCommand = commands[15];
-        expect([...graph.getPredecessors(fetchAllFieldsCommand)]).to.deep.eq([]);
-        expect([...graph.getSuccessors(fetchAllFieldsCommand)]).to.deep.eq([
-            getSummaryFieldIdCommand,
-            getLabelsFieldIdCommand,
-        ]);
-        expect([...graph.getPredecessors(getSummaryFieldIdCommand)]).to.deep.eq([
-            fetchAllFieldsCommand,
-        ]);
-        expect([...graph.getSuccessors(getSummaryFieldIdCommand)]).to.deep.eq([
-            getCurrentSummariesCommand,
-            getNewSummariesCommand,
-            editSummariesCommand,
-        ]);
-        expect([...graph.getPredecessors(getLabelsFieldIdCommand)]).to.deep.eq([
-            fetchAllFieldsCommand,
-        ]);
-        expect([...graph.getSuccessors(getLabelsFieldIdCommand)]).to.deep.eq([
-            getCurrentLabelsCommand,
-            getNewLabelsCommand,
-            editLabelsCommand,
-        ]);
     });
 });

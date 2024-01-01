@@ -24,17 +24,15 @@ import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExecutableGraph } from "../../util/executable/executable";
 import { createExtractFieldIdCommand } from "../util";
-import {
-    AssertCucumberConversionValidCommand,
-    AssertCypressConversionValidCommand,
-    CombineCucumberMultipartCommand,
-    CombineCypressJsonCommand,
-    CompareCypressCucumberKeysCommand,
-    ExtractVideoFilesCommand,
-    FetchExecutionIssueDetailsCommand,
-    PrintUploadSuccessCommand,
-    VerifyExecutionIssueKeyCommand,
-} from "./commands";
+import { AssertCucumberConversionValidCommand } from "./commands/assertCucumberConversionValidCommand";
+import { AssertCypressConversionValidCommand } from "./commands/assertCypressConversionValidCommand";
+import { CombineCucumberMultipartCommand } from "./commands/combineCucumberMultipartCommand";
+import { CombineCypressJsonCommand } from "./commands/combineCypressXrayCommand";
+import { CompareCypressCucumberKeysCommand } from "./commands/compareCypressCucumberKeysCommand";
+import { ExtractVideoFilesCommand } from "./commands/extractVideoFilesCommand";
+import { FetchExecutionIssueDetailsCommand } from "./commands/fetchExecutionIssueDetailsCommand";
+import { PrintUploadSuccessCommand } from "./commands/printUploadSuccessCommand";
+import { VerifyExecutionIssueKeyCommand } from "./commands/verifyExecutionIssueKeyCommand";
 
 export function addUploadCommands(
     runResult: CypressCommandLine.CypressRunResult,
