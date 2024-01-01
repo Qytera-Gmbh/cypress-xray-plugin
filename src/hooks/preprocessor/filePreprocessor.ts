@@ -9,7 +9,7 @@ import { ExtractFeatureFileIssuesCommand } from "./commands/extractFeatureFileIs
 import { ParseFeatureFileCommand } from "./commands/parseFeatureFileCommand";
 
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
-import { ExecutableGraph } from "../../util/executable/executable";
+import { ExecutableGraph } from "../../util/graph/executable";
 import { ConstantCommand } from "../util/commands/constantCommand";
 import { createExtractFieldIdCommand } from "../util/util";
 import { ExtractIssueKeysCommand } from "./commands/extractIssueKeysCommand";

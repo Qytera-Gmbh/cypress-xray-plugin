@@ -18,7 +18,7 @@ import {
     InternalPluginOptions,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
-import { ExecutableGraph } from "./util/executable/executable";
+import { ExecutableGraph } from "./util/graph/executable";
 import { commandToDot, graphToDot } from "./util/graph/visualisation/dot";
 import { HELP } from "./util/help";
 import { LOG, Level } from "./util/logging";

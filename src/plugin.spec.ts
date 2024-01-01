@@ -15,7 +15,7 @@ import * as synchronizeFeatureFileHook from "./hooks/preprocessor/filePreprocess
 import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CypressXrayPluginOptions, PluginContext } from "./types/plugin";
 import { dedent } from "./util/dedent";
-import { ExecutableGraph } from "./util/executable/executable";
+import { ExecutableGraph } from "./util/graph/executable";
 import { Level } from "./util/logging";
 
 describe(path.relative(process.cwd(), __filename), () => {

@@ -3,7 +3,7 @@ import path from "path";
 import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
-import { ExecutableGraph } from "../../util/executable/executable";
+import { ExecutableGraph } from "../../util/graph/executable";
 import { LOG, Level } from "../../util/logging";
 import { containsCucumberTest, containsNativeTest } from "../../util/preprocessing";
 import { Command, Computable } from "../command";
