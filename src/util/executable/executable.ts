@@ -1,4 +1,4 @@
-import { Computable, isSkippedError } from "../../commands/command";
+import { Computable, isSkippedError } from "../../hooks/command";
 import { LOG, Level } from "../../logging/logging";
 import { errorMessage } from "../errors";
 import { DirectedEdge, SimpleDirectedEdge, SimpleDirectedGraph } from "../graph/graph";

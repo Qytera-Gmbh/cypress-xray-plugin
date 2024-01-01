@@ -2,16 +2,6 @@ import { expect } from "chai";
 import path from "path";
 import { getMockedJiraClient, getMockedXrayClient } from "../../../test/mocks";
 import { assertIsInstanceOf } from "../../../test/util";
-import { Command } from "../../commands/command";
-import { ConstantCommand } from "../../commands/constantCommand";
-import { ExtractFeatureFileIssuesCommand } from "../../commands/cucumber/extractFeatureFileIssuesCommand";
-import { ParseFeatureFileCommand } from "../../commands/cucumber/parseFeatureFileCommand";
-import { EditIssueFieldCommand } from "../../commands/jira/fields/editIssueFieldCommand";
-import { ExtractFieldIdCommand, JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
-import { FetchAllFieldsCommand } from "../../commands/jira/fields/fetchAllFieldsCommand";
-import { GetLabelValuesCommand } from "../../commands/jira/fields/getLabelValuesCommand";
-import { GetSummaryValuesCommand } from "../../commands/jira/fields/getSummaryValuesCommand";
-import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
 import {
     initCucumberOptions,
     initJiraOptions,
@@ -21,10 +11,20 @@ import {
 } from "../../context";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { ExecutableGraph } from "../../util/executable/executable";
+import { Command } from "../command";
+import { ConstantCommand } from "../util";
+import { ExtractFeatureFileIssuesCommand } from "./commands/extractFeatureFileIssuesCommand";
 import { ExtractIssueKeysCommand } from "./commands/extractIssueKeysCommand";
 import { GetLabelsToResetCommand } from "./commands/getLabelsToResetCommand";
 import { GetSummariesToResetCommand } from "./commands/getSummariesToResetCommand";
 import { GetUpdatedIssuesCommand } from "./commands/getUpdatedIssuesCommand";
+import { EditIssueFieldCommand } from "./commands/jira/editIssueFieldCommand";
+import { ExtractFieldIdCommand, JiraField } from "./commands/jira/extractFieldIdCommand";
+import { FetchAllFieldsCommand } from "./commands/jira/fetchAllFieldsCommand";
+import { GetLabelValuesCommand } from "./commands/jira/getLabelValuesCommand";
+import { GetSummaryValuesCommand } from "./commands/jira/getSummaryValuesCommand";
+import { ParseFeatureFileCommand } from "./commands/parseFeatureFileCommand";
+import { ImportFeatureCommand } from "./commands/xray/importFeatureCommand";
 import { addSynchronizationCommands } from "./filePreprocessor";
 
 describe(path.relative(process.cwd(), __filename), () => {

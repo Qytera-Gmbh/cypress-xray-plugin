@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import path from "path";
 import { getMockedLogger } from "../../../../test/mocks";
-import { ConstantCommand } from "../../../commands/constantCommand";
 import { Level } from "../../../logging/logging";
 import { dedent } from "../../../util/dedent";
+import { ConstantCommand } from "../../util";
 import { GetLabelsToResetCommand } from "./getLabelsToResetCommand";
 
 describe(path.relative(process.cwd(), __filename), () => {

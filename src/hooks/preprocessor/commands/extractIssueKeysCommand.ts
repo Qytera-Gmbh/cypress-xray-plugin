@@ -1,5 +1,5 @@
-import { Command, Computable } from "../../../commands/command";
 import { FeatureFileIssueData } from "../../../preprocessing/preprocessing";
+import { Command, Computable } from "../../command";
 
 export class ExtractIssueKeysCommand extends Command<string[]> {
     private readonly issueData: Computable<FeatureFileIssueData>;

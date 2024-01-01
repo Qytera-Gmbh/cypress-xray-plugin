@@ -1,8 +1,8 @@
-import { Command, Computable } from "../../../commands/command";
 import { LOG, Level } from "../../../logging/logging";
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
 import { unknownToString } from "../../../util/string";
+import { Command, Computable } from "../../command";
 
 export class GetSummariesToResetCommand extends Command<StringMap<string>> {
     private readonly oldValues: Computable<StringMap<string>>;

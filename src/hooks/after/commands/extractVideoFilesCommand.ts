@@ -1,5 +1,5 @@
-import { Command, Computable, SkippedError } from "../../../commands/command";
 import { LOG, Level } from "../../../logging/logging";
+import { Command, Computable, SkippedError } from "../../command";
 
 export class ExtractVideoFilesCommand extends Command<string[]> {
     private readonly cypressRunResult: Computable<CypressCommandLine.CypressRunResult>;

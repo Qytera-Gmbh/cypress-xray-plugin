@@ -1,5 +1,5 @@
-import { Command, Computable } from "../../../commands/command";
 import { LOG, Level } from "../../../logging/logging";
+import { Command, Computable } from "../../command";
 
 interface Parameters {
     url: string;

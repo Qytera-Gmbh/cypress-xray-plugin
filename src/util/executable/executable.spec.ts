@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Computable } from "../../commands/command";
+import { Computable } from "../../hooks/command";
 import { ExecutableGraph } from "./executable";
 
 describe("ExecutableGraph", () => {

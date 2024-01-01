@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import path from "path";
-import { ConstantCommand } from "../../../commands/constantCommand";
+import { ConstantCommand } from "../../util";
 import { ExtractIssueKeysCommand } from "./extractIssueKeysCommand";
 
 describe(path.relative(process.cwd(), __filename), () => {

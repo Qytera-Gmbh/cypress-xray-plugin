@@ -1,38 +1,37 @@
 import fs from "fs";
 import path from "path";
-import { Command, Computable } from "../../commands/command";
-import { ConstantCommand } from "../../commands/constantCommand";
-import { AttachFilesCommand } from "../../commands/jira/attachFilesCommand";
-import { FetchIssueTypesCommand } from "../../commands/jira/fetchIssueTypesCommand";
-import { JiraField } from "../../commands/jira/fields/extractFieldIdCommand";
-import { ConvertCucumberFeaturesCommand } from "../../commands/plugin/conversion/cucumber/convertCucumberFeaturesCommand";
-import {
-    ConvertCucumberInfoCloudCommand,
-    ConvertCucumberInfoCommand,
-    ConvertCucumberInfoServerCommand,
-} from "../../commands/plugin/conversion/cucumber/convertCucumberInfoCommand";
-import { RunData } from "../../commands/plugin/conversion/cucumber/util/multipartInfo";
-import { ConvertCypressInfoCommand } from "../../commands/plugin/conversion/cypress/convertCypressInfoCommand";
-import { ConvertCypressTestsCommand } from "../../commands/plugin/conversion/cypress/convertCypressTestsCommand";
-import { ImportExecutionCucumberCommand } from "../../commands/xray/importExecutionCucumberCommand";
-import { ImportExecutionCypressCommand } from "../../commands/xray/importExecutionCypressCommand";
-import { ImportFeatureCommand } from "../../commands/xray/importFeatureCommand";
 import { LOG, Level } from "../../logging/logging";
 import { containsCucumberTest, containsNativeTest } from "../../preprocessing/preprocessing";
 import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExecutableGraph } from "../../util/executable/executable";
-import { createExtractFieldIdCommand } from "../util";
-import { AssertCucumberConversionValidCommand } from "./commands/assertCucumberConversionValidCommand";
-import { AssertCypressConversionValidCommand } from "./commands/assertCypressConversionValidCommand";
-import { CombineCucumberMultipartCommand } from "./commands/combineCucumberMultipartCommand";
-import { CombineCypressJsonCommand } from "./commands/combineCypressXrayCommand";
+import { Command, Computable } from "../command";
+import { JiraField } from "../preprocessor/commands/jira/extractFieldIdCommand";
+import { ImportFeatureCommand } from "../preprocessor/commands/xray/importFeatureCommand";
+import { ConstantCommand, createExtractFieldIdCommand } from "../util";
 import { CompareCypressCucumberKeysCommand } from "./commands/compareCypressCucumberKeysCommand";
+import { AssertCucumberConversionValidCommand } from "./commands/conversion/cucumber/assertCucumberConversionValidCommand";
+import { CombineCucumberMultipartCommand } from "./commands/conversion/cucumber/combineCucumberMultipartCommand";
+import { ConvertCucumberFeaturesCommand } from "./commands/conversion/cucumber/convertCucumberFeaturesCommand";
+import {
+    ConvertCucumberInfoCloudCommand,
+    ConvertCucumberInfoCommand,
+    ConvertCucumberInfoServerCommand,
+} from "./commands/conversion/cucumber/convertCucumberInfoCommand";
+import { RunData } from "./commands/conversion/cucumber/util/multipartInfo";
+import { AssertCypressConversionValidCommand } from "./commands/conversion/cypress/assertCypressConversionValidCommand";
+import { CombineCypressJsonCommand } from "./commands/conversion/cypress/combineCypressXrayCommand";
+import { ConvertCypressInfoCommand } from "./commands/conversion/cypress/convertCypressInfoCommand";
+import { ConvertCypressTestsCommand } from "./commands/conversion/cypress/convertCypressTestsCommand";
 import { ExtractVideoFilesCommand } from "./commands/extractVideoFilesCommand";
-import { FetchExecutionIssueDetailsCommand } from "./commands/fetchExecutionIssueDetailsCommand";
+import { AttachFilesCommand } from "./commands/jira/attachFilesCommand";
+import { FetchExecutionIssueDetailsCommand } from "./commands/jira/fetchExecutionIssueDetailsCommand";
+import { FetchIssueTypesCommand } from "./commands/jira/fetchIssueTypesCommand";
 import { PrintUploadSuccessCommand } from "./commands/printUploadSuccessCommand";
 import { VerifyExecutionIssueKeyCommand } from "./commands/verifyExecutionIssueKeyCommand";
+import { ImportExecutionCucumberCommand } from "./commands/xray/importExecutionCucumberCommand";
+import { ImportExecutionCypressCommand } from "./commands/xray/importExecutionCypressCommand";
 
 export function addUploadCommands(
     runResult: CypressCommandLine.CypressRunResult,

@@ -1,6 +1,6 @@
-import { Command, Computable } from "../../../commands/command";
 import { LOG, Level } from "../../../logging/logging";
 import { dedent } from "../../../util/dedent";
+import { Command, Computable } from "../../command";
 
 interface Parameters {
     testExecutionIssueKey: string;

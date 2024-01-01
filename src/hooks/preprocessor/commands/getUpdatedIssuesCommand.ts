@@ -1,9 +1,9 @@
-import { Command, Computable } from "../../../commands/command";
 import { LOG, Level } from "../../../logging/logging";
 import { ImportFeatureResponse } from "../../../types/xray/responses/importFeature";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
 import { computeOverlap } from "../../../util/set";
+import { Command, Computable } from "../../command";
 
 export class GetUpdatedIssuesCommand extends Command<string[]> {
     private readonly expectedAffectedIssues: Computable<string[]>;
