@@ -173,7 +173,8 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
         if (this.outgoingEdges.has(vertex)) {
             throw new Error(`Duplicate vertex detected: ${unknownToString(vertex)}`);
         }
-        this.initVertex(vertex);
+        this.outgoingEdges.set(vertex, new Set<DirectedEdge<V>>());
+        this.incomingEdges.set(vertex, new Set<DirectedEdge<V>>());
         return vertex;
     }
 
@@ -295,22 +296,5 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
         for (const edge of this.getOutgoing(vertex)) {
             yield edge.getDestination();
         }
-    }
-
-    private initVertex(vertex: V): {
-        incoming: Set<DirectedEdge<V>>;
-        outgoing: Set<DirectedEdge<V>>;
-    } {
-        let outgoing: Set<DirectedEdge<V>> | undefined = this.outgoingEdges.get(vertex);
-        let incoming: Set<DirectedEdge<V>> | undefined = this.incomingEdges.get(vertex);
-        if (!outgoing) {
-            outgoing = new Set();
-            this.outgoingEdges.set(vertex, outgoing);
-        }
-        if (!incoming) {
-            incoming = new Set();
-            this.incomingEdges.set(vertex, incoming);
-        }
-        return { incoming: incoming, outgoing: outgoing };
     }
 }
