@@ -1,6 +1,6 @@
 import { XrayClient } from "../../../../client/xray/xrayClient";
-import { LOG, Level } from "../../../../logging/logging";
 import { XrayTestExecutionResults } from "../../../../types/xray/importTestExecutionResults";
+import { LOG, Level } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 
 export class ImportExecutionCypressCommand extends Command<string> {

@@ -1,6 +1,6 @@
 import { XrayClient } from "../../../../client/xray/xrayClient";
-import { LOG, Level } from "../../../../logging/logging";
 import { CucumberMultipart } from "../../../../types/xray/requests/importExecutionCucumberMultipart";
+import { LOG, Level } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 
 export class ImportExecutionCucumberCommand extends Command<string> {

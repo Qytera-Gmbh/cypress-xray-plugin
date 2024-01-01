@@ -3,10 +3,10 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { SinonStubbedInstance, useFakeTimers } from "sinon";
 import { getMockedJwtCredentials, getMockedLogger, getMockedRestClient } from "../../test/mocks";
-import { JwtCredentials, PatCredentials } from "../authentication/credentials";
-import { AxiosRestClient } from "../https/requests";
-import { Level } from "../logging/logging";
+import { JwtCredentials, PatCredentials } from "../client/authentication/credentials";
+import { AxiosRestClient } from "../client/https/requests";
 import { dedent } from "./dedent";
+import { Level } from "./logging";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./ping";
 
 chai.use(chaiAsPromised);

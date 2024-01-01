@@ -3,12 +3,12 @@ import { expect } from "chai";
 import fs from "fs";
 import { SinonStubbedInstance } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
-import { BasicAuthCredentials } from "../../authentication/credentials";
-import { AxiosRestClient } from "../../https/requests";
-import { Level } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { dedent } from "../../util/dedent";
+import { Level } from "../../util/logging";
+import { BasicAuthCredentials } from "../authentication/credentials";
+import { AxiosRestClient } from "../https/requests";
 import { XrayClientServer } from "./xrayClientServer";
 
 describe("the xray server client", () => {

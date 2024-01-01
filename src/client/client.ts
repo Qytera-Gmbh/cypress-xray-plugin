@@ -1,6 +1,6 @@
-import { HttpCredentials } from "../authentication/credentials";
-import { LOG, Level } from "../logging/logging";
+import { LOG, Level } from "../util/logging";
 import { startInterval } from "../util/time";
+import { HttpCredentials } from "./authentication/credentials";
 
 /**
  * A basic client interface which stores credentials data used for communicating with a server.

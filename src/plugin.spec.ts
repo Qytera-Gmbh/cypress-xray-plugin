@@ -12,11 +12,11 @@ import { mockedCypressEventEmitter } from "../test/util";
 import * as context from "./context";
 import * as afterRunHook from "./hooks/after/afterRun";
 import * as synchronizeFeatureFileHook from "./hooks/preprocessor/filePreprocessor";
-import { Level } from "./logging/logging";
 import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CypressXrayPluginOptions, PluginContext } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/executable/executable";
+import { Level } from "./util/logging";
 
 describe(path.relative(process.cwd(), __filename), () => {
     let config: Cypress.PluginConfigOptions;

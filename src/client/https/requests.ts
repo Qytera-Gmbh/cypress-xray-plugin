@@ -7,9 +7,9 @@ import axios, {
 } from "axios";
 import { readFileSync } from "fs";
 import { Agent } from "https";
-import { LOG, Level } from "../logging/logging";
-import { InternalSslOptions } from "../types/plugin";
-import { normalizedFilename } from "../util/files";
+import { InternalSslOptions } from "../../types/plugin";
+import { normalizedFilename } from "../../util/files";
+import { LOG, Level } from "../../util/logging";
 
 export interface RequestConfigPost<D = unknown> {
     url: string;

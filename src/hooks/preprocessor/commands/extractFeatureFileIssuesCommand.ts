@@ -1,10 +1,4 @@
 import { GherkinDocument } from "@cucumber/messages";
-import {
-    FeatureFileIssueData,
-    getCucumberPreconditionIssueComments,
-    getCucumberPreconditionIssueTags,
-    getCucumberScenarioIssueTags,
-} from "../../../preprocessing/preprocessing";
 import { CucumberOptions } from "../../../types/plugin";
 import {
     missingPreconditionKeyInCucumberBackgroundError,
@@ -12,6 +6,12 @@ import {
     multiplePreconditionKeysInCucumberBackgroundError,
     multipleTestKeysInCucumberScenarioError,
 } from "../../../util/errors";
+import {
+    FeatureFileIssueData,
+    getCucumberPreconditionIssueComments,
+    getCucumberPreconditionIssueTags,
+    getCucumberScenarioIssueTags,
+} from "../../../util/preprocessing";
 import { Command, Computable } from "../../command";
 
 export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueData> {

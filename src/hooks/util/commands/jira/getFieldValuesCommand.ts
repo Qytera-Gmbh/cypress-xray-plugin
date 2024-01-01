@@ -1,9 +1,9 @@
 import { JiraClient } from "../../../../client/jira/jiraClient";
-import { LOG, Level } from "../../../../logging/logging";
 import { Issue } from "../../../../types/jira/responses/issue";
 import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
 import { errorMessage } from "../../../../util/errors";
+import { LOG, Level } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 import { JiraField } from "./extractFieldIdCommand";
 

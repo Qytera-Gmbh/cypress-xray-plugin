@@ -10,9 +10,9 @@ import {
     initSslOptions,
     initXrayOptions,
 } from "../../../../../context";
-import { Level } from "../../../../../logging/logging";
 import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
 import { dedent } from "../../../../../util/dedent";
+import { Level } from "../../../../../util/logging";
 import { ConstantCommand } from "../../../../util/commands/constantCommand";
 import { ConvertCypressTestsCommand } from "./convertCypressTestsCommand";
 

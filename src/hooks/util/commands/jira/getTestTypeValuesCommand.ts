@@ -1,9 +1,9 @@
 import { XrayClientCloud } from "../../../../client/xray/xrayClientCloud";
-import { LOG, Level } from "../../../../logging/logging";
 import { Issue } from "../../../../types/jira/responses/issue";
 import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
 import { extractNestedString } from "../../../../util/extraction";
+import { LOG, Level } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 import { JiraField } from "./extractFieldIdCommand";
 import { GetFieldValuesCommand } from "./getFieldValuesCommand";

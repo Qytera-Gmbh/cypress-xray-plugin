@@ -1,6 +1,6 @@
 import { GherkinDocument } from "@cucumber/messages";
-import { LOG, Level } from "../../../logging/logging";
-import { parseFeatureFile } from "../../../preprocessing/preprocessing";
+import { LOG, Level } from "../../../util/logging";
+import { parseFeatureFile } from "../../../util/preprocessing";
 import { Command } from "../../command";
 
 export class ParseFeatureFileCommand extends Command<GherkinDocument> {

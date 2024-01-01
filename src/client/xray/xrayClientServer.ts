@@ -1,6 +1,4 @@
 import FormData from "form-data";
-import { RequestConfigPost } from "../../https/requests";
-import { LOG, Level } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/importExecution";
@@ -10,6 +8,8 @@ import {
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
+import { LOG, Level } from "../../util/logging";
+import { RequestConfigPost } from "../https/requests";
 import { AbstractXrayClient } from "./xrayClient";
 
 export class XrayClientServer extends AbstractXrayClient {

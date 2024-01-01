@@ -1,9 +1,9 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { getMockedLogger, getMockedRestClient } from "../../test/mocks";
-import { Level } from "../logging/logging";
-import { dedent } from "../util/dedent";
+import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
+import { dedent } from "../../util/dedent";
+import { Level } from "../../util/logging";
 import { JwtCredentials } from "./credentials";
 
 chai.use(chaiAsPromised);

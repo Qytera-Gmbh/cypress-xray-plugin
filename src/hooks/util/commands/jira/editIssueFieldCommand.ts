@@ -1,7 +1,7 @@
 import { JiraClient } from "../../../../client/jira/jiraClient";
-import { LOG, Level } from "../../../../logging/logging";
 import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
+import { LOG, Level } from "../../../../util/logging";
 import { unknownToString } from "../../../../util/string";
 import { Command, Computable } from "../../../command";
 import { JiraField } from "./extractFieldIdCommand";

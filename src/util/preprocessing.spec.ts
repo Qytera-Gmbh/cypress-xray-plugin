@@ -2,8 +2,8 @@ import { Background, Scenario } from "@cucumber/messages";
 import { expect } from "chai";
 import fs from "fs";
 import { getMockedLogger } from "../../test/mocks";
-import { Level } from "../logging/logging";
-import { dedent } from "../util/dedent";
+import { dedent } from "./dedent";
+import { Level } from "./logging";
 import {
     containsCucumberTest,
     containsNativeTest,

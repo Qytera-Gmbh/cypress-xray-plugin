@@ -1,5 +1,5 @@
-import { LOG, Level } from "../../../logging/logging";
 import { dedent } from "../../../util/dedent";
+import { LOG, Level } from "../../../util/logging";
 import { Command, Computable } from "../../command";
 
 export class CompareCypressCucumberKeysCommand extends Command<string> {

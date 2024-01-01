@@ -1,3 +1,4 @@
+import { REST } from "./client/https/requests";
 import {
     clearPluginContext,
     getPluginContext,
@@ -11,8 +12,6 @@ import {
 } from "./context";
 import { addUploadCommands } from "./hooks/after/afterRun";
 import { addSynchronizationCommands } from "./hooks/preprocessor/filePreprocessor";
-import { REST } from "./https/requests";
-import { LOG, Level } from "./logging/logging";
 import {
     CypressXrayPluginOptions,
     InternalCypressXrayPluginOptions,
@@ -22,6 +21,7 @@ import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/executable/executable";
 import { commandToDot, graphToDot } from "./util/graph/visualisation/dot";
 import { HELP } from "./util/help";
+import { LOG, Level } from "./util/logging";
 
 let canShowInitializationWarning = true;
 

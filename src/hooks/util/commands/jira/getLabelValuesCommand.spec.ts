@@ -2,8 +2,8 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
 import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks";
-import { Level } from "../../../../logging/logging";
 import { dedent } from "../../../../util/dedent";
+import { Level } from "../../../../util/logging";
 import { ConstantCommand } from "../constantCommand";
 import { GetLabelValuesCommand } from "./getLabelValuesCommand";
 

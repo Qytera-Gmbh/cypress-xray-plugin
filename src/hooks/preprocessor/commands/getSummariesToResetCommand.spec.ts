@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import path from "path";
 import { getMockedLogger } from "../../../../test/mocks";
-import { Level } from "../../../logging/logging";
 import { dedent } from "../../../util/dedent";
+import { Level } from "../../../util/logging";
 import { ConstantCommand } from "../../util/commands/constantCommand";
 import { GetSummariesToResetCommand } from "./getSummariesToResetCommand";
 

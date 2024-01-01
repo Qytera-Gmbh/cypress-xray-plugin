@@ -1,4 +1,4 @@
-import { LOG, Level } from "../../../logging/logging";
+import { LOG, Level } from "../../../util/logging";
 import { Command, Computable, SkippedError } from "../../command";
 
 export class ExtractVideoFilesCommand extends Command<string[]> {

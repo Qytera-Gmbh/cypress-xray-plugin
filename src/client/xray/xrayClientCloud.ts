@@ -1,8 +1,5 @@
 import { AxiosResponse } from "axios";
 import FormData from "form-data";
-import { JwtCredentials } from "../../authentication/credentials";
-import { RequestConfigPost, REST } from "../../https/requests";
-import { Level, LOG } from "../../logging/logging";
 import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
@@ -14,7 +11,10 @@ import {
     IssueDetails,
 } from "../../types/xray/responses/importFeature";
 import { dedent } from "../../util/dedent";
-import { errorMessage, LoggedError } from "../../util/errors";
+import { LoggedError, errorMessage } from "../../util/errors";
+import { LOG, Level } from "../../util/logging";
+import { JwtCredentials } from "../authentication/credentials";
+import { REST, RequestConfigPost } from "../https/requests";
 import { AbstractXrayClient } from "./xrayClient";
 
 interface GetTestsJiraData {

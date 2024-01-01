@@ -1,7 +1,7 @@
-import { LOG, Level } from "../../../logging/logging";
 import { ImportFeatureResponse } from "../../../types/xray/responses/importFeature";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
+import { LOG, Level } from "../../../util/logging";
 import { computeOverlap } from "../../../util/set";
 import { Command, Computable } from "../../command";
 

@@ -1,5 +1,3 @@
-import { LOG, Level } from "../../../../../../logging/logging";
-import { getScenarioTagRegex } from "../../../../../../preprocessing/preprocessing";
 import {
     CucumberMultipartElement,
     CucumberMultipartFeature,
@@ -12,6 +10,8 @@ import {
     missingTestKeyInCucumberScenarioError,
     multipleTestKeysInCucumberScenarioError,
 } from "../../../../../../util/errors";
+import { LOG, Level } from "../../../../../../util/logging";
+import { getScenarioTagRegex } from "../../../../../../util/preprocessing";
 
 /**
  * Modifies the input Cucumber JSON results by adding test execution issue tags and filtering

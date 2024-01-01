@@ -4,12 +4,12 @@ import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import { SinonStubbedInstance } from "sinon";
 import { getMockedJwtCredentials, getMockedLogger, getMockedRestClient } from "../../../test/mocks";
-import { AxiosRestClient } from "../../https/requests";
-import { Level } from "../../logging/logging";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/getTests";
 import { dedent } from "../../util/dedent";
+import { Level } from "../../util/logging";
+import { AxiosRestClient } from "../https/requests";
 import { XrayClientCloud } from "./xrayClientCloud";
 
 chai.use(chaiAsPromised);

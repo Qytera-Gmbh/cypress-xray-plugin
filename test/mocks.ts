@@ -2,19 +2,19 @@ import { AxiosRequestConfig } from "axios";
 import chai from "chai";
 import { SinonStub, SinonStubbedInstance, restore, stub } from "sinon";
 import sinonChai from "sinon-chai";
-import { JwtCredentials } from "../src/authentication/credentials";
+import { JwtCredentials } from "../src/client/authentication/credentials";
+import { AxiosRestClient, REST } from "../src/client/https/requests";
 import { JiraClient } from "../src/client/jira/jiraClient";
 import { XrayClient } from "../src/client/xray/xrayClient";
 import { HasTestTypes, XrayClientCloud } from "../src/client/xray/xrayClientCloud";
-import { AxiosRestClient, REST } from "../src/https/requests";
-import * as logging from "../src/logging/logging";
-import { Logger } from "../src/logging/logging";
 import { SearchRequest } from "../src/types/jira/requests/search";
 import { IssueUpdate } from "../src/types/jira/responses/issueUpdate";
 import { XrayTestExecutionResults } from "../src/types/xray/importTestExecutionResults";
 import { CucumberMultipartFeature } from "../src/types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfo } from "../src/types/xray/requests/importExecutionCucumberMultipartInfo";
 import { dedent } from "../src/util/dedent";
+import * as logging from "../src/util/logging";
+import { Logger } from "../src/util/logging";
 
 chai.use(sinonChai);
 

@@ -1,15 +1,13 @@
-import { BasicAuthCredentials, JwtCredentials, PatCredentials } from "./authentication/credentials";
+import {
+    BasicAuthCredentials,
+    JwtCredentials,
+    PatCredentials,
+} from "./client/authentication/credentials";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
-import {
-    CucumberPreprocessorArgs,
-    CucumberPreprocessorExports,
-    importOptionalDependency,
-} from "./dependencies";
 import { ENV_NAMES } from "./env";
-import { LOG, Level } from "./logging/logging";
 import {
     ClientCombination,
     CypressXrayPluginOptions,
@@ -21,8 +19,14 @@ import {
     PluginContext,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
+import {
+    CucumberPreprocessorArgs,
+    CucumberPreprocessorExports,
+    importOptionalDependency,
+} from "./util/dependencies";
 import { errorMessage } from "./util/errors";
 import { HELP } from "./util/help";
+import { LOG, Level } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asInt, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
 

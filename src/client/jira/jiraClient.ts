@@ -1,8 +1,6 @@
 import { AxiosResponse } from "axios";
 import FormData from "form-data";
 import fs from "fs";
-import { REST } from "../../https/requests";
-import { LOG, Level } from "../../logging/logging";
 import { SearchRequest } from "../../types/jira/requests/search";
 import { Attachment } from "../../types/jira/responses/attachment";
 import { FieldDetail } from "../../types/jira/responses/fieldDetail";
@@ -12,7 +10,9 @@ import { IssueUpdate } from "../../types/jira/responses/issueUpdate";
 import { SearchResults } from "../../types/jira/responses/searchResults";
 import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
+import { LOG, Level } from "../../util/logging";
 import { Client } from "../client";
+import { REST } from "../https/requests";
 
 /**
  * All methods a Jira client needs to implement.

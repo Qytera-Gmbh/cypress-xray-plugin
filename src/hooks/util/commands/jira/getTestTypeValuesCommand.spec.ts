@@ -6,8 +6,8 @@ import {
     getMockedLogger,
     getMockedXrayClient,
 } from "../../../../../test/mocks";
-import { Level } from "../../../../logging/logging";
 import { dedent } from "../../../../util/dedent";
+import { Level } from "../../../../util/logging";
 import { ConstantCommand } from "../constantCommand";
 import {
     GetTestTypeValuesCommandCloud,

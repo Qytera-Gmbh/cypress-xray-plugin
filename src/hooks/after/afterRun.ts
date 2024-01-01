@@ -1,11 +1,11 @@
 import fs from "fs";
 import path from "path";
-import { LOG, Level } from "../../logging/logging";
-import { containsCucumberTest, containsNativeTest } from "../../preprocessing/preprocessing";
 import { IssueTypeDetails } from "../../types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExecutableGraph } from "../../util/executable/executable";
+import { LOG, Level } from "../../util/logging";
+import { containsCucumberTest, containsNativeTest } from "../../util/preprocessing";
 import { Command, Computable } from "../command";
 import { ConstantCommand } from "../util/commands/constantCommand";
 import { AttachFilesCommand } from "../util/commands/jira/attachFilesCommand";

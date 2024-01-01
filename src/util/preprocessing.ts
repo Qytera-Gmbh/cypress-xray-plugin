@@ -1,7 +1,6 @@
 import { AstBuilder, GherkinClassicTokenMatcher, Parser } from "@cucumber/gherkin";
 import { Background, Comment, GherkinDocument, IdGenerator, Scenario } from "@cucumber/messages";
 import fs from "fs";
-import { LOG, Level } from "../logging/logging";
 import { CucumberOptions } from "../types/plugin";
 import {
     errorMessage,
@@ -11,7 +10,8 @@ import {
     multiplePreconditionKeysInCucumberBackgroundError,
     multipleTestKeysInCucumberScenarioError,
     multipleTestKeysInNativeTestTitleError,
-} from "../util/errors";
+} from "./errors";
+import { LOG, Level } from "./logging";
 
 // ============================================================================================== //
 // CYPRESS NATIVE                                                                                 //

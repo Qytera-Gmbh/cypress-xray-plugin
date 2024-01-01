@@ -1,11 +1,11 @@
 import { AxiosResponse } from "axios";
+import { StringMap } from "../../types/util";
+import { encode } from "../../util/base64";
+import { dedent } from "../../util/dedent";
+import { LoggedError, errorMessage } from "../../util/errors";
+import { LOG, Level } from "../../util/logging";
+import { startInterval } from "../../util/time";
 import { REST } from "../https/requests";
-import { LOG, Level } from "../logging/logging";
-import { StringMap } from "../types/util";
-import { encode } from "../util/base64";
-import { dedent } from "../util/dedent";
-import { LoggedError, errorMessage } from "../util/errors";
-import { startInterval } from "../util/time";
 
 /**
  * A basic HTTP header.

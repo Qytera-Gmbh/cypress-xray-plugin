@@ -1,4 +1,4 @@
-import { FeatureFileIssueData } from "../../../preprocessing/preprocessing";
+import { FeatureFileIssueData } from "../../../util/preprocessing";
 import { Command, Computable } from "../../command";
 
 export class ExtractIssueKeysCommand extends Command<string[]> {

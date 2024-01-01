@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 import { stub } from "sinon";
 import { resolveTestDirPath } from "../../test/util";
-import { LoggedError } from "../util/errors";
+import { LoggedError } from "./errors";
 import { Level, PluginLogger } from "./logging";
 
 describe("logging", () => {

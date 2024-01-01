@@ -1,8 +1,6 @@
 import { AxiosResponse, HttpStatusCode, isAxiosError } from "axios";
 import FormData from "form-data";
 import fs from "fs";
-import { REST, RequestConfigPost } from "../../https/requests";
-import { LOG, Level } from "../../logging/logging";
 import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { CucumberMultipartInfo } from "../../types/xray/requests/importExecutionCucumberMultipartInfo";
@@ -19,7 +17,9 @@ import {
 import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
 import { HELP } from "../../util/help";
+import { LOG, Level } from "../../util/logging";
 import { Client } from "../client";
+import { REST, RequestConfigPost } from "../https/requests";
 
 export interface XrayClient {
     /**

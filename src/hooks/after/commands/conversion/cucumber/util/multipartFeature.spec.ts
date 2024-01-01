@@ -3,9 +3,9 @@ import { readFileSync } from "fs";
 import path from "path";
 import { getMockedLogger } from "../../../../../../../test/mocks";
 import { expectToExist } from "../../../../../../../test/util";
-import { Level } from "../../../../../../logging/logging";
 import { CucumberMultipartFeature } from "../../../../../../types/xray/requests/importExecutionCucumberMultipart";
 import { dedent } from "../../../../../../util/dedent";
+import { Level } from "../../../../../../util/logging";
 import { buildMultipartFeatures } from "./multipartFeature";
 
 describe(path.relative(process.cwd(), __filename), () => {

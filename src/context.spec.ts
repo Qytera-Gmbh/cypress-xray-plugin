@@ -2,7 +2,11 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { stub } from "sinon";
 import { getMockedLogger } from "../test/mocks";
-import { BasicAuthCredentials, JwtCredentials, PatCredentials } from "./authentication/credentials";
+import {
+    BasicAuthCredentials,
+    JwtCredentials,
+    PatCredentials,
+} from "./client/authentication/credentials";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
@@ -15,8 +19,6 @@ import {
     initSslOptions,
     initXrayOptions,
 } from "./context";
-import * as dependencies from "./dependencies";
-import { Level } from "./logging/logging";
 import {
     InternalCucumberOptions,
     InternalJiraOptions,
@@ -25,6 +27,8 @@ import {
     InternalXrayOptions,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
+import * as dependencies from "./util/dependencies";
+import { Level } from "./util/logging";
 import * as ping from "./util/ping";
 
 chai.use(chaiAsPromised);

@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { getMockedLogger } from "../../../../test/mocks";
-import { Level } from "../../../logging/logging";
 import { dedent } from "../../../util/dedent";
+import { Level } from "../../../util/logging";
 import { ParseFeatureFileCommand } from "./parseFeatureFileCommand";
 
 describe(ParseFeatureFileCommand.name, () => {

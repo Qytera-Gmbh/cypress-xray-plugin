@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import path from "path";
 import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks";
-import { Level } from "../../../../logging/logging";
 import { dedent } from "../../../../util/dedent";
+import { Level } from "../../../../util/logging";
 import { ImportFeatureCommand } from "./importFeatureCommand";
 
 describe(path.relative(process.cwd(), __filename), () => {

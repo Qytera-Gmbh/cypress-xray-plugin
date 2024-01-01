@@ -1,7 +1,7 @@
 import { Computable, isSkippedError } from "../../hooks/command";
-import { LOG, Level } from "../../logging/logging";
 import { errorMessage } from "../errors";
 import { DirectedEdge, SimpleDirectedEdge, SimpleDirectedGraph } from "../graph/graph";
+import { LOG, Level } from "../logging";
 
 /**
  * Models a graph which can be executed in a top-down fashion, i.e. starting at vertices without

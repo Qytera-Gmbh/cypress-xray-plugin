@@ -1,7 +1,5 @@
 import { basename, parse } from "path";
 import { gte, lt } from "semver";
-import { LOG, Level } from "../../../../../logging/logging";
-import { getNativeTestIssueKey } from "../../../../../preprocessing/preprocessing";
 import {
     CypressRunResult as CypressRunResult_V12,
     RunResult as RunResult_V12,
@@ -23,6 +21,8 @@ import { encodeFile } from "../../../../../util/base64";
 import { dedent } from "../../../../../util/dedent";
 import { errorMessage } from "../../../../../util/errors";
 import { normalizedFilename } from "../../../../../util/files";
+import { LOG, Level } from "../../../../../util/logging";
+import { getNativeTestIssueKey } from "../../../../../util/preprocessing";
 import { truncateIsoTime } from "../../../../../util/time";
 import { Command, Computable } from "../../../../command";
 import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./util/run";

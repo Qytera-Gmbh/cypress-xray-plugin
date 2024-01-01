@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 import { expect } from "chai";
-import { BasicAuthCredentials } from "../../authentication/credentials";
+import { BasicAuthCredentials } from "../authentication/credentials";
 import { JiraClientServer } from "./jiraClientServer";
 
 describe("the jira server client", () => {

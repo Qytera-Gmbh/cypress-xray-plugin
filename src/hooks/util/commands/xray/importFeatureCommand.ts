@@ -1,7 +1,7 @@
 import { XrayClient } from "../../../../client/xray/xrayClient";
-import { LOG, Level } from "../../../../logging/logging";
 import { ImportFeatureResponse } from "../../../../types/xray/responses/importFeature";
 import { dedent } from "../../../../util/dedent";
+import { LOG, Level } from "../../../../util/logging";
 import { Command } from "../../../command";
 
 export interface Parameters {
