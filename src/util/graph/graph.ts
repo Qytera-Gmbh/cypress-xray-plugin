@@ -9,17 +9,19 @@ export interface DirectedGraph<V, E extends DirectedEdge<V>> {
      * Inserts a vertex into the graph without connecting it to any existing vertex.
      *
      * @param vertex - the new vertex
+     * @returns the vertex
      * @throws if the graph contains the vertex already
      */
-    place(vertex: V): void;
+    place<T extends V>(vertex: T): T;
     /**
-     * Connects two vertices in the graph with an edge. If the graph does not yet contain the
-     * vertices, they will automatically be inserted prior to the connection.
+     * Connects two vertices in the graph with an edge. The vertices must exist in the graph already
+     * to connect them (using {@link place | `place`}).
      *
      * @param source - the source vertex
      * @param destination - the destination vertex
      * @returns the new edge
-     * @throws if the connection would introduce a duplicate edge or a cycle
+     * @throws if the graph does not contain one of the vertices or if the connection would
+     * introduce a duplicate edge or a cycle
      */
     connect(source: V, destination: V): E;
     /**
@@ -167,16 +169,21 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
         this.outgoingEdges = new Map();
     }
 
-    public place(vertex: V): void {
+    public place<T extends V>(vertex: T): T {
         if (this.outgoingEdges.has(vertex)) {
             throw new Error(`Duplicate vertex detected: ${unknownToString(vertex)}`);
         }
         this.initVertex(vertex);
+        return vertex;
     }
 
     public connect(source: V, destination: V): SimpleDirectedEdge<V> {
-        const sourceConnections = this.initVertex(source);
-        const destinationConnections = this.initVertex(destination);
+        if (!this.outgoingEdges.has(source)) {
+            throw new Error("Failed to connect vertices: the source vertex does not exist");
+        }
+        if (!this.outgoingEdges.has(destination)) {
+            throw new Error("Failed to connect vertices: the destination vertex does not exist");
+        }
         if (dfs(this, { source: destination, destination: source })) {
             throw new Error(
                 `Failed to connect vertices ${unknownToString(source)} -> ${unknownToString(
@@ -184,7 +191,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
                 )}: cycle detected`
             );
         }
-        for (const outgoingEdge of sourceConnections.outgoing) {
+        for (const outgoingEdge of this.getOutgoing(source)) {
             if (outgoingEdge.getDestination() === destination) {
                 throw new Error(
                     `Failed to connect vertices ${unknownToString(source)} -> ${unknownToString(
@@ -194,8 +201,8 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
             }
         }
         const edge = new SimpleDirectedEdge(source, destination);
-        sourceConnections.outgoing.add(edge);
-        destinationConnections.incoming.add(edge);
+        this.outgoingEdges.get(source)?.add(edge);
+        this.incomingEdges.get(destination)?.add(edge);
         return edge;
     }
 

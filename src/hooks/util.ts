@@ -13,14 +13,14 @@ export function createExtractFieldIdCommand(
         (vertex): vertex is FetchAllFieldsCommand => {
             return vertex instanceof FetchAllFieldsCommand;
         },
-        () => new FetchAllFieldsCommand(jiraClient)
+        () => graph.place(new FetchAllFieldsCommand(jiraClient))
     );
     const extractFieldIdCommand = graph.findOrDefault(
         (command): command is ExtractFieldIdCommand => {
             return command instanceof ExtractFieldIdCommand && command.getField() === field;
         },
         () => {
-            const command = new ExtractFieldIdCommand(field, fetchAllFieldsCommand);
+            const command = graph.place(new ExtractFieldIdCommand(field, fetchAllFieldsCommand));
             graph.connect(fetchAllFieldsCommand, command);
             return command;
         }

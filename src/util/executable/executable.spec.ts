@@ -24,12 +24,11 @@ describe("ExecutableGraph", () => {
         const messages: string[] = [];
         const logger = (message: string) => messages.push(message);
 
-        const v1 = new ComputableVertex("vertex 1", logger);
-        const v2 = new ComputableVertex("vertex 2", logger);
-        const v3 = new ComputableVertex("vertex 3", logger);
-        const v4 = new ComputableVertex("vertex 4", logger);
-
         const g = new ExecutableGraph();
+        const v1 = g.place(new ComputableVertex("vertex 1", logger));
+        const v2 = g.place(new ComputableVertex("vertex 2", logger));
+        const v3 = g.place(new ComputableVertex("vertex 3", logger));
+        const v4 = g.place(new ComputableVertex("vertex 4", logger));
         g.connect(v2, v1);
         g.connect(v1, v3);
         g.connect(v2, v4);

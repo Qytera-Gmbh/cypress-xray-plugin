@@ -16,16 +16,16 @@ class Vertex {
 
 describe("search", () => {
     const graph = new SimpleDirectedGraph<Vertex>();
-    const v0 = new Vertex(0);
-    const v1 = new Vertex(1);
-    const v2 = new Vertex(2);
-    const v3 = new Vertex(3);
-    const v4 = new Vertex(4);
-    const v5 = new Vertex(5);
-    const v6 = new Vertex(6);
-    const v7 = new Vertex(7);
-    const v8 = new Vertex(8);
-    const v9 = new Vertex(9);
+    const v0 = graph.place(new Vertex(0));
+    const v1 = graph.place(new Vertex(1));
+    const v2 = graph.place(new Vertex(2));
+    const v3 = graph.place(new Vertex(3));
+    const v4 = graph.place(new Vertex(4));
+    const v5 = graph.place(new Vertex(5));
+    const v6 = graph.place(new Vertex(6));
+    const v7 = graph.place(new Vertex(7));
+    const v8 = graph.place(new Vertex(8));
+    const v9 = graph.place(new Vertex(9));
     graph.connect(v1, v2);
     graph.connect(v1, v5);
     graph.connect(v1, v7);

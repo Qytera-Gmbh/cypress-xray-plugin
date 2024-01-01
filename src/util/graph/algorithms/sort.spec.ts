@@ -6,6 +6,16 @@ describe("sort", () => {
     describe(computeTopologicalOrder.name, () => {
         it("computes the order for directed graphs", () => {
             const graph = new SimpleDirectedGraph<number>();
+            graph.place(0);
+            graph.place(1);
+            graph.place(2);
+            graph.place(3);
+            graph.place(4);
+            graph.place(5);
+            graph.place(6);
+            graph.place(7);
+            graph.place(8);
+            graph.place(9);
             graph.connect(1, 2);
             graph.connect(1, 5);
             graph.connect(1, 7);

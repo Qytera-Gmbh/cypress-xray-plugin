@@ -8,6 +8,11 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         beforeEach(() => {
             graph = new SimpleDirectedGraph<number>();
+            graph.place(0);
+            graph.place(1);
+            graph.place(2);
+            graph.place(3);
+            graph.place(4);
             graph.connect(0, 1);
             graph.connect(0, 2);
             graph.connect(0, 3);
@@ -29,12 +34,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         describe(graph.connect.name, () => {
-            it("adds new edges", () => {
-                graph.connect(5, 6);
-                expect([...graph.getOutgoing(5)]).to.deep.eq([new SimpleDirectedEdge(5, 6)]);
-            });
-
             it("connects to existing vertices", () => {
+                graph.place(5);
                 graph.connect(0, 5);
                 expect([...graph.getOutgoing(0)]).to.deep.eq([
                     new SimpleDirectedEdge(0, 1),
@@ -44,6 +45,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ]);
             });
 
+            it("detects unknown source vertices", () => {
+                expect(() => {
+                    graph.connect(42, 0);
+                }).to.throw("Failed to connect vertices: the source vertex does not exist");
+            });
+
+            it("detects unknown destination vertices", () => {
+                expect(() => {
+                    graph.connect(0, 42);
+                }).to.throw("Failed to connect vertices: the destination vertex does not exist");
+            });
+
             it("detects cycles", () => {
                 expect(() => {
                     graph.connect(4, 2);
@@ -51,6 +64,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("detects duplicates", () => {
+                graph.place(8);
                 graph.connect(0, 8);
                 expect(() => {
                     graph.connect(0, 8);
