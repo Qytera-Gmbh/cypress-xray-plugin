@@ -2,7 +2,7 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import { CucumberMultipartFeature } from "../../../../../types/xray/requests/importExecutionCucumberMultipart";
-import { ConstantCommand } from "../../../../util";
+import { ConstantCommand } from "../../../../util/commands/constantCommand";
 import { ConvertCucumberFeaturesCommand } from "./convertCucumberFeaturesCommand";
 
 describe(path.relative(process.cwd(), __filename), () => {

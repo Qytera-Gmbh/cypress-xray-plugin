@@ -1,5 +1,5 @@
 import { Background, Comment } from "@cucumber/messages";
-import { JiraField } from "../hooks/preprocessor/commands/jira/extractFieldIdCommand";
+import { JiraField } from "../hooks/util/commands/jira/extractFieldIdCommand";
 import { FieldDetail } from "../types/jira/responses/fieldDetail";
 import { JiraFieldIds } from "../types/plugin";
 import { StringMap } from "../types/util";

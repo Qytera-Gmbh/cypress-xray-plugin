@@ -8,7 +8,7 @@ import {
 } from "../../../../../test/mocks";
 import { Level } from "../../../../logging/logging";
 import { dedent } from "../../../../util/dedent";
-import { ConstantCommand } from "../../../util";
+import { ConstantCommand } from "../constantCommand";
 import {
     GetTestTypeValuesCommandCloud,
     GetTestTypeValuesCommandServer,

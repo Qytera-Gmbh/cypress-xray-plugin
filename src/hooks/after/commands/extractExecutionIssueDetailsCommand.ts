@@ -1,14 +1,14 @@
-import { IssueTypeDetails } from "../../../../types/jira/responses/issueTypeDetails";
-import { dedent } from "../../../../util/dedent";
-import { HELP } from "../../../../util/help";
-import { Command, Computable } from "../../../command";
+import { IssueTypeDetails } from "../../../types/jira/responses/issueTypeDetails";
+import { dedent } from "../../../util/dedent";
+import { HELP } from "../../../util/help";
+import { Command, Computable } from "../../command";
 
 interface Parameters {
     projectKey: string;
     testExecutionIssueType: string;
 }
 
-export class FetchExecutionIssueDetailsCommand extends Command<IssueTypeDetails> {
+export class ExtractExecutionIssueDetailsCommand extends Command<IssueTypeDetails> {
     private readonly parameters: Parameters;
     private readonly allIssueTypes: Computable<IssueTypeDetails[]>;
 

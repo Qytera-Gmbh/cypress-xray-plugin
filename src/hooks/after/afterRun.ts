@@ -7,9 +7,14 @@ import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExecutableGraph } from "../../util/executable/executable";
 import { Command, Computable } from "../command";
-import { JiraField } from "../preprocessor/commands/jira/extractFieldIdCommand";
-import { ImportFeatureCommand } from "../preprocessor/commands/xray/importFeatureCommand";
-import { ConstantCommand, createExtractFieldIdCommand } from "../util";
+import { ConstantCommand } from "../util/commands/constantCommand";
+import { AttachFilesCommand } from "../util/commands/jira/attachFilesCommand";
+import { JiraField } from "../util/commands/jira/extractFieldIdCommand";
+import { FetchIssueDetailsCommand } from "../util/commands/jira/fetchIssueDetailsCommand";
+import { ImportExecutionCucumberCommand } from "../util/commands/xray/importExecutionCucumberCommand";
+import { ImportExecutionCypressCommand } from "../util/commands/xray/importExecutionCypressCommand";
+import { ImportFeatureCommand } from "../util/commands/xray/importFeatureCommand";
+import { createExtractFieldIdCommand } from "../util/util";
 import { CompareCypressCucumberKeysCommand } from "./commands/compareCypressCucumberKeysCommand";
 import { AssertCucumberConversionValidCommand } from "./commands/conversion/cucumber/assertCucumberConversionValidCommand";
 import { CombineCucumberMultipartCommand } from "./commands/conversion/cucumber/combineCucumberMultipartCommand";
@@ -24,14 +29,10 @@ import { AssertCypressConversionValidCommand } from "./commands/conversion/cypre
 import { CombineCypressJsonCommand } from "./commands/conversion/cypress/combineCypressXrayCommand";
 import { ConvertCypressInfoCommand } from "./commands/conversion/cypress/convertCypressInfoCommand";
 import { ConvertCypressTestsCommand } from "./commands/conversion/cypress/convertCypressTestsCommand";
+import { ExtractExecutionIssueDetailsCommand } from "./commands/extractExecutionIssueDetailsCommand";
 import { ExtractVideoFilesCommand } from "./commands/extractVideoFilesCommand";
-import { AttachFilesCommand } from "./commands/jira/attachFilesCommand";
-import { FetchExecutionIssueDetailsCommand } from "./commands/jira/fetchExecutionIssueDetailsCommand";
-import { FetchIssueTypesCommand } from "./commands/jira/fetchIssueTypesCommand";
 import { PrintUploadSuccessCommand } from "./commands/printUploadSuccessCommand";
 import { VerifyExecutionIssueKeyCommand } from "./commands/verifyExecutionIssueKeyCommand";
-import { ImportExecutionCucumberCommand } from "./commands/xray/importExecutionCucumberCommand";
-import { ImportExecutionCypressCommand } from "./commands/xray/importExecutionCypressCommand";
 
 export function addUploadCommands(
     runResult: CypressCommandLine.CypressRunResult,
@@ -195,11 +196,12 @@ function createImportExecutionCucumberCommand(
     ) as CucumberMultipartFeature[];
     const cucumberResultsCommand = graph.place(new ConstantCommand(results));
     const fetchIssueTypesCommand = graph.findOrDefault(
-        (command): command is FetchIssueTypesCommand => command instanceof FetchIssueTypesCommand,
-        () => graph.place(new FetchIssueTypesCommand(clients.jiraClient))
+        (command): command is FetchIssueDetailsCommand =>
+            command instanceof FetchIssueDetailsCommand,
+        () => graph.place(new FetchIssueDetailsCommand(clients.jiraClient))
     );
     const fetchExecutionIssueDetailsCommand = graph.place(
-        new FetchExecutionIssueDetailsCommand(
+        new ExtractExecutionIssueDetailsCommand(
             {
                 projectKey: options.jira.projectKey,
                 testExecutionIssueType: options.jira.testExecutionIssueType,

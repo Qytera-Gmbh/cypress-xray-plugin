@@ -1,16 +1,17 @@
 import path from "path";
 import { Command } from "../command";
+import { EditIssueFieldCommand } from "../util/commands/jira/editIssueFieldCommand";
+import { JiraField } from "../util/commands/jira/extractFieldIdCommand";
+import { GetLabelValuesCommand } from "../util/commands/jira/getLabelValuesCommand";
+import { GetSummaryValuesCommand } from "../util/commands/jira/getSummaryValuesCommand";
+import { ImportFeatureCommand } from "../util/commands/xray/importFeatureCommand";
 import { ExtractFeatureFileIssuesCommand } from "./commands/extractFeatureFileIssuesCommand";
-import { EditIssueFieldCommand } from "./commands/jira/editIssueFieldCommand";
-import { JiraField } from "./commands/jira/extractFieldIdCommand";
-import { GetLabelValuesCommand } from "./commands/jira/getLabelValuesCommand";
-import { GetSummaryValuesCommand } from "./commands/jira/getSummaryValuesCommand";
 import { ParseFeatureFileCommand } from "./commands/parseFeatureFileCommand";
-import { ImportFeatureCommand } from "./commands/xray/importFeatureCommand";
 
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { ExecutableGraph } from "../../util/executable/executable";
-import { ConstantCommand, createExtractFieldIdCommand } from "../util";
+import { ConstantCommand } from "../util/commands/constantCommand";
+import { createExtractFieldIdCommand } from "../util/util";
 import { ExtractIssueKeysCommand } from "./commands/extractIssueKeysCommand";
 import { GetLabelsToResetCommand } from "./commands/getLabelsToResetCommand";
 import { GetSummariesToResetCommand } from "./commands/getSummariesToResetCommand";

@@ -4,7 +4,7 @@ import path from "path";
 import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks";
 import { Level } from "../../../../logging/logging";
 import { dedent } from "../../../../util/dedent";
-import { ConstantCommand } from "../../../util";
+import { ConstantCommand } from "../constantCommand";
 import { GetLabelValuesCommand } from "./getLabelValuesCommand";
 
 chai.use(chaiAsPromised);

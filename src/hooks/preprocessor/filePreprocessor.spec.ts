@@ -12,19 +12,19 @@ import {
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { ExecutableGraph } from "../../util/executable/executable";
 import { Command } from "../command";
-import { ConstantCommand } from "../util";
+import { ConstantCommand } from "../util/commands/constantCommand";
+import { EditIssueFieldCommand } from "../util/commands/jira/editIssueFieldCommand";
+import { ExtractFieldIdCommand, JiraField } from "../util/commands/jira/extractFieldIdCommand";
+import { FetchAllFieldsCommand } from "../util/commands/jira/fetchAllFieldsCommand";
+import { GetLabelValuesCommand } from "../util/commands/jira/getLabelValuesCommand";
+import { GetSummaryValuesCommand } from "../util/commands/jira/getSummaryValuesCommand";
+import { ImportFeatureCommand } from "../util/commands/xray/importFeatureCommand";
 import { ExtractFeatureFileIssuesCommand } from "./commands/extractFeatureFileIssuesCommand";
 import { ExtractIssueKeysCommand } from "./commands/extractIssueKeysCommand";
 import { GetLabelsToResetCommand } from "./commands/getLabelsToResetCommand";
 import { GetSummariesToResetCommand } from "./commands/getSummariesToResetCommand";
 import { GetUpdatedIssuesCommand } from "./commands/getUpdatedIssuesCommand";
-import { EditIssueFieldCommand } from "./commands/jira/editIssueFieldCommand";
-import { ExtractFieldIdCommand, JiraField } from "./commands/jira/extractFieldIdCommand";
-import { FetchAllFieldsCommand } from "./commands/jira/fetchAllFieldsCommand";
-import { GetLabelValuesCommand } from "./commands/jira/getLabelValuesCommand";
-import { GetSummaryValuesCommand } from "./commands/jira/getSummaryValuesCommand";
 import { ParseFeatureFileCommand } from "./commands/parseFeatureFileCommand";
-import { ImportFeatureCommand } from "./commands/xray/importFeatureCommand";
 import { addSynchronizationCommands } from "./filePreprocessor";
 
 describe(path.relative(process.cwd(), __filename), () => {

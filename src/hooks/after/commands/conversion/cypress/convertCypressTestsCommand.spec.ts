@@ -13,7 +13,7 @@ import {
 import { Level } from "../../../../../logging/logging";
 import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
 import { dedent } from "../../../../../util/dedent";
-import { ConstantCommand } from "../../../../util";
+import { ConstantCommand } from "../../../../util/commands/constantCommand";
 import { ConvertCypressTestsCommand } from "./convertCypressTestsCommand";
 
 chai.use(chaiAsPromised);

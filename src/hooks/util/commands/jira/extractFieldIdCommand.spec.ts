@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
 import { dedent } from "../../../../util/dedent";
-import { ConstantCommand } from "../../../util";
+import { ConstantCommand } from "../constantCommand";
 import { ExtractFieldIdCommand, JiraField } from "./extractFieldIdCommand";
 
 chai.use(chaiAsPromised);

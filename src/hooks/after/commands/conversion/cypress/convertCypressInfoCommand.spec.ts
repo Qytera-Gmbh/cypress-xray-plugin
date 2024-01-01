@@ -9,7 +9,7 @@ import {
 } from "../../../../../context";
 import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
 import { dedent } from "../../../../../util/dedent";
-import { ConstantCommand } from "../../../../util";
+import { ConstantCommand } from "../../../../util/commands/constantCommand";
 import { ConvertCypressInfoCommand } from "./convertCypressInfoCommand";
 
 describe(path.relative(process.cwd(), __filename), () => {

@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import path from "path";
-import { ConstantCommand } from "../../../../util";
+import { ConstantCommand } from "../../../../util/commands/constantCommand";
 import {
     ConvertCucumberInfoCloudCommand,
     ConvertCucumberInfoServerCommand,

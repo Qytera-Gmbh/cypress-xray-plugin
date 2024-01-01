@@ -3,7 +3,7 @@ import path from "path";
 import { getMockedLogger } from "../../../../test/mocks";
 import { Level } from "../../../logging/logging";
 import { dedent } from "../../../util/dedent";
-import { ConstantCommand } from "../../util";
+import { ConstantCommand } from "../../util/commands/constantCommand";
 import { GetSummariesToResetCommand } from "./getSummariesToResetCommand";
 
 describe(path.relative(process.cwd(), __filename), () => {

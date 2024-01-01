@@ -3,10 +3,10 @@ import { ConvertCypressInfoCommand } from "../../../hooks/after/commands/convers
 import { ConvertCypressTestsCommand } from "../../../hooks/after/commands/conversion/cypress/convertCypressTestsCommand";
 import { Command, CommandState } from "../../../hooks/command";
 import { ExtractFeatureFileIssuesCommand } from "../../../hooks/preprocessor/commands/extractFeatureFileIssuesCommand";
-import { EditIssueFieldCommand } from "../../../hooks/preprocessor/commands/jira/editIssueFieldCommand";
-import { ExtractFieldIdCommand } from "../../../hooks/preprocessor/commands/jira/extractFieldIdCommand";
 import { ParseFeatureFileCommand } from "../../../hooks/preprocessor/commands/parseFeatureFileCommand";
-import { ImportFeatureCommand } from "../../../hooks/preprocessor/commands/xray/importFeatureCommand";
+import { EditIssueFieldCommand } from "../../../hooks/util/commands/jira/editIssueFieldCommand";
+import { ExtractFieldIdCommand } from "../../../hooks/util/commands/jira/extractFieldIdCommand";
+import { ImportFeatureCommand } from "../../../hooks/util/commands/xray/importFeatureCommand";
 import { dedent } from "../../dedent";
 import { errorMessage } from "../../errors";
 import { unknownToString } from "../../string";
