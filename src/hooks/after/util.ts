@@ -1,10 +1,8 @@
-import { CypressRunResultType, CypressTestResultType } from "../../types/cypress/run-result";
+import { CypressRunResultType } from "../../types/cypress/run-result";
 import {
-    errorMessage,
     missingTestKeyInNativeTestTitleError,
     multipleTestKeysInNativeTestTitleError,
 } from "../../util/errors";
-import { LOG, Level } from "../../util/logging";
 
 export function containsCypressTest(
     runResult: CypressRunResultType,
@@ -28,39 +26,6 @@ export function containsCucumberTest(
         }
         return false;
     });
-}
-
-export function getNativeTestIssueKeys(
-    results: CypressRunResultType,
-    projectKey: string,
-    featureFileExtension?: string
-): string[] {
-    const issueKeys: string[] = [];
-    for (const runResult of results.runs) {
-        const keyedTests: CypressTestResultType[] = [];
-        // Cucumber tests aren't handled here. Let's skip them.
-        if (featureFileExtension && runResult.spec.absolute.endsWith(featureFileExtension)) {
-            continue;
-        }
-        for (let i = runResult.tests.length - 1; i >= 0; i--) {
-            const testResult = runResult.tests[i];
-            const title = testResult.title.join(" ");
-            try {
-                // The last element refers to an individual test (it).
-                // The ones before are test suite titles (describe, context, ...).
-                const issueKey = getNativeTestIssueKey(
-                    testResult.title[testResult.title.length - 1],
-                    projectKey
-                );
-                keyedTests.push(testResult);
-                issueKeys.push(issueKey);
-            } catch (error: unknown) {
-                LOG.message(Level.WARNING, `Skipping test: ${title}\n\n${errorMessage(error)}`);
-                runResult.tests.splice(i, 1);
-            }
-        }
-    }
-    return issueKeys;
 }
 
 /**
