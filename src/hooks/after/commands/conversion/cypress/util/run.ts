@@ -134,11 +134,8 @@ export function getTestRunData_V13(
     projectKey: string
 ): Promise<TestRunData>[] {
     const testRuns: Promise<TestRunData>[] = [];
-    const testStarts: Map<string, Date> = startTimesByTest(runResult);
-    const testScreenshots: StringMap<ScreenshotInformation_V13[]> = screenshotsByTest(
-        runResult,
-        projectKey
-    );
+    const testStarts = startTimesByTest(runResult);
+    const testScreenshots = screenshotsByTest(runResult, projectKey);
     runResult.tests.forEach((test: TestResult_V13) => {
         const title = test.title.join(" ");
         const screenshots = title in testScreenshots ? testScreenshots[title] : [];
@@ -152,7 +149,7 @@ export function getTestRunData_V13(
                     spec: {
                         filepath: runResult.spec.absolute,
                     },
-                    startedAt: testStarts.get(title) ?? new Date(),
+                    startedAt: testStarts[title],
                     status: toCypressStatus(test.state),
                     title: title,
                 });
@@ -162,8 +159,8 @@ export function getTestRunData_V13(
     return testRuns;
 }
 
-function startTimesByTest(run: RunResult_V13): Map<string, Date> {
-    const map = new Map<string, Date>();
+function startTimesByTest(run: RunResult_V13): StringMap<Date> {
+    const map: StringMap<Date> = {};
     const testStarts: Date[] = [];
     for (let i = 0; i < run.tests.length; i++) {
         let date: Date;
@@ -173,7 +170,7 @@ function startTimesByTest(run: RunResult_V13): Map<string, Date> {
             date = new Date(testStarts[i - 1].getTime() + run.tests[i - 1].duration);
         }
         testStarts.push(date);
-        map.set(run.tests[i].title.join(" "), date);
+        map[run.tests[i].title.join(" ")] = date;
     }
     return map;
 }

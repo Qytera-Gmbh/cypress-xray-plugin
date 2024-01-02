@@ -136,10 +136,9 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                                 dedent(`
                                     Screenshot will not be uploaded: ${screenshot.path}
 
-                                    Its filename does not contain a test issue key.
                                     To upload screenshots, include a test issue key anywhere in their names:
 
-                                    cy.screenshot("${this.parameters.jira.projectKey}-123 ${path.name}")
+                                      cy.screenshot("${this.parameters.jira.projectKey}-123 ${path.name}")
                                 `)
                             );
                         }

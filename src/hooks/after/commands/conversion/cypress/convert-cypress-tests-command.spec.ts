@@ -10,6 +10,7 @@ import {
     initSslOptions,
     initXrayOptions,
 } from "../../../../../context";
+import { CypressRunResult } from "../../../../../types/cypress/13.0.0/api";
 import { CypressRunResultType } from "../../../../../types/cypress/run-result";
 import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
 import { dedent } from "../../../../../util/dedent";
@@ -42,38 +43,149 @@ describe(path.relative(process.cwd(), __filename), () => {
             };
         });
 
-        it("converts test results into xray info json", async () => {
-            const result: CypressRunResultType = JSON.parse(
-                readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressRunResultType;
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
-            const json = await command.compute();
-            expect(json).to.deep.eq([
-                {
-                    testKey: "CYP-40",
-                    start: "2022-11-28T17:41:15Z",
-                    finish: "2022-11-28T17:41:15Z",
-                    status: "PASS",
-                },
-                {
-                    testKey: "CYP-41",
-                    start: "2022-11-28T17:41:15Z",
-                    finish: "2022-11-28T17:41:15Z",
-                    status: "PASS",
-                },
-                {
-                    testKey: "CYP-49",
-                    start: "2022-11-28T17:41:15Z",
-                    finish: "2022-11-28T17:41:19Z",
-                    status: "FAIL",
-                    evidence: [
-                        {
-                            data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
-                            filename: "small.png",
-                        },
-                    ],
-                },
-            ]);
+        describe("<13", () => {
+            it("converts test results into xray info json", async () => {
+                const result: CypressRunResultType = JSON.parse(
+                    readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+                ) as CypressRunResultType;
+                const command = new ConvertCypressTestsCommand(
+                    options,
+                    new ConstantCommand(result)
+                );
+                const json = await command.compute();
+                expect(json).to.deep.eq([
+                    {
+                        testKey: "CYP-40",
+                        start: "2022-11-28T17:41:15Z",
+                        finish: "2022-11-28T17:41:15Z",
+                        status: "PASS",
+                    },
+                    {
+                        testKey: "CYP-41",
+                        start: "2022-11-28T17:41:15Z",
+                        finish: "2022-11-28T17:41:15Z",
+                        status: "PASS",
+                    },
+                    {
+                        testKey: "CYP-49",
+                        start: "2022-11-28T17:41:15Z",
+                        finish: "2022-11-28T17:41:19Z",
+                        status: "FAIL",
+                        evidence: [
+                            {
+                                data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
+                                filename: "small.png",
+                            },
+                        ],
+                    },
+                ]);
+            });
+        });
+
+        describe(">=13", () => {
+            it("converts test results into xray info json", async () => {
+                const result: CypressRunResultType = JSON.parse(
+                    readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
+                ) as CypressRunResultType;
+                const command = new ConvertCypressTestsCommand(
+                    options,
+                    new ConstantCommand(result)
+                );
+                const json = await command.compute();
+                expect(json).to.deep.eq([
+                    {
+                        testKey: "CYP-452",
+                        start: "2023-09-09T10:59:28Z",
+                        finish: "2023-09-09T10:59:29Z",
+                        status: "PASS",
+                    },
+                    {
+                        testKey: "CYP-268",
+                        start: "2023-09-09T10:59:29Z",
+                        finish: "2023-09-09T10:59:29Z",
+                        status: "PASS",
+                    },
+                    {
+                        testKey: "CYP-237",
+                        start: "2023-09-09T10:59:29Z",
+                        finish: "2023-09-09T10:59:29Z",
+                        status: "FAIL",
+                        evidence: [
+                            {
+                                data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
+                                filename: "small CYP-237.png",
+                            },
+                        ],
+                    },
+                    {
+                        testKey: "CYP-332",
+                        start: "2023-09-09T10:59:29Z",
+                        finish: "2023-09-09T10:59:29Z",
+                        status: "FAIL",
+                    },
+                    {
+                        testKey: "CYP-333",
+                        start: "2023-09-09T10:59:29Z",
+                        finish: "2023-09-09T10:59:29Z",
+                        status: "TODO",
+                    },
+                ]);
+            });
+
+            it("warns about non-attributable screenshots", async () => {
+                const result: CypressRunResult = JSON.parse(
+                    readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
+                ) as CypressRunResult;
+                result.runs[0].screenshots[0].path = "./test/resources/small.png";
+                const command = new ConvertCypressTestsCommand(
+                    options,
+                    new ConstantCommand(result)
+                );
+                const logger = getMockedLogger();
+                const json = await command.compute();
+                expect(json).to.deep.eq([
+                    {
+                        testKey: "CYP-452",
+                        start: "2023-09-09T10:59:28Z",
+                        finish: "2023-09-09T10:59:29Z",
+                        status: "PASS",
+                    },
+                    {
+                        testKey: "CYP-268",
+                        start: "2023-09-09T10:59:29Z",
+                        finish: "2023-09-09T10:59:29Z",
+                        status: "PASS",
+                    },
+                    {
+                        testKey: "CYP-237",
+                        start: "2023-09-09T10:59:29Z",
+                        finish: "2023-09-09T10:59:29Z",
+                        status: "FAIL",
+                    },
+                    {
+                        testKey: "CYP-332",
+                        start: "2023-09-09T10:59:29Z",
+                        finish: "2023-09-09T10:59:29Z",
+                        status: "FAIL",
+                    },
+                    {
+                        testKey: "CYP-333",
+                        start: "2023-09-09T10:59:29Z",
+                        finish: "2023-09-09T10:59:29Z",
+                        status: "TODO",
+                    },
+                ]);
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.WARNING,
+                    dedent(`
+                        Screenshot will not be uploaded: ./test/resources/small.png
+
+                        To upload screenshots, include a test issue key anywhere in their names:
+
+                          cy.screenshot("CYP-123 small")
+                    `)
+                );
+            });
         });
 
         it("skips tests when encountering unknown statuses", async () => {
