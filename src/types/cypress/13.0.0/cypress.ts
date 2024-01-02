@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 
-import { CypressFailedRunResult, CypressRunResult, RunResult } from "./api";
+import { CypressFailedRunResult_V13, CypressRunResult_V13, RunResult_V13 } from "./api";
 
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
-export type TestingType = "e2e" | "component";
-interface Auth {
+export type TestingType_V13 = "e2e" | "component";
+interface Auth_V13 {
     username: string;
     password: string;
 }
-interface RemoteState {
-    auth?: Auth;
+interface RemoteState_V13 {
+    auth?: Auth_V13;
     domainName: string;
     strategy: "file" | "http";
     origin: string;
@@ -18,13 +18,13 @@ interface RemoteState {
     props: Record<string, unknown>;
     visiting: string;
 }
-type BrowserName = "electron" | "chrome" | "chromium" | "firefox" | "edge" | string;
-type BrowserChannel = "stable" | "canary" | "beta" | "dev" | "nightly" | string;
-type BrowserFamily = "chromium" | "firefox" | "webkit";
-interface Browser {
-    name: BrowserName;
-    family: BrowserFamily;
-    channel: BrowserChannel;
+type BrowserName_V13 = "electron" | "chrome" | "chromium" | "firefox" | "edge" | string;
+type BrowserChannel_V13 = "stable" | "canary" | "beta" | "dev" | "nightly" | string;
+type BrowserFamily_V13 = "chromium" | "firefox" | "webkit";
+interface Browser_V13 {
+    name: BrowserName_V13;
+    family: BrowserFamily_V13;
+    channel: BrowserChannel_V13;
     displayName: string;
     version: string;
     majorVersion: number | string;
@@ -36,49 +36,49 @@ interface Browser {
     minSupportedVersion?: number;
     unsupportedVersion?: boolean;
 }
-export interface PublicBrowser {
-    channel: BrowserChannel;
+export interface PublicBrowser_V13 {
+    channel: BrowserChannel_V13;
     displayName: string;
     family: string;
     majorVersion?: string | number | null;
-    name: BrowserName;
+    name: BrowserName_V13;
     path: string;
     version: string;
 }
-type CypressSpecType = "integration" | "component";
+type CypressSpecType_V13 = "integration" | "component";
 interface Spec {
     name: string;
     relative: string;
     absolute: string;
     specFilter?: string;
-    specType?: CypressSpecType;
+    specType?: CypressSpecType_V13;
 }
 interface Cypress {
     spec: Spec;
 }
-type experimentalCspAllowedDirectives =
+type experimentalCspAllowedDirectives_V13 =
     | "default-src"
     | "child-src"
     | "frame-src"
     | "script-src"
     | "script-src-elem"
     | "form-action";
-type scrollBehaviorOptions = false | "center" | "top" | "bottom" | "nearest";
-interface PEMCert {
+type scrollBehaviorOptions_V13 = false | "center" | "top" | "bottom" | "nearest";
+interface PEMCert_V13 {
     cert: string;
     key: string;
     passphrase?: string;
 }
-interface PFXCert {
+interface PFXCert_V13 {
     pfx: string;
     passphrase?: string;
 }
-interface ClientCertificate {
+interface ClientCertificate_V13 {
     url: string;
     ca?: string[];
-    certs: PEMCert[] | PFXCert[];
+    certs: PEMCert_V13[] | PFXCert_V13[];
 }
-export interface ResolvedConfigOptions<ComponentDevServerOpts = unknown> {
+export interface ResolvedConfigOptions_V13<ComponentDevServerOpts = unknown> {
     baseUrl: string | null;
     env: Record<string, unknown>;
     excludeSpecPattern: string | string[];
@@ -114,8 +114,8 @@ export interface ResolvedConfigOptions<ComponentDevServerOpts = unknown> {
     viewportWidth: number;
     animationDistanceThreshold: number;
     waitForAnimations: boolean;
-    scrollBehavior: scrollBehaviorOptions;
-    experimentalCspAllowList: boolean | experimentalCspAllowedDirectives[];
+    scrollBehavior: scrollBehaviorOptions_V13;
+    experimentalCspAllowList: boolean | experimentalCspAllowedDirectives_V13[];
     experimentalInteractiveRunEvents: boolean;
     experimentalModifyObstructiveThirdPartyCode: boolean;
     experimentalSkipDomainInjection: string[] | null;
@@ -131,27 +131,27 @@ export interface ResolvedConfigOptions<ComponentDevServerOpts = unknown> {
     specPattern: string | string[];
     userAgent: null | string;
     experimentalFetchPolyfill: boolean;
-    component: ComponentConfigOptions<ComponentDevServerOpts>;
-    e2e: EndToEndConfigOptions;
-    clientCertificates: ClientCertificate[];
+    component: ComponentConfigOptions_V13<ComponentDevServerOpts>;
+    e2e: EndToEndConfigOptions_V13;
+    clientCertificates: ClientCertificate_V13[];
     setupNodeEvents: (
-        on: PluginEvents,
-        config: PluginConfigOptions
-    ) => Promise<PluginConfigOptions | void> | PluginConfigOptions | void;
+        on: PluginEvents_V13,
+        config: PluginConfigOptions_V13
+    ) => Promise<PluginConfigOptions_V13 | void> | PluginConfigOptions_V13 | void;
     indexHtmlFile: string;
 }
-interface EndToEndConfigOptions extends Omit<CoreConfigOptions, "indexHtmlFile"> {
+interface EndToEndConfigOptions_V13 extends Omit<CoreConfigOptions_V13, "indexHtmlFile"> {
     experimentalRunAllSpecs?: boolean;
     experimentalOriginDependencies?: boolean;
 }
-interface RuntimeConfigOptions extends Partial<RuntimeServerConfigOptions> {
+interface RuntimeConfigOptions_V13 extends Partial<RuntimeServerConfigOptions_V13> {
     configFile: string;
     arch: string;
-    browsers: Browser[];
+    browsers: Browser_V13[];
     hosts: null | Record<string, string>;
     isInteractive: boolean;
     platform: "linux" | "darwin" | "win32";
-    remote: RemoteState;
+    remote: RemoteState_V13;
     version: string;
     namespace: string;
     projectRoot: string;
@@ -159,8 +159,8 @@ interface RuntimeConfigOptions extends Partial<RuntimeServerConfigOptions> {
     devServerPublicPathRoute: string;
     cypressBinaryRoot: string;
 }
-interface RuntimeServerConfigOptions {
-    browser: Browser;
+interface RuntimeServerConfigOptions_V13 {
+    browser: Browser_V13;
     autoOpen: boolean;
     browserUrl: string;
     clientRoute: string;
@@ -172,7 +172,7 @@ interface RuntimeServerConfigOptions {
     parentTestsFolderDisplay: string;
     projectName: string;
     proxyUrl: string;
-    remote: RemoteState;
+    remote: RemoteState_V13;
     report: boolean;
     reporterRoute: string;
     reporterUrl: string;
@@ -185,24 +185,26 @@ interface RuntimeServerConfigOptions {
     hideCommandLog: boolean;
     hideRunnerUi: boolean;
 }
-type CoreConfigOptions = Partial<Omit<ResolvedConfigOptions, TestingType>>;
-type DefineDevServerConfig = Record<string, unknown>;
-type PickConfigOpt<T> = T extends keyof DefineDevServerConfig ? DefineDevServerConfig[T] : unknown;
+type CoreConfigOptions_V13 = Partial<Omit<ResolvedConfigOptions_V13, TestingType_V13>>;
+type DefineDevServerConfig_V13 = Record<string, unknown>;
+type PickConfigOpt_V13<T> = T extends keyof DefineDevServerConfig_V13
+    ? DefineDevServerConfig_V13[T]
+    : unknown;
 interface AngularDevServerProjectConfig {
     root: string;
     sourceRoot: string;
     buildOptions: Record<string, unknown>;
 }
-type DevServerFn<ComponentDevServerOpts = unknown> = (
-    cypressDevServerConfig: DevServerConfig,
+type DevServerFn_V13<ComponentDevServerOpts = unknown> = (
+    cypressDevServerConfig: DevServerConfig_V13,
     devServerConfig: ComponentDevServerOpts
-) => ResolvedDevServerConfig | Promise<ResolvedDevServerConfig>;
-type ConfigHandler<T> = T | (() => T | Promise<T>);
-type DevServerConfigOptions =
+) => ResolvedDevServerConfig_V13 | Promise<ResolvedDevServerConfig_V13>;
+type ConfigHandler_V13<T> = T | (() => T | Promise<T>);
+type DevServerConfigOptions_V13 =
     | {
           bundler: "webpack";
           framework: "react" | "vue" | "vue-cli" | "nuxt" | "create-react-app" | "next" | "svelte";
-          webpackConfig?: ConfigHandler<PickConfigOpt<"webpackConfig">>;
+          webpackConfig?: ConfigHandler_V13<PickConfigOpt_V13<"webpackConfig">>;
       }
     | {
           bundler: "vite";
@@ -217,52 +219,52 @@ type DevServerConfigOptions =
     | {
           bundler: "webpack";
           framework: "angular";
-          webpackConfig?: ConfigHandler<PickConfigOpt<"webpackConfig">>;
+          webpackConfig?: ConfigHandler_V13<PickConfigOpt_V13<"webpackConfig">>;
           options?: {
               projectConfig: AngularDevServerProjectConfig;
           };
       };
-interface ComponentConfigOptions<ComponentDevServerOpts = unknown>
-    extends Omit<CoreConfigOptions, "baseUrl" | "experimentalStudio"> {
-    devServer: DevServerFn<ComponentDevServerOpts> | DevServerConfigOptions;
+interface ComponentConfigOptions_V13<ComponentDevServerOpts = unknown>
+    extends Omit<CoreConfigOptions_V13, "baseUrl" | "experimentalStudio"> {
+    devServer: DevServerFn_V13<ComponentDevServerOpts> | DevServerConfigOptions_V13;
     devServerConfig?: ComponentDevServerOpts;
     experimentalSingleTabRunMode?: boolean;
 }
-type UserConfigOptions<ComponentDevServerOpts = unknown> = Omit<
-    ResolvedConfigOptions<ComponentDevServerOpts>,
+type UserConfigOptions_V13<ComponentDevServerOpts = unknown> = Omit<
+    ResolvedConfigOptions_V13<ComponentDevServerOpts>,
     "baseUrl" | "excludeSpecPattern" | "supportFile" | "specPattern" | "indexHtmlFile"
 >;
-export type ConfigOptions<ComponentDevServerOpts = unknown> = Partial<
-    UserConfigOptions<ComponentDevServerOpts>
+export type ConfigOptions_V13<ComponentDevServerOpts = unknown> = Partial<
+    UserConfigOptions_V13<ComponentDevServerOpts>
 > & {
     hosts?: null | Record<string, string>;
 };
-interface PluginConfigOptions extends ResolvedConfigOptions, RuntimeConfigOptions {
+interface PluginConfigOptions_V13 extends ResolvedConfigOptions_V13, RuntimeConfigOptions_V13 {
     projectRoot: string;
-    testingType: TestingType;
+    testingType: TestingType_V13;
     version: string;
 }
-interface Dimensions {
+interface Dimensions_V13 {
     x: number;
     y: number;
     width: number;
     height: number;
 }
-interface BrowserLaunchOptions {
+interface BrowserLaunchOptions_V13 {
     extensions: string[];
     preferences: Record<string, unknown>;
     args: string[];
     env: Record<string, unknown>;
 }
-interface Dimensions {
+interface Dimensions_V13 {
     width: number;
     height: number;
 }
-interface ScreenshotDetails {
+interface ScreenshotDetails_V13 {
     size: number;
     takenAt: string;
     duration: number;
-    dimensions: Dimensions;
+    dimensions: Dimensions_V13;
     multipart: boolean;
     pixelRatio: number;
     name: string;
@@ -272,70 +274,70 @@ interface ScreenshotDetails {
     scaled: boolean;
     blackout: string[];
 }
-interface AfterScreenshotReturnObject {
+interface AfterScreenshotReturnObject_V13 {
     path?: string;
     size?: number;
-    dimensions?: Dimensions;
+    dimensions?: Dimensions_V13;
 }
-interface FileObject extends NodeEventEmitter {
+interface FileObject_V13 extends NodeEventEmitter {
     filePath: string;
     outputPath: string;
     shouldWatch: boolean;
 }
-type Task = (value: unknown) => unknown;
-type Tasks = Record<string, Task>;
-interface SystemDetails {
+type Task_V13 = (value: unknown) => unknown;
+type Tasks_V13 = Record<string, Task_V13>;
+interface SystemDetails_V13 {
     osName: string;
     osVersion: string;
 }
-interface BeforeRunDetails {
-    browser?: Browser;
-    config: ConfigOptions;
+interface BeforeRunDetails_V13 {
+    browser?: Browser_V13;
+    config: ConfigOptions_V13;
     cypressVersion: string;
     group?: string;
     parallel?: boolean;
     runUrl?: string;
     specs?: Spec[];
     specPattern?: string[];
-    system: SystemDetails;
+    system: SystemDetails_V13;
     tag?: string;
     autoCancelAfterFailures?: number | false;
 }
-interface DevServerConfig {
+interface DevServerConfig_V13 {
     specs: Spec[];
-    cypressConfig: PluginConfigOptions;
+    cypressConfig: PluginConfigOptions_V13;
     devServerEvents: NodeJS.EventEmitter;
 }
-interface ResolvedDevServerConfig {
+interface ResolvedDevServerConfig_V13 {
     port: number;
     close: (done?: (err?: Error) => unknown) => void;
 }
-interface PluginEvents {
+interface PluginEvents_V13 {
     (
         action: "after:run",
-        fn: (results: CypressRunResult | CypressFailedRunResult) => void | Promise<void>
+        fn: (results: CypressRunResult_V13 | CypressFailedRunResult_V13) => void | Promise<void>
     ): void;
     (
         action: "after:screenshot",
         fn: (
-            details: ScreenshotDetails
-        ) => void | AfterScreenshotReturnObject | Promise<AfterScreenshotReturnObject>
+            details: ScreenshotDetails_V13
+        ) => void | AfterScreenshotReturnObject_V13 | Promise<AfterScreenshotReturnObject_V13>
     ): void;
-    (action: "after:spec", fn: (spec: Spec, results: RunResult) => void | Promise<void>): void;
-    (action: "before:run", fn: (runDetails: BeforeRunDetails) => void | Promise<void>): void;
+    (action: "after:spec", fn: (spec: Spec, results: RunResult_V13) => void | Promise<void>): void;
+    (action: "before:run", fn: (runDetails: BeforeRunDetails_V13) => void | Promise<void>): void;
     (action: "before:spec", fn: (spec: Spec) => void | Promise<void>): void;
     (
         action: "before:browser:launch",
         fn: (
-            browser: Browser,
-            browserLaunchOptions: BrowserLaunchOptions
-        ) => void | BrowserLaunchOptions | Promise<BrowserLaunchOptions>
+            browser: Browser_V13,
+            browserLaunchOptions: BrowserLaunchOptions_V13
+        ) => void | BrowserLaunchOptions_V13 | Promise<BrowserLaunchOptions_V13>
     ): void;
-    (action: "file:preprocessor", fn: (file: FileObject) => string | Promise<string>): void;
+    (action: "file:preprocessor", fn: (file: FileObject_V13) => string | Promise<string>): void;
     (
         action: "dev-server:start",
-        fn: (file: DevServerConfig) => Promise<ResolvedDevServerConfig>
+        fn: (file: DevServerConfig_V13) => Promise<ResolvedDevServerConfig_V13>
     ): void;
-    (action: "task", tasks: Tasks): void;
+    (action: "task", tasks: Tasks_V13): void;
 }
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;

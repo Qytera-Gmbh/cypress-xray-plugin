@@ -1,12 +1,12 @@
 import {
-    RunResult as RunResult_V12,
-    ScreenshotInformation as ScreenshotInformation_V12,
-    TestResult as TestResult_V12,
+    RunResult_V12,
+    ScreenshotInformation_V12,
+    TestResult_V12,
 } from "../../../../../../types/cypress/12.0.0/api";
 import {
-    RunResult as RunResult_V13,
-    ScreenshotInformation as ScreenshotInformation_V13,
-    TestResult as TestResult_V13,
+    RunResult_V13,
+    ScreenshotInformation_V13,
+    TestResult_V13,
 } from "../../../../../../types/cypress/13.0.0/api";
 import { Status } from "../../../../../../types/test-status";
 import { StringMap } from "../../../../../../types/util";

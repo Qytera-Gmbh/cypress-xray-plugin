@@ -10,7 +10,8 @@ import {
     initSslOptions,
     initXrayOptions,
 } from "../../../../../context";
-import { CypressRunResult } from "../../../../../types/cypress/13.0.0/api";
+import { CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
+import { CypressRunResult_V13 } from "../../../../../types/cypress/13.0.0/api";
 import { CypressRunResultType } from "../../../../../types/cypress/run-result";
 import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
 import { dedent } from "../../../../../util/dedent";
@@ -45,9 +46,9 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("<13", () => {
             it("converts test results into xray info json", async () => {
-                const result: CypressRunResultType = JSON.parse(
+                const result: CypressRunResult_V12 = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-                ) as CypressRunResultType;
+                ) as CypressRunResult_V12;
                 const command = new ConvertCypressTestsCommand(
                     options,
                     new ConstantCommand(result)
@@ -84,9 +85,9 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe(">=13", () => {
             it("converts test results into xray info json", async () => {
-                const result: CypressRunResultType = JSON.parse(
+                const result: CypressRunResult_V13 = JSON.parse(
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-                ) as CypressRunResultType;
+                ) as CypressRunResult_V13;
                 const command = new ConvertCypressTestsCommand(
                     options,
                     new ConstantCommand(result)
@@ -133,9 +134,9 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("warns about non-attributable screenshots", async () => {
-                const result: CypressRunResult = JSON.parse(
+                const result: CypressRunResult_V13 = JSON.parse(
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-                ) as CypressRunResult;
+                ) as CypressRunResult_V13;
                 result.runs[0].screenshots[0].path = "./test/resources/small.png";
                 const command = new ConvertCypressTestsCommand(
                     options,

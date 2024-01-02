@@ -1,10 +1,7 @@
 import { basename, parse } from "path";
 import { gte, lt } from "semver";
-import { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
-import {
-    RunResult as RunResult_V13,
-    ScreenshotInformation as ScreenshotInformation_V13,
-} from "../../../../../types/cypress/13.0.0/api";
+import { RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
+import { RunResult_V13, ScreenshotInformation_V13 } from "../../../../../types/cypress/13.0.0/api";
 import { CypressRunResultType } from "../../../../../types/cypress/run-result";
 import {
     InternalCucumberOptions,
