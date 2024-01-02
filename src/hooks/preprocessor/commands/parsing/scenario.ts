@@ -11,7 +11,7 @@ export function getCucumberScenarioIssueTags(
         if (!matches) {
             continue;
         }
-        // We know for sure that a match will contain the value in the first group.
+        // We know the regex: the match will contain the value in the first group.
         issueKeys.push(matches[1]);
     }
     return issueKeys;

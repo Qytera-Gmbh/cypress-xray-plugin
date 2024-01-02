@@ -35,7 +35,7 @@ export function getCucumberPreconditionIssueTags(
             if (!matches) {
                 continue;
             }
-            // We know for sure that a match will contain the value in the first group.
+            // We know the regex: the match will contain the value in the first group.
             preconditionKeys.push(matches[1]);
         }
     }

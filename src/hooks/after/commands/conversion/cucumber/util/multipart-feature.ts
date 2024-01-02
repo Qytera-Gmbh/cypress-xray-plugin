@@ -42,6 +42,7 @@ export function buildMultipartFeatures(
                 name: `@${options.testExecutionIssueKey}`,
             };
             // Xray uses the first encountered issue tag for deducing the test execution issue.
+            // Note: The tag is a feature tag, not a scenario tag!
             if (result.tags) {
                 test.tags = [testExecutionIssueTag, ...result.tags];
             } else {
@@ -95,9 +96,9 @@ function assertScenarioContainsIssueKey(
             const matches = tag.name.match(getScenarioTagRegex(projectKey, testPrefix));
             if (!matches) {
                 continue;
-            } else if (matches.length === 2) {
-                issueKeys.push(matches[1]);
             }
+            // We know the regex: the match will contain the value in the first group.
+            issueKeys.push(matches[1]);
         }
         if (issueKeys.length > 1) {
             throw multipleTestKeysInCucumberScenarioError(
