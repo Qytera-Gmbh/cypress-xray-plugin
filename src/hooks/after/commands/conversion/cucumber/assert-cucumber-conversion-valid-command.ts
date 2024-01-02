@@ -12,7 +12,9 @@ export class AssertCucumberConversionValidCommand extends Command<void> {
     protected async computeResult(): Promise<void> {
         const cucumberMultipart = await this.cucumberMultipart.compute();
         if (cucumberMultipart.features.length === 0) {
-            throw new SkippedError("No Cucumber tests were executed. Skipping Cucumber upload.");
+            throw new SkippedError(
+                "Skipping Cucumber results upload: No Cucumber tests were executed"
+            );
         }
     }
 }

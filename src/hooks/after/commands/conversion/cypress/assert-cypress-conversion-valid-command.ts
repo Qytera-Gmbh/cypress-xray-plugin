@@ -13,7 +13,7 @@ export class AssertCypressConversionValidCommand extends Command<void> {
         const xrayTestExecutionResults = await this.xrayTestExecutionResults.compute();
         if (!xrayTestExecutionResults.tests || xrayTestExecutionResults.tests.length === 0) {
             throw new SkippedError(
-                "No native Cypress tests were executed. Skipping native upload."
+                "Skipping Cypress results upload: No native Cypress tests were executed"
             );
         }
     }
