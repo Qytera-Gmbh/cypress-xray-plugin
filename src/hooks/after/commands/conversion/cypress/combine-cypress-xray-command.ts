@@ -1,4 +1,4 @@
-import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
+import { InternalJiraOptions } from "../../../../../types/plugin";
 import {
     XrayTest,
     XrayTestExecutionInfo,
@@ -6,7 +6,7 @@ import {
 } from "../../../../../types/xray/import-test-execution-results";
 import { Command, Computable } from "../../../../command";
 
-type Parameters = Pick<InternalCypressXrayPluginOptions["jira"], "testExecutionIssueKey">;
+type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey">;
 
 export class CombineCypressJsonCommand extends Command<XrayTestExecutionResults> {
     private readonly parameters: Parameters;

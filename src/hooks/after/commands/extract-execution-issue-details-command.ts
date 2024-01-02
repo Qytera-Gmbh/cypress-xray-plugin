@@ -1,13 +1,10 @@
 import { IssueTypeDetails } from "../../../types/jira/responses/issue-type-details";
-import { InternalCypressXrayPluginOptions } from "../../../types/plugin";
+import { InternalJiraOptions } from "../../../types/plugin";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
 import { Command, Computable } from "../../command";
 
-type Parameters = Pick<
-    InternalCypressXrayPluginOptions["jira"],
-    "projectKey" | "testExecutionIssueType"
->;
+type Parameters = Pick<InternalJiraOptions, "projectKey" | "testExecutionIssueType">;
 
 export class ExtractExecutionIssueDetailsCommand extends Command<IssueTypeDetails> {
     private readonly parameters: Parameters;

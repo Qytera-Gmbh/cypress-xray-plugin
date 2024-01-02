@@ -154,5 +154,38 @@ describe(path.relative(process.cwd(), __filename), () => {
             const info = await command.compute();
             expect(info.testEnvironments).to.deep.eq(["DEV"]);
         });
+
+        it("returns its parameters", () => {
+            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+                readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+            ) as CypressCommandLine.CypressRunResult;
+            const command = new ConvertCypressInfoCommand(
+                {
+                    jira: {
+                        projectKey: "CYP",
+                        testExecutionIssueKey: "CYP-123",
+                        testExecutionIssueDescription: "desription",
+                        testExecutionIssueSummary: "summary",
+                        testPlanIssueKey: "CYP-456",
+                    },
+                    xray: {
+                        testEnvironments: ["DEV"],
+                    },
+                },
+                new ConstantCommand(result)
+            );
+            expect(command.getParameters()).to.deep.eq({
+                jira: {
+                    projectKey: "CYP",
+                    testExecutionIssueKey: "CYP-123",
+                    testExecutionIssueDescription: "desription",
+                    testExecutionIssueSummary: "summary",
+                    testPlanIssueKey: "CYP-456",
+                },
+                xray: {
+                    testEnvironments: ["DEV"],
+                },
+            });
+        });
     });
 });
