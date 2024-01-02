@@ -5,7 +5,7 @@ import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExecutableGraph } from "../../util/graph/executable";
 import { LOG, Level } from "../../util/logging";
-import { containsCucumberTest, containsNativeTest } from "../../util/preprocessing";
+import { containsNativeTest } from "../../util/preprocessing";
 import { Command, Computable } from "../command";
 import { ConstantCommand } from "../util/commands/constantCommand";
 import { AttachFilesCommand } from "../util/commands/jira/attachFilesCommand";
@@ -33,6 +33,7 @@ import { ExtractExecutionIssueDetailsCommand } from "./commands/extractExecution
 import { ExtractVideoFilesCommand } from "./commands/extractVideoFilesCommand";
 import { PrintUploadSuccessCommand } from "./commands/printUploadSuccessCommand";
 import { VerifyExecutionIssueKeyCommand } from "./commands/verifyExecutionIssueKeyCommand";
+import { containsCucumberTest } from "./util";
 
 export function addUploadCommands(
     runResult: CypressCommandLine.CypressRunResult,

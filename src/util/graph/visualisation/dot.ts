@@ -60,13 +60,10 @@ export async function graphToDot<V>(
 export async function commandToDot<R>(command: Command<R>): Promise<string> {
     let vertexDataRows: string | null = null;
     if (command instanceof ExtractFeatureFileIssuesCommand) {
-        const prefixes = escapeHtmlLabel(unknownToString(command.getPrefixes(), true));
+        const parameters = escapeHtmlLabel(unknownToString(command.getParameters(), true));
         vertexDataRows = dedent(`
             <TR>
-              ${td("Project key", "right")}${td(command.getProjectKey(), "left")}
-            </TR>
-            <TR>
-              ${td("Prefixes", "right")}${td(prefixes, "left")}
+              ${td("Parameters", "right")}${td(parameters, "left")}
             </TR>
         `);
     } else if (command instanceof ParseFeatureFileCommand) {

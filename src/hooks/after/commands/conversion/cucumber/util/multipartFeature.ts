@@ -11,7 +11,7 @@ import {
     multipleTestKeysInCucumberScenarioError,
 } from "../../../../../../util/errors";
 import { LOG, Level } from "../../../../../../util/logging";
-import { getScenarioTagRegex } from "../../../../../../util/preprocessing";
+import { getScenarioTagRegex } from "../../../../../preprocessor/commands/parsing/scenario";
 
 /**
  * Modifies the input Cucumber JSON results by adding test execution issue tags and filtering

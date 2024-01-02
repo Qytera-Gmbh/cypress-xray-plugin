@@ -85,10 +85,13 @@ describe(path.relative(process.cwd(), __filename), () => {
             assertIsInstanceOf(commands[0], ParseFeatureFileCommand);
             expect(commands[0].getFilePath()).to.eq("./path/to/file.feature");
             assertIsInstanceOf(commands[1], ExtractFeatureFileIssuesCommand);
-            expect(commands[1].getProjectKey()).to.eq("CYP");
-            expect(commands[1].getPrefixes()).to.deep.eq({
-                test: "TestName:",
-                precondition: "Precondition:",
+            expect(commands[1].getParameters()).to.deep.eq({
+                projectKey: "CYP",
+                prefixes: {
+                    test: "TestName:",
+                    precondition: "Precondition:",
+                },
+                displayCloudHelp: false,
             });
             assertIsInstanceOf(commands[2], ExtractIssueKeysCommand);
             assertIsInstanceOf(commands[3], FetchAllFieldsCommand);

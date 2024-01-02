@@ -27,9 +27,11 @@ export function addSynchronizationCommands(
     const parseFeatureFileCommand = graph.place(new ParseFeatureFileCommand(file.filePath));
     const extractIssueDataCommand = graph.place(
         new ExtractFeatureFileIssuesCommand(
-            options.jira.projectKey,
-            options.cucumber?.prefixes,
-            clients.kind === "cloud",
+            {
+                projectKey: options.jira.projectKey,
+                prefixes: options.cucumber?.prefixes,
+                displayCloudHelp: clients.kind === "cloud",
+            },
             parseFeatureFileCommand
         )
     );

@@ -1,4 +1,5 @@
 import { GherkinDocument } from "@cucumber/messages";
+import { FeatureFileIssueData } from "../../../types/cucumber/cucumber";
 import { CucumberOptions } from "../../../types/plugin";
 import {
     missingPreconditionKeyInCucumberBackgroundError,
@@ -6,38 +7,30 @@ import {
     multiplePreconditionKeysInCucumberBackgroundError,
     multipleTestKeysInCucumberScenarioError,
 } from "../../../util/errors";
+import { Command, Computable } from "../../command";
 import {
-    FeatureFileIssueData,
     getCucumberPreconditionIssueComments,
     getCucumberPreconditionIssueTags,
-    getCucumberScenarioIssueTags,
-} from "../../../util/preprocessing";
-import { Command, Computable } from "../../command";
+} from "./parsing/precondition";
+import { getCucumberScenarioIssueTags } from "./parsing/scenario";
+
+interface Parameters {
+    readonly projectKey: string;
+    readonly prefixes: CucumberOptions["prefixes"];
+    readonly displayCloudHelp: boolean;
+}
 
 export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueData> {
-    private readonly projectKey: string;
-    private readonly prefixes: CucumberOptions["prefixes"];
-    private readonly displayCloudHelp: boolean;
+    private readonly parameters: Parameters;
     private readonly document: Computable<GherkinDocument>;
-    constructor(
-        projectKey: string,
-        prefixes: CucumberOptions["prefixes"],
-        displayCloudHelp: boolean,
-        document: Computable<GherkinDocument>
-    ) {
+    constructor(parameters: Parameters, document: Computable<GherkinDocument>) {
         super();
-        this.projectKey = projectKey;
-        this.prefixes = prefixes;
-        this.displayCloudHelp = displayCloudHelp;
+        this.parameters = parameters;
         this.document = document;
     }
 
-    public getProjectKey(): string {
-        return this.projectKey;
-    }
-
-    public getPrefixes(): CucumberOptions["prefixes"] {
-        return this.prefixes;
+    public getParameters(): Parameters {
+        return this.parameters;
     }
 
     protected async computeResult(): Promise<FeatureFileIssueData> {
@@ -51,21 +44,21 @@ export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueDat
                 if (child.scenario) {
                     const issueKeys = getCucumberScenarioIssueTags(
                         child.scenario,
-                        this.projectKey,
-                        this.prefixes?.test
+                        this.parameters.projectKey,
+                        this.parameters.prefixes?.test
                     );
                     if (issueKeys.length === 0) {
                         throw missingTestKeyInCucumberScenarioError(
                             child.scenario,
-                            this.projectKey,
-                            this.displayCloudHelp
+                            this.parameters.projectKey,
+                            this.parameters.displayCloudHelp
                         );
                     } else if (issueKeys.length > 1) {
                         throw multipleTestKeysInCucumberScenarioError(
                             child.scenario,
                             child.scenario.tags,
                             issueKeys,
-                            this.displayCloudHelp
+                            this.parameters.displayCloudHelp
                         );
                     }
                     featureFileIssueKeys.tests.push({
@@ -80,15 +73,15 @@ export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueDat
                     );
                     const preconditionKeys = getCucumberPreconditionIssueTags(
                         child.background,
-                        this.projectKey,
+                        this.parameters.projectKey,
                         preconditionComments,
-                        this.prefixes?.precondition
+                        this.parameters.prefixes?.precondition
                     );
                     if (preconditionKeys.length === 0) {
                         throw missingPreconditionKeyInCucumberBackgroundError(
                             child.background,
-                            this.projectKey,
-                            this.displayCloudHelp,
+                            this.parameters.projectKey,
+                            this.parameters.displayCloudHelp,
                             preconditionComments
                         );
                     } else if (preconditionKeys.length > 1) {
@@ -96,7 +89,7 @@ export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueDat
                             child.background,
                             preconditionKeys,
                             parsedDocument.comments,
-                            this.displayCloudHelp
+                            this.parameters.displayCloudHelp
                         );
                     }
                     featureFileIssueKeys.preconditions.push({
