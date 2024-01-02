@@ -10,8 +10,8 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
-import { addUploadCommands } from "./hooks/after/afterRun";
-import { addSynchronizationCommands } from "./hooks/preprocessor/filePreprocessor";
+import { addUploadCommands } from "./hooks/after/after-run";
+import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
 import {
     CypressXrayPluginOptions,
     InternalCypressXrayPluginOptions,

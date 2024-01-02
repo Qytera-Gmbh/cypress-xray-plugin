@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Status } from "../../../../../../types/testStatus";
+import { Status } from "../../../../../../types/test-status";
 import { getXrayStatus, toCypressStatus } from "./status";
 
 describe("toCypressStatus", () => {

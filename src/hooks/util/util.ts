@@ -1,8 +1,8 @@
-import { JiraClient } from "../../client/jira/jiraClient";
+import { JiraClient } from "../../client/jira/jira-client";
 import { ExecutableGraph } from "../../util/graph/executable";
 import { Command } from "../command";
-import { ExtractFieldIdCommand, JiraField } from "./commands/jira/extractFieldIdCommand";
-import { FetchAllFieldsCommand } from "./commands/jira/fetchAllFieldsCommand";
+import { ExtractFieldIdCommand, JiraField } from "./commands/jira/extract-field-id-command";
+import { FetchAllFieldsCommand } from "./commands/jira/fetch-all-fields-command";
 
 export function createExtractFieldIdCommand(
     field: JiraField,

@@ -1,6 +1,6 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
-import { JiraClient } from "../client/jira/jiraClient";
-import { XrayClient } from "../client/xray/xrayClient";
+import { JiraClient } from "../client/jira/jira-client";
+import { XrayClient } from "../client/xray/xray-client";
 import { Command } from "../hooks/command";
 import { ExecutableGraph } from "../util/graph/executable";
 

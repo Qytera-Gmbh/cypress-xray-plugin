@@ -10,8 +10,8 @@ import {
 } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
 import * as context from "./context";
-import * as afterRunHook from "./hooks/after/afterRun";
-import * as synchronizeFeatureFileHook from "./hooks/preprocessor/filePreprocessor";
+import * as afterRunHook from "./hooks/after/after-run";
+import * as synchronizeFeatureFileHook from "./hooks/preprocessor/file-preprocessor";
 import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CypressXrayPluginOptions, PluginContext } from "./types/plugin";
 import { dedent } from "./util/dedent";

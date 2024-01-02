@@ -7,10 +7,10 @@ import {
     JwtCredentials,
     PatCredentials,
 } from "./client/authentication/credentials";
-import { JiraClientCloud } from "./client/jira/jiraClientCloud";
-import { JiraClientServer } from "./client/jira/jiraClientServer";
-import { XrayClientCloud } from "./client/xray/xrayClientCloud";
-import { XrayClientServer } from "./client/xray/xrayClientServer";
+import { JiraClientCloud } from "./client/jira/jira-client-cloud";
+import { JiraClientServer } from "./client/jira/jira-client-server";
+import { XrayClientCloud } from "./client/xray/xray-client-cloud";
+import { XrayClientServer } from "./client/xray/xray-client-server";
 import {
     initClients,
     initCucumberOptions,

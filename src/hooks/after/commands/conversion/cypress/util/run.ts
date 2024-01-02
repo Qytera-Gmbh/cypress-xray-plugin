@@ -8,7 +8,7 @@ import {
     ScreenshotInformation as ScreenshotInformation_V13,
     TestResult as TestResult_V13,
 } from "../../../../../../types/cypress/13.0.0/api";
-import { Status } from "../../../../../../types/testStatus";
+import { Status } from "../../../../../../types/test-status";
 import { StringMap } from "../../../../../../types/util";
 import { getNativeTestIssueKey } from "../../../../util";
 import { toCypressStatus } from "./status";

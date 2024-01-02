@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api";
 import { RunResult as RunResult_V13 } from "../../../../../../types/cypress/13.0.0/api";
-import { Status } from "../../../../../../types/testStatus";
+import { Status } from "../../../../../../types/test-status";
 import { getTestRunData_V12, getTestRunData_V13 } from "./run";
 
 chai.use(chaiAsPromised);

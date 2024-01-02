@@ -1,4 +1,4 @@
-import { LinkGroup } from "./linkGroup";
+import { LinkGroup } from "./link-group";
 
 export interface Opsbar {
     /**

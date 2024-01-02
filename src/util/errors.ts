@@ -1,6 +1,6 @@
 import { Background, Comment } from "@cucumber/messages";
-import { JiraField } from "../hooks/util/commands/jira/extractFieldIdCommand";
-import { FieldDetail } from "../types/jira/responses/fieldDetail";
+import { JiraField } from "../hooks/util/commands/jira/extract-field-id-command";
+import { FieldDetail } from "../types/jira/responses/field-detail";
 import { JiraFieldIds } from "../types/plugin";
 import { StringMap } from "../types/util";
 import { dedent } from "./dedent";
