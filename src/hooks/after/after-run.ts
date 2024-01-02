@@ -167,6 +167,7 @@ function createImportExecutionCypressCommand(
                     testExecutionIssueKey: options.jira.testExecutionIssueKey,
                     testExecutionIssueType: options.jira.testExecutionIssueType,
                     importType: "cypress",
+                    displayCloudHelp: clients.kind === "cloud",
                 },
                 importCypressExecutionCommand
             )
@@ -275,6 +276,7 @@ function createImportExecutionCucumberCommand(
                     testExecutionIssueKey: options.jira.testExecutionIssueKey,
                     testExecutionIssueType: options.jira.testExecutionIssueType,
                     importType: "cucumber",
+                    displayCloudHelp: clients.kind === "cloud",
                 },
                 importCucumberExecutionCommand
             )

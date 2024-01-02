@@ -1,12 +1,13 @@
+import { InternalJiraOptions } from "../../../types/plugin";
 import { dedent } from "../../../util/dedent";
+import { HELP } from "../../../util/help";
 import { LOG, Level } from "../../../util/logging";
 import { Command, Computable } from "../../command";
 
-interface Parameters {
-    testExecutionIssueKey: string;
-    testExecutionIssueType: string;
+type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey" | "testExecutionIssueType"> & {
+    displayCloudHelp: boolean;
     importType: "cypress" | "cucumber";
-}
+};
 
 export class VerifyExecutionIssueKeyCommand extends Command<string> {
     private readonly parameters: Parameters;
@@ -33,6 +34,14 @@ export class VerifyExecutionIssueKeyCommand extends Command<string> {
                     Make sure issue ${
                         this.parameters.testExecutionIssueKey
                     } actually exists and is of type: ${this.parameters.testExecutionIssueType}
+
+                    More information
+                    - ${HELP.plugin.configuration.jira.testExecutionIssueType}
+                    - ${
+                        this.parameters.displayCloudHelp
+                            ? HELP.xray.issueTypeMapping.cloud
+                            : HELP.xray.issueTypeMapping.server
+                    }
                 `)
             );
         }
