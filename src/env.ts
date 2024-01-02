@@ -1,5 +1,5 @@
 import { CypressXrayPluginOptions } from "./types/plugin";
-import { Remapping } from "./types/util";
+import { Remap } from "./types/util";
 
 /**
  * An interface containing all authentication options which can be provided via environment
@@ -22,7 +22,7 @@ interface Authentication {
 /**
  * Contains a mapping of all available options to their respective environment variable names.
  */
-export const ENV_NAMES: Remapping<CypressXrayPluginOptions & Authentication, string> = {
+export const ENV_NAMES: Remap<CypressXrayPluginOptions & Authentication, string> = {
     authentication: {
         jira: {
             username: "JIRA_USERNAME",

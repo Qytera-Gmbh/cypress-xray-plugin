@@ -23,7 +23,7 @@ export type StringMap<T> = Record<string, T>;
  *   }
  * }
  *
- * const remapped: Remapping<A, string> = {
+ * const remapped: Remap<A, string> = {
  *   a: "these",
  *   b: "properties",
  *   c: {
@@ -35,10 +35,10 @@ export type StringMap<T> = Record<string, T>;
  * }
  * ```
  */
-export type Remapping<T extends object, V> = {
+export type Remap<T extends object, V> = {
     [K in keyof Required<T>]: Required<T>[K] extends object
         ? Required<T>[K] extends unknown[]
             ? V
-            : Remapping<Required<T>[K], V>
+            : Remap<Required<T>[K], V>
         : V;
 };
