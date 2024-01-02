@@ -1,3 +1,4 @@
+import { GherkinDocument } from "@cucumber/messages";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
@@ -35,7 +36,100 @@ describe(path.relative(process.cwd(), __filename), () => {
                         tags: ["TestName:CYP-555", "TestSet:CYP-444"],
                     },
                 ],
-                preconditions: [{ key: "CYP-222", summary: "<empty>" }],
+                preconditions: [{ key: "CYP-222", summary: "" }],
+            });
+        });
+
+        it("skips empty feature files", async () => {
+            const document: GherkinDocument = {
+                comments: [],
+            };
+            const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
+                {
+                    projectKey: "CYP",
+                    prefixes: {},
+                    displayCloudHelp: true,
+                },
+                new ConstantCommand(document)
+            );
+            expect(await extractIssueKeysCommand.compute()).to.deep.eq({
+                tests: [],
+                preconditions: [],
+            });
+        });
+
+        it("handles rules", async () => {
+            const document: GherkinDocument = {
+                feature: {
+                    location: { line: 1 },
+                    tags: [],
+                    language: "en",
+                    keyword: "Feature",
+                    name: "Rule feature",
+                    description: "",
+                    children: [
+                        {
+                            rule: {
+                                id: "123242-rule",
+                                location: { line: 3 },
+                                tags: [],
+                                keyword: "Rule",
+                                name: "A rule",
+                                description: "",
+                                children: [
+                                    {
+                                        background: {
+                                            id: "123242-background",
+                                            location: { line: 4 },
+                                            keyword: "Background",
+                                            name: "A background",
+                                            description: "",
+                                            steps: [
+                                                {
+                                                    id: "123242-background-given",
+                                                    location: { line: 6 },
+                                                    keyword: "Given",
+                                                    text: "Something",
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    {
+                                        scenario: {
+                                            id: "123242-scenario",
+                                            location: { line: 8 },
+                                            tags: [
+                                                {
+                                                    name: "@CYP-123",
+                                                    location: { line: 7 },
+                                                    id: "123242-scenario-tag",
+                                                },
+                                            ],
+                                            keyword: "Scenario",
+                                            name: "A scenario",
+                                            description: "",
+                                            steps: [],
+                                            examples: [],
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                },
+                comments: [{ location: { line: 5 }, text: "@CYP-456" }],
+            };
+            const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
+                {
+                    projectKey: "CYP",
+                    prefixes: {},
+                    displayCloudHelp: true,
+                },
+                new ConstantCommand(document)
+            );
+            expect(await extractIssueKeysCommand.compute()).to.deep.eq({
+                tests: [{ key: "CYP-123", summary: "A scenario", tags: ["CYP-123"] }],
+                preconditions: [{ key: "CYP-456", summary: "A background" }],
             });
         });
 
