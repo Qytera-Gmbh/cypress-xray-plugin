@@ -4,7 +4,9 @@ import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
 import { Command, Computable } from "../../command";
 
-type Parameters = Pick<InternalJiraOptions, "projectKey" | "testExecutionIssueType">;
+type Parameters = Pick<InternalJiraOptions, "projectKey" | "testExecutionIssueType"> & {
+    displayCloudHelp: boolean;
+};
 
 export class ExtractExecutionIssueDetailsCommand extends Command<IssueTypeDetails> {
     private readonly parameters: Parameters;
@@ -24,25 +26,62 @@ export class ExtractExecutionIssueDetailsCommand extends Command<IssueTypeDetail
         if (executionIssueDetails.length === 0) {
             throw new Error(
                 dedent(`
-                    Failed to retrieve issue type information for issue type: ${this.parameters.testExecutionIssueType}
+                    Failed to retrieve Jira issue type information of test execution issue type: ${
+                        this.parameters.testExecutionIssueType
+                    }
 
-                    Make sure you have Xray installed.
+                    Make sure Xray's issue types have been added to project ${
+                        this.parameters.projectKey
+                    } or that you've configured any custom execution issue type accordingly
+
+                      For example, the following plugin configuration will tell Xray to create Jira issues of type "My Custom Issue Type" to document test execution results:
+
+                        {
+                          jira: {
+                            testExecutionIssueType: "My Custom Issue Type"
+                          }
+                        }
 
                     For more information, visit:
                     - ${HELP.plugin.configuration.jira.testExecutionIssueType}
-                    - ${HELP.plugin.configuration.jira.testPlanIssueType}
+                    - ${
+                        this.parameters.displayCloudHelp
+                            ? HELP.xray.issueTypeMapping.cloud
+                            : HELP.xray.issueTypeMapping.server
+                    }
                 `)
             );
         } else if (executionIssueDetails.length > 1) {
             throw new Error(
                 dedent(`
-                    Found multiple issue types named: ${this.parameters.testExecutionIssueType}
+                    Failed to retrieve Jira issue type information of test execution issue type: ${
+                        this.parameters.testExecutionIssueType
+                    }
 
-                    Make sure to only make a single one available in project ${this.parameters.projectKey}.
+                    There are multiple issue types with this name, make sure to only make a single one available in project ${
+                        this.parameters.projectKey
+                    }:
+                      ${executionIssueDetails
+                          .map((details) => `${details.name}: ${JSON.stringify(details)}`)
+                          .join("\n")}
+
+                    If none of them is the test execution issue type you're using in project ${
+                        this.parameters.projectKey
+                    }, please specify the correct text execution issue type in the plugin configuration:
+
+                      {
+                        jira: {
+                          testExecutionIssueType: "My Custom Issue Type"
+                        }
+                      }
 
                     For more information, visit:
                     - ${HELP.plugin.configuration.jira.testExecutionIssueType}
-                    - ${HELP.plugin.configuration.jira.testPlanIssueType}
+                    - ${
+                        this.parameters.displayCloudHelp
+                            ? HELP.xray.issueTypeMapping.cloud
+                            : HELP.xray.issueTypeMapping.server
+                    }
                 `)
             );
         }

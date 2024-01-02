@@ -206,6 +206,7 @@ function createImportExecutionCucumberCommand(
             {
                 projectKey: options.jira.projectKey,
                 testExecutionIssueType: options.jira.testExecutionIssueType,
+                displayCloudHelp: clients.kind === "cloud",
             },
             fetchIssueTypesCommand
         )

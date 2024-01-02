@@ -40,5 +40,9 @@ export const HELP = {
             cloud: "https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2",
             server: "https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST",
         },
+        issueTypeMapping: {
+            cloud: "https://docs.getxray.app/display/XRAYCLOUD/Project+Settings%3A+Issue+Types+Mapping",
+            server: "https://docs.getxray.app/display/XRAY/Configuring+a+Jira+project+to+be+used+as+an+Xray+Test+Project",
+        },
     },
 };
