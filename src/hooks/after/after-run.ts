@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { CypressRunResultType } from "../../types/cypress/run-result";
 import { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
@@ -35,7 +36,7 @@ import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issu
 import { containsCucumberTest, containsCypressTest } from "./util";
 
 export function addUploadCommands(
-    runResult: CypressCommandLine.CypressRunResult,
+    runResult: CypressRunResultType,
     projectRoot: string,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
@@ -102,7 +103,7 @@ export function addUploadCommands(
     graph.connect(getExecutionIssueKeyCommand, printSuccessCommand);
     if (options.jira.attachVideos) {
         const resultsCommand = graph.findOrDefault(
-            (command): command is ConstantCommand<CypressCommandLine.CypressRunResult> =>
+            (command): command is ConstantCommand<CypressRunResultType> =>
                 command instanceof ConstantCommand && command.getValue() === runResult,
             () => graph.place(new ConstantCommand(runResult))
         );
@@ -124,13 +125,13 @@ export function addUploadCommands(
 }
 
 function createImportExecutionCypressCommand(
-    results: CypressCommandLine.CypressRunResult,
+    results: CypressRunResultType,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>
 ): ImportExecutionCypressCommand {
     const resultsCommand = graph.findOrDefault(
-        (command): command is ConstantCommand<CypressCommandLine.CypressRunResult> =>
+        (command): command is ConstantCommand<CypressRunResultType> =>
             command instanceof ConstantCommand && command.getValue() === results,
         () => graph.place(new ConstantCommand(results))
     );
@@ -179,7 +180,7 @@ function createImportExecutionCypressCommand(
 }
 
 function createImportExecutionCucumberCommand(
-    cypressResults: CypressCommandLine.CypressRunResult,
+    cypressResults: CypressRunResultType,
     projectRoot: string,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
@@ -211,7 +212,7 @@ function createImportExecutionCucumberCommand(
     );
     graph.connect(fetchIssueTypesCommand, fetchExecutionIssueDetailsCommand);
     const resultsCommand = graph.findOrDefault(
-        (command): command is ConstantCommand<CypressCommandLine.CypressRunResult> =>
+        (command): command is ConstantCommand<CypressRunResultType> =>
             command instanceof ConstantCommand && command.getValue() === cypressResults,
         () => graph.place(new ConstantCommand(cypressResults))
     );

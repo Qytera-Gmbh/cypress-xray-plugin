@@ -1,11 +1,7 @@
 import { basename, parse } from "path";
 import { gte, lt } from "semver";
+import { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
 import {
-    CypressRunResult as CypressRunResult_V12,
-    RunResult as RunResult_V12,
-} from "../../../../../types/cypress/12.0.0/api";
-import {
-    CypressRunResult as CypressRunResult_V13,
     RunResult as RunResult_V13,
     ScreenshotInformation as ScreenshotInformation_V13,
 } from "../../../../../types/cypress/13.0.0/api";
@@ -87,12 +83,10 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         return [xrayTests[0], ...xrayTests.slice(1)];
     }
 
-    private async getTestRunData(
-        runResults: CypressRunResult_V12 | CypressRunResult_V13
-    ): Promise<TestRunData[]> {
+    private async getTestRunData(runResults: CypressRunResultType): Promise<TestRunData[]> {
         const testRunData: TestRunData[] = [];
         const conversionPromises: [string, Promise<TestRunData>][] = [];
-        const cypressRuns = runResults.runs.filter((run: RunResult_V12 | RunResult_V13) => {
+        const cypressRuns = runResults.runs.filter((run) => {
             return (
                 !this.parameters.cucumber ||
                 !run.spec.relative.endsWith(this.parameters.cucumber.featureFileExtension)
@@ -102,15 +96,13 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
             throw new Error("Failed to extract test run data: Only Cucumber tests were executed");
         }
         if (lt(runResults.cypressVersion, "13.0.0")) {
-            const runs = cypressRuns as RunResult_V12[];
-            for (const run of runs) {
+            for (const run of cypressRuns as RunResult_V12[]) {
                 getTestRunData_V12(run).forEach((promise, index) =>
                     conversionPromises.push([run.tests[index].title.join(" "), promise])
                 );
             }
         } else {
-            const runs = cypressRuns as RunResult_V13[];
-            for (const run of runs) {
+            for (const run of cypressRuns as RunResult_V13[]) {
                 getTestRunData_V13(run, this.parameters.jira.projectKey).forEach((promise, index) =>
                     conversionPromises.push([run.tests[index].title.join(" "), promise])
                 );

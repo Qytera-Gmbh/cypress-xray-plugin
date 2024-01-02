@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
+
+import { CypressFailedRunResult, CypressRunResult, RunResult } from "./api";
+
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 export type TestingType = "e2e" | "component";
 interface Auth {
@@ -310,9 +313,7 @@ interface ResolvedDevServerConfig {
 interface PluginEvents {
     (
         action: "after:run",
-        fn: (
-            results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
-        ) => void | Promise<void>
+        fn: (results: CypressRunResult | CypressFailedRunResult) => void | Promise<void>
     ): void;
     (
         action: "after:screenshot",
@@ -320,10 +321,7 @@ interface PluginEvents {
             details: ScreenshotDetails
         ) => void | AfterScreenshotReturnObject | Promise<AfterScreenshotReturnObject>
     ): void;
-    (
-        action: "after:spec",
-        fn: (spec: Spec, results: CypressCommandLine.RunResult) => void | Promise<void>
-    ): void;
+    (action: "after:spec", fn: (spec: Spec, results: RunResult) => void | Promise<void>): void;
     (action: "before:run", fn: (runDetails: BeforeRunDetails) => void | Promise<void>): void;
     (action: "before:spec", fn: (spec: Spec) => void | Promise<void>): void;
     (

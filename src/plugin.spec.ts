@@ -13,6 +13,7 @@ import * as context from "./context";
 import * as afterRunHook from "./hooks/after/after-run";
 import * as synchronizeFeatureFileHook from "./hooks/preprocessor/file-preprocessor";
 import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
+import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/run-result";
 import { CypressXrayPluginOptions, PluginContext } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable";
@@ -205,9 +206,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("adds upload commands", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
             stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
-            const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
+            const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const stubbedHook = stub(afterRunHook, "addUploadCommands");
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", afterRunResult),
@@ -226,7 +227,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("displays an error for failed runs", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
             stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
-            const failedResults: CypressCommandLine.CypressFailedRunResult = {
+            const failedResults: CypressFailedRunResultType = {
                 status: "failed",
                 failures: 47,
                 message: "Pretty messed up",
@@ -249,9 +250,9 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("displays warnings if the plugin was not configured", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
-            const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
+            const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const logger = getMockedLogger();
             logger.message
                 .withArgs(
@@ -283,7 +284,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("does not display an error for failed runs if disabled", async () => {
-            const failedResults: CypressCommandLine.CypressFailedRunResult = {
+            const failedResults: CypressFailedRunResultType = {
                 status: "failed",
                 failures: 47,
                 message: "Pretty messed up",
@@ -305,9 +306,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("should skip the results upload if disabled", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
             stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
-            const afterRunResult: CypressCommandLine.CypressRunResult = JSON.parse(
+            const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const logger = getMockedLogger();
             pluginContext.options.xray.uploadResults = false;
             context.setPluginContext(pluginContext);

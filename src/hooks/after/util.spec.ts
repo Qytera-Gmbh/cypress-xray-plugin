@@ -2,6 +2,7 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import { getMockedLogger } from "../../../test/mocks";
+import { CypressRunResultType } from "../../types/cypress/run-result";
 import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
 import {
@@ -13,12 +14,12 @@ import {
 
 describe(path.relative(process.cwd(), __filename), () => {
     describe(containsCypressTest.name, () => {
-        let result: CypressCommandLine.CypressRunResult;
+        let result: CypressRunResultType;
 
         beforeEach(() => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
         });
 
         it("returns true for native runs", () => {
@@ -28,21 +29,21 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("returns true for mixed runs", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             expect(containsCypressTest(result, ".feature")).to.be.true;
         });
 
         it("returns false for cucumber runs", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             expect(containsCypressTest(result, ".feature")).to.be.false;
         });
 
         it("regards cucumber runs as native if cucumber was not configured", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             expect(containsCypressTest(result)).to.be.true;
         });
     });
@@ -51,53 +52,53 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("returns true for Cucumber runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             expect(containsCucumberTest(result, ".feature")).to.be.true;
         });
 
         it("returns true for mixed runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             expect(containsCucumberTest(result, ".feature")).to.be.true;
         });
 
         it("returns false for native runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             expect(containsCucumberTest(result, ".feature")).to.be.false;
         });
 
         it("regards cucumber runs as native if cucumber was not configured", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             expect(containsCucumberTest(result)).to.be.false;
         });
     });
 
     describe(getNativeTestIssueKeys.name, () => {
-        let result: CypressCommandLine.CypressRunResult;
+        let result: CypressRunResultType;
 
         beforeEach(() => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
         });
 
         it("returns valid issue keys", () => {
             expect(getNativeTestIssueKeys(result, "CYP")).to.deep.eq([
-                "CYP-40",
-                "CYP-41",
                 "CYP-49",
+                "CYP-41",
+                "CYP-40",
             ]);
         });
 
         it("skips invalid or missing issue keys", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const logger = getMockedLogger();
             expect(getNativeTestIssueKeys(result, "CYP")).to.deep.eq([]);
             expect(logger.message).to.have.been.calledWithExactly(
@@ -154,13 +155,13 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             expect(getNativeTestIssueKeys(result, "CYP", ".feature")).to.deep.eq([
-                "CYP-330",
-                "CYP-268",
-                "CYP-237",
-                "CYP-332",
                 "CYP-333",
+                "CYP-332",
+                "CYP-237",
+                "CYP-268",
+                "CYP-330",
             ]);
             expect(logger.message).to.not.have.been.called;
         });

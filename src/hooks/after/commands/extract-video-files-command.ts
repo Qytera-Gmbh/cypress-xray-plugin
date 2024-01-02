@@ -1,12 +1,13 @@
+import { CypressRunResultType } from "../../../types/cypress/run-result";
 import { LOG, Level } from "../../../util/logging";
 import { Command, Computable, SkippedError } from "../../command";
 
 export class ExtractVideoFilesCommand extends Command<string[]> {
-    private readonly cypressRunResult: Computable<CypressCommandLine.CypressRunResult>;
+    private readonly cypressRunResult: Computable<CypressRunResultType>;
     private readonly resolvedExecutionIssueKey: Computable<string>;
 
     constructor(
-        cypressRunResult: Computable<CypressCommandLine.CypressRunResult>,
+        cypressRunResult: Computable<CypressRunResultType>,
         resolvedExecutionIssueKey: Computable<string>
     ) {
         super();
@@ -17,7 +18,7 @@ export class ExtractVideoFilesCommand extends Command<string[]> {
         const cypressRunResult = await this.cypressRunResult.compute();
         const resolvedExecutionIssueKey = await this.resolvedExecutionIssueKey.compute();
         const videos = cypressRunResult.runs
-            .map((run: CypressCommandLine.RunResult) => {
+            .map((run) => {
                 return run.video;
             })
             .filter((value): value is string => typeof value === "string");

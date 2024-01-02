@@ -7,6 +7,7 @@ import {
     initSslOptions,
     initXrayOptions,
 } from "../../../../../context";
+import { CypressRunResultType } from "../../../../../types/cypress/run-result";
 import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
 import { dedent } from "../../../../../util/dedent";
 import { ConstantCommand } from "../../../../util/commands/constant-command";
@@ -37,9 +38,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("converts test results into xray info json", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressInfoCommand(options, new ConstantCommand(result));
             const json = await command.compute();
             expect(json).to.deep.eq({
@@ -54,9 +55,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("erases milliseconds from timestamps", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressInfoCommand(options, new ConstantCommand(result));
             const info = await command.compute();
             expect(info.startDate).to.eq("2022-11-28T17:41:12Z");
@@ -64,9 +65,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("adds test plan issue keys", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             options.jira.testPlanIssueKey = "CYP-123";
             const command = new ConvertCypressInfoCommand(options, new ConstantCommand(result));
             const info = await command.compute();
@@ -74,18 +75,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("does not add test plan issue keys on its own", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressInfoCommand(options, new ConstantCommand(result));
             const info = await command.compute();
             expect(info.testPlanKey).to.be.undefined;
         });
 
         it("includes a custom test execution summary if provided", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             options.jira.testExecutionIssueSummary = "Jeffrey's Test";
             const command = new ConvertCypressInfoCommand(options, new ConstantCommand(result));
             const info = await command.compute();
@@ -93,18 +94,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("uses a timestamp as test execution summary by default", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressInfoCommand(options, new ConstantCommand(result));
             const info = await command.compute();
             expect(info.summary).to.eq("Execution Results [1669657272234]");
         });
 
         it("does not add the default test execution summary if omitted and a key is given", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             options.jira.testExecutionIssueKey = "CYP-100";
             const command = new ConvertCypressInfoCommand(options, new ConstantCommand(result));
             const info = await command.compute();
@@ -112,9 +113,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("includes a custom test execution description if provided", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             options.jira.testExecutionIssueDescription = "Very Useful Text";
             const command = new ConvertCypressInfoCommand(options, new ConstantCommand(result));
             const info = await command.compute();
@@ -122,9 +123,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("uses versions as test execution description by default", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressInfoCommand(options, new ConstantCommand(result));
             const info = await command.compute();
             expect(info.description).to.eq(
@@ -136,9 +137,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("does not add the default test execution description if omitted and a key is given", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             options.jira.testExecutionIssueKey = "CYP-100";
             const command = new ConvertCypressInfoCommand(options, new ConstantCommand(result));
             const info = await command.compute();
@@ -146,9 +147,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("includes test environments", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             options.xray.testEnvironments = ["DEV"];
             const command = new ConvertCypressInfoCommand(options, new ConstantCommand(result));
             const info = await command.compute();
@@ -156,9 +157,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("returns its parameters", () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressInfoCommand(
                 {
                     jira: {

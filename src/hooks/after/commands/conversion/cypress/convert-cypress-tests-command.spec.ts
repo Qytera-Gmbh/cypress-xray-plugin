@@ -10,6 +10,7 @@ import {
     initSslOptions,
     initXrayOptions,
 } from "../../../../../context";
+import { CypressRunResultType } from "../../../../../types/cypress/run-result";
 import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
 import { dedent } from "../../../../../util/dedent";
 import { Level } from "../../../../../util/logging";
@@ -42,9 +43,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("converts test results into xray info json", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             const json = await command.compute();
             expect(json).to.deep.eq([
@@ -76,9 +77,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("skips tests when encountering unknown statuses", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const logger = getMockedLogger();
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             await expect(command.compute()).to.eventually.be.rejectedWith(
@@ -103,9 +104,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("uploads screenshots by default", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             const tests = await command.compute();
             expectToExist(tests);
@@ -117,9 +118,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("skips screenshot upload if disabled", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             options.xray.uploadScreenshots = false;
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             const tests = await command.compute();
@@ -131,9 +132,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("normalizes screenshot filenames if enabled", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             options.plugin.normalizeScreenshotNames = true;
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             const tests = await command.compute();
@@ -143,9 +144,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("does not normalize screenshot filenames by default", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             const tests = await command.compute();
             expectToExist(tests);
@@ -154,9 +155,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("uses custom passed statuses", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             options.xray.status = { passed: "it worked" };
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             const tests = await command.compute();
@@ -165,9 +166,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("uses custom failed statuses", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             options.xray.status = { failed: "it did not work" };
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             const tests = await command.compute();
@@ -175,9 +176,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("uses custom pending statuses", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultPending.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             options.xray.status = { pending: "still pending" };
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             const tests = await command.compute();
@@ -188,9 +189,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("uses custom skipped statuses", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultSkipped.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             options.xray.status = { skipped: "omit" };
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             const tests = await command.compute();
@@ -198,9 +199,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("does not modify test information", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             const tests = await command.compute();
             expect(tests[0].testInfo).to.be.undefined;
@@ -209,9 +210,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("includes test issue keys", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             const tests = await command.compute();
             expect(tests[0].testKey).to.eq("CYP-40");
@@ -220,9 +221,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("defaults to server status values", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
             const tests = await command.compute();
             expect(tests[0].status).to.eq("PASS");
@@ -231,9 +232,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("uses cloud status values", async () => {
-            const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
-            ) as CypressCommandLine.CypressRunResult;
+            ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(
                 { ...options, useCloudStatusFallback: true },
                 new ConstantCommand(result)
@@ -242,6 +243,66 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(tests[0].status).to.eq("PASSED");
             expect(tests[1].status).to.eq("PASSED");
             expect(tests[2].status).to.eq("FAILED");
+        });
+
+        it("throws if no native cypress tests were executed", async () => {
+            const result: CypressRunResultType = JSON.parse(
+                readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+            ) as CypressRunResultType;
+            const command = new ConvertCypressTestsCommand(
+                {
+                    ...options,
+                    cucumber: { featureFileExtension: ".ts" },
+                    useCloudStatusFallback: true,
+                },
+                new ConstantCommand(result)
+            );
+            await expect(command.compute()).to.eventually.be.rejectedWith(
+                "Failed to extract test run data: Only Cucumber tests were executed"
+            );
+        });
+
+        it("returns its parameters", () => {
+            const result: CypressRunResultType = JSON.parse(
+                readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
+            ) as CypressRunResultType;
+            const command = new ConvertCypressTestsCommand(
+                {
+                    jira: {
+                        projectKey: "CYP",
+                    },
+                    xray: {
+                        status: {
+                            failed: "FAILED",
+                            passed: "PASSED",
+                            pending: "TODO",
+                            skipped: "TODO",
+                        },
+                        uploadScreenshots: false,
+                    },
+                    plugin: {
+                        normalizeScreenshotNames: true,
+                    },
+                },
+                new ConstantCommand(result)
+            );
+            expect(command.getParameters()).to.deep.eq({
+                jira: {
+                    projectKey: "CYP",
+                },
+                xray: {
+                    status: {
+                        failed: "FAILED",
+                        passed: "PASSED",
+                        pending: "TODO",
+                        skipped: "TODO",
+                    },
+                    uploadScreenshots: false,
+                },
+                plugin: {
+                    normalizeScreenshotNames: true,
+                },
+            });
         });
     });
 });

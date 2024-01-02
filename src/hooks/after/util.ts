@@ -1,3 +1,4 @@
+import { CypressRunResultType, CypressTestResultType } from "../../types/cypress/run-result";
 import {
     errorMessage,
     missingTestKeyInNativeTestTitleError,
@@ -6,10 +7,10 @@ import {
 import { LOG, Level } from "../../util/logging";
 
 export function containsCypressTest(
-    runResult: CypressCommandLine.CypressRunResult,
+    runResult: CypressRunResultType,
     featureFileExtension?: string
 ): boolean {
-    return runResult.runs.some((run: CypressCommandLine.RunResult) => {
+    return runResult.runs.some((run) => {
         if (featureFileExtension && run.spec.absolute.endsWith(featureFileExtension)) {
             return false;
         }
@@ -18,10 +19,10 @@ export function containsCypressTest(
 }
 
 export function containsCucumberTest(
-    runResult: CypressCommandLine.CypressRunResult,
+    runResult: CypressRunResultType,
     featureFileExtension?: string
 ): boolean {
-    return runResult.runs.some((run: CypressCommandLine.RunResult) => {
+    return runResult.runs.some((run) => {
         if (featureFileExtension && run.spec.absolute.endsWith(featureFileExtension)) {
             return true;
         }
@@ -30,18 +31,19 @@ export function containsCucumberTest(
 }
 
 export function getNativeTestIssueKeys(
-    results: CypressCommandLine.CypressRunResult,
+    results: CypressRunResultType,
     projectKey: string,
     featureFileExtension?: string
 ): string[] {
     const issueKeys: string[] = [];
     for (const runResult of results.runs) {
-        const keyedTests: CypressCommandLine.TestResult[] = [];
+        const keyedTests: CypressTestResultType[] = [];
         // Cucumber tests aren't handled here. Let's skip them.
         if (featureFileExtension && runResult.spec.absolute.endsWith(featureFileExtension)) {
             continue;
         }
-        for (const testResult of runResult.tests) {
+        for (let i = runResult.tests.length - 1; i >= 0; i--) {
+            const testResult = runResult.tests[i];
             const title = testResult.title.join(" ");
             try {
                 // The last element refers to an individual test (it).
@@ -54,9 +56,9 @@ export function getNativeTestIssueKeys(
                 issueKeys.push(issueKey);
             } catch (error: unknown) {
                 LOG.message(Level.WARNING, `Skipping test: ${title}\n\n${errorMessage(error)}`);
+                runResult.tests.splice(i, 1);
             }
         }
-        runResult.tests = keyedTests;
     }
     return issueKeys;
 }

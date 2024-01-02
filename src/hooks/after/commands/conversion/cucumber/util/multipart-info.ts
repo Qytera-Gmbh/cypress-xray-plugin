@@ -1,3 +1,4 @@
+import { CypressRunResultType } from "../../../../../../types/cypress/run-result";
 import { IssueTypeDetails } from "../../../../../../types/jira/responses/issue-type-details";
 import {
     CucumberMultipartInfo,
@@ -9,7 +10,7 @@ import { dedent } from "../../../../../../util/dedent";
  * Interface containing general/minimal Cypress run data.
  */
 export type RunData = Pick<
-    CypressCommandLine.CypressRunResult,
+    CypressRunResultType,
     "browserName" | "browserVersion" | "cypressVersion" | "startedTestsAt"
 >;
 

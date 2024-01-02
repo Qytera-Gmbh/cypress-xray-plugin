@@ -12,6 +12,7 @@ import {
 } from "./context";
 import { addUploadCommands } from "./hooks/after/after-run";
 import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
+import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/run-result";
 import {
     CypressXrayPluginOptions,
     InternalCypressXrayPluginOptions,
@@ -84,61 +85,57 @@ export async function configureXrayPlugin(
         clients: await initClients(internalOptions.jira, config.env),
         graph: new ExecutableGraph(),
     });
-    on(
-        "after:run",
-        async (
-            results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
-        ) => {
-            const context = getPluginContext();
-            if (!context) {
-                if (canShowInitializationWarning) {
-                    logInitializationWarning("after:run");
-                }
-                return;
+    on("after:run", async (results: CypressRunResultType | CypressFailedRunResultType) => {
+        const context = getPluginContext();
+        if (!context) {
+            if (canShowInitializationWarning) {
+                logInitializationWarning("after:run");
             }
-            if (!context.options.plugin.enabled) {
-                LOG.message(Level.INFO, "Skipping after:run hook: Plugin disabled");
-                return;
-            }
-            if (context.options.xray.uploadResults) {
-                // Cypress's status types are incomplete, there is also "finished".
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                if ("status" in results && results.status === "failed") {
-                    const failedResult = results;
-                    LOG.message(
-                        Level.ERROR,
-                        dedent(`
-                            Skipping results upload: Failed to run ${failedResult.failures} tests
-
-                            ${failedResult.message}
-                        `)
-                    );
-                } else {
-                    addUploadCommands(
-                        results as CypressCommandLine.CypressRunResult,
-                        context.cypress.projectRoot,
-                        context.options,
-                        context.clients,
-                        context.graph
-                    );
-                }
-            } else {
+            return;
+        }
+        if (!context.options.plugin.enabled) {
+            LOG.message(Level.INFO, "Skipping after:run hook: Plugin disabled");
+            return;
+        }
+        if (context.options.xray.uploadResults) {
+            // Cypress's status types are incomplete, there is also "finished".
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            if ("status" in results && results.status === "failed") {
+                const failedResult = results;
                 LOG.message(
-                    Level.INFO,
-                    "Skipping results upload: Plugin is configured to not upload test results"
+                    Level.ERROR,
+                    dedent(`
+                        Skipping results upload: Failed to run ${failedResult.failures} tests
+
+                        ${failedResult.message}
+                    `)
+                );
+            } else {
+                addUploadCommands(
+                    results as CypressRunResultType,
+                    context.cypress.projectRoot,
+                    context.options,
+                    context.clients,
+                    context.graph
                 );
             }
-            try {
-                await context.graph.execute();
-            } finally {
-                if (context.options.plugin.debug) {
-                    const executionGraphFile = LOG.logToFile(
-                        await graphToDot(context.graph, commandToDot),
-                        "execution-graph.vz"
-                    );
-                    LOG.message(
-                        Level.DEBUG,
-                        dedent(`
+        } else {
+            LOG.message(
+                Level.INFO,
+                "Skipping results upload: Plugin is configured to not upload test results"
+            );
+        }
+        try {
+            await context.graph.execute();
+        } finally {
+            if (context.options.plugin.debug) {
+                const executionGraphFile = LOG.logToFile(
+                    await graphToDot(context.graph, commandToDot),
+                    "execution-graph.vz"
+                );
+                LOG.message(
+                    Level.DEBUG,
+                    dedent(`
                             Plugin execution graph saved to: ${executionGraphFile}
 
                             You can view it using Graphviz (https://graphviz.org/):
@@ -150,11 +147,10 @@ export async function configureXrayPlugin(
                             - https://edotor.net/
                             - https://www.devtoolsdaily.com/graphviz/
                         `)
-                    );
-                }
+                );
             }
         }
-    );
+    });
 }
 
 /**

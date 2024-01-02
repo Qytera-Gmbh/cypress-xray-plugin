@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { CypressResultsType, CypressRunResultType } from "../src/types/cypress/run-result";
 import { unknownToString } from "../src/util/string";
 
 const TEST_TMP_DIR = "test/out";
@@ -61,13 +62,11 @@ type Action =
     | "task";
 
 interface ActionCallbacks {
-    ["after:run"]: (
-        results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
-    ) => Promise<void>;
+    ["after:run"]: (results: CypressResultsType) => Promise<void>;
     ["after:screenshot"]: (
         details: Cypress.ScreenshotDetails
     ) => Promise<Cypress.AfterScreenshotReturnObject>;
-    ["after:spec"]: (spec: Cypress.Spec, results: CypressCommandLine.RunResult) => Promise<void>;
+    ["after:spec"]: (spec: Cypress.Spec, results: CypressRunResultType) => Promise<void>;
     ["before:run"]: (runDetails: Cypress.BeforeRunDetails) => Promise<void>;
     ["before:spec"]: (spec: Cypress.Spec) => Promise<void>;
     ["before:browser:launch"]: (
