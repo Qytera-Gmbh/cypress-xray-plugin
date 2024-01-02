@@ -1,26 +1,30 @@
 import { IssueTypeDetails } from "../../../types/jira/responses/issue-type-details";
+import { InternalCypressXrayPluginOptions } from "../../../types/plugin";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
 import { Command, Computable } from "../../command";
 
-interface Parameters {
-    projectKey: string;
-    testExecutionIssueType: string;
-}
+type Parameters = Pick<
+    InternalCypressXrayPluginOptions["jira"],
+    "projectKey" | "testExecutionIssueType"
+>;
 
 export class ExtractExecutionIssueDetailsCommand extends Command<IssueTypeDetails> {
     private readonly parameters: Parameters;
-    private readonly allIssueTypes: Computable<IssueTypeDetails[]>;
+    private readonly allIssueDetails: Computable<IssueTypeDetails[]>;
 
-    constructor(parameters: Parameters, allIssueTypes: Computable<IssueTypeDetails[]>) {
+    constructor(parameters: Parameters, allIssueDetails: Computable<IssueTypeDetails[]>) {
         super();
         this.parameters = parameters;
-        this.allIssueTypes = allIssueTypes;
+        this.allIssueDetails = allIssueDetails;
     }
 
     protected async computeResult(): Promise<IssueTypeDetails> {
-        const allIssueTypes = await this.allIssueTypes.compute();
-        if (allIssueTypes.length === 0) {
+        const allIssueDetails = await this.allIssueDetails.compute();
+        const executionIssueDetails = allIssueDetails.filter(
+            (details: IssueTypeDetails) => details.name === this.parameters.testExecutionIssueType
+        );
+        if (executionIssueDetails.length === 0) {
             throw new Error(
                 dedent(`
                     Failed to retrieve issue type information for issue type: ${this.parameters.testExecutionIssueType}
@@ -32,7 +36,7 @@ export class ExtractExecutionIssueDetailsCommand extends Command<IssueTypeDetail
                     - ${HELP.plugin.configuration.jira.testPlanIssueType}
                 `)
             );
-        } else if (allIssueTypes.length > 1) {
+        } else if (executionIssueDetails.length > 1) {
             throw new Error(
                 dedent(`
                     Found multiple issue types named: ${this.parameters.testExecutionIssueType}
@@ -45,6 +49,6 @@ export class ExtractExecutionIssueDetailsCommand extends Command<IssueTypeDetail
                 `)
             );
         }
-        return allIssueTypes[0];
+        return executionIssueDetails[0];
     }
 }
