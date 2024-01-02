@@ -107,11 +107,8 @@ export function addUploadCommands(
                 command instanceof ConstantCommand && command.getValue() === runResult,
             () => graph.place(new ConstantCommand(runResult))
         );
-        const extractVideoFilesCommand = graph.place(
-            new ExtractVideoFilesCommand(resultsCommand, getExecutionIssueKeyCommand)
-        );
+        const extractVideoFilesCommand = graph.place(new ExtractVideoFilesCommand(resultsCommand));
         graph.connect(resultsCommand, extractVideoFilesCommand);
-        graph.connect(getExecutionIssueKeyCommand, extractVideoFilesCommand);
         const attachVideosCommand = graph.place(
             new AttachFilesCommand(
                 clients.jiraClient,
