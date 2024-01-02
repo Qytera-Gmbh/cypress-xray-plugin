@@ -10,7 +10,7 @@ import {
 } from "../../../../../../types/cypress/13.0.0/api";
 import { Status } from "../../../../../../types/testStatus";
 import { StringMap } from "../../../../../../types/util";
-import { getNativeTestIssueKey } from "../../../../../../util/preprocessing";
+import { getNativeTestIssueKey } from "../../../../util";
 import { toCypressStatus } from "./status";
 
 /**

@@ -22,9 +22,9 @@ import { dedent } from "../../../../../util/dedent";
 import { errorMessage } from "../../../../../util/errors";
 import { normalizedFilename } from "../../../../../util/files";
 import { LOG, Level } from "../../../../../util/logging";
-import { getNativeTestIssueKey } from "../../../../../util/preprocessing";
 import { truncateIsoTime } from "../../../../../util/time";
 import { Command, Computable } from "../../../../command";
+import { getNativeTestIssueKey } from "../../../util";
 import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./util/run";
 import { getXrayStatus } from "./util/status";
 

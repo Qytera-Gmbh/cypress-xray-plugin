@@ -5,7 +5,6 @@ import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types
 import { CucumberMultipartFeature } from "../../types/xray/requests/importExecutionCucumberMultipart";
 import { ExecutableGraph } from "../../util/graph/executable";
 import { LOG, Level } from "../../util/logging";
-import { containsNativeTest } from "../../util/preprocessing";
 import { Command, Computable } from "../command";
 import { ConstantCommand } from "../util/commands/constantCommand";
 import { AttachFilesCommand } from "../util/commands/jira/attachFilesCommand";
@@ -33,7 +32,7 @@ import { ExtractExecutionIssueDetailsCommand } from "./commands/extractExecution
 import { ExtractVideoFilesCommand } from "./commands/extractVideoFilesCommand";
 import { PrintUploadSuccessCommand } from "./commands/printUploadSuccessCommand";
 import { VerifyExecutionIssueKeyCommand } from "./commands/verifyExecutionIssueKeyCommand";
-import { containsCucumberTest } from "./util";
+import { containsCucumberTest, containsCypressTest } from "./util";
 
 export function addUploadCommands(
     runResult: CypressCommandLine.CypressRunResult,
@@ -44,7 +43,7 @@ export function addUploadCommands(
 ): void {
     let importCypressExecutionCommand: ImportExecutionCypressCommand | null = null;
     let importCucumberExecutionCommand: ImportExecutionCucumberCommand | null = null;
-    if (containsNativeTest(runResult, options.cucumber?.featureFileExtension)) {
+    if (containsCypressTest(runResult, options.cucumber?.featureFileExtension)) {
         importCypressExecutionCommand = createImportExecutionCypressCommand(
             runResult,
             options,

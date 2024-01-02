@@ -31,7 +31,7 @@ export function getCucumberPreconditionIssueTags(
     const preconditionKeys: string[] = [];
     if (background.steps.length > 0) {
         for (const comment of comments) {
-            const matches = comment.match(backgroundRegex(projectKey, preconditionPrefix));
+            const matches = comment.match(getBackgroundTagRegex(projectKey, preconditionPrefix));
             if (!matches) {
                 continue;
             }
@@ -42,7 +42,7 @@ export function getCucumberPreconditionIssueTags(
     return preconditionKeys;
 }
 
-export function backgroundRegex(projectKey: string, preconditionPrefix?: string): RegExp {
+export function getBackgroundTagRegex(projectKey: string, preconditionPrefix?: string): RegExp {
     if (preconditionPrefix) {
         // @Precondition:CYP-111
         return new RegExp(`@${preconditionPrefix}(${projectKey}-\\d+)`);
