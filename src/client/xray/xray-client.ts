@@ -4,7 +4,6 @@ import fs from "fs";
 import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
-import { ExportCucumberTestsResponse } from "../../types/xray/responses/export-feature";
 import {
     ImportExecutionResponseCloud,
     ImportExecutionResponseServer,
@@ -30,15 +29,6 @@ export interface XrayClient {
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
     importExecution(execution: XrayTestExecutionResults): Promise<string>;
-    /**
-     * Downloads feature (file) specifications from corresponding Xray issues.
-     *
-     * @param keys - a list of issue keys
-     * @param filter - an integer that represents the filter ID
-     * @returns the response of the Xray instance
-     * @see https://docs.getxray.app/display/XRAYCLOUD/Exporting+Cucumber+Tests+-+REST+v2
-     */
-    exportCucumber(keys?: string[], filter?: number): Promise<ExportCucumberTestsResponse>;
     /**
      * Uploads (zipped) feature file(s) to corresponding Xray issues.
      *
@@ -99,43 +89,6 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
             LOG.logErrorToFile(error, "importExecutionError");
             throw new LoggedError("Failed to import Cypress execution results");
         }
-    }
-
-    public async exportCucumber(
-        keys?: string[],
-        filter?: number
-    ): Promise<ExportCucumberTestsResponse> {
-        try {
-            const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Exporting Cucumber tests...");
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const response: AxiosResponse<string> = await REST.get(
-                    this.getUrlExportCucumber(keys, filter),
-                    {
-                        headers: {
-                            ...authorizationHeader,
-                        },
-                    }
-                );
-                // Extract filename from response.
-                if ("Content-Disposition" in response.headers) {
-                    const contentDisposition = response.headers["Content-Disposition"] as string;
-                    const filenameStart = contentDisposition.indexOf('"');
-                    const filenameEnd = contentDisposition.lastIndexOf('"');
-                    const filename = contentDisposition.substring(filenameStart, filenameEnd);
-                    fs.writeFileSync(filename, response.data);
-                } else {
-                    throw new Error("Content-Disposition header does not contain a filename");
-                }
-            } finally {
-                clearInterval(progressInterval);
-            }
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to export Cucumber tests: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "exportCucumberError");
-        }
-        throw new Error("Method not implemented.");
     }
 
     public async importFeature(
@@ -240,15 +193,6 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
      * @returns the URL
      */
     public abstract getUrlImportExecution(): string;
-
-    /**
-     * Returns the endpoint to use for exporting Cucumber feature files.
-     *
-     * @param keys - a list of issue keys
-     * @param filter - an integer that represents the filter ID
-     * @returns the URL
-     */
-    public abstract getUrlExportCucumber(issueKeys?: string[], filter?: number): string;
 
     /**
      * This method is called when a feature file was successfully imported to Xray.

@@ -269,31 +269,30 @@ describe("the xray server client", () => {
                 "importFeatureError"
             );
         });
+
+        it("handles network failures", async () => {
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            const error = new Error("Connection timeout");
+            restClient.post.onFirstCall().rejects(error);
+            await expect(
+                client.importFeature(
+                    "./test/resources/features/taggedPrefixCorrect.feature",
+                    "utf-8",
+                    "CYP"
+                )
+            ).to.eventually.be.rejectedWith("Feature file import failed");
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.ERROR,
+                "Failed to import Cucumber features: Connection timeout"
+            );
+            expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                error,
+                "importFeatureError"
+            );
+        });
     });
 
     describe("the urls", () => {
-        describe("export cucumber", () => {
-            it("keys", () => {
-                expect(client.getUrlExportCucumber(["CYP-123", "CYP-456"])).to.eq(
-                    "https://example.org/rest/raven/latest/export/test?keys=CYP-123;CYP-456&fz=true"
-                );
-            });
-            it("filter", () => {
-                expect(client.getUrlExportCucumber(undefined, 56)).to.eq(
-                    "https://example.org/rest/raven/latest/export/test?filter=56&fz=true"
-                );
-            });
-            it("keys and filter", () => {
-                expect(client.getUrlExportCucumber(["CYP-123", "CYP-456"], 56)).to.eq(
-                    "https://example.org/rest/raven/latest/export/test?keys=CYP-123;CYP-456&filter=56&fz=true"
-                );
-            });
-            it("neither keys nor filter", () => {
-                expect(() => client.getUrlExportCucumber()).to.throw(
-                    "One of issueKeys or filter must be provided to export feature files"
-                );
-            });
-        });
         it("import execution", () => {
             expect(client.getUrlImportExecution()).to.eq(
                 "https://example.org/rest/raven/latest/import/execution"

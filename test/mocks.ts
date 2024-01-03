@@ -91,9 +91,6 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             importExecution: function (execution: XrayTestExecutionResults) {
                 throw mockCalledUnexpectedlyError(execution);
             },
-            exportCucumber: function (keys?: string[], filter?: number) {
-                throw mockCalledUnexpectedlyError(keys, filter);
-            },
             importFeature: function (
                 file: string,
                 projectKey?: string,
@@ -114,9 +111,6 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
     const client: XrayClient & HasTestTypes = {
         importExecution: function (execution: XrayTestExecutionResults) {
             throw mockCalledUnexpectedlyError(execution);
-        },
-        exportCucumber: function (keys?: string[], filter?: number) {
-            throw mockCalledUnexpectedlyError(keys, filter);
         },
         importFeature: function (
             file: string,

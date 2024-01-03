@@ -60,20 +60,6 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
         return `${this.apiBaseUrl}/import/execution`;
     }
 
-    public getUrlExportCucumber(issueKeys?: string[], filter?: number): string {
-        const query: string[] = [];
-        if (issueKeys) {
-            query.push(`keys=${issueKeys.join(";")}`);
-        }
-        if (filter) {
-            query.push(`filter=${filter}`);
-        }
-        if (query.length === 0) {
-            throw new Error("One of issueKeys or filter must be provided to export feature files");
-        }
-        return `${this.apiBaseUrl}/export/cucumber?${query.join("&")}`;
-    }
-
     public getUrlImportFeature(projectKey?: string, projectId?: string): string {
         const query: string[] = [];
         if (projectKey) {

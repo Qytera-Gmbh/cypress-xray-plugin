@@ -356,6 +356,27 @@ describe("the xray cloud client", () => {
                 "importFeatureError"
             );
         });
+
+        it("handles network failures", async () => {
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            const error = new Error("Connection timeout");
+            restClient.post.onFirstCall().rejects(error);
+            await expect(
+                client.importFeature(
+                    "./test/resources/features/taggedPrefixCorrect.feature",
+                    "utf-8",
+                    "CYP"
+                )
+            ).to.eventually.be.rejectedWith("Feature file import failed");
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.ERROR,
+                "Failed to import Cucumber features: Connection timeout"
+            );
+            expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                error,
+                "importFeatureError"
+            );
+        });
     });
 
     describe("get test types", () => {
@@ -469,28 +490,6 @@ describe("the xray cloud client", () => {
     });
 
     describe("the urls", () => {
-        describe("export cucumber", () => {
-            it("keys", () => {
-                expect(client.getUrlExportCucumber(["CYP-123", "CYP-456"])).to.eq(
-                    "https://xray.cloud.getxray.app/api/v2/export/cucumber?keys=CYP-123;CYP-456"
-                );
-            });
-            it("filter", () => {
-                expect(client.getUrlExportCucumber(undefined, 56)).to.eq(
-                    "https://xray.cloud.getxray.app/api/v2/export/cucumber?filter=56"
-                );
-            });
-            it("keys and filter", () => {
-                expect(client.getUrlExportCucumber(["CYP-123", "CYP-456"], 56)).to.eq(
-                    "https://xray.cloud.getxray.app/api/v2/export/cucumber?keys=CYP-123;CYP-456&filter=56"
-                );
-            });
-            it("neither keys nor filter", () => {
-                expect(() => client.getUrlExportCucumber()).to.throw(
-                    "One of issueKeys or filter must be provided to export feature files"
-                );
-            });
-        });
         it("import execution", () => {
             expect(client.getUrlImportExecution()).to.eq(
                 "https://xray.cloud.getxray.app/api/v2/import/execution"

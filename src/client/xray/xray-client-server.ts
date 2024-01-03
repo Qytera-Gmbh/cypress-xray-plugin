@@ -17,22 +17,6 @@ export class XrayClientServer extends AbstractXrayClient {
         return `${this.apiBaseUrl}/rest/raven/latest/import/execution`;
     }
 
-    public getUrlExportCucumber(issueKeys?: string[], filter?: number): string {
-        const query: string[] = [];
-        if (issueKeys) {
-            query.push(`keys=${issueKeys.join(";")}`);
-        }
-        if (filter) {
-            query.push(`filter=${filter}`);
-        }
-        if (query.length === 0) {
-            throw new Error("One of issueKeys or filter must be provided to export feature files");
-        }
-        // Always zip feature files, even single ones.
-        query.push("fz=true");
-        return `${this.apiBaseUrl}/rest/raven/latest/export/test?${query.join("&")}`;
-    }
-
     public getUrlImportFeature(projectKey: string): string {
         return `${this.apiBaseUrl}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
     }
