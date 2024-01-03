@@ -2,9 +2,10 @@ import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
-import { SinonStubbedInstance } from "sinon";
+import { SinonStubbedInstance, useFakeTimers } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { expectToExist } from "../../../test/util";
+import { FieldDetail } from "../../types/jira/responses/field-detail";
 import { SearchResults } from "../../types/jira/responses/search-results";
 import { Level } from "../../util/logging";
 import { BasicAuthCredentials } from "../authentication/credentials";
@@ -444,6 +445,43 @@ describe("the jira clients", () => {
                         "editIssue"
                     );
                 });
+            });
+
+            it("logs progress", async () => {
+                const clock = useFakeTimers();
+                const mockedData = JSON.parse(
+                    fs.readFileSync(
+                        "./test/resources/fixtures/jira/responses/getFields.json",
+                        "utf-8"
+                    )
+                ) as FieldDetail[];
+                const logger = getMockedLogger();
+                restClient.get.onFirstCall().returns(
+                    new Promise((resolve) => {
+                        setTimeout(() => {
+                            resolve({
+                                status: HttpStatusCode.Ok,
+                                data: mockedData.slice(0, 2),
+                                headers: {},
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                                config: {
+                                    headers: new AxiosHeaders(),
+                                },
+                            });
+                        }, 23000);
+                    })
+                );
+                const responsePromise = client.getFields();
+                await clock.tickAsync(27000);
+                await responsePromise;
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.INFO,
+                    "Waiting for https://example.org to respond... (10 seconds)"
+                );
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.INFO,
+                    "Waiting for https://example.org to respond... (20 seconds)"
+                );
             });
         });
     });

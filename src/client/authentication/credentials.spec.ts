@@ -1,6 +1,7 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { useFakeTimers } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
@@ -101,6 +102,36 @@ describe("credentials", () => {
 
                         Request failed with status code 404
                     `)
+                );
+            });
+
+            it("logs progress", async () => {
+                const clock = useFakeTimers();
+                const logger = getMockedLogger();
+                const restClient = getMockedRestClient();
+                restClient.post.onFirstCall().returns(
+                    new Promise((resolve) => {
+                        setTimeout(() => {
+                            resolve({
+                                status: HttpStatusCode.Found,
+                                data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                                headers: {},
+                                statusText: HttpStatusCode[HttpStatusCode.Found],
+                                config: { headers: new AxiosHeaders() },
+                            });
+                        }, 23000);
+                    })
+                );
+                const promise = credentials.getAuthorizationHeader();
+                await clock.tickAsync(27000);
+                await promise;
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.INFO,
+                    "Waiting for https://example.org to respond... (10 seconds)"
+                );
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.INFO,
+                    "Waiting for https://example.org to respond... (20 seconds)"
                 );
             });
         });
