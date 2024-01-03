@@ -197,6 +197,48 @@ describe("the xray server client", () => {
             );
         });
 
+        it("handles responses with empty messages", async () => {
+            restClient.post.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    testIssues: [
+                        {
+                            id: "14401",
+                            key: "CYP-555",
+                            self: "http://localhost:8727/rest/api/2/issue/14401",
+                            issueType: {
+                                id: "10103",
+                                name: "Test",
+                            },
+                        },
+                    ],
+                    preconditionIssues: [
+                        {
+                            id: "14401",
+                            key: "CYP-222",
+                            self: "http://localhost:8727/rest/api/2/issue/14401",
+                            issueType: {
+                                id: "10103",
+                                name: "Pre-Condition",
+                            },
+                        },
+                    ],
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            const response = await client.importFeature(
+                "./test/resources/features/taggedPrefixCorrect.feature",
+                "utf-8",
+                "CYP"
+            );
+            expect(response).to.deep.eq({
+                errors: [],
+                updatedOrCreatedIssues: ["CYP-555", "CYP-222"],
+            });
+        });
+
         it("handles responses without any updated issues", async () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             restClient.post.onFirstCall().resolves({

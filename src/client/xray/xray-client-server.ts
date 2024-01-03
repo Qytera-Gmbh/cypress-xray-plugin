@@ -32,40 +32,7 @@ export class XrayClientServer extends AbstractXrayClient {
             errors: [],
             updatedOrCreatedIssues: [],
         };
-        // Happens when scenarios cause errors in Xray, e.g. typos in keywords ('Scenariot').
-        if (typeof serverResponse === "object" && "message" in serverResponse) {
-            if (serverResponse.message) {
-                response.errors.push(serverResponse.message);
-                LOG.message(
-                    Level.DEBUG,
-                    `Encountered an error during feature file import: ${serverResponse.message}`
-                );
-            }
-            if (serverResponse.testIssues && serverResponse.testIssues.length > 0) {
-                const testKeys = serverResponse.testIssues.map((test: IssueDetails) => test.key);
-                response.updatedOrCreatedIssues.push(...testKeys);
-                LOG.message(
-                    Level.DEBUG,
-                    dedent(`
-                        Successfully updated or created test issues:
-                        ${testKeys.join(", ")}
-                    `)
-                );
-            }
-            if (serverResponse.preconditionIssues && serverResponse.preconditionIssues.length > 0) {
-                const preconditionKeys = serverResponse.preconditionIssues.map(
-                    (test: IssueDetails) => test.key
-                );
-                response.updatedOrCreatedIssues.push(...preconditionKeys);
-                LOG.message(
-                    Level.DEBUG,
-                    dedent(`
-                        Successfully updated or created precondition issues:
-                        ${preconditionKeys.join(", ")}
-                    `)
-                );
-            }
-        } else if (Array.isArray(serverResponse)) {
+        if (Array.isArray(serverResponse)) {
             const issueKeys = serverResponse.map((test: IssueDetails) => test.key);
             response.updatedOrCreatedIssues.push(...issueKeys);
             LOG.message(
@@ -73,6 +40,39 @@ export class XrayClientServer extends AbstractXrayClient {
                 dedent(`
                     Successfully updated or created issues:
                     ${issueKeys.join(", ")}
+                `)
+            );
+            return response;
+        }
+        // Occurs when scenarios cause errors in Xray, e.g. typos in keywords ('Scenariot').
+        if (serverResponse.message) {
+            response.errors.push(serverResponse.message);
+            LOG.message(
+                Level.DEBUG,
+                `Encountered an error during feature file import: ${serverResponse.message}`
+            );
+        }
+        if (serverResponse.testIssues && serverResponse.testIssues.length > 0) {
+            const testKeys = serverResponse.testIssues.map((test: IssueDetails) => test.key);
+            response.updatedOrCreatedIssues.push(...testKeys);
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Successfully updated or created test issues:
+                    ${testKeys.join(", ")}
+                `)
+            );
+        }
+        if (serverResponse.preconditionIssues && serverResponse.preconditionIssues.length > 0) {
+            const preconditionKeys = serverResponse.preconditionIssues.map(
+                (test: IssueDetails) => test.key
+            );
+            response.updatedOrCreatedIssues.push(...preconditionKeys);
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Successfully updated or created precondition issues:
+                    ${preconditionKeys.join(", ")}
                 `)
             );
         }
