@@ -17,9 +17,11 @@ export class ImportFeatureCommand extends Command<ImportFeatureResponse, Paramet
         LOG.message(Level.INFO, `Importing feature file to Xray: ${this.parameters.filePath}`);
         const importResponse = await this.parameters.xrayClient.importFeature(
             this.parameters.filePath,
-            this.parameters.projectKey,
-            this.parameters.projectId,
-            this.parameters.source
+            {
+                projectKey: this.parameters.projectKey,
+                projectId: this.parameters.projectId,
+                source: this.parameters.source,
+            }
         );
         if (importResponse.errors.length > 0) {
             LOG.message(

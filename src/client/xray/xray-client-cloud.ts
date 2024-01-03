@@ -60,13 +60,16 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
         return `${this.apiBaseUrl}/import/execution`;
     }
 
-    public getUrlImportFeature(projectKey?: string, projectId?: string): string {
+    public getUrlImportFeature(projectKey?: string, projectId?: string, source?: string): string {
         const query: string[] = [];
         if (projectKey) {
             query.push(`projectKey=${projectKey}`);
         }
         if (projectId) {
             query.push(`projectId=${projectId}`);
+        }
+        if (source) {
+            query.push(`source=${source}`);
         }
         return `${this.apiBaseUrl}/import/feature?${query.join("&")}`;
     }

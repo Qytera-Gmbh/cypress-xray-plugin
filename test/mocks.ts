@@ -93,11 +93,18 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             },
             importFeature: function (
                 file: string,
-                projectKey?: string,
-                projectId?: string,
-                source?: string
+                query: {
+                    projectKey?: string;
+                    projectId?: string;
+                    source?: string;
+                }
             ) {
-                throw mockCalledUnexpectedlyError(file, projectKey, projectId, source);
+                throw mockCalledUnexpectedlyError(
+                    file,
+                    query.projectKey,
+                    query.projectId,
+                    query.source
+                );
             },
             importExecutionCucumberMultipart: function (
                 cucumberJson: CucumberMultipartFeature[],
@@ -114,11 +121,18 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
         },
         importFeature: function (
             file: string,
-            projectKey?: string,
-            projectId?: string,
-            source?: string
+            query: {
+                projectKey?: string;
+                projectId?: string;
+                source?: string;
+            }
         ) {
-            throw mockCalledUnexpectedlyError(file, projectKey, projectId, source);
+            throw mockCalledUnexpectedlyError(
+                file,
+                query.projectKey,
+                query.projectId,
+                query.source
+            );
         },
         importExecutionCucumberMultipart: function (
             cucumberJson: CucumberMultipartFeature[],

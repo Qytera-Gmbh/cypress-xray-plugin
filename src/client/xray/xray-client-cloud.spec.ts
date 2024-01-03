@@ -221,8 +221,7 @@ describe("the xray cloud client", () => {
             });
             const response = await client.importFeature(
                 "./test/resources/features/taggedPrefixCorrect.feature",
-                "utf-8",
-                "CYP"
+                { projectKey: "CYP" }
             );
             expect(response).to.deep.eq({
                 errors: [],
@@ -232,30 +231,34 @@ describe("the xray cloud client", () => {
 
         it("handles responses with errors", async () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            restClient.post.onFirstCall().resolves({
-                status: HttpStatusCode.Ok,
-                data: {
-                    errors: [
-                        "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
-                        "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
-                    ],
-                    updatedOrCreatedTests: [
-                        {
-                            id: "32493",
-                            key: "CYP-555",
-                            self: "https://devxray3.atlassian.net/rest/api/2/issue/32493",
-                        },
-                    ],
-                    updatedOrCreatedPreconditions: [],
-                },
-                headers: {},
-                statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
-            });
+            restClient.post
+                .withArgs(
+                    "https://xray.cloud.getxray.app/api/v2/import/feature?projectId=abcdef1234"
+                )
+                .onFirstCall()
+                .resolves({
+                    status: HttpStatusCode.Ok,
+                    data: {
+                        errors: [
+                            "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
+                            "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
+                        ],
+                        updatedOrCreatedTests: [
+                            {
+                                id: "32493",
+                                key: "CYP-555",
+                                self: "https://devxray3.atlassian.net/rest/api/2/issue/32493",
+                            },
+                        ],
+                        updatedOrCreatedPreconditions: [],
+                    },
+                    headers: {},
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    config: { headers: new AxiosHeaders() },
+                });
             const response = await client.importFeature(
                 "./test/resources/features/taggedPrefixCorrect.feature",
-                "utf-8",
-                "CYP"
+                { projectId: "abcdef1234" }
             );
             expect(response).to.deep.eq({
                 errors: [
@@ -276,25 +279,27 @@ describe("the xray cloud client", () => {
 
         it("handles responses without any updated issues", async () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            restClient.post.onFirstCall().resolves({
-                status: HttpStatusCode.Ok,
-                data: {
-                    errors: [
-                        "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
-                        "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
-                        "Error in file taggedPrefixCorrect.feature: Test with key CYP-555 was not found!",
-                    ],
-                    updatedOrCreatedTests: [],
-                    updatedOrCreatedPreconditions: [],
-                },
-                headers: {},
-                statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
-            });
+            restClient.post
+                .withArgs("https://xray.cloud.getxray.app/api/v2/import/feature?source=CYP")
+                .onFirstCall()
+                .resolves({
+                    status: HttpStatusCode.Ok,
+                    data: {
+                        errors: [
+                            "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
+                            "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
+                            "Error in file taggedPrefixCorrect.feature: Test with key CYP-555 was not found!",
+                        ],
+                        updatedOrCreatedTests: [],
+                        updatedOrCreatedPreconditions: [],
+                    },
+                    headers: {},
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    config: { headers: new AxiosHeaders() },
+                });
             const response = await client.importFeature(
                 "./test/resources/features/taggedPrefixCorrect.feature",
-                "utf-8",
-                "CYP"
+                { source: "CYP" }
             );
             expect(response).to.deep.eq({
                 errors: [
@@ -334,11 +339,9 @@ describe("the xray cloud client", () => {
             );
             restClient.post.onFirstCall().rejects(error);
             await expect(
-                client.importFeature(
-                    "./test/resources/features/taggedPrefixCorrect.feature",
-                    "utf-8",
-                    "CYP"
-                )
+                client.importFeature("./test/resources/features/taggedPrefixCorrect.feature", {
+                    projectKey: "CYP",
+                })
             ).to.eventually.be.rejectedWith("Feature file import failed");
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,
@@ -362,11 +365,9 @@ describe("the xray cloud client", () => {
             const error = new Error("Connection timeout");
             restClient.post.onFirstCall().rejects(error);
             await expect(
-                client.importFeature(
-                    "./test/resources/features/taggedPrefixCorrect.feature",
-                    "utf-8",
-                    "CYP"
-                )
+                client.importFeature("./test/resources/features/taggedPrefixCorrect.feature", {
+                    projectKey: "CYP",
+                })
             ).to.eventually.be.rejectedWith("Feature file import failed");
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,

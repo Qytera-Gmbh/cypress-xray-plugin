@@ -140,8 +140,7 @@ describe("the xray server client", () => {
             });
             const response = await client.importFeature(
                 "./test/resources/features/taggedPrefixCorrect.feature",
-                "utf-8",
-                "CYP"
+                { projectKey: "CYP" }
             );
             expect(response).to.deep.eq({
                 errors: [],
@@ -184,8 +183,7 @@ describe("the xray server client", () => {
             });
             const response = await client.importFeature(
                 "./test/resources/features/taggedPrefixCorrect.feature",
-                "utf-8",
-                "CYP"
+                { projectKey: "CYP" }
             );
             expect(response).to.deep.eq({
                 errors: ["Test with key CYP-333 was not found!"],
@@ -230,8 +228,7 @@ describe("the xray server client", () => {
             });
             const response = await client.importFeature(
                 "./test/resources/features/taggedPrefixCorrect.feature",
-                "utf-8",
-                "CYP"
+                { projectKey: "CYP" }
             );
             expect(response).to.deep.eq({
                 errors: [],
@@ -255,8 +252,7 @@ describe("the xray server client", () => {
             });
             const response = await client.importFeature(
                 "./test/resources/features/taggedPrefixCorrect.feature",
-                "utf-8",
-                "CYP"
+                { projectKey: "CYP" }
             );
             expect(response).to.deep.eq({
                 errors: [
@@ -289,11 +285,9 @@ describe("the xray server client", () => {
             );
             restClient.post.onFirstCall().rejects(error);
             await expect(
-                client.importFeature(
-                    "./test/resources/features/taggedPrefixCorrect.feature",
-                    "utf-8",
-                    "CYP"
-                )
+                client.importFeature("./test/resources/features/taggedPrefixCorrect.feature", {
+                    projectKey: "CYP",
+                })
             ).to.eventually.be.rejectedWith("Feature file import failed");
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,
@@ -317,11 +311,9 @@ describe("the xray server client", () => {
             const error = new Error("Connection timeout");
             restClient.post.onFirstCall().rejects(error);
             await expect(
-                client.importFeature(
-                    "./test/resources/features/taggedPrefixCorrect.feature",
-                    "utf-8",
-                    "CYP"
-                )
+                client.importFeature("./test/resources/features/taggedPrefixCorrect.feature", {
+                    projectKey: "CYP",
+                })
             ).to.eventually.be.rejectedWith("Feature file import failed");
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,

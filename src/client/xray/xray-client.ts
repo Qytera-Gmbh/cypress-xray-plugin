@@ -33,18 +33,28 @@ export interface XrayClient {
      * Uploads (zipped) feature file(s) to corresponding Xray issues.
      *
      * @param file - the (zipped) Cucumber feature file(s)
-     * @param projectKey - key of the project where the tests and pre-conditions are located
-     * @param projectId - id of the project where the tests and pre-conditions are located
-     * @param source - a name designating the source of the features being imported (e.g. the source project name)
+     * @param query - the query parameters
      * @returns the response containing updated issues
      * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
      * @see https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
      */
     importFeature(
         file: string,
-        projectKey?: string,
-        projectId?: string,
-        source?: string
+        query: {
+            /**
+             * The key of the project where the tests and pre-conditions are located.
+             */
+            projectKey?: string;
+            /**
+             * The ID of the project where the tests and pre-conditions are located.
+             */
+            projectId?: string;
+            /**
+             * A name designating the source of the features being imported (e.g. the source
+             * project name).
+             */
+            source?: string;
+        }
     ): Promise<ImportFeatureResponse>;
     /**
      * Uploads Cucumber test results to the Xray instance.
@@ -93,9 +103,11 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
 
     public async importFeature(
         file: string,
-        projectKey?: string,
-        projectId?: string,
-        source?: string
+        query: {
+            projectKey?: string;
+            projectId?: string;
+            source?: string;
+        }
     ): Promise<ImportFeatureResponse> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
@@ -108,12 +120,16 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
 
                 const response: AxiosResponse<
                     ImportFeatureResponseServer | ImportFeatureResponseCloud
-                > = await REST.post(this.getUrlImportFeature(projectKey, projectId, source), form, {
-                    headers: {
-                        ...authorizationHeader,
-                        ...form.getHeaders(),
-                    },
-                });
+                > = await REST.post(
+                    this.getUrlImportFeature(query.projectKey, query.projectId, query.source),
+                    form,
+                    {
+                        headers: {
+                            ...authorizationHeader,
+                            ...form.getHeaders(),
+                        },
+                    }
+                );
                 return this.handleResponseImportFeature(response.data);
             } finally {
                 clearInterval(progressInterval);
