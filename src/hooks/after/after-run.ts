@@ -10,7 +10,7 @@ import { Command, Computable } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";
 import { AttachFilesCommand } from "../util/commands/jira/attach-files-command";
 import { JiraField } from "../util/commands/jira/extract-field-id-command";
-import { FetchIssueDetailsCommand } from "../util/commands/jira/fetch-issue-details-command";
+import { FetchIssueTypesCommand } from "../util/commands/jira/fetch-issue-types-command";
 import { ImportExecutionCucumberCommand } from "../util/commands/xray/import-execution-cucumber-command";
 import { ImportExecutionCypressCommand } from "../util/commands/xray/import-execution-cypress-command";
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
@@ -29,7 +29,7 @@ import { AssertCypressConversionValidCommand } from "./commands/conversion/cypre
 import { CombineCypressJsonCommand } from "./commands/conversion/cypress/combine-cypress-xray-command";
 import { ConvertCypressInfoCommand } from "./commands/conversion/cypress/convert-cypress-info-command";
 import { ConvertCypressTestsCommand } from "./commands/conversion/cypress/convert-cypress-tests-command";
-import { ExtractExecutionIssueDetailsCommand } from "./commands/extract-execution-issue-details-command";
+import { ExtractExecutionIssueTypeCommand } from "./commands/extract-execution-issue-type-command";
 import { ExtractVideoFilesCommand } from "./commands/extract-video-files-command";
 import { PrintUploadSuccessCommand } from "./commands/print-upload-success-command";
 import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issue-key-command";
@@ -198,12 +198,11 @@ function createImportExecutionCucumberCommand(
     ) as CucumberMultipartFeature[];
     const cucumberResultsCommand = graph.place(new ConstantCommand(results));
     const fetchIssueTypesCommand = graph.findOrDefault(
-        (command): command is FetchIssueDetailsCommand =>
-            command instanceof FetchIssueDetailsCommand,
-        () => graph.place(new FetchIssueDetailsCommand({ jiraClient: clients.jiraClient }))
+        (command): command is FetchIssueTypesCommand => command instanceof FetchIssueTypesCommand,
+        () => graph.place(new FetchIssueTypesCommand({ jiraClient: clients.jiraClient }))
     );
-    const fetchExecutionIssueDetailsCommand = graph.place(
-        new ExtractExecutionIssueDetailsCommand(
+    const extractExecutionIssueTypeCommand = graph.place(
+        new ExtractExecutionIssueTypeCommand(
             {
                 projectKey: options.jira.projectKey,
                 testExecutionIssueType: options.jira.testExecutionIssueType,
@@ -212,7 +211,7 @@ function createImportExecutionCucumberCommand(
             fetchIssueTypesCommand
         )
     );
-    graph.connect(fetchIssueTypesCommand, fetchExecutionIssueDetailsCommand);
+    graph.connect(fetchIssueTypesCommand, extractExecutionIssueTypeCommand);
     const resultsCommand = graph.findOrDefault(
         (command): command is ConstantCommand<CypressRunResultType> =>
             command instanceof ConstantCommand && command.getValue() === cypressResults,
@@ -222,10 +221,10 @@ function createImportExecutionCucumberCommand(
         options,
         clients,
         graph,
-        fetchExecutionIssueDetailsCommand,
+        extractExecutionIssueTypeCommand,
         resultsCommand
     );
-    graph.connect(fetchExecutionIssueDetailsCommand, convertCucumberInfoCommand);
+    graph.connect(extractExecutionIssueTypeCommand, convertCucumberInfoCommand);
     graph.connect(resultsCommand, convertCucumberInfoCommand);
     const convertCucumberFeaturesCommand = graph.place(
         new ConvertCucumberFeaturesCommand(
@@ -297,12 +296,12 @@ function getConvertCucumberInfoCommand(
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
-    executionIssueDetails: Computable<IssueTypeDetails>,
+    executionIssueType: Computable<IssueTypeDetails>,
     results: Computable<RunData>
 ): ConvertCucumberInfoCommand {
     if (clients.kind === "cloud") {
         return graph.place(
-            new ConvertCucumberInfoCloudCommand(options, executionIssueDetails, results)
+            new ConvertCucumberInfoCloudCommand(options, executionIssueType, results)
         );
     }
     let testPlanIdCommand: Command<string> | undefined = undefined;
@@ -327,7 +326,7 @@ function getConvertCucumberInfoCommand(
         }
     }
     const convertCucumberInfoCommand = graph.place(
-        new ConvertCucumberInfoServerCommand(options, executionIssueDetails, results, {
+        new ConvertCucumberInfoServerCommand(options, executionIssueType, results, {
             testPlanId: testPlanIdCommand,
             testEnvironmentsId: testEnvironmentsIdCommand,
         })

@@ -8,7 +8,7 @@ type Parameters = Pick<InternalJiraOptions, "projectKey" | "testExecutionIssueTy
     displayCloudHelp: boolean;
 };
 
-export class ExtractExecutionIssueDetailsCommand extends Command<IssueTypeDetails, Parameters> {
+export class ExtractExecutionIssueTypeCommand extends Command<IssueTypeDetails, Parameters> {
     private readonly allIssueDetails: Computable<IssueTypeDetails[]>;
 
     constructor(parameters: Parameters, allIssueDetails: Computable<IssueTypeDetails[]>) {

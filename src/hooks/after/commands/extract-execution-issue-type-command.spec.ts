@@ -5,26 +5,26 @@ import path from "path";
 import { IssueTypeDetails } from "../../../types/jira/responses/issue-type-details";
 import { dedent } from "../../../util/dedent";
 import { ConstantCommand } from "../../util/commands/constant-command";
-import { ExtractExecutionIssueDetailsCommand } from "./extract-execution-issue-details-command";
+import { ExtractExecutionIssueTypeCommand } from "./extract-execution-issue-type-command";
 
 chai.use(chaiAsPromised);
 
 describe(path.relative(process.cwd(), __filename), () => {
-    describe(ExtractExecutionIssueDetailsCommand.name, () => {
-        it("extracts test execution issue details", async () => {
-            const issueDetails = JSON.parse(
+    describe(ExtractExecutionIssueTypeCommand.name, () => {
+        it("extracts test execution issue types", async () => {
+            const issueTypes = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/jira/responses/getIssueTypes.json",
                     "utf-8"
                 )
             ) as IssueTypeDetails[];
-            const command = new ExtractExecutionIssueDetailsCommand(
+            const command = new ExtractExecutionIssueTypeCommand(
                 {
                     projectKey: "CYP",
                     testExecutionIssueType: "Test Execution",
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(issueDetails)
+                new ConstantCommand(issueTypes)
             );
             expect(await command.compute()).to.deep.eq({
                 self: "https://example.org/rest/api/2/issuetype/10008",
@@ -41,20 +41,20 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
         });
 
-        it("throws when the test execution details do not exist (cloud)", async () => {
-            const issueDetails = JSON.parse(
+        it("throws when the test execution types do not exist (cloud)", async () => {
+            const issueTypes = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/jira/responses/getIssueTypes.json",
                     "utf-8"
                 )
             ) as IssueTypeDetails[];
-            const command = new ExtractExecutionIssueDetailsCommand(
+            const command = new ExtractExecutionIssueTypeCommand(
                 {
                     projectKey: "CYP",
                     testExecutionIssueType: "Nonexistent Execution",
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(issueDetails)
+                new ConstantCommand(issueTypes)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -77,20 +77,20 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
-        it("throws when the test execution details do not exist (server)", async () => {
-            const issueDetails = JSON.parse(
+        it("throws when the test execution types do not exist (server)", async () => {
+            const issueTypes = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/jira/responses/getIssueTypes.json",
                     "utf-8"
                 )
             ) as IssueTypeDetails[];
-            const command = new ExtractExecutionIssueDetailsCommand(
+            const command = new ExtractExecutionIssueTypeCommand(
                 {
                     projectKey: "CYP",
                     testExecutionIssueType: "Nonexistent Execution",
                     displayCloudHelp: false,
                 },
-                new ConstantCommand(issueDetails)
+                new ConstantCommand(issueTypes)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -113,20 +113,20 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
-        it("throws when multiple test execution details exist (cloud)", async () => {
-            const issueDetails = JSON.parse(
+        it("throws when multiple test execution types exist (cloud)", async () => {
+            const issueTypes = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/jira/responses/getIssueTypes.json",
                     "utf-8"
                 )
             ) as IssueTypeDetails[];
-            const command = new ExtractExecutionIssueDetailsCommand(
+            const command = new ExtractExecutionIssueTypeCommand(
                 {
                     projectKey: "CYP",
                     testExecutionIssueType: "Task",
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(issueDetails)
+                new ConstantCommand(issueTypes)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -152,20 +152,20 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
-        it("throws when multiple test execution details exist (server)", async () => {
-            const issueDetails = JSON.parse(
+        it("throws when multiple test execution types exist (server)", async () => {
+            const issueTypes = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/jira/responses/getIssueTypes.json",
                     "utf-8"
                 )
             ) as IssueTypeDetails[];
-            const command = new ExtractExecutionIssueDetailsCommand(
+            const command = new ExtractExecutionIssueTypeCommand(
                 {
                     projectKey: "CYP",
                     testExecutionIssueType: "Task",
                     displayCloudHelp: false,
                 },
-                new ConstantCommand(issueDetails)
+                new ConstantCommand(issueTypes)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`

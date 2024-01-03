@@ -31,26 +31,26 @@ export abstract class ConvertCucumberInfoCommand extends Command<
     CucumberMultipartInfo,
     Parameters
 > {
-    private readonly testExecutionIssueDetails: Computable<IssueTypeDetails>;
+    private readonly testExecutionIssueType: Computable<IssueTypeDetails>;
     private readonly runInformation: Computable<RunData>;
     constructor(
         parameters: Parameters,
-        testExecutionIssueDetails: Computable<IssueTypeDetails>,
+        testExecutionIssueType: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>
     ) {
         super(parameters);
-        this.testExecutionIssueDetails = testExecutionIssueDetails;
+        this.testExecutionIssueType = testExecutionIssueType;
         this.runInformation = runInformation;
     }
 
     protected async computeResult(): Promise<CucumberMultipartInfo> {
-        const testExecutionIssueDetails = await this.testExecutionIssueDetails.compute();
+        const testExecutionIssueType = await this.testExecutionIssueType.compute();
         const runInformation = await this.runInformation.compute();
-        return await this.buildInfo(testExecutionIssueDetails, runInformation);
+        return await this.buildInfo(testExecutionIssueType, runInformation);
     }
 
     protected abstract buildInfo(
-        testExecutionIssueDetails: IssueTypeDetails,
+        testExecutionIssueType: IssueTypeDetails,
         runInformation: RunData
     ): CucumberMultipartInfo | Promise<CucumberMultipartInfo>;
 }
@@ -60,14 +60,14 @@ export class ConvertCucumberInfoServerCommand extends ConvertCucumberInfoCommand
     private readonly testEnvironmentsId?: Computable<string>;
     constructor(
         options: Parameters,
-        testExecutionIssueDetails: Computable<IssueTypeDetails>,
+        testExecutionIssueType: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>,
         fieldIds?: {
             testPlanId?: Computable<string>;
             testEnvironmentsId?: Computable<string>;
         }
     ) {
-        super(options, testExecutionIssueDetails, runInformation);
+        super(options, testExecutionIssueType, runInformation);
         if (this.parameters.jira.testPlanIssueKey && !fieldIds?.testPlanId) {
             throw new Error(
                 "A test plan issue key was supplied without the test plan Jira field ID"
@@ -83,14 +83,14 @@ export class ConvertCucumberInfoServerCommand extends ConvertCucumberInfoCommand
     }
 
     protected async buildInfo(
-        testExecutionIssueDetails: IssueTypeDetails,
+        testExecutionIssueType: IssueTypeDetails,
         runInformation: RunData
     ): Promise<CucumberMultipartInfo> {
         const testExecutionIssueData: TestExecutionIssueDataServer = {
             projectKey: this.parameters.jira.projectKey,
             summary: this.parameters.jira.testExecutionIssueSummary,
             description: this.parameters.jira.testExecutionIssueDescription,
-            issuetype: testExecutionIssueDetails,
+            issuetype: testExecutionIssueType,
         };
         if (this.parameters.jira.testPlanIssueKey && this.testPlanId) {
             const testPlandId = await this.testPlanId.compute();
@@ -112,14 +112,14 @@ export class ConvertCucumberInfoServerCommand extends ConvertCucumberInfoCommand
 
 export class ConvertCucumberInfoCloudCommand extends ConvertCucumberInfoCommand {
     protected buildInfo(
-        testExecutionIssueDetails: IssueTypeDetails,
+        testExecutionIssueType: IssueTypeDetails,
         runInformation: RunData
     ): CucumberMultipartInfo {
         const testExecutionIssueData: TestExecutionIssueData = {
             projectKey: this.parameters.jira.projectKey,
             summary: this.parameters.jira.testExecutionIssueSummary,
             description: this.parameters.jira.testExecutionIssueDescription,
-            issuetype: testExecutionIssueDetails,
+            issuetype: testExecutionIssueType,
         };
         if (this.parameters.jira.testPlanIssueKey) {
             testExecutionIssueData.testPlan = {

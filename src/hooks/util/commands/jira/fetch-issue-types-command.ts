@@ -6,7 +6,7 @@ interface Parameters {
     jiraClient: JiraClient;
 }
 
-export class FetchIssueDetailsCommand extends Command<IssueTypeDetails[], Parameters> {
+export class FetchIssueTypesCommand extends Command<IssueTypeDetails[], Parameters> {
     protected async computeResult(): Promise<IssueTypeDetails[]> {
         return await this.parameters.jiraClient.getIssueTypes();
     }
