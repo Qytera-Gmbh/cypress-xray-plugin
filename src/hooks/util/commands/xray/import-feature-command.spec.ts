@@ -7,10 +7,31 @@ import { ImportFeatureCommand } from "./import-feature-command";
 
 describe(path.relative(process.cwd(), __filename), () => {
     describe(ImportFeatureCommand.name, () => {
+        it("imports features", async () => {
+            const logger = getMockedLogger();
+            const xrayClient = getMockedXrayClient();
+            const command = new ImportFeatureCommand({
+                xrayClient: xrayClient,
+                filePath: "/path/to/some/cucumber.feature",
+            });
+            xrayClient.importFeature.onFirstCall().resolves({
+                errors: [],
+                updatedOrCreatedIssues: ["CYP-123", "CYP-42"],
+            });
+            expect(await command.compute()).to.deep.eq({
+                errors: [],
+                updatedOrCreatedIssues: ["CYP-123", "CYP-42"],
+            });
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Importing feature file to Xray: /path/to/some/cucumber.feature"
+            );
+        });
+
         it("warns about import errors", async () => {
             const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient();
-            const importFeatureCommand = new ImportFeatureCommand({
+            const command = new ImportFeatureCommand({
                 xrayClient: xrayClient,
                 filePath: "/path/to/some/cucumber.feature",
             });
@@ -18,7 +39,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 errors: ["CYP-123 does not exist", "CYP-42: Access denied", "Big\nProblem"],
                 updatedOrCreatedIssues: [],
             });
-            await importFeatureCommand.compute();
+            await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
                 dedent(`
