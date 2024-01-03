@@ -403,7 +403,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
-        it("calls the synchronizeFile hook", () => {
+        it("adds synchronization commands", () => {
             const stubbedHook = stub(synchronizeFeatureFileHook, "addSynchronizationCommands");
             pluginContext.options.cucumber = {
                 featureFileExtension: ".feature",
@@ -420,6 +420,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                 pluginContext.clients,
                 pluginContext.graph
             );
+        });
+
+        it("does not add synchronization commands for native test files", () => {
+            const stubbedHook = stub(synchronizeFeatureFileHook, "addSynchronizationCommands");
+            pluginContext.options.cucumber = {
+                featureFileExtension: ".feature",
+                uploadFeatures: true,
+                downloadFeatures: false,
+                prefixes: {},
+            };
+            context.setPluginContext(pluginContext);
+            file.filePath = "/something.js";
+            syncFeatureFile(file);
+            expect(stubbedHook).to.not.have.been.called;
         });
     });
 });
