@@ -1,8 +1,6 @@
 import { CypressRunResultType } from "../../types/cypress/run-result";
-import {
-    missingTestKeyInNativeTestTitleError,
-    multipleTestKeysInNativeTestTitleError,
-} from "../../util/errors";
+import { dedent } from "../../util/dedent";
+import { HELP } from "../../util/help";
 
 export function containsCypressTest(
     runResult: CypressRunResultType,
@@ -41,10 +39,42 @@ export function getNativeTestIssueKey(title: string, projectKey: string): string
     const regex = new RegExp(`(${projectKey}-\\d+)`, "g");
     const matches = title.match(regex);
     if (!matches) {
-        throw missingTestKeyInNativeTestTitleError(title, projectKey);
+        throw new Error(
+            dedent(`
+                No test issue keys found in title of test: ${title}
+                You can target existing test issues by adding a corresponding issue key:
+
+                it("${projectKey}-123 ${title}", () => {
+                  // ...
+                });
+
+                For more information, visit:
+                - ${HELP.plugin.guides.targetingExistingIssues}
+            `)
+        );
     } else if (matches.length === 1) {
         return matches[0];
     } else {
-        throw multipleTestKeysInNativeTestTitleError(title, matches);
+        // Remove any circumflexes currently present in the title.
+        let indicatorLine = title.replaceAll("^", " ");
+        matches.forEach((issueKey: string) => {
+            indicatorLine = indicatorLine.replaceAll(issueKey, "^".repeat(issueKey.length));
+        });
+        // Replace everything but circumflexes with space.
+        indicatorLine = indicatorLine.replaceAll(/[^^]/g, " ");
+        throw new Error(
+            dedent(`
+                Multiple test keys found in title of test: ${title}
+                The plugin cannot decide for you which one to use:
+
+                it("${title}", () => {
+                    ${indicatorLine}
+                  // ...
+                });
+
+                For more information, visit:
+                - ${HELP.plugin.guides.targetingExistingIssues}
+            `)
+        );
     }
 }

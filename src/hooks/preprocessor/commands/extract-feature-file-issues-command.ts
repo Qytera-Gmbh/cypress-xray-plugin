@@ -1,12 +1,12 @@
-import { Background, GherkinDocument, Scenario } from "@cucumber/messages";
+import { Background, Comment, GherkinDocument, Scenario } from "@cucumber/messages";
 import { FeatureFileIssueData } from "../../../types/cucumber/cucumber";
 import { CucumberOptions } from "../../../types/plugin";
+import { dedent } from "../../../util/dedent";
 import {
-    missingPreconditionKeyInCucumberBackgroundError,
     missingTestKeyInCucumberScenarioError,
-    multiplePreconditionKeysInCucumberBackgroundError,
     multipleTestKeysInCucumberScenarioError,
 } from "../../../util/errors";
+import { HELP } from "../../../util/help";
 import { Command, Computable } from "../../command";
 import {
     getCucumberPreconditionIssueComments,
@@ -67,18 +67,114 @@ export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueDat
                 this.parameters.prefixes?.precondition
             );
             if (preconditionKeys.length === 0) {
-                throw missingPreconditionKeyInCucumberBackgroundError(
-                    background,
-                    this.parameters.projectKey,
-                    this.parameters.displayCloudHelp,
-                    preconditionComments
+                const firstStepLine =
+                    background.steps.length > 0
+                        ? `${background.steps[0].keyword.trim()} ${background.steps[0].text}`
+                        : "Given A step";
+                if (preconditionComments.length > 0) {
+                    throw new Error(
+                        dedent(`
+                            No precondition issue keys found in comments of background${
+                                background.name.length > 0 ? `: ${background.name}` : ""
+                            }
+
+                            Available comments:
+                              ${preconditionComments.join("\n")}
+
+                            If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray
+
+                              For example, with the following plugin configuration:
+
+                                {
+                                  cucumber: {
+                                    prefixes: {
+                                      precondition: "Precondition:"
+                                    }
+                                  }
+                                }
+
+                              The following comment will be recognized as a precondition issue tag by the plugin:
+
+                                ${background.keyword}: ${background.name}
+                                  #@Precondition:${this.parameters.projectKey}-123
+                                  ${firstStepLine}
+                                  ...
+
+                            For more information, visit:
+                            - ${HELP.plugin.guides.targetingExistingIssues}
+                            - ${HELP.plugin.configuration.cucumber.prefixes}
+                            - ${
+                                this.parameters.displayCloudHelp
+                                    ? HELP.xray.importCucumberTests.cloud
+                                    : HELP.xray.importCucumberTests.server
+                            }
+                        `)
+                    );
+                }
+                throw new Error(
+                    dedent(`
+                        No precondition issue keys found in comments of background${
+                            background.name.length > 0 ? `: ${background.name}` : ""
+                        }
+
+                        You can target existing precondition issues by adding a corresponding comment:
+
+                          ${background.keyword}: ${background.name}
+                            #@${this.parameters.projectKey}-123
+                            ${firstStepLine}
+                            ...
+
+                        You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+                          Plugin configuration:
+
+                            {
+                              cucumber: {
+                                prefixes: {
+                                  precondition: "Precondition:"
+                                }
+                              }
+                            }
+
+                          Feature file:
+
+                            ${background.keyword}: ${background.name}
+                              #@Precondition:${this.parameters.projectKey}-123
+                              ${firstStepLine}
+                              ...
+
+                        For more information, visit:
+                        - ${HELP.plugin.guides.targetingExistingIssues}
+                        - ${HELP.plugin.configuration.cucumber.prefixes}
+                        - ${
+                            this.parameters.displayCloudHelp
+                                ? HELP.xray.importCucumberTests.cloud
+                                : HELP.xray.importCucumberTests.server
+                        }
+                    `)
                 );
             } else if (preconditionKeys.length > 1) {
-                throw multiplePreconditionKeysInCucumberBackgroundError(
-                    background,
-                    preconditionKeys,
-                    parsedDocument.comments,
-                    this.parameters.displayCloudHelp
+                throw new Error(
+                    dedent(`
+                        Multiple precondition issue keys found in comments of background${
+                            background.name.length > 0 ? `: ${background.name}` : ""
+                        }
+                        The plugin cannot decide for you which one to use:
+
+                        ${reconstructMultipleTagsBackground(
+                            background,
+                            preconditionKeys,
+                            parsedDocument.comments
+                        )}
+
+                        For more information, visit:
+                        - ${
+                            this.parameters.displayCloudHelp
+                                ? HELP.xray.importCucumberTests.cloud
+                                : HELP.xray.importCucumberTests.server
+                        }
+                        - ${HELP.plugin.guides.targetingExistingIssues}
+                    `)
                 );
             }
             featureFileIssueKeys.preconditions.push({
@@ -114,4 +210,26 @@ export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueDat
         }
         return featureFileIssueKeys;
     }
+}
+
+function reconstructMultipleTagsBackground(
+    background: Background,
+    preconditionIssueKeys: readonly string[],
+    comments: readonly Comment[]
+): string {
+    const example: string[] = [];
+    const backgroundLine = background.location.line;
+    const firstStepLine = background.steps[0].location.line;
+    example.push(`${background.keyword}: ${background.name}`);
+    for (const comment of comments) {
+        if (comment.location.line > backgroundLine && comment.location.line < firstStepLine) {
+            example.push(`  ${comment.text.trimStart()}`);
+            if (preconditionIssueKeys.some((key: string) => comment.text.endsWith(key))) {
+                example.push(`  ${comment.text.replaceAll(/\S/g, "^").trimStart()}`);
+            }
+        }
+    }
+    example.push(`  ${background.steps[0].keyword.trim()} ${background.steps[0].text}`);
+    example.push("  ...");
+    return example.join("\n");
 }

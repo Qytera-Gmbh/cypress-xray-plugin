@@ -47,12 +47,29 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("throws for missing fields", async () => {
             const command = new ExtractFieldIdCommand(
                 { field: JiraField.DESCRIPTION },
-                new ConstantCommand([])
+                new ConstantCommand([
+                    {
+                        id: "customfield_12345",
+                        name: "Summary",
+                        custom: false,
+                        orderable: true,
+                        navigable: true,
+                        searchable: true,
+                        clauseNames: ["summary"],
+                        schema: {
+                            type: "string",
+                            system: "summary",
+                        },
+                    },
+                ])
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
                     Failed to fetch Jira field ID for field with name: description
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                    Available fields:
+                      name: "Summary" id: "customfield_12345"
 
                     You can provide field IDs directly without relying on language settings:
 
@@ -65,56 +82,132 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
-        it("throws for missing fields and displays a hint", async () => {
-            const command = new ExtractFieldIdCommand(
-                { field: JiraField.TEST_PLAN },
-                new ConstantCommand([
-                    {
-                        id: "summary",
-                        name: "Summary",
-                        custom: false,
-                        orderable: true,
-                        navigable: true,
-                        searchable: true,
-                        clauseNames: ["summary"],
-                        schema: {
-                            type: "string",
-                            system: "summary",
-                        },
-                    },
-                    {
-                        id: "description",
-                        name: "Description",
-                        custom: false,
-                        orderable: true,
-                        navigable: true,
-                        searchable: true,
-                        clauseNames: ["description"],
-                        schema: {
-                            type: "string",
-                            system: "description",
-                        },
-                    },
-                ])
-            );
-            await expect(command.compute()).to.eventually.be.rejectedWith(
-                dedent(`
-                    Failed to fetch Jira field ID for field with name: test plan
-                    Make sure the field actually exists and that your Jira language settings did not modify the field's name
+        describe("throws for missing fields and displays a hint", () => {
+            it(JiraField.DESCRIPTION, async () => {
+                const command = new ExtractFieldIdCommand(
+                    { field: JiraField.DESCRIPTION },
+                    new ConstantCommand([])
+                );
+                await expect(command.compute()).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Failed to fetch Jira field ID for field with name: description
+                        Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
-                    Available fields:
-                      name: "Description" id: "description"
-                      name: "Summary"     id: "summary"
+                        You can provide field IDs directly without relying on language settings:
 
-                    You can provide field IDs directly without relying on language settings:
+                          jira: {
+                            fields: {
+                              description: // corresponding field ID
+                            }
+                          }
+                    `)
+                );
+            });
 
-                      jira: {
-                        fields: {
-                          testPlan: // corresponding field ID
-                        }
-                      }
-                `)
-            );
+            it(JiraField.SUMMARY, async () => {
+                const command = new ExtractFieldIdCommand(
+                    { field: JiraField.SUMMARY },
+                    new ConstantCommand([])
+                );
+                await expect(command.compute()).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Failed to fetch Jira field ID for field with name: summary
+                        Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                        You can provide field IDs directly without relying on language settings:
+
+                          jira: {
+                            fields: {
+                              summary: // corresponding field ID
+                            }
+                          }
+                    `)
+                );
+            });
+
+            it(JiraField.LABELS, async () => {
+                const command = new ExtractFieldIdCommand(
+                    { field: JiraField.LABELS },
+                    new ConstantCommand([])
+                );
+                await expect(command.compute()).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Failed to fetch Jira field ID for field with name: labels
+                        Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                        You can provide field IDs directly without relying on language settings:
+
+                          jira: {
+                            fields: {
+                              labels: // corresponding field ID
+                            }
+                          }
+                    `)
+                );
+            });
+
+            it(JiraField.TEST_ENVIRONMENTS, async () => {
+                const command = new ExtractFieldIdCommand(
+                    { field: JiraField.TEST_ENVIRONMENTS },
+                    new ConstantCommand([])
+                );
+                await expect(command.compute()).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Failed to fetch Jira field ID for field with name: test environments
+                        Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                        You can provide field IDs directly without relying on language settings:
+
+                          jira: {
+                            fields: {
+                              testEnvironments: // corresponding field ID
+                            }
+                          }
+                    `)
+                );
+            });
+
+            it(JiraField.TEST_PLAN, async () => {
+                const command = new ExtractFieldIdCommand(
+                    { field: JiraField.TEST_PLAN },
+                    new ConstantCommand([])
+                );
+                await expect(command.compute()).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Failed to fetch Jira field ID for field with name: test plan
+                        Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                        You can provide field IDs directly without relying on language settings:
+
+                          jira: {
+                            fields: {
+                              testPlan: // corresponding field ID
+                            }
+                          }
+                    `)
+                );
+            });
+
+            it(JiraField.TEST_TYPE, async () => {
+                const command = new ExtractFieldIdCommand(
+                    { field: JiraField.TEST_TYPE },
+                    new ConstantCommand([])
+                );
+                await expect(command.compute()).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Failed to fetch Jira field ID for field with name: test type
+                        Make sure the field actually exists and that your Jira language settings did not modify the field's name
+
+                        You can provide field IDs directly without relying on language settings:
+
+                          jira: {
+                            fields: {
+                              testType: // corresponding field ID
+                            }
+                          }
+                    `)
+                );
+            });
         });
 
         it("throws for multiple fields", async () => {

@@ -1,4 +1,4 @@
-import { GherkinDocument } from "@cucumber/messages";
+import { Background, GherkinDocument } from "@cucumber/messages";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
@@ -281,6 +281,110 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
+        it("throws for missing background tags (no background steps and names)", async () => {
+            const document = parseFeatureFile(
+                "./test/resources/features/taggedPrefixMissingBackground.feature"
+            );
+            // Cast because we know for certain it exists.
+            const background = document.feature?.children[0].background as Background;
+            background.steps = [];
+            background.name = "";
+            const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
+                {
+                    projectKey: "CYP",
+                    prefixes: { test: "TestName:" },
+                    displayCloudHelp: false,
+                },
+                new ConstantCommand(document)
+            );
+            await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
+                dedent(`
+                    No precondition issue keys found in comments of background
+
+                    You can target existing precondition issues by adding a corresponding comment:
+
+                      Background:
+                        #@CYP-123
+                        Given A step
+                        ...
+
+                    You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+                      Plugin configuration:
+
+                        {
+                          cucumber: {
+                            prefixes: {
+                              precondition: "Precondition:"
+                            }
+                          }
+                        }
+
+                      Feature file:
+
+                        Background:
+                          #@Precondition:CYP-123
+                          Given A step
+                          ...
+
+                    For more information, visit:
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                    - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                `)
+            );
+        });
+
+        it("throws for wrong background tags (no background name)", async () => {
+            const document = parseFeatureFile(
+                "./test/resources/features/taggedWrongBackgroundTags.feature"
+            );
+            // Cast because we know for certain it exists.
+            const background = document.feature?.children[0].background as Background;
+            background.name = "";
+            const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
+                {
+                    projectKey: "CYP",
+                    prefixes: {},
+                    displayCloudHelp: true,
+                },
+                new ConstantCommand(document)
+            );
+            await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
+                dedent(`
+                    No precondition issue keys found in comments of background
+
+                    Available comments:
+                      #@HairConditioning:CYP-244
+                      #@PavlovConditioning:CYP-784
+
+                    If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray
+
+                      For example, with the following plugin configuration:
+
+                        {
+                          cucumber: {
+                            prefixes: {
+                              precondition: "Precondition:"
+                            }
+                          }
+                        }
+
+                      The following comment will be recognized as a precondition issue tag by the plugin:
+
+                        Background:
+                          #@Precondition:CYP-123
+                          Given abc123
+                          ...
+
+                    For more information, visit:
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                    - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                `)
+            );
+        });
+
         it("throws for wrong background tags", async () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongBackgroundTags.feature"
@@ -377,6 +481,42 @@ describe(path.relative(process.cwd(), __filename), () => {
                         The plugin cannot decide for you which one to use:
 
                         Background: A background
+                          #@CYP-244
+                          ^^^^^^^^^
+                          # a random comment
+                          #@CYP-262
+                          ^^^^^^^^^
+                          Given abc123
+                          ...
+
+                        For more information, visit:
+                        - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                    `)
+                );
+            });
+
+            it("throws for multiple background tags (no background name)", async () => {
+                const document = parseFeatureFile(
+                    "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
+                );
+                // Cast because we know for certain it exists.
+                const background = document.feature?.children[0].background as Background;
+                background.name = "";
+                const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
+                    {
+                        projectKey: "CYP",
+                        prefixes: {},
+                        displayCloudHelp: false,
+                    },
+                    new ConstantCommand(document)
+                );
+                await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Multiple precondition issue keys found in comments of background
+                        The plugin cannot decide for you which one to use:
+
+                        Background:
                           #@CYP-244
                           ^^^^^^^^^
                           # a random comment
