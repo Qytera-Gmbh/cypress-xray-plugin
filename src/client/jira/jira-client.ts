@@ -79,7 +79,7 @@ export interface JiraClient {
 /**
  * A Jira client class for communicating with Jira instances.
  */
-export abstract class AbstractJiraClient extends Client implements JiraClient {
+export class BaseJiraClient extends Client implements JiraClient {
     public async addAttachment(issueIdOrKey: string, ...files: string[]): Promise<Attachment[]> {
         if (files.length === 0) {
             LOG.message(
@@ -111,7 +111,7 @@ export abstract class AbstractJiraClient extends Client implements JiraClient {
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<Attachment[]> = await REST.post(
-                    this.getUrlAddAttachment(issueIdOrKey),
+                    `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/attachments`,
                     form,
                     {
                         headers: {
@@ -146,7 +146,7 @@ export abstract class AbstractJiraClient extends Client implements JiraClient {
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<IssueTypeDetails[]> = await REST.get(
-                    this.getUrlGetIssueTypes(),
+                    `${this.apiBaseUrl}/rest/api/latest/issuetype`,
                     {
                         headers: {
                             ...authorizationHeader,
@@ -184,7 +184,7 @@ export abstract class AbstractJiraClient extends Client implements JiraClient {
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<FieldDetail[]> = await REST.get(
-                    this.getUrlGetFields(),
+                    `${this.apiBaseUrl}/rest/api/latest/field`,
                     {
                         headers: {
                             ...authorizationHeader,
@@ -230,7 +230,7 @@ export abstract class AbstractJiraClient extends Client implements JiraClient {
                         startAt: startAt,
                     };
                     const response: AxiosResponse<SearchResults> = await REST.post(
-                        this.getUrlPostSearch(),
+                        `${this.apiBaseUrl}/rest/api/latest/search`,
                         paginatedRequest,
                         {
                             headers: {
@@ -265,11 +265,15 @@ export abstract class AbstractJiraClient extends Client implements JiraClient {
             LOG.message(Level.DEBUG, "Editing issue...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                await REST.put(this.getUrlEditIssue(issueIdOrKey), issueUpdateData, {
-                    headers: {
-                        ...header,
-                    },
-                });
+                await REST.put(
+                    `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}`,
+                    issueUpdateData,
+                    {
+                        headers: {
+                            ...header,
+                        },
+                    }
+                );
                 LOG.message(Level.DEBUG, `Successfully edited issue: ${issueIdOrKey}`);
             } finally {
                 clearInterval(progressInterval);
@@ -281,41 +285,4 @@ export abstract class AbstractJiraClient extends Client implements JiraClient {
             throw new LoggedError("Failed to edit issue");
         }
     }
-
-    /**
-     * Returns the endpoint to use for adding attchments to issues.
-     *
-     * @param issueIdOrKey - the ID or key of the issue that attachments are added to
-     * @returns the URL
-     */
-    public abstract getUrlAddAttachment(issueIdOrKey: string): string;
-
-    /**
-     * Returns the endpoint to use for retrieving issue types.
-     *
-     * @returns the URL
-     */
-    public abstract getUrlGetIssueTypes(): string;
-
-    /**
-     * Returns the endpoint to use for retrieving fields.
-     *
-     * @returns the URL
-     */
-    public abstract getUrlGetFields(): string;
-
-    /**
-     * Returns the endpoint to use for searching issues.
-     *
-     * @returns the endpoint
-     */
-    public abstract getUrlPostSearch(): string;
-
-    /**
-     * Returns the endpoint to use for editing issues.
-     *
-     * @param issueIdOrKey - the ID or key of the issue
-     * @returns the endpoint
-     */
-    public abstract getUrlEditIssue(issueIdOrKey: string): string;
 }

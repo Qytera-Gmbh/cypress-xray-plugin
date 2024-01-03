@@ -7,8 +7,7 @@ import {
     JwtCredentials,
     PatCredentials,
 } from "./client/authentication/credentials";
-import { JiraClientCloud } from "./client/jira/jira-client-cloud";
-import { JiraClientServer } from "./client/jira/jira-client-server";
+import { BaseJiraClient } from "./client/jira/jira-client";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud";
 import { XrayClientServer } from "./client/xray/xray-client-server";
 import {
@@ -1146,9 +1145,9 @@ describe("the plugin context configuration", () => {
                 .onFirstCall()
                 .returns();
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
-            expect(jiraClient).to.be.an.instanceof(JiraClientCloud);
+            expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
             expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
-            expect((jiraClient as JiraClientCloud).getCredentials()).to.be.an.instanceof(
+            expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
                 BasicAuthCredentials
             );
             expect((xrayClient as XrayClientCloud).getCredentials()).to.be.an.instanceof(
@@ -1199,9 +1198,9 @@ describe("the plugin context configuration", () => {
                 .onFirstCall()
                 .returns();
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
-            expect(jiraClient).to.be.an.instanceof(JiraClientServer);
+            expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
-            expect((jiraClient as JiraClientServer).getCredentials()).to.be.an.instanceof(
+            expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
                 PatCredentials
             );
             expect((xrayClient as XrayClientServer).getCredentials()).to.be.an.instanceof(
@@ -1236,9 +1235,9 @@ describe("the plugin context configuration", () => {
                 .onFirstCall()
                 .returns();
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
-            expect(jiraClient).to.be.an.instanceof(JiraClientServer);
+            expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
-            expect((jiraClient as JiraClientServer).getCredentials()).to.be.an.instanceof(
+            expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
                 BasicAuthCredentials
             );
             expect((xrayClient as XrayClientServer).getCredentials()).to.be.an.instanceof(
@@ -1262,9 +1261,9 @@ describe("the plugin context configuration", () => {
             stubbedJiraPing.onFirstCall().resolves();
             stubbedXrayPing.onFirstCall().resolves();
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
-            expect(jiraClient).to.be.an.instanceof(JiraClientCloud);
+            expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
             expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
-            expect((jiraClient as JiraClientCloud).getCredentials()).to.be.an.instanceof(
+            expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
                 BasicAuthCredentials
             );
             expect((xrayClient as XrayClientCloud).getCredentials()).to.be.an.instanceof(

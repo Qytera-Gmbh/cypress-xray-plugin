@@ -3,8 +3,7 @@ import {
     JwtCredentials,
     PatCredentials,
 } from "./client/authentication/credentials";
-import { JiraClientCloud } from "./client/jira/jira-client-cloud";
-import { JiraClientServer } from "./client/jira/jira-client-server";
+import { BaseJiraClient } from "./client/jira/jira-client";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud";
 import { XrayClientServer } from "./client/xray/xray-client-server";
 import { ENV_NAMES } from "./env";
@@ -306,7 +305,7 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
         await pingJiraInstance(jiraOptions.url, credentials);
-        const jiraClient = new JiraClientCloud(jiraOptions.url, credentials);
+        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials);
         if (
             ENV_NAMES.authentication.xray.clientId in env &&
             ENV_NAMES.authentication.xray.clientSecret in env
@@ -343,7 +342,7 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
         await pingJiraInstance(jiraOptions.url, credentials);
-        const jiraClient = new JiraClientServer(jiraOptions.url, credentials);
+        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials);
         // Xray server authentication: no username, only token.
         LOG.message(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials");
         await pingXrayServer(jiraOptions.url, credentials);
@@ -367,7 +366,7 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.password] as string
         );
         await pingJiraInstance(jiraOptions.url, credentials);
-        const jiraClient = new JiraClientServer(jiraOptions.url, credentials);
+        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials);
         LOG.message(
             Level.INFO,
             "Jira username and password found. Setting up Xray server basic auth credentials"
