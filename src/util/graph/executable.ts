@@ -3,19 +3,30 @@ import { errorMessage } from "../errors";
 import { LOG, Level } from "../logging";
 import { DirectedEdge, SimpleDirectedEdge, SimpleDirectedGraph } from "./graph";
 
+enum VertexState {
+    /**
+     * The vertex has been queued and is pending computation.
+     */
+    PENDING,
+    /**
+     * The vertex successfully computed its result.
+     */
+    COMPUTED,
+    /**
+     * The vertex failed computing its result.
+     */
+    FORBIDDEN,
+}
+
 /**
  * Models a graph which can be executed in a top-down fashion, i.e. starting at vertices without
  * incoming edges and progressing towards leaf vertices without outgoing edges.
  */
 export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirectedGraph<V> {
     /**
-     * Stores vertices which computed their results successfully.
+     * Maps vertices to their execution states.
      */
-    private readonly computedVertices = new Set<Computable<unknown>>();
-    /**
-     * Stores vertices which cannot/must not be computed anymore because of failures or skips.
-     */
-    private readonly forbiddenVertices = new Set<Computable<unknown>>();
+    private readonly states = new Map<Computable<unknown>, VertexState>();
     /**
      * Stores edges which are optional, i.e. that the destination vertex should still compute even
      * if the predecessor failed to compute its result.
@@ -27,7 +38,12 @@ export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirect
      */
     public async execute(): Promise<void> {
         const roots = [...this.getVertices()].filter((vertex) => !this.hasIncoming(vertex));
-        await Promise.all(roots.map((root) => this.executeFollowedBySuccessors(root)));
+        await Promise.all(
+            roots.map((root) => {
+                this.states.set(root, VertexState.PENDING);
+                return this.executeFollowedBySuccessors(root);
+            })
+        );
     }
 
     /**
@@ -49,60 +65,60 @@ export class ExecutableGraph<V extends Computable<unknown>> extends SimpleDirect
     }
 
     private async executeFollowedBySuccessors(vertex: V): Promise<void> {
-        if (!this.computedVertices.has(vertex) && !this.forbiddenVertices.has(vertex)) {
-            try {
-                await vertex.compute();
-                this.computedVertices.add(vertex);
-                await Promise.all(
-                    [...this.getOutgoing(vertex)]
-                        .map((edge) => edge.getDestination())
-                        .filter((successor) => {
-                            // Skip vertices marked as failed/forbidden due to (propagated) errors.
-                            if (this.forbiddenVertices.has(successor)) {
-                                return false;
-                            }
-                            // Only allow computation when all predecessors are done.
-                            // Otherwise we might end up skipping in line.
-                            for (const edge of this.getIncoming(successor)) {
-                                if (!this.computedVertices.has(edge.getSource())) {
-                                    if (
-                                        this.forbiddenVertices.has(edge.getSource()) &&
-                                        this.optionalEdges.has(edge)
-                                    ) {
-                                        continue;
-                                    }
-                                    return false;
-                                }
-                            }
-                            return true;
-                        })
-                        .map((successor) => this.executeFollowedBySuccessors(successor))
-                );
-            } catch (error: unknown) {
-                if (isSkippedError(error)) {
-                    LOG.message(Level.WARNING, errorMessage(error));
-                } else {
-                    LOG.message(Level.ERROR, errorMessage(error));
-                }
-                this.markForbidden(vertex);
+        try {
+            await vertex.compute();
+            this.states.set(vertex, VertexState.COMPUTED);
+        } catch (error: unknown) {
+            if (isSkippedError(error)) {
+                LOG.message(Level.WARNING, errorMessage(error));
+            } else {
+                LOG.message(Level.ERROR, errorMessage(error));
             }
+            this.markForbidden(vertex);
+        } finally {
+            const successorPromises: Promise<void>[] = [];
+            for (const edge of this.getOutgoing(vertex)) {
+                const destination = edge.getDestination();
+                if (this.canQueueVertex(destination)) {
+                    this.states.set(destination, VertexState.PENDING);
+                    successorPromises.push(this.executeFollowedBySuccessors(destination));
+                }
+            }
+            await Promise.all(successorPromises);
         }
     }
 
-    /**
-     * Marks a vertex and its successors as potentially forbidden, meaning that both the vertex and
-     * its successors might not be computed anymore.
-     *
-     * @param vertex - the vertex
-     */
     private markForbidden(vertex: V): void {
-        if (!this.forbiddenVertices.has(vertex)) {
-            this.forbiddenVertices.add(vertex);
+        if (this.states.get(vertex) !== VertexState.FORBIDDEN) {
+            this.states.set(vertex, VertexState.FORBIDDEN);
             for (const edge of this.getOutgoing(vertex)) {
                 if (!this.optionalEdges.has(edge)) {
                     this.markForbidden(edge.getDestination());
                 }
             }
         }
+    }
+
+    private canQueueVertex(vertex: V): boolean {
+        if (this.states.has(vertex)) {
+            return false;
+        }
+        // Only allow computation when all predecessors are done.
+        // Otherwise we might end up skipping in line.
+        // An precedessor edge is:
+        // - ok iff:        success ||  (failed && optional)
+        // - not okay iff: !success && !(failed && optional)
+        for (const incomingEdge of this.getIncoming(vertex)) {
+            if (
+                this.states.get(incomingEdge.getSource()) !== VertexState.COMPUTED &&
+                !(
+                    this.states.get(incomingEdge.getSource()) === VertexState.FORBIDDEN &&
+                    this.optionalEdges.has(incomingEdge)
+                )
+            ) {
+                return false;
+            }
+        }
+        return true;
     }
 }
