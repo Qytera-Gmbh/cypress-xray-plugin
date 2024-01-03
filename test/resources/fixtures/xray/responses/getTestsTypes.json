@@ -1,7 +1,7 @@
 {
     "data": {
         "getTests": {
-            "total": 3,
+            "total": 5,
             "start": 0,
             "results": [
                 {
@@ -28,13 +28,34 @@
                 },
                 {
                     "testType": {
-                        "id": "5e42b1d4d0257f0016808ef1",
+                        "id": "5e42b1d2343537f0016808ef1",
                         "name": "Manual",
                         "kind": "Steps"
                     },
                     "jira": {
                         "key": "CYP-332",
                         "summary": "something happens"
+                    }
+                },
+                {
+                    "testType": {
+                        "id": "5e42b1d45235dac0016808ef1",
+                        "name": "Manual",
+                        "kind": "Steps"
+                    },
+                    "jira": {
+                        "key": "CYP-337",
+                        "summary": "a manual test"
+                    }
+                },
+                {
+                    "testType": {
+                        "id": "5e42b1d4d0257f0reterzrzf1",
+                        "name": "Manual",
+                        "kind": "Steps"
+                    },
+                    "jira": {
+                        "summary": "an unknown manual test"
                     }
                 }
             ]

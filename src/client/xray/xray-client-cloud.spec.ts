@@ -394,11 +394,18 @@ describe("the xray cloud client", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-            const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
+            const response = await client.getTestTypes(
+                "CYP",
+                "CYP-330",
+                "CYP-331",
+                "CYP-332",
+                "CYP-337"
+            );
             expect(response).to.deep.eq({
                 ["CYP-330"]: "Generic",
                 ["CYP-331"]: "Cucumber",
                 ["CYP-332"]: "Manual",
+                ["CYP-337"]: "Manual",
             });
         });
 
@@ -409,7 +416,7 @@ describe("the xray cloud client", () => {
                     "utf-8"
                 )
             ) as GetTestsResponse<unknown>;
-            restClient.post.onFirstCall().resolves({
+            restClient.post.onCall(0).resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     data: {
@@ -423,7 +430,7 @@ describe("the xray cloud client", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-            restClient.post.onSecondCall().resolves({
+            restClient.post.onCall(1).resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     data: {
@@ -438,7 +445,7 @@ describe("the xray cloud client", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-            restClient.post.onThirdCall().resolves({
+            restClient.post.onCall(2).resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     data: {
@@ -453,11 +460,79 @@ describe("the xray cloud client", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-            const response = await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332");
+            restClient.post.onCall(3).resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    data: {
+                        getTests: {
+                            start: 3,
+                            total: 5,
+                        },
+                    },
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            restClient.post.onCall(4).resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    data: {
+                        getTests: {
+                            ...mockedData.data.getTests,
+                            start: undefined,
+                            total: undefined,
+                            results: mockedData.data.getTests.results?.slice(3, 4),
+                        },
+                    },
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            restClient.post.onCall(5).resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    data: {
+                        getTests: {
+                            ...mockedData.data.getTests,
+                            start: 3,
+                            results: mockedData.data.getTests.results?.slice(3, 4),
+                        },
+                    },
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            restClient.post.onCall(6).resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    data: {
+                        getTests: {
+                            ...mockedData.data.getTests,
+                            start: 4,
+                            results: mockedData.data.getTests.results?.slice(4, 5),
+                        },
+                    },
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: { headers: new AxiosHeaders() },
+            });
+            const response = await client.getTestTypes(
+                "CYP",
+                "CYP-330",
+                "CYP-331",
+                "CYP-332",
+                "CYP-337",
+                "CYP-339"
+            );
             expect(response).to.deep.eq({
                 ["CYP-330"]: "Generic",
                 ["CYP-331"]: "Cucumber",
                 ["CYP-332"]: "Manual",
+                ["CYP-337"]: "Manual",
             });
         });
 
