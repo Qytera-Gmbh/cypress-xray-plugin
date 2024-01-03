@@ -22,20 +22,24 @@ export class GetTestTypeValuesCommandServer extends GetFieldValuesCommand<JiraFi
     }
 }
 
-export class GetTestTypeValuesCommandCloud extends Command<StringMap<string>> {
-    private readonly projectKey: string;
-    private readonly xrayClient: XrayClientCloud;
+interface Parameters {
+    projectKey: string;
+    xrayClient: XrayClientCloud;
+}
+
+export class GetTestTypeValuesCommandCloud extends Command<StringMap<string>, Parameters> {
     private readonly issueKeys: Computable<string[]>;
-    constructor(projectKey: string, xrayClient: XrayClientCloud, issueKeys: Computable<string[]>) {
-        super();
-        this.projectKey = projectKey;
-        this.xrayClient = xrayClient;
+    constructor(parameters: Parameters, issueKeys: Computable<string[]>) {
+        super(parameters);
         this.issueKeys = issueKeys;
     }
 
     protected async computeResult(): Promise<StringMap<string>> {
         const issueKeys = await this.issueKeys.compute();
-        const testTypes = await this.xrayClient.getTestTypes(this.projectKey, ...issueKeys);
+        const testTypes = await this.parameters.xrayClient.getTestTypes(
+            this.parameters.projectKey,
+            ...issueKeys
+        );
         const missingTypes = issueKeys.filter((key) => !(key in testTypes));
         if (missingTypes.length > 0) {
             missingTypes.sort();

@@ -20,17 +20,11 @@ interface Parameters {
     readonly displayCloudHelp: boolean;
 }
 
-export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueData> {
-    private readonly parameters: Parameters;
+export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueData, Parameters> {
     private readonly document: Computable<GherkinDocument>;
     constructor(parameters: Parameters, document: Computable<GherkinDocument>) {
-        super();
-        this.parameters = parameters;
+        super(parameters);
         this.document = document;
-    }
-
-    public getParameters(): Parameters {
-        return this.parameters;
     }
 
     protected async computeResult(): Promise<FeatureFileIssueData> {

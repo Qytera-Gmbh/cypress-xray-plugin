@@ -5,7 +5,7 @@ import { LOG, Level } from "../../../util/logging";
 import { computeOverlap } from "../../../util/set";
 import { Command, Computable } from "../../command";
 
-export class GetUpdatedIssuesCommand extends Command<string[]> {
+export class GetUpdatedIssuesCommand extends Command<string[], void> {
     private readonly expectedAffectedIssues: Computable<string[]>;
     private readonly importResponse: Computable<ImportFeatureResponse>;
 

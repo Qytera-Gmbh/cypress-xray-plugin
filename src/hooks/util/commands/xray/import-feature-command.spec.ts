@@ -10,8 +10,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("warns about import errors", async () => {
             const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient();
-            const importFeatureCommand = new ImportFeatureCommand(xrayClient, {
-                file: "/path/to/some/cucumber.feature",
+            const importFeatureCommand = new ImportFeatureCommand({
+                xrayClient: xrayClient,
+                filePath: "/path/to/some/cucumber.feature",
             });
             xrayClient.importFeature.onFirstCall().resolves({
                 errors: ["CYP-123 does not exist", "CYP-42: Access denied", "Big\nProblem"],

@@ -13,19 +13,22 @@ export interface FieldValueMap {
     [JiraField.TEST_TYPE]: string;
 }
 
+interface Parameters {
+    jiraClient: JiraClient;
+}
+
 export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> extends Command<
-    StringMap<FieldValueMap[F]>
+    StringMap<FieldValueMap[F]>,
+    Parameters
 > {
-    protected readonly jiraClient: JiraClient;
     protected readonly fieldId: Computable<string>;
     protected readonly issueKeys: Computable<string[]>;
     constructor(
-        jiraClient: JiraClient,
+        parameters: Parameters,
         fieldId: Computable<string>,
         issueKeys: Computable<string[]>
     ) {
-        super();
-        this.jiraClient = jiraClient;
+        super(parameters);
         this.fieldId = fieldId;
         this.issueKeys = issueKeys;
     }
@@ -35,7 +38,7 @@ export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> exten
     ): Promise<StringMap<FieldValueMap[F]>> {
         const fieldId = await this.fieldId.compute();
         const issueKeys = await this.issueKeys.compute();
-        const issues: Issue[] = await this.jiraClient.search({
+        const issues: Issue[] = await this.parameters.jiraClient.search({
             jql: `issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
         });

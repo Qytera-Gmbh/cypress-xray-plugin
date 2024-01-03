@@ -18,7 +18,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 { filename: "something.mp4", size: 54321 },
             ]);
             const command = new AttachFilesCommand(
-                jiraClient,
+                { jiraClient: jiraClient },
                 new ConstantCommand(["image.jpg", "something.mp4"]),
                 new ConstantCommand("CYP-123")
             );
@@ -35,7 +35,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("throws without files to attach", async () => {
             const jiraClient = getMockedJiraClient();
             const command = new AttachFilesCommand(
-                jiraClient,
+                { jiraClient: jiraClient },
                 new ConstantCommand([]),
                 new ConstantCommand("CYP-123")
             );

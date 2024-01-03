@@ -17,17 +17,11 @@ interface Parameters {
     xray: Pick<InternalXrayOptions, "testEnvironments">;
 }
 
-export class ConvertCypressInfoCommand extends Command<XrayTestExecutionInfo> {
-    protected readonly parameters: Parameters;
+export class ConvertCypressInfoCommand extends Command<XrayTestExecutionInfo, Parameters> {
     private readonly results: Computable<CypressRunResultType>;
     constructor(parameters: Parameters, results: Computable<CypressRunResultType>) {
-        super();
-        this.parameters = parameters;
+        super(parameters);
         this.results = results;
-    }
-
-    public getParameters(): Parameters {
-        return this.parameters;
     }
 
     protected async computeResult(): Promise<XrayTestExecutionInfo> {

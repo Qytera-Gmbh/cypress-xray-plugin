@@ -83,7 +83,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(graph.size("vertices")).to.eq(16);
             const commands = [...graph.getVertices()];
             assertIsInstanceOf(commands[0], ParseFeatureFileCommand);
-            expect(commands[0].getFilePath()).to.eq("./path/to/file.feature");
+            expect(commands[0].getParameters()).to.deep.eq({ filePath: "./path/to/file.feature" });
             assertIsInstanceOf(commands[1], ExtractFeatureFileIssuesCommand);
             expect(commands[1].getParameters()).to.deep.eq({
                 projectKey: "CYP",
@@ -96,25 +96,32 @@ describe(path.relative(process.cwd(), __filename), () => {
             assertIsInstanceOf(commands[2], ExtractIssueKeysCommand);
             assertIsInstanceOf(commands[3], FetchAllFieldsCommand);
             assertIsInstanceOf(commands[4], ExtractFieldIdCommand);
-            expect(commands[4].getField()).to.eq(JiraField.SUMMARY);
+            expect(commands[4].getParameters()).to.deep.eq({ field: JiraField.SUMMARY });
             assertIsInstanceOf(commands[5], ExtractFieldIdCommand);
-            expect(commands[5].getField()).to.eq(JiraField.LABELS);
+            expect(commands[5].getParameters()).to.deep.eq({ field: JiraField.LABELS });
             assertIsInstanceOf(commands[6], GetSummaryValuesCommand);
             assertIsInstanceOf(commands[7], GetLabelValuesCommand);
             assertIsInstanceOf(commands[8], ImportFeatureCommand);
-            expect(commands[8].getFilePath()).to.eq(path.relative(".", "./path/to/file.feature"));
-            expect(commands[8].getProjectKey()).to.eq("CYP");
-            expect(commands[8].getProjectId()).to.be.undefined;
-            expect(commands[8].getSource()).to.be.undefined;
+            expect(commands[8].getParameters()).to.deep.eq({
+                xrayClient: clients.xrayClient,
+                filePath: path.relative(".", "./path/to/file.feature"),
+                projectKey: "CYP",
+            });
             assertIsInstanceOf(commands[9], GetUpdatedIssuesCommand);
             assertIsInstanceOf(commands[10], GetSummaryValuesCommand);
             assertIsInstanceOf(commands[11], GetLabelValuesCommand);
             assertIsInstanceOf(commands[12], GetSummariesToResetCommand);
             assertIsInstanceOf(commands[13], GetLabelsToResetCommand);
             assertIsInstanceOf(commands[14], EditIssueFieldCommand);
-            expect(commands[14].getField()).to.eq(JiraField.SUMMARY);
+            expect(commands[14].getParameters()).to.deep.eq({
+                jiraClient: clients.jiraClient,
+                field: JiraField.SUMMARY,
+            });
             assertIsInstanceOf(commands[15], EditIssueFieldCommand);
-            expect(commands[15].getField()).to.eq(JiraField.LABELS);
+            expect(commands[15].getParameters()).to.deep.eq({
+                jiraClient: clients.jiraClient,
+                field: JiraField.LABELS,
+            });
         });
 
         it("correctly connects all commands", () => {
@@ -200,13 +207,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("reuses existing commands", () => {
             const graph = new ExecutableGraph<Command>();
             const fetchAllFieldsCommand = graph.place(
-                new FetchAllFieldsCommand(clients.jiraClient)
+                new FetchAllFieldsCommand({ jiraClient: clients.jiraClient })
             );
             const getSummaryFieldIdCommand = graph.place(
-                new ExtractFieldIdCommand(JiraField.SUMMARY, fetchAllFieldsCommand)
+                new ExtractFieldIdCommand({ field: JiraField.SUMMARY }, fetchAllFieldsCommand)
             );
             const getLabelsFieldIdCommand = graph.place(
-                new ExtractFieldIdCommand(JiraField.LABELS, fetchAllFieldsCommand)
+                new ExtractFieldIdCommand({ field: JiraField.LABELS }, fetchAllFieldsCommand)
             );
             graph.connect(fetchAllFieldsCommand, getSummaryFieldIdCommand);
             graph.connect(fetchAllFieldsCommand, getLabelsFieldIdCommand);

@@ -21,7 +21,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("fetches test types", async () => {
             const jiraClient = getMockedJiraClient();
             const command = new GetTestTypeValuesCommandServer(
-                jiraClient,
+                { jiraClient: jiraClient },
                 new ConstantCommand("customfield_12345"),
                 new ConstantCommand(["CYP-123", "CYP-456", "CYP-789"])
             );
@@ -46,7 +46,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("displays a warning for issues which do not exist", async () => {
             const jiraClient = getMockedJiraClient();
             const command = new GetTestTypeValuesCommandServer(
-                jiraClient,
+                { jiraClient: jiraClient },
                 new ConstantCommand("customfield_12345"),
                 new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
             );
@@ -76,7 +76,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("displays a warning for issues whose fields cannot be parsed", async () => {
             const jiraClient = getMockedJiraClient();
             const command = new GetTestTypeValuesCommandServer(
-                jiraClient,
+                { jiraClient: jiraClient },
                 new ConstantCommand("customfield_12345"),
                 new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
             );
@@ -112,7 +112,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("throws when encountering search failures", async () => {
             const jiraClient = getMockedJiraClient();
             const command = new GetTestTypeValuesCommandServer(
-                jiraClient,
+                { jiraClient: jiraClient },
                 new ConstantCommand("customfield_12345"),
                 new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
             );
@@ -130,8 +130,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("fetches test types", async () => {
             const xrayClient = getMockedXrayClient("cloud");
             const command = new GetTestTypeValuesCommandCloud(
-                "CYP",
-                xrayClient,
+                { projectKey: "CYP", xrayClient: xrayClient },
                 new ConstantCommand(["CYP-123", "CYP-456", "CYP-789"])
             );
             xrayClient.getTestTypes.withArgs("CYP", "CYP-123", "CYP-456", "CYP-789").resolves({
@@ -150,8 +149,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("displays a warning for issues which do not exist", async () => {
             const xrayClient = getMockedXrayClient("cloud");
             const command = new GetTestTypeValuesCommandCloud(
-                "CYP",
-                xrayClient,
+                { projectKey: "CYP", xrayClient: xrayClient },
                 new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
             );
             xrayClient.getTestTypes.withArgs("CYP", "CYP-123", "CYP-789", "CYP-456").resolves({
@@ -175,8 +173,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("throws when encountering failures", async () => {
             const xrayClient = getMockedXrayClient("cloud");
             const command = new GetTestTypeValuesCommandCloud(
-                "CYP",
-                xrayClient,
+                { projectKey: "CYP", xrayClient: xrayClient },
                 new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
             );
             xrayClient.getTestTypes

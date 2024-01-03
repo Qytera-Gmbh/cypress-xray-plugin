@@ -111,7 +111,7 @@ export function addUploadCommands(
         graph.connect(resultsCommand, extractVideoFilesCommand);
         const attachVideosCommand = graph.place(
             new AttachFilesCommand(
-                clients.jiraClient,
+                { jiraClient: clients.jiraClient },
                 extractVideoFilesCommand,
                 getExecutionIssueKeyCommand
             )
@@ -157,7 +157,10 @@ function createImportExecutionCypressCommand(
     );
     graph.connect(combineResultsJsonCommand, assertConversionValidCommand);
     const importCypressExecutionCommand = graph.place(
-        new ImportExecutionCypressCommand(clients.xrayClient, combineResultsJsonCommand)
+        new ImportExecutionCypressCommand(
+            { xrayClient: clients.xrayClient },
+            combineResultsJsonCommand
+        )
     );
     graph.connect(assertConversionValidCommand, importCypressExecutionCommand);
     if (options.jira.testExecutionIssueKey) {
@@ -197,7 +200,7 @@ function createImportExecutionCucumberCommand(
     const fetchIssueTypesCommand = graph.findOrDefault(
         (command): command is FetchIssueDetailsCommand =>
             command instanceof FetchIssueDetailsCommand,
-        () => graph.place(new FetchIssueDetailsCommand(clients.jiraClient))
+        () => graph.place(new FetchIssueDetailsCommand({ jiraClient: clients.jiraClient }))
     );
     const fetchExecutionIssueDetailsCommand = graph.place(
         new ExtractExecutionIssueDetailsCommand(
@@ -248,7 +251,10 @@ function createImportExecutionCucumberCommand(
     );
     graph.connect(combineCucumberMultipartCommand, assertConversionValidCommand);
     const importCucumberExecutionCommand = graph.place(
-        new ImportExecutionCucumberCommand(clients.xrayClient, combineCucumberMultipartCommand)
+        new ImportExecutionCucumberCommand(
+            { xrayClient: clients.xrayClient },
+            combineCucumberMultipartCommand
+        )
     );
     // Make sure to add an edge from any feature file imports to the execution. Otherwise, the
     // execution will contain old steps (those which were there prior to feature import).
@@ -258,7 +264,8 @@ function createImportExecutionCucumberCommand(
                 if (
                     cypressResults.runs.some(
                         (run) =>
-                            path.relative(projectRoot, run.spec.relative) === command.getFilePath()
+                            path.relative(projectRoot, run.spec.relative) ===
+                            command.getParameters().filePath
                     )
                 ) {
                     // We can still upload results even if the feature file import fails. It's

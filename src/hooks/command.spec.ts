@@ -5,7 +5,7 @@ import { Command } from "./command";
 describe(path.relative(process.cwd(), __filename), () => {
     describe(Command.name, () => {
         it("computes the result on compute call", async () => {
-            class ArithmeticCommand extends Command<number> {
+            class ArithmeticCommand extends Command<number, void> {
                 private readonly x: number;
                 private readonly operands: ArithmeticCommand[];
 

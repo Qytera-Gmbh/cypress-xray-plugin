@@ -27,8 +27,10 @@ interface Parameters {
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 
-export abstract class ConvertCucumberInfoCommand extends Command<CucumberMultipartInfo> {
-    protected readonly parameters: Parameters;
+export abstract class ConvertCucumberInfoCommand extends Command<
+    CucumberMultipartInfo,
+    Parameters
+> {
     private readonly testExecutionIssueDetails: Computable<IssueTypeDetails>;
     private readonly runInformation: Computable<RunData>;
     constructor(
@@ -36,14 +38,9 @@ export abstract class ConvertCucumberInfoCommand extends Command<CucumberMultipa
         testExecutionIssueDetails: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>
     ) {
-        super();
-        this.parameters = parameters;
+        super(parameters);
         this.testExecutionIssueDetails = testExecutionIssueDetails;
         this.runInformation = runInformation;
-    }
-
-    public getParameters(): Parameters {
-        return this.parameters;
     }
 
     protected async computeResult(): Promise<CucumberMultipartInfo> {

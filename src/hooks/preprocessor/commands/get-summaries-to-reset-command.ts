@@ -4,7 +4,7 @@ import { LOG, Level } from "../../../util/logging";
 import { unknownToString } from "../../../util/string";
 import { Command, Computable } from "../../command";
 
-export class GetSummariesToResetCommand extends Command<StringMap<string>> {
+export class GetSummariesToResetCommand extends Command<StringMap<string>, void> {
     private readonly oldValues: Computable<StringMap<string>>;
     private readonly newValues: Computable<StringMap<string>>;
 

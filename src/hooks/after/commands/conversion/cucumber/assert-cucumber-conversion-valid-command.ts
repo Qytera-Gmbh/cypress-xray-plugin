@@ -1,7 +1,7 @@
 import { CucumberMultipart } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
 import { Command, Computable, SkippedError } from "../../../../command";
 
-export class AssertCucumberConversionValidCommand extends Command<void> {
+export class AssertCucumberConversionValidCommand extends Command<void, void> {
     private readonly cucumberMultipart: Computable<CucumberMultipart>;
 
     constructor(cucumberMultipart: Computable<CucumberMultipart>) {

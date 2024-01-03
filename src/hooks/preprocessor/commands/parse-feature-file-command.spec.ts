@@ -8,7 +8,7 @@ describe(ParseFeatureFileCommand.name, () => {
     it("displays errors for invalid feature files", async () => {
         const filePath = "./test/resources/features/invalid.feature";
         const logger = getMockedLogger();
-        const command = new ParseFeatureFileCommand(filePath);
+        const command = new ParseFeatureFileCommand({ filePath: filePath });
         await expect(command.compute()).to.eventually.be.rejectedWith(
             dedent(`
                 Parser errors:

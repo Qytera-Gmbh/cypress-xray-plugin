@@ -5,7 +5,7 @@ import {
 import { CucumberMultipartInfo } from "../../../../../types/xray/requests/import-execution-cucumber-multipart-info";
 import { Command, Computable } from "../../../../command";
 
-export class CombineCucumberMultipartCommand extends Command<CucumberMultipart> {
+export class CombineCucumberMultipartCommand extends Command<CucumberMultipart, void> {
     private readonly cucumberMultipartInfo: Computable<CucumberMultipartInfo>;
     private readonly cucumberMultipartFeatures: Computable<CucumberMultipartFeature[]>;
 

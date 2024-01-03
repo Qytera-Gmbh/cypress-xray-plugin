@@ -2,7 +2,7 @@ import { dedent } from "../../../util/dedent";
 import { LOG, Level } from "../../../util/logging";
 import { Command, Computable } from "../../command";
 
-export class CompareCypressCucumberKeysCommand extends Command<string> {
+export class CompareCypressCucumberKeysCommand extends Command<string, void> {
     private readonly resolvedCypressIssueKey: Computable<string>;
     private readonly resolvedCucumberIssueKey: Computable<string>;
 

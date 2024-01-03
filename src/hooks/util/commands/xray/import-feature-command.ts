@@ -4,47 +4,19 @@ import { dedent } from "../../../../util/dedent";
 import { LOG, Level } from "../../../../util/logging";
 import { Command } from "../../../command";
 
-export interface Parameters {
-    file: string;
+interface Parameters {
+    xrayClient: XrayClient;
+    filePath: string;
     projectKey?: string;
     projectId?: string;
     source?: string;
 }
 
-export class ImportFeatureCommand extends Command<ImportFeatureResponse> {
-    private readonly xrayClient: XrayClient;
-    private readonly parameters: Parameters;
-    constructor(xrayClient: XrayClient, importParameters: Parameters) {
-        super();
-        this.xrayClient = xrayClient;
-        this.parameters = importParameters;
-    }
-
-    /**
-     * Returns the feature file's path relative to the project root.
-     *
-     * @returns the path
-     */
-    public getFilePath(): string {
-        return this.parameters.file;
-    }
-
-    public getProjectKey(): string | undefined {
-        return this.parameters.projectKey;
-    }
-
-    public getProjectId(): string | undefined {
-        return this.parameters.projectId;
-    }
-
-    public getSource(): string | undefined {
-        return this.parameters.source;
-    }
-
+export class ImportFeatureCommand extends Command<ImportFeatureResponse, Parameters> {
     protected async computeResult(): Promise<ImportFeatureResponse> {
-        LOG.message(Level.INFO, `Importing feature file to Xray: ${this.getFilePath()}`);
-        const importResponse = await this.xrayClient.importFeature(
-            this.parameters.file,
+        LOG.message(Level.INFO, `Importing feature file to Xray: ${this.parameters.filePath}`);
+        const importResponse = await this.parameters.xrayClient.importFeature(
+            this.parameters.filePath,
             this.parameters.projectKey,
             this.parameters.projectId,
             this.parameters.source

@@ -1,12 +1,4 @@
-import { ConvertCucumberFeaturesCommand } from "../../../hooks/after/commands/conversion/cucumber/convert-cucumber-features-command";
-import { ConvertCypressInfoCommand } from "../../../hooks/after/commands/conversion/cypress/convert-cypress-info-command";
-import { ConvertCypressTestsCommand } from "../../../hooks/after/commands/conversion/cypress/convert-cypress-tests-command";
 import { Command, CommandState } from "../../../hooks/command";
-import { ExtractFeatureFileIssuesCommand } from "../../../hooks/preprocessor/commands/extract-feature-file-issues-command";
-import { ParseFeatureFileCommand } from "../../../hooks/preprocessor/commands/parse-feature-file-command";
-import { EditIssueFieldCommand } from "../../../hooks/util/commands/jira/edit-issue-field-command";
-import { ExtractFieldIdCommand } from "../../../hooks/util/commands/jira/extract-field-id-command";
-import { ImportFeatureCommand } from "../../../hooks/util/commands/xray/import-feature-command";
 import { dedent } from "../../dedent";
 import { errorMessage } from "../../errors";
 import { unknownToString } from "../../string";
@@ -59,55 +51,12 @@ export async function graphToDot<V>(
 
 export async function commandToDot<R>(command: Command<R>): Promise<string> {
     let vertexDataRows: string | null = null;
-    if (command instanceof ExtractFeatureFileIssuesCommand) {
-        const parameters = escapeHtmlLabel(unknownToString(command.getParameters(), true));
-        vertexDataRows = dedent(`
-            <TR>
-              ${td("Parameters", "right")}${td(parameters, "left")}
-            </TR>
-        `);
-    } else if (command instanceof ParseFeatureFileCommand) {
-        vertexDataRows = dedent(`
-            <TR>
-              ${td("File path", "right")}${td(command.getFilePath(), "left")}
-            </TR>
-        `);
-    } else if (
-        command instanceof ExtractFieldIdCommand ||
-        command instanceof EditIssueFieldCommand
-    ) {
-        vertexDataRows = dedent(`
-            <TR>
-              ${td("Field", "right")}${td(command.getField(), "left")}
-            </TR>
-        `);
-    } else if (
-        command instanceof ConvertCucumberFeaturesCommand ||
-        command instanceof ConvertCypressInfoCommand ||
-        command instanceof ConvertCypressTestsCommand
-    ) {
-        const parameters = escapeHtmlLabel(unknownToString(command.getParameters(), true));
-        vertexDataRows = dedent(`
-            <TR>
-              ${td("Parameters", "right")}${td(parameters, "left")}
-            </TR>
-        `);
-    } else if (command instanceof ImportFeatureCommand) {
-        vertexDataRows = dedent(`
-            <TR>
-              ${td("File path", "right")}${td(command.getFilePath(), "left")}
-            </TR>
-            <TR>
-              ${td("Project key", "right")}${td(unknownToString(command.getProjectKey()), "left")}
-            </TR>
-            <TR>
-              ${td("Project ID", "right")}${td(unknownToString(command.getProjectId()), "left")}
-            </TR>
-            <TR>
-              ${td("Source", "right")}${td(unknownToString(command.getSource()), "left")}
-            </TR>
-        `);
-    }
+    const parameters = escapeHtmlLabel(unknownToString(command.getParameters(), true));
+    vertexDataRows = dedent(`
+        <TR>
+          ${td("Parameters", "right")}${td(parameters, "left")}
+        </TR>
+    `);
     let result = "pending";
     let color = "silver";
     if (command.getState() === CommandState.RESOLVED) {

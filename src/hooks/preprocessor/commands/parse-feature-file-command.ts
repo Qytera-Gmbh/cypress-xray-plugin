@@ -3,22 +3,16 @@ import { LOG, Level } from "../../../util/logging";
 import { Command } from "../../command";
 import { parseFeatureFile } from "./parsing/gherkin";
 
-export class ParseFeatureFileCommand extends Command<GherkinDocument> {
-    private readonly filePath: string;
-    constructor(filePath: string) {
-        super();
-        this.filePath = filePath;
-    }
+interface Parameters {
+    filePath: string;
+}
 
-    public getFilePath(): string {
-        return this.filePath;
-    }
-
+export class ParseFeatureFileCommand extends Command<GherkinDocument, Parameters> {
     protected computeResult(): Promise<GherkinDocument> {
         return new Promise((resolve, reject) => {
-            LOG.message(Level.INFO, `Parsing feature file: ${this.getFilePath()}`);
+            LOG.message(Level.INFO, `Parsing feature file: ${this.parameters.filePath}`);
             try {
-                resolve(parseFeatureFile(this.filePath));
+                resolve(parseFeatureFile(this.parameters.filePath));
             } catch (error: unknown) {
                 reject(error);
             }

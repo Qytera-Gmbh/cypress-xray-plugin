@@ -32,17 +32,11 @@ interface Parameters {
     useCloudStatusFallback?: boolean;
 }
 
-export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]]> {
-    protected readonly parameters: Parameters;
+export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]], Parameters> {
     private readonly results: Computable<CypressRunResultType>;
     constructor(parameters: Parameters, results: Computable<CypressRunResultType>) {
-        super();
-        this.parameters = parameters;
+        super(parameters);
         this.results = results;
-    }
-
-    public getParameters(): Parameters {
-        return this.parameters;
     }
 
     protected async computeResult(): Promise<[XrayTest, ...XrayTest[]]> {

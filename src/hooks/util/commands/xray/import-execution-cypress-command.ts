@@ -3,18 +3,20 @@ import { XrayTestExecutionResults } from "../../../../types/xray/import-test-exe
 import { LOG, Level } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 
-export class ImportExecutionCypressCommand extends Command<string> {
-    private readonly xrayClient: XrayClient;
+interface Parameters {
+    xrayClient: XrayClient;
+}
+
+export class ImportExecutionCypressCommand extends Command<string, Parameters> {
     private readonly results: Computable<XrayTestExecutionResults>;
-    constructor(xrayClient: XrayClient, results: Computable<XrayTestExecutionResults>) {
-        super();
-        this.xrayClient = xrayClient;
+    constructor(parameters: Parameters, results: Computable<XrayTestExecutionResults>) {
+        super(parameters);
         this.results = results;
     }
 
     protected async computeResult(): Promise<string> {
         const results = await this.results.compute();
         LOG.message(Level.INFO, "Uploading Cypress test results");
-        return await this.xrayClient.importExecution(results);
+        return await this.parameters.xrayClient.importExecution(results);
     }
 }

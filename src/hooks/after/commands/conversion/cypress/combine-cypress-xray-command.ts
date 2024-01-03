@@ -8,8 +8,7 @@ import { Command, Computable } from "../../../../command";
 
 type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey">;
 
-export class CombineCypressJsonCommand extends Command<XrayTestExecutionResults> {
-    private readonly parameters: Parameters;
+export class CombineCypressJsonCommand extends Command<XrayTestExecutionResults, Parameters> {
     private readonly cypressTestsJson: Computable<[XrayTest, ...XrayTest[]]>;
     private readonly cypressTestsInfo: Computable<XrayTestExecutionInfo>;
 
@@ -18,8 +17,7 @@ export class CombineCypressJsonCommand extends Command<XrayTestExecutionResults>
         cypressTestsJson: Computable<[XrayTest, ...XrayTest[]]>,
         cypressTestsInfo: Computable<XrayTestExecutionInfo>
     ) {
-        super();
-        this.parameters = parameters;
+        super(parameters);
         this.cypressTestsJson = cypressTestsJson;
         this.cypressTestsInfo = cypressTestsInfo;
     }

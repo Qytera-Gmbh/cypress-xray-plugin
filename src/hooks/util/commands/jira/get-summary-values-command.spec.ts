@@ -14,7 +14,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("fetches summaries", async () => {
             const jiraClient = getMockedJiraClient();
             const command = new GetSummaryValuesCommand(
-                jiraClient,
+                { jiraClient: jiraClient },
                 new ConstantCommand("customfield_12345"),
                 new ConstantCommand(["CYP-123", "CYP-456", "CYP-789"])
             );
@@ -39,7 +39,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("displays a warning for issues which do not exist", async () => {
             const jiraClient = getMockedJiraClient();
             const command = new GetSummaryValuesCommand(
-                jiraClient,
+                { jiraClient: jiraClient },
                 new ConstantCommand("customfield_12345"),
                 new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
             );
@@ -67,7 +67,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("displays a warning for issues whose fields cannot be parsed", async () => {
             const jiraClient = getMockedJiraClient();
             const command = new GetSummaryValuesCommand(
-                jiraClient,
+                { jiraClient: jiraClient },
                 new ConstantCommand("customfield_12345"),
                 new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
             );
@@ -103,7 +103,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("throws when encountering search failures", async () => {
             const jiraClient = getMockedJiraClient();
             const command = new GetSummaryValuesCommand(
-                jiraClient,
+                { jiraClient: jiraClient },
                 new ConstantCommand("customfield_12345"),
                 new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
             );

@@ -1,7 +1,7 @@
 import { CypressRunResultType } from "../../../types/cypress/run-result";
 import { Command, Computable } from "../../command";
 
-export class ExtractVideoFilesCommand extends Command<string[]> {
+export class ExtractVideoFilesCommand extends Command<string[], void> {
     private readonly cypressRunResult: Computable<CypressRunResultType>;
 
     constructor(cypressRunResult: Computable<CypressRunResultType>) {

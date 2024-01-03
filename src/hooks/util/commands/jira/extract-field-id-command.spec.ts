@@ -11,7 +11,7 @@ describe(path.relative(process.cwd(), __filename), () => {
     describe(ExtractFieldIdCommand.name, () => {
         it("extracts fields case-insensitively", async () => {
             const command = new ExtractFieldIdCommand(
-                JiraField.SUMMARY,
+                { field: JiraField.SUMMARY },
                 new ConstantCommand([
                     {
                         id: "customfield_12345",
@@ -46,7 +46,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("throws for missing fields", async () => {
             const command = new ExtractFieldIdCommand(
-                JiraField.DESCRIPTION,
+                { field: JiraField.DESCRIPTION },
                 new ConstantCommand([])
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
@@ -67,7 +67,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("throws for missing fields and displays a hint", async () => {
             const command = new ExtractFieldIdCommand(
-                JiraField.TEST_PLAN,
+                { field: JiraField.TEST_PLAN },
                 new ConstantCommand([
                     {
                         id: "summary",
@@ -119,7 +119,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("throws for multiple fields", async () => {
             const command = new ExtractFieldIdCommand(
-                JiraField.SUMMARY,
+                { field: JiraField.SUMMARY },
                 new ConstantCommand([
                     {
                         id: "summary",

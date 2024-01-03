@@ -3,17 +3,19 @@ import { Attachment } from "../../../../types/jira/responses/attachment";
 import { LOG, Level } from "../../../../util/logging";
 import { Command, Computable, SkippedError } from "../../../command";
 
-export class AttachFilesCommand extends Command<Attachment[]> {
-    private readonly jiraClient: JiraClient;
+interface Parameters {
+    jiraClient: JiraClient;
+}
+
+export class AttachFilesCommand extends Command<Attachment[], Parameters> {
     private readonly files: Computable<string[]>;
     private readonly resolvedExecutionIssueKey: Computable<string>;
     constructor(
-        jiraClient: JiraClient,
+        parameters: Parameters,
         files: Computable<string[]>,
         resolvedExecutionIssueKey: Computable<string>
     ) {
-        super();
-        this.jiraClient = jiraClient;
+        super(parameters);
         this.files = files;
         this.resolvedExecutionIssueKey = resolvedExecutionIssueKey;
     }
@@ -30,6 +32,6 @@ export class AttachFilesCommand extends Command<Attachment[]> {
             Level.INFO,
             `Attaching files to test execution issue ${resolvedExecutionIssueKey}`
         );
-        return await this.jiraClient.addAttachment(resolvedExecutionIssueKey, ...files);
+        return await this.parameters.jiraClient.addAttachment(resolvedExecutionIssueKey, ...files);
     }
 }

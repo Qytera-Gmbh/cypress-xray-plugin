@@ -1,6 +1,6 @@
 import { Command } from "../../command";
 
-export class ConstantCommand<R> extends Command<R> {
+export class ConstantCommand<R> extends Command<R, void> {
     private readonly value: R;
     constructor(value: R) {
         super();

@@ -57,7 +57,8 @@ export function isSkippedError(error: unknown): error is SkippedError {
  * Models a generic command. The command only starts doing something when
  * {@link compute | `compute`} is triggered.
  */
-export abstract class Command<R = unknown> implements Computable<R> {
+export abstract class Command<R = unknown, P = unknown> implements Computable<R> {
+    protected readonly parameters: P;
     private readonly result: Promise<R>;
     private readonly executeEmitter: EventEmitter;
     private state: CommandState = CommandState.INITIAL;
@@ -66,7 +67,8 @@ export abstract class Command<R = unknown> implements Computable<R> {
     /**
      * Constructs a new command.
      */
-    constructor() {
+    constructor(parameters: P) {
+        this.parameters = parameters;
         this.executeEmitter = new EventEmitter();
         this.result = new Promise((resolve, reject) => {
             this.executeEmitter.on("execute", () => {
@@ -86,6 +88,15 @@ export abstract class Command<R = unknown> implements Computable<R> {
                     });
             });
         });
+    }
+
+    /**
+     * Returns the command's parameters.
+     *
+     * @returns the parameters
+     */
+    public getParameters(): P {
+        return this.parameters;
     }
 
     /**

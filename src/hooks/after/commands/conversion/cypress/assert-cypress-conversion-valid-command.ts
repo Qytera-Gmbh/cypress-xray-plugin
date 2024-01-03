@@ -1,7 +1,7 @@
 import { XrayTestExecutionResults } from "../../../../../types/xray/import-test-execution-results";
 import { Command, Computable, SkippedError } from "../../../../command";
 
-export class AssertCypressConversionValidCommand extends Command<void> {
+export class AssertCypressConversionValidCommand extends Command<void, void> {
     private readonly xrayTestExecutionResults: Computable<XrayTestExecutionResults>;
 
     constructor(xrayTestExecutionResults: Computable<XrayTestExecutionResults>) {

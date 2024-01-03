@@ -24,7 +24,9 @@ export function addSynchronizationCommands(
     clients: ClientCombination,
     graph: ExecutableGraph<Command>
 ): void {
-    const parseFeatureFileCommand = graph.place(new ParseFeatureFileCommand(file.filePath));
+    const parseFeatureFileCommand = graph.place(
+        new ParseFeatureFileCommand({ filePath: file.filePath })
+    );
     const extractIssueDataCommand = graph.place(
         new ExtractFeatureFileIssuesCommand(
             {
@@ -53,7 +55,7 @@ export function addSynchronizationCommands(
     // See: https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
     const getCurrentSummariesCommand = graph.place(
         new GetSummaryValuesCommand(
-            clients.jiraClient,
+            { jiraClient: clients.jiraClient },
             getSummaryFieldIdCommand,
             extractIssueKeysCommand
         )
@@ -62,7 +64,7 @@ export function addSynchronizationCommands(
     graph.connect(extractIssueKeysCommand, getCurrentSummariesCommand);
     const getCurrentLabelsCommand = graph.place(
         new GetLabelValuesCommand(
-            clients.jiraClient,
+            { jiraClient: clients.jiraClient },
             getLabelsFieldIdCommand,
             extractIssueKeysCommand
         )
@@ -71,8 +73,9 @@ export function addSynchronizationCommands(
     graph.connect(extractIssueKeysCommand, getCurrentLabelsCommand);
     // Only import the feature once the backups have been created.
     const importFeatureCommand = graph.place(
-        new ImportFeatureCommand(clients.xrayClient, {
-            file: path.relative(projectRoot, file.filePath),
+        new ImportFeatureCommand({
+            xrayClient: clients.xrayClient,
+            filePath: path.relative(projectRoot, file.filePath),
             projectKey: options.jira.projectKey,
         })
     );
@@ -86,7 +89,7 @@ export function addSynchronizationCommands(
     graph.connect(importFeatureCommand, getUpdatedIssuesCommand);
     const getNewSummariesCommand = graph.place(
         new GetSummaryValuesCommand(
-            clients.jiraClient,
+            { jiraClient: clients.jiraClient },
             getSummaryFieldIdCommand,
             extractIssueKeysCommand
         )
@@ -96,7 +99,7 @@ export function addSynchronizationCommands(
     graph.connect(getUpdatedIssuesCommand, getNewSummariesCommand);
     const getNewLabelsCommand = graph.place(
         new GetLabelValuesCommand(
-            clients.jiraClient,
+            { jiraClient: clients.jiraClient },
             getLabelsFieldIdCommand,
             extractIssueKeysCommand
         )
@@ -116,8 +119,7 @@ export function addSynchronizationCommands(
     graph.connect(getNewLabelsCommand, getLabelsToResetCommand);
     const editSummariesCommand = graph.place(
         new EditIssueFieldCommand(
-            clients.jiraClient,
-            JiraField.SUMMARY,
+            { jiraClient: clients.jiraClient, field: JiraField.SUMMARY },
             getSummaryFieldIdCommand,
             getSummariesToResetCommand
         )
@@ -126,8 +128,7 @@ export function addSynchronizationCommands(
     graph.connect(getSummariesToResetCommand, editSummariesCommand);
     const editLabelsCommand = graph.place(
         new EditIssueFieldCommand(
-            clients.jiraClient,
-            JiraField.LABELS,
+            { jiraClient: clients.jiraClient, field: JiraField.LABELS },
             getLabelsFieldIdCommand,
             getLabelsToResetCommand
         )

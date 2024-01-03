@@ -20,8 +20,10 @@ interface Parameters {
     useCloudTags?: boolean;
 }
 
-export class ConvertCucumberFeaturesCommand extends Command<CucumberMultipartFeature[]> {
-    protected readonly parameters: Parameters;
+export class ConvertCucumberFeaturesCommand extends Command<
+    CucumberMultipartFeature[],
+    Parameters
+> {
     private readonly input: Computable<CucumberMultipartFeature[]>;
     private readonly testExecutionIssueKey?: Computable<string>;
     constructor(
@@ -29,14 +31,9 @@ export class ConvertCucumberFeaturesCommand extends Command<CucumberMultipartFea
         input: Computable<CucumberMultipartFeature[]>,
         testExecutionIssueKey?: Computable<string>
     ) {
-        super();
-        this.parameters = parameters;
+        super(parameters);
         this.input = input;
         this.testExecutionIssueKey = testExecutionIssueKey;
-    }
-
-    public getParameters(): Parameters {
-        return this.parameters;
     }
 
     protected async computeResult(): Promise<CucumberMultipartFeature[]> {

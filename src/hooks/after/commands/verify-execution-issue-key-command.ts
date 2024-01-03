@@ -9,13 +9,11 @@ type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey" | "testExecu
     importType: "cypress" | "cucumber";
 };
 
-export class VerifyExecutionIssueKeyCommand extends Command<string> {
-    private readonly parameters: Parameters;
+export class VerifyExecutionIssueKeyCommand extends Command<string, Parameters> {
     private readonly resolvedExecutionIssue: Computable<string>;
 
     constructor(parameters: Parameters, resolvedExecutionIssue: Computable<string>) {
-        super();
-        this.parameters = parameters;
+        super(parameters);
         this.resolvedExecutionIssue = resolvedExecutionIssue;
     }
 

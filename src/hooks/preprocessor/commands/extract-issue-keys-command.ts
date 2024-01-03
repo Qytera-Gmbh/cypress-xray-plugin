@@ -1,7 +1,7 @@
 import { FeatureFileIssueData } from "../../../types/cucumber/cucumber";
 import { Command, Computable } from "../../command";
 
-export class ExtractIssueKeysCommand extends Command<string[]> {
+export class ExtractIssueKeysCommand extends Command<string[], void> {
     private readonly issueData: Computable<FeatureFileIssueData>;
 
     constructor(issueData: Computable<FeatureFileIssueData>) {
