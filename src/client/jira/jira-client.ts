@@ -8,6 +8,7 @@ import { Issue } from "../../types/jira/responses/issue";
 import { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
 import { IssueUpdate } from "../../types/jira/responses/issue-update";
 import { SearchResults } from "../../types/jira/responses/search-results";
+import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
 import { LOG, Level } from "../../util/logging";
@@ -223,7 +224,7 @@ export class BaseJiraClient extends Client implements JiraClient {
             try {
                 let total = 0;
                 let startAt = request.startAt ?? 0;
-                const results: Issue[] = [];
+                const results: StringMap<Issue> = {};
                 do {
                     const paginatedRequest = {
                         ...request,
@@ -240,7 +241,11 @@ export class BaseJiraClient extends Client implements JiraClient {
                     );
                     total = response.data.total ?? total;
                     if (response.data.issues) {
-                        results.push(...response.data.issues);
+                        for (const issue of response.data.issues) {
+                            if (issue.key) {
+                                results[issue.key] = issue;
+                            }
+                        }
                         // Explicit check because it could also be 0.
                         if (typeof response.data.startAt === "number") {
                             startAt = response.data.startAt + response.data.issues.length;
@@ -248,7 +253,7 @@ export class BaseJiraClient extends Client implements JiraClient {
                     }
                 } while (startAt && startAt < total);
                 LOG.message(Level.DEBUG, `Found ${total} issues`);
-                return results;
+                return Object.values(results);
             } finally {
                 clearInterval(progressInterval);
             }

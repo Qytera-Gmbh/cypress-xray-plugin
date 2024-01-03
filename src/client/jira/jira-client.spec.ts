@@ -6,6 +6,7 @@ import { SinonStubbedInstance, useFakeTimers } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { expectToExist } from "../../../test/util";
 import { FieldDetail } from "../../types/jira/responses/field-detail";
+import { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
 import { SearchResults } from "../../types/jira/responses/search-results";
 import { Level } from "../../util/logging";
 import { BasicAuthCredentials } from "../authentication/credentials";
@@ -216,6 +217,58 @@ describe("the jira clients", () => {
         });
     });
 
+    describe("get issue types", () => {
+        it("returns issue types", async () => {
+            const issueTypes = JSON.parse(
+                fs.readFileSync(
+                    "./test/resources/fixtures/jira/responses/getIssueTypes.json",
+                    "utf-8"
+                )
+            ) as IssueTypeDetails[];
+            restClient.get.onFirstCall().resolves({
+                status: HttpStatusCode.Ok,
+                data: issueTypes,
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: {
+                    headers: new AxiosHeaders(),
+                },
+            });
+            expect(await client.getIssueTypes()).to.eq(issueTypes);
+        });
+
+        it("handles bad responses", async () => {
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            const error = new AxiosError(
+                "Request failed with status code 409",
+                HttpStatusCode.BadRequest.toString(),
+                undefined,
+                null,
+                {
+                    status: HttpStatusCode.Conflict,
+                    statusText: HttpStatusCode[HttpStatusCode.Conflict],
+                    config: { headers: new AxiosHeaders() },
+                    headers: {},
+                    data: {
+                        errorMessages: ["There is a conflict or something"],
+                    },
+                }
+            );
+            restClient.get.onFirstCall().rejects(error);
+            await expect(client.getIssueTypes()).to.eventually.be.rejectedWith(
+                "Failed to fetch Jira issue types"
+            );
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.ERROR,
+                "Failed to get issue types: Request failed with status code 409"
+            );
+            expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                error,
+                "getIssueTypesError"
+            );
+        });
+    });
+
     describe("get fields", () => {
         it("returns the correct values", async () => {
             const mockedData = JSON.parse(
@@ -284,25 +337,24 @@ describe("the jira clients", () => {
                 fields: ["customfield_12100"],
             });
             expect(restClient.post).to.have.been.calledOnce;
-            expect(response).to.be.an("array").with.length(5);
-            expectToExist(response);
+            expect(response).to.be.an("array").with.length(4);
             expect(response[0].key).to.eq("CYP-333").and;
             expect(response[1].key).to.eq("CYP-338");
             expect(response[2].key).to.eq("CYP-332");
             expect(response[3].key).to.eq("CYP-268");
-            expect(response[4].key).to.eq("CYP-237");
         });
-        it("should return all issues with pagination", async () => {
+
+        it("returns all issues with pagination", async () => {
             const mockedData: SearchResults = JSON.parse(
                 fs.readFileSync("./test/resources/fixtures/jira/responses/search.json", "utf-8")
             ) as SearchResults;
-            restClient.post.onFirstCall().resolves({
+            restClient.post.onCall(0).resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     ...mockedData,
                     startAt: 0,
-                    maxResults: 2,
-                    issues: mockedData.issues?.slice(0, 2),
+                    maxResults: 1,
+                    issues: mockedData.issues?.slice(0, 1),
                 },
                 headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
@@ -310,27 +362,56 @@ describe("the jira clients", () => {
                     headers: new AxiosHeaders(),
                 },
             });
-            restClient.post.onSecondCall().resolves({
+            restClient.post.onCall(1).resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    ...mockedData,
+                    total: undefined,
+                    startAt: 1,
+                    maxResults: 0,
+                    issues: undefined,
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: {
+                    headers: new AxiosHeaders(),
+                },
+            });
+            restClient.post.onCall(2).resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    ...mockedData,
+                    startAt: undefined,
+                    maxResults: 1,
+                    issues: mockedData.issues?.slice(1, 2),
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: {
+                    headers: new AxiosHeaders(),
+                },
+            });
+            restClient.post.onCall(3).resolves({
+                status: HttpStatusCode.Ok,
+                data: {
+                    ...mockedData,
+                    startAt: 1,
+                    maxResults: 1,
+                    issues: mockedData.issues?.slice(1, 2),
+                },
+                headers: {},
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                config: {
+                    headers: new AxiosHeaders(),
+                },
+            });
+            restClient.post.onCall(4).resolves({
                 status: HttpStatusCode.Ok,
                 data: {
                     ...mockedData,
                     startAt: 2,
-                    maxResults: 2,
-                    issues: mockedData.issues?.slice(2, 4),
-                },
-                headers: {},
-                statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: {
-                    headers: new AxiosHeaders(),
-                },
-            });
-            restClient.post.onThirdCall().resolves({
-                status: HttpStatusCode.Ok,
-                data: {
-                    ...mockedData,
-                    startAt: 4,
-                    maxResults: 2,
-                    issues: mockedData.issues?.slice(4, 5),
+                    maxResults: 3,
+                    issues: mockedData.issues?.slice(2),
                 },
                 headers: {},
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
@@ -342,17 +423,17 @@ describe("the jira clients", () => {
                 jql: "project = CYP AND issue in (CYP-268,CYP-237,CYP-332,CYP-333,CYP-338)",
                 fields: ["customfield_12100"],
             });
-            expect(restClient.post).to.have.been.calledThrice;
+            expect(restClient.post).to.have.callCount(5);
             expect(restClient.post.getCall(0).args[1]).to.have.property("startAt", 0);
-            expect(restClient.post.getCall(1).args[1]).to.have.property("startAt", 2);
-            expect(restClient.post.getCall(2).args[1]).to.have.property("startAt", 4);
-            expectToExist(response);
-            expect(response).to.be.an("array").with.length(5);
+            expect(restClient.post.getCall(1).args[1]).to.have.property("startAt", 1);
+            expect(restClient.post.getCall(2).args[1]).to.have.property("startAt", 1);
+            expect(restClient.post.getCall(3).args[1]).to.have.property("startAt", 1);
+            expect(restClient.post.getCall(4).args[1]).to.have.property("startAt", 2);
+            expect(response).to.be.an("array").with.length(4);
             expect(response[0].key).to.eq("CYP-333");
             expect(response[1].key).to.eq("CYP-338");
             expect(response[2].key).to.eq("CYP-332");
             expect(response[3].key).to.eq("CYP-268");
-            expect(response[4].key).to.eq("CYP-237");
         });
 
         it("handles bad responses", async () => {
@@ -385,6 +466,28 @@ describe("the jira clients", () => {
     });
 
     describe("editIssue", () => {
+        it("edits issues", async () => {
+            restClient.put
+                .withArgs("https://example.org/rest/api/latest/issue/CYP-XYZ", {
+                    fields: { summary: "Hi" },
+                })
+                .onFirstCall()
+                .resolves({
+                    status: HttpStatusCode.NoContent,
+                    data: undefined,
+                    headers: {},
+                    statusText: HttpStatusCode[HttpStatusCode.NoContent],
+                    config: {
+                        headers: new AxiosHeaders(),
+                    },
+                });
+            expect(
+                await client.editIssue("CYP-XYZ", {
+                    fields: { summary: "Hi" },
+                })
+            ).to.eq("CYP-XYZ");
+        });
+
         it("handles bad responses", async () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const error = new AxiosError(
