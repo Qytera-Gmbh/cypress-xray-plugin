@@ -1,4 +1,4 @@
-import { Background, GherkinDocument } from "@cucumber/messages";
+import { Background, GherkinDocument, Scenario } from "@cucumber/messages";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
@@ -183,6 +183,59 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
+        it("throws for missing scenario tags (no scenario name)", async () => {
+            const document = parseFeatureFile(
+                "./test/resources/features/taggedPrefixMissingScenario.feature"
+            );
+            // Cast because we know for certain it exists.
+            const scenario = document.feature?.children[1].scenario as Scenario;
+            scenario.name = "";
+            const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
+                {
+                    projectKey: "CYP",
+                    prefixes: { precondition: "Precondition:" },
+                    displayCloudHelp: true,
+                },
+                new ConstantCommand(document)
+            );
+            await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
+                dedent(`
+                    No test issue keys found in tags of scenario
+
+                    You can target existing test issues by adding a corresponding tag:
+
+                      @CYP-123
+                      Scenario:
+                        Given an assumption
+                        ...
+
+                    You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+                      Plugin configuration:
+
+                        {
+                          cucumber: {
+                            prefixes: {
+                              test: "TestName:"
+                            }
+                          }
+                        }
+
+                      Feature file:
+
+                        @TestName:CYP-123
+                        Scenario:
+                          Given an assumption
+                          ...
+
+                    For more information, visit:
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                    - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                `)
+            );
+        });
+
         it("throws for wrong scenario tags", async () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongScenarioTags.feature"
@@ -227,6 +280,58 @@ describe(path.relative(process.cwd(), __filename), () => {
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                     - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                `)
+            );
+        });
+
+        it("throws for wrong scenario tags (no scenario name, no steps)", async () => {
+            const document = parseFeatureFile(
+                "./test/resources/features/taggedWrongScenarioTags.feature"
+            );
+            // Cast because we know for certain it exists.
+            const scenario = document.feature?.children[1].scenario as Scenario;
+            scenario.name = "";
+            scenario.steps = [];
+            const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
+                {
+                    projectKey: "CYP",
+                    prefixes: {},
+                    displayCloudHelp: true,
+                },
+                new ConstantCommand(document)
+            );
+            await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
+                dedent(`
+                    No test issue keys found in tags of scenario
+
+                    Available tags:
+                      @Test:CYP-123
+                      @Cool
+                      @Lucky:CYP-415
+
+                    If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray
+
+                      For example, with the following plugin configuration:
+
+                        {
+                          cucumber: {
+                            prefixes: {
+                              test: "TestName:"
+                            }
+                          }
+                        }
+
+                      The following tag will be recognized as a test issue tag by the plugin:
+
+                        @TestName:CYP-123
+                        Scenario:
+                          Given A step
+                          ...
+
+                    For more information, visit:
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                    - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
                 `)
             );
         });
@@ -433,10 +538,14 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         describe("no prefix", () => {
-            it("throws for multiple scenario tags", async () => {
+            it("throws for multiple scenario tags (no scenario name, no steps)", async () => {
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedNoPrefixMultipleScenario.feature"
                 );
+                // Cast because we know for certain it exists.
+                const scenario = document.feature?.children[1].scenario as Scenario;
+                scenario.name = "";
+                scenario.steps = [];
                 const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                     {
                         projectKey: "CYP",
@@ -447,13 +556,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                     dedent(`
-                        Multiple test issue keys found in tags of scenario: A scenario
+                        Multiple test issue keys found in tags of scenario
                         The plugin cannot decide for you which one to use:
 
                         @CYP-123 @Some @Other @CYP-456 @Tags
                         ^^^^^^^^              ^^^^^^^^
-                        Scenario: A scenario
-                          Given an assumption
+                        Scenario:
+                          Given A step
                           ...
 
                         For more information, visit:
