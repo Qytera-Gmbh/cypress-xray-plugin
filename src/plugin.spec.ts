@@ -17,6 +17,7 @@ import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypres
 import { CypressXrayPluginOptions, PluginContext } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable";
+import * as dot from "./util/graph/visualisation/dot";
 import { Level } from "./util/logging";
 
 describe(path.relative(process.cwd(), __filename), () => {
@@ -57,10 +58,6 @@ describe(path.relative(process.cwd(), __filename), () => {
     describe(configureXrayPlugin.name, () => {
         it("does nothing if disabled", async () => {
             const logger = getMockedLogger();
-            logger.message
-                .withArgs(Level.INFO, "Plugin disabled. Skipping further configuration")
-                .onFirstCall()
-                .returns();
             await configureXrayPlugin(mockedCypressEventEmitter, config, {
                 jira: {
                     projectKey: "ABC",
@@ -70,6 +67,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     enabled: false,
                 },
             });
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Plugin disabled. Skipping further configuration"
+            );
         });
 
         it("initializes the plugin context with the provided options", async () => {
@@ -193,19 +194,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     url: "https://example.org",
                 },
             };
-            logger.configure
-                .withArgs({
-                    debug: pluginContext.options.plugin.debug,
-                    logDirectory: pluginContext.options.plugin.logDirectory,
-                })
-                .onFirstCall()
-                .returns();
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
+            expect(logger.configure).to.have.been.calledWithExactly({
+                debug: pluginContext.options.plugin.debug,
+                logDirectory: pluginContext.options.plugin.logDirectory,
+            });
         });
 
         it("adds upload commands", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
-            stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
             const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;
@@ -218,7 +215,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(stubbedHook).to.have.been.calledOnceWithExactly(
                 afterRunResult,
                 pluginContext.cypress.projectRoot,
-                pluginContext.options,
+                { ...pluginContext.options, cucumber: undefined },
                 pluginContext.clients,
                 pluginContext.graph
             );
@@ -248,39 +245,16 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
-        it("displays warnings if the plugin was not configured", async () => {
-            stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
-            const afterRunResult: CypressRunResultType = JSON.parse(
-                fs.readFileSync("./test/resources/runResult.json", "utf-8")
-            ) as CypressRunResultType;
-            const logger = getMockedLogger();
-            logger.message
-                .withArgs(
-                    Level.WARNING,
-                    dedent(`
-                        Skipping after:run hook: Plugin misconfigured: configureXrayPlugin() was not called
-
-                        Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
-                    `)
-                )
-                .onFirstCall()
-                .returns();
-            await configureXrayPlugin(
-                mockedCypressEventEmitter("after:run", afterRunResult),
-                config,
-                pluginContext.options
-            );
-        });
-
         it("does not display a warning if the plugin was configured but disabled", async () => {
             const logger = getMockedLogger();
-            logger.message
-                .withArgs(Level.INFO, "Plugin disabled. Skipping further configuration")
-                .returns();
             await configureXrayPlugin(mockedCypressEventEmitter, config, {
                 jira: { projectKey: "CYP", url: "https://example.org" },
                 plugin: { enabled: false },
             });
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Plugin disabled. Skipping further configuration"
+            );
         });
 
         it("does not display an error for failed runs if disabled", async () => {
@@ -291,15 +265,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             };
             const logger = getMockedLogger();
             pluginContext.options.plugin.enabled = false;
-            context.setPluginContext(pluginContext);
-            logger.message
-                .withArgs(Level.INFO, "Skipping after:run hook: Plugin disabled")
-                .onFirstCall()
-                .returns();
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", failedResults),
                 config,
                 pluginContext.options
+            );
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Plugin disabled. Skipping further configuration"
             );
         });
 
@@ -312,17 +285,71 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             pluginContext.options.xray.uploadResults = false;
             context.setPluginContext(pluginContext);
-            logger.message
-                .withArgs(
-                    Level.INFO,
-                    "Skipping results upload: Plugin is configured to not upload test results"
-                )
-                .onFirstCall()
-                .returns();
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", afterRunResult),
                 config,
                 pluginContext.options
+            );
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Skipping results upload: Plugin is configured to not upload test results"
+            );
+        });
+
+        it("creates an execution graph if debug is enabled", async () => {
+            stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
+            stub(dot, "graphToDot")
+                .onFirstCall()
+                .resolves(
+                    dedent(`
+                        digraph "Plugin Execution Graph" {
+                          rankdir=TD;
+                          node[shape=none];
+                        }
+                    `)
+                );
+            const afterRunResult: CypressRunResultType = JSON.parse(
+                fs.readFileSync("./test/resources/runResult.json", "utf-8")
+            ) as CypressRunResultType;
+            const logger = getMockedLogger();
+            logger.logToFile
+                .withArgs(
+                    dedent(`
+                        digraph "Plugin Execution Graph" {
+                          rankdir=TD;
+                          node[shape=none];
+                        }
+                    `),
+                    "execution-graph.vz"
+                )
+                .returns("execution-graph.vz");
+            pluginContext.options.plugin.debug = true;
+            await configureXrayPlugin(
+                mockedCypressEventEmitter("after:run", afterRunResult),
+                config,
+                pluginContext.options
+            );
+            // Workaround: yields control back to the configuration function so that the finally
+            // block may run.
+            await new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve("ok");
+                }, 10);
+            });
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.DEBUG,
+                dedent(`
+                    Plugin execution graph saved to: execution-graph.vz
+
+                    You can view it using Graphviz (https://graphviz.org/):
+
+                      dot -o execution-graph.svg -Tsvg execution-graph.vz
+
+                    Alternatively, you can view it online under any of the following websites:
+                    - https://dreampuf.github.io/GraphvizOnline
+                    - https://edotor.net/
+                    - https://www.devtoolsdaily.com/graphviz/
+                `)
             );
         });
     });
@@ -330,10 +357,8 @@ describe(path.relative(process.cwd(), __filename), () => {
     describe(syncFeatureFile.name, () => {
         let file: Cypress.FileObject;
         beforeEach(() => {
-            // Weird workaround.
-            const emitter = {} as Cypress.FileObject;
             file = {
-                ...emitter,
+                ...({} as Cypress.FileObject),
                 filePath: "./test/resources/features/taggedCloud.feature",
                 outputPath: "",
                 shouldWatch: false,
@@ -342,31 +367,28 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("displays warnings if the plugin was not configured", () => {
             const logger = getMockedLogger();
-            logger.message
-                .withArgs(
-                    Level.WARNING,
-                    dedent(`
-                        Skipping file:preprocessor hook: Plugin misconfigured: configureXrayPlugin() was not called
-
-                        Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
-                    `)
-                )
-                .onFirstCall()
-                .returns();
             syncFeatureFile(file);
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.WARNING,
+                dedent(`
+                    Skipping file:preprocessor hook: Plugin misconfigured: configureXrayPlugin() was not called
+
+                    Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
+                `)
+            );
         });
 
         it("does not display a warning if the plugin was configured but disabled", async () => {
             const logger = getMockedLogger();
-            logger.message
-                .withArgs(Level.INFO, "Plugin disabled. Skipping further configuration")
-                .onFirstCall()
-                .returns();
             await configureXrayPlugin(mockedCypressEventEmitter, config, {
                 jira: { projectKey: "CYP", url: "https://example.org" },
                 plugin: { enabled: false },
             });
             syncFeatureFile(file);
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Plugin disabled. Skipping further configuration"
+            );
         });
 
         it("does not do anything if disabled", () => {
@@ -374,14 +396,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             pluginContext.options.plugin.enabled = false;
             context.setPluginContext(pluginContext);
-            logger.message
-                .withArgs(
-                    Level.INFO,
-                    "Plugin disabled. Skipping feature file synchronization triggered by: ./test/resources/features/taggedCloud.feature"
-                )
-                .onFirstCall()
-                .returns();
             syncFeatureFile(file);
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Plugin disabled. Skipping feature file synchronization triggered by: ./test/resources/features/taggedCloud.feature"
+            );
         });
 
         it("calls the synchronizeFile hook", () => {

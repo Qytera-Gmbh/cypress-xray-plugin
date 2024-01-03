@@ -17,6 +17,7 @@ import {
     CypressXrayPluginOptions,
     InternalCypressXrayPluginOptions,
     InternalPluginOptions,
+    PluginContext,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable";
@@ -79,24 +80,14 @@ export async function configureXrayPlugin(
         debug: internalOptions.plugin.debug,
         ssl: internalOptions.ssl,
     });
-    setPluginContext({
+    const context: PluginContext = {
         cypress: config,
         options: internalOptions,
         clients: await initClients(internalOptions.jira, config.env),
         graph: new ExecutableGraph(),
-    });
+    };
+    setPluginContext(context);
     on("after:run", async (results: CypressRunResultType | CypressFailedRunResultType) => {
-        const context = getPluginContext();
-        if (!context) {
-            if (canShowInitializationWarning) {
-                logInitializationWarning("after:run");
-            }
-            return;
-        }
-        if (!context.options.plugin.enabled) {
-            LOG.message(Level.INFO, "Skipping after:run hook: Plugin disabled");
-            return;
-        }
         if (context.options.xray.uploadResults) {
             // Cypress's status types are incomplete, there is also "finished".
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -165,7 +156,14 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
     const context = getPluginContext();
     if (!context) {
         if (canShowInitializationWarning) {
-            logInitializationWarning("file:preprocessor");
+            LOG.message(
+                Level.WARNING,
+                dedent(`
+                    Skipping file:preprocessor hook: Plugin misconfigured: configureXrayPlugin() was not called
+
+                    Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
+                `)
+            );
         }
         return file.filePath;
     }
@@ -190,16 +188,4 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
         );
     }
     return file.filePath;
-}
-
-function logInitializationWarning(hook: "after:run" | "file:preprocessor"): void {
-    // Do not throw in case someone does not want the plugin to run but forgot to remove a hook.
-    LOG.message(
-        Level.WARNING,
-        dedent(`
-            Skipping ${hook} hook: Plugin misconfigured: configureXrayPlugin() was not called
-
-            Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
-        `)
-    );
 }
