@@ -27,11 +27,11 @@ export enum CommandState {
     /**
      * The command is done computing.
      */
-    RESOLVED = "resolved",
+    SUCCEEDED = "succeeded",
     /**
      * The command encountered problems during execution.
      */
-    REJECTED = "rejected",
+    FAILED = "failed",
     /**
      * The command was skipped.
      */
@@ -73,14 +73,14 @@ export abstract class Command<R = unknown, P = unknown> implements Computable<R>
         this.result = new Promise<void>((resolve) => this.executeEmitter.once("execute", resolve))
             .then(this.computeResult.bind(this))
             .then((result: R) => {
-                this.state = CommandState.RESOLVED;
+                this.state = CommandState.SUCCEEDED;
                 return result;
             })
             .catch((error: unknown) => {
                 if (isSkippedError(error)) {
                     this.state = CommandState.SKIPPED;
                 } else {
-                    this.state = CommandState.REJECTED;
+                    this.state = CommandState.FAILED;
                 }
                 this.reason = error;
                 throw error;
@@ -114,7 +114,7 @@ export abstract class Command<R = unknown, P = unknown> implements Computable<R>
     }
 
     public getFailureOrSkipReason(): unknown {
-        if (this.state !== CommandState.REJECTED && this.state !== CommandState.SKIPPED) {
+        if (this.state !== CommandState.FAILED && this.state !== CommandState.SKIPPED) {
             throw new Error("The command was neither skipped, nor did it fail");
         }
         return this.reason;

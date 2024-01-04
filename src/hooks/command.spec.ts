@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { Command } from "./command";
+import { Command, CommandState, SkippedError } from "./command";
 
 chai.use(chaiAsPromised);
 
@@ -45,6 +45,20 @@ describe(path.relative(process.cwd(), __filename), () => {
             const command = new FailingCommand();
             await expect(command.compute()).to.eventually.be.rejectedWith("Failure 123");
             expect(command.getFailureOrSkipReason()).to.eq(error);
+            expect(command.getState()).to.eq(CommandState.FAILED);
+        });
+
+        it("returns the skip reason", async () => {
+            const error = new SkippedError("Skip 123");
+            class SkippingCommand extends Command<number, void> {
+                protected computeResult(): Promise<number> {
+                    throw error;
+                }
+            }
+            const command = new SkippingCommand();
+            await expect(command.compute()).to.eventually.be.rejectedWith("Skip 123");
+            expect(command.getFailureOrSkipReason()).to.eq(error);
+            expect(command.getState()).to.eq(CommandState.SKIPPED);
         });
     });
 });

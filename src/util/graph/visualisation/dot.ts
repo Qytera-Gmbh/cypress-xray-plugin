@@ -59,13 +59,13 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
     `);
     let result = "pending";
     let color = "silver";
-    if (command.getState() === CommandState.RESOLVED) {
+    if (command.getState() === CommandState.SUCCEEDED) {
         result = escapeHtmlLabel(unknownToString(await command.compute(), true));
         color = "darkolivegreen3";
     } else if (command.getState() === CommandState.SKIPPED) {
         result = escapeHtmlLabel(errorMessage(command.getFailureOrSkipReason()));
         color = "khaki";
-    } else if (command.getState() === CommandState.REJECTED) {
+    } else if (command.getState() === CommandState.FAILED) {
         result = escapeHtmlLabel(errorMessage(command.getFailureOrSkipReason()));
         color = "salmon";
     }
