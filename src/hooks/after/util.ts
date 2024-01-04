@@ -17,7 +17,7 @@ export function containsCypressTest(
 export function containsCucumberTest(
     runResult: CypressRunResultType,
     featureFileExtension?: string
-): boolean {
+): featureFileExtension is string {
     return runResult.runs.some((run) => {
         if (featureFileExtension && run.spec.absolute.endsWith(featureFileExtension)) {
             return true;

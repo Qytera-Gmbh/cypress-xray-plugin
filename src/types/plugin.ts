@@ -323,7 +323,7 @@ export type InternalCucumberOptions = Required<CucumberOptions> & {
     /**
      * The Cucumber preprocessor configuration.
      */
-    preprocessor?: IPreprocessorConfiguration;
+    preprocessor?: Pick<IPreprocessorConfiguration, "json">;
 };
 
 export interface PluginOptions {

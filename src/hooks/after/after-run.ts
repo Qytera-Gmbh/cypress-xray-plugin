@@ -24,7 +24,6 @@ import {
     ConvertCucumberInfoCommand,
     ConvertCucumberInfoServerCommand,
 } from "./commands/conversion/cucumber/convert-cucumber-info-command";
-import { RunData } from "./commands/conversion/cucumber/util/multipart-info";
 import { AssertCypressConversionValidCommand } from "./commands/conversion/cypress/assert-cypress-conversion-valid-command";
 import { CombineCypressJsonCommand } from "./commands/conversion/cypress/combine-cypress-xray-command";
 import { ConvertCypressInfoCommand } from "./commands/conversion/cypress/convert-cypress-info-command";
@@ -44,20 +43,29 @@ export function addUploadCommands(
 ): void {
     let importCypressExecutionCommand: ImportExecutionCypressCommand | null = null;
     let importCucumberExecutionCommand: ImportExecutionCucumberCommand | null = null;
+    const cypressResultsCommand = graph.findOrDefault(
+        (command): command is ConstantCommand<CypressRunResultType> =>
+            command instanceof ConstantCommand && command.getValue() === runResult,
+        () => graph.place(new ConstantCommand(runResult))
+    );
     if (containsCypressTest(runResult, options.cucumber?.featureFileExtension)) {
         importCypressExecutionCommand = createImportExecutionCypressCommand(
-            runResult,
+            cypressResultsCommand,
             options,
             clients,
             graph
         );
     }
     if (containsCucumberTest(runResult, options.cucumber?.featureFileExtension)) {
-        if (!options.cucumber?.preprocessor?.json.output) {
+        if (!options.cucumber.preprocessor?.json.output) {
             throw new Error(
                 "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured"
             );
         }
+        const cucumberResults: CucumberMultipartFeature[] = JSON.parse(
+            fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
+        ) as CucumberMultipartFeature[];
+        const cucumberResultsCommand = graph.place(new ConstantCommand(cucumberResults));
         let testExecutionIssueKeyCommand: Command<string> | undefined = undefined;
         if (options.jira.testExecutionIssueKey) {
             testExecutionIssueKeyCommand = graph.place(
@@ -67,13 +75,32 @@ export function addUploadCommands(
             testExecutionIssueKeyCommand = importCypressExecutionCommand;
         }
         importCucumberExecutionCommand = createImportExecutionCucumberCommand(
-            runResult,
-            projectRoot,
+            cypressResultsCommand,
+            cucumberResultsCommand,
             options,
             clients,
             graph,
             testExecutionIssueKeyCommand
         );
+        // Make sure to add an edge from any feature file imports to the execution. Otherwise, the
+        // execution will contain old steps (those which were there prior to feature import).
+        if (options.cucumber.uploadFeatures) {
+            for (const importFeatureCommand of graph.getVertices()) {
+                if (importFeatureCommand instanceof ImportFeatureCommand) {
+                    if (
+                        runResult.runs.some(
+                            (run) =>
+                                path.relative(projectRoot, run.spec.relative) ===
+                                importFeatureCommand.getParameters().filePath
+                        )
+                    ) {
+                        // We can still upload results even if the feature file import fails. It's
+                        // better to upload mismatched results than none at all.
+                        graph.connect(importFeatureCommand, importCucumberExecutionCommand, true);
+                    }
+                }
+            }
+        }
     }
     // Retrieve the test execution issue key for further attachment uploads.
     let getExecutionIssueKeyCommand: Command<string>;
@@ -102,13 +129,10 @@ export function addUploadCommands(
     );
     graph.connect(getExecutionIssueKeyCommand, printSuccessCommand);
     if (options.jira.attachVideos) {
-        const resultsCommand = graph.findOrDefault(
-            (command): command is ConstantCommand<CypressRunResultType> =>
-                command instanceof ConstantCommand && command.getValue() === runResult,
-            () => graph.place(new ConstantCommand(runResult))
+        const extractVideoFilesCommand = graph.place(
+            new ExtractVideoFilesCommand(cypressResultsCommand)
         );
-        const extractVideoFilesCommand = graph.place(new ExtractVideoFilesCommand(resultsCommand));
-        graph.connect(resultsCommand, extractVideoFilesCommand);
+        graph.connect(cypressResultsCommand, extractVideoFilesCommand);
         const attachVideosCommand = graph.place(
             new AttachFilesCommand(
                 { jiraClient: clients.jiraClient },
@@ -122,27 +146,22 @@ export function addUploadCommands(
 }
 
 function createImportExecutionCypressCommand(
-    results: CypressRunResultType,
+    cypressResultsCommand: Command<CypressRunResultType>,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>
 ): ImportExecutionCypressCommand {
-    const resultsCommand = graph.findOrDefault(
-        (command): command is ConstantCommand<CypressRunResultType> =>
-            command instanceof ConstantCommand && command.getValue() === results,
-        () => graph.place(new ConstantCommand(results))
-    );
     const convertCypressTestsCommand = graph.place(
         new ConvertCypressTestsCommand(
             { ...options, useCloudStatusFallback: clients.kind === "cloud" },
-            resultsCommand
+            cypressResultsCommand
         )
     );
-    graph.connect(resultsCommand, convertCypressTestsCommand);
+    graph.connect(cypressResultsCommand, convertCypressTestsCommand);
     const convertCypressInfoCommand = graph.place(
-        new ConvertCypressInfoCommand(options, resultsCommand)
+        new ConvertCypressInfoCommand(options, cypressResultsCommand)
     );
-    graph.connect(resultsCommand, convertCypressInfoCommand);
+    graph.connect(cypressResultsCommand, convertCypressInfoCommand);
     const combineResultsJsonCommand = graph.place(
         new CombineCypressJsonCommand(
             { testExecutionIssueKey: options.jira.testExecutionIssueKey },
@@ -163,8 +182,9 @@ function createImportExecutionCypressCommand(
         )
     );
     graph.connect(assertConversionValidCommand, importCypressExecutionCommand);
+    graph.connect(combineResultsJsonCommand, importCypressExecutionCommand);
     if (options.jira.testExecutionIssueKey) {
-        const verifyIssueKeysCommand = graph.place(
+        const verifyIssueKeyCommand = graph.place(
             new VerifyExecutionIssueKeyCommand(
                 {
                     testExecutionIssueKey: options.jira.testExecutionIssueKey,
@@ -175,28 +195,19 @@ function createImportExecutionCypressCommand(
                 importCypressExecutionCommand
             )
         );
-        graph.connect(importCypressExecutionCommand, verifyIssueKeysCommand);
+        graph.connect(importCypressExecutionCommand, verifyIssueKeyCommand);
     }
     return importCypressExecutionCommand;
 }
 
 function createImportExecutionCucumberCommand(
-    cypressResults: CypressRunResultType,
-    projectRoot: string,
+    cypressResultsCommand: Command<CypressRunResultType>,
+    cucumberResultsCommand: ConstantCommand<CucumberMultipartFeature[]>,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
     testExecutionIssueKeyCommand?: Command<string>
 ): ImportExecutionCucumberCommand {
-    if (!options.cucumber?.preprocessor?.json.output) {
-        throw new Error(
-            "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured"
-        );
-    }
-    const results: CucumberMultipartFeature[] = JSON.parse(
-        fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
-    ) as CucumberMultipartFeature[];
-    const cucumberResultsCommand = graph.place(new ConstantCommand(results));
     const fetchIssueTypesCommand = graph.findOrDefault(
         (command): command is FetchIssueTypesCommand => command instanceof FetchIssueTypesCommand,
         () => graph.place(new FetchIssueTypesCommand({ jiraClient: clients.jiraClient }))
@@ -212,20 +223,15 @@ function createImportExecutionCucumberCommand(
         )
     );
     graph.connect(fetchIssueTypesCommand, extractExecutionIssueTypeCommand);
-    const resultsCommand = graph.findOrDefault(
-        (command): command is ConstantCommand<CypressRunResultType> =>
-            command instanceof ConstantCommand && command.getValue() === cypressResults,
-        () => graph.place(new ConstantCommand(cypressResults))
-    );
     const convertCucumberInfoCommand = getConvertCucumberInfoCommand(
         options,
         clients,
         graph,
         extractExecutionIssueTypeCommand,
-        resultsCommand
+        cypressResultsCommand
     );
     graph.connect(extractExecutionIssueTypeCommand, convertCucumberInfoCommand);
-    graph.connect(resultsCommand, convertCucumberInfoCommand);
+    graph.connect(cypressResultsCommand, convertCucumberInfoCommand);
     const convertCucumberFeaturesCommand = graph.place(
         new ConvertCucumberFeaturesCommand(
             { ...options, useCloudTags: clients.kind === "cloud" },
@@ -255,25 +261,6 @@ function createImportExecutionCucumberCommand(
             combineCucumberMultipartCommand
         )
     );
-    // Make sure to add an edge from any feature file imports to the execution. Otherwise, the
-    // execution will contain old steps (those which were there prior to feature import).
-    if (options.cucumber.uploadFeatures) {
-        for (const command of graph.getVertices()) {
-            if (command instanceof ImportFeatureCommand) {
-                if (
-                    cypressResults.runs.some(
-                        (run) =>
-                            path.relative(projectRoot, run.spec.relative) ===
-                            command.getParameters().filePath
-                    )
-                ) {
-                    // We can still upload results even if the feature file import fails. It's
-                    // better to upload mismatched results than none at all.
-                    graph.connect(command, importCucumberExecutionCommand, true);
-                }
-            }
-        }
-    }
     graph.connect(combineCucumberMultipartCommand, importCucumberExecutionCommand);
     if (options.jira.testExecutionIssueKey) {
         const verifyIssueKeysCommand = graph.place(
@@ -297,11 +284,11 @@ function getConvertCucumberInfoCommand(
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
     executionIssueType: Computable<IssueTypeDetails>,
-    results: Computable<RunData>
+    cypressResults: Computable<CypressRunResultType>
 ): ConvertCucumberInfoCommand {
     if (clients.kind === "cloud") {
         return graph.place(
-            new ConvertCucumberInfoCloudCommand(options, executionIssueType, results)
+            new ConvertCucumberInfoCloudCommand(options, executionIssueType, cypressResults)
         );
     }
     let testPlanIdCommand: Command<string> | undefined = undefined;
@@ -326,7 +313,7 @@ function getConvertCucumberInfoCommand(
         }
     }
     const convertCucumberInfoCommand = graph.place(
-        new ConvertCucumberInfoServerCommand(options, executionIssueType, results, {
+        new ConvertCucumberInfoServerCommand(options, executionIssueType, cypressResults, {
             testPlanId: testPlanIdCommand,
             testEnvironmentsId: testEnvironmentsIdCommand,
         })
