@@ -42,7 +42,7 @@ export abstract class Client {
      * @param url - the request URL
      * @returns the timer's handler
      */
-    protected startResponseInterval(url: string): NodeJS.Timer {
+    protected startResponseInterval(url: string): ReturnType<typeof setInterval> {
         return startInterval((totalTime: number) => {
             LOG.message(
                 Level.INFO,
