@@ -184,7 +184,7 @@ function createImportExecutionCypressCommand(
     graph.connect(assertConversionValidCommand, importCypressExecutionCommand);
     graph.connect(combineResultsJsonCommand, importCypressExecutionCommand);
     if (options.jira.testExecutionIssueKey) {
-        const verifyIssueKeyCommand = graph.place(
+        const verifyExecutionIssueKeyCommand = graph.place(
             new VerifyExecutionIssueKeyCommand(
                 {
                     testExecutionIssueKey: options.jira.testExecutionIssueKey,
@@ -195,7 +195,7 @@ function createImportExecutionCypressCommand(
                 importCypressExecutionCommand
             )
         );
-        graph.connect(importCypressExecutionCommand, verifyIssueKeyCommand);
+        graph.connect(importCypressExecutionCommand, verifyExecutionIssueKeyCommand);
     }
     return importCypressExecutionCommand;
 }
@@ -263,7 +263,7 @@ function createImportExecutionCucumberCommand(
     );
     graph.connect(combineCucumberMultipartCommand, importCucumberExecutionCommand);
     if (options.jira.testExecutionIssueKey) {
-        const verifyIssueKeysCommand = graph.place(
+        const verifyExecutionIssueKeyCommand = graph.place(
             new VerifyExecutionIssueKeyCommand(
                 {
                     testExecutionIssueKey: options.jira.testExecutionIssueKey,
@@ -274,7 +274,7 @@ function createImportExecutionCucumberCommand(
                 importCucumberExecutionCommand
             )
         );
-        graph.connect(importCucumberExecutionCommand, verifyIssueKeysCommand);
+        graph.connect(importCucumberExecutionCommand, verifyExecutionIssueKeyCommand);
     }
     return importCucumberExecutionCommand;
 }

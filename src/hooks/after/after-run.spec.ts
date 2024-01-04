@@ -21,6 +21,8 @@ import { ExecutableGraph } from "../../util/graph/executable";
 import { Command } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";
 import { AttachFilesCommand } from "../util/commands/jira/attach-files-command";
+import { ExtractFieldIdCommand, JiraField } from "../util/commands/jira/extract-field-id-command";
+import { FetchAllFieldsCommand } from "../util/commands/jira/fetch-all-fields-command";
 import { FetchIssueTypesCommand } from "../util/commands/jira/fetch-issue-types-command";
 import { ImportExecutionCucumberCommand } from "../util/commands/xray/import-execution-cucumber-command";
 import { ImportExecutionCypressCommand } from "../util/commands/xray/import-execution-cypress-command";
@@ -341,6 +343,161 @@ describe.only(path.relative(process.cwd(), __filename), () => {
                     ]);
                     expect([...graph.getSuccessors(importCucumberExecutionCommand)]).to.deep.eq([
                         printSuccessCommand,
+                    ]);
+                });
+
+                it("uses configured test plan data", () => {
+                    options.jira.testPlanIssueKey = "CYP-42";
+                    const graph = new ExecutableGraph<Command>();
+                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    // Vertices.
+                    expect(graph.size("vertices")).to.eq(12);
+                    const commands = [...graph.getVertices()];
+                    const fetchAllFieldsCommand = commands[4];
+                    const testPlanIdCommand = commands[5];
+                    const convertCucumberInfoCommand = commands[6];
+                    assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
+                    assertIsInstanceOf(testPlanIdCommand, ExtractFieldIdCommand);
+                    // Vertex data.
+                    expect(fetchAllFieldsCommand.getParameters()).to.deep.eq({
+                        jiraClient: clients.jiraClient,
+                    });
+                    expect(testPlanIdCommand.getParameters()).to.deep.eq({
+                        field: JiraField.TEST_PLAN,
+                    });
+                    // Edges.
+                    expect(graph.size("edges")).to.eq(11);
+                    expect([...graph.getSuccessors(fetchAllFieldsCommand)]).to.deep.eq([
+                        testPlanIdCommand,
+                    ]);
+                    expect([...graph.getSuccessors(testPlanIdCommand)]).to.deep.eq([
+                        convertCucumberInfoCommand,
+                    ]);
+                });
+
+                it("uses configured test plan data with hardcoded test plan ids", () => {
+                    options.jira.testPlanIssueKey = "CYP-42";
+                    options.jira.fields.testPlan = "customfield_12345";
+                    const graph = new ExecutableGraph<Command>();
+                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    // Vertices.
+                    expect(graph.size("vertices")).to.eq(11);
+                    const commands = [...graph.getVertices()];
+                    const testPlanIdCommand = commands[4];
+                    const convertCucumberInfoCommand = commands[5];
+                    assertIsInstanceOf(testPlanIdCommand, ConstantCommand);
+                    // Vertex data.
+                    expect(testPlanIdCommand.getValue()).to.eq("customfield_12345");
+                    // Edges.
+                    expect(graph.size("edges")).to.eq(10);
+                    expect([...graph.getSuccessors(testPlanIdCommand)]).to.deep.eq([
+                        convertCucumberInfoCommand,
+                    ]);
+                });
+
+                it("uses configured test environment data", () => {
+                    options.xray.testEnvironments = ["DEV"];
+                    const graph = new ExecutableGraph<Command>();
+                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    // Vertices.
+                    expect(graph.size("vertices")).to.eq(12);
+                    const commands = [...graph.getVertices()];
+                    const fetchAllFieldsCommand = commands[4];
+                    const testEnvironmentsIdCommand = commands[5];
+                    const convertCucumberInfoCommand = commands[6];
+                    assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
+                    assertIsInstanceOf(testEnvironmentsIdCommand, ExtractFieldIdCommand);
+                    // Vertex data.
+                    expect(fetchAllFieldsCommand.getParameters()).to.deep.eq({
+                        jiraClient: clients.jiraClient,
+                    });
+                    expect(testEnvironmentsIdCommand.getParameters()).to.deep.eq({
+                        field: JiraField.TEST_ENVIRONMENTS,
+                    });
+                    // Edges.
+                    expect(graph.size("edges")).to.eq(11);
+                    expect([...graph.getSuccessors(fetchAllFieldsCommand)]).to.deep.eq([
+                        testEnvironmentsIdCommand,
+                    ]);
+                    expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
+                        convertCucumberInfoCommand,
+                    ]);
+                });
+
+                it("uses configured test environment data with hardcoded test environment ids", () => {
+                    options.xray.testEnvironments = ["DEV"];
+                    options.jira.fields.testEnvironments = "customfield_67890";
+                    const graph = new ExecutableGraph<Command>();
+                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    // Vertices.
+                    expect(graph.size("vertices")).to.eq(11);
+                    const commands = [...graph.getVertices()];
+                    const testEnvironmentsIdCommand = commands[4];
+                    const convertCucumberInfoCommand = commands[5];
+                    assertIsInstanceOf(testEnvironmentsIdCommand, ConstantCommand);
+                    // Vertex data.
+                    expect(testEnvironmentsIdCommand.getValue()).to.eq("customfield_67890");
+                    // Edges.
+                    expect(graph.size("edges")).to.eq(10);
+                    expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
+                        convertCucumberInfoCommand,
+                    ]);
+                });
+
+                it("uses configured test plan and environment data", () => {
+                    options.jira.testPlanIssueKey = "CYP-42";
+                    options.xray.testEnvironments = ["DEV"];
+                    const graph = new ExecutableGraph<Command>();
+                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    // Vertices.
+                    expect(graph.size("vertices")).to.eq(13);
+                    const commands = [...graph.getVertices()];
+                    const fetchAllFieldsCommand = commands[4];
+                    const testPlanIdCommand = commands[5];
+                    const testEnvironmentsIdCommand = commands[6];
+                    const convertCucumberInfoCommand = commands[7];
+                    assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
+                    assertIsInstanceOf(testPlanIdCommand, ExtractFieldIdCommand);
+                    assertIsInstanceOf(testEnvironmentsIdCommand, ExtractFieldIdCommand);
+                    // Edges.
+                    expect(graph.size("edges")).to.eq(13);
+                    expect([...graph.getSuccessors(fetchAllFieldsCommand)]).to.deep.eq([
+                        testPlanIdCommand,
+                        testEnvironmentsIdCommand,
+                    ]);
+                    expect([...graph.getSuccessors(testPlanIdCommand)]).to.deep.eq([
+                        convertCucumberInfoCommand,
+                    ]);
+                    expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
+                        convertCucumberInfoCommand,
+                    ]);
+                });
+
+                it("uses configured test plan and environment data with hardcoded ids", () => {
+                    options.jira.testPlanIssueKey = "CYP-42";
+                    options.jira.fields.testPlan = "customfield_12345";
+                    options.xray.testEnvironments = ["DEV"];
+                    options.jira.fields.testEnvironments = "customfield_67890";
+                    const graph = new ExecutableGraph<Command>();
+                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    // Vertices.
+                    expect(graph.size("vertices")).to.eq(12);
+                    const commands = [...graph.getVertices()];
+                    const testPlanIdCommand = commands[4];
+                    const testEnvironmentsIdCommand = commands[5];
+                    const convertCucumberInfoCommand = commands[6];
+                    assertIsInstanceOf(testPlanIdCommand, ConstantCommand);
+                    assertIsInstanceOf(testEnvironmentsIdCommand, ConstantCommand);
+                    // Vertex data.
+                    expect(testPlanIdCommand.getValue()).to.eq("customfield_12345");
+                    expect(testEnvironmentsIdCommand.getValue()).to.eq("customfield_67890");
+                    // Edges.
+                    expect(graph.size("edges")).to.eq(11);
+                    expect([...graph.getSuccessors(testPlanIdCommand)]).to.deep.eq([
+                        convertCucumberInfoCommand,
+                    ]);
+                    expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
+                        convertCucumberInfoCommand,
                     ]);
                 });
             });
