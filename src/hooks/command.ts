@@ -60,16 +60,15 @@ export function isSkippedError(error: unknown): error is SkippedError {
 export abstract class Command<R = unknown, P = unknown> implements Computable<R> {
     protected readonly parameters: P;
     private readonly result: Promise<R>;
-    private readonly executeEmitter: EventEmitter;
+    private readonly executeEmitter: EventEmitter = new EventEmitter();
     private state: CommandState = CommandState.INITIAL;
-    private reason?: unknown = null;
+    private failureOrSkipReason: unknown = null;
 
     /**
      * Constructs a new command.
      */
     constructor(parameters: P) {
         this.parameters = parameters;
-        this.executeEmitter = new EventEmitter();
         this.result = new Promise<void>((resolve) => this.executeEmitter.once("execute", resolve))
             .then(this.computeResult.bind(this))
             .then((result: R) => {
@@ -82,9 +81,17 @@ export abstract class Command<R = unknown, P = unknown> implements Computable<R>
                 } else {
                     this.state = CommandState.FAILED;
                 }
-                this.reason = error;
+                this.failureOrSkipReason = error;
                 throw error;
             });
+    }
+
+    public async compute(): Promise<R> {
+        if (this.state === CommandState.INITIAL) {
+            this.state = CommandState.PENDING;
+            this.executeEmitter.emit("execute");
+        }
+        return await this.result;
     }
 
     /**
@@ -105,19 +112,17 @@ export abstract class Command<R = unknown, P = unknown> implements Computable<R>
         return this.state;
     }
 
-    public async compute(): Promise<R> {
-        if (this.state === CommandState.INITIAL) {
-            this.state = CommandState.PENDING;
-            this.executeEmitter.emit("execute");
-        }
-        return await this.result;
-    }
-
+    /**
+     * Returns the reason why the command failed or was skipped.
+     *
+     * @returns the reason
+     * @throws if the command was not (yet) skipped or did not (yet) fail
+     */
     public getFailureOrSkipReason(): unknown {
         if (this.state !== CommandState.FAILED && this.state !== CommandState.SKIPPED) {
             throw new Error("The command was neither skipped, nor did it fail");
         }
-        return this.reason;
+        return this.failureOrSkipReason;
     }
 
     /**

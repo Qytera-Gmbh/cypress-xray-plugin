@@ -1,5 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import EventEmitter from "node:events";
 import path from "path";
 import { Command, CommandState, SkippedError } from "./command";
 
@@ -59,6 +60,70 @@ describe(path.relative(process.cwd(), __filename), () => {
             await expect(command.compute()).to.eventually.be.rejectedWith("Skip 123");
             expect(command.getFailureOrSkipReason()).to.eq(error);
             expect(command.getState()).to.eq(CommandState.SKIPPED);
+        });
+
+        it("updates its state", async () => {
+            const eventEmitter = new EventEmitter();
+
+            class WaitingCommand extends Command<number, void> {
+                protected computeResult(): Promise<number> {
+                    return new Promise((resolve) => {
+                        eventEmitter.once("go", () => {
+                            resolve(42);
+                        });
+                    });
+                }
+            }
+            const command = new WaitingCommand();
+            expect(command.getState()).to.eq(CommandState.INITIAL);
+            const computePromise = command.compute();
+            expect(command.getState()).to.eq(CommandState.PENDING);
+            // Await something to force the event loop to go back to the computeResult() method.
+            await new Promise<void>((resolve) => {
+                resolve();
+            });
+            eventEmitter.emit("go");
+            expect(await computePromise).to.eq(42);
+            expect(command.getState()).to.eq(CommandState.SUCCEEDED);
+        });
+
+        it("computes its result only once", async () => {
+            class ComputingCommand extends Command<number, void> {
+                private hasComputed = false;
+
+                protected computeResult(): Promise<number> {
+                    if (!this.hasComputed) {
+                        this.hasComputed = true;
+                        return new Promise((resolve) => {
+                            resolve(42);
+                        });
+                    }
+                    return new Promise((resolve) => {
+                        resolve(0);
+                    });
+                }
+            }
+            const command = new ComputingCommand();
+            expect(await command.compute()).to.eq(42);
+            expect(await command.compute()).to.eq(42);
+        });
+
+        it("throws on failure retrieval if it did not fail", async () => {
+            class ComputingCommand extends Command<number, void> {
+                protected computeResult(): Promise<number> {
+                    return new Promise((resolve) => {
+                        resolve(42);
+                    });
+                }
+            }
+            const command = new ComputingCommand();
+            expect(() => command.getFailureOrSkipReason()).to.throw(
+                "The command was neither skipped, nor did it fail"
+            );
+            await command.compute();
+            expect(() => command.getFailureOrSkipReason()).to.throw(
+                "The command was neither skipped, nor did it fail"
+            );
         });
     });
 });
