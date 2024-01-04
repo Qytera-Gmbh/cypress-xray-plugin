@@ -26,6 +26,7 @@ import { FetchAllFieldsCommand } from "../util/commands/jira/fetch-all-fields-co
 import { FetchIssueTypesCommand } from "../util/commands/jira/fetch-issue-types-command";
 import { ImportExecutionCucumberCommand } from "../util/commands/xray/import-execution-cucumber-command";
 import { ImportExecutionCypressCommand } from "../util/commands/xray/import-execution-cypress-command";
+import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
 import { addUploadCommands } from "./after-run";
 import { AssertCucumberConversionValidCommand } from "./commands/conversion/cucumber/assert-cucumber-conversion-valid-command";
 import { CombineCucumberMultipartCommand } from "./commands/conversion/cucumber/combine-cucumber-multipart-command";
@@ -649,6 +650,57 @@ describe.only(path.relative(process.cwd(), __filename), () => {
                 }).to.throw(
                     "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured"
                 );
+            });
+
+            it("adds connections from feature file imports to execution uploads", () => {
+                options.cucumber = {
+                    featureFileExtension: ".feature",
+                    preprocessor: {
+                        json: {
+                            enabled: true,
+                            output: "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
+                        },
+                    },
+                    downloadFeatures: false,
+                    uploadFeatures: true,
+                    prefixes: {},
+                };
+                const graph = new ExecutableGraph<Command>();
+                graph.place(
+                    new ImportFeatureCommand({
+                        filePath: path.relative(".", "cypress/e2e/outline.cy.feature"),
+                        xrayClient: clients.xrayClient,
+                    })
+                );
+                graph.place(
+                    new ImportFeatureCommand({
+                        filePath: path.relative(".", "cypress/e2e/spec.cy.feature"),
+                        xrayClient: clients.xrayClient,
+                    })
+                );
+                graph.place(
+                    new ImportFeatureCommand({
+                        filePath: path.relative(".", "cypress/e2e/nonexistent.cy.feature"),
+                        xrayClient: clients.xrayClient,
+                    })
+                );
+                addUploadCommands(cypressResult, ".", options, clients, graph);
+                // Vertices.
+                expect(graph.size("vertices")).to.eq(13);
+                const commands = [...graph.getVertices()];
+                const importFeatureCommand1 = commands[0];
+                const importFeatureCommand2 = commands[1];
+                const importFeatureCommand3 = commands[2];
+                const importCucumberExecutionCommand = commands[11];
+                // Edges.
+                expect(graph.size("edges")).to.eq(11);
+                expect([...graph.getSuccessors(importFeatureCommand1)]).to.contain(
+                    importCucumberExecutionCommand
+                );
+                expect([...graph.getSuccessors(importFeatureCommand2)]).to.deep.eq([
+                    importCucumberExecutionCommand,
+                ]);
+                expect([...graph.getSuccessors(importFeatureCommand3)]).to.be.empty;
             });
         });
     });
