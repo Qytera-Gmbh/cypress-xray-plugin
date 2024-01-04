@@ -1,6 +1,9 @@
-import { expect } from "chai";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import path from "path";
 import { Command } from "./command";
+
+chai.use(chaiAsPromised);
 
 describe(path.relative(process.cwd(), __filename), () => {
     describe(Command.name, () => {
@@ -30,6 +33,18 @@ describe(path.relative(process.cwd(), __filename), () => {
             const resultPromise = sum.compute();
             await Promise.all([sum.compute(), a.compute(), b.compute()]);
             expect(await resultPromise).to.eq(100);
+        });
+
+        it("returns the failure reason", async () => {
+            const error = new Error("Failure 123");
+            class FailingCommand extends Command<number, void> {
+                protected computeResult(): Promise<number> {
+                    throw error;
+                }
+            }
+            const command = new FailingCommand();
+            await expect(command.compute()).to.eventually.be.rejectedWith("Failure 123");
+            expect(command.getFailureOrSkipReason()).to.eq(error);
         });
     });
 });
