@@ -28,7 +28,10 @@ import { addUploadCommands } from "./after-run";
 import { AssertCucumberConversionValidCommand } from "./commands/conversion/cucumber/assert-cucumber-conversion-valid-command";
 import { CombineCucumberMultipartCommand } from "./commands/conversion/cucumber/combine-cucumber-multipart-command";
 import { ConvertCucumberFeaturesCommand } from "./commands/conversion/cucumber/convert-cucumber-features-command";
-import { ConvertCucumberInfoServerCommand } from "./commands/conversion/cucumber/convert-cucumber-info-command";
+import {
+    ConvertCucumberInfoCloudCommand,
+    ConvertCucumberInfoServerCommand,
+} from "./commands/conversion/cucumber/convert-cucumber-info-command";
 import { AssertCypressConversionValidCommand } from "./commands/conversion/cypress/assert-cypress-conversion-valid-command";
 import { CombineCypressJsonCommand } from "./commands/conversion/cypress/combine-cypress-xray-command";
 import { ConvertCypressInfoCommand } from "./commands/conversion/cypress/convert-cypress-info-command";
@@ -38,7 +41,7 @@ import { ExtractVideoFilesCommand } from "./commands/extract-video-files-command
 import { PrintUploadSuccessCommand } from "./commands/print-upload-success-command";
 import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issue-key-command";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe.only(path.relative(process.cwd(), __filename), () => {
     let clients: ClientCombination;
     let options: InternalCypressXrayPluginOptions;
     beforeEach(async () => {
@@ -104,27 +107,28 @@ describe(path.relative(process.cwd(), __filename), () => {
                     printUploadSuccessCommand,
                 ] = [...graph.getVertices()];
                 assertIsInstanceOf(resultsCommand, ConstantCommand);
-                expect(resultsCommand.getValue()).to.deep.eq(result);
                 assertIsInstanceOf(convertCypressTestsCommand, ConvertCypressTestsCommand);
-                expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
-                    ...options,
-                    useCloudStatusFallback: false,
-                });
                 assertIsInstanceOf(convertCypressInfoCommand, ConvertCypressInfoCommand);
-                expect(convertCypressInfoCommand.getParameters()).to.deep.eq(options);
                 assertIsInstanceOf(combineCypressJsonCommand, CombineCypressJsonCommand);
-                expect(combineCypressJsonCommand.getParameters()).to.deep.eq({
-                    testExecutionIssueKey: undefined,
-                });
                 assertIsInstanceOf(
                     assertCypressConversionValidCommand,
                     AssertCypressConversionValidCommand
                 );
                 assertIsInstanceOf(importExecutionCypressCommand, ImportExecutionCypressCommand);
+                assertIsInstanceOf(printUploadSuccessCommand, PrintUploadSuccessCommand);
+                // Vertex data.
+                expect(resultsCommand.getValue()).to.deep.eq(result);
+                expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
+                    ...options,
+                    useCloudStatusFallback: false,
+                });
+                expect(convertCypressInfoCommand.getParameters()).to.deep.eq(options);
+                expect(combineCypressJsonCommand.getParameters()).to.deep.eq({
+                    testExecutionIssueKey: undefined,
+                });
                 expect(importExecutionCypressCommand.getParameters()).to.deep.eq({
                     xrayClient: clients.xrayClient,
                 });
-                assertIsInstanceOf(printUploadSuccessCommand, PrintUploadSuccessCommand);
                 expect(printUploadSuccessCommand.getParameters()).to.deep.eq({
                     url: "https://example.org",
                 });
@@ -169,10 +173,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                 // Vertices.
                 const commands = [...graph.getVertices()];
                 const importExecutionCypressCommand = commands[5];
-                const verifyIssueKeyCommand = commands[6];
+                const verifyExecutionIssueKeyCommand = commands[6];
                 const printUploadSuccessCommand = commands[7];
-                assertIsInstanceOf(verifyIssueKeyCommand, VerifyExecutionIssueKeyCommand);
-                expect(verifyIssueKeyCommand.getParameters()).to.deep.eq({
+                assertIsInstanceOf(verifyExecutionIssueKeyCommand, VerifyExecutionIssueKeyCommand);
+                // Vertex data.
+                expect(verifyExecutionIssueKeyCommand.getParameters()).to.deep.eq({
                     testExecutionIssueKey: "CYP-415",
                     testExecutionIssueType: "Test Run",
                     importType: "cypress",
@@ -181,7 +186,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 // Edges.
                 expect(graph.size("edges")).to.eq(9);
                 expect([...graph.getSuccessors(importExecutionCypressCommand)]).to.deep.eq([
-                    verifyIssueKeyCommand,
+                    verifyExecutionIssueKeyCommand,
                     printUploadSuccessCommand,
                 ]);
             });
@@ -199,6 +204,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const attachVideosCommand = commands[8];
                 assertIsInstanceOf(extractVideoFilesCommand, ExtractVideoFilesCommand);
                 assertIsInstanceOf(attachVideosCommand, AttachFilesCommand);
+                // Vertex data.
                 expect(attachVideosCommand.getParameters()).to.deep.eq({
                     jiraClient: clients.jiraClient,
                 });
@@ -244,87 +250,237 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ) as CucumberMultipartFeature[];
             });
 
-            it("adds commands necessary for cucumber results upload", () => {
-                const graph = new ExecutableGraph<Command>();
-                addUploadCommands(cypressResult, ".", options, clients, graph);
-                // Vertices.
-                // expect(graph.size("vertices")).to.eq(10);
-                const [
-                    cypressResultsCommand,
-                    cucumberResultsCommand,
-                    fetchIssueTypesCommand,
-                    extractExecutionIssueTypeCommand,
-                    convertCucumberInfoCommand,
-                    convertCucumberFeaturesCommand,
-                    combineCucumberMultipartCommand,
-                    assertConversionValidCommand,
-                    importCucumberExecutionCommand,
-                    printSuccessCommand,
-                ] = [...graph.getVertices()];
-                assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
-                expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
-                assertIsInstanceOf(cucumberResultsCommand, ConstantCommand);
-                expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
-                assertIsInstanceOf(fetchIssueTypesCommand, FetchIssueTypesCommand);
-                expect(fetchIssueTypesCommand.getParameters()).to.deep.eq({
-                    jiraClient: clients.jiraClient,
+            describe("server", () => {
+                it("adds commands necessary for cucumber results upload", () => {
+                    const graph = new ExecutableGraph<Command>();
+                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    // Vertices.
+                    expect(graph.size("vertices")).to.eq(10);
+                    const [
+                        cypressResultsCommand,
+                        cucumberResultsCommand,
+                        fetchIssueTypesCommand,
+                        extractExecutionIssueTypeCommand,
+                        convertCucumberInfoCommand,
+                        convertCucumberFeaturesCommand,
+                        combineCucumberMultipartCommand,
+                        assertConversionValidCommand,
+                        importCucumberExecutionCommand,
+                        printSuccessCommand,
+                    ] = [...graph.getVertices()];
+                    assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
+                    assertIsInstanceOf(cucumberResultsCommand, ConstantCommand);
+                    assertIsInstanceOf(fetchIssueTypesCommand, FetchIssueTypesCommand);
+                    assertIsInstanceOf(
+                        extractExecutionIssueTypeCommand,
+                        ExtractExecutionIssueTypeCommand
+                    );
+                    assertIsInstanceOf(
+                        convertCucumberInfoCommand,
+                        ConvertCucumberInfoServerCommand
+                    );
+                    assertIsInstanceOf(
+                        convertCucumberFeaturesCommand,
+                        ConvertCucumberFeaturesCommand
+                    );
+                    assertIsInstanceOf(
+                        combineCucumberMultipartCommand,
+                        CombineCucumberMultipartCommand
+                    );
+                    assertIsInstanceOf(
+                        assertConversionValidCommand,
+                        AssertCucumberConversionValidCommand
+                    );
+                    assertIsInstanceOf(
+                        importCucumberExecutionCommand,
+                        ImportExecutionCucumberCommand
+                    );
+                    assertIsInstanceOf(printSuccessCommand, PrintUploadSuccessCommand);
+                    // Vertex data.
+                    expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
+                    expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
+                    expect(fetchIssueTypesCommand.getParameters()).to.deep.eq({
+                        jiraClient: clients.jiraClient,
+                    });
+                    expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
+                        projectKey: "CYP",
+                        testExecutionIssueType: "Test Execution",
+                        displayCloudHelp: false,
+                    });
+                    expect(convertCucumberInfoCommand.getParameters()).to.deep.eq(options);
+                    expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
+                        ...options,
+                        useCloudTags: false,
+                    });
+                    expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
+                        xrayClient: clients.xrayClient,
+                    });
+                    // Edges.
+                    expect(graph.size("edges")).to.eq(9);
+                    expect([...graph.getSuccessors(cypressResultsCommand)]).to.contain(
+                        convertCucumberInfoCommand
+                    );
+                    expect([...graph.getSuccessors(cucumberResultsCommand)]).to.deep.eq([
+                        convertCucumberFeaturesCommand,
+                    ]);
+                    expect([...graph.getSuccessors(fetchIssueTypesCommand)]).to.deep.eq([
+                        extractExecutionIssueTypeCommand,
+                    ]);
+                    expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
+                        convertCucumberInfoCommand,
+                    ]);
+                    expect([...graph.getSuccessors(convertCucumberInfoCommand)]).to.deep.eq([
+                        combineCucumberMultipartCommand,
+                    ]);
+                    expect([...graph.getSuccessors(convertCucumberFeaturesCommand)]).to.deep.eq([
+                        combineCucumberMultipartCommand,
+                    ]);
+                    expect([...graph.getSuccessors(combineCucumberMultipartCommand)]).to.deep.eq([
+                        assertConversionValidCommand,
+                        importCucumberExecutionCommand,
+                    ]);
+                    expect([...graph.getSuccessors(importCucumberExecutionCommand)]).to.deep.eq([
+                        printSuccessCommand,
+                    ]);
                 });
-                assertIsInstanceOf(
-                    extractExecutionIssueTypeCommand,
-                    ExtractExecutionIssueTypeCommand
-                );
-                expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
-                    projectKey: "CYP",
-                    testExecutionIssueType: "Test Execution",
-                    displayCloudHelp: false,
+            });
+
+            describe("cloud", () => {
+                beforeEach(() => {
+                    clients.kind = "cloud";
                 });
-                assertIsInstanceOf(convertCucumberInfoCommand, ConvertCucumberInfoServerCommand);
-                expect(convertCucumberInfoCommand.getParameters()).to.deep.eq(options);
-                assertIsInstanceOf(convertCucumberFeaturesCommand, ConvertCucumberFeaturesCommand);
-                expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
-                    ...options,
-                    useCloudTags: false,
+
+                it("adds commands necessary for cucumber results upload", () => {
+                    const graph = new ExecutableGraph<Command>();
+                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    // Vertices.
+                    expect(graph.size("vertices")).to.eq(10);
+                    const commands = [...graph.getVertices()];
+                    const extractExecutionIssueTypeCommand = commands[3];
+                    const convertCucumberInfoCommand = commands[4];
+                    const convertCucumberFeaturesCommand = commands[5];
+                    expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
+                        projectKey: "CYP",
+                        testExecutionIssueType: "Test Execution",
+                        displayCloudHelp: true,
+                    });
+                    assertIsInstanceOf(convertCucumberInfoCommand, ConvertCucumberInfoCloudCommand);
+                    expect(convertCucumberInfoCommand.getParameters()).to.deep.eq(options);
+                    expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
+                        ...options,
+                        useCloudTags: true,
+                    });
                 });
-                assertIsInstanceOf(
-                    combineCucumberMultipartCommand,
-                    CombineCucumberMultipartCommand
-                );
-                assertIsInstanceOf(
-                    assertConversionValidCommand,
-                    AssertCucumberConversionValidCommand
-                );
-                assertIsInstanceOf(importCucumberExecutionCommand, ImportExecutionCucumberCommand);
-                expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
-                    xrayClient: clients.xrayClient,
+
+                it("uses configured test execution issue data", () => {
+                    const graph = new ExecutableGraph<Command>();
+                    options.jira.testExecutionIssueKey = "CYP-42";
+                    options.jira.testExecutionIssueType = "Test Run";
+                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    // Vertices.
+                    expect(graph.size("vertices")).to.eq(12);
+                    const [
+                        cypressResultsCommand,
+                        cucumberResultsCommand,
+                        testExecutionIssueKeyCommand,
+                        fetchIssueTypesCommand,
+                        extractExecutionIssueTypeCommand,
+                        convertCucumberInfoCommand,
+                        convertCucumberFeaturesCommand,
+                        combineCucumberMultipartCommand,
+                        assertConversionValidCommand,
+                        importCucumberExecutionCommand,
+                        verifyExecutionIssueKeyCommand,
+                        printSuccessCommand,
+                    ] = [...graph.getVertices()];
+                    assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
+                    assertIsInstanceOf(cucumberResultsCommand, ConstantCommand);
+                    assertIsInstanceOf(testExecutionIssueKeyCommand, ConstantCommand);
+                    assertIsInstanceOf(fetchIssueTypesCommand, FetchIssueTypesCommand);
+                    assertIsInstanceOf(
+                        extractExecutionIssueTypeCommand,
+                        ExtractExecutionIssueTypeCommand
+                    );
+                    assertIsInstanceOf(convertCucumberInfoCommand, ConvertCucumberInfoCloudCommand);
+                    assertIsInstanceOf(
+                        convertCucumberFeaturesCommand,
+                        ConvertCucumberFeaturesCommand
+                    );
+                    assertIsInstanceOf(
+                        combineCucumberMultipartCommand,
+                        CombineCucumberMultipartCommand
+                    );
+                    assertIsInstanceOf(
+                        assertConversionValidCommand,
+                        AssertCucumberConversionValidCommand
+                    );
+                    assertIsInstanceOf(
+                        importCucumberExecutionCommand,
+                        ImportExecutionCucumberCommand
+                    );
+                    assertIsInstanceOf(
+                        verifyExecutionIssueKeyCommand,
+                        VerifyExecutionIssueKeyCommand
+                    );
+                    assertIsInstanceOf(printSuccessCommand, PrintUploadSuccessCommand);
+                    // Vertex data.
+                    expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
+                    expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
+                    expect(testExecutionIssueKeyCommand.getValue()).to.deep.eq("CYP-42");
+                    expect(fetchIssueTypesCommand.getParameters()).to.deep.eq({
+                        jiraClient: clients.jiraClient,
+                    });
+                    expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
+                        projectKey: "CYP",
+                        testExecutionIssueType: "Test Run",
+                        displayCloudHelp: true,
+                    });
+                    expect(convertCucumberInfoCommand.getParameters()).to.deep.eq(options);
+                    expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
+                        ...options,
+                        useCloudTags: true,
+                    });
+                    expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
+                        xrayClient: clients.xrayClient,
+                    });
+                    expect(verifyExecutionIssueKeyCommand.getParameters()).to.deep.eq({
+                        testExecutionIssueKey: "CYP-42",
+                        testExecutionIssueType: "Test Run",
+                        importType: "cucumber",
+                        displayCloudHelp: true,
+                    });
+                    // Edges.
+                    expect(graph.size("edges")).to.eq(11);
+                    expect([...graph.getSuccessors(cypressResultsCommand)]).to.contain(
+                        convertCucumberInfoCommand
+                    );
+                    expect([...graph.getSuccessors(cucumberResultsCommand)]).to.deep.eq([
+                        convertCucumberFeaturesCommand,
+                    ]);
+                    expect([...graph.getSuccessors(testExecutionIssueKeyCommand)]).to.deep.eq([
+                        convertCucumberFeaturesCommand,
+                    ]);
+                    expect([...graph.getSuccessors(fetchIssueTypesCommand)]).to.deep.eq([
+                        extractExecutionIssueTypeCommand,
+                    ]);
+                    expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
+                        convertCucumberInfoCommand,
+                    ]);
+                    expect([...graph.getSuccessors(convertCucumberInfoCommand)]).to.deep.eq([
+                        combineCucumberMultipartCommand,
+                    ]);
+                    expect([...graph.getSuccessors(convertCucumberFeaturesCommand)]).to.deep.eq([
+                        combineCucumberMultipartCommand,
+                    ]);
+                    expect([...graph.getSuccessors(combineCucumberMultipartCommand)]).to.deep.eq([
+                        assertConversionValidCommand,
+                        importCucumberExecutionCommand,
+                    ]);
+                    expect([...graph.getSuccessors(importCucumberExecutionCommand)]).to.deep.eq([
+                        verifyExecutionIssueKeyCommand,
+                        printSuccessCommand,
+                    ]);
                 });
-                assertIsInstanceOf(printSuccessCommand, PrintUploadSuccessCommand);
-                // Edges.
-                expect(graph.size("edges")).to.eq(9);
-                expect([...graph.getSuccessors(cypressResultsCommand)]).to.contain(
-                    convertCucumberInfoCommand
-                );
-                expect([...graph.getSuccessors(cucumberResultsCommand)]).to.deep.eq([
-                    convertCucumberFeaturesCommand,
-                ]);
-                expect([...graph.getSuccessors(fetchIssueTypesCommand)]).to.deep.eq([
-                    extractExecutionIssueTypeCommand,
-                ]);
-                expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
-                    convertCucumberInfoCommand,
-                ]);
-                expect([...graph.getSuccessors(convertCucumberInfoCommand)]).to.deep.eq([
-                    combineCucumberMultipartCommand,
-                ]);
-                expect([...graph.getSuccessors(convertCucumberFeaturesCommand)]).to.deep.eq([
-                    combineCucumberMultipartCommand,
-                ]);
-                expect([...graph.getSuccessors(combineCucumberMultipartCommand)]).to.deep.eq([
-                    assertConversionValidCommand,
-                    importCucumberExecutionCommand,
-                ]);
-                expect([...graph.getSuccessors(importCucumberExecutionCommand)]).to.deep.eq([
-                    printSuccessCommand,
-                ]);
             });
 
             it("throws if the cucumber report was not configured", () => {
