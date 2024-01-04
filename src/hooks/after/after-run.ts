@@ -41,14 +41,29 @@ export function addUploadCommands(
     clients: ClientCombination,
     graph: ExecutableGraph<Command>
 ): void {
-    let importCypressExecutionCommand: ImportExecutionCypressCommand | null = null;
-    let importCucumberExecutionCommand: ImportExecutionCucumberCommand | null = null;
+    const containsCypressTests = containsCypressTest(
+        runResult,
+        options.cucumber?.featureFileExtension
+    );
+    const containsCucumberTests = containsCucumberTest(
+        runResult,
+        options.cucumber?.featureFileExtension
+    );
+    if (!containsCypressTests && !containsCucumberTests) {
+        LOG.message(
+            Level.WARNING,
+            "No test execution results to upload, skipping results upload preparations"
+        );
+        return;
+    }
     const cypressResultsCommand = graph.findOrDefault(
         (command): command is ConstantCommand<CypressRunResultType> =>
             command instanceof ConstantCommand && command.getValue() === runResult,
         () => graph.place(new ConstantCommand(runResult))
     );
-    if (containsCypressTest(runResult, options.cucumber?.featureFileExtension)) {
+    let importCypressExecutionCommand: ImportExecutionCypressCommand | null = null;
+    let importCucumberExecutionCommand: ImportExecutionCucumberCommand | null = null;
+    if (containsCypressTests) {
         importCypressExecutionCommand = createImportExecutionCypressCommand(
             cypressResultsCommand,
             options,
@@ -56,8 +71,8 @@ export function addUploadCommands(
             graph
         );
     }
-    if (containsCucumberTest(runResult, options.cucumber?.featureFileExtension)) {
-        if (!options.cucumber.preprocessor?.json.output) {
+    if (containsCucumberTests) {
+        if (!options.cucumber?.preprocessor?.json.output) {
             throw new Error(
                 "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured"
             );
@@ -103,31 +118,34 @@ export function addUploadCommands(
         }
     }
     // Retrieve the test execution issue key for further attachment uploads.
-    let getExecutionIssueKeyCommand: Command<string>;
+    let compareExecutionIssueKeysCommand: Command<string>;
     if (importCypressExecutionCommand && importCucumberExecutionCommand) {
-        getExecutionIssueKeyCommand = graph.place(
+        compareExecutionIssueKeysCommand = graph.place(
             new CompareCypressCucumberKeysCommand(
                 importCypressExecutionCommand,
                 importCucumberExecutionCommand
             )
         );
-        graph.connect(importCypressExecutionCommand, getExecutionIssueKeyCommand);
-        graph.connect(importCucumberExecutionCommand, getExecutionIssueKeyCommand);
+        graph.connect(importCypressExecutionCommand, compareExecutionIssueKeysCommand);
+        graph.connect(importCucumberExecutionCommand, compareExecutionIssueKeysCommand);
     } else if (importCypressExecutionCommand) {
-        getExecutionIssueKeyCommand = importCypressExecutionCommand;
-    } else if (importCucumberExecutionCommand) {
-        getExecutionIssueKeyCommand = importCucumberExecutionCommand;
+        compareExecutionIssueKeysCommand = importCypressExecutionCommand;
     } else {
-        LOG.message(
-            Level.WARNING,
-            "Execution results import was skipped. Skipping remaining tasks"
-        );
-        return;
+        // Cast is valid because we know for sure that the results either contain Cypress results,
+        // Cucumber results or both. The remaining case cannot occur because we'd have returned at
+        // the very beginning.
+        compareExecutionIssueKeysCommand =
+            importCucumberExecutionCommand as ImportExecutionCucumberCommand;
     }
-    const printSuccessCommand = graph.place(
-        new PrintUploadSuccessCommand({ url: options.jira.url }, getExecutionIssueKeyCommand)
+    const printUploadSuccessCommand = graph.place(
+        new PrintUploadSuccessCommand(
+            {
+                url: options.jira.url,
+            },
+            compareExecutionIssueKeysCommand
+        )
     );
-    graph.connect(getExecutionIssueKeyCommand, printSuccessCommand);
+    graph.connect(compareExecutionIssueKeysCommand, printUploadSuccessCommand);
     if (options.jira.attachVideos) {
         const extractVideoFilesCommand = graph.place(
             new ExtractVideoFilesCommand(cypressResultsCommand)
@@ -137,11 +155,11 @@ export function addUploadCommands(
             new AttachFilesCommand(
                 { jiraClient: clients.jiraClient },
                 extractVideoFilesCommand,
-                getExecutionIssueKeyCommand
+                compareExecutionIssueKeysCommand
             )
         );
         graph.connect(extractVideoFilesCommand, attachVideosCommand);
-        graph.connect(getExecutionIssueKeyCommand, attachVideosCommand);
+        graph.connect(compareExecutionIssueKeysCommand, attachVideosCommand);
     }
 }
 

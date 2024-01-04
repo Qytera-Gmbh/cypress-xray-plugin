@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
 import path from "path";
-import { getMockedJiraClient, getMockedXrayClient } from "../../../test/mocks";
+import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks";
 import { assertIsInstanceOf } from "../../../test/util";
 import {
     initCucumberOptions,
@@ -18,6 +18,7 @@ import {
 } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { ExecutableGraph } from "../../util/graph/executable";
+import { Level } from "../../util/logging";
 import { Command } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";
 import { AttachFilesCommand } from "../util/commands/jira/attach-files-command";
@@ -28,6 +29,7 @@ import { ImportExecutionCucumberCommand } from "../util/commands/xray/import-exe
 import { ImportExecutionCypressCommand } from "../util/commands/xray/import-execution-cypress-command";
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
 import { addUploadCommands } from "./after-run";
+import { CompareCypressCucumberKeysCommand } from "./commands/compare-cypress-cucumber-keys-command";
 import { AssertCucumberConversionValidCommand } from "./commands/conversion/cucumber/assert-cucumber-conversion-valid-command";
 import { CombineCucumberMultipartCommand } from "./commands/conversion/cucumber/combine-cucumber-multipart-command";
 import { ConvertCucumberFeaturesCommand } from "./commands/conversion/cucumber/convert-cucumber-features-command";
@@ -44,7 +46,7 @@ import { ExtractVideoFilesCommand } from "./commands/extract-video-files-command
 import { PrintUploadSuccessCommand } from "./commands/print-upload-success-command";
 import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issue-key-command";
 
-describe.only(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), __filename), () => {
     let clients: ClientCombination;
     let options: InternalCypressXrayPluginOptions;
     beforeEach(async () => {
@@ -269,7 +271,7 @@ describe.only(path.relative(process.cwd(), __filename), () => {
                         combineCucumberMultipartCommand,
                         assertConversionValidCommand,
                         importCucumberExecutionCommand,
-                        printSuccessCommand,
+                        printUploadSuccessCommand,
                     ] = [...graph.getVertices()];
                     assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
                     assertIsInstanceOf(cucumberResultsCommand, ConstantCommand);
@@ -298,7 +300,7 @@ describe.only(path.relative(process.cwd(), __filename), () => {
                         importCucumberExecutionCommand,
                         ImportExecutionCucumberCommand
                     );
-                    assertIsInstanceOf(printSuccessCommand, PrintUploadSuccessCommand);
+                    assertIsInstanceOf(printUploadSuccessCommand, PrintUploadSuccessCommand);
                     // Vertex data.
                     expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
                     expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
@@ -343,7 +345,7 @@ describe.only(path.relative(process.cwd(), __filename), () => {
                         importCucumberExecutionCommand,
                     ]);
                     expect([...graph.getSuccessors(importCucumberExecutionCommand)]).to.deep.eq([
-                        printSuccessCommand,
+                        printUploadSuccessCommand,
                     ]);
                 });
 
@@ -549,7 +551,7 @@ describe.only(path.relative(process.cwd(), __filename), () => {
                         assertConversionValidCommand,
                         importCucumberExecutionCommand,
                         verifyExecutionIssueKeyCommand,
-                        printSuccessCommand,
+                        printUploadSuccessCommand,
                     ] = [...graph.getVertices()];
                     assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
                     assertIsInstanceOf(cucumberResultsCommand, ConstantCommand);
@@ -580,7 +582,7 @@ describe.only(path.relative(process.cwd(), __filename), () => {
                         verifyExecutionIssueKeyCommand,
                         VerifyExecutionIssueKeyCommand
                     );
-                    assertIsInstanceOf(printSuccessCommand, PrintUploadSuccessCommand);
+                    assertIsInstanceOf(printUploadSuccessCommand, PrintUploadSuccessCommand);
                     // Vertex data.
                     expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
                     expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
@@ -636,7 +638,7 @@ describe.only(path.relative(process.cwd(), __filename), () => {
                     ]);
                     expect([...graph.getSuccessors(importCucumberExecutionCommand)]).to.deep.eq([
                         verifyExecutionIssueKeyCommand,
-                        printSuccessCommand,
+                        printUploadSuccessCommand,
                     ]);
                 });
             });
@@ -649,6 +651,19 @@ describe.only(path.relative(process.cwd(), __filename), () => {
                     addUploadCommands(cypressResult, ".", options, clients, graph);
                 }).to.throw(
                     "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured"
+                );
+            });
+
+            it("does not add any commands if neither cypress nor cucumber results exist", () => {
+                const logger = getMockedLogger();
+                cypressResult.runs = [];
+                const graph = new ExecutableGraph<Command>();
+                addUploadCommands(cypressResult, ".", options, clients, graph);
+                expect(graph.size("vertices")).to.eq(0);
+                expect(graph.size("edges")).to.eq(0);
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.WARNING,
+                    "No test execution results to upload, skipping results upload preparations"
                 );
             });
 
@@ -701,6 +716,153 @@ describe.only(path.relative(process.cwd(), __filename), () => {
                     importCucumberExecutionCommand,
                 ]);
                 expect([...graph.getSuccessors(importFeatureCommand3)]).to.be.empty;
+            });
+        });
+
+        describe("mixed", () => {
+            let cypressResult: CypressRunResultType;
+
+            beforeEach(() => {
+                cypressResult = JSON.parse(
+                    readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
+                ) as CypressRunResultType;
+                options.cucumber = {
+                    featureFileExtension: ".feature",
+                    preprocessor: {
+                        json: {
+                            enabled: true,
+                            output: "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
+                        },
+                    },
+                    downloadFeatures: false,
+                    uploadFeatures: false,
+                    prefixes: {},
+                };
+            });
+
+            it("adds commands necessary for cypress results upload", () => {
+                const graph = new ExecutableGraph<Command>();
+                addUploadCommands(cypressResult, ".", options, clients, graph);
+                // Vertices.
+                expect(graph.size("vertices")).to.eq(16);
+                const [
+                    cypressResultsCommand,
+                    convertCypressTestsCommand,
+                    convertCypressInfoCommand,
+                    combineCypressJsonCommand,
+                    assertCypressConversionValidCommand,
+                    importExecutionCypressCommand,
+                    cucumberResultsCommand,
+                    fetchIssueTypesCommand,
+                    extractExecutionIssueTypeCommand,
+                    convertCucumberInfoCommand,
+                    convertCucumberFeaturesCommand,
+                    combineCucumberMultipartCommand,
+                    assertConversionValidCommand,
+                    importCucumberExecutionCommand,
+                    compareExecutionIssueKeysCommand,
+                    printUploadSuccessCommand,
+                ] = [...graph.getVertices()];
+                assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
+                assertIsInstanceOf(convertCypressTestsCommand, ConvertCypressTestsCommand);
+                assertIsInstanceOf(convertCypressInfoCommand, ConvertCypressInfoCommand);
+                assertIsInstanceOf(combineCypressJsonCommand, CombineCypressJsonCommand);
+                assertIsInstanceOf(
+                    assertCypressConversionValidCommand,
+                    AssertCypressConversionValidCommand
+                );
+                assertIsInstanceOf(importExecutionCypressCommand, ImportExecutionCypressCommand);
+                assertIsInstanceOf(printUploadSuccessCommand, PrintUploadSuccessCommand);
+                assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
+                assertIsInstanceOf(cucumberResultsCommand, ConstantCommand);
+                assertIsInstanceOf(fetchIssueTypesCommand, FetchIssueTypesCommand);
+                assertIsInstanceOf(
+                    extractExecutionIssueTypeCommand,
+                    ExtractExecutionIssueTypeCommand
+                );
+                assertIsInstanceOf(convertCucumberInfoCommand, ConvertCucumberInfoServerCommand);
+                assertIsInstanceOf(convertCucumberFeaturesCommand, ConvertCucumberFeaturesCommand);
+                assertIsInstanceOf(
+                    combineCucumberMultipartCommand,
+                    CombineCucumberMultipartCommand
+                );
+                assertIsInstanceOf(
+                    assertConversionValidCommand,
+                    AssertCucumberConversionValidCommand
+                );
+                assertIsInstanceOf(importCucumberExecutionCommand, ImportExecutionCucumberCommand);
+                assertIsInstanceOf(
+                    compareExecutionIssueKeysCommand,
+                    CompareCypressCucumberKeysCommand
+                );
+                assertIsInstanceOf(printUploadSuccessCommand, PrintUploadSuccessCommand);
+                // Vertex data.
+                expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
+                expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
+                    ...options,
+                    useCloudStatusFallback: false,
+                });
+                expect(convertCypressInfoCommand.getParameters()).to.deep.eq(options);
+                expect(combineCypressJsonCommand.getParameters()).to.deep.eq({
+                    testExecutionIssueKey: undefined,
+                });
+                expect(importExecutionCypressCommand.getParameters()).to.deep.eq({
+                    xrayClient: clients.xrayClient,
+                });
+                expect(printUploadSuccessCommand.getParameters()).to.deep.eq({
+                    url: "https://example.org",
+                });
+                // Edges.
+                expect(graph.size("edges")).to.eq(19);
+                // Cypress.
+                expect([...graph.getSuccessors(cypressResultsCommand)]).to.deep.eq([
+                    convertCypressTestsCommand,
+                    convertCypressInfoCommand,
+                    convertCucumberInfoCommand,
+                ]);
+                expect([...graph.getSuccessors(convertCypressTestsCommand)]).to.deep.eq([
+                    combineCypressJsonCommand,
+                ]);
+                expect([...graph.getSuccessors(convertCypressInfoCommand)]).to.deep.eq([
+                    combineCypressJsonCommand,
+                ]);
+                expect([...graph.getSuccessors(combineCypressJsonCommand)]).to.deep.eq([
+                    assertCypressConversionValidCommand,
+                    importExecutionCypressCommand,
+                ]);
+                expect([...graph.getSuccessors(assertCypressConversionValidCommand)]).to.deep.eq([
+                    importExecutionCypressCommand,
+                ]);
+                expect([...graph.getSuccessors(importExecutionCypressCommand)]).to.deep.eq([
+                    convertCucumberFeaturesCommand,
+                    compareExecutionIssueKeysCommand,
+                ]);
+                // Cucumber.
+                expect([...graph.getSuccessors(cucumberResultsCommand)]).to.deep.eq([
+                    convertCucumberFeaturesCommand,
+                ]);
+                expect([...graph.getSuccessors(fetchIssueTypesCommand)]).to.deep.eq([
+                    extractExecutionIssueTypeCommand,
+                ]);
+                expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
+                    convertCucumberInfoCommand,
+                ]);
+                expect([...graph.getSuccessors(convertCucumberInfoCommand)]).to.deep.eq([
+                    combineCucumberMultipartCommand,
+                ]);
+                expect([...graph.getSuccessors(convertCucumberFeaturesCommand)]).to.deep.eq([
+                    combineCucumberMultipartCommand,
+                ]);
+                expect([...graph.getSuccessors(combineCucumberMultipartCommand)]).to.deep.eq([
+                    assertConversionValidCommand,
+                    importCucumberExecutionCommand,
+                ]);
+                expect([...graph.getSuccessors(importCucumberExecutionCommand)]).to.deep.eq([
+                    compareExecutionIssueKeysCommand,
+                ]);
+                expect([...graph.getSuccessors(compareExecutionIssueKeysCommand)]).to.deep.eq([
+                    printUploadSuccessCommand,
+                ]);
             });
         });
     });
