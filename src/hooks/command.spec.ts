@@ -2,7 +2,8 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import EventEmitter from "node:events";
 import path from "path";
-import { Command, CommandState, SkippedError } from "./command";
+import { SkippedError } from "../util/errors";
+import { Command, CommandState } from "./command";
 
 chai.use(chaiAsPromised);
 

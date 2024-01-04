@@ -1,7 +1,8 @@
 import { JiraClient } from "../../../../client/jira/jira-client";
 import { Attachment } from "../../../../types/jira/responses/attachment";
+import { SkippedError } from "../../../../util/errors";
 import { LOG, Level } from "../../../../util/logging";
-import { Command, Computable, SkippedError } from "../../../command";
+import { Command, Computable } from "../../../command";
 
 interface Parameters {
     jiraClient: JiraClient;

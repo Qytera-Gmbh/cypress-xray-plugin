@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { getMockedLogger } from "../../../test/mocks";
-import { Computable, SkippedError } from "../../hooks/command";
+import { Computable } from "../../hooks/command";
+import { SkippedError } from "../errors";
 import { Level } from "../logging";
 import { ExecutableGraph } from "./executable";
 

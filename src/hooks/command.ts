@@ -1,4 +1,5 @@
 import { EventEmitter } from "node:events";
+import { isSkippedError } from "../util/errors";
 
 /**
  * Models an entity which can compute a result.
@@ -39,25 +40,13 @@ export enum CommandState {
 }
 
 /**
- * An error which is thrown when a command is skipped.
- */
-export class SkippedError extends Error {}
-
-/**
- * Assesses whether the given error is an instance of a {@link SkippedError | `SkippedError`}.
- *
- * @param error - the error
- * @returns `true` if the error is a {@link SkippedError | `SkippedError`}, otherwise `false`
- */
-export function isSkippedError(error: unknown): error is SkippedError {
-    return error instanceof SkippedError;
-}
-
-/**
  * Models a generic command. The command only starts doing something when
  * {@link compute | `compute`} is triggered.
  */
 export abstract class Command<R = unknown, P = unknown> implements Computable<R> {
+    /**
+     * The command's parameters.
+     */
     protected readonly parameters: P;
     private readonly result: Promise<R>;
     private readonly executeEmitter: EventEmitter = new EventEmitter();
@@ -66,6 +55,8 @@ export abstract class Command<R = unknown, P = unknown> implements Computable<R>
 
     /**
      * Constructs a new command.
+     *
+     * @param parameters - the command parameters
      */
     constructor(parameters: P) {
         this.parameters = parameters;

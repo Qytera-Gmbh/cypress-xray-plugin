@@ -1,5 +1,5 @@
-import { Computable, isSkippedError } from "../../hooks/command";
-import { errorMessage } from "../errors";
+import { Computable } from "../../hooks/command";
+import { errorMessage, isSkippedError } from "../errors";
 import { LOG, Level } from "../logging";
 import { DirectedEdge, SimpleDirectedEdge, SimpleDirectedGraph } from "./graph";
 

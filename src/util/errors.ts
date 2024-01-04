@@ -30,6 +30,22 @@ export function isLoggedError(error: unknown): boolean {
     return error instanceof LoggedError;
 }
 
+/**
+ * An error which is thrown when a command is skipped.
+ */
+
+export class SkippedError extends Error {}
+/**
+ * Assesses whether the given error is an instance of a {@link SkippedError | `SkippedError`}.
+ *
+ * @param error - the error
+ * @returns `true` if the error is a {@link SkippedError | `SkippedError`}, otherwise `false`
+ */
+
+export function isSkippedError(error: unknown): error is SkippedError {
+    return error instanceof SkippedError;
+}
+
 // ============================================================================================== //
 // COLLECTION OF USEFUL ERRORS                                                                    //
 // ============================================================================================== //
