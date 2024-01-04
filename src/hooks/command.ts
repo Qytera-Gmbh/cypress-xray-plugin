@@ -70,24 +70,21 @@ export abstract class Command<R = unknown, P = unknown> implements Computable<R>
     constructor(parameters: P) {
         this.parameters = parameters;
         this.executeEmitter = new EventEmitter();
-        this.result = new Promise((resolve, reject) => {
-            this.executeEmitter.on("execute", () => {
-                this.computeResult()
-                    .then((result: R) => {
-                        this.state = CommandState.RESOLVED;
-                        resolve(result);
-                    })
-                    .catch((error: unknown) => {
-                        if (isSkippedError(error)) {
-                            this.state = CommandState.SKIPPED;
-                        } else {
-                            this.state = CommandState.REJECTED;
-                        }
-                        this.reason = error;
-                        reject(error);
-                    });
+        this.result = new Promise<void>((resolve) => this.executeEmitter.once("execute", resolve))
+            .then(this.computeResult.bind(this))
+            .then((result: R) => {
+                this.state = CommandState.RESOLVED;
+                return result;
+            })
+            .catch((error: unknown) => {
+                if (isSkippedError(error)) {
+                    this.state = CommandState.SKIPPED;
+                } else {
+                    this.state = CommandState.REJECTED;
+                }
+                this.reason = error;
+                throw error;
             });
-        });
     }
 
     /**
