@@ -1,5 +1,4 @@
 import axios, {
-    Axios,
     AxiosRequestConfig,
     AxiosResponse,
     InternalAxiosRequestConfig,
@@ -33,7 +32,7 @@ export interface RequestsOptions {
 
 export class AxiosRestClient {
     private httpAgent: Agent | undefined = undefined;
-    private axios: Axios | undefined = undefined;
+    private axios: typeof axios | undefined = undefined;
 
     private options: RequestsOptions | undefined = undefined;
 
@@ -83,7 +82,7 @@ export class AxiosRestClient {
         return this.httpAgent;
     }
 
-    private getAxios(): Axios {
+    private getAxios(): typeof axios {
         if (!this.options) {
             throw new Error("Requests module has not been initialized");
         }
@@ -103,6 +102,7 @@ export class AxiosRestClient {
                                 url: url,
                                 headers: request.headers,
                                 params: request.params as unknown,
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                                 body: request.data,
                             }),
                             filename
@@ -110,7 +110,7 @@ export class AxiosRestClient {
                         LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
                         return request;
                     },
-                    (error) => {
+                    (error: unknown) => {
                         const timestamp = Date.now();
                         let filename: string;
                         let data: unknown;
@@ -151,7 +151,7 @@ export class AxiosRestClient {
                         LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
                         return response;
                     },
-                    (error) => {
+                    (error: unknown) => {
                         const timestamp = Date.now();
                         let filename: string;
                         let data: unknown;

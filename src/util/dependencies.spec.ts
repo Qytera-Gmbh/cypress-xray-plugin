@@ -6,17 +6,16 @@ import * as dependencies from "./dependencies";
 chai.use(chaiAsPromised);
 
 describe("the optional dependency import", () => {
-    it("throws if a package is not installed 2", async () => {
+    it("throws if a package is not installed", async () => {
         await expect(
             dependencies.importOptionalDependency("nonexistent")
-        ).to.eventually.be.rejectedWith(/Cannot find module 'nonexistent'/);
+        ).to.eventually.be.rejectedWith(/Cannot find package 'nonexistent'/);
     });
 
     it("returns imported packages", async () => {
-        const members = await dependencies.importOptionalDependency("axios");
-        expect(members).to.haveOwnProperty("get");
-        expect(members).to.haveOwnProperty("post");
-        expect(members).to.haveOwnProperty("put");
-        expect(members).to.haveOwnProperty("delete");
+        const members = await dependencies.importOptionalDependency(
+            "@badeball/cypress-cucumber-preprocessor"
+        );
+        expect(members).to.have.property("resolvePreprocessorConfiguration");
     });
 });
