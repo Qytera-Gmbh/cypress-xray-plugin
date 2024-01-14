@@ -16,7 +16,7 @@ export interface Computable<R> {
 /**
  * Models the different states of a command.
  */
-export enum CommandState {
+export enum ComputableState {
     /**
      * The command has neither been told to compute, nor is it done computing.
      */
@@ -39,18 +39,35 @@ export enum CommandState {
     SKIPPED = "skipped",
 }
 
+export interface Stateful<S> {
+    /**
+     * Returns the state the object is currently in.
+     *
+     * @returns the state
+     */
+    getState(): S;
+    /**
+     * Sets the object's state to the new state.
+     *
+     * @param state - the new state
+     */
+    setState(state: S): void;
+}
+
 /**
  * Models a generic command. The command only starts doing something when
  * {@link compute | `compute`} is triggered.
  */
-export abstract class Command<R = unknown, P = unknown> implements Computable<R> {
+export abstract class Command<R = unknown, P = unknown>
+    implements Computable<R>, Stateful<ComputableState>
+{
     /**
      * The command's parameters.
      */
     protected readonly parameters: P;
     private readonly result: Promise<R>;
     private readonly executeEmitter: EventEmitter = new EventEmitter();
-    private state: CommandState = CommandState.INITIAL;
+    private state: ComputableState = ComputableState.INITIAL;
     private failureOrSkipReason: unknown = null;
 
     /**
@@ -63,14 +80,14 @@ export abstract class Command<R = unknown, P = unknown> implements Computable<R>
         this.result = new Promise<void>((resolve) => this.executeEmitter.once("execute", resolve))
             .then(this.computeResult.bind(this))
             .then((result: R) => {
-                this.state = CommandState.SUCCEEDED;
+                this.setState(ComputableState.SUCCEEDED);
                 return result;
             })
             .catch((error: unknown) => {
                 if (isSkippedError(error)) {
-                    this.state = CommandState.SKIPPED;
+                    this.setState(ComputableState.SKIPPED);
                 } else {
-                    this.state = CommandState.FAILED;
+                    this.setState(ComputableState.FAILED);
                 }
                 this.failureOrSkipReason = error;
                 throw error;
@@ -78,8 +95,8 @@ export abstract class Command<R = unknown, P = unknown> implements Computable<R>
     }
 
     public async compute(): Promise<R> {
-        if (this.state === CommandState.INITIAL) {
-            this.state = CommandState.PENDING;
+        if (this.state === ComputableState.INITIAL) {
+            this.state = ComputableState.PENDING;
             this.executeEmitter.emit("execute");
         }
         return await this.result;
@@ -94,25 +111,20 @@ export abstract class Command<R = unknown, P = unknown> implements Computable<R>
         return this.parameters;
     }
 
-    /**
-     * Returns the state the command is currently in.
-     *
-     * @returns the state
-     */
-    public getState(): CommandState {
+    public getState(): ComputableState {
         return this.state;
+    }
+
+    public setState(state: ComputableState): void {
+        this.state = state;
     }
 
     /**
      * Returns the reason why the command failed or was skipped.
      *
      * @returns the reason
-     * @throws if the command was not (yet) skipped or did not (yet) fail
      */
     public getFailureOrSkipReason(): unknown {
-        if (this.state !== CommandState.FAILED && this.state !== CommandState.SKIPPED) {
-            throw new Error("The command was neither skipped, nor did it fail");
-        }
         return this.failureOrSkipReason;
     }
 

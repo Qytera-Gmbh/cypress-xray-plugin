@@ -1,13 +1,14 @@
 import { expect } from "chai";
 import { getMockedLogger } from "../../../test/mocks";
-import { Computable } from "../../hooks/command";
+import { Computable, ComputableState, Stateful } from "../../hooks/command";
 import { SkippedError } from "../errors";
 import { Level } from "../logging";
 import { ExecutableGraph } from "./executable";
 
-class ComputableVertex implements Computable<unknown> {
+class ComputableVertex implements Computable<unknown>, Stateful<ComputableState> {
     private readonly message: string;
     private readonly logger: (message: string) => void;
+    private state: ComputableState = ComputableState.INITIAL;
     constructor(message: string, logger: (message: string) => void) {
         this.message = message;
         this.logger = logger;
@@ -15,6 +16,13 @@ class ComputableVertex implements Computable<unknown> {
 
     public compute(): void | Promise<void> {
         this.logger(this.message);
+    }
+
+    public getState(): ComputableState {
+        return this.state;
+    }
+    public setState(state: ComputableState): void {
+        this.state = state;
     }
 
     public toString(): string {

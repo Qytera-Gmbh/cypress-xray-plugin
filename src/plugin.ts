@@ -11,6 +11,7 @@ import {
     setPluginContext,
 } from "./context";
 import { addUploadCommands } from "./hooks/after/after-run";
+import { Command } from "./hooks/command";
 import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
 import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/run-result";
 import {
@@ -119,26 +120,14 @@ export async function configureXrayPlugin(
         try {
             await context.graph.execute();
         } finally {
-            if (context.options.plugin.debug) {
-                const executionGraphFile = LOG.logToFile(
-                    await graphToDot(context.graph, commandToDot),
-                    "execution-graph.vz"
+            if (context.graph.hasFailedVertices()) {
+                await exportGraph(
+                    context.graph,
+                    Level.WARNING,
+                    "Failed to execute some steps during plugin execution"
                 );
-                LOG.message(
-                    Level.DEBUG,
-                    dedent(`
-                            Plugin execution graph saved to: ${executionGraphFile}
-
-                            You can view it using Graphviz (https://graphviz.org/):
-
-                              dot -o execution-graph.svg -Tsvg ${executionGraphFile}
-
-                            Alternatively, you can view it online under any of the following websites:
-                            - https://dreampuf.github.io/GraphvizOnline
-                            - https://edotor.net/
-                            - https://www.devtoolsdaily.com/graphviz/
-                        `)
-                );
+            } else if (options.plugin?.debug) {
+                await exportGraph(context.graph, Level.DEBUG);
             }
         }
     });
@@ -188,4 +177,31 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
         );
     }
     return file.filePath;
+}
+
+async function exportGraph<V extends Command>(
+    graph: ExecutableGraph<V>,
+    level: Level,
+    prefix?: string
+): Promise<void> {
+    const executionGraphFile = LOG.logToFile(
+        await graphToDot(graph, commandToDot, (edge) =>
+            graph.isOptional(edge) ? "dashed" : "bold"
+        ),
+        "execution-graph.vz"
+    );
+    LOG.message(
+        level,
+        dedent(`
+            ${prefix ? `${prefix}\n\n` : ""}Plugin execution graph saved to: ${executionGraphFile}
+
+            You can view it using Graphviz (https://graphviz.org/):
+
+              dot -o execution-graph.pdf -Tpdf ${executionGraphFile}
+
+            Alternatively, you can view it online under any of the following websites:
+            - https://dreampuf.github.io/GraphvizOnline
+            - https://edotor.net/
+        `)
+    );
 }

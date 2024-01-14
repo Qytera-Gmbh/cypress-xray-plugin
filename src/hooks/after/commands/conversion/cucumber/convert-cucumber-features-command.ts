@@ -25,11 +25,11 @@ export class ConvertCucumberFeaturesCommand extends Command<
     Parameters
 > {
     private readonly input: Computable<CucumberMultipartFeature[]>;
-    private readonly testExecutionIssueKey?: Computable<string>;
+    private readonly testExecutionIssueKey?: Computable<string | undefined>;
     constructor(
         parameters: Parameters,
         input: Computable<CucumberMultipartFeature[]>,
-        testExecutionIssueKey?: Computable<string>
+        testExecutionIssueKey?: Computable<string | undefined>
     ) {
         super(parameters);
         this.input = input;

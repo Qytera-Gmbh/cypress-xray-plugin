@@ -343,12 +343,11 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                     You can view it using Graphviz (https://graphviz.org/):
 
-                      dot -o execution-graph.svg -Tsvg execution-graph.vz
+                      dot -o execution-graph.pdf -Tpdf execution-graph.vz
 
                     Alternatively, you can view it online under any of the following websites:
                     - https://dreampuf.github.io/GraphvizOnline
                     - https://edotor.net/
-                    - https://www.devtoolsdaily.com/graphviz/
                 `)
             );
         });

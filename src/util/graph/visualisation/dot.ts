@@ -1,13 +1,14 @@
-import { Command, CommandState } from "../../../hooks/command";
+import { Command, ComputableState } from "../../../hooks/command";
 import { dedent } from "../../dedent";
 import { errorMessage } from "../../errors";
 import { unknownToString } from "../../string";
 import { computeTopologicalOrder } from "../algorithms/sort";
 import { DirectedEdge, DirectedGraph } from "../graph";
 
-export async function graphToDot<V>(
-    graph: DirectedGraph<V, DirectedEdge<V>>,
-    labeller: (vertex: V) => string | Promise<string>
+export async function graphToDot<V, E extends DirectedEdge<V>>(
+    graph: DirectedGraph<V, E>,
+    labeller: (vertex: V) => string | Promise<string>,
+    edgeStyler: (edge: E) => "bold" | "dashed"
 ): Promise<string> {
     let i = 0;
     const ids = new Map<V, string>();
@@ -39,7 +40,7 @@ export async function graphToDot<V>(
                   (edge) =>
                       `${ids.get(edge.getSource())} -> ${ids.get(
                           edge.getDestination()
-                      )}[arrowhead="vee",arrowsize="0.75"];`
+                      )}[arrowhead="vee",arrowsize="0.75",style=${edgeStyler(edge)}];`
               )
               .join("\n")}
           ${Object.values(sameRanks)
@@ -58,16 +59,24 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
         </TR>
     `);
     let result = "pending";
-    let color = "silver";
-    if (command.getState() === CommandState.SUCCEEDED) {
+    let color = "#aaaaaa";
+    if (command.getState() === ComputableState.SUCCEEDED) {
         result = escapeHtmlLabel(unknownToString(await command.compute(), true));
-        color = "darkolivegreen3";
-    } else if (command.getState() === CommandState.SKIPPED) {
-        result = escapeHtmlLabel(errorMessage(command.getFailureOrSkipReason()));
-        color = "khaki";
-    } else if (command.getState() === CommandState.FAILED) {
-        result = escapeHtmlLabel(errorMessage(command.getFailureOrSkipReason()));
-        color = "salmon";
+        color = "#7abf69";
+    } else if (command.getState() === ComputableState.SKIPPED) {
+        if (command.getFailureOrSkipReason()) {
+            result = escapeHtmlLabel(errorMessage(command.getFailureOrSkipReason()));
+        } else {
+            result = "skipped";
+        }
+        color = "#c8b77e";
+    } else if (command.getState() === ComputableState.FAILED) {
+        if (command.getFailureOrSkipReason()) {
+            result = escapeHtmlLabel(errorMessage(command.getFailureOrSkipReason()));
+        } else {
+            result = "failed";
+        }
+        color = "#d8796f";
     }
     if (vertexDataRows) {
         return dedent(`
