@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js"></script>
+        <style>
+            .collapsible {
+                background-color: #eee;
+                color: #444;
+                cursor: pointer;
+                padding: 18px;
+                width: 100%;
+                border: none;
+                text-align: left;
+                outline: none;
+                font-size: 15px;
+            }
+
+            .collapsible:hover {
+                background-color: #ccc;
+            }
+
+            .content {
+                padding: 0 18px;
+                overflow: hidden;
+                background-color: #f1f1f1;
+            }
+
+            .is-hidden {
+                display: none;
+            }
+
+            .not-hidden {
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="mermaid-container" class="mermaid">graph TD; v[Rendering...]</div>
+        <pre id="mermaid-content" style="display: none">
+            %%{ init: { 'flowchart': { 'curve': 'monotoneY' } } }%%
+            graph TD;
+            v0["
+                <b>ParseFeatureFileCommand</b>
+                <button type="button" class="collapsible">▶ Click to expand</button>
+                <div id="content-v0" class="content is-hidden"><p>Good morning</p></div>
+            "];
+            click v0 toggle
+        </pre>
+        <script>
+            function toggle(node) {
+                render(false).then(() => console.log("Finished rendering"));
+            }
+            async function render(hideContent) {
+                const container = document.getElementById("mermaid-container");
+                let graphContent = document.getElementById("mermaid-content").innerHTML;
+                console.log(graphContent);
+                if (hideContent) {
+                    graphContent = graphContent.replaceAll("not-hidden", "is-hidden");
+                } else {
+                    graphContent = graphContent.replaceAll("is-hidden", "not-hidden");
+                }
+                const { svg, bindFunctions } = await mermaid.render("mermaid-graph", graphContent);
+                container.innerHTML = svg;
+
+                if (bindFunctions) {
+                    bindFunctions(container);
+                }
+            }
+            mermaid.initialize({
+                startOnLoad: false,
+                securityLevel: "loose",
+                maxTextSize: Number.MAX_SAFE_INTEGER,
+                flowChart: {
+                    htmlLabels: true,
+                },
+            });
+            render(true).then(() => console.log("Finished rendering"));
+        </script>
+    </body>
+</html>
