@@ -1,5 +1,4 @@
 import axios, {
-    Axios,
     AxiosRequestConfig,
     AxiosResponse,
     InternalAxiosRequestConfig,
@@ -10,6 +9,7 @@ import { Agent } from "https";
 import { LOG, Level } from "../logging/logging";
 import { InternalSslOptions } from "../types/plugin";
 import { normalizedFilename } from "../util/files";
+import { unknownToString } from "../util/string";
 
 export interface RequestConfigPost<D = unknown> {
     url: string;
@@ -33,7 +33,7 @@ export interface RequestsOptions {
 
 export class AxiosRestClient {
     private httpAgent: Agent | undefined = undefined;
-    private axios: Axios | undefined = undefined;
+    private axios: typeof axios | undefined = undefined;
 
     private options: RequestsOptions | undefined = undefined;
 
@@ -45,7 +45,7 @@ export class AxiosRestClient {
         url: string,
         config?: AxiosRequestConfig<unknown>
     ): Promise<AxiosResponse<R>> {
-        return this.getAxios().get(url, {
+        return await this.getAxios().get(url, {
             ...config,
             httpsAgent: this.getAgent(),
         });
@@ -83,7 +83,7 @@ export class AxiosRestClient {
         return this.httpAgent;
     }
 
-    private getAxios(): Axios {
+    private getAxios(): typeof axios {
         if (!this.options) {
             throw new Error("Requests module has not been initialized");
         }
@@ -103,6 +103,7 @@ export class AxiosRestClient {
                                 url: url,
                                 headers: request.headers,
                                 params: request.params as unknown,
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                                 body: request.data,
                             },
                             filename
@@ -110,7 +111,7 @@ export class AxiosRestClient {
                         LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
                         return request;
                     },
-                    (error) => {
+                    (error: unknown) => {
                         const timestamp = Date.now();
                         let filename: string;
                         let data: unknown;
@@ -127,7 +128,9 @@ export class AxiosRestClient {
                         }
                         const resolvedFilename = LOG.logToFile(data, filename);
                         LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
-                        return Promise.reject(error);
+                        return Promise.reject(
+                            error instanceof Error ? error : new Error(unknownToString(error))
+                        );
                     }
                 );
                 this.axios.interceptors.response.use(
@@ -151,7 +154,7 @@ export class AxiosRestClient {
                         LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
                         return response;
                     },
-                    (error) => {
+                    (error: unknown) => {
                         const timestamp = Date.now();
                         let filename: string;
                         let data: unknown;
@@ -168,7 +171,9 @@ export class AxiosRestClient {
                         }
                         const resolvedFilename = LOG.logToFile(data, filename);
                         LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
-                        return Promise.reject(error);
+                        return Promise.reject(
+                            error instanceof Error ? error : new Error(unknownToString(error))
+                        );
                     }
                 );
             }
