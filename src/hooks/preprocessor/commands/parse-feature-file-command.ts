@@ -9,13 +9,9 @@ interface Parameters {
 
 export class ParseFeatureFileCommand extends Command<GherkinDocument, Parameters> {
     protected computeResult(): Promise<GherkinDocument> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             LOG.message(Level.INFO, `Parsing feature file: ${this.parameters.filePath}`);
-            try {
-                resolve(parseFeatureFile(this.parameters.filePath));
-            } catch (error: unknown) {
-                reject(error);
-            }
+            resolve(parseFeatureFile(this.parameters.filePath));
         });
     }
 }
