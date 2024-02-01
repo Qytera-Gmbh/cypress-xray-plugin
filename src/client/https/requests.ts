@@ -9,6 +9,7 @@ import { Agent } from "https";
 import { InternalSslOptions } from "../../types/plugin";
 import { normalizedFilename } from "../../util/files";
 import { LOG, Level } from "../../util/logging";
+import { unknownToString } from "../../util/string";
 
 export interface RequestConfigPost<D = unknown> {
     url: string;
@@ -44,7 +45,7 @@ export class AxiosRestClient {
         url: string,
         config?: AxiosRequestConfig<unknown>
     ): Promise<AxiosResponse<R>> {
-        return this.getAxios().get(url, {
+        return await this.getAxios().get(url, {
             ...config,
             httpsAgent: this.getAgent(),
         });
@@ -127,7 +128,9 @@ export class AxiosRestClient {
                         }
                         const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
                         LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
-                        return Promise.reject(error);
+                        return Promise.reject(
+                            error instanceof Error ? error : new Error(unknownToString(error))
+                        );
                     }
                 );
                 this.axios.interceptors.response.use(
@@ -168,7 +171,9 @@ export class AxiosRestClient {
                         }
                         const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
                         LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
-                        return Promise.reject(error);
+                        return Promise.reject(
+                            error instanceof Error ? error : new Error(unknownToString(error))
+                        );
                     }
                 );
             }

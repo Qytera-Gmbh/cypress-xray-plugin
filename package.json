@@ -45,7 +45,7 @@
     "dependencies": {
         "@cucumber/gherkin": "^27.0.0",
         "@cucumber/messages": "^24.0.1",
-        "axios": "^1.6.2",
+        "axios": "^1.6.7",
         "chalk": "^4.1.2",
         "form-data": "^4.0.0",
         "semver": "^7.5.4"
@@ -54,16 +54,16 @@
         "cypress": ">=10.0.0 < 14"
     },
     "optionalDependencies": {
-        "@badeball/cypress-cucumber-preprocessor": "^19.2.0"
+        "@badeball/cypress-cucumber-preprocessor": "^20.0.1"
     },
     "devDependencies": {
         "@types/chai": "^4.3.11",
         "@types/chai-as-promised": "^7.1.8",
         "@types/node": "^20.10.6",
         "@types/sinon-chai": "^3.2.12",
-        "@typescript-eslint/eslint-plugin": "^6.16.0",
-        "@typescript-eslint/parser": "^6.13.1",
-        "chai": "^4.3.10",
+        "@typescript-eslint/eslint-plugin": "^6.20.0",
+        "@typescript-eslint/parser": "^6.20.0",
+        "chai": "^4.4.1",
         "chai-as-promised": "^7.1.1",
         "eslint": "^8.56.0",
         "eslint-plugin-tsdoc": "^0.2.17",
