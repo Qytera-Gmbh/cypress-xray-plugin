@@ -54,7 +54,7 @@
         "cypress": ">=10.0.0 < 14"
     },
     "optionalDependencies": {
-        "@badeball/cypress-cucumber-preprocessor": "^19.2.0"
+        "@badeball/cypress-cucumber-preprocessor": "^20.0.1"
     },
     "devDependencies": {
         "@types/chai": "^4.3.11",
