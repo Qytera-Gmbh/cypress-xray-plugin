@@ -296,7 +296,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
-        it("creates an execution graph if debug is enabled", async () => {
+        it("creates an execution graph and displays a warning if there are failed vertices", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
             stub(dot, "graphToDot")
                 .onFirstCall()
@@ -337,8 +337,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 }, 10);
             });
             expect(logger.message).to.have.been.calledWithExactly(
-                Level.DEBUG,
+                Level.WARNING,
                 dedent(`
+                    Failed to execute some steps during plugin execution
+
                     Plugin execution graph saved to: execution-graph.vz
 
                     You can view it using Graphviz (https://graphviz.org/):

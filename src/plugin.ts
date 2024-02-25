@@ -1,4 +1,3 @@
-import { writeFileSync } from "node:fs";
 import { REST } from "./client/https/requests";
 import {
     clearPluginContext,
@@ -12,7 +11,7 @@ import {
     setPluginContext,
 } from "./context";
 import { addUploadCommands } from "./hooks/after/after-run";
-import { Command, ComputableState } from "./hooks/command";
+import { Command } from "./hooks/command";
 import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
 import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/run-result";
 import {
@@ -22,12 +21,10 @@ import {
     PluginContext,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
-import { errorMessage } from "./util/errors";
 import { ExecutableGraph } from "./util/graph/executable";
-import { graphToD3Json } from "./util/graph/visualisation/d3";
+import { commandToDot, graphToDot } from "./util/graph/visualisation/dot";
 import { HELP } from "./util/help";
 import { LOG, Level } from "./util/logging";
-import { unknownToString } from "./util/string";
 
 let canShowInitializationWarning = true;
 
@@ -187,42 +184,20 @@ async function exportGraph<V extends Command>(
     level: Level,
     prefix?: string
 ): Promise<void> {
-    const d3Json = await graphToD3Json(
-        graph,
-        (command) => command.constructor.name,
-        (command) =>
-            command.getParameters() ? unknownToString(command.getParameters(), true) : "none",
-        async (command) => {
-            let result = "pending";
-            if (command.getState() === ComputableState.SUCCEEDED) {
-                result = unknownToString(await command.compute(), true);
-            } else if (command.getState() === ComputableState.SKIPPED) {
-                if (command.getFailureOrSkipReason()) {
-                    result = errorMessage(command.getFailureOrSkipReason());
-                } else {
-                    result = "skipped";
-                }
-            } else if (command.getState() === ComputableState.FAILED) {
-                if (command.getFailureOrSkipReason()) {
-                    result = errorMessage(command.getFailureOrSkipReason());
-                } else {
-                    result = "failed";
-                }
-            }
-            return result;
-        },
-        (command) => command.getState(),
-        (edge) => (graph.isOptional(edge) ? "dotted" : "normal")
+    const executionGraphFile = LOG.logToFile(
+        await graphToDot(graph, commandToDot, (edge) =>
+            graph.isOptional(edge) ? "dashed" : "bold"
+        ),
+        "execution-graph.vz"
     );
-    writeFileSync("out.json", JSON.stringify(d3Json, null, 2));
     LOG.message(
         level,
         dedent(`
-            ${prefix ? `${prefix}\n\n` : ""}Plugin execution graph saved to: ${"TODO:" + 42}
+            ${prefix ? `${prefix}\n\n` : ""}Plugin execution graph saved to: ${executionGraphFile}
 
             You can view it using Graphviz (https://graphviz.org/):
 
-              dot -o execution-graph.pdf -Tpdf ${"TODO:" + 42}
+              dot -o execution-graph.pdf -Tpdf ${executionGraphFile}
 
             Alternatively, you can view it online under any of the following websites:
             - https://dreampuf.github.io/GraphvizOnline
