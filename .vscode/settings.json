@@ -9,6 +9,10 @@
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
+    "[javascript]": {
+        "editor.maxTokenizationLineLength": 500,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
     "[json]": {
         "editor.quickSuggestions": {
             "strings": true

@@ -36,9 +36,11 @@
     "scripts": {
         "test": "mocha",
         "coverage": "nyc --reporter=html --exclude=**/*.spec.ts --exclude=test/ mocha",
-        "build": "tsc --project tsconfigBuild.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
+        "build": "tsc --project tsconfigBuild.json",
+        "postbuild": "shx cp package.json README.md LICENSE.md CHANGELOG.md dist/ && shx cp viewer/index.html dist/viewer/index.html",
         "eslint": "eslint src/**/*.ts test/**/*.ts index.ts index.spec.ts"
     },
+    "bin": "./viewer/cli.js",
     "engines": {
         "node": ">=18.0.0"
     },
@@ -48,7 +50,8 @@
         "axios": "^1.6.7",
         "chalk": "^4.1.2",
         "form-data": "^4.0.0",
-        "semver": "^7.5.4"
+        "semver": "^7.5.4",
+        "yargs": "^17.7.2"
     },
     "peerDependencies": {
         "cypress": ">=10.0.0 < 14"
@@ -61,6 +64,7 @@
         "@types/chai-as-promised": "^7.1.8",
         "@types/node": "^20.10.6",
         "@types/sinon-chai": "^3.2.12",
+        "@types/yargs": "^17.0.32",
         "@typescript-eslint/eslint-plugin": "^6.20.0",
         "@typescript-eslint/parser": "^6.20.0",
         "chai": "^4.4.1",
