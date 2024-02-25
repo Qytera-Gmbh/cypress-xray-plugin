@@ -1,55 +1,52 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { PublicBrowser, ResolvedConfigOptions } from "./cypress";
+import { PublicBrowser_V13, ResolvedConfigOptions_V13 } from "./cypress";
 
-type dateTimeISO = string;
-type ms = number;
-type pixels = number;
-export interface TestResult {
+export interface TestResult_V13 {
     duration: number;
     title: string[];
     state: string;
     displayError: string | null;
-    attempts: AttemptResult[];
+    attempts: AttemptResult_V13[];
 }
-export interface AttemptResult {
+export interface AttemptResult_V13 {
     state: string;
 }
-export interface ScreenshotInformation {
+export interface ScreenshotInformation_V13 {
     name: string;
-    takenAt: dateTimeISO;
+    takenAt: string;
     path: string;
-    height: pixels;
-    width: pixels;
+    height: number;
+    width: number;
 }
-interface SpecResult {
+interface SpecResult_V13 {
     absolute: string;
     fileExtension: string;
     fileName: string;
     name: string;
     relative: string;
 }
-export interface RunResult {
+export interface RunResult_V13 {
     error: string | null;
     reporter: string;
     reporterStats: object;
-    screenshots: ScreenshotInformation[];
+    screenshots: ScreenshotInformation_V13[];
     stats: {
-        duration?: ms;
-        endedAt: dateTimeISO;
+        duration?: number;
+        endedAt: string;
         failures: number;
         passes: number;
         pending: number;
         skipped: number;
-        startedAt: dateTimeISO;
+        startedAt: string;
         suites: number;
         tests: number;
     };
-    spec: SpecResult;
-    tests: TestResult[];
+    spec: SpecResult_V13;
+    tests: TestResult_V13[];
     video: string | null;
 }
-type PublicConfig = Omit<
-    ResolvedConfigOptions,
+type PublicConfig_V13 = Omit<
+    ResolvedConfigOptions_V13,
     | "additionalIgnorePattern"
     | "autoOpen"
     | "browser"
@@ -77,21 +74,21 @@ type PublicConfig = Omit<
     | "state"
     | "supportFolder"
 > & {
-    browsers: PublicBrowser[];
+    browsers: PublicBrowser_V13[];
     cypressInternalEnv: string;
 };
-export interface CypressRunResult {
+export interface CypressRunResult_V13 {
     browserName: string;
     browserPath: string;
     browserVersion: string;
-    config: PublicConfig;
+    config: PublicConfig_V13;
     cypressVersion: string;
-    endedTestsAt: dateTimeISO;
+    endedTestsAt: string;
     osName: string;
     osVersion: string;
-    runs: RunResult[];
+    runs: RunResult_V13[];
     runUrl?: string;
-    startedTestsAt: dateTimeISO;
+    startedTestsAt: string;
     totalDuration: number;
     totalFailed: number;
     totalPassed: number;
@@ -100,7 +97,7 @@ export interface CypressRunResult {
     totalSuites: number;
     totalTests: number;
 }
-export interface CypressFailedRunResult {
+export interface CypressFailedRunResult_V13 {
     status: "failed";
     failures: number;
     message: string;

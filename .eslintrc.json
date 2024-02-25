@@ -12,13 +12,7 @@
     },
     "rules": {
         "tsdoc/syntax": "error",
-        "@typescript-eslint/parameter-properties": [
-          "error",
-            {
-              "allow": ["public", "public readonly", "protected", "protected readonly"],
-              "prefer": "parameter-property"
-            }
-        ],
+        "@typescript-eslint/parameter-properties": "error",
         "@typescript-eslint/non-nullable-type-assertion-style": "off",
         "@typescript-eslint/member-ordering": "error",
         "@typescript-eslint/prefer-readonly": "error",

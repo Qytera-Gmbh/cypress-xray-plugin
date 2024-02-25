@@ -2,11 +2,14 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { stub } from "sinon";
 import { getMockedLogger } from "../test/mocks";
-import { BasicAuthCredentials, JwtCredentials, PatCredentials } from "./authentication/credentials";
-import { JiraClientCloud } from "./client/jira/jiraClientCloud";
-import { JiraClientServer } from "./client/jira/jiraClientServer";
-import { XrayClientCloud } from "./client/xray/xrayClientCloud";
-import { XrayClientServer } from "./client/xray/xrayClientServer";
+import {
+    BasicAuthCredentials,
+    JwtCredentials,
+    PatCredentials,
+} from "./client/authentication/credentials";
+import { BaseJiraClient } from "./client/jira/jira-client";
+import { XrayClientCloud } from "./client/xray/xray-client-cloud";
+import { XrayClientServer } from "./client/xray/xray-client-server";
 import {
     initClients,
     initCucumberOptions,
@@ -15,8 +18,6 @@ import {
     initSslOptions,
     initXrayOptions,
 } from "./context";
-import * as dependencies from "./dependencies";
-import { Level } from "./logging/logging";
 import {
     InternalCucumberOptions,
     InternalJiraOptions,
@@ -25,6 +26,8 @@ import {
     InternalXrayOptions,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
+import * as dependencies from "./util/dependencies";
+import { Level } from "./util/logging";
 import * as ping from "./util/ping";
 
 chai.use(chaiAsPromised);
@@ -1142,9 +1145,9 @@ describe("the plugin context configuration", () => {
                 .onFirstCall()
                 .returns();
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
-            expect(jiraClient).to.be.an.instanceof(JiraClientCloud);
+            expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
             expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
-            expect((jiraClient as JiraClientCloud).getCredentials()).to.be.an.instanceof(
+            expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
                 BasicAuthCredentials
             );
             expect((xrayClient as XrayClientCloud).getCredentials()).to.be.an.instanceof(
@@ -1195,9 +1198,9 @@ describe("the plugin context configuration", () => {
                 .onFirstCall()
                 .returns();
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
-            expect(jiraClient).to.be.an.instanceof(JiraClientServer);
+            expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
-            expect((jiraClient as JiraClientServer).getCredentials()).to.be.an.instanceof(
+            expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
                 PatCredentials
             );
             expect((xrayClient as XrayClientServer).getCredentials()).to.be.an.instanceof(
@@ -1232,9 +1235,9 @@ describe("the plugin context configuration", () => {
                 .onFirstCall()
                 .returns();
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
-            expect(jiraClient).to.be.an.instanceof(JiraClientServer);
+            expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
-            expect((jiraClient as JiraClientServer).getCredentials()).to.be.an.instanceof(
+            expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
                 BasicAuthCredentials
             );
             expect((xrayClient as XrayClientServer).getCredentials()).to.be.an.instanceof(
@@ -1258,9 +1261,9 @@ describe("the plugin context configuration", () => {
             stubbedJiraPing.onFirstCall().resolves();
             stubbedXrayPing.onFirstCall().resolves();
             const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
-            expect(jiraClient).to.be.an.instanceof(JiraClientCloud);
+            expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
             expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
-            expect((jiraClient as JiraClientCloud).getCredentials()).to.be.an.instanceof(
+            expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
                 BasicAuthCredentials
             );
             expect((xrayClient as XrayClientCloud).getCredentials()).to.be.an.instanceof(

@@ -1,10 +1,10 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
-import { JiraClient } from "../client/jira/jiraClient";
-import { XrayClient } from "../client/xray/xrayClient";
-import { JiraRepository } from "../repository/jira/jiraRepository";
-import { IssueTypeDetails } from "./jira/responses/issueTypeDetails";
+import { JiraClient } from "../client/jira/jira-client";
+import { XrayClient } from "../client/xray/xray-client";
+import { Command } from "../hooks/command";
+import { ExecutableGraph } from "../util/graph/executable";
 
-export interface Options {
+export interface CypressXrayPluginOptions {
     jira: JiraOptions;
     plugin?: PluginOptions;
     xray?: XrayOptions;
@@ -161,12 +161,7 @@ export type InternalJiraOptions = JiraOptions &
             | "testPlanIssueType"
             | "url"
         >
-    > & {
-        /**
-         * The details of the test execution issue type.
-         */
-        testExecutionIssueDetails: IssueTypeDetails;
-    };
+    >;
 
 export interface XrayOptions {
     /**
@@ -328,7 +323,7 @@ export type InternalCucumberOptions = Required<CucumberOptions> & {
     /**
      * The Cucumber preprocessor configuration.
      */
-    preprocessor?: IPreprocessorConfiguration;
+    preprocessor?: Pick<IPreprocessorConfiguration, "json">;
 };
 
 export interface PluginOptions {
@@ -401,7 +396,7 @@ export type InternalSslOptions = OpenSSLOptions;
 /**
  * Options only intended for internal plugin use.
  */
-export interface InternalOptions {
+export interface InternalCypressXrayPluginOptions {
     jira: InternalJiraOptions;
     plugin: InternalPluginOptions;
     xray: InternalXrayOptions;
@@ -416,11 +411,11 @@ export interface ClientCombination {
     kind: "server" | "cloud";
     jiraClient: JiraClient;
     xrayClient: XrayClient;
-    jiraRepository: JiraRepository;
 }
 
 export interface PluginContext {
     cypress: Cypress.PluginConfigOptions;
-    internal: InternalOptions;
+    options: InternalCypressXrayPluginOptions;
     clients: ClientCombination;
+    graph: ExecutableGraph<Command>;
 }

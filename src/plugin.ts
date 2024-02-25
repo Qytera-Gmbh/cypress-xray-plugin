@@ -1,3 +1,4 @@
+import { REST } from "./client/https/requests";
 import {
     clearPluginContext,
     getPluginContext,
@@ -9,13 +10,21 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
-import { afterRunHook, beforeRunHook } from "./hooks/hooks";
-import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
-import { REST } from "./https/requests";
-import { LOG, Level } from "./logging/logging";
-import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
+import { addUploadCommands } from "./hooks/after/after-run";
+import { Command } from "./hooks/command";
+import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
+import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/run-result";
+import {
+    CypressXrayPluginOptions,
+    InternalCypressXrayPluginOptions,
+    InternalPluginOptions,
+    PluginContext,
+} from "./types/plugin";
 import { dedent } from "./util/dedent";
+import { ExecutableGraph } from "./util/graph/executable";
+import { commandToDot, graphToDot } from "./util/graph/visualisation/dot";
 import { HELP } from "./util/help";
+import { LOG, Level } from "./util/logging";
 
 let canShowInitializationWarning = true;
 
@@ -37,14 +46,16 @@ export function resetPlugin(): void {
  * Other Cypress configuration values which the plugin typically accesses are the Cypress version or
  * the project root directory.
  *
+ * @param on - the Cypress event registration functon
  * @param config - the Cypress configuration
  * @param options - the plugin options
  *
  * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadTestResults/#setup
  */
 export async function configureXrayPlugin(
+    on: Cypress.PluginEvents,
     config: Cypress.PluginConfigOptions,
-    options: Options
+    options: CypressXrayPluginOptions
 ): Promise<void> {
     canShowInitializationWarning = false;
     // Resolve these before all other options for correct enabledness.
@@ -59,7 +70,7 @@ export async function configureXrayPlugin(
         debug: pluginOptions.debug,
         logDirectory: pluginOptions.logDirectory,
     });
-    const internalOptions: InternalOptions = {
+    const internalOptions: InternalCypressXrayPluginOptions = {
         jira: initJiraOptions(config.env, options.jira),
         plugin: pluginOptions,
         xray: initXrayOptions(config.env, options.xray),
@@ -70,63 +81,15 @@ export async function configureXrayPlugin(
         debug: internalOptions.plugin.debug,
         ssl: internalOptions.ssl,
     });
-    setPluginContext({
+    const context: PluginContext = {
         cypress: config,
-        internal: internalOptions,
+        options: internalOptions,
         clients: await initClients(internalOptions.jira, config.env),
-    });
-}
-
-/**
- * Enables Cypress test results upload to Xray. This method will register several upload hooks under
- * the passed plugin events.
- *
- * @param on - the Cypress plugin events
- *
- * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadTestResults/
- */
-export function addXrayResultUpload(on: Cypress.PluginEvents): void {
-    on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
-        const context = getPluginContext();
-        if (!context) {
-            if (canShowInitializationWarning) {
-                logInitializationWarning("before:run");
-            }
-            return;
-        }
-        if (!context.internal.plugin.enabled) {
-            LOG.message(Level.INFO, "Plugin disabled. Skipping before:run hook");
-            return;
-        }
-        if (!runDetails.specs) {
-            LOG.message(Level.WARNING, "No specs about to be executed. Skipping before:run hook");
-            return;
-        }
-        await beforeRunHook(runDetails.specs, context.internal, context.clients);
-    });
-    on(
-        "after:run",
-        async (
-            results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
-        ) => {
-            const context = getPluginContext();
-            if (!context) {
-                if (canShowInitializationWarning) {
-                    logInitializationWarning("after:run");
-                }
-                return;
-            }
-            if (!context.internal.plugin.enabled) {
-                LOG.message(Level.INFO, "Skipping after:run hook: Plugin disabled");
-                return;
-            }
-            if (!context.internal.xray.uploadResults) {
-                LOG.message(
-                    Level.INFO,
-                    "Skipping results upload: Plugin is configured to not upload test results"
-                );
-                return;
-            }
+        graph: new ExecutableGraph(),
+    };
+    setPluginContext(context);
+    on("after:run", async (results: CypressRunResultType | CypressFailedRunResultType) => {
+        if (context.options.xray.uploadResults) {
             // Cypress's status types are incomplete, there is also "finished".
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if ("status" in results && results.status === "failed") {
@@ -134,20 +97,40 @@ export function addXrayResultUpload(on: Cypress.PluginEvents): void {
                 LOG.message(
                     Level.ERROR,
                     dedent(`
-                        Skipping after:run hook: Failed to run ${failedResult.failures} tests
+                        Skipping results upload: Failed to run ${failedResult.failures} tests
 
                         ${failedResult.message}
                     `)
                 );
-                return;
+            } else {
+                addUploadCommands(
+                    results as CypressRunResultType,
+                    context.cypress.projectRoot,
+                    context.options,
+                    context.clients,
+                    context.graph
+                );
             }
-            await afterRunHook(
-                results as CypressCommandLine.CypressRunResult,
-                context.internal,
-                context.clients
+        } else {
+            LOG.message(
+                Level.INFO,
+                "Skipping results upload: Plugin is configured to not upload test results"
             );
         }
-    );
+        try {
+            await context.graph.execute();
+        } finally {
+            if (context.graph.hasFailedVertices()) {
+                await exportGraph(
+                    context.graph,
+                    Level.WARNING,
+                    "Failed to execute some steps during plugin execution"
+                );
+            } else if (options.plugin?.debug) {
+                await exportGraph(context.graph, Level.DEBUG);
+            }
+        }
+    });
 }
 
 /**
@@ -158,37 +141,67 @@ export function addXrayResultUpload(on: Cypress.PluginEvents): void {
  * @param file - the Cypress file object
  * @returns the unmodified file's path
  */
-export async function syncFeatureFile(file: Cypress.FileObject): Promise<string> {
+export function syncFeatureFile(file: Cypress.FileObject): string {
     const context = getPluginContext();
     if (!context) {
         if (canShowInitializationWarning) {
-            logInitializationWarning("file:preprocessor");
+            LOG.message(
+                Level.WARNING,
+                dedent(`
+                    Skipping file:preprocessor hook: Plugin misconfigured: configureXrayPlugin() was not called
+
+                    Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
+                `)
+            );
         }
         return file.filePath;
     }
-    if (!context.internal.plugin.enabled) {
+    if (!context.options.plugin.enabled) {
         LOG.message(
             Level.INFO,
             `Plugin disabled. Skipping feature file synchronization triggered by: ${file.filePath}`
         );
         return file.filePath;
     }
-    return await synchronizeFeatureFile(
-        file,
-        context.cypress.projectRoot,
-        context.internal,
-        context.clients
-    );
+    if (
+        context.options.cucumber &&
+        file.filePath.endsWith(context.options.cucumber.featureFileExtension) &&
+        context.options.cucumber.uploadFeatures
+    ) {
+        addSynchronizationCommands(
+            file,
+            context.cypress.projectRoot,
+            context.options,
+            context.clients,
+            context.graph
+        );
+    }
+    return file.filePath;
 }
 
-function logInitializationWarning(hook: "before:run" | "after:run" | "file:preprocessor"): void {
-    // Do not throw in case someone does not want the plugin to run but forgot to remove a hook.
+async function exportGraph<V extends Command>(
+    graph: ExecutableGraph<V>,
+    level: Level,
+    prefix?: string
+): Promise<void> {
+    const executionGraphFile = LOG.logToFile(
+        await graphToDot(graph, commandToDot, (edge) =>
+            graph.isOptional(edge) ? "dashed" : "bold"
+        ),
+        "execution-graph.vz"
+    );
     LOG.message(
-        Level.WARNING,
+        level,
         dedent(`
-            Skipping ${hook} hook: Plugin misconfigured: configureXrayPlugin() was not called
+            ${prefix ? `${prefix}\n\n` : ""}Plugin execution graph saved to: ${executionGraphFile}
 
-            Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
+            You can view it using Graphviz (https://graphviz.org/):
+
+              dot -o execution-graph.pdf -Tpdf ${executionGraphFile}
+
+            Alternatively, you can view it online under any of the following websites:
+            - https://dreampuf.github.io/GraphvizOnline
+            - https://edotor.net/
         `)
     );
 }

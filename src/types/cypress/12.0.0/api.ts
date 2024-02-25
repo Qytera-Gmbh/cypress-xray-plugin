@@ -1,43 +1,40 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { ResolvedConfigOptions } from "./cypress";
+import { ResolvedConfigOptions_V12 } from "./cypress";
 
-type HookName = "before" | "beforeEach" | "afterEach" | "after";
-interface TestError {
+type HookName_V12 = "before" | "beforeEach" | "afterEach" | "after";
+interface TestError_V12 {
     name: string;
     message: string;
     stack: string;
 }
-type dateTimeISO = string;
-type ms = number;
-type pixels = number;
-export interface TestResult {
+export interface TestResult_V12 {
     title: string[];
     state: string;
     body: string;
     displayError: string | null;
-    attempts: AttemptResult[];
+    attempts: AttemptResult_V12[];
 }
-export interface AttemptResult {
+export interface AttemptResult_V12 {
     state: string;
-    error: TestError | null;
-    startedAt: dateTimeISO;
-    duration: ms;
-    videoTimestamp: ms;
-    screenshots: ScreenshotInformation[];
+    error: TestError_V12 | null;
+    startedAt: string;
+    duration: number;
+    videoTimestamp: number;
+    screenshots: ScreenshotInformation_V12[];
 }
-interface HookInformation {
-    hookName: HookName;
+interface HookInformation_V12 {
+    hookName: HookName_V12;
     title: string[];
     body: string;
 }
-export interface ScreenshotInformation {
+export interface ScreenshotInformation_V12 {
     name: string;
-    takenAt: dateTimeISO;
+    takenAt: string;
     path: string;
-    height: pixels;
-    width: pixels;
+    height: number;
+    width: number;
 }
-export interface RunResult {
+export interface RunResult_V12 {
     stats: {
         suites: number;
         tests: number;
@@ -45,15 +42,15 @@ export interface RunResult {
         pending: number;
         skipped: number;
         failures: number;
-        startedAt: dateTimeISO;
-        endedAt: dateTimeISO;
-        duration: ms;
+        startedAt: string;
+        endedAt: string;
+        duration: number;
         wallClockDuration?: number;
     };
     reporter: string;
     reporterStats: object;
-    hooks: HookInformation[];
-    tests: TestResult[];
+    hooks: HookInformation_V12[];
+    tests: TestResult_V12[];
     error: string | null;
     video: string | null;
     spec: {
@@ -65,11 +62,11 @@ export interface RunResult {
     shouldUploadVideo: boolean;
     skippedSpec: boolean;
 }
-export interface CypressRunResult {
+export interface CypressRunResult_V12 {
     status: "finished";
-    startedTestsAt: dateTimeISO;
-    endedTestsAt: dateTimeISO;
-    totalDuration: ms;
+    startedTestsAt: string;
+    endedTestsAt: string;
+    totalDuration: number;
     totalSuites: number;
     totalTests: number;
     totalFailed: number;
@@ -77,12 +74,17 @@ export interface CypressRunResult {
     totalPending: number;
     totalSkipped: number;
     runUrl?: string;
-    runs: RunResult[];
+    runs: RunResult_V12[];
     browserPath: string;
     browserName: string;
     browserVersion: string;
     osName: string;
     osVersion: string;
     cypressVersion: string;
-    config: ResolvedConfigOptions;
+    config: ResolvedConfigOptions_V12;
+}
+export interface CypressFailedRunResult_V12 {
+    status: "failed";
+    failures: number;
+    message: string;
 }
