@@ -48,7 +48,7 @@
         "axios": "^1.6.7",
         "chalk": "^4.1.2",
         "form-data": "^4.0.0",
-        "semver": "^7.5.4"
+        "semver": "^7.6.0"
     },
     "peerDependencies": {
         "cypress": ">=10.0.0 < 14"
