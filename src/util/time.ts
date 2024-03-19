@@ -22,7 +22,7 @@ const LOG_RESPONSE_INTERVAL_MS = 10000;
  * @param onTick - the function to call on each interval tick
  * @returns the timer's handler
  */
-export function startInterval(onTick: (totalTime: number) => void): NodeJS.Timer {
+export function startInterval(onTick: (totalTime: number) => void): ReturnType<typeof setInterval> {
     let sumTime = 0;
     const callback = () => {
         sumTime = sumTime + LOG_RESPONSE_INTERVAL_MS;

@@ -5,13 +5,12 @@
         "allowJs": true,
         "declaration": true,
         "esModuleInterop": true,
-        "lib": ["ESNext", "DOM"],
-        "module": "CommonJS",
-        "moduleResolution": "Node",
+        "lib": ["ESNext"],
+        "module": "NodeNext",
         "outDir": "dist",
         "skipLibCheck": true,
         "strict": true,
         "target": "ESNext",
-        "types": ["cypress", "node"],
-    }
+        "types": ["node", "cypress"],
+    },
 }

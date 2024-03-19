@@ -1,34 +1,31 @@
-import { BasicAuthCredentials, JwtCredentials, PatCredentials } from "./authentication/credentials";
-import { JiraClientCloud } from "./client/jira/jiraClientCloud";
-import { JiraClientServer } from "./client/jira/jiraClientServer";
-import { XrayClientCloud } from "./client/xray/xrayClientCloud";
-import { XrayClientServer } from "./client/xray/xrayClientServer";
 import {
-    CucumberPreprocessorArgs,
-    CucumberPreprocessorExports,
-    importOptionalDependency,
-} from "./dependencies";
+    BasicAuthCredentials,
+    JwtCredentials,
+    PatCredentials,
+} from "./client/authentication/credentials";
+import { BaseJiraClient } from "./client/jira/jira-client";
+import { XrayClientCloud } from "./client/xray/xray-client-cloud";
+import { XrayClientServer } from "./client/xray/xray-client-server";
 import { ENV_NAMES } from "./env";
-import { LOG, Level } from "./logging/logging";
-import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
-import {
-    CachingJiraIssueFetcher,
-    CachingJiraIssueFetcherCloud,
-} from "./repository/jira/fields/jiraIssueFetcher";
-import { CachingJiraRepository } from "./repository/jira/jiraRepository";
 import {
     ClientCombination,
+    CypressXrayPluginOptions,
     InternalCucumberOptions,
     InternalJiraOptions,
     InternalPluginOptions,
     InternalSslOptions,
     InternalXrayOptions,
-    Options,
     PluginContext,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
+import {
+    CucumberPreprocessorArgs,
+    CucumberPreprocessorExports,
+    importOptionalDependency,
+} from "./util/dependencies";
 import { errorMessage } from "./util/errors";
 import { HELP } from "./util/help";
+import { LOG, Level } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asInt, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
 
@@ -57,7 +54,7 @@ export function clearPluginContext(): void {
  */
 export function initJiraOptions(
     env: Cypress.ObjectLike,
-    options: Options["jira"]
+    options: CypressXrayPluginOptions["jira"]
 ): InternalJiraOptions {
     const projectKey = parse(env, ENV_NAMES.jira.projectKey, asString) ?? options.projectKey;
     if (!projectKey) {
@@ -98,7 +95,6 @@ export function initJiraOptions(
         testExecutionIssueDescription:
             parse(env, ENV_NAMES.jira.testExecutionIssueDescription, asString) ??
             options.testExecutionIssueDescription,
-        testExecutionIssueDetails: { subtask: false },
         testExecutionIssueKey: testExecutionIssueKey,
         testExecutionIssueSummary:
             parse(env, ENV_NAMES.jira.testExecutionIssueSummary, asString) ??
@@ -127,7 +123,7 @@ export function initJiraOptions(
  */
 export function initPluginOptions(
     env: Cypress.ObjectLike,
-    options: Options["plugin"]
+    options: CypressXrayPluginOptions["plugin"]
 ): InternalPluginOptions {
     return {
         debug: parse(env, ENV_NAMES.plugin.debug, asBoolean) ?? options?.debug ?? false,
@@ -152,7 +148,7 @@ export function initPluginOptions(
  */
 export function initXrayOptions(
     env: Cypress.ObjectLike,
-    options: Options["xray"]
+    options: CypressXrayPluginOptions["xray"]
 ): InternalXrayOptions {
     return {
         status: {
@@ -186,7 +182,7 @@ export function initXrayOptions(
  */
 export async function initCucumberOptions(
     config: CucumberPreprocessorArgs[0],
-    options: Options["cucumber"]
+    options: CypressXrayPluginOptions["cucumber"]
 ): Promise<InternalCucumberOptions | undefined> {
     // Check if the user has chosen to upload Cucumber results, too.
     const featureFileExtension =
@@ -275,7 +271,7 @@ export async function initCucumberOptions(
  */
 export function initSslOptions(
     env: Cypress.ObjectLike,
-    options: Options["openSSL"]
+    options: CypressXrayPluginOptions["openSSL"]
 ): InternalSslOptions {
     return {
         ["rootCAPath"]: parse(env, ENV_NAMES.openSSL.rootCAPath, asString) ?? options?.rootCAPath,
@@ -309,7 +305,7 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
         await pingJiraInstance(jiraOptions.url, credentials);
-        const jiraClient = new JiraClientCloud(jiraOptions.url, credentials);
+        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials);
         if (
             ENV_NAMES.authentication.xray.clientId in env &&
             ENV_NAMES.authentication.xray.clientSecret in env
@@ -326,18 +322,10 @@ export async function initClients(
             );
             await pingXrayCloud(xrayCredentials);
             const xrayClient = new XrayClientCloud(xrayCredentials);
-            const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-            const jiraFieldFetcher = new CachingJiraIssueFetcherCloud(
-                jiraClient,
-                jiraFieldRepository,
-                xrayClient,
-                jiraOptions
-            );
             return {
                 kind: "cloud",
                 jiraClient: jiraClient,
                 xrayClient: xrayClient,
-                jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
             };
         } else {
             throw new Error(
@@ -354,22 +342,15 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
         await pingJiraInstance(jiraOptions.url, credentials);
-        const jiraClient = new JiraClientServer(jiraOptions.url, credentials);
+        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials);
         // Xray server authentication: no username, only token.
         LOG.message(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials");
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
-        const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-        const jiraFieldFetcher = new CachingJiraIssueFetcher(
-            jiraClient,
-            jiraFieldRepository,
-            jiraOptions.fields
-        );
         return {
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
         };
     } else if (
         ENV_NAMES.authentication.jira.username in env &&
@@ -385,24 +366,17 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.password] as string
         );
         await pingJiraInstance(jiraOptions.url, credentials);
-        const jiraClient = new JiraClientServer(jiraOptions.url, credentials);
+        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials);
         LOG.message(
             Level.INFO,
             "Jira username and password found. Setting up Xray server basic auth credentials"
         );
         await pingXrayServer(jiraOptions.url, credentials);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
-        const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-        const jiraFieldFetcher = new CachingJiraIssueFetcher(
-            jiraClient,
-            jiraFieldRepository,
-            jiraOptions.fields
-        );
         return {
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
         };
     } else {
         throw new Error(

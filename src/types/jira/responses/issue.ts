@@ -1,7 +1,7 @@
 import { Changelog } from "./changelog";
-import { EditMeta } from "./editMeta";
-import { IncludedFields } from "./includedFields";
-import { JsonType } from "./jsonType";
+import { EditMeta } from "./edit-meta";
+import { IncludedFields } from "./included-fields";
+import { JsonType } from "./json-type";
 import { Opsbar } from "./opsbar";
 import { Properties } from "./properties";
 import { Transition } from "./transition";

@@ -1,12 +1,12 @@
-import { AxiosHeaders, HttpStatusCode } from "axios";
+import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { SinonStubbedInstance, useFakeTimers } from "sinon";
 import { getMockedJwtCredentials, getMockedLogger, getMockedRestClient } from "../../test/mocks";
-import { JwtCredentials, PatCredentials } from "../authentication/credentials";
-import { AxiosRestClient } from "../https/requests";
-import { Level } from "../logging/logging";
+import { JwtCredentials, PatCredentials } from "../client/authentication/credentials";
+import { AxiosRestClient } from "../client/https/requests";
 import { dedent } from "./dedent";
+import { Level } from "./logging";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./ping";
 
 chai.use(chaiAsPromised);
@@ -252,7 +252,7 @@ describe("Xray cloud ping", () => {
     beforeEach(() => {
         restClient = getMockedRestClient();
     });
-    it("returns true on success", async () => {
+    it("returns on success", async () => {
         restClient.post
             .withArgs("https://example.org", {
                 ["client_id"]: "user",
@@ -270,15 +270,25 @@ describe("Xray cloud ping", () => {
         await pingXrayCloud(credentials);
     });
 
-    it("returns false on failure", async () => {
+    it("throws on failure", async () => {
         getMockedLogger({ allowUnstubbedCalls: true });
-        restClient.post.onFirstCall().resolves({
-            status: HttpStatusCode.NotFound,
-            data: "<div>Not Found</div>",
-            headers: {},
-            statusText: HttpStatusCode[HttpStatusCode.NotFound],
-            config: { headers: new AxiosHeaders() },
-        });
+        restClient.post.onFirstCall().rejects(
+            new AxiosError(
+                "Request failed with status code 404",
+                HttpStatusCode.BadRequest.toString(),
+                undefined,
+                null,
+                {
+                    status: HttpStatusCode.NotFound,
+                    statusText: HttpStatusCode[HttpStatusCode.NotFound],
+                    config: { headers: new AxiosHeaders() },
+                    headers: {},
+                    data: {
+                        errorMessages: ["not found"],
+                    },
+                }
+            )
+        );
         await expect(
             pingXrayCloud(new JwtCredentials("id", "secret", "https://example.org"))
         ).to.eventually.be.rejectedWith(

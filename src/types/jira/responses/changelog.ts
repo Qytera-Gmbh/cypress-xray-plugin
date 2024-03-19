@@ -1,4 +1,4 @@
-import { ChangeHistory } from "./changeHistory";
+import { ChangeHistory } from "./change-history";
 
 export interface Changelog {
     /**

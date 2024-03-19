@@ -64,7 +64,6 @@
             "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
             "id": "51529",
             "self": "https://example.org/rest/api/2/issue/51529",
-            "key": "CYP-237",
             "fields": {
                 "customfield_12100": {
                     "self": "https://example.org/rest/api/2/customFieldOption/12701",
