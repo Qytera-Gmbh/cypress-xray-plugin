@@ -8,6 +8,7 @@ import http from "http";
 import path from "path";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import { dedent } from "../src/util/dedent";
 
 void yargs(hideBin(process.argv))
     .strict()
@@ -54,15 +55,16 @@ void yargs(hideBin(process.argv))
             const query = argv.file ? `?file=${encodeURIComponent(argv.file)}` : "";
 
             console.log(
-                [
-                    "",
-                    "Serving plugin execution graph at:",
-                    "",
-                    `    ${chalk.green(`http://127.0.0.1:${port}${query}`)}`,
-                    "",
-                    `Press ${chalk.cyan("CTRL-C")} to stop the server`,
-                    "",
-                ].join("\n")
+                "\n",
+                dedent(`
+
+                    Serving plugin execution graph at:
+
+                        ${chalk.green(`http://127.0.0.1:${port}${query}`)}
+
+                    Press ${chalk.cyan("CTRL-C")} to stop the server
+
+                `)
             );
         }
     )
