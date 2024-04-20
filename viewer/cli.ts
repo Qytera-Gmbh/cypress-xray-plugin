@@ -10,6 +10,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
 void yargs(hideBin(process.argv))
+    .strict()
     .options({
         file: {
             type: "string",
@@ -27,7 +28,7 @@ void yargs(hideBin(process.argv))
             describe: "Run with verbose logging",
         },
     })
-    .scriptName("execution-viewer")
+    .scriptName("")
     .command(
         "show-execution [file]",
         "start the interactive execution viewer",
@@ -66,4 +67,5 @@ void yargs(hideBin(process.argv))
         }
     )
     .demandCommand(1, "")
+    .usage("\nUsage: cypress-xray-plugin <command>")
     .parse();
