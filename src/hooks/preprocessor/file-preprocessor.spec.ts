@@ -10,7 +10,7 @@ import {
     initXrayOptions,
 } from "../../context";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
-import { ExecutableGraph } from "../../util/graph/executable";
+import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Command } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";
 import { EditIssueFieldCommand } from "../util/commands/jira/edit-issue-field-command";

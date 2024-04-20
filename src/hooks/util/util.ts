@@ -1,5 +1,5 @@
 import { JiraClient } from "../../client/jira/jira-client";
-import { ExecutableGraph } from "../../util/graph/executable";
+import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Command } from "../command";
 import { ExtractFieldIdCommand, JiraField } from "./commands/jira/extract-field-id-command";
 import { FetchAllFieldsCommand } from "./commands/jira/fetch-all-fields-command";

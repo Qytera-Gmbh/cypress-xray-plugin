@@ -17,7 +17,7 @@ import {
     InternalCypressXrayPluginOptions,
 } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { ExecutableGraph } from "../../util/graph/executable";
+import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Level } from "../../util/logging";
 import { Command, ComputableState } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";

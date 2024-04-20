@@ -16,8 +16,7 @@ import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/run-result";
 import { CypressXrayPluginOptions, PluginContext } from "./types/plugin";
 import { dedent } from "./util/dedent";
-import { ExecutableGraph } from "./util/graph/executable";
-import * as dot from "./util/graph/visualisation/dot";
+import { ExecutableGraph } from "./util/graph/executable-graph";
 import { Level } from "./util/logging";
 
 describe(path.relative(process.cwd(), __filename), () => {
@@ -298,16 +297,6 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("creates an execution graph and displays a warning if there are failed vertices", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
-            stub(dot, "graphToDot")
-                .onFirstCall()
-                .resolves(
-                    dedent(`
-                        digraph "Plugin Execution Graph" {
-                          rankdir=TD;
-                          node[shape=none];
-                        }
-                    `)
-                );
             const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;

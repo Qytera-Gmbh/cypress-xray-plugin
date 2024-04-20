@@ -4,7 +4,7 @@ import { CypressRunResultType } from "../../types/cypress/run-result";
 import { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { ExecutableGraph } from "../../util/graph/executable";
+import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { LOG, Level } from "../../util/logging";
 import { Command, Computable, ComputableState } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";

@@ -3,7 +3,7 @@ import { getMockedLogger } from "../../../test/mocks";
 import { Computable, ComputableState, Stateful } from "../../hooks/command";
 import { SkippedError } from "../errors";
 import { Level } from "../logging";
-import { ExecutableGraph } from "./executable";
+import { ExecutableGraph } from "./executable-graph";
 
 class ComputableVertex implements Computable<unknown>, Stateful<ComputableState> {
     private readonly message: string;

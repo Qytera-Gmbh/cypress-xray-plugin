@@ -2,7 +2,7 @@ import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preproces
 import { JiraClient } from "../client/jira/jira-client";
 import { XrayClient } from "../client/xray/xray-client";
 import { Command } from "../hooks/command";
-import { ExecutableGraph } from "../util/graph/executable";
+import { ExecutableGraph } from "../util/graph/executable-graph";
 
 export interface CypressXrayPluginOptions {
     jira: JiraOptions;
