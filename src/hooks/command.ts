@@ -1,5 +1,6 @@
 import { EventEmitter } from "node:events";
 import { isSkippedError } from "../util/errors";
+import { CapturingLogger, Logger } from "../util/logging";
 
 /**
  * Models an entity which can compute a result.
@@ -65,6 +66,10 @@ export abstract class Command<R = unknown, P = unknown>
      * The command's parameters.
      */
     protected readonly parameters: P;
+    /**
+     * The logger to use for printing progress, failure or success messages.
+     */
+    protected readonly logger: Logger;
     private readonly result: Promise<R>;
     private readonly executeEmitter: EventEmitter = new EventEmitter();
     private state: ComputableState = ComputableState.INITIAL;
@@ -74,9 +79,11 @@ export abstract class Command<R = unknown, P = unknown>
      * Constructs a new command.
      *
      * @param parameters - the command parameters
+     * @param logger - the logger to use for log messages
      */
-    constructor(parameters: P) {
+    constructor(parameters: P, logger: Logger = new CapturingLogger()) {
         this.parameters = parameters;
+        this.logger = logger;
         this.result = new Promise<void>((resolve) => this.executeEmitter.once("execute", resolve))
             .then(this.computeResult.bind(this))
             .then((result: R) => {
@@ -127,6 +134,10 @@ export abstract class Command<R = unknown, P = unknown>
      */
     public getFailureOrSkipReason(): Error | null {
         return this.failureOrSkipReason;
+    }
+
+    public getLogger(): Logger {
+        return this.logger;
     }
 
     /**

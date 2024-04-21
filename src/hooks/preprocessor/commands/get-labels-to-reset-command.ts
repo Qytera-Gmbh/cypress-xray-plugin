@@ -1,6 +1,6 @@
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
-import { LOG, Level } from "../../../util/logging";
+import { Level } from "../../../util/logging";
 import { unknownToString } from "../../../util/string";
 import { Command, Computable } from "../../command";
 
@@ -23,7 +23,7 @@ export class GetLabelsToResetCommand extends Command<StringMap<string[]>, void> 
         const toReset: StringMap<string[]> = {};
         for (const [issueKey, newLabels] of Object.entries(newValues)) {
             if (!(issueKey in oldValues)) {
-                LOG.message(
+                this.logger.message(
                     Level.WARNING,
                     dedent(`
                         Skipping resetting labels of issue: ${issueKey}
@@ -37,7 +37,7 @@ export class GetLabelsToResetCommand extends Command<StringMap<string[]>, void> 
                 oldLabels.length === newLabels.length &&
                 newLabels.every((label) => oldLabels.includes(label))
             ) {
-                LOG.message(
+                this.logger.message(
                     Level.DEBUG,
                     dedent(`
                         Skipping resetting labels of issue: ${issueKey}

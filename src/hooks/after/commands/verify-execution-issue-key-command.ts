@@ -1,7 +1,7 @@
 import { InternalJiraOptions } from "../../../types/plugin";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
-import { LOG, Level } from "../../../util/logging";
+import { Level } from "../../../util/logging";
 import { Command, Computable } from "../../command";
 
 type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey" | "testExecutionIssueType"> & {
@@ -20,7 +20,7 @@ export class VerifyExecutionIssueKeyCommand extends Command<string, Parameters> 
     protected async computeResult(): Promise<string> {
         const resolvedExecutionIssueKey = await this.resolvedExecutionIssue.compute();
         if (resolvedExecutionIssueKey !== this.parameters.testExecutionIssueKey) {
-            LOG.message(
+            this.logger.message(
                 Level.WARNING,
                 dedent(`
                     ${

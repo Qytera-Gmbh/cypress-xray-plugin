@@ -1,7 +1,7 @@
 import { JiraClient } from "../../../../client/jira/jira-client";
 import { Attachment } from "../../../../types/jira/responses/attachment";
 import { SkippedError } from "../../../../util/errors";
-import { LOG, Level } from "../../../../util/logging";
+import { Level } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 
 interface Parameters {
@@ -29,7 +29,7 @@ export class AttachFilesCommand extends Command<Attachment[], Parameters> {
                 `Skipping attaching files to test execution issue ${resolvedExecutionIssueKey}: No files to attach`
             );
         }
-        LOG.message(
+        this.logger.message(
             Level.INFO,
             `Attaching files to test execution issue ${resolvedExecutionIssueKey}`
         );

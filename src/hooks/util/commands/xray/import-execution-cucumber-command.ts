@@ -1,6 +1,6 @@
 import { XrayClient } from "../../../../client/xray/xray-client";
 import { CucumberMultipart } from "../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { LOG, Level } from "../../../../util/logging";
+import { Level } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 
 interface Parameters {
@@ -16,7 +16,7 @@ export class ImportExecutionCucumberCommand extends Command<string, Parameters> 
 
     protected async computeResult(): Promise<string> {
         const cucumberMultipart = await this.cucumberMultipart.compute();
-        LOG.message(Level.INFO, "Uploading Cucumber test results");
+        this.logger.message(Level.INFO, "Uploading Cucumber test results");
         return await this.parameters.xrayClient.importExecutionCucumberMultipart(
             cucumberMultipart.features,
             cucumberMultipart.info

@@ -1,7 +1,7 @@
 import { ImportFeatureResponse } from "../../../types/xray/responses/import-feature";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
-import { LOG, Level } from "../../../util/logging";
+import { Level } from "../../../util/logging";
 import { computeOverlap } from "../../../util/set";
 import { Command, Computable } from "../../command";
 
@@ -54,7 +54,7 @@ export class GetUpdatedIssuesCommand extends Command<string[], void> {
             } else {
                 mismatchLines = mismatchLinesJira.join("\n");
             }
-            LOG.message(
+            this.logger.message(
                 Level.WARNING,
                 dedent(`
                     Mismatch between feature file issue tags and updated Jira issues detected

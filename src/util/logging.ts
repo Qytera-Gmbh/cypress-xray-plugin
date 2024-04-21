@@ -154,6 +154,60 @@ export class PluginLogger implements Logger {
 }
 
 /**
+ * A logger which does not print anything itself but rather collects all log messages for later
+ * retrieval.
+ */
+export class CapturingLogger implements Logger {
+    private readonly messages: Parameters<Logger["message"]>[] = [];
+    private readonly fileLogMessages: Parameters<Logger["logToFile"]>[] = [];
+    private readonly fileLogErrorMessages: Parameters<Logger["logErrorToFile"]>[] = [];
+
+    public message(level: Level, ...text: string[]): void {
+        this.messages.push([level, ...text]);
+    }
+
+    /**
+     * Returns the captured log messages.
+     *
+     * @returns the log messages
+     */
+    public getMessages(): readonly Parameters<Logger["message"]>[] {
+        return this.messages;
+    }
+
+    public logToFile(data: string, filename: string): string {
+        this.fileLogMessages.push([data, filename]);
+        return filename;
+    }
+
+    /**
+     * Returns the captured _log to file_ messages.
+     *
+     * @returns the _log to file_ messages
+     */
+    public getFileLogMessages(): readonly Parameters<Logger["logToFile"]>[] {
+        return this.fileLogMessages;
+    }
+
+    public logErrorToFile(error: unknown, filename: string): void {
+        this.fileLogErrorMessages.push([error, filename]);
+    }
+
+    /**
+     * Returns the captured _log error to file_ messages.
+     *
+     * @returns the _log error to file_ messages
+     */
+    public getFileLogErrorMessages(): readonly Parameters<Logger["logErrorToFile"]>[] {
+        return this.fileLogErrorMessages;
+    }
+
+    public configure(): void {
+        // Do nothing.
+    }
+}
+
+/**
  * The global logger instance.
  */
 export const LOG: Logger = new PluginLogger();

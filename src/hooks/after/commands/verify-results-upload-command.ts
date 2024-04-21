@@ -1,6 +1,6 @@
 import { dedent } from "../../../util/dedent";
 import { SkippedError } from "../../../util/errors";
-import { LOG, Level } from "../../../util/logging";
+import { Level } from "../../../util/logging";
 import { Command, Computable } from "../../command";
 
 interface Parameters {
@@ -38,20 +38,20 @@ export class VerifyResultsUploadCommand extends Command<string, Parameters> {
                     `)
                 );
             } else {
-                LOG.message(
+                this.logger.message(
                     Level.SUCCESS,
                     `Uploaded test results to issue: ${cypressExecutionIssueKey} (${this.parameters.url}/browse/${cypressExecutionIssueKey})`
                 );
                 return cypressExecutionIssueKey;
             }
         } else if (cypressExecutionIssueKey) {
-            LOG.message(
+            this.logger.message(
                 Level.SUCCESS,
                 `Uploaded Cypress test results to issue: ${cypressExecutionIssueKey} (${this.parameters.url}/browse/${cypressExecutionIssueKey})`
             );
             return cypressExecutionIssueKey;
         } else if (cucumberExecutionIssueKey) {
-            LOG.message(
+            this.logger.message(
                 Level.SUCCESS,
                 `Uploaded Cucumber test results to issue: ${cucumberExecutionIssueKey} (${this.parameters.url}/browse/${cucumberExecutionIssueKey})`
             );

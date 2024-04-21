@@ -3,7 +3,7 @@ import { Issue } from "../../../../types/jira/responses/issue";
 import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
 import { errorMessage } from "../../../../util/errors";
-import { LOG, Level } from "../../../../util/logging";
+import { Level } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 import { JiraField } from "./extract-field-id-command";
 
@@ -45,7 +45,7 @@ export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> exten
         const unknownIssues = issueKeys.filter((key) => issues.every((issue) => issue.key !== key));
         if (unknownIssues.length > 0) {
             unknownIssues.sort();
-            LOG.message(
+            this.logger.message(
                 Level.WARNING,
                 dedent(`
                     Failed to find Jira issues:
@@ -69,7 +69,7 @@ export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> exten
         }
         if (issuesWithUnparseableField.length > 0) {
             issuesWithUnparseableField.sort();
-            LOG.message(
+            this.logger.message(
                 Level.WARNING,
                 dedent(`
                     Failed to parse Jira field with ID ${fieldId} in issues:

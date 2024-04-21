@@ -3,7 +3,7 @@ import { Issue } from "../../../../types/jira/responses/issue";
 import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
 import { extractNestedString } from "../../../../util/extraction";
-import { LOG, Level } from "../../../../util/logging";
+import { Level } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 import { JiraField } from "./extract-field-id-command";
 import { GetFieldValuesCommand } from "./get-field-values-command";
@@ -43,7 +43,7 @@ export class GetTestTypeValuesCommandCloud extends Command<StringMap<string>, Pa
         const missingTypes = issueKeys.filter((key) => !(key in testTypes));
         if (missingTypes.length > 0) {
             missingTypes.sort();
-            LOG.message(
+            this.logger.message(
                 Level.WARNING,
                 dedent(`
                     Failed to retrieve test types of issues:

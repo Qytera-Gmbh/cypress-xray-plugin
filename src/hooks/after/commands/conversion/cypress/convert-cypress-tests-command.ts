@@ -17,7 +17,7 @@ import { encodeFile } from "../../../../../util/base64";
 import { dedent } from "../../../../../util/dedent";
 import { errorMessage } from "../../../../../util/errors";
 import { normalizedFilename } from "../../../../../util/files";
-import { LOG, Level } from "../../../../../util/logging";
+import { Level } from "../../../../../util/logging";
 import { truncateIsoTime } from "../../../../../util/time";
 import { Command, Computable } from "../../../../command";
 import { getNativeTestIssueKey } from "../../../util";
@@ -56,7 +56,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 );
                 xrayTests.push(test);
             } catch (error: unknown) {
-                LOG.message(
+                this.logger.message(
                     Level.WARNING,
                     dedent(`
                         Skipping result upload for test: ${testData.title}
@@ -106,7 +106,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
             if (promise.status === "fulfilled") {
                 testRunData.push(promise.value);
             } else {
-                LOG.message(
+                this.logger.message(
                     Level.WARNING,
                     dedent(`
                         Skipping result upload for test: ${conversionPromises[index][0]}
@@ -122,7 +122,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                     for (const screenshot of run.screenshots) {
                         if (!this.willBeUploaded(screenshot, testRunData)) {
                             const path = parse(screenshot.path);
-                            LOG.message(
+                            this.logger.message(
                                 Level.WARNING,
                                 dedent(`
                                     Screenshot will not be uploaded: ${screenshot.path}

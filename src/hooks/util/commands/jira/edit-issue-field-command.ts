@@ -1,7 +1,7 @@
 import { JiraClient } from "../../../../client/jira/jira-client";
 import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
-import { LOG, Level } from "../../../../util/logging";
+import { Level } from "../../../../util/logging";
 import { unknownToString } from "../../../../util/string";
 import { Command, Computable } from "../../../command";
 import { FieldValueMap } from "./get-field-values-command";
@@ -38,7 +38,7 @@ export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Comman
                     await this.parameters.jiraClient.editIssue(issueKey, { fields: fields })
                 );
             } catch (error: unknown) {
-                LOG.message(
+                this.logger.message(
                     Level.ERROR,
                     dedent(`
                         Failed to set ${unknownToString(
