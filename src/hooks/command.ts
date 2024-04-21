@@ -68,7 +68,7 @@ export abstract class Command<R = unknown, P = unknown>
     private readonly result: Promise<R>;
     private readonly executeEmitter: EventEmitter = new EventEmitter();
     private state: ComputableState = ComputableState.INITIAL;
-    private failureOrSkipReason: unknown = null;
+    private failureOrSkipReason: Error | null = null;
 
     /**
      * Constructs a new command.
@@ -86,11 +86,12 @@ export abstract class Command<R = unknown, P = unknown>
             .catch((error: unknown) => {
                 if (isSkippedError(error)) {
                     this.setState(ComputableState.SKIPPED);
-                } else {
+                    this.failureOrSkipReason = error;
+                } else if (error instanceof Error) {
                     this.setState(ComputableState.FAILED);
+                    this.failureOrSkipReason = error;
                 }
-                this.failureOrSkipReason = error;
-                throw error;
+                throw new Error("Encountered unexpected error", { cause: error });
             });
     }
 
@@ -120,11 +121,11 @@ export abstract class Command<R = unknown, P = unknown>
     }
 
     /**
-     * Returns the reason why the command failed or was skipped.
+     * Returns the error why the command failed or was skipped.
      *
-     * @returns the reason
+     * @returns the error or `null` if the command succeeded
      */
-    public getFailureOrSkipReason(): unknown {
+    public getFailureOrSkipReason(): Error | null {
         return this.failureOrSkipReason;
     }
 
