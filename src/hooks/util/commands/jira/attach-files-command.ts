@@ -2,7 +2,7 @@ import { JiraClient } from "../../../../client/jira/jira-client";
 import { Attachment } from "../../../../types/jira/responses/attachment";
 import { SkippedError } from "../../../../util/errors";
 import { LOG, Level } from "../../../../util/logging";
-import { Command, Computable } from "../../../command";
+import { Command, CommandDescription, Computable } from "../../../command";
 
 interface Parameters {
     jiraClient: JiraClient;
@@ -19,6 +19,13 @@ export class AttachFilesCommand extends Command<Attachment[], Parameters> {
         super(parameters);
         this.files = files;
         this.resolvedExecutionIssueKey = resolvedExecutionIssueKey;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description: "Attaches files to a test execution issue.",
+            runtimeInputs: ["the files to attach", "a mapping of issues to their new values"],
+        };
     }
 
     protected async computeResult(): Promise<Attachment[]> {

@@ -4,11 +4,21 @@ import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
 import { extractNestedString } from "../../../../util/extraction";
 import { LOG, Level } from "../../../../util/logging";
-import { Command, Computable } from "../../../command";
+import { Command, CommandDescription, Computable } from "../../../command";
 import { JiraField } from "./extract-field-id-command";
 import { GetFieldValuesCommand } from "./get-field-values-command";
 
 export class GetTestTypeValuesCommandServer extends GetFieldValuesCommand<JiraField.TEST_TYPE> {
+    public getDescription(): CommandDescription {
+        return {
+            description: "Retrieves test type field values of provided Jira issues.",
+            runtimeInputs: [
+                "the ID of the test type field",
+                "the issue keys whose test types to retrieve",
+            ],
+        };
+    }
+
     protected async computeResult(): Promise<StringMap<string>> {
         // Field property example:
         // customfield_12100: {
@@ -32,6 +42,16 @@ export class GetTestTypeValuesCommandCloud extends Command<StringMap<string>, Pa
     constructor(parameters: Parameters, issueKeys: Computable<string[]>) {
         super(parameters);
         this.issueKeys = issueKeys;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description: "Retrieves test type field values of provided Jira issues.",
+            runtimeInputs: [
+                "the ID of the test type field",
+                "the issue keys whose test types to retrieve",
+            ],
+        };
     }
 
     protected async computeResult(): Promise<StringMap<string>> {

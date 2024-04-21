@@ -2,7 +2,7 @@ import { XrayClient } from "../../../../client/xray/xray-client";
 import { ImportFeatureResponse } from "../../../../types/xray/responses/import-feature";
 import { dedent } from "../../../../util/dedent";
 import { LOG, Level } from "../../../../util/logging";
-import { Command } from "../../../command";
+import { Command, CommandDescription } from "../../../command";
 
 interface Parameters {
     xrayClient: XrayClient;
@@ -13,6 +13,13 @@ interface Parameters {
 }
 
 export class ImportFeatureCommand extends Command<ImportFeatureResponse, Parameters> {
+    public getDescription(): CommandDescription {
+        return {
+            description: "Imports a Gherkin feature file to Xray.",
+            runtimeInputs: [],
+        };
+    }
+
     protected async computeResult(): Promise<ImportFeatureResponse> {
         LOG.message(Level.INFO, `Importing feature file to Xray: ${this.parameters.filePath}`);
         const importResponse = await this.parameters.xrayClient.importFeature(

@@ -2,7 +2,7 @@ import { InternalJiraOptions } from "../../../types/plugin";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
 import { LOG, Level } from "../../../util/logging";
-import { Command, Computable } from "../../command";
+import { Command, CommandDescription, Computable } from "../../command";
 
 type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey" | "testExecutionIssueType"> & {
     displayCloudHelp: boolean;
@@ -15,6 +15,16 @@ export class VerifyExecutionIssueKeyCommand extends Command<string, Parameters> 
     constructor(parameters: Parameters, resolvedExecutionIssue: Computable<string>) {
         super(parameters);
         this.resolvedExecutionIssue = resolvedExecutionIssue;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description:
+                "Verifies that a test results upload to Xray did not create or modify a Jira test execution issue other than the configured one.",
+            runtimeInputs: [
+                "the actual Jira test execution issue key Xray created or modified during upload",
+            ],
+        };
     }
 
     protected async computeResult(): Promise<string> {

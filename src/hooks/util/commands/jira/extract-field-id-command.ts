@@ -3,7 +3,7 @@ import { JiraFieldIds } from "../../../../types/plugin";
 import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
 import { prettyPadObjects, prettyPadValues } from "../../../../util/pretty";
-import { Command, Computable } from "../../../command";
+import { Command, CommandDescription, Computable } from "../../../command";
 
 export enum JiraField {
     DESCRIPTION = "description",
@@ -23,6 +23,13 @@ export class ExtractFieldIdCommand extends Command<string, Parameters> {
     constructor(parameters: Parameters, allFields: Computable<FieldDetail[]>) {
         super(parameters);
         this.allFields = allFields;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description: "Extracts the ID of a Jira field.",
+            runtimeInputs: ["all fields available in the Jira instance"],
+        };
     }
 
     protected async computeResult(): Promise<string> {

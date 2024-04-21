@@ -5,7 +5,7 @@ import {
     InternalXrayOptions,
 } from "../../../../../types/plugin";
 import { CucumberMultipartInfo } from "../../../../../types/xray/requests/import-execution-cucumber-multipart-info";
-import { Command, Computable } from "../../../../command";
+import { Command, CommandDescription, Computable } from "../../../../command";
 import {
     RunData,
     TestExecutionIssueData,
@@ -41,6 +41,17 @@ export abstract class ConvertCucumberInfoCommand extends Command<
         super(parameters);
         this.testExecutionIssueType = testExecutionIssueType;
         this.runInformation = runInformation;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description:
+                "Converts the test run data into valid Jira test execution data which can be parsed by Xray during Cucumber result imports to create or modify an appropriate test execution issue.",
+            runtimeInputs: [
+                "the Jira test execution issue type",
+                "Cypress run information such as test start and end timestamps",
+            ],
+        };
     }
 
     protected async computeResult(): Promise<CucumberMultipartInfo> {
@@ -80,6 +91,18 @@ export class ConvertCucumberInfoServerCommand extends ConvertCucumberInfoCommand
         }
         this.testPlanId = fieldIds?.testPlanId;
         this.testEnvironmentsId = fieldIds?.testEnvironmentsId;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description:
+                "Converts the test run data into valid Jira test execution data which can be parsed by Xray during Cucumber result imports to create or modify an appropriate test execution issue.",
+            runtimeInputs: [
+                "the Jira test execution issue type",
+                "Cypress run information such as test start and end timestamps",
+                "necessary Jira field IDs for configuring test environments or the execution's test plan",
+            ],
+        };
     }
 
     protected async buildInfo(

@@ -3,7 +3,7 @@ import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
 import { LOG, Level } from "../../../util/logging";
 import { computeOverlap } from "../../../util/set";
-import { Command, Computable } from "../../command";
+import { Command, CommandDescription, Computable } from "../../command";
 
 export class GetUpdatedIssuesCommand extends Command<string[], void> {
     private readonly expectedAffectedIssues: Computable<string[]>;
@@ -16,6 +16,14 @@ export class GetUpdatedIssuesCommand extends Command<string[], void> {
         super();
         this.expectedAffectedIssues = expectedAffectedIssues;
         this.importResponse = importResponse;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description:
+                "Compares a list of known Jira issues with the issues updated following a feature file import and returns the issues which were actually created or modified.",
+            runtimeInputs: ["the list of known Jira issues", "the feature file import response"],
+        };
     }
 
     protected async computeResult(): Promise<string[]> {

@@ -55,6 +55,20 @@ export interface Stateful<S> {
 }
 
 /**
+ * Models the description of a command.
+ */
+export interface CommandDescription {
+    /**
+     * A short, human-readable description of what the command does.
+     */
+    description: string;
+    /**
+     * A description of inputs the command requires at runtime.
+     */
+    runtimeInputs: string[];
+}
+
+/**
  * Models a generic command. The command only starts doing something when
  * {@link compute | `compute`} is triggered.
  */
@@ -127,6 +141,13 @@ export abstract class Command<R = unknown, P = unknown>
     public getFailureOrSkipReason(): unknown {
         return this.failureOrSkipReason;
     }
+
+    /**
+     * Returns a description of what the command does.
+     *
+     * @returns the description
+     */
+    public abstract getDescription(): CommandDescription;
 
     /**
      * Computes the command's result.

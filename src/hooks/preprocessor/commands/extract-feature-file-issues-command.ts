@@ -7,7 +7,7 @@ import {
     multipleTestKeysInCucumberScenarioError,
 } from "../../../util/errors";
 import { HELP } from "../../../util/help";
-import { Command, Computable } from "../../command";
+import { Command, CommandDescription, Computable } from "../../command";
 import {
     getCucumberPreconditionIssueComments,
     getCucumberPreconditionIssueTags,
@@ -25,6 +25,13 @@ export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueDat
     constructor(parameters: Parameters, document: Computable<GherkinDocument>) {
         super(parameters);
         this.document = document;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description: "Extracts Jira-related data from a parsed Gherkin file.",
+            runtimeInputs: ["the parsed Gherkin data"],
+        };
     }
 
     protected async computeResult(): Promise<FeatureFileIssueData> {

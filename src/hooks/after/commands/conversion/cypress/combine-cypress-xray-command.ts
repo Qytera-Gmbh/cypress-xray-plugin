@@ -4,7 +4,7 @@ import {
     XrayTestExecutionInfo,
     XrayTestExecutionResults,
 } from "../../../../../types/xray/import-test-execution-results";
-import { Command, Computable } from "../../../../command";
+import { Command, CommandDescription, Computable } from "../../../../command";
 
 type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey">;
 
@@ -20,6 +20,17 @@ export class CombineCypressJsonCommand extends Command<XrayTestExecutionResults,
         super(parameters);
         this.cypressTestsJson = cypressTestsJson;
         this.cypressTestsInfo = cypressTestsInfo;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description:
+                "Aggregates Xray JSON data in preparation of an upload of Cypress test results to Xray.",
+            runtimeInputs: [
+                "native Cypress test results in Xray JSON format",
+                "information about a Jira test execution issue in Xray JSON format",
+            ],
+        };
     }
 
     protected async computeResult(): Promise<XrayTestExecutionResults> {

@@ -1,6 +1,6 @@
 import { XrayTestExecutionResults } from "../../../../../types/xray/import-test-execution-results";
 import { SkippedError } from "../../../../../util/errors";
-import { Command, Computable } from "../../../../command";
+import { Command, CommandDescription, Computable } from "../../../../command";
 
 export class AssertCypressConversionValidCommand extends Command<void, void> {
     private readonly xrayTestExecutionResults: Computable<XrayTestExecutionResults>;
@@ -8,6 +8,13 @@ export class AssertCypressConversionValidCommand extends Command<void, void> {
     constructor(xrayTestExecutionResults: Computable<XrayTestExecutionResults>) {
         super();
         this.xrayTestExecutionResults = xrayTestExecutionResults;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description: "Asserts that at least one native Cypress test was executed.",
+            runtimeInputs: ["the Cypress run information in Xray JSON format"],
+        };
     }
 
     protected async computeResult(): Promise<void> {

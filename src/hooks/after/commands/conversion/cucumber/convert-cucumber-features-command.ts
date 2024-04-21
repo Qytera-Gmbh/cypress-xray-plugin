@@ -4,7 +4,7 @@ import {
     InternalXrayOptions,
 } from "../../../../../types/plugin";
 import { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { Command, Computable } from "../../../../command";
+import { Command, CommandDescription, Computable } from "../../../../command";
 import { buildMultipartFeatures } from "./util/multipart-feature";
 
 interface Parameters {
@@ -34,6 +34,14 @@ export class ConvertCucumberFeaturesCommand extends Command<
         super(parameters);
         this.input = input;
         this.testExecutionIssueKey = testExecutionIssueKey;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description:
+                "Modifies Cucumber reports by adding test execution issue tags and filtering screenshots, based on the plugin options provided. The command also asserts that every scenario contained within the report has been appropriately tagged with either Xray cloud or Xray server tags and discards untagged ones.",
+            runtimeInputs: ["the Cucumber report", "the test execution issue key"],
+        };
     }
 
     protected async computeResult(): Promise<CucumberMultipartFeature[]> {

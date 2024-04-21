@@ -3,7 +3,7 @@ import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
 import { LOG, Level } from "../../../../util/logging";
 import { unknownToString } from "../../../../util/string";
-import { Command, Computable } from "../../../command";
+import { Command, CommandDescription, Computable } from "../../../command";
 import { FieldValueMap } from "./get-field-values-command";
 
 interface Parameters<F extends keyof FieldValueMap> {
@@ -25,6 +25,16 @@ export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Comman
         super(parameters);
         this.fieldId = fieldId;
         this.fieldValues = fieldValues;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description: "Updates a single field of one or more Jira issues to certain values.",
+            runtimeInputs: [
+                "the field ID of the field to update in each issue",
+                "a mapping of issues to their new values",
+            ],
+        };
     }
 
     protected async computeResult(): Promise<string[]> {

@@ -2,7 +2,7 @@ import { IssueTypeDetails } from "../../../types/jira/responses/issue-type-detai
 import { InternalJiraOptions } from "../../../types/plugin";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
-import { Command, Computable } from "../../command";
+import { Command, CommandDescription, Computable } from "../../command";
 
 type Parameters = Pick<InternalJiraOptions, "projectKey" | "testExecutionIssueType"> & {
     displayCloudHelp: boolean;
@@ -14,6 +14,14 @@ export class ExtractExecutionIssueTypeCommand extends Command<IssueTypeDetails, 
     constructor(parameters: Parameters, allIssueDetails: Computable<IssueTypeDetails[]>) {
         super(parameters);
         this.allIssueDetails = allIssueDetails;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description:
+                "Extracts the configured Jira test execution issue type from all issue types available in the Jira instance.",
+            runtimeInputs: ["all Jira issue types available in the Jira instace"],
+        };
     }
 
     protected async computeResult(): Promise<IssueTypeDetails> {

@@ -19,7 +19,7 @@ import { errorMessage } from "../../../../../util/errors";
 import { normalizedFilename } from "../../../../../util/files";
 import { LOG, Level } from "../../../../../util/logging";
 import { truncateIsoTime } from "../../../../../util/time";
-import { Command, Computable } from "../../../../command";
+import { Command, CommandDescription, Computable } from "../../../../command";
 import { getNativeTestIssueKey } from "../../../util";
 import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./util/run";
 import { getXrayStatus } from "./util/status";
@@ -37,6 +37,13 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
     constructor(parameters: Parameters, results: Computable<CypressRunResultType>) {
         super(parameters);
         this.results = results;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description: "Converts Cypress test results into Xray test result JSON.",
+            runtimeInputs: ["native Cypress test results"],
+        };
     }
 
     protected async computeResult(): Promise<[XrayTest, ...XrayTest[]]> {

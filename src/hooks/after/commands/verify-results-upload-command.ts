@@ -1,7 +1,7 @@
 import { dedent } from "../../../util/dedent";
 import { SkippedError } from "../../../util/errors";
 import { LOG, Level } from "../../../util/logging";
-import { Command, Computable } from "../../command";
+import { Command, CommandDescription, Computable } from "../../command";
 
 interface Parameters {
     url: string;
@@ -21,6 +21,19 @@ export class VerifyResultsUploadCommand extends Command<string, Parameters> {
         super(parameters);
         this.resolvedCypressExecutionIssueKey = inputs?.cypressExecutionIssueKey;
         this.resolvedCucumberExecutionIssueKey = inputs?.cucumberExecutionIssueKey;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description: dedent(`
+                Verifies that the test result upload was successful and returns the corresponding Jira test execution issue key.
+
+                If both Cucumber and Cypress results were uploaded, the command furthermore verifies that both uploads targeted the same test execution issue.
+            `),
+            runtimeInputs: [
+                "the actual Jira test execution issue key Xray created or modified during upload",
+            ],
+        };
     }
 
     protected async computeResult(): Promise<string> {

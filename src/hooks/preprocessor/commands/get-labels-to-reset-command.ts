@@ -2,7 +2,7 @@ import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
 import { LOG, Level } from "../../../util/logging";
 import { unknownToString } from "../../../util/string";
-import { Command, Computable } from "../../command";
+import { Command, CommandDescription, Computable } from "../../command";
 
 export class GetLabelsToResetCommand extends Command<StringMap<string[]>, void> {
     private readonly oldValues: Computable<StringMap<string[]>>;
@@ -15,6 +15,17 @@ export class GetLabelsToResetCommand extends Command<StringMap<string[]>, void> 
         super();
         this.oldValues = oldValues;
         this.newValues = newValues;
+    }
+
+    public getDescription(): CommandDescription {
+        return {
+            description:
+                "Compares backed up Jira issue labels with current labels and returns the issues whose labels need to be reverted to the backed up version.",
+            runtimeInputs: [
+                "a mapping of Jira issues to their backed up labels",
+                "a mapping of Jira issues to their current labels",
+            ],
+        };
     }
 
     protected async computeResult(): Promise<StringMap<string[]>> {

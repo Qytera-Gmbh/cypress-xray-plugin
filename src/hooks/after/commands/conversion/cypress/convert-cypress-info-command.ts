@@ -3,7 +3,7 @@ import { InternalJiraOptions, InternalXrayOptions } from "../../../../../types/p
 import { XrayTestExecutionInfo } from "../../../../../types/xray/import-test-execution-results";
 import { dedent } from "../../../../../util/dedent";
 import { truncateIsoTime } from "../../../../../util/time";
-import { Command, Computable } from "../../../../command";
+import { Command, CommandDescription, Computable } from "../../../../command";
 
 interface Parameters {
     jira: Pick<
@@ -24,13 +24,20 @@ export class ConvertCypressInfoCommand extends Command<XrayTestExecutionInfo, Pa
         this.results = results;
     }
 
+    public getDescription(): CommandDescription {
+        return {
+            description: "Converts Cypress test results into Xray test execution issue JSON.",
+            runtimeInputs: ["native Cypress test results"],
+        };
+    }
+
     protected async computeResult(): Promise<XrayTestExecutionInfo> {
         const results = await this.results.compute();
         return {
             project: this.parameters.jira.projectKey,
             startDate: truncateIsoTime(results.startedTestsAt),
             finishDate: truncateIsoTime(results.endedTestsAt),
-            description: this.getDescription(results),
+            description: this.getIssueDescription(results),
             summary: this.getTextExecutionResultSummary(results),
             testPlanKey: this.parameters.jira.testPlanIssueKey,
             testEnvironments: this.parameters.xray.testEnvironments,
@@ -51,7 +58,7 @@ export class ConvertCypressInfoCommand extends Command<XrayTestExecutionInfo, Pa
         );
     }
 
-    private getDescription(results: CypressRunResultType): string | undefined {
+    private getIssueDescription(results: CypressRunResultType): string | undefined {
         // Don't replace existing execution descriptions with the default one.
         if (
             this.parameters.jira.testExecutionIssueKey &&
