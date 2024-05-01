@@ -134,7 +134,7 @@ export function addXrayResultUpload(on: Cypress.PluginEvents): void {
                 LOG.message(
                     Level.ERROR,
                     dedent(`
-                        Skipping after:run hook: Failed to run ${failedResult.failures} tests
+                        Skipping after:run hook: Failed to run ${failedResult.failures.toString()} tests
 
                         ${failedResult.message}
                     `)
