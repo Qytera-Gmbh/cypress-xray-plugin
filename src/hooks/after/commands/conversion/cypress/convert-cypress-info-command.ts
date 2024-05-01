@@ -47,7 +47,7 @@ export class ConvertCypressInfoCommand extends Command<XrayTestExecutionInfo, Pa
         }
         return (
             this.parameters.jira.testExecutionIssueSummary ??
-            `Execution Results [${new Date(results.startedTestsAt).getTime()}]`
+            `Execution Results [${new Date(results.startedTestsAt).getTime().toString()}]`
         );
     }
 

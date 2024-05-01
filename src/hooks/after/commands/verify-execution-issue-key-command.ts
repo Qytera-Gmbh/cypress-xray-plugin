@@ -19,7 +19,10 @@ export class VerifyExecutionIssueKeyCommand extends Command<string, Parameters> 
 
     protected async computeResult(): Promise<string> {
         const resolvedExecutionIssueKey = await this.resolvedExecutionIssue.compute();
-        if (resolvedExecutionIssueKey !== this.parameters.testExecutionIssueKey) {
+        if (
+            this.parameters.testExecutionIssueKey &&
+            resolvedExecutionIssueKey !== this.parameters.testExecutionIssueKey
+        ) {
             this.logger.message(
                 Level.WARNING,
                 dedent(`

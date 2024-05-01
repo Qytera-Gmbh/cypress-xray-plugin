@@ -156,14 +156,24 @@ export class BaseJiraClient extends Client implements JiraClient {
                 );
                 LOG.message(
                     Level.DEBUG,
-                    `Successfully retrieved data for ${response.data.length} issue types.`
+                    `Successfully retrieved data for ${response.data.length.toString()} issue types.`
                 );
                 LOG.message(
                     Level.DEBUG,
                     dedent(`
                         Received data for issue types:
                         ${response.data
-                            .map((issueType) => `${issueType.name} (id: ${issueType.id})`)
+                            .map((issueType) => {
+                                if (issueType.name) {
+                                    if (issueType.id) {
+                                        return `${issueType.name} (id: ${issueType.id})`;
+                                    }
+                                    return `${issueType.name} (id: undefined)`;
+                                } else if (issueType.id) {
+                                    return `undefined (id: ${issueType.id})`;
+                                }
+                                return "undefined (id: undefined)";
+                            })
                             .join("\n")}
                     `)
                 );
@@ -194,7 +204,7 @@ export class BaseJiraClient extends Client implements JiraClient {
                 );
                 LOG.message(
                     Level.DEBUG,
-                    `Successfully retrieved data for ${response.data.length} fields`
+                    `Successfully retrieved data for ${response.data.length.toString()} fields`
                 );
                 LOG.message(
                     Level.DEBUG,
@@ -252,7 +262,7 @@ export class BaseJiraClient extends Client implements JiraClient {
                         }
                     }
                 } while (startAt && startAt < total);
-                LOG.message(Level.DEBUG, `Found ${total} issues`);
+                LOG.message(Level.DEBUG, `Found ${total.toString()} issues`);
                 return Object.values(results);
             } finally {
                 clearInterval(progressInterval);

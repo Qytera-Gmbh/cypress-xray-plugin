@@ -60,7 +60,10 @@ export class ExtractExecutionIssueTypeCommand extends Command<IssueTypeDetails, 
                         this.parameters.projectKey
                     }:
                       ${executionIssueDetails
-                          .map((details) => `${details.name}: ${JSON.stringify(details)}`)
+                          .map(
+                              (details) =>
+                                  `${details.name ?? "undefined"}: ${JSON.stringify(details)}`
+                          )
                           .join("\n")}
 
                     If none of them is the test execution issue type you're using in project ${

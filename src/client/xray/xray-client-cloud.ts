@@ -141,7 +141,7 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                 } while (start && start < total);
                 LOG.message(
                     Level.DEBUG,
-                    `Successfully retrieved test types for ${issueKeys.length} issues`
+                    `Successfully retrieved test types for ${issueKeys.length.toString()} issues`
                 );
                 return types;
             } finally {

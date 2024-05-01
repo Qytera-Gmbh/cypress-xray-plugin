@@ -64,7 +64,9 @@ export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> exten
                     issuesWithUnparseableField.push(`Unknown: ${JSON.stringify(issue)}`);
                 }
             } catch (error: unknown) {
-                issuesWithUnparseableField.push(`${issue.key}: ${errorMessage(error)}`);
+                issuesWithUnparseableField.push(
+                    `${issue.key ?? "undefined"}: ${errorMessage(error)}`
+                );
             }
         }
         if (issuesWithUnparseableField.length > 0) {

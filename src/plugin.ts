@@ -97,7 +97,7 @@ export async function configureXrayPlugin(
                 LOG.message(
                     Level.ERROR,
                     dedent(`
-                        Skipping results upload: Failed to run ${failedResult.failures} tests
+                        Skipping results upload: Failed to run ${failedResult.failures.toString()} tests
 
                         ${failedResult.message}
                     `)

@@ -156,7 +156,9 @@ function mockCalledUnexpectedlyError(...args: unknown[]): Error {
         return new Error(
             dedent(`
                 Mock called unexpectedly with args:
-                  ${args.map((arg, index) => `arg ${index}: ${JSON.stringify(arg)}`).join("\n")};
+                  ${args
+                      .map((arg, index) => `arg ${index.toString()}: ${JSON.stringify(arg)}`)
+                      .join("\n")};
             `)
         );
     }

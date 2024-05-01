@@ -14,7 +14,7 @@ export async function graphToDot<V, E extends DirectedEdge<V>>(
     const ids = new Map<V, string>();
     const vertexLabels = new Map<V, string>();
     for (const vertex of graph.getVertices()) {
-        const id = `v${i++}`;
+        const id = `v${(i++).toString()}`;
         ids.set(vertex, id);
         vertexLabels.set(vertex, await labeller(vertex));
     }
@@ -33,14 +33,19 @@ export async function graphToDot<V, E extends DirectedEdge<V>>(
           rankdir=TD;
           node[shape=none];
           ${[...graph.getVertices()]
-              .map((vertex) => `${ids.get(vertex)}[label=${vertexLabels.get(vertex)}];`)
+              .map(
+                  (vertex) =>
+                      `${ids.get(vertex) ?? "undefined"}[label=${
+                          vertexLabels.get(vertex) ?? "undefined"
+                      }];`
+              )
               .join("\n")}
           ${[...graph.getEdges()]
               .map(
                   (edge) =>
-                      `${ids.get(edge.getSource())} -> ${ids.get(
-                          edge.getDestination()
-                      )}[arrowhead="vee",arrowsize="0.75",style=${edgeStyler(edge)}];`
+                      `${ids.get(edge.getSource()) ?? "undefined"} -> ${
+                          ids.get(edge.getDestination()) ?? "undefined"
+                      }[arrowhead="vee",arrowsize="0.75",style=${edgeStyler(edge)}];`
               )
               .join("\n")}
           ${Object.values(sameRanks)

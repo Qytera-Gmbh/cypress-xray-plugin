@@ -116,7 +116,7 @@ export class JwtCredentials implements HttpCredentials {
             this.fetchToken();
         }
         return {
-            ["Authorization"]: `Bearer ${await this.token}`,
+            ["Authorization"]: `Bearer ${(await this.token) ?? "undefined"}`,
         };
     }
 
@@ -125,9 +125,9 @@ export class JwtCredentials implements HttpCredentials {
             const progressInterval = startInterval((totalTime: number) => {
                 LOG.message(
                     Level.INFO,
-                    `Waiting for ${this.authenticationUrl} to respond... (${
+                    `Waiting for ${this.authenticationUrl} to respond... (${(
                         totalTime / 1000
-                    } seconds)`
+                    ).toString()} seconds)`
                 );
             });
             LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
