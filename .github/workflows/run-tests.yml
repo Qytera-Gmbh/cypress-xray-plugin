@@ -23,14 +23,16 @@ jobs:
           cache: npm
       - run: npm install
       - run: npm run build
-      - run: npm run test
       - run: npm run eslint
+      - run: npm run test
+      - run: npm run coverage
       - uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
           files: |
             .mocha/**/*.json
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           path: coverage
           retention-days: 30
