@@ -102,16 +102,14 @@ export class AxiosRestClient {
                             prefix = `${prefix}_${url}`;
                         }
                         const filename = normalizedFilename(`${prefix}_request.json`);
-                        const resolvedFilename = LOG.logToFile(
-                            {
-                                url: url,
-                                headers: request.headers,
-                                params: request.params as unknown,
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                                body: request.data,
-                            },
-                            filename
-                        );
+                        const data = {
+                            url: url,
+                            headers: request.headers,
+                            params: request.params as unknown,
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                            body: request.data,
+                        };
+                        const resolvedFilename = LOG.logToFile(data, filename);
                         LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
                         return request;
                     },

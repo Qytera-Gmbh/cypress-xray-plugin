@@ -1,0 +1,5 @@
+{
+    "check-coverage": true,
+    "exclude": ["**/*.spec.ts", "test/"],
+    "reporter": ["html", "text-summary"]
+}
