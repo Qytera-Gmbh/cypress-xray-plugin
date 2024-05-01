@@ -46,7 +46,7 @@ export abstract class Client {
         return startInterval((totalTime: number) => {
             LOG.message(
                 Level.INFO,
-                `Waiting for ${url} to respond... (${totalTime / 1000} seconds)`
+                `Waiting for ${url} to respond... (${(totalTime / 1000).toString()} seconds)`
             );
         });
     }

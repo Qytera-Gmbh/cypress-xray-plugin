@@ -58,7 +58,7 @@ export class ImportExecutionConverter {
         }
         return (
             this.options.jira.testExecutionIssueSummary ??
-            `Execution Results [${new Date(results.startedTestsAt).getTime()}]`
+            `Execution Results [${new Date(results.startedTestsAt).getTime().toString()}]`
         );
     }
 

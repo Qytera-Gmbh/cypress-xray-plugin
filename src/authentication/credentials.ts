@@ -118,9 +118,9 @@ export class JwtCredentials implements HttpCredentials {
                 const progressInterval = startInterval((totalTime: number) => {
                     LOG.message(
                         Level.INFO,
-                        `Waiting for ${this.authenticationUrl} to respond... (${
+                        `Waiting for ${this.authenticationUrl} to respond... (${(
                             totalTime / 1000
-                        } seconds)`
+                        ).toString()} seconds)`
                     );
                 });
                 try {

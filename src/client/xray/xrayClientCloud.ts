@@ -66,7 +66,7 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
             query.push(`keys=${issueKeys.join(";")}`);
         }
         if (filter) {
-            query.push(`filter=${filter}`);
+            query.push(`filter=${filter.toString()}`);
         }
         if (query.length === 0) {
             throw new Error("One of issueKeys or filter must be provided to export feature files");
@@ -173,7 +173,7 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                 }
                 LOG.message(
                     Level.DEBUG,
-                    `Successfully retrieved test types for ${issueKeys.length} issues`
+                    `Successfully retrieved test types for ${issueKeys.length.toString()} issues`
                 );
                 return types;
             } finally {
