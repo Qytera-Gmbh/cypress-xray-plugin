@@ -2,5 +2,7 @@
     "extension": ["ts"],
     "spec": ["**/*.spec.ts"],
     "ignore": ["node_modules/**/*"],
-    "require": "ts-node/register"
+    "require": "ts-node/register",
+    "reporter": "json",
+    "reporter-option": ["output=.mocha/results.json"]
 }
