@@ -34,7 +34,7 @@
         "lib": "src"
     },
     "scripts": {
-        "test": "mocha",
+        "test": "mocha --reporter list",
         "coverage": "nyc mocha",
         "build": "tsc --project tsconfigBuild.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
         "eslint": "eslint"

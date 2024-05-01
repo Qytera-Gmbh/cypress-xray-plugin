@@ -3,6 +3,5 @@
     "spec": ["**/*.spec.ts"],
     "ignore": ["node_modules/**/*"],
     "require": "ts-node/register",
-    "reporter": ["json", "list"],
-    "reporter-option": ["output=.mocha/results.json"]
+    "reporter": "test/reporter.ts"
 }
