@@ -29,7 +29,10 @@ export async function pingJiraInstance(
 ): Promise<void> {
     LOG.message(Level.DEBUG, "Pinging Jira instance...");
     const progressInterval = startInterval((totalTime: number) => {
-        LOG.message(Level.INFO, `Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
+        LOG.message(
+            Level.INFO,
+            `Waiting for ${url} to respond... (${(totalTime / 1000).toString()} seconds)`
+        );
     });
     try {
         const header = credentials.getAuthorizationHeader();
@@ -94,7 +97,10 @@ export async function pingXrayServer(
 ): Promise<void> {
     LOG.message(Level.DEBUG, "Pinging Xray server instance...");
     const progressInterval = startInterval((totalTime: number) => {
-        LOG.message(Level.INFO, `Waiting for ${url} to respond... (${totalTime / 1000} seconds)`);
+        LOG.message(
+            Level.INFO,
+            `Waiting for ${url} to respond... (${(totalTime / 1000).toString()} seconds)`
+        );
     });
     try {
         const header = credentials.getAuthorizationHeader();

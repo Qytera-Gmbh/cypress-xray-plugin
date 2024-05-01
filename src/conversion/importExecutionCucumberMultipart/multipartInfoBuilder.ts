@@ -122,7 +122,7 @@ export function buildMultipartInfoCloud(
 }
 
 function defaultSummary(timestamp: number): string {
-    return `Execution Results [${timestamp}]`;
+    return `Execution Results [${timestamp.toString()}]`;
 }
 
 function defaultDescription(

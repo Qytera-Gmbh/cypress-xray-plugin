@@ -23,7 +23,7 @@ export class XrayClientServer extends AbstractXrayClient {
             query.push(`keys=${issueKeys.join(";")}`);
         }
         if (filter) {
-            query.push(`filter=${filter}`);
+            query.push(`filter=${filter.toString()}`);
         }
         if (query.length === 0) {
             throw new Error("One of issueKeys or filter must be provided to export feature files");
