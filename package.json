@@ -35,9 +35,9 @@
     },
     "scripts": {
         "test": "mocha",
-        "coverage": "nyc --reporter=html --exclude=**/*.spec.ts --exclude=test/ mocha",
+        "coverage": "nyc mocha",
         "build": "tsc --project tsconfigBuild.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
-        "eslint": "eslint src/**/*.ts test/**/*.ts index.ts index.spec.ts"
+        "eslint": "eslint"
     },
     "engines": {
         "node": ">=18.0.0"

@@ -30,3 +30,7 @@ jobs:
         with:
           files: |
             .mocha/**/*.json
+      - uses: actions/upload-artifact@v4
+        with:
+          path: coverage
+          retention-days: 30
