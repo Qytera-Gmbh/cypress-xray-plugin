@@ -419,8 +419,41 @@ export interface ClientCombination {
     jiraRepository: JiraRepository;
 }
 
-export interface PluginContext {
-    cypress: Cypress.PluginConfigOptions;
-    internal: InternalOptions;
-    clients: ClientCombination;
+export class PluginContext {
+    private readonly requests: Partial<Cypress.RequestOptions>[] = [];
+    private readonly responses: Cypress.Response<unknown>[] = [];
+
+    constructor(
+        private readonly clients: ClientCombination,
+        private readonly internalOptions: InternalOptions,
+        private readonly cypressOptions: Cypress.PluginConfigOptions
+    ) {}
+
+    public getClients(): ClientCombination {
+        return this.clients;
+    }
+
+    public getOptions(): InternalOptions {
+        return this.internalOptions;
+    }
+
+    public getCypressOptions(): Cypress.PluginConfigOptions {
+        return this.cypressOptions;
+    }
+
+    public addRequest(request: Partial<Cypress.RequestOptions>): void {
+        this.requests.push(request);
+    }
+
+    public getRequests(): readonly Partial<Cypress.RequestOptions>[] {
+        return this.requests;
+    }
+
+    public addResponse(response: Cypress.Response<unknown>): void {
+        this.responses.push(response);
+    }
+
+    public getResponses(): readonly Cypress.Response<unknown>[] {
+        return this.responses;
+    }
 }
