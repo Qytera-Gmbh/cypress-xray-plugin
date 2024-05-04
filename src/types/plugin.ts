@@ -1,6 +1,7 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import { JiraClient } from "../client/jira/jiraClient";
 import { XrayClient } from "../client/xray/xrayClient";
+import { getNativeTestIssueKey } from "../preprocessing/preprocessing";
 import { JiraRepository } from "../repository/jira/jiraRepository";
 import { IssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
@@ -218,6 +219,14 @@ export interface XrayOptions {
      */
     testEnvironments?: [string, ...string[]];
     /**
+     * Turns on or off the upload of manually performed requests using `cy.request`. If `true`,
+     * requests and responses will be attached as evidence to the corresponding test. If `false` or
+     * if left `undefined`, neither requests nor responses will be attached.
+     *
+     * Note: For this option to work properly, you need to overwrite the `cy.request` command.
+     */
+    uploadRequests?: boolean;
+    /**
      * Turns execution results upload on or off. Useful when switching upload on or off from the
      * command line (via environment variables).
      */
@@ -420,8 +429,8 @@ export interface ClientCombination {
 }
 
 export class PluginContext {
-    private readonly requests: Partial<Cypress.RequestOptions>[] = [];
-    private readonly responses: Cypress.Response<unknown>[] = [];
+    private readonly requests = new Map<string, Partial<Cypress.RequestOptions>[]>();
+    private readonly responses = new Map<string, Cypress.Response<unknown>[]>();
 
     constructor(
         private readonly clients: ClientCombination,
@@ -441,19 +450,29 @@ export class PluginContext {
         return this.cypressOptions;
     }
 
-    public addRequest(request: Partial<Cypress.RequestOptions>): void {
-        this.requests.push(request);
+    public addRequest(testTitle: string, request: Partial<Cypress.RequestOptions>): void {
+        const issueKey = getNativeTestIssueKey(testTitle, this.internalOptions.jira.projectKey);
+        const requests = this.requests.get(issueKey);
+        if (requests) {
+            requests.push(request);
+        }
+        this.requests.set(issueKey, [request]);
     }
 
-    public getRequests(): readonly Partial<Cypress.RequestOptions>[] {
+    public getRequests(): Map<string, Partial<Cypress.RequestOptions>[]> {
         return this.requests;
     }
 
-    public addResponse(response: Cypress.Response<unknown>): void {
-        this.responses.push(response);
+    public addResponse(testTitle: string, response: Cypress.Response<unknown>): void {
+        const issueKey = getNativeTestIssueKey(testTitle, this.internalOptions.jira.projectKey);
+        const responses = this.responses.get(issueKey);
+        if (responses) {
+            responses.push(response);
+        }
+        this.responses.set(issueKey, [response]);
     }
 
-    public getResponses(): readonly Cypress.Response<unknown>[] {
+    public getResponses(): Map<string, Cypress.Response<unknown>[]> {
         return this.responses;
     }
 }

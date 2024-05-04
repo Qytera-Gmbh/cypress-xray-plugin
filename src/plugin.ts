@@ -27,6 +27,10 @@ export function resetPlugin(): void {
     canShowInitializationWarning = true;
 }
 
+export function showInitializationWarnings(): boolean {
+    return canShowInitializationWarning;
+}
+
 /**
  * Configures the plugin. The plugin will inspect all environment variables passed in
  * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with the ones provided in
@@ -91,7 +95,7 @@ export function addXrayResultUpload(on: Cypress.PluginEvents): void {
     on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
         const context = getPluginContext();
         if (!context) {
-            if (canShowInitializationWarning) {
+            if (showInitializationWarnings()) {
                 logInitializationWarning("before:run");
             }
             return;
@@ -113,7 +117,7 @@ export function addXrayResultUpload(on: Cypress.PluginEvents): void {
         ) => {
             const context = getPluginContext();
             if (!context) {
-                if (canShowInitializationWarning) {
+                if (showInitializationWarnings()) {
                     logInitializationWarning("after:run");
                 }
                 return;
@@ -163,7 +167,7 @@ export function addXrayResultUpload(on: Cypress.PluginEvents): void {
 export async function syncFeatureFile(file: Cypress.FileObject): Promise<string> {
     const context = getPluginContext();
     if (!context) {
-        if (canShowInitializationWarning) {
+        if (showInitializationWarnings()) {
             logInitializationWarning("file:preprocessor");
         }
         return file.filePath;
