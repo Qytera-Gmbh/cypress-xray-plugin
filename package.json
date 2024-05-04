@@ -28,7 +28,8 @@
     ],
     "exports": {
         ".": "./index.js",
-        "./register": "./src/register.js"
+        "./commands": "./src/cypress/commands.js",
+        "./commands/handler": "./src/cypress/handler.js"
     },
     "directories": {
         "lib": "src"
