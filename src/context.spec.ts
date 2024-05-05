@@ -19,6 +19,7 @@ import * as dependencies from "./dependencies";
 import { AxiosRestClient } from "./https/requests";
 import { Level } from "./logging/logging";
 import {
+    HttpOptions,
     InternalCucumberOptions,
     InternalHttpOptions,
     InternalJiraOptions,
@@ -1057,23 +1058,17 @@ describe("the plugin context configuration", () => {
         it("creates a single client by default", () => {
             const httpClients = initHttpClients(undefined, undefined);
             expect(httpClients.jira).to.eq(httpClients.xray);
-            expect(httpClients.jira).to.deep.eq(
-                new AxiosRestClient({ debug: undefined, http: undefined })
-            );
+            expect(httpClients.jira).to.deep.eq(new AxiosRestClient({ debug: undefined }));
         });
         it("sets debugging to true if enabled", () => {
             const httpClients = initHttpClients({ debug: true }, undefined);
             expect(httpClients.jira).to.eq(httpClients.xray);
-            expect(httpClients.jira).to.deep.eq(
-                new AxiosRestClient({ debug: true, http: undefined })
-            );
+            expect(httpClients.jira).to.deep.eq(new AxiosRestClient({ debug: true }));
         });
         it("sets debugging to false if disabled", () => {
             const httpClients = initHttpClients({ debug: false }, undefined);
             expect(httpClients.jira).to.eq(httpClients.xray);
-            expect(httpClients.jira).to.deep.eq(
-                new AxiosRestClient({ debug: false, http: undefined })
-            );
+            expect(httpClients.jira).to.deep.eq(new AxiosRestClient({ debug: false }));
         });
         it("creates a single client if empty options are passed", () => {
             const httpClients = initHttpClients(undefined, {});
@@ -1128,11 +1123,16 @@ describe("the plugin context configuration", () => {
             expect(httpClients.xray).to.deep.eq(
                 new AxiosRestClient({
                     debug: undefined,
-                    http: undefined,
+                    http: {},
                 })
             );
         });
         it("creates a different xray client if a xray config is passed", () => {
+            const x: HttpOptions = {
+                url: "abc",
+                jira: {},
+            };
+            console.log(x);
             const httpOptions: InternalHttpOptions = {
                 xray: {
                     proxy: {
@@ -1146,7 +1146,7 @@ describe("the plugin context configuration", () => {
             expect(httpClients.jira).to.deep.eq(
                 new AxiosRestClient({
                     debug: undefined,
-                    http: undefined,
+                    http: {},
                 })
             );
             expect(httpClients.xray).to.deep.eq(
@@ -1193,6 +1193,49 @@ describe("the plugin context configuration", () => {
                 new AxiosRestClient({
                     debug: undefined,
                     http: {
+                        proxy: {
+                            host: "https://example.org",
+                            port: 12345,
+                        },
+                    },
+                })
+            );
+        });
+        it("passes common http options to both clients", () => {
+            const httpOptions: InternalHttpOptions = {
+                timeout: 42,
+                jira: {
+                    proxy: {
+                        host: "http://localhost",
+                        port: 98765,
+                    },
+                },
+                xray: {
+                    proxy: {
+                        host: "https://example.org",
+                        port: 12345,
+                    },
+                },
+            };
+            const httpClients = initHttpClients(undefined, httpOptions);
+            expect(httpClients.jira).to.not.eq(httpClients.xray);
+            expect(httpClients.jira).to.deep.eq(
+                new AxiosRestClient({
+                    debug: undefined,
+                    http: {
+                        timeout: 42,
+                        proxy: {
+                            host: "http://localhost",
+                            port: 98765,
+                        },
+                    },
+                })
+            );
+            expect(httpClients.xray).to.deep.eq(
+                new AxiosRestClient({
+                    debug: undefined,
+                    http: {
+                        timeout: 42,
                         proxy: {
                             host: "https://example.org",
                             port: 12345,

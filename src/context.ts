@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from "axios";
 import { BasicAuthCredentials, JwtCredentials, PatCredentials } from "./authentication/credentials";
 import { JiraClientCloud } from "./client/jira/jiraClientCloud";
 import { JiraClientServer } from "./client/jira/jiraClientServer";
@@ -272,31 +271,41 @@ export function initHttpClients(
     httpOptions?: InternalHttpOptions
 ): HttpClientCombination {
     if (httpOptions) {
-        if (!isAxiosConfig(httpOptions)) {
+        const { jira, xray, ...httpConfig } = httpOptions;
+        if (jira ?? xray) {
             return {
                 jira: new AxiosRestClient({
                     debug: pluginOptions?.debug,
-                    http: httpOptions.jira,
+                    http: {
+                        ...httpConfig,
+                        ...jira,
+                    },
                 }),
                 xray: new AxiosRestClient({
                     debug: pluginOptions?.debug,
-                    http: httpOptions.xray,
+                    http: {
+                        ...httpConfig,
+                        ...xray,
+                    },
                 }),
             };
         }
+        const httpClient = new AxiosRestClient({
+            debug: pluginOptions?.debug,
+            http: httpOptions,
+        });
+        return {
+            jira: httpClient,
+            xray: httpClient,
+        };
     }
     const httpClient = new AxiosRestClient({
         debug: pluginOptions?.debug,
-        http: httpOptions,
     });
     return {
         jira: httpClient,
         xray: httpClient,
     };
-}
-
-function isAxiosConfig(config: InternalHttpOptions): config is AxiosRequestConfig {
-    return !("jira" in config || "xray" in config);
 }
 
 export async function initClients(

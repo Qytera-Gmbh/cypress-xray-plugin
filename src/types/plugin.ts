@@ -333,18 +333,50 @@ export type InternalCucumberOptions = Required<CucumberOptions> & {
     preprocessor?: IPreprocessorConfiguration;
 };
 
-export type HttpOptions =
-    | AxiosRequestConfig
-    | {
-          /**
-           * The HTTP configuration for requests directed at Jira.
-           */
-          jira?: AxiosRequestConfig;
-          /**
-           * The HTTP configuration for requests directed at Xray.
-           */
-          xray?: AxiosRequestConfig;
-      };
+export type HttpOptions = AxiosRequestConfig & {
+    /**
+     * The HTTP configuration for requests directed at Jira. HTTP options defined for both clients
+     * will be overriden in the Jira client by the ones defined here.
+     *
+     * Note: when in a Jira/Xray server environment, Jira and Xray endpoints will be located
+     * at the same host. To avoid duplicating your HTTP configuration, it is recommended to
+     * define a single one instead, e.g.:
+     *
+     * ```ts
+     * {
+     *   // ...other plugin options
+     *   http: {
+     *     proxy: {
+     *       host: "http://1.2.3.4",
+     *       port: 12345
+     *     }
+     *   }
+     * }
+     * ```
+     */
+    jira?: AxiosRequestConfig;
+    /**
+     * The HTTP configuration for requests directed at Xray. HTTP options defined for both clients
+     * will be overriden in the Xray client by the ones defined here.
+     *
+     * Note: when in a Jira/Xray server environment, Jira and Xray endpoints will be located
+     * at the same host. To avoid duplicating your HTTP configuration, it is recommended to
+     * define a single one instead, e.g.:
+     *
+     * ```ts
+     * {
+     *   // ...other plugin options
+     *   http: {
+     *     proxy: {
+     *       host: "http://1.2.3.4",
+     *       port: 12345
+     *     }
+     *   }
+     * }
+     * ```
+     */
+    xray?: AxiosRequestConfig;
+};
 
 export type InternalHttpOptions = HttpOptions;
 
