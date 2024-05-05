@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import fs from "fs";
-import { Agent } from "https";
+import { Agent } from "node:https";
 import { stub } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
@@ -10,6 +10,7 @@ import { XrayClientServer } from "./client/xray/xrayClientServer";
 import * as context from "./context";
 import * as hooks from "./hooks/hooks";
 import * as synchronizeFeatureFileHook from "./hooks/preprocessor/synchronizeFeatureFile";
+import { AxiosRestClient } from "./https/requests";
 import { Level } from "./logging/logging";
 import { addXrayResultUpload, configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
@@ -26,8 +27,16 @@ describe("the plugin", () => {
         config = JSON.parse(
             fs.readFileSync("./test/resources/cypress.config.json", "utf-8")
         ) as Cypress.PluginConfigOptions;
-        const jiraClient = new JiraClientServer("https://example.org", new PatCredentials("token"));
-        const xrayClient = new XrayClientServer("https://example.org", new PatCredentials("token"));
+        const jiraClient = new JiraClientServer(
+            "https://example.org",
+            new PatCredentials("token"),
+            getMockedRestClient()
+        );
+        const xrayClient = new XrayClientServer(
+            "https://example.org",
+            new PatCredentials("token"),
+            getMockedRestClient()
+        );
         const jiraOptions = context.initJiraOptions(
             {},
             {
@@ -177,20 +186,50 @@ describe("the plugin", () => {
             expect(stubbedContext.firstCall.args[0].clients).to.eq(pluginContext.clients);
         });
 
-        it("initializes the requests module", async () => {
-            const restClient = getMockedRestClient();
-            const stubbedClients = stub(context, "initClients");
-            stubbedClients.onFirstCall().resolves(pluginContext.clients);
+        it("initializes the clients with different http configurations", async () => {
             const options: Options = {
                 jira: {
                     projectKey: "ABC",
                     url: "https://example.org",
                 },
+                http: {
+                    jira: {
+                        proxy: {
+                            host: "https://example.org",
+                            port: 1234,
+                        },
+                    },
+                    xray: {
+                        proxy: {
+                            host: "http://localhost",
+                            port: 5678,
+                        },
+                    },
+                },
             };
+            const stubbedClients = stub(context, "initClients");
+            stubbedClients.onFirstCall().resolves(pluginContext.clients);
             await configureXrayPlugin(config, options);
-            expect(restClient.init).to.have.been.calledOnceWithExactly({
-                debug: false,
-                http: pluginContext.internal.http,
+            expect(stubbedClients).to.have.been.calledOnce;
+            expect(stubbedClients.getCall(0).args[2]).to.deep.eq({
+                jira: new AxiosRestClient({
+                    debug: false,
+                    http: {
+                        proxy: {
+                            host: "https://example.org",
+                            port: 1234,
+                        },
+                    },
+                }),
+                xray: new AxiosRestClient({
+                    debug: false,
+                    http: {
+                        proxy: {
+                            host: "http://localhost",
+                            port: 5678,
+                        },
+                    },
+                }),
             });
         });
 

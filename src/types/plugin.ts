@@ -2,6 +2,7 @@ import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preproces
 import { AxiosRequestConfig } from "axios";
 import { JiraClient } from "../client/jira/jiraClient";
 import { XrayClient } from "../client/xray/xrayClient";
+import { AxiosRestClient } from "../https/requests";
 import { JiraRepository } from "../repository/jira/jiraRepository";
 import { IssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
@@ -10,7 +11,7 @@ export interface Options {
     plugin?: PluginOptions;
     xray?: XrayOptions;
     cucumber?: CucumberOptions;
-    http?: AxiosRequestConfig;
+    http?: HttpOptions;
 }
 
 export interface JiraFieldIds {
@@ -332,6 +333,21 @@ export type InternalCucumberOptions = Required<CucumberOptions> & {
     preprocessor?: IPreprocessorConfiguration;
 };
 
+export type HttpOptions =
+    | AxiosRequestConfig
+    | {
+          /**
+           * The HTTP configuration for requests directed at Jira.
+           */
+          jira?: AxiosRequestConfig;
+          /**
+           * The HTTP configuration for requests directed at Xray.
+           */
+          xray?: AxiosRequestConfig;
+      };
+
+export type InternalHttpOptions = HttpOptions;
+
 export interface PluginOptions {
     /**
      * Enables or disables the entire plugin. Setting this option to `false` disables all plugin
@@ -371,7 +387,7 @@ export interface InternalOptions {
     plugin: InternalPluginOptions;
     xray: InternalXrayOptions;
     cucumber?: InternalCucumberOptions;
-    http?: AxiosRequestConfig;
+    http?: InternalHttpOptions;
 }
 
 /**
@@ -382,6 +398,14 @@ export interface ClientCombination {
     jiraClient: JiraClient;
     xrayClient: XrayClient;
     jiraRepository: JiraRepository;
+}
+
+/**
+ * Wraps the REST clients used for HTTP requests directed at Jira and Xray.
+ */
+export interface HttpClientCombination {
+    jira: AxiosRestClient;
+    xray: AxiosRestClient;
 }
 
 export interface PluginContext {

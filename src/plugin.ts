@@ -3,6 +3,7 @@ import {
     getPluginContext,
     initClients,
     initCucumberOptions,
+    initHttpClients,
     initJiraOptions,
     initPluginOptions,
     initXrayOptions,
@@ -10,7 +11,6 @@ import {
 } from "./context";
 import { afterRunHook, beforeRunHook } from "./hooks/hooks";
 import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
-import { REST } from "./https/requests";
 import { LOG, Level } from "./logging/logging";
 import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
 import { dedent } from "./util/dedent";
@@ -65,14 +65,17 @@ export async function configureXrayPlugin(
         cucumber: await initCucumberOptions(config, options.cucumber),
         http: options.http,
     };
-    REST.init({
-        debug: internalOptions.plugin.debug,
-        http: options.http,
-    });
+    const httpClients = initHttpClients(
+        {
+            debug: internalOptions.plugin.debug,
+        },
+        internalOptions.http
+    );
+    const clients = await initClients(internalOptions.jira, config.env, httpClients);
     setPluginContext({
         cypress: config,
         internal: internalOptions,
-        clients: await initClients(internalOptions.jira, config.env),
+        clients: clients,
     });
 }
 

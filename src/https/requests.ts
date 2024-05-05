@@ -1,10 +1,10 @@
 import axios, {
+    AxiosInstance,
     AxiosRequestConfig,
     AxiosResponse,
     InternalAxiosRequestConfig,
     isAxiosError,
 } from "axios";
-import { readFileSync } from "fs";
 import { LOG, Level } from "../logging/logging";
 import { normalizedFilename } from "../util/files";
 import { unknownToString } from "../util/string";
@@ -30,11 +30,11 @@ export interface RequestsOptions {
 }
 
 export class AxiosRestClient {
-    private axios: typeof axios | undefined = undefined;
+    private readonly options: RequestsOptions | undefined;
 
-    private options: RequestsOptions | undefined = undefined;
+    private axios: AxiosInstance | undefined = undefined;
 
-    public init(options: RequestsOptions): void {
+    constructor(options?: RequestsOptions) {
         this.options = options;
     }
 
@@ -70,13 +70,10 @@ export class AxiosRestClient {
         });
     }
 
-    private getAxios(): typeof axios {
-        if (!this.options) {
-            throw new Error("Requests module has not been initialized");
-        }
+    private getAxios(): AxiosInstance {
         if (!this.axios) {
-            this.axios = axios;
-            if (this.options.debug) {
+            this.axios = axios.create();
+            if (this.options?.debug) {
                 this.axios.interceptors.request.use(
                     (request: InternalAxiosRequestConfig<unknown>) => {
                         const method = request.method?.toUpperCase();
@@ -178,13 +175,4 @@ export class AxiosRestClient {
         }
         return this.axios;
     }
-
-    private readCertificate(path?: string): Buffer | undefined {
-        if (!path) {
-            return undefined;
-        }
-        return readFileSync(path);
-    }
 }
-
-export const REST: AxiosRestClient = new AxiosRestClient();

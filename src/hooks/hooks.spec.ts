@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { stub } from "sinon";
-import { getMockedLogger } from "../../test/mocks";
+import { getMockedLogger, getMockedRestClient } from "../../test/mocks";
 import { PatCredentials } from "../authentication/credentials";
 import { JiraClientServer } from "../client/jira/jiraClientServer";
 import { XrayClientServer } from "../client/xray/xrayClientServer";
@@ -44,8 +44,16 @@ describe("the hooks", () => {
             ),
             plugin: initPluginOptions({}, {}),
         };
-        const jiraClient = new JiraClientServer("https://example.org", new PatCredentials("token"));
-        const xrayClient = new XrayClientServer("https://example.org", new PatCredentials("token"));
+        const jiraClient = new JiraClientServer(
+            "https://example.org",
+            new PatCredentials("token"),
+            getMockedRestClient()
+        );
+        const xrayClient = new XrayClientServer(
+            "https://example.org",
+            new PatCredentials("token"),
+            getMockedRestClient()
+        );
         const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
         const jiraFieldFetcher = new CachingJiraIssueFetcher(
             jiraClient,
