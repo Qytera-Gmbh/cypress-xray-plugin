@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import fs from "fs";
+import { Agent } from "https";
 import { stub } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
@@ -47,7 +48,6 @@ describe("the plugin", () => {
                 jira: jiraOptions,
                 plugin: context.initPluginOptions({}, {}),
                 xray: context.initXrayOptions({}, {}),
-                ssl: context.initSslOptions({}, {}),
             },
             clients: {
                 kind: "server",
@@ -128,9 +128,11 @@ describe("the plugin", () => {
                     downloadFeatures: false,
                     uploadFeatures: false,
                 },
-                ["openSSL"]: {
-                    ["rootCAPath"]: "/home/somewhere",
-                    secureOptions: 42,
+                http: {
+                    httpAgent: new Agent({
+                        ca: "/home/somewhere",
+                        secureOptions: 42,
+                    }),
                 },
             };
             await configureXrayPlugin(config, options);
@@ -171,7 +173,7 @@ describe("the plugin", () => {
                 enabled: true,
                 output: "somewhere",
             });
-            expect(stubbedContext.firstCall.args[0].internal.ssl).to.deep.eq(options.openSSL);
+            expect(stubbedContext.firstCall.args[0].internal.http).to.deep.eq(options.http);
             expect(stubbedContext.firstCall.args[0].clients).to.eq(pluginContext.clients);
         });
 
@@ -188,7 +190,7 @@ describe("the plugin", () => {
             await configureXrayPlugin(config, options);
             expect(restClient.init).to.have.been.calledOnceWithExactly({
                 debug: false,
-                ssl: pluginContext.internal.ssl,
+                http: pluginContext.internal.http,
             });
         });
 

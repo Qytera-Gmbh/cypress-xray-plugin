@@ -10,7 +10,6 @@ import {
     initCucumberOptions,
     initJiraOptions,
     initPluginOptions,
-    initSslOptions,
     initXrayOptions,
 } from "../context";
 import { Level } from "../logging/logging";
@@ -44,7 +43,6 @@ describe("the hooks", () => {
                 }
             ),
             plugin: initPluginOptions({}, {}),
-            ssl: initSslOptions({}, {}),
         };
         const jiraClient = new JiraClientServer("https://example.org", new PatCredentials("token"));
         const xrayClient = new XrayClientServer("https://example.org", new PatCredentials("token"));

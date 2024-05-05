@@ -6,7 +6,6 @@ import {
     initCucumberOptions,
     initJiraOptions,
     initPluginOptions,
-    initSslOptions,
     initXrayOptions,
 } from "../../context";
 import { Level } from "../../logging/logging";
@@ -36,7 +35,6 @@ describe("the test converter", () => {
                 }
             ),
             plugin: initPluginOptions({}, {}),
-            ssl: initSslOptions({}, {}),
         };
     });
 

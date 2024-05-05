@@ -64,15 +64,15 @@ describe("the plugin exports should work", () => {
             };
             expect(options.plugin).to.exist;
         });
-        it("openSSL", () => {
+        it("http", () => {
             const options: CypressXrayPluginOptions = {
                 jira: {
                     projectKey: "CYP-123",
                     url: "https://example.org",
                 },
-                ["openSSL"]: {},
+                http: {},
             };
-            expect(options.openSSL).to.exist;
+            expect(options.http).to.exist;
         });
     });
 });

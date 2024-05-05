@@ -9,7 +9,7 @@ import {
 } from "../../../test/mocks";
 import { JiraClient } from "../../client/jira/jiraClient";
 import { XrayClient } from "../../client/xray/xrayClient";
-import { initJiraOptions, initPluginOptions, initSslOptions, initXrayOptions } from "../../context";
+import { initJiraOptions, initPluginOptions, initXrayOptions } from "../../context";
 import { Level } from "../../logging/logging";
 import { SupportedFields } from "../../repository/jira/fields/jiraIssueFetcher";
 import { JiraRepository } from "../../repository/jira/jiraRepository";
@@ -40,7 +40,6 @@ describe("synchronizeFeatureFile", () => {
                 }
             ),
             plugin: initPluginOptions({}, {}),
-            ssl: initSslOptions({}, {}),
         };
         jiraClient = getMockedJiraClient();
         xrayClient = getMockedXrayClient();

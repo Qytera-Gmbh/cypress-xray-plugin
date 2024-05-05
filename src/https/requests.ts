@@ -5,9 +5,7 @@ import axios, {
     isAxiosError,
 } from "axios";
 import { readFileSync } from "fs";
-import { Agent } from "https";
 import { LOG, Level } from "../logging/logging";
-import { InternalSslOptions } from "../types/plugin";
 import { normalizedFilename } from "../util/files";
 import { unknownToString } from "../util/string";
 
@@ -26,13 +24,12 @@ export interface RequestsOptions {
      */
     debug?: boolean;
     /**
-     * Additional OpenSSL options for the underlying HTTP agent.
+     * Additional options for controlling HTTP behaviour.
      */
-    ssl?: InternalSslOptions;
+    http?: AxiosRequestConfig;
 }
 
 export class AxiosRestClient {
-    private httpAgent: Agent | undefined = undefined;
     private axios: typeof axios | undefined = undefined;
 
     private options: RequestsOptions | undefined = undefined;
@@ -46,8 +43,8 @@ export class AxiosRestClient {
         config?: AxiosRequestConfig<unknown>
     ): Promise<AxiosResponse<R>> {
         return await this.getAxios().get(url, {
+            ...this.options?.http,
             ...config,
-            httpsAgent: this.getAgent(),
         });
     }
 
@@ -57,8 +54,8 @@ export class AxiosRestClient {
         config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse<R>> {
         return this.getAxios().post(url, data, {
+            ...this.options?.http,
             ...config,
-            httpsAgent: this.getAgent(),
         });
     }
 
@@ -68,19 +65,9 @@ export class AxiosRestClient {
         config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse<R>> {
         return this.getAxios().put(url, data, {
+            ...this.options?.http,
             ...config,
-            httpsAgent: this.getAgent(),
         });
-    }
-
-    private getAgent(): Agent {
-        if (!this.httpAgent) {
-            this.httpAgent = new Agent({
-                ca: this.readCertificate(this.options?.ssl?.rootCAPath),
-                secureOptions: this.options?.ssl?.secureOptions,
-            });
-        }
-        return this.httpAgent;
     }
 
     private getAxios(): typeof axios {

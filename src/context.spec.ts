@@ -12,7 +12,6 @@ import {
     initCucumberOptions,
     initJiraOptions,
     initPluginOptions,
-    initSslOptions,
     initXrayOptions,
 } from "./context";
 import * as dependencies from "./dependencies";
@@ -21,7 +20,6 @@ import {
     InternalCucumberOptions,
     InternalJiraOptions,
     InternalPluginOptions,
-    InternalSslOptions,
     InternalXrayOptions,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
@@ -157,16 +155,6 @@ describe("the plugin context configuration", () => {
                 });
                 it("uploadFeatures", () => {
                     expect(cucumberOptions?.uploadFeatures).to.eq(false);
-                });
-            });
-
-            describe("openSSL", () => {
-                const sslOptions: InternalSslOptions = initSslOptions({}, {});
-                it("openSSL", () => {
-                    expect(sslOptions.rootCAPath).to.eq(undefined);
-                });
-                it("secureOptions", () => {
-                    expect(sslOptions.secureOptions).to.eq(undefined);
                 });
             });
         });
@@ -528,27 +516,6 @@ describe("the plugin context configuration", () => {
                         }
                     );
                     expect(cucumberOptions?.uploadFeatures).to.eq(true);
-                });
-            });
-
-            describe("openSSL", () => {
-                it("rootCAPath", () => {
-                    const sslOptions = initSslOptions(
-                        {},
-                        {
-                            ["rootCAPath"]: "/path/to/cert.pem",
-                        }
-                    );
-                    expect(sslOptions.rootCAPath).to.eq("/path/to/cert.pem");
-                });
-                it("secureOptions", () => {
-                    const sslOptions = initSslOptions(
-                        {},
-                        {
-                            secureOptions: 42,
-                        }
-                    );
-                    expect(sslOptions.secureOptions).to.eq(42);
                 });
             });
         });
@@ -963,27 +930,6 @@ describe("the plugin context configuration", () => {
                         normalizeScreenshotNames: false,
                     });
                     expect(pluginOptions.normalizeScreenshotNames).to.be.true;
-                });
-            });
-            describe("openSSL", () => {
-                it("OPENSSL_ROOT_CA_PATH ", () => {
-                    const env = {
-                        ["OPENSSL_ROOT_CA_PATH"]: "/home/ssl/ca.pem",
-                    };
-                    const sslOptions = initSslOptions(env, {
-                        ["rootCAPath"]: "/a/b/c.pem",
-                    });
-                    expect(sslOptions.rootCAPath).to.eq("/home/ssl/ca.pem");
-                });
-
-                it("OPENSSL_SECURE_OPTIONS ", () => {
-                    const env = {
-                        ["OPENSSL_SECURE_OPTIONS"]: 415,
-                    };
-                    const sslOptions = initSslOptions(env, {
-                        secureOptions: 42,
-                    });
-                    expect(sslOptions.secureOptions).to.eq(415);
                 });
             });
         });

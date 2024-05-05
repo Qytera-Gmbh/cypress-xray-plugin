@@ -1,4 +1,5 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
+import { AxiosRequestConfig } from "axios";
 import { JiraClient } from "../client/jira/jiraClient";
 import { XrayClient } from "../client/xray/xrayClient";
 import { JiraRepository } from "../repository/jira/jiraRepository";
@@ -9,7 +10,7 @@ export interface Options {
     plugin?: PluginOptions;
     xray?: XrayOptions;
     cucumber?: CucumberOptions;
-    ["openSSL"]?: OpenSSLOptions;
+    http?: AxiosRequestConfig;
 }
 
 export interface JiraFieldIds {
@@ -362,42 +363,6 @@ export type InternalPluginOptions = PluginOptions &
         Pick<PluginOptions, "debug" | "enabled" | "logDirectory" | "normalizeScreenshotNames">
     >;
 
-/* eslint-disable @typescript-eslint/naming-convention */
-export interface OpenSSLOptions {
-    /**
-     * Specify the path to a root CA in .pem format. This will then be used to authenticate against
-     * the Xray instance.
-     */
-    rootCAPath?: string;
-    /**
-     * A {@link https://nodejs.org/api/crypto.html#crypto-constants | crypto constant} that will be
-     * used to configure the `securityOptions` of the
-     * {@link https://nodejs.org/api/https.html#class-httpsagent | https.Agent} used for sending
-     * requests to your Xray instance.
-     *
-     * *Note: Compute their bitwise OR if you need to set more than one option.*
-     *
-     * @example
-     * ```ts
-     * import { constants } from "crypto";
-     * // ...
-     *   openSSL: {
-     *     secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT |
-     *                    constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
-     *   }
-     * // ...
-     * ```
-     */
-    secureOptions?: number;
-}
-/* eslint-enable @typescript-eslint/naming-convention */
-
-/**
- * A more specific OpenSSL options type with optional properties converted to required ones if
- * default/fallback values are used by the plugin.
- */
-export type InternalSslOptions = OpenSSLOptions;
-
 /**
  * Options only intended for internal plugin use.
  */
@@ -406,7 +371,7 @@ export interface InternalOptions {
     plugin: InternalPluginOptions;
     xray: InternalXrayOptions;
     cucumber?: InternalCucumberOptions;
-    ssl: InternalSslOptions;
+    http?: AxiosRequestConfig;
 }
 
 /**

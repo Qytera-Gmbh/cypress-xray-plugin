@@ -21,7 +21,6 @@ import {
     InternalCucumberOptions,
     InternalJiraOptions,
     InternalPluginOptions,
-    InternalSslOptions,
     InternalXrayOptions,
     Options,
     PluginContext,
@@ -29,7 +28,7 @@ import {
 import { dedent } from "./util/dedent";
 import { errorMessage } from "./util/errors";
 import { HELP } from "./util/help";
-import { asArrayOfStrings, asBoolean, asInt, asString, parse } from "./util/parsing";
+import { asArrayOfStrings, asBoolean, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
 
 let context: PluginContext | undefined = undefined;
@@ -262,25 +261,6 @@ export async function initCucumberOptions(
         };
     }
     return undefined;
-}
-
-/**
- * Returns an {@link InternalSslOptions | `InternalOpenSSLOptions`} instance based on parsed
- * environment variables and a provided options object. Environment variables will take precedence
- * over the options set in the object.
- *
- * @param env - an object containing environment variables as properties
- * @param options - an options object containing OpenSSL options
- * @returns the constructed internal OpenSSL options
- */
-export function initSslOptions(
-    env: Cypress.ObjectLike,
-    options: Options["openSSL"]
-): InternalSslOptions {
-    return {
-        ["rootCAPath"]: parse(env, ENV_NAMES.openSSL.rootCAPath, asString) ?? options?.rootCAPath,
-        secureOptions: parse(env, ENV_NAMES.openSSL.secureOptions, asInt) ?? options?.secureOptions,
-    };
 }
 
 export async function initClients(
