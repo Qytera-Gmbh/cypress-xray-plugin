@@ -126,7 +126,7 @@ export async function configureXrayPlugin(
 /**
  * Attempts to synchronize the Cucumber feature file with Xray. If the filename does not end with
  * the configured {@link https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#featurefileextension | feature file extension},
- * this method does not upload anything to Xray.
+ * this method will not upload anything to Xray.
  *
  * @param file - the Cypress file object
  * @returns the unmodified file's path
