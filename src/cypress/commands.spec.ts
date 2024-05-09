@@ -63,13 +63,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 })
             `)
         );
-        console.log(
-            Buffer.from(
-                childProcess.execSync(`${CYPRESS_EXECUTABLE} run`, {
-                    cwd: TEST_DIRECTORY,
-                    env: process.env,
-                })
-            ).toString()
-        );
-    }).timeout(10000);
+        childProcess.spawnSync(CYPRESS_EXECUTABLE, ["run"], {
+            cwd: TEST_DIRECTORY,
+            env: process.env,
+            stdio: "inherit",
+        });
+    }).timeout(60000);
 });
