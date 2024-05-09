@@ -448,7 +448,7 @@ export type InternalHttpOptions = HttpOptions;
 export interface PluginOptions {
     /**
      * Enables or disables the entire plugin. Setting this option to false will disable all plugin
-     * functions, including authentication checks, uploads or feature file synchronisation.
+     * functions, including authentication checks, uploads or feature file synchronization.
      */
     enabled?: boolean;
     /**

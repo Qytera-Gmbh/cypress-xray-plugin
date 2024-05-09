@@ -27,11 +27,13 @@ export function resetPlugin(): void {
 }
 
 /**
- * Configures the plugin. The plugin will inspect all environment variables passed in
- * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with the ones provided in
- * `options`. Environment variables always take precedence over values specified in `options`.
+ * Configures the plugin. The plugin will check all environment variables passed in
+ * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with those specified in
+ * `options`. Environment variables always override values specified in `options`.
  *
- * Note: This method will register several upload hooks under the passed plugin events.
+ * *Note: This method will register upload hooks under the Cypress `before:run` and `after:run`
+ * events. Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if you
+ * have other hooks registered to prevent the plugin from replacing them.*
  *
  * @param on - the Cypress plugin events
  * @param config - the Cypress configuration
