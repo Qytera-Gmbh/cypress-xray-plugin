@@ -2,6 +2,7 @@ import { AstBuilder, GherkinClassicTokenMatcher, Parser } from "@cucumber/gherki
 import { Background, Comment, GherkinDocument, IdGenerator, Scenario } from "@cucumber/messages";
 import fs from "fs";
 import { LOG, Level } from "../logging/logging";
+import { CypressRunResultType, RunResultType } from "../types/cypress/cypress";
 import { CucumberOptions } from "../types/plugin";
 import {
     errorMessage,
@@ -18,10 +19,10 @@ import {
 // ============================================================================================== //
 
 export function containsNativeTest(
-    runResult: CypressCommandLine.CypressRunResult,
+    runResult: CypressRunResultType,
     featureFileExtension?: string
 ): boolean {
-    return runResult.runs.some((run: CypressCommandLine.RunResult) => {
+    return runResult.runs.some((run: RunResultType) => {
         if (featureFileExtension && run.spec.absolute.endsWith(featureFileExtension)) {
             return false;
         }
@@ -86,10 +87,10 @@ export function getNativeTestIssueKey(title: string, projectKey: string): string
 // ============================================================================================== //
 
 export function containsCucumberTest(
-    runResult: CypressCommandLine.CypressRunResult,
+    runResult: CypressRunResultType,
     featureFileExtension?: string
 ): boolean {
-    return runResult.runs.some((run: CypressCommandLine.RunResult) => {
+    return runResult.runs.some((run: RunResultType) => {
         if (featureFileExtension && run.spec.absolute.endsWith(featureFileExtension)) {
             return true;
         }

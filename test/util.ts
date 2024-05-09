@@ -51,17 +51,22 @@ export function arrayEquals(a: unknown[], b: unknown[]) {
 // Huge hack around Cypress's event handling. It somewhat works, don't question it :(             //
 // ============================================================================================== //
 type Action =
+    | "after:browser:launch"
     | "after:run"
     | "after:screenshot"
     | "after:spec"
+    | "before:browser:launch"
     | "before:run"
     | "before:spec"
-    | "before:browser:launch"
     | "file:preprocessor"
     | "dev-server:start"
     | "task";
 
 interface ActionCallbacks {
+    ["after:browser:launch"]: (
+        browser: Cypress.Browser,
+        browserLaunchOptions: Cypress.AfterBrowserLaunchDetails
+    ) => Promise<Cypress.BeforeBrowserLaunchOptions>;
     ["after:run"]: (
         results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
     ) => Promise<void>;
@@ -69,12 +74,12 @@ interface ActionCallbacks {
         details: Cypress.ScreenshotDetails
     ) => Promise<Cypress.AfterScreenshotReturnObject>;
     ["after:spec"]: (spec: Cypress.Spec, results: CypressCommandLine.RunResult) => Promise<void>;
-    ["before:run"]: (runDetails: Cypress.BeforeRunDetails) => Promise<void>;
-    ["before:spec"]: (spec: Cypress.Spec) => Promise<void>;
     ["before:browser:launch"]: (
         browser: Cypress.Browser,
-        browserLaunchOptions: Cypress.BrowserLaunchOptions
-    ) => Promise<Cypress.BrowserLaunchOptions>;
+        browserLaunchOptions: Cypress.BeforeBrowserLaunchOptions
+    ) => Promise<Cypress.BeforeBrowserLaunchOptions>;
+    ["before:run"]: (runDetails: Cypress.BeforeRunDetails) => Promise<void>;
+    ["before:spec"]: (spec: Cypress.Spec) => Promise<void>;
     ["file:preprocessor"]: (file: Cypress.FileObject) => Promise<string>;
     ["dev-server:start"]: (
         file: Cypress.DevServerConfig

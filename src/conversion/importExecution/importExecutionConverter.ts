@@ -1,12 +1,9 @@
-import { CypressRunResult as CypressRunResult_V_12 } from "../../types/cypress/12.0.0/api";
-import { CypressRunResult as CypressRunResult_V_13 } from "../../types/cypress/13.0.0/api";
+import { CypressRunResultType } from "../../types/cypress/cypress";
 import { InternalOptions } from "../../types/plugin";
 import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
 import { dedent } from "../../util/dedent";
 import { truncateIsoTime } from "../../util/time";
 import { TestConverter } from "./testConverter";
-
-type CypressRunResultType = CypressRunResult_V_12 | CypressRunResult_V_13;
 
 /**
  * A class for converting Cypress run results into Xray JSON. Both Xray server JSON and Xray cloud

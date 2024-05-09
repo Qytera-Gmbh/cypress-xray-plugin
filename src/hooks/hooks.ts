@@ -4,6 +4,7 @@ import { ImportExecutionConverter } from "../conversion/importExecution/importEx
 import { ImportExecutionCucumberMultipartConverter } from "../conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverter";
 import { LOG, Level } from "../logging/logging";
 import { containsCucumberTest, containsNativeTest } from "../preprocessing/preprocessing";
+import { CypressRunResultType, RunResultType } from "../types/cypress/cypress";
 import { IssueTypeDetails } from "../types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalOptions } from "../types/plugin";
 import { nonNull } from "../types/util";
@@ -87,7 +88,7 @@ function retrieveIssueTypeInformation(
 }
 
 export async function afterRunHook(
-    results: CypressCommandLine.CypressRunResult,
+    results: CypressRunResultType,
     options: InternalOptions,
     clients: ClientCombination
 ) {
@@ -169,7 +170,7 @@ export async function afterRunHook(
 }
 
 async function uploadCypressResults(
-    runResult: CypressCommandLine.CypressRunResult,
+    runResult: CypressRunResultType,
     options: InternalOptions,
     clients: ClientCombination
 ) {
@@ -183,7 +184,7 @@ async function uploadCypressResults(
 }
 
 async function uploadCucumberResults(
-    runResult: CypressCommandLine.CypressRunResult,
+    runResult: CypressRunResultType,
     options: InternalOptions,
     clients: ClientCombination
 ) {
@@ -208,12 +209,12 @@ async function uploadCucumberResults(
 }
 
 async function attachVideos(
-    runResult: CypressCommandLine.CypressRunResult,
+    runResult: CypressRunResultType,
     issueKey: string,
     jiraClient: JiraClient
 ): Promise<void> {
     const videos: string[] = runResult.runs
-        .map((result: CypressCommandLine.RunResult) => {
+        .map((result: RunResultType) => {
             return result.video;
         })
         .filter(nonNull);
