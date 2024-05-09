@@ -19,7 +19,7 @@ const CONFIG_FILE = dedent(`
     async function setupNodeEvents(on, config) {
         await configureXrayPlugin(on, config, {
             jira: {
-                url: https://example.org,
+                url: "https://example.org",
                 projectKey: "CYP"
             },
             plugin: {
