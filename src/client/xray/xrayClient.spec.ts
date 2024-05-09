@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { getMockedJwtCredentials, getMockedLogger } from "../../../test/mocks";
+import { getMockedJwtCredentials, getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { Level } from "../../logging/logging";
 import { AbstractXrayClient } from "./xrayClient";
@@ -18,9 +18,10 @@ describe("the xray clients", () => {
                     clientType === "server"
                         ? new XrayClientServer(
                               "https://example.org",
-                              new BasicAuthCredentials("user", "token")
+                              new BasicAuthCredentials("user", "token"),
+                              getMockedRestClient()
                           )
-                        : new XrayClientCloud(credentials);
+                        : new XrayClientCloud(credentials, getMockedRestClient());
             });
 
             describe("import execution", () => {

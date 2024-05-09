@@ -1,6 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { stub } from "sinon";
+import { getMockedRestClient } from "../../../../test/mocks";
 import { BasicAuthCredentials } from "../../../authentication/credentials";
 import { JiraClientServer } from "../../../client/jira/jiraClientServer";
 import { dedent } from "../../../util/dedent";
@@ -16,7 +17,8 @@ describe("the jira field repository", () => {
     beforeEach(() => {
         jiraClient = new JiraClientServer(
             "https://example.org",
-            new BasicAuthCredentials("user", "xyz")
+            new BasicAuthCredentials("user", "xyz"),
+            getMockedRestClient()
         );
         repository = new CachingJiraFieldRepository(jiraClient);
     });

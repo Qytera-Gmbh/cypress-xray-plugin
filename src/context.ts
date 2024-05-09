@@ -9,6 +9,7 @@ import {
     importOptionalDependency,
 } from "./dependencies";
 import { ENV_NAMES } from "./env";
+import { AxiosRestClient } from "./https/requests";
 import { LOG, Level } from "./logging/logging";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import {
@@ -18,10 +19,11 @@ import {
 import { CachingJiraRepository } from "./repository/jira/jiraRepository";
 import {
     ClientCombination,
+    HttpClientCombination,
     InternalCucumberOptions,
+    InternalHttpOptions,
     InternalJiraOptions,
     InternalPluginOptions,
-    InternalSslOptions,
     InternalXrayOptions,
     Options,
     PluginContext,
@@ -29,7 +31,7 @@ import {
 import { dedent } from "./util/dedent";
 import { errorMessage } from "./util/errors";
 import { HELP } from "./util/help";
-import { asArrayOfStrings, asBoolean, asInt, asString, parse } from "./util/parsing";
+import { asArrayOfStrings, asBoolean, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
 
 let context: PluginContext | undefined = undefined;
@@ -264,28 +266,52 @@ export async function initCucumberOptions(
     return undefined;
 }
 
-/**
- * Returns an {@link InternalSslOptions | `InternalOpenSSLOptions`} instance based on parsed
- * environment variables and a provided options object. Environment variables will take precedence
- * over the options set in the object.
- *
- * @param env - an object containing environment variables as properties
- * @param options - an options object containing OpenSSL options
- * @returns the constructed internal OpenSSL options
- */
-export function initSslOptions(
-    env: Cypress.ObjectLike,
-    options: Options["openSSL"]
-): InternalSslOptions {
+export function initHttpClients(
+    pluginOptions?: Pick<InternalPluginOptions, "debug">,
+    httpOptions?: InternalHttpOptions
+): HttpClientCombination {
+    if (httpOptions) {
+        const { jira, xray, ...httpConfig } = httpOptions;
+        if (jira ?? xray) {
+            return {
+                jira: new AxiosRestClient({
+                    debug: pluginOptions?.debug,
+                    http: {
+                        ...httpConfig,
+                        ...jira,
+                    },
+                }),
+                xray: new AxiosRestClient({
+                    debug: pluginOptions?.debug,
+                    http: {
+                        ...httpConfig,
+                        ...xray,
+                    },
+                }),
+            };
+        }
+        const httpClient = new AxiosRestClient({
+            debug: pluginOptions?.debug,
+            http: httpOptions,
+        });
+        return {
+            jira: httpClient,
+            xray: httpClient,
+        };
+    }
+    const httpClient = new AxiosRestClient({
+        debug: pluginOptions?.debug,
+    });
     return {
-        ["rootCAPath"]: parse(env, ENV_NAMES.openSSL.rootCAPath, asString) ?? options?.rootCAPath,
-        secureOptions: parse(env, ENV_NAMES.openSSL.secureOptions, asInt) ?? options?.secureOptions,
+        jira: httpClient,
+        xray: httpClient,
     };
 }
 
 export async function initClients(
     jiraOptions: InternalJiraOptions,
-    env: Cypress.ObjectLike
+    env: Cypress.ObjectLike,
+    httpClients: HttpClientCombination
 ): Promise<ClientCombination> {
     if (!jiraOptions.url) {
         throw new Error(
@@ -308,8 +334,8 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.username] as string,
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
-        await pingJiraInstance(jiraOptions.url, credentials);
-        const jiraClient = new JiraClientCloud(jiraOptions.url, credentials);
+        await pingJiraInstance(jiraOptions.url, credentials, httpClients.jira);
+        const jiraClient = new JiraClientCloud(jiraOptions.url, credentials, httpClients.jira);
         if (
             ENV_NAMES.authentication.xray.clientId in env &&
             ENV_NAMES.authentication.xray.clientSecret in env
@@ -322,10 +348,11 @@ export async function initClients(
             const xrayCredentials = new JwtCredentials(
                 env[ENV_NAMES.authentication.xray.clientId] as string,
                 env[ENV_NAMES.authentication.xray.clientSecret] as string,
-                `${XrayClientCloud.URL}/authenticate`
+                `${XrayClientCloud.URL}/authenticate`,
+                httpClients.xray
             );
             await pingXrayCloud(xrayCredentials);
-            const xrayClient = new XrayClientCloud(xrayCredentials);
+            const xrayClient = new XrayClientCloud(xrayCredentials, httpClients.xray);
             const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
             const jiraFieldFetcher = new CachingJiraIssueFetcherCloud(
                 jiraClient,
@@ -353,12 +380,12 @@ export async function initClients(
         const credentials = new PatCredentials(
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
-        await pingJiraInstance(jiraOptions.url, credentials);
-        const jiraClient = new JiraClientServer(jiraOptions.url, credentials);
+        await pingJiraInstance(jiraOptions.url, credentials, httpClients.jira);
+        const jiraClient = new JiraClientServer(jiraOptions.url, credentials, httpClients.jira);
         // Xray server authentication: no username, only token.
         LOG.message(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials");
-        await pingXrayServer(jiraOptions.url, credentials);
-        const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
+        await pingXrayServer(jiraOptions.url, credentials, httpClients.xray);
+        const xrayClient = new XrayClientServer(jiraOptions.url, credentials, httpClients.xray);
         const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
         const jiraFieldFetcher = new CachingJiraIssueFetcher(
             jiraClient,
@@ -384,14 +411,14 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.username] as string,
             env[ENV_NAMES.authentication.jira.password] as string
         );
-        await pingJiraInstance(jiraOptions.url, credentials);
-        const jiraClient = new JiraClientServer(jiraOptions.url, credentials);
+        await pingJiraInstance(jiraOptions.url, credentials, httpClients.jira);
+        const jiraClient = new JiraClientServer(jiraOptions.url, credentials, httpClients.jira);
         LOG.message(
             Level.INFO,
             "Jira username and password found. Setting up Xray server basic auth credentials"
         );
-        await pingXrayServer(jiraOptions.url, credentials);
-        const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
+        await pingXrayServer(jiraOptions.url, credentials, httpClients.xray);
+        const xrayClient = new XrayClientServer(jiraOptions.url, credentials, httpClients.xray);
         const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
         const jiraFieldFetcher = new CachingJiraIssueFetcher(
             jiraClient,

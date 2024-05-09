@@ -1,19 +1,10 @@
 import { expect } from "chai";
-import {
-    CypressXrayPluginOptions,
-    addXrayResultUpload,
-    configureXrayPlugin,
-    syncFeatureFile,
-} from "./index";
+import { CypressXrayPluginOptions, configureXrayPlugin, syncFeatureFile } from "./index";
 
 // Make sure there are no accidental breaking changes for the plugin's exported members.
 // If there were, the compiler would complain about these tests.
 // These tests therefore somewhat simulate a real use case.
 describe("the plugin exports should work", () => {
-    it("addXrayResultUpload", () => {
-        expect(addXrayResultUpload).to.be.a("function");
-    });
-
     it("configureXrayPlugin", () => {
         expect(configureXrayPlugin).to.be.a("function");
     });
@@ -64,15 +55,15 @@ describe("the plugin exports should work", () => {
             };
             expect(options.plugin).to.exist;
         });
-        it("openSSL", () => {
+        it("http", () => {
             const options: CypressXrayPluginOptions = {
                 jira: {
                     projectKey: "CYP-123",
                     url: "https://example.org",
                 },
-                ["openSSL"]: {},
+                http: {},
             };
-            expect(options.openSSL).to.exist;
+            expect(options.http).to.exist;
         });
     });
 });

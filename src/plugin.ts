@@ -3,15 +3,14 @@ import {
     getPluginContext,
     initClients,
     initCucumberOptions,
+    initHttpClients,
     initJiraOptions,
     initPluginOptions,
-    initSslOptions,
     initXrayOptions,
     setPluginContext,
 } from "./context";
 import { afterRunHook, beforeRunHook } from "./hooks/hooks";
 import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
-import { REST } from "./https/requests";
 import { LOG, Level } from "./logging/logging";
 import { InternalOptions, InternalPluginOptions, Options, PluginContext } from "./types/plugin";
 import { dedent } from "./util/dedent";
@@ -32,21 +31,22 @@ export function showInitializationWarnings(): boolean {
 }
 
 /**
- * Configures the plugin. The plugin will inspect all environment variables passed in
- * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with the ones provided in
- * `options`.
+ * Configures the plugin. The plugin will check all environment variables passed in
+ * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with those specified in
+ * `options`. Environment variables always override values specified in `options`.
  *
- * Note: Environment variables always take precedence over values specified in `options`.
+ * *Note: This method will register upload hooks under the Cypress `before:run` and `after:run`
+ * events. Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if you
+ * have other hooks registered to prevent the plugin from replacing them.*
  *
- * Other Cypress configuration values which the plugin typically accesses are the Cypress version or
- * the project root directory.
- *
+ * @param on - the Cypress plugin events
  * @param config - the Cypress configuration
  * @param options - the plugin options
  *
  * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadTestResults/#setup
  */
 export async function configureXrayPlugin(
+    on: Cypress.PluginEvents,
     config: Cypress.PluginConfigOptions,
     options: Options
 ): Promise<void> {
@@ -68,98 +68,65 @@ export async function configureXrayPlugin(
         plugin: pluginOptions,
         xray: initXrayOptions(config.env, options.xray),
         cucumber: await initCucumberOptions(config, options.cucumber),
-        ssl: initSslOptions(config.env, options.openSSL),
+        http: options.http,
     };
-    REST.init({
-        debug: internalOptions.plugin.debug,
-        ssl: internalOptions.ssl,
-    });
-    setPluginContext(
-        new PluginContext(
-            await initClients(internalOptions.jira, config.env),
-            internalOptions,
-            config
-        )
+    const httpClients = initHttpClients(
+        {
+            debug: internalOptions.plugin.debug,
+        },
+        internalOptions.http
     );
-}
-
-/**
- * Enables Cypress test results upload to Xray. This method will register several upload hooks under
- * the passed plugin events.
- *
- * @param on - the Cypress plugin events
- *
- * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadTestResults/
- */
-export function addXrayResultUpload(on: Cypress.PluginEvents): void {
-    on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
-        const context = getPluginContext();
-        if (!context) {
-            if (showInitializationWarnings()) {
-                logInitializationWarning("before:run");
+    const clients = await initClients(internalOptions.jira, config.env, httpClients);
+    const context = new PluginContext(clients, internalOptions, config);
+    setPluginContext(context);
+    if (internalOptions.xray.uploadResults) {
+        on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
+            if (!runDetails.specs) {
+                LOG.message(
+                    Level.WARNING,
+                    "No specs about to be executed. Skipping before:run hook"
+                );
+                return;
             }
-            return;
-        }
-        if (!context.getOptions().plugin.enabled) {
-            LOG.message(Level.INFO, "Plugin disabled. Skipping before:run hook");
-            return;
-        }
-        if (!runDetails.specs) {
-            LOG.message(Level.WARNING, "No specs about to be executed. Skipping before:run hook");
-            return;
-        }
-        await beforeRunHook(runDetails.specs, context.getOptions(), context.getClients());
-    });
-    on(
-        "after:run",
-        async (
-            results: CypressCommandLine.CypressRunResult | CypressCommandLine.CypressFailedRunResult
-        ) => {
-            const context = getPluginContext();
-            if (!context) {
-                if (showInitializationWarnings()) {
-                    logInitializationWarning("after:run");
+            await beforeRunHook(runDetails.specs, context.getOptions(), context.getClients());
+        });
+        on(
+            "after:run",
+            async (
+                results:
+                    | CypressCommandLine.CypressRunResult
+                    | CypressCommandLine.CypressFailedRunResult
+            ) => {
+                // Cypress's status types are incomplete, there is also "finished".
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                if ("status" in results && results.status === "failed") {
+                    const failedResult = results;
+                    LOG.message(
+                        Level.ERROR,
+                        dedent(`
+                            Skipping after:run hook: Failed to run ${failedResult.failures.toString()} tests
+
+                            ${failedResult.message}
+                        `)
+                    );
+                    return;
                 }
-                return;
-            }
-            if (!context.getOptions().plugin.enabled) {
-                LOG.message(Level.INFO, "Skipping after:run hook: Plugin disabled");
-                return;
-            }
-            if (!context.getOptions().xray.uploadResults) {
-                LOG.message(
-                    Level.INFO,
-                    "Skipping results upload: Plugin is configured to not upload test results"
+                await afterRunHook(
+                    results as CypressCommandLine.CypressRunResult,
+                    context.getOptions(),
+                    context.getClients()
                 );
-                return;
             }
-            // Cypress's status types are incomplete, there is also "finished".
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            if ("status" in results && results.status === "failed") {
-                const failedResult = results;
-                LOG.message(
-                    Level.ERROR,
-                    dedent(`
-                        Skipping after:run hook: Failed to run ${failedResult.failures.toString()} tests
-
-                        ${failedResult.message}
-                    `)
-                );
-                return;
-            }
-            await afterRunHook(
-                results as CypressCommandLine.CypressRunResult,
-                context.getOptions(),
-                context.getClients()
-            );
-        }
-    );
+        );
+    } else {
+        LOG.message(Level.INFO, "Xray results upload disabled. No results will be uploaded");
+    }
 }
 
 /**
  * Attempts to synchronize the Cucumber feature file with Xray. If the filename does not end with
  * the configured {@link https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#featurefileextension | feature file extension},
- * this method does not upload anything to Xray.
+ * this method will not upload anything to Xray.
  *
  * @param file - the Cypress file object
  * @returns the unmodified file's path
