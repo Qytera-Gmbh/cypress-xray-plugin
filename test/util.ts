@@ -1,14 +1,17 @@
-import fs from "fs";
-import path from "path";
+import chalk from "chalk";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
-export const TEST_TMP_DIR = "test/out";
+export const TEST_TMP_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "cypress-xray-plugin-"));
+console.log(chalk.gray(`Temporary directory: ${TEST_TMP_DIR}`));
 
 export function resolveTestDirPath(...subPaths: string[]): string {
     return path.resolve(TEST_TMP_DIR, ...subPaths);
 }
 
-// Clean up temporary directory at the end of all tests.
-after(() => {
+// Clean up temporary directory before all tests.
+before(() => {
     if (fs.existsSync(TEST_TMP_DIR)) {
         fs.rmSync(TEST_TMP_DIR, { recursive: true });
     }
