@@ -333,6 +333,30 @@ export type InternalCucumberOptions = Required<CucumberOptions> & {
     preprocessor?: IPreprocessorConfiguration;
 };
 
+/**
+ * HTTP configuration to use for requests the plugin makes. You can define default options to use
+ * for all requests and override them with individual options for Jira or Xray:
+ *
+ * ```ts
+ * {
+ *   // ...other plugin options
+ *   http: {
+ *     timeout: 5000,
+ *     jira: {
+ *       proxy: {
+ *         host: "http://1.2.3.4",
+ *         port: 12345
+ *       }
+ *     },
+ *     xray: {
+ *       timeout: 10000,
+ *     }
+ *   }
+ * }
+ * ```
+ *
+ * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/http
+ */
 export type HttpOptions = AxiosRequestConfig & {
     /**
      * The HTTP configuration for requests directed at Jira. HTTP options defined for both clients
