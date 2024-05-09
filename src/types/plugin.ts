@@ -7,10 +7,57 @@ import { JiraRepository } from "../repository/jira/jiraRepository";
 import { IssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
 export interface Options {
+    /**
+     * Defines Jira-specific options that control how the plugin interacts with Jira.
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/
+     */
     jira: JiraOptions;
+    /**
+     * Options for configuring the general behaviour of the plugin.
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/
+     */
     plugin?: PluginOptions;
+    /**
+     * Xray settings that may be required depending on your project configuration.
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/xray/
+     */
     xray?: XrayOptions;
+    /**
+     * When Cucumber is enabled, you can use these options to configure how the plugin works with
+     * your feature files.
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/
+     */
     cucumber?: CucumberOptions;
+    /**
+     * HTTP configuration to be used for requests made by the plugin. You can set default options to be
+     * used for all requests and override them with individual options for Jira or Xray.
+     *
+     * @example
+     *
+     * ```ts
+     * {
+     *   // ...other plugin options
+     *   http: {
+     *     timeout: 5000,
+     *     jira: {
+     *       proxy: {
+     *         host: "http://1.2.3.4",
+     *         port: 12345
+     *       }
+     *     },
+     *     xray: {
+     *       timeout: 10000,
+     *     }
+     *   }
+     * }
+     * ```
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/http
+     */
     http?: HttpOptions;
 }
 
@@ -51,6 +98,9 @@ export interface JiraFieldIds {
     testType?: string;
 }
 
+/**
+ * Jira-specific options that control how the plugin interacts with Jira.
+ */
 export interface JiraOptions {
     /**
      * The Jira project key.
@@ -170,6 +220,9 @@ export type InternalJiraOptions = JiraOptions &
         testExecutionIssueDetails: IssueTypeDetails;
     };
 
+/**
+ * Xray settings that may be required depending on the project configuration.
+ */
 export interface XrayOptions {
     /**
      * A mapping of Cypress statuses to corresponding Xray statuses.
@@ -237,6 +290,10 @@ export interface XrayOptions {
 export type InternalXrayOptions = XrayOptions &
     Required<Pick<XrayOptions, "status" | "uploadResults" | "uploadScreenshots">>;
 
+/**
+ * When Cucumber is enabled, these options are used to configure how the plugin works with
+ * encountered feature files.
+ */
 export interface CucumberOptions {
     /**
      * The file extension of feature files you want to run in Cypress. The plugin will use this to
@@ -326,45 +383,26 @@ export interface CucumberOptions {
  * A more specific Cucumber options type with optional properties converted to required ones if
  * default/fallback values are used by the plugin.
  */
-export type InternalCucumberOptions = Required<CucumberOptions> & {
+export interface InternalCucumberOptions extends Required<CucumberOptions> {
     /**
      * The Cucumber preprocessor configuration.
      */
     preprocessor?: IPreprocessorConfiguration;
-};
+}
 
 /**
- * HTTP configuration to use for requests the plugin makes. You can define default options to use
- * for all requests and override them with individual options for Jira or Xray:
- *
- * ```ts
- * {
- *   // ...other plugin options
- *   http: {
- *     timeout: 5000,
- *     jira: {
- *       proxy: {
- *         host: "http://1.2.3.4",
- *         port: 12345
- *       }
- *     },
- *     xray: {
- *       timeout: 10000,
- *     }
- *   }
- * }
- * ```
- *
- * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/http
+ * Options which the plugin will use when making HTTP requests. You can specify
+ * [common options](https://axios-http.com/docs/req_config) to use for all requests or choose to
+ * define specific ones for Jira or Xray.
  */
-export type HttpOptions = AxiosRequestConfig & {
+export interface HttpOptions extends AxiosRequestConfig {
     /**
-     * The HTTP configuration for requests directed at Jira. HTTP options defined for both clients
-     * will be overriden in the Jira client by the ones defined here.
+     * The HTTP configuration for requests to Jira. HTTP options defined for both clients will be
+     * overridden in the Jira client by those defined here.
      *
-     * Note: when in a Jira/Xray server environment, Jira and Xray endpoints will be located
-     * at the same host. To avoid duplicating your HTTP configuration, it is recommended to
-     * define a single one instead, e.g.:
+     * *Note: In a Jira/Xray server environment, the Jira and Xray endpoints will reside on the same
+     * host. To avoid duplicating your HTTP configuration, it is recommended that you define a
+     * single one instead, e.g.:*
      *
      * ```ts
      * {
@@ -380,12 +418,12 @@ export type HttpOptions = AxiosRequestConfig & {
      */
     jira?: AxiosRequestConfig;
     /**
-     * The HTTP configuration for requests directed at Xray. HTTP options defined for both clients
-     * will be overriden in the Xray client by the ones defined here.
+     * The HTTP configuration for requests to Xray. HTTP options defined for both clients will be
+     * overridden in the Jira client by those defined here.
      *
-     * Note: when in a Jira/Xray server environment, Jira and Xray endpoints will be located
-     * at the same host. To avoid duplicating your HTTP configuration, it is recommended to
-     * define a single one instead, e.g.:
+     * *Note: In a Jira/Xray server environment, the Jira and Xray endpoints will reside on the same
+     * host. To avoid duplicating your HTTP configuration, it is recommended that you define a
+     * single one instead, e.g.:*
      *
      * ```ts
      * {
@@ -400,18 +438,21 @@ export type HttpOptions = AxiosRequestConfig & {
      * ```
      */
     xray?: AxiosRequestConfig;
-};
+}
 
 export type InternalHttpOptions = HttpOptions;
 
+/**
+ * Options for configuring the general behaviour of the plugin.
+ */
 export interface PluginOptions {
     /**
-     * Enables or disables the entire plugin. Setting this option to `false` disables all plugin
-     * functions, including authentication checks, uploads or feature file synchronization.
+     * Enables or disables the entire plugin. Setting this option to false will disable all plugin
+     * functions, including authentication checks, uploads or feature file synchronisation.
      */
     enabled?: boolean;
     /**
-     * Turns on or off extensive debugging output.
+     * Enables or disables extensive debugging output.
      */
     debug?: boolean;
     /**
@@ -419,9 +460,9 @@ export interface PluginOptions {
      */
     logDirectory?: string;
     /**
-     * Some Xray setups might struggle with uploaded evidence if the filenames contain non-ASCII
-     * characters. With this option enabled, the plugin only allows characters `a-zA-Z0-9.` in
-     * screenshot names and replaces all other sequences with `_`.
+     * Some Xray setups may have problems with uploaded evidence if the filenames contain non-ASCII
+     * characters. With this option enabled, the plugin will only allow the characters `a-zA-Z0-9.`
+     * in screenshot names, and will replace all other sequences with `_`.
      */
     normalizeScreenshotNames?: boolean;
 }

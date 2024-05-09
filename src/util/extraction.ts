@@ -56,7 +56,7 @@ export function extractArrayOfStrings(data: unknown, propertyName: string): stri
  * ```
  *
  * @param data - the object
- * @param propertyName - the property to access
+ * @param propertyNames - the properties to access
  * @returns the property's string value
  * @throws if `data` is not an object or does not contain a nested string property `propertyName`
  */
