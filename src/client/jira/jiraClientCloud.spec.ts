@@ -1,13 +1,13 @@
-/// <reference types="cypress" />
-
 import { expect } from "chai";
+import { getMockedRestClient } from "../../../test/mocks";
 import { BasicAuthCredentials } from "../../authentication/credentials";
 import { JiraClientCloud } from "./jiraClientCloud";
 
 describe("the jira cloud client", () => {
     const client: JiraClientCloud = new JiraClientCloud(
         "https://example.org",
-        new BasicAuthCredentials("user", "token")
+        new BasicAuthCredentials("user", "token"),
+        getMockedRestClient()
     );
 
     describe("the urls", () => {

@@ -30,11 +30,13 @@ describe("the jira clients", () => {
                     clientType === "server"
                         ? new JiraClientServer(
                               "https://example.org",
-                              new BasicAuthCredentials("user", "token")
+                              new BasicAuthCredentials("user", "token"),
+                              restClient
                           )
                         : new JiraClientCloud(
                               "https://example.org",
-                              new BasicAuthCredentials("user", "token")
+                              new BasicAuthCredentials("user", "token"),
+                              restClient
                           );
             });
 

@@ -29,9 +29,9 @@ export async function importOptionalDependency<T>(packageName: string): Promise<
 /**
  * Dynamically imports a package.
  *
- * Note: This function is mainly used for stubbing purposes only, since `import` cannot be stubbed
+ * *Note: This function is mainly used for stubbing purposes only, since `import` cannot be stubbed
  * as it's not a function. You should probably use safer alternatives like
- * {@link importOptionalDependency | `importOptionalDependency`}.
+ * {@link importOptionalDependency | `importOptionalDependency`}.*
  *
  * @param packageName - the name of the package to import
  * @returns the package

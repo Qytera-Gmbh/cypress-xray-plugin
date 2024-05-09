@@ -6,7 +6,7 @@ import { JwtCredentials } from "../src/authentication/credentials";
 import { JiraClient } from "../src/client/jira/jiraClient";
 import { XrayClient } from "../src/client/xray/xrayClient";
 import { HasTestTypes, XrayClientCloud } from "../src/client/xray/xrayClientCloud";
-import { AxiosRestClient, REST } from "../src/https/requests";
+import { AxiosRestClient } from "../src/https/requests";
 import * as logging from "../src/logging/logging";
 import { Logger } from "../src/logging/logging";
 import { JiraFieldRepository } from "../src/repository/jira/fields/jiraFieldRepository";
@@ -47,7 +47,7 @@ export function getMockedLogger(
 }
 
 export function getMockedRestClient(): SinonStubbedInstance<AxiosRestClient> {
-    const client = stub(REST);
+    const client = stub(new AxiosRestClient({}));
     client.get.callsFake((url: string, config?: AxiosRequestConfig<unknown>) => {
         throw mockCalledUnexpectedlyError(url, config);
     });
@@ -191,7 +191,9 @@ export function getMockedJiraRepository(): SinonStubbedInstance<JiraRepository> 
 }
 
 export function getMockedJwtCredentials(): SinonStubbedInstance<JwtCredentials> {
-    return makeTransparent(stub(new JwtCredentials("abc", "xyz", "https://example.org")));
+    return makeTransparent(
+        stub(new JwtCredentials("abc", "xyz", "https://example.org", getMockedRestClient()))
+    );
 }
 
 function mockCalledUnexpectedlyError(...args: unknown[]): Error {

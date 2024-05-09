@@ -21,8 +21,8 @@ describe("the xray cloud client", () => {
     beforeEach(() => {
         const credentials = getMockedJwtCredentials();
         credentials.getAuthorizationHeader.resolves({ ["Authorization"]: "ey12345" });
-        client = new XrayClientCloud(credentials);
         restClient = getMockedRestClient();
+        client = new XrayClientCloud(credentials, restClient);
     });
 
     describe("import execution", () => {

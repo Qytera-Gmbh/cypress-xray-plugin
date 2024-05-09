@@ -16,13 +16,6 @@ describe(path.relative(process.cwd(), __filename), () => {
     });
 
     describe("get", () => {
-        it("throws if init was not called", async () => {
-            const client = new AxiosRestClient();
-            await expect(client.get("https://example.org")).to.eventually.be.rejectedWith(
-                "Requests module has not been initialized"
-            );
-        });
-
         it("returns the response", async () => {
             const response: BaseAxios.AxiosResponse<string> = {
                 status: BaseAxios.HttpStatusCode.Ok,
@@ -33,9 +26,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     headers: new BaseAxios.AxiosHeaders(),
                 },
             };
-            stub(BaseAxios.default, "get").resolves(response);
+            const restClient = stub(BaseAxios.default.create());
+            stub(BaseAxios.default, "create").returns(restClient);
+            restClient.get.resolves(response);
             const client = new AxiosRestClient();
-            client.init({});
             expect(await client.get("https://example.org")).to.deep.contain(response);
         });
 
@@ -50,8 +44,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             logger.logToFile.onSecondCall().returns("response.json");
             useFakeTimers(new Date(12345));
 
-            const client = new AxiosRestClient();
-            client.init({ debug: true });
+            const client = new AxiosRestClient({ debug: true });
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
             expect(logger.message).to.have.been.calledTwice;
             expect(logger.logToFile).to.have.been.calledWithMatch(
@@ -77,7 +70,6 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not write to a file on encountering axios errors if debug is disabled", async () => {
             const logger = getMockedLogger();
             const client = new AxiosRestClient();
-            client.init({});
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
             expect(logger.message).to.not.have.been.called;
             expect(logger.logToFile).to.not.have.been.called;
@@ -85,16 +77,8 @@ describe(path.relative(process.cwd(), __filename), () => {
     });
 
     describe("post", () => {
-        it("throws if init was not called", async () => {
-            const client = new AxiosRestClient();
-            await expect(client.post("https://example.org")).to.eventually.be.rejectedWith(
-                "Requests module has not been initialized"
-            );
-        });
-
         it("returns the response", async () => {
             const client = new AxiosRestClient();
-            client.init({});
             const response: BaseAxios.AxiosResponse<string> = {
                 status: BaseAxios.HttpStatusCode.Ok,
                 data: "Example domain 123",
@@ -104,7 +88,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     headers: new BaseAxios.AxiosHeaders(),
                 },
             };
-            stub(BaseAxios.default, "post").resolves(response);
+            const restClient = stub(BaseAxios.default.create());
+            stub(BaseAxios.default, "create").returns(restClient);
+            restClient.post.resolves(response);
             expect(await client.post("https://example.org")).to.deep.eq(response);
         });
 
@@ -119,8 +105,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             logger.logToFile.onSecondCall().returns("response.json");
             useFakeTimers(new Date(12345));
 
-            const client = new AxiosRestClient();
-            client.init({ debug: true });
+            const client = new AxiosRestClient({ debug: true });
             await expect(
                 client.post("https://localhost:1234", {
                     hello: "!",
@@ -158,7 +143,6 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not write to a file on encountering axios errors if debug is disabled", async () => {
             const logger = getMockedLogger();
             const client = new AxiosRestClient();
-            client.init({});
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
             expect(logger.message).to.not.have.been.called;
             expect(logger.logToFile).to.not.have.been.called;
@@ -166,16 +150,8 @@ describe(path.relative(process.cwd(), __filename), () => {
     });
 
     describe("put", () => {
-        it("throws if init was not called", async () => {
-            const client = new AxiosRestClient();
-            await expect(client.put("https://example.org")).to.eventually.be.rejectedWith(
-                "Requests module has not been initialized"
-            );
-        });
-
         it("returns the response", async () => {
             const client = new AxiosRestClient();
-            client.init({});
             const response: BaseAxios.AxiosResponse<string> = {
                 status: BaseAxios.HttpStatusCode.Ok,
                 data: "Example domain 123",
@@ -185,7 +161,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     headers: new BaseAxios.AxiosHeaders(),
                 },
             };
-            stub(BaseAxios.default, "put").resolves(response);
+            const restClient = stub(BaseAxios.default.create());
+            stub(BaseAxios.default, "create").returns(restClient);
+            restClient.put.resolves(response);
             expect(await client.put("https://example.org")).to.deep.eq(response);
         });
 
@@ -200,8 +178,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             logger.logToFile.onSecondCall().returns("response.json");
             useFakeTimers(new Date(12345));
 
-            const client = new AxiosRestClient();
-            client.init({ debug: true });
+            const client = new AxiosRestClient({ debug: true });
             await expect(
                 client.put("https://localhost:1234", {
                     hello: "!",
@@ -239,7 +216,6 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not write to a file on encountering axios errors if debug is disabled", async () => {
             const logger = getMockedLogger();
             const client = new AxiosRestClient();
-            client.init({});
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
             expect(logger.message).to.not.have.been.called;
             expect(logger.logToFile).to.not.have.been.called;

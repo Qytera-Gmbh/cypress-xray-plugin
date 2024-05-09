@@ -1,5 +1,5 @@
 import { AxiosResponse } from "axios";
-import { REST } from "../https/requests";
+import { AxiosRestClient } from "../https/requests";
 import { LOG, Level } from "../logging/logging";
 import { StringMap } from "../types/util";
 import { encode } from "../util/base64";
@@ -88,11 +88,13 @@ export class JwtCredentials implements HttpCredentials {
      * @param clientId - the client ID
      * @param clientSecret - the client secret
      * @param authenticationUrl - the authentication URL/token endpoint
+     * @param httpClient - the HTTP client to use for fetching the token
      */
     constructor(
         private readonly clientId: string,
         private readonly clientSecret: string,
-        private readonly authenticationUrl: string
+        private readonly authenticationUrl: string,
+        private readonly httpClient: AxiosRestClient
     ) {
         this.token = undefined;
     }
@@ -125,7 +127,7 @@ export class JwtCredentials implements HttpCredentials {
                 });
                 try {
                     LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
-                    const tokenResponse: AxiosResponse<string> = await REST.post(
+                    const tokenResponse: AxiosResponse<string> = await this.httpClient.post(
                         this.authenticationUrl,
                         {
                             ["client_id"]: this.clientId,

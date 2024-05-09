@@ -3,15 +3,14 @@ import {
     getPluginContext,
     initClients,
     initCucumberOptions,
+    initHttpClients,
     initJiraOptions,
     initPluginOptions,
-    initSslOptions,
     initXrayOptions,
     setPluginContext,
 } from "./context";
 import { afterRunHook, beforeRunHook } from "./hooks/hooks";
 import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
-import { REST } from "./https/requests";
 import { LOG, Level } from "./logging/logging";
 import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
 import { dedent } from "./util/dedent";
@@ -28,11 +27,13 @@ export function resetPlugin(): void {
 }
 
 /**
- * Configures the plugin. The plugin will inspect all environment variables passed in
- * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with the ones provided in
- * `options`. Environment variables always take precedence over values specified in `options`.
+ * Configures the plugin. The plugin will check all environment variables passed in
+ * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with those specified in
+ * `options`. Environment variables always override values specified in `options`.
  *
- * Note: This method will register several upload hooks under the passed plugin events.
+ * *Note: This method will register upload hooks under the Cypress `before:run` and `after:run`
+ * events. Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if you
+ * have other hooks registered to prevent the plugin from replacing them.*
  *
  * @param on - the Cypress plugin events
  * @param config - the Cypress configuration
@@ -63,16 +64,19 @@ export async function configureXrayPlugin(
         plugin: pluginOptions,
         xray: initXrayOptions(config.env, options.xray),
         cucumber: await initCucumberOptions(config, options.cucumber),
-        ssl: initSslOptions(config.env, options.openSSL),
+        http: options.http,
     };
-    REST.init({
-        debug: internalOptions.plugin.debug,
-        ssl: internalOptions.ssl,
-    });
+    const httpClients = initHttpClients(
+        {
+            debug: internalOptions.plugin.debug,
+        },
+        internalOptions.http
+    );
+    const clients = await initClients(internalOptions.jira, config.env, httpClients);
     const context = {
         cypress: config,
         internal: internalOptions,
-        clients: await initClients(internalOptions.jira, config.env),
+        clients: clients,
     };
     setPluginContext(context);
     if (internalOptions.xray.uploadResults) {
@@ -122,7 +126,7 @@ export async function configureXrayPlugin(
 /**
  * Attempts to synchronize the Cucumber feature file with Xray. If the filename does not end with
  * the configured {@link https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#featurefileextension | feature file extension},
- * this method does not upload anything to Xray.
+ * this method will not upload anything to Xray.
  *
  * @param file - the Cypress file object
  * @returns the unmodified file's path
