@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import * as childProcess from "child_process";
 import fs from "fs";
 import path from "path";
@@ -63,10 +64,30 @@ describe(path.relative(process.cwd(), __filename), () => {
                 })
             `)
         );
-        childProcess.spawnSync(CYPRESS_EXECUTABLE, ["run"], {
+        const result = childProcess.spawnSync(CYPRESS_EXECUTABLE, ["run"], {
             cwd: TEST_DIRECTORY,
             env: process.env,
             stdio: "inherit",
         });
+        if (result.status !== 0) {
+            if (result.error) {
+                throw new Error(
+                    dedent(`
+                        Cypress command finished with unexpected non-zero status code ${chalk.red(
+                            result.status
+                        )}:
+
+                        ${chalk.red(result.error.toString())}
+                    `)
+                );
+            }
+            throw new Error(
+                dedent(`
+                    Cypress command finished with unexpected non-zero status code ${chalk.red(
+                        result.status
+                    )}
+                `)
+            );
+        }
     }).timeout(60000);
 });
