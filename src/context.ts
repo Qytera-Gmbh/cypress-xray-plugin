@@ -11,6 +11,7 @@ import {
 import { ENV_NAMES } from "./env";
 import { AxiosRestClient } from "./https/requests";
 import { LOG, Level } from "./logging/logging";
+import { getNativeTestIssueKey } from "./preprocessing/preprocessing";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import {
     CachingJiraIssueFetcher,
@@ -23,10 +24,10 @@ import {
     InternalCucumberOptions,
     InternalHttpOptions,
     InternalJiraOptions,
+    InternalOptions,
     InternalPluginOptions,
     InternalXrayOptions,
     Options,
-    PluginContext,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { errorMessage } from "./util/errors";
@@ -34,18 +35,63 @@ import { HELP } from "./util/help";
 import { asArrayOfStrings, asBoolean, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
 
+export class PluginContext {
+    private readonly requests = new Map<string, Partial<Cypress.RequestOptions>[]>();
+    private readonly responses = new Map<string, Cypress.Response<unknown>[]>();
+
+    constructor(
+        private readonly clients: ClientCombination,
+        private readonly internalOptions: InternalOptions,
+        private readonly cypressOptions: Cypress.PluginConfigOptions
+    ) {}
+
+    public getClients(): ClientCombination {
+        return this.clients;
+    }
+
+    public getOptions(): InternalOptions {
+        return this.internalOptions;
+    }
+
+    public getCypressOptions(): Cypress.PluginConfigOptions {
+        return this.cypressOptions;
+    }
+
+    public addRequest(testTitle: string, request: Partial<Cypress.RequestOptions>): void {
+        const issueKey = getNativeTestIssueKey(testTitle, this.internalOptions.jira.projectKey);
+        const requests = this.requests.get(issueKey);
+        if (requests) {
+            requests.push(request);
+        }
+        this.requests.set(issueKey, [request]);
+    }
+
+    public getRequests(): Map<string, Partial<Cypress.RequestOptions>[]> {
+        return this.requests;
+    }
+
+    public addResponse(testTitle: string, response: Cypress.Response<unknown>): void {
+        const issueKey = getNativeTestIssueKey(testTitle, this.internalOptions.jira.projectKey);
+        const responses = this.responses.get(issueKey);
+        if (responses) {
+            responses.push(response);
+        }
+        this.responses.set(issueKey, [response]);
+    }
+
+    public getResponses(): Map<string, Cypress.Response<unknown>[]> {
+        return this.responses;
+    }
+}
+
 let context: PluginContext | undefined = undefined;
 
 export function getPluginContext(): PluginContext | undefined {
     return context;
 }
 
-export function setPluginContext(newContext: PluginContext): void {
+export function setPluginContext(newContext?: PluginContext): void {
     context = newContext;
-}
-
-export function clearPluginContext(): void {
-    context = undefined;
 }
 
 /**

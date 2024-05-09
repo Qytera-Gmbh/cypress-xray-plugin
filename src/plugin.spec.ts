@@ -16,12 +16,12 @@ import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import { CachingJiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
 import { CachingJiraRepository } from "./repository/jira/jiraRepository";
-import { Options, PluginContext } from "./types/plugin";
+import { Options } from "./types/plugin";
 import { dedent } from "./util/dedent";
 
 describe("the plugin", () => {
     let config: Cypress.PluginConfigOptions;
-    let pluginContext: PluginContext;
+    let pluginContext: context.PluginContext;
 
     beforeEach(() => {
         config = JSON.parse(
@@ -51,7 +51,7 @@ describe("the plugin", () => {
             jiraOptions.fields
         );
         const jiraRepository = new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher);
-        pluginContext = new PluginContext(
+        pluginContext = new context.PluginContext(
             {
                 kind: "server",
                 jiraClient: jiraClient,
@@ -146,8 +146,8 @@ describe("the plugin", () => {
                 },
             };
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
-            expect(stubbedContext.firstCall.args[0].getCypressOptions()).to.eq(config);
-            expect(stubbedContext.firstCall.args[0].getOptions().jira).to.deep.eq({
+            expect(stubbedContext.firstCall.args[0]?.getCypressOptions()).to.eq(config);
+            expect(stubbedContext.firstCall.args[0]?.getOptions().jira).to.deep.eq({
                 attachVideos: true,
                 fields: {
                     summary: "bonjour",
@@ -169,23 +169,27 @@ describe("the plugin", () => {
                 testPlanIssueType: "QA-2",
                 url: "https://example.org",
             });
-            expect(stubbedContext.firstCall.args[0].getOptions().plugin).to.deep.eq(options.plugin);
-            expect(stubbedContext.firstCall.args[0].getOptions().xray).to.deep.eq(options.xray);
+            expect(stubbedContext.firstCall.args[0]?.getOptions().plugin).to.deep.eq(
+                options.plugin
+            );
+            expect(stubbedContext.firstCall.args[0]?.getOptions().xray).to.deep.eq(options.xray);
             expect(
-                stubbedContext.firstCall.args[0].getOptions().cucumber?.featureFileExtension
+                stubbedContext.firstCall.args[0]?.getOptions().cucumber?.featureFileExtension
             ).to.eq(".cucumber");
-            expect(stubbedContext.firstCall.args[0].getOptions().cucumber?.downloadFeatures).to.be
+            expect(stubbedContext.firstCall.args[0]?.getOptions().cucumber?.downloadFeatures).to.be
                 .false;
-            expect(stubbedContext.firstCall.args[0].getOptions().cucumber?.uploadFeatures).to.be
+            expect(stubbedContext.firstCall.args[0]?.getOptions().cucumber?.uploadFeatures).to.be
                 .false;
             expect(
-                stubbedContext.firstCall.args[0].getOptions().cucumber?.preprocessor?.json
+                stubbedContext.firstCall.args[0]?.getOptions().cucumber?.preprocessor?.json
             ).to.deep.eq({
                 enabled: true,
                 output: "somewhere",
             });
-            expect(stubbedContext.firstCall.args[0].getOptions().http).to.deep.eq(options.http);
-            expect(stubbedContext.firstCall.args[0].getClients()).to.eq(pluginContext.getClients());
+            expect(stubbedContext.firstCall.args[0]?.getOptions().http).to.deep.eq(options.http);
+            expect(stubbedContext.firstCall.args[0]?.getClients()).to.eq(
+                pluginContext.getClients()
+            );
         });
 
         it("initializes the clients with different http configurations", async () => {

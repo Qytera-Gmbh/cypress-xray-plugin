@@ -3,7 +3,6 @@ import { AxiosRequestConfig } from "axios";
 import { JiraClient } from "../client/jira/jiraClient";
 import { XrayClient } from "../client/xray/xrayClient";
 import { AxiosRestClient } from "../https/requests";
-import { getNativeTestIssueKey } from "../preprocessing/preprocessing";
 import { JiraRepository } from "../repository/jira/jiraRepository";
 import { IssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
@@ -512,53 +511,4 @@ export interface ClientCombination {
 export interface HttpClientCombination {
     jira: AxiosRestClient;
     xray: AxiosRestClient;
-}
-
-export class PluginContext {
-    private readonly requests = new Map<string, Partial<Cypress.RequestOptions>[]>();
-    private readonly responses = new Map<string, Cypress.Response<unknown>[]>();
-
-    constructor(
-        private readonly clients: ClientCombination,
-        private readonly internalOptions: InternalOptions,
-        private readonly cypressOptions: Cypress.PluginConfigOptions
-    ) {}
-
-    public getClients(): ClientCombination {
-        return this.clients;
-    }
-
-    public getOptions(): InternalOptions {
-        return this.internalOptions;
-    }
-
-    public getCypressOptions(): Cypress.PluginConfigOptions {
-        return this.cypressOptions;
-    }
-
-    public addRequest(testTitle: string, request: Partial<Cypress.RequestOptions>): void {
-        const issueKey = getNativeTestIssueKey(testTitle, this.internalOptions.jira.projectKey);
-        const requests = this.requests.get(issueKey);
-        if (requests) {
-            requests.push(request);
-        }
-        this.requests.set(issueKey, [request]);
-    }
-
-    public getRequests(): Map<string, Partial<Cypress.RequestOptions>[]> {
-        return this.requests;
-    }
-
-    public addResponse(testTitle: string, response: Cypress.Response<unknown>): void {
-        const issueKey = getNativeTestIssueKey(testTitle, this.internalOptions.jira.projectKey);
-        const responses = this.responses.get(issueKey);
-        if (responses) {
-            responses.push(response);
-        }
-        this.responses.set(issueKey, [response]);
-    }
-
-    public getResponses(): Map<string, Cypress.Response<unknown>[]> {
-        return this.responses;
-    }
 }

@@ -1,5 +1,5 @@
 import {
-    clearPluginContext,
+    PluginContext,
     getPluginContext,
     initClients,
     initCucumberOptions,
@@ -12,7 +12,7 @@ import {
 import { afterRunHook, beforeRunHook } from "./hooks/hooks";
 import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
 import { LOG, Level } from "./logging/logging";
-import { InternalOptions, InternalPluginOptions, Options, PluginContext } from "./types/plugin";
+import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { HELP } from "./util/help";
 
@@ -22,7 +22,7 @@ let canShowInitializationWarning = true;
  * Resets the plugin including its context.
  */
 export function resetPlugin(): void {
-    clearPluginContext();
+    setPluginContext(undefined);
     canShowInitializationWarning = true;
 }
 
