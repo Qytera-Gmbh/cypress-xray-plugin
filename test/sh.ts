@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import "dotenv/config";
 import * as childProcess from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -93,13 +94,55 @@ export function setupCypressProject(project: {
     };
 }
 
-export function runCypress(cwd: string, env: object): void {
+const ENV_CLOUD = [
+    "CYPRESS_JIRA_TEST_EXECUTION_ISSUE_KEY_CLOUD",
+    "CYPRESS_JIRA_PROJECT_KEY_CLOUD",
+    "CYPRESS_XRAY_CLIENT_SECRET_CLOUD",
+    "CYPRESS_XRAY_CLIENT_ID_CLOUD",
+    "CYPRESS_JIRA_API_TOKEN_CLOUD",
+    "CYPRESS_JIRA_USERNAME_CLOUD",
+    "CYPRESS_JIRA_URL_CLOUD",
+    "CYPRESS_JIRA_PASSWORD_CLOUD",
+];
+
+const ENV_SERVER = [
+    "CYPRESS_JIRA_TEST_EXECUTION_ISSUE_KEY_SERVER",
+    "CYPRESS_JIRA_PROJECT_KEY_SERVER",
+    "CYPRESS_XRAY_CLIENT_SECRET_SERVER",
+    "CYPRESS_XRAY_CLIENT_ID_SERVER",
+    "CYPRESS_JIRA_API_TOKEN_SERVER",
+    "CYPRESS_JIRA_USERNAME_SERVER",
+    "CYPRESS_JIRA_URL_SERVER",
+    "CYPRESS_JIRA_PASSWORD_SERVER",
+];
+
+export function runCypress(
+    cwd: string,
+    env: object,
+    options?: { includeEnv?: "cloud" | "server" }
+): void {
+    let mergedEnv = {
+        ...process.env,
+    };
+    if (options?.includeEnv === "cloud") {
+        mergedEnv = {
+            ...mergedEnv,
+            ...getEnv(ENV_CLOUD),
+        };
+    }
+    if (options?.includeEnv === "server") {
+        mergedEnv = {
+            ...mergedEnv,
+            ...getEnv(ENV_SERVER),
+        };
+    }
+    mergedEnv = {
+        ...mergedEnv,
+        ...env,
+    };
     const result = childProcess.spawnSync(CYPRESS_EXECUTABLE, ["run"], {
         cwd: cwd,
-        env: {
-            ...process.env,
-            ...env,
-        },
+        env: mergedEnv,
         shell: true,
     });
     if (result.status !== 0) {
@@ -138,4 +181,19 @@ export function runCypress(cwd: string, env: object): void {
             `)
         );
     }
+}
+
+function getEnv(names: string[]): Record<string, string | undefined> {
+    const env: Record<string, string | undefined> = {};
+    for (const name of names) {
+        const truncatedName = name.replace(/_CLOUD$/, "").replace(/_SERVER$/, "");
+        const value = process.env[name];
+        env[truncatedName] = value;
+    }
+    return env;
+}
+
+export interface IntegrationTest {
+    service: "cloud" | "server";
+    testIssueKey: string;
 }
