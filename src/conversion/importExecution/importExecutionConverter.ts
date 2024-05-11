@@ -1,3 +1,4 @@
+import { EvidenceCollection } from "../../context";
 import { CypressRunResultType } from "../../types/cypress/cypress";
 import { InternalOptions } from "../../types/plugin";
 import { XrayTestExecutionResults } from "../../types/xray/importTestExecutionResults";
@@ -23,13 +24,22 @@ export class ImportExecutionConverter {
      *
      * @param options - the options
      * @param isCloudConverter - whether Xray cloud JSONs should be created
+     * @param evidenceCollection - a collection for test evidence
      */
-    constructor(options: InternalOptions, private readonly isCloudConverter: boolean) {
+    constructor(
+        options: InternalOptions,
+        private readonly isCloudConverter: boolean,
+        private readonly evidenceCollection: EvidenceCollection
+    ) {
         this.options = options;
     }
 
     public async toXrayJson(results: CypressRunResultType): Promise<XrayTestExecutionResults> {
-        const testConverter: TestConverter = new TestConverter(this.options, this.isCloudConverter);
+        const testConverter: TestConverter = new TestConverter(
+            this.options,
+            this.isCloudConverter,
+            this.evidenceCollection
+        );
         return {
             testExecutionKey: this.options.jira.testExecutionIssueKey,
             info: {

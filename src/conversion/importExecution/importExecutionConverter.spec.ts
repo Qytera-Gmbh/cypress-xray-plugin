@@ -3,7 +3,13 @@ import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { getMockedLogger } from "../../../test/mocks";
 import { expectToExist } from "../../../test/util";
-import { initJiraOptions, initPluginOptions, initXrayOptions } from "../../context";
+import {
+    EvidenceCollection,
+    SimpleEvidenceCollection,
+    initJiraOptions,
+    initPluginOptions,
+    initXrayOptions,
+} from "../../context";
 import { Level } from "../../logging/logging";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
@@ -14,6 +20,7 @@ chai.use(chaiAsPromised);
 describe("the import execution converter", () => {
     let options: InternalOptions;
     let converter: ImportExecutionConverter;
+    let evidenceCollection: EvidenceCollection;
     beforeEach(() => {
         options = {
             jira: initJiraOptions(
@@ -31,7 +38,8 @@ describe("the import execution converter", () => {
             ),
             plugin: initPluginOptions({}, {}),
         };
-        converter = new ImportExecutionConverter(options, false);
+        evidenceCollection = new SimpleEvidenceCollection();
+        converter = new ImportExecutionConverter(options, false, evidenceCollection);
     });
 
     it("converts test results into xray json", async () => {
@@ -294,7 +302,7 @@ describe("the import execution converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         ) as CypressCommandLine.CypressRunResult;
-        converter = new ImportExecutionConverter(options, true);
+        converter = new ImportExecutionConverter(options, true, evidenceCollection);
         const json = await converter.toXrayJson(result);
         expectToExist(json.tests);
         expect(json.tests).to.have.length(3);

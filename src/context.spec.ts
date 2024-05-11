@@ -19,7 +19,6 @@ import * as dependencies from "./dependencies";
 import { AxiosRestClient } from "./https/requests";
 import { Level } from "./logging/logging";
 import {
-    HttpOptions,
     InternalCucumberOptions,
     InternalHttpOptions,
     InternalJiraOptions,
@@ -1128,11 +1127,6 @@ describe("the plugin context configuration", () => {
             );
         });
         it("creates a different xray client if a xray config is passed", () => {
-            const x: HttpOptions = {
-                url: "abc",
-                jira: {},
-            };
-            console.log(x);
             const httpOptions: InternalHttpOptions = {
                 xray: {
                     proxy: {

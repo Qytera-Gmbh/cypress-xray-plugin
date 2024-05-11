@@ -12,8 +12,11 @@ import {
 import { afterRunHook, beforeRunHook } from "./hooks/hooks";
 import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
 import { LOG, Level } from "./logging/logging";
+import { getNativeTestIssueKey } from "./preprocessing/preprocessing";
 import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
+import { encode } from "./util/base64";
 import { dedent } from "./util/dedent";
+import { errorMessage } from "./util/errors";
 import { HELP } from "./util/help";
 
 let canShowInitializationWarning = true;
@@ -50,6 +53,100 @@ export async function configureXrayPlugin(
     config: Cypress.PluginConfigOptions,
     options: Options
 ): Promise<void> {
+    on("task", {
+        ["task:request"]: (args: {
+            test: string;
+            filename: string;
+            request: Partial<Cypress.RequestOptions>;
+        }) => {
+            const context = getPluginContext();
+            if (!context) {
+                if (showInitializationWarnings()) {
+                    LOG.message(
+                        Level.WARNING,
+                        dedent(`
+                            Skipping cy.request listener in ${args.test}: Plugin misconfigured: configureXrayPlugin() was not called
+
+                            Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
+                        `)
+                    );
+                }
+            } else if (context.getOptions().xray.uploadRequests) {
+                let issueKey: string | null = null;
+                try {
+                    issueKey = getNativeTestIssueKey(
+                        args.test,
+                        context.getOptions().jira.projectKey
+                    );
+                } catch (error: unknown) {
+                    LOG.message(
+                        Level.WARNING,
+                        dedent(`
+                            Encountered a cy.request call which will not be included as evidence for test: ${
+                                args.test
+                            }
+
+                            ${errorMessage(error)}
+                        `)
+                    );
+                }
+                if (issueKey) {
+                    context.addEvidence(issueKey, {
+                        filename: `${args.filename} request.json`,
+                        contentType: "application/json",
+                        data: encode(JSON.stringify(args.request, null, 2)),
+                    });
+                }
+            }
+            return args.request;
+        },
+        ["task:response"]: (args: {
+            test: string;
+            filename: string;
+            response: Cypress.Response<unknown>;
+        }) => {
+            const context = getPluginContext();
+            if (!context) {
+                if (showInitializationWarnings()) {
+                    LOG.message(
+                        Level.WARNING,
+                        dedent(`
+                            Skipping cy.request listener in ${args.test}: Plugin misconfigured: configureXrayPlugin() was not called
+
+                            Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
+                        `)
+                    );
+                }
+            } else if (context.getOptions().xray.uploadRequests) {
+                let issueKey: string | null = null;
+                try {
+                    issueKey = getNativeTestIssueKey(
+                        args.test,
+                        context.getOptions().jira.projectKey
+                    );
+                } catch (error: unknown) {
+                    LOG.message(
+                        Level.WARNING,
+                        dedent(`
+                            Encountered a cy.request call which will not be included as evidence for test: ${
+                                args.test
+                            }
+
+                            ${errorMessage(error)}
+                        `)
+                    );
+                }
+                if (issueKey) {
+                    context.addEvidence(issueKey, {
+                        filename: `${args.filename} response.json`,
+                        contentType: "application/json",
+                        data: encode(JSON.stringify(args.response, null, 2)),
+                    });
+                }
+            }
+            return args.response;
+        },
+    });
     canShowInitializationWarning = false;
     // Resolve these before all other options for correct enabledness.
     const pluginOptions: InternalPluginOptions = initPluginOptions(config.env, options.plugin);
@@ -114,7 +211,8 @@ export async function configureXrayPlugin(
                 await afterRunHook(
                     results as CypressCommandLine.CypressRunResult,
                     context.getOptions(),
-                    context.getClients()
+                    context.getClients(),
+                    context
                 );
             }
         );

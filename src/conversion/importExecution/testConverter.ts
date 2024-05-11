@@ -1,5 +1,6 @@
 import { basename, parse } from "path";
 import { gte, lt } from "semver";
+import { EvidenceCollection } from "../../context";
 import { LOG, Level } from "../../logging/logging";
 import { getNativeTestIssueKey } from "../../preprocessing/preprocessing";
 import { RunResult as RunResult_V12 } from "../../types/cypress/12.0.0/api";
@@ -28,10 +29,12 @@ export class TestConverter {
      *
      * @param options - the options
      * @param isCloudConverter - whether Xray cloud JSONs should be created
+     * @param evidenceCollection - a collection for test evidence
      */
     constructor(
         private readonly options: InternalOptions,
-        private readonly isCloudConverter: boolean
+        private readonly isCloudConverter: boolean,
+        private readonly evidenceCollection: EvidenceCollection
     ) {}
 
     public async toXrayTests(runResults: CypressRunResultType): Promise<[XrayTest, ...XrayTest[]]> {
@@ -46,7 +49,7 @@ export class TestConverter {
                 const test: XrayTest = this.getTest(
                     testData,
                     issueKey,
-                    this.getXrayEvidence(testData)
+                    this.getXrayEvidence(issueKey, testData)
                 );
                 xrayTests.push(test);
             } catch (error: unknown) {
@@ -168,7 +171,7 @@ export class TestConverter {
         return xrayTest;
     }
 
-    private getXrayEvidence(testRunData: TestRunData): XrayEvidenceItem[] {
+    private getXrayEvidence(issueKey: string, testRunData: TestRunData): XrayEvidenceItem[] {
         const evidence: XrayEvidenceItem[] = [];
         if (this.options.xray.uploadScreenshots) {
             for (const screenshot of testRunData.screenshots) {
@@ -182,6 +185,7 @@ export class TestConverter {
                 });
             }
         }
+        this.evidenceCollection.getEvidence(issueKey).forEach((item) => evidence.push(item));
         return evidence;
     }
 

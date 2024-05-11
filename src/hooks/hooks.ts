@@ -1,5 +1,6 @@
 import fs from "fs";
 import { JiraClient } from "../client/jira/jiraClient";
+import { EvidenceCollection } from "../context";
 import { ImportExecutionConverter } from "../conversion/importExecution/importExecutionConverter";
 import { ImportExecutionCucumberMultipartConverter } from "../conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverter";
 import { LOG, Level } from "../logging/logging";
@@ -90,13 +91,14 @@ function retrieveIssueTypeInformation(
 export async function afterRunHook(
     results: CypressRunResultType,
     options: InternalOptions,
-    clients: ClientCombination
+    clients: ClientCombination,
+    evidenceCollection: EvidenceCollection
 ) {
     const runResult = results;
     let issueKey: string | null | undefined = null;
     if (containsNativeTest(runResult, options.cucumber?.featureFileExtension)) {
         LOG.message(Level.INFO, "Uploading native Cypress test results...");
-        issueKey = await uploadCypressResults(runResult, options, clients);
+        issueKey = await uploadCypressResults(runResult, options, clients, evidenceCollection);
         if (
             options.jira.testExecutionIssueKey &&
             issueKey &&
@@ -172,9 +174,14 @@ export async function afterRunHook(
 async function uploadCypressResults(
     runResult: CypressRunResultType,
     options: InternalOptions,
-    clients: ClientCombination
+    clients: ClientCombination,
+    evidenceCollection: EvidenceCollection
 ) {
-    const converter = new ImportExecutionConverter(options, clients.kind === "cloud");
+    const converter = new ImportExecutionConverter(
+        options,
+        clients.kind === "cloud",
+        evidenceCollection
+    );
     try {
         const cypressExecution = await converter.toXrayJson(runResult);
         return await clients.xrayClient.importExecution(cypressExecution);

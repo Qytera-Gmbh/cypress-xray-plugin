@@ -3,6 +3,8 @@ import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { getMockedLogger } from "../../../test/mocks";
 import {
+    EvidenceCollection,
+    SimpleEvidenceCollection,
     initCucumberOptions,
     initJiraOptions,
     initPluginOptions,
@@ -18,6 +20,7 @@ chai.use(chaiAsPromised);
 
 describe("the test converter", () => {
     let options: InternalOptions;
+    let evidenceCollection: EvidenceCollection;
     beforeEach(() => {
         options = {
             jira: initJiraOptions(
@@ -35,13 +38,14 @@ describe("the test converter", () => {
             ),
             plugin: initPluginOptions({}, {}),
         };
+        evidenceCollection = new SimpleEvidenceCollection();
     });
 
     it("warns about skipped screenshots", async () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0_manualScreenshot.json", "utf-8")
         ) as CypressCommandLine.CypressRunResult;
-        const converter = new TestConverter(options, false);
+        const converter = new TestConverter(options, false, evidenceCollection);
         const logger = getMockedLogger();
         logger.message
             .withArgs(
@@ -80,7 +84,7 @@ describe("the test converter", () => {
             },
             { featureFileExtension: ".feature" }
         );
-        const converter = new TestConverter(options, true);
+        const converter = new TestConverter(options, true, evidenceCollection);
         await expect(converter.toXrayTests(result)).to.eventually.be.rejectedWith(
             "Failed to extract test run data: Only Cucumber tests were executed"
         );
@@ -101,7 +105,7 @@ describe("the test converter", () => {
             },
             { featureFileExtension: ".ts" }
         );
-        const converter = new TestConverter(options, false);
+        const converter = new TestConverter(options, false, evidenceCollection);
         await expect(converter.toXrayTests(result)).to.eventually.be.rejectedWith(
             "Failed to extract test run data: Only Cucumber tests were executed"
         );
@@ -111,7 +115,7 @@ describe("the test converter", () => {
         const result: CypressRunResult_V12 = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         ) as CypressRunResult_V12;
-        const converter = new TestConverter(options, false);
+        const converter = new TestConverter(options, false, evidenceCollection);
         const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
             {
@@ -145,7 +149,7 @@ describe("the test converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
         ) as CypressCommandLine.CypressRunResult;
-        const converter = new TestConverter(options, false);
+        const converter = new TestConverter(options, false, evidenceCollection);
         const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
             {
@@ -191,7 +195,7 @@ describe("the test converter", () => {
         const result: CypressRunResult_V12 = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         ) as CypressRunResult_V12;
-        const converter = new TestConverter(options, true);
+        const converter = new TestConverter(options, true, evidenceCollection);
         const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
             {
@@ -225,7 +229,7 @@ describe("the test converter", () => {
         const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
         ) as CypressCommandLine.CypressRunResult;
-        const converter = new TestConverter(options, true);
+        const converter = new TestConverter(options, true, evidenceCollection);
         const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
             {

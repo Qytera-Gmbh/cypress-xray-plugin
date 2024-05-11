@@ -196,4 +196,5 @@ function getEnv(names: string[]): Record<string, string | undefined> {
 export interface IntegrationTest {
     service: "cloud" | "server";
     testIssueKey: string;
+    env?: Record<string, string>;
 }

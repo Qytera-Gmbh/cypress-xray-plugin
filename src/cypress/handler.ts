@@ -1,8 +1,4 @@
-import { getPluginContext } from "../context";
-import { LOG, Level } from "../logging/logging";
-import { showInitializationWarnings } from "../plugin";
-import { dedent } from "../util/dedent";
-import { HELP } from "../util/help";
+import { normalizedFilename } from "../util/files";
 
 /**
  * Handles a `cy.request` call. The event handler stores the request with its parameters as well as
@@ -44,23 +40,23 @@ function onCyRequest(...args: HandleParameterType["cy.request"]): HandleReturnTy
     const originalFn = args[0];
     const options = args[1];
     const currentTest = Cypress.currentTest;
-    const context = getPluginContext();
-    if (!context) {
-        if (showInitializationWarnings()) {
-            LOG.message(
-                Level.WARNING,
-                dedent(`
-                    Skipping cy.request listener in ${currentTest.title}: Plugin misconfigured: configureXrayPlugin() was not called
+    const filename = toFilename(options);
+    return cy
+        .task("task:request", { test: currentTest.title, filename: filename, request: options })
+        .then(() => originalFn(options))
+        .then((response) => {
+            cy.task("task:response", {
+                test: currentTest.title,
+                filename: filename,
+                response: response,
+            });
+            return cy.wrap(response);
+        });
+}
 
-                    Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
-                `)
-            );
-        }
-        return originalFn(options);
-    }
-    context.addRequest(currentTest.title, args[1]);
-    return originalFn(options).then((response) => {
-        context.addResponse(currentTest.title, response);
-        return response;
-    });
+function toFilename(request: Partial<Cypress.RequestOptions>): string {
+    const method = typeof request === "string" ? "GET" : request.method ?? "UNKNOWN METHOD";
+    const url = typeof request === "string" ? request : request.url ?? "UNKNOWN URL";
+    const timestamp = normalizedFilename(new Date().toLocaleTimeString());
+    return `${method} ${url} ${timestamp}`;
 }

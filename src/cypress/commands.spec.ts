@@ -14,10 +14,16 @@ describe(path.relative(process.cwd(), __filename), () => {
         {
             service: "cloud",
             testIssueKey: "CYP-666",
+            env: {
+                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+            },
         },
         {
             service: "server",
             testIssueKey: "CYPLUG-107",
+            env: {
+                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+            },
         },
     ] as IntegrationTest[]) {
         it.only(`cy.request gets overwritten in ${env.service} environments`, () => {

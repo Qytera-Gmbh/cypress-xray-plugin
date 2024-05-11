@@ -11,7 +11,6 @@ import {
 import { ENV_NAMES } from "./env";
 import { AxiosRestClient } from "./https/requests";
 import { LOG, Level } from "./logging/logging";
-import { getNativeTestIssueKey } from "./preprocessing/preprocessing";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import {
     CachingJiraIssueFetcher,
@@ -29,15 +28,35 @@ import {
     InternalXrayOptions,
     Options,
 } from "./types/plugin";
+import { XrayEvidenceItem } from "./types/xray/importTestExecutionResults";
 import { dedent } from "./util/dedent";
 import { errorMessage } from "./util/errors";
 import { HELP } from "./util/help";
 import { asArrayOfStrings, asBoolean, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
 
-export class PluginContext {
-    private readonly requests = new Map<string, Partial<Cypress.RequestOptions>[]>();
-    private readonly responses = new Map<string, Cypress.Response<unknown>[]>();
+export interface EvidenceCollection {
+    addEvidence(issueKey: string, evidence: XrayEvidenceItem): void;
+    getEvidence(issueKey: string): XrayEvidenceItem[];
+}
+
+export class SimpleEvidenceCollection {
+    private readonly collectedEvidence = new Map<string, XrayEvidenceItem[]>();
+    addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
+        const currentEvidence = this.collectedEvidence.get(issueKey);
+        if (!currentEvidence) {
+            this.collectedEvidence.set(issueKey, [evidence]);
+        } else {
+            currentEvidence.push(evidence);
+        }
+    }
+    getEvidence(issueKey: string): XrayEvidenceItem[] {
+        return this.collectedEvidence.get(issueKey) ?? [];
+    }
+}
+
+export class PluginContext implements EvidenceCollection {
+    private readonly evidenceCollection: EvidenceCollection = new SimpleEvidenceCollection();
 
     constructor(
         private readonly clients: ClientCombination,
@@ -57,30 +76,12 @@ export class PluginContext {
         return this.cypressOptions;
     }
 
-    public addRequest(testTitle: string, request: Partial<Cypress.RequestOptions>): void {
-        const issueKey = getNativeTestIssueKey(testTitle, this.internalOptions.jira.projectKey);
-        const requests = this.requests.get(issueKey);
-        if (requests) {
-            requests.push(request);
-        }
-        this.requests.set(issueKey, [request]);
+    public addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
+        this.evidenceCollection.addEvidence(issueKey, evidence);
     }
 
-    public getRequests(): Map<string, Partial<Cypress.RequestOptions>[]> {
-        return this.requests;
-    }
-
-    public addResponse(testTitle: string, response: Cypress.Response<unknown>): void {
-        const issueKey = getNativeTestIssueKey(testTitle, this.internalOptions.jira.projectKey);
-        const responses = this.responses.get(issueKey);
-        if (responses) {
-            responses.push(response);
-        }
-        this.responses.set(issueKey, [response]);
-    }
-
-    public getResponses(): Map<string, Cypress.Response<unknown>[]> {
-        return this.responses;
+    public getEvidence(issueKey: string): XrayEvidenceItem[] {
+        return this.evidenceCollection.getEvidence(issueKey);
     }
 }
 
@@ -214,6 +215,10 @@ export function initXrayOptions(
         testEnvironments:
             parse(env, ENV_NAMES.xray.testEnvironments, asArrayOfStrings) ??
             options?.testEnvironments,
+        uploadRequests:
+            parse(env, ENV_NAMES.xray.uploadRequests, asBoolean) ??
+            options?.uploadRequests ??
+            false,
         uploadResults:
             parse(env, ENV_NAMES.xray.uploadResults, asBoolean) ?? options?.uploadResults ?? true,
         uploadScreenshots:
