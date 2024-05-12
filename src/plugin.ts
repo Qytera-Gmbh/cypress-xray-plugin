@@ -1,5 +1,6 @@
 import {
     PluginContext,
+    SimpleEvidenceCollection,
     getPluginContext,
     initClients,
     initCucumberOptions,
@@ -9,14 +10,12 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
+import { PluginTask, PluginTaskListener } from "./cypress/tasks";
 import { afterRunHook, beforeRunHook } from "./hooks/hooks";
 import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
 import { LOG, Level } from "./logging/logging";
-import { getNativeTestIssueKey } from "./preprocessing/preprocessing";
 import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
-import { encode } from "./util/base64";
 import { dedent } from "./util/dedent";
-import { errorMessage } from "./util/errors";
 import { HELP } from "./util/help";
 
 let canShowInitializationWarning = true;
@@ -29,7 +28,7 @@ export function resetPlugin(): void {
     canShowInitializationWarning = true;
 }
 
-export function showInitializationWarnings(): boolean {
+function showInitializationWarnings(): boolean {
     return canShowInitializationWarning;
 }
 
@@ -38,9 +37,9 @@ export function showInitializationWarnings(): boolean {
  * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with those specified in
  * `options`. Environment variables always override values specified in `options`.
  *
- * *Note: This method will register upload hooks under the Cypress `before:run` and `after:run`
- * events. Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if you
- * have other hooks registered to prevent the plugin from replacing them.*
+ * *Note: This method will register upload hooks under the Cypress `before:run`, `after:run` and
+ * `task` events. Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if
+ * you have other hooks registered to prevent the plugin from replacing them.*
  *
  * @param on - the Cypress plugin events
  * @param config - the Cypress configuration
@@ -53,100 +52,6 @@ export async function configureXrayPlugin(
     config: Cypress.PluginConfigOptions,
     options: Options
 ): Promise<void> {
-    on("task", {
-        ["task:request"]: (args: {
-            test: string;
-            filename: string;
-            request: Partial<Cypress.RequestOptions>;
-        }) => {
-            const context = getPluginContext();
-            if (!context) {
-                if (showInitializationWarnings()) {
-                    LOG.message(
-                        Level.WARNING,
-                        dedent(`
-                            Skipping cy.request listener in ${args.test}: Plugin misconfigured: configureXrayPlugin() was not called
-
-                            Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
-                        `)
-                    );
-                }
-            } else if (context.getOptions().xray.uploadRequests) {
-                let issueKey: string | null = null;
-                try {
-                    issueKey = getNativeTestIssueKey(
-                        args.test,
-                        context.getOptions().jira.projectKey
-                    );
-                } catch (error: unknown) {
-                    LOG.message(
-                        Level.WARNING,
-                        dedent(`
-                            Encountered a cy.request call which will not be included as evidence for test: ${
-                                args.test
-                            }
-
-                            ${errorMessage(error)}
-                        `)
-                    );
-                }
-                if (issueKey) {
-                    context.addEvidence(issueKey, {
-                        filename: `${args.filename} request.json`,
-                        contentType: "application/json",
-                        data: encode(JSON.stringify(args.request, null, 2)),
-                    });
-                }
-            }
-            return args.request;
-        },
-        ["task:response"]: (args: {
-            test: string;
-            filename: string;
-            response: Cypress.Response<unknown>;
-        }) => {
-            const context = getPluginContext();
-            if (!context) {
-                if (showInitializationWarnings()) {
-                    LOG.message(
-                        Level.WARNING,
-                        dedent(`
-                            Skipping cy.request listener in ${args.test}: Plugin misconfigured: configureXrayPlugin() was not called
-
-                            Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
-                        `)
-                    );
-                }
-            } else if (context.getOptions().xray.uploadRequests) {
-                let issueKey: string | null = null;
-                try {
-                    issueKey = getNativeTestIssueKey(
-                        args.test,
-                        context.getOptions().jira.projectKey
-                    );
-                } catch (error: unknown) {
-                    LOG.message(
-                        Level.WARNING,
-                        dedent(`
-                            Encountered a cy.request call which will not be included as evidence for test: ${
-                                args.test
-                            }
-
-                            ${errorMessage(error)}
-                        `)
-                    );
-                }
-                if (issueKey) {
-                    context.addEvidence(issueKey, {
-                        filename: `${args.filename} response.json`,
-                        contentType: "application/json",
-                        data: encode(JSON.stringify(args.response, null, 2)),
-                    });
-                }
-            }
-            return args.response;
-        },
-    });
     canShowInitializationWarning = false;
     // Resolve these before all other options for correct enabledness.
     const pluginOptions: InternalPluginOptions = initPluginOptions(config.env, options.plugin);
@@ -176,6 +81,16 @@ export async function configureXrayPlugin(
     const clients = await initClients(internalOptions.jira, config.env, httpClients);
     const context = new PluginContext(clients, internalOptions, config);
     setPluginContext(context);
+    const taskEventListener = new PluginTaskListener(
+        internalOptions.jira.projectKey,
+        new SimpleEvidenceCollection()
+    );
+    if (internalOptions.xray.uploadRequests) {
+        on("task", {
+            [PluginTask.OUTGOING_REQUEST]: taskEventListener[PluginTask.OUTGOING_REQUEST],
+            [PluginTask.INCOMING_RESPONSE]: taskEventListener[PluginTask.INCOMING_RESPONSE],
+        });
+    }
     if (internalOptions.xray.uploadResults) {
         on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
             if (!runDetails.specs) {

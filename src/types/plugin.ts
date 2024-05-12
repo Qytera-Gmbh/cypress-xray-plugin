@@ -296,7 +296,9 @@ export interface XrayOptions {
  * default/fallback values are used by the plugin.
  */
 export type InternalXrayOptions = XrayOptions &
-    Required<Pick<XrayOptions, "status" | "uploadResults" | "uploadScreenshots">>;
+    Required<
+        Pick<XrayOptions, "status" | "uploadRequests" | "uploadResults" | "uploadScreenshots">
+    >;
 
 /**
  * When Cucumber is enabled, these options are used to configure how the plugin works with
