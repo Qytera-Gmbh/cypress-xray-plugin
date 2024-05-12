@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  run-tests:
+  run-unit-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,6 +38,18 @@ jobs:
           name: coverage-report
           path: coverage
           retention-days: 30
+
+  run-integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          registry-url: https://registry.npmjs.org/
+          cache: npm
+      - run: npm install
+      - run: npm run build
       - run: npm run test:integration
         env:
           CYPRESS_JIRA_API_TOKEN_CLOUD: ${{ secrets.CYPRESS_JIRA_API_TOKEN_CLOUD }}
