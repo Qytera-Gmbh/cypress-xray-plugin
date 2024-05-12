@@ -19,6 +19,7 @@ import {
 import { CachingJiraRepository } from "./repository/jira/jiraRepository";
 import {
     ClientCombination,
+    CypressXrayPluginOptions,
     HttpClientCombination,
     InternalCucumberOptions,
     InternalHttpOptions,
@@ -26,7 +27,6 @@ import {
     InternalOptions,
     InternalPluginOptions,
     InternalXrayOptions,
-    Options,
 } from "./types/plugin";
 import { XrayEvidenceItem } from "./types/xray/importTestExecutionResults";
 import { dedent } from "./util/dedent";
@@ -107,7 +107,7 @@ export function setPluginContext(newContext?: PluginContext): void {
  */
 export function initJiraOptions(
     env: Cypress.ObjectLike,
-    options: Options["jira"]
+    options: CypressXrayPluginOptions["jira"]
 ): InternalJiraOptions {
     const projectKey = parse(env, ENV_NAMES.jira.projectKey, asString) ?? options.projectKey;
     if (!projectKey) {
@@ -177,7 +177,7 @@ export function initJiraOptions(
  */
 export function initPluginOptions(
     env: Cypress.ObjectLike,
-    options: Options["plugin"]
+    options: CypressXrayPluginOptions["plugin"]
 ): InternalPluginOptions {
     return {
         debug: parse(env, ENV_NAMES.plugin.debug, asBoolean) ?? options?.debug ?? false,
@@ -202,7 +202,7 @@ export function initPluginOptions(
  */
 export function initXrayOptions(
     env: Cypress.ObjectLike,
-    options: Options["xray"]
+    options: CypressXrayPluginOptions["xray"]
 ): InternalXrayOptions {
     return {
         status: {
@@ -240,7 +240,7 @@ export function initXrayOptions(
  */
 export async function initCucumberOptions(
     config: CucumberPreprocessorArgs[0],
-    options: Options["cucumber"]
+    options: CypressXrayPluginOptions["cucumber"]
 ): Promise<InternalCucumberOptions | undefined> {
     // Check if the user has chosen to upload Cucumber results, too.
     const featureFileExtension =

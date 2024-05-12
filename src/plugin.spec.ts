@@ -16,7 +16,7 @@ import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import { CachingJiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
 import { CachingJiraRepository } from "./repository/jira/jiraRepository";
-import { Options } from "./types/plugin";
+import { CypressXrayPluginOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
 
 describe("the plugin", () => {
@@ -96,7 +96,7 @@ describe("the plugin", () => {
             const stubbedContext = stub(context, "setPluginContext");
             const stubbedClients = stub(context, "initClients");
             stubbedClients.onFirstCall().resolves(pluginContext.getClients());
-            const options: Options = {
+            const options: CypressXrayPluginOptions = {
                 jira: {
                     attachVideos: true,
                     fields: {
@@ -194,7 +194,7 @@ describe("the plugin", () => {
         });
 
         it("initializes the clients with different http configurations", async () => {
-            const options: Options = {
+            const options: CypressXrayPluginOptions = {
                 jira: {
                     projectKey: "ABC",
                     url: "https://example.org",
@@ -244,7 +244,7 @@ describe("the plugin", () => {
             const stubbedClients = stub(context, "initClients");
             const logger = getMockedLogger();
             stubbedClients.onFirstCall().resolves(pluginContext.getClients());
-            const options: Options = {
+            const options: CypressXrayPluginOptions = {
                 jira: {
                     projectKey: "ABC",
                     url: "https://example.org",

@@ -13,7 +13,7 @@ import { PluginTask, PluginTaskListener, PluginTaskParameterType } from "./cypre
 import { afterRunHook, beforeRunHook } from "./hooks/hooks";
 import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
 import { LOG, Level } from "./logging/logging";
-import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
+import { CypressXrayPluginOptions, InternalOptions, InternalPluginOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { HELP } from "./util/help";
 
@@ -49,7 +49,7 @@ function showInitializationWarnings(): boolean {
 export async function configureXrayPlugin(
     on: Cypress.PluginEvents,
     config: Cypress.PluginConfigOptions,
-    options: Options
+    options: CypressXrayPluginOptions
 ): Promise<void> {
     canShowInitializationWarning = false;
     // Resolve these before all other options for correct enabledness.

@@ -6,7 +6,10 @@ import { AxiosRestClient } from "../https/requests";
 import { JiraRepository } from "../repository/jira/jiraRepository";
 import { IssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
-export interface Options {
+/**
+ * Models all options for configuring the behaviour of the plugin.
+ */
+export interface CypressXrayPluginOptions {
     /**
      * Defines Jira-specific options that control how the plugin interacts with Jira.
      *
