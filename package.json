@@ -36,7 +36,7 @@
     },
     "scripts": {
         "test": "mocha --ignore test/integration/**/* **/*.spec.ts",
-        "test:coverage": "nyc npm run test",
+        "test:coverage": "nyc mocha --ignore test/integration/**/* **/*.spec.ts",
         "test:integration": "mocha test/integration/**/*.spec.ts",
         "build": "tsc --project tsconfigBuild.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
         "eslint": "eslint src/**/*.ts test/**/*.ts index.ts index.spec.ts"
