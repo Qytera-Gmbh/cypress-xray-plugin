@@ -25,6 +25,19 @@ jobs:
       - run: npm run build
       - run: npm run eslint
       - run: npm run coverage
+        env:
+          CYPRESS_JIRA_API_TOKEN_CLOUD: ${{ secrets.CYPRESS_JIRA_API_TOKEN_CLOUD }}
+          CYPRESS_JIRA_PASSWORD_SERVER: ${{ secrets.CYPRESS_JIRA_PASSWORD_SERVER }}
+          CYPRESS_JIRA_PROJECT_KEY_CLOUD: ${{ secrets.CYPRESS_JIRA_PROJECT_KEY_CLOUD }}
+          CYPRESS_JIRA_PROJECT_KEY_SERVER: ${{ secrets.CYPRESS_JIRA_PROJECT_KEY_SERVER }}
+          CYPRESS_JIRA_TEST_EXECUTION_ISSUE_KEY_CLOUD: ${{ secrets.CYPRESS_JIRA_TEST_EXECUTION_ISSUE_KEY_CLOUD }}
+          CYPRESS_JIRA_TEST_EXECUTION_ISSUE_KEY_SERVER: ${{ secrets.CYPRESS_JIRA_TEST_EXECUTION_ISSUE_KEY_SERVER }}
+          CYPRESS_JIRA_URL_CLOUD: ${{ secrets.CYPRESS_JIRA_URL_CLOUD }}
+          CYPRESS_JIRA_URL_SERVER: ${{ secrets.CYPRESS_JIRA_URL_SERVER }}
+          CYPRESS_JIRA_USERNAME_CLOUD: ${{ secrets.CYPRESS_JIRA_USERNAME_CLOUD }}
+          CYPRESS_JIRA_USERNAME_SERVER: ${{ secrets.CYPRESS_JIRA_USERNAME_SERVER }}
+          CYPRESS_XRAY_CLIENT_ID_CLOUD: ${{ secrets.XRAY_CLIENT_ID }}
+          CYPRESS_XRAY_CLIENT_SECRET_CLOUD: ${{ secrets.XRAY_CLIENT_SECRET }}
       - uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
