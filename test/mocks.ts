@@ -201,10 +201,8 @@ export function getMockedCypress(): {
     cy: Cypress.cy & CyEventEmitter;
 } {
     global.Cypress = {
-        currentTest: {
-            title: "MOCK TITLE",
-            titlePath: ["MOCK PATH"],
-        },
+        currentTest: {},
+        ["Commands"]: {},
     } as Cypress.Cypress & CyEventEmitter;
     global.cy = {
         task: () => {
