@@ -270,4 +270,72 @@ describe("the test converter", () => {
             },
         ]);
     });
+
+    it("includes all evidence", async () => {
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
+        ) as CypressCommandLine.CypressRunResult;
+        evidenceCollection.addEvidence("CYP-452", {
+            data: "aGkgdGhlcmU=",
+            filename: "hi.txt",
+            contentType: "text/plain",
+        });
+        evidenceCollection.addEvidence("CYP-237", {
+            data: "Z29vZGJ5ZQ==",
+            filename: "goodbye.txt",
+            contentType: "text/plain",
+        });
+        const converter = new TestConverter(options, false, evidenceCollection);
+        const json = await converter.toXrayTests(result);
+        expect(json).to.deep.eq([
+            {
+                testKey: "CYP-452",
+                start: "2023-09-09T10:59:28Z",
+                finish: "2023-09-09T10:59:29Z",
+                status: "PASS",
+                evidence: [
+                    {
+                        data: "aGkgdGhlcmU=",
+                        filename: "hi.txt",
+                        contentType: "text/plain",
+                    },
+                ],
+            },
+            {
+                testKey: "CYP-268",
+                start: "2023-09-09T10:59:29Z",
+                finish: "2023-09-09T10:59:29Z",
+                status: "PASS",
+            },
+            {
+                testKey: "CYP-237",
+                start: "2023-09-09T10:59:29Z",
+                finish: "2023-09-09T10:59:29Z",
+                status: "FAIL",
+                evidence: [
+                    {
+                        filename: "small CYP-237.png",
+                        data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
+                    },
+                    {
+                        data: "Z29vZGJ5ZQ==",
+                        filename: "goodbye.txt",
+                        contentType: "text/plain",
+                    },
+                ],
+            },
+            {
+                testKey: "CYP-332",
+                start: "2023-09-09T10:59:29Z",
+                finish: "2023-09-09T10:59:29Z",
+                status: "FAIL",
+            },
+            {
+                testKey: "CYP-333",
+                start: "2023-09-09T10:59:29Z",
+                finish: "2023-09-09T10:59:29Z",
+                status: "TODO",
+            },
+        ]);
+    });
 });
