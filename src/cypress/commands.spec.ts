@@ -49,8 +49,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 statusText: "Ok",
             },
             expectedFilenames: [
-                "GET https_example.org 01_00_12 request.json",
-                "GET https_example.org 01_00_12 response.json",
+                `GET https_example.org ${new Date(12345).toLocaleTimeString()} request.json`,
+                `GET https_example.org ${new Date(12345).toLocaleTimeString()} response.json`,
             ],
         },
         {
@@ -69,8 +69,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 statusText: "Not found",
             },
             expectedFilenames: [
-                "GET https_example.org 01_00_12 request.json",
-                "GET https_example.org 01_00_12 response.json",
+                `GET https_example.org ${new Date(12345).toLocaleTimeString()} request.json`,
+                `GET https_example.org ${new Date(12345).toLocaleTimeString()} response.json`,
             ],
         },
         {
@@ -89,8 +89,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 statusText: "Found",
             },
             expectedFilenames: [
-                "UNKNOWN_METHOD UNKNOWN_URL 01_00_12 request.json",
-                "UNKNOWN_METHOD UNKNOWN_URL 01_00_12 response.json",
+                `UNKNOWN_METHOD UNKNOWN_URL ${new Date(12345).toLocaleTimeString()} request.json`,
+                `UNKNOWN_METHOD UNKNOWN_URL ${new Date(12345).toLocaleTimeString()} response.json`,
             ],
         },
     ];
