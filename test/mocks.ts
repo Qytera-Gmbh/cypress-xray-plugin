@@ -196,6 +196,24 @@ export function getMockedJwtCredentials(): SinonStubbedInstance<JwtCredentials> 
     );
 }
 
+export function getMockedCypress(): {
+    cypress: Cypress.Cypress & CyEventEmitter;
+    cy: Cypress.cy & CyEventEmitter;
+} {
+    global.Cypress = {
+        currentTest: {
+            title: "MOCK TITLE",
+            titlePath: ["MOCK PATH"],
+        },
+    } as Cypress.Cypress & CyEventEmitter;
+    global.cy = {
+        task: () => {
+            throw new Error("Mock called unexpectedly");
+        },
+    } as unknown as Cypress.cy & CyEventEmitter;
+    return { cypress: global.Cypress, cy: global.cy };
+}
+
 function mockCalledUnexpectedlyError(...args: unknown[]): Error {
     if (args.length > 0) {
         return new Error(
