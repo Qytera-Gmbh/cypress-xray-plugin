@@ -29,7 +29,7 @@
     "exports": {
         ".": "./index.js",
         "./commands": "./src/cypress/commands.js",
-        "./commands/handler": "./src/cypress/handler.js"
+        "./commands/tasks": "./src/cypress/index.js"
     },
     "directories": {
         "lib": "src"

@@ -42,13 +42,13 @@ const E2E_FILE = dedent(`
     import "./commands";
 `);
 
-const SUPPORT_FILE = dedent(`
+const COMMANDS_FILE = dedent(`
     import "cypress-xray-plugin/commands";
 `);
 
 export function setupCypressProject(project: {
     configFileContent?: string;
-    supportFileContent?: string;
+    commandFileContent?: string;
     e2eFileContent?: string;
     testFiles: { fileName: string; content: string }[];
 }): {
@@ -69,7 +69,7 @@ export function setupCypressProject(project: {
     fs.mkdirSync(supportDirectory, { recursive: true });
     fs.writeFileSync(
         path.join(supportDirectory, "commands.js"),
-        project.supportFileContent ?? SUPPORT_FILE
+        project.commandFileContent ?? COMMANDS_FILE
     );
     fs.writeFileSync(path.join(supportDirectory, "e2e.js"), project.e2eFileContent ?? E2E_FILE);
 
@@ -195,6 +195,8 @@ function getEnv(names: string[]): Record<string, string | undefined> {
 
 export interface IntegrationTest {
     service: "cloud" | "server";
+    title: string;
     testIssueKey: string;
     env?: Record<string, string | undefined>;
+    commandFileContent?: string;
 }
