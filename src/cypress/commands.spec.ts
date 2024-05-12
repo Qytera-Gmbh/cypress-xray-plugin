@@ -4,6 +4,7 @@ import process from "node:process";
 
 import Sinon from "sinon";
 import { getMockedCypress } from "../../test/mocks";
+import { normalizedFilename } from "../util/files";
 import * as tasks from "./tasks";
 
 describe(path.relative(process.cwd(), __filename), () => {
@@ -24,6 +25,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         expect(overwriteSpy).to.have.been.calledOnce;
     });
 
+    const timestamp = normalizedFilename(new Date(12345).toLocaleTimeString());
     const tests: {
         name: string;
         request: Partial<Cypress.RequestOptions>;
@@ -49,8 +51,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 statusText: "Ok",
             },
             expectedFilenames: [
-                `GET https_example.org ${new Date(12345).toLocaleTimeString()} request.json`,
-                `GET https_example.org ${new Date(12345).toLocaleTimeString()} response.json`,
+                `GET https_example.org ${timestamp} request.json`,
+                `GET https_example.org ${timestamp} response.json`,
             ],
         },
         {
@@ -69,8 +71,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 statusText: "Not found",
             },
             expectedFilenames: [
-                `GET https_example.org ${new Date(12345).toLocaleTimeString()} request.json`,
-                `GET https_example.org ${new Date(12345).toLocaleTimeString()} response.json`,
+                `GET https_example.org ${timestamp} request.json`,
+                `GET https_example.org ${timestamp} response.json`,
             ],
         },
         {
@@ -89,8 +91,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 statusText: "Found",
             },
             expectedFilenames: [
-                `UNKNOWN_METHOD UNKNOWN_URL ${new Date(12345).toLocaleTimeString()} request.json`,
-                `UNKNOWN_METHOD UNKNOWN_URL ${new Date(12345).toLocaleTimeString()} response.json`,
+                `UNKNOWN_METHOD UNKNOWN_URL ${timestamp} request.json`,
+                `UNKNOWN_METHOD UNKNOWN_URL ${timestamp} response.json`,
             ],
         },
     ];
