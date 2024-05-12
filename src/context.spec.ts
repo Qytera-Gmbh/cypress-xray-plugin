@@ -8,6 +8,7 @@ import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
 import {
+    PluginContext,
     SimpleEvidenceCollection,
     initClients,
     initCucumberOptions,
@@ -19,6 +20,9 @@ import {
 import * as dependencies from "./dependencies";
 import { AxiosRestClient } from "./https/requests";
 import { Level } from "./logging/logging";
+import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
+import { CachingJiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
+import { CachingJiraRepository } from "./repository/jira/jiraRepository";
 import {
     InternalCucumberOptions,
     InternalHttpOptions,
@@ -1471,6 +1475,122 @@ describe(SimpleEvidenceCollection.name, () => {
             data: "WyJnb29kYnllIl0=",
         });
         expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+            {
+                filename: "hello.json",
+                contentType: "application/json",
+                data: "WyJoZWxsbyJd",
+            },
+            {
+                filename: "goodbye.json",
+                contentType: "application/json",
+                data: "WyJnb29kYnllIl0=",
+            },
+        ]);
+    });
+
+    it("collects evidence for multiple tests", () => {
+        const evidenceCollection = new SimpleEvidenceCollection();
+        evidenceCollection.addEvidence("CYP-123", {
+            filename: "hello.json",
+            contentType: "application/json",
+            data: "WyJoZWxsbyJd",
+        });
+        evidenceCollection.addEvidence("CYP-456", {
+            filename: "goodbye.json",
+            contentType: "application/json",
+            data: "WyJnb29kYnllIl0=",
+        });
+        expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+            {
+                filename: "hello.json",
+                contentType: "application/json",
+                data: "WyJoZWxsbyJd",
+            },
+        ]);
+        expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([
+            {
+                filename: "goodbye.json",
+                contentType: "application/json",
+                data: "WyJnb29kYnllIl0=",
+            },
+        ]);
+    });
+
+    it("returns an empty array for unknown tests", () => {
+        const evidenceCollection = new SimpleEvidenceCollection();
+        evidenceCollection.addEvidence("CYP-123", {
+            filename: "hello.json",
+            contentType: "application/json",
+            data: "WyJoZWxsbyJd",
+        });
+        expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([]);
+    });
+});
+
+describe(PluginContext.name, () => {
+    let context: PluginContext;
+
+    beforeEach(() => {
+        const jiraClient = new JiraClientServer(
+            "https://example.org",
+            new PatCredentials("token"),
+            getMockedRestClient()
+        );
+        const xrayClient = new XrayClientServer(
+            "https://example.org",
+            new PatCredentials("token"),
+            getMockedRestClient()
+        );
+        const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
+        const jiraFieldFetcher = new CachingJiraIssueFetcher(jiraClient, jiraFieldRepository, {});
+        const jiraRepository = new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher);
+        context = new PluginContext(
+            {
+                kind: "server",
+                jiraClient: jiraClient,
+                xrayClient: xrayClient,
+                jiraRepository: jiraRepository,
+            },
+            {
+                jira: {
+                    attachVideos: false,
+                    fields: {},
+                    projectKey: "CYP",
+                    url: "https://example.org",
+                    testExecutionIssueType: "Test Execution",
+                    testExecutionIssueDetails: { subtask: false },
+                    testPlanIssueType: "Test Plan",
+                },
+                plugin: {
+                    debug: false,
+                    enabled: true,
+                    logDirectory: "./logs",
+                    normalizeScreenshotNames: false,
+                },
+                xray: {
+                    status: {},
+                    uploadRequests: false,
+                    uploadResults: false,
+                    uploadScreenshots: false,
+                },
+                http: {},
+            },
+            {} as Cypress.PluginConfigOptions
+        );
+    });
+
+    it("collects evidence for single tests", () => {
+        context.addEvidence("CYP-123", {
+            filename: "hello.json",
+            contentType: "application/json",
+            data: "WyJoZWxsbyJd",
+        });
+        context.addEvidence("CYP-123", {
+            filename: "goodbye.json",
+            contentType: "application/json",
+            data: "WyJnb29kYnllIl0=",
+        });
+        expect(context.getEvidence("CYP-123")).to.deep.eq([
             {
                 filename: "hello.json",
                 contentType: "application/json",
