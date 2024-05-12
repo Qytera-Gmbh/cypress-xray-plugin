@@ -7,6 +7,8 @@ import { getMockedCypress } from "../../test/mocks";
 import { normalizedFilename } from "../util/files";
 import * as tasks from "./tasks";
 
+console.log("here???");
+
 describe(path.relative(process.cwd(), __filename), () => {
     beforeEach(() => {
         const resolved = require.resolve(`${__dirname}/commands`);
