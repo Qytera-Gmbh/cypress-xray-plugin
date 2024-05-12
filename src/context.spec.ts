@@ -8,6 +8,7 @@ import { JiraClientServer } from "./client/jira/jiraClientServer";
 import { XrayClientCloud } from "./client/xray/xrayClientCloud";
 import { XrayClientServer } from "./client/xray/xrayClientServer";
 import {
+    SimpleEvidenceCollection,
     initClients,
     initCucumberOptions,
     initHttpClients,
@@ -1453,5 +1454,71 @@ describe("the plugin context configuration", () => {
                 `)
             );
         });
+    });
+});
+
+describe(SimpleEvidenceCollection.name, () => {
+    it("collects evidence for single tests", () => {
+        const evidenceCollection = new SimpleEvidenceCollection();
+        evidenceCollection.addEvidence("CYP-123", {
+            filename: "hello.json",
+            contentType: "application/json",
+            data: "WyJoZWxsbyJd",
+        });
+        evidenceCollection.addEvidence("CYP-123", {
+            filename: "goodbye.json",
+            contentType: "application/json",
+            data: "WyJnb29kYnllIl0=",
+        });
+        expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+            {
+                filename: "hello.json",
+                contentType: "application/json",
+                data: "WyJoZWxsbyJd",
+            },
+            {
+                filename: "goodbye.json",
+                contentType: "application/json",
+                data: "WyJnb29kYnllIl0=",
+            },
+        ]);
+    });
+
+    it("collects evidence for multiple tests", () => {
+        const evidenceCollection = new SimpleEvidenceCollection();
+        evidenceCollection.addEvidence("CYP-123", {
+            filename: "hello.json",
+            contentType: "application/json",
+            data: "WyJoZWxsbyJd",
+        });
+        evidenceCollection.addEvidence("CYP-456", {
+            filename: "goodbye.json",
+            contentType: "application/json",
+            data: "WyJnb29kYnllIl0=",
+        });
+        expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+            {
+                filename: "hello.json",
+                contentType: "application/json",
+                data: "WyJoZWxsbyJd",
+            },
+        ]);
+        expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([
+            {
+                filename: "goodbye.json",
+                contentType: "application/json",
+                data: "WyJnb29kYnllIl0=",
+            },
+        ]);
+    });
+
+    it("returns an empty array for unknown tests", () => {
+        const evidenceCollection = new SimpleEvidenceCollection();
+        evidenceCollection.addEvidence("CYP-123", {
+            filename: "hello.json",
+            contentType: "application/json",
+            data: "WyJoZWxsbyJd",
+        });
+        expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([]);
     });
 });
