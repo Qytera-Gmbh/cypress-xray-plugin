@@ -1,6 +1,5 @@
 import {
     PluginContext,
-    SimpleEvidenceCollection,
     getPluginContext,
     initClients,
     initCucumberOptions,
@@ -10,7 +9,7 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
-import { PluginTask, PluginTaskListener } from "./cypress/tasks";
+import { PluginTask, PluginTaskListener, PluginTaskParameterType } from "./cypress/tasks";
 import { afterRunHook, beforeRunHook } from "./hooks/hooks";
 import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
 import { LOG, Level } from "./logging/logging";
@@ -81,14 +80,15 @@ export async function configureXrayPlugin(
     const clients = await initClients(internalOptions.jira, config.env, httpClients);
     const context = new PluginContext(clients, internalOptions, config);
     setPluginContext(context);
-    const taskEventListener = new PluginTaskListener(
-        internalOptions.jira.projectKey,
-        new SimpleEvidenceCollection()
-    );
+    const listener = new PluginTaskListener(internalOptions.jira.projectKey, context);
     if (internalOptions.xray.uploadRequests) {
         on("task", {
-            [PluginTask.OUTGOING_REQUEST]: taskEventListener[PluginTask.OUTGOING_REQUEST],
-            [PluginTask.INCOMING_RESPONSE]: taskEventListener[PluginTask.INCOMING_RESPONSE],
+            [PluginTask.OUTGOING_REQUEST]: (
+                args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
+            ) => listener[PluginTask.OUTGOING_REQUEST](args),
+            [PluginTask.INCOMING_RESPONSE]: (
+                args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
+            ) => listener[PluginTask.INCOMING_RESPONSE](args),
         });
     }
     if (internalOptions.xray.uploadResults) {

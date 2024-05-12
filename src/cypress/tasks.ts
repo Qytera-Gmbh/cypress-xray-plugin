@@ -77,7 +77,10 @@ export function enqueueTask<T>(
     }
 }
 
-interface PluginTaskParameterType {
+/**
+ * Models the parameters for the different plugin tasks.
+ */
+export interface PluginTaskParameterType {
     /**
      * The parameters for an outgoing request task.
      */
@@ -144,7 +147,7 @@ export class PluginTaskListener implements TaskListener {
             const issueKey = getNativeTestIssueKey(args.test, this.projectKey);
             if (issueKey) {
                 this.evidenceCollection.addEvidence(issueKey, {
-                    filename: `${args.filename} request.json`,
+                    filename: args.filename,
                     contentType: "application/json",
                     data: encode(JSON.stringify(args.request, null, 2)),
                 });
@@ -174,7 +177,7 @@ export class PluginTaskListener implements TaskListener {
             const issueKey = getNativeTestIssueKey(args.test, this.projectKey);
             if (issueKey) {
                 this.evidenceCollection.addEvidence(issueKey, {
-                    filename: `${args.filename} response.json`,
+                    filename: args.filename,
                     contentType: "application/json",
                     data: encode(JSON.stringify(args.response, null, 2)),
                 });

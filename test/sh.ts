@@ -1,10 +1,13 @@
 import chalk from "chalk";
-import "dotenv/config";
 import * as childProcess from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { dedent } from "../src/util/dedent";
 import { TEST_TMP_DIR } from "./util";
+
+const ENV_BACKUP = { ...process.env };
+
+import "dotenv/config";
 
 const CYPRESS_EXECUTABLE = path.join(__dirname, "..", "node_modules", ".bin", "cypress");
 
@@ -118,11 +121,10 @@ const ENV_SERVER = [
 
 export function runCypress(
     cwd: string,
-    env: object,
-    options?: { includeEnv?: "cloud" | "server" }
+    options?: { includeEnv?: "cloud" | "server"; env?: Record<string, string | undefined> }
 ): void {
     let mergedEnv = {
-        ...process.env,
+        ...ENV_BACKUP,
     };
     if (options?.includeEnv === "cloud") {
         mergedEnv = {
@@ -138,7 +140,7 @@ export function runCypress(
     }
     mergedEnv = {
         ...mergedEnv,
-        ...env,
+        ...options?.env,
     };
     const result = childProcess.spawnSync(CYPRESS_EXECUTABLE, ["run"], {
         cwd: cwd,
@@ -196,5 +198,5 @@ function getEnv(names: string[]): Record<string, string | undefined> {
 export interface IntegrationTest {
     service: "cloud" | "server";
     testIssueKey: string;
-    env?: Record<string, string>;
+    env?: Record<string, string | undefined>;
 }

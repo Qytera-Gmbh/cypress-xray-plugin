@@ -119,6 +119,9 @@ describe("the plugin context configuration", () => {
                 it("testEnvironments", () => {
                     expect(xrayOptions.testEnvironments).to.eq(undefined);
                 });
+                it("uploadRequests", () => {
+                    expect(xrayOptions.uploadRequests).to.eq(false);
+                });
                 it("uploadResults", () => {
                     expect(xrayOptions.uploadResults).to.eq(true);
                 });
@@ -429,6 +432,16 @@ describe("the plugin context configuration", () => {
                     expect(xrayOptions.testEnvironments).to.deep.eq(["Test", "Prod"]);
                 });
 
+                it("uploadRequests", () => {
+                    const xrayOptions = initXrayOptions(
+                        {},
+                        {
+                            uploadRequests: true,
+                        }
+                    );
+                    expect(xrayOptions.uploadResults).to.eq(true);
+                });
+
                 it("uploadResults", () => {
                     const xrayOptions = initXrayOptions(
                         {},
@@ -438,6 +451,7 @@ describe("the plugin context configuration", () => {
                     );
                     expect(xrayOptions.uploadResults).to.eq(false);
                 });
+
                 it("uploadScreenshots", () => {
                     const xrayOptions = initXrayOptions(
                         {},
@@ -767,6 +781,16 @@ describe("the plugin context configuration", () => {
                         testEnvironments: ["A", "B", "C"],
                     });
                     expect(xrayOptions.testEnvironments).to.deep.eq(["false", "bonjour", "5"]);
+                });
+
+                it("XRAY_UPLOAD_REQUESTS", () => {
+                    const env = {
+                        ["XRAY_UPLOAD_REQUESTS"]: "true",
+                    };
+                    const xrayOptions = initXrayOptions(env, {
+                        uploadRequests: false,
+                    });
+                    expect(xrayOptions.uploadRequests).to.be.true;
                 });
 
                 it("XRAY_UPLOAD_RESULTS", () => {

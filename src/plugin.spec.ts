@@ -130,6 +130,7 @@ describe("the plugin", () => {
                         skipped: "OMITTED",
                     },
                     testEnvironments: ["A", "B"],
+                    uploadRequests: false,
                     uploadResults: false,
                     uploadScreenshots: false,
                 },
@@ -362,14 +363,19 @@ describe("the plugin", () => {
                 config,
                 pluginContext.getOptions()
             );
-            expect(stubbedHook).to.have.been.calledOnceWithExactly(
-                afterRunResult,
+            const expectedContext = new context.PluginContext(
+                pluginContext.getClients(),
                 {
                     ...pluginContext.getOptions(),
                     cucumber: undefined,
-                    http: {},
                 },
-                pluginContext.getClients()
+                config
+            );
+            expect(stubbedHook).to.have.been.calledOnceWithExactly(
+                afterRunResult,
+                expectedContext.getOptions(),
+                expectedContext.getClients(),
+                expectedContext
             );
         });
 

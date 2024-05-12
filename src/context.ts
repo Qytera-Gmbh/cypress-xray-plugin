@@ -78,6 +78,7 @@ export class PluginContext implements EvidenceCollection {
 
     public addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
         this.evidenceCollection.addEvidence(issueKey, evidence);
+        LOG.message(Level.DEBUG, `Added evidence for test ${issueKey}: ${evidence.filename}`);
     }
 
     public getEvidence(issueKey: string): XrayEvidenceItem[] {

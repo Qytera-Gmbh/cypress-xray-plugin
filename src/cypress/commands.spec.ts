@@ -26,7 +26,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             },
         },
     ] as IntegrationTest[]) {
-        it.only(`cy.request gets overwritten in ${env.service} environments`, () => {
+        it(`cy.request gets overwritten in ${env.service} environments`, () => {
             const project = setupCypressProject({
                 testFiles: [
                     {
@@ -41,7 +41,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 ],
             });
-            runCypress(project.projectDirectory, env, { includeEnv: env.service });
+            runCypress(project.projectDirectory, { includeEnv: env.service, env: env.env });
             for (const entry of fs.readdirSync(project.logDirectory, {
                 withFileTypes: true,
             })) {
