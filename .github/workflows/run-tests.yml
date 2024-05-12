@@ -24,7 +24,21 @@ jobs:
       - run: npm install
       - run: npm run build
       - run: npm run eslint
-      - run: npm run coverage
+      - run: npm run test:coverage
+      - uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          check_name: Unit Test Results
+          files: |
+            .mocha/**/*.json
+          time_unit: milliseconds
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage
+          retention-days: 30
+      - run: npm run test:integration
         env:
           CYPRESS_JIRA_API_TOKEN_CLOUD: ${{ secrets.CYPRESS_JIRA_API_TOKEN_CLOUD }}
           CYPRESS_JIRA_PASSWORD_SERVER: ${{ secrets.CYPRESS_JIRA_PASSWORD_SERVER }}
@@ -39,12 +53,7 @@ jobs:
       - uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
+          check_name: Integration Test Results
           files: |
             .mocha/**/*.json
           time_unit: milliseconds
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage-report
-          path: coverage
-          retention-days: 30

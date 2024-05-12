@@ -3,11 +3,11 @@ import chalk from "chalk";
 import fs from "fs";
 import path from "path";
 import process from "process";
-import { IntegrationTest, runCypress, setupCypressProject } from "../../test/sh";
-import { TIMEOUT_INTEGRATION_TESTS, expectToExist } from "../../test/util";
-import { LoggedRequest } from "../https/requests";
-import { XrayTestExecutionResults } from "../types/xray/importTestExecutionResults";
-import { dedent } from "../util/dedent";
+import { LoggedRequest } from "../../src/https/requests";
+import { XrayTestExecutionResults } from "../../src/types/xray/importTestExecutionResults";
+import { dedent } from "../../src/util/dedent";
+import { IntegrationTest, runCypress, setupCypressProject } from "../sh";
+import { TIMEOUT_INTEGRATION_TESTS, expectToExist } from "../util";
 
 describe(path.relative(process.cwd(), __filename), () => {
     for (const env of [
