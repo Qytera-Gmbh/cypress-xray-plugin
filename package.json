@@ -35,7 +35,7 @@
         "lib": "src"
     },
     "scripts": {
-        "test": "mocha --ignore 'test/integration/**/*' **/*.spec.ts",
+        "test": "mocha --ignore test/integration/**/* **/*.spec.ts",
         "test:coverage": "nyc npm run test",
         "test:integration": "mocha test/integration/**/*.spec.ts",
         "build": "tsc --project tsconfigBuild.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
