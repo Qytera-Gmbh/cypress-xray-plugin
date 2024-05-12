@@ -145,13 +145,11 @@ export class PluginTaskListener implements TaskListener {
     ) {
         try {
             const issueKey = getNativeTestIssueKey(args.test, this.projectKey);
-            if (issueKey) {
-                this.evidenceCollection.addEvidence(issueKey, {
-                    filename: args.filename,
-                    contentType: "application/json",
-                    data: encode(JSON.stringify(args.request, null, 2)),
-                });
-            }
+            this.evidenceCollection.addEvidence(issueKey, {
+                filename: args.filename,
+                contentType: "application/json",
+                data: encode(JSON.stringify(args.request, null, 2)),
+            });
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {
                 LOG.message(
@@ -175,13 +173,11 @@ export class PluginTaskListener implements TaskListener {
     ) {
         try {
             const issueKey = getNativeTestIssueKey(args.test, this.projectKey);
-            if (issueKey) {
-                this.evidenceCollection.addEvidence(issueKey, {
-                    filename: args.filename,
-                    contentType: "application/json",
-                    data: encode(JSON.stringify(args.response, null, 2)),
-                });
-            }
+            this.evidenceCollection.addEvidence(issueKey, {
+                filename: args.filename,
+                contentType: "application/json",
+                data: encode(JSON.stringify(args.response, null, 2)),
+            });
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {
                 LOG.message(
