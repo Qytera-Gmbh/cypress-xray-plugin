@@ -3,7 +3,10 @@ import path from "node:path";
 import process from "node:process";
 
 import sinon from "sinon";
-import { getMockedCypress } from "../../test/mocks";
+import { getMockedCypress, getMockedLogger } from "../../test/mocks";
+import { SimpleEvidenceCollection } from "../context";
+import { Level } from "../logging/logging";
+import { dedent } from "../util/dedent";
 import * as tasks from "./tasks";
 
 describe(path.relative(process.cwd(), __filename), () => {
@@ -84,6 +87,146 @@ describe(path.relative(process.cwd(), __filename), () => {
                         },
                     },
                 }
+            );
+        });
+    });
+
+    describe(tasks.PluginTaskListener.name, () => {
+        it("handles single outgoing requests for tests with issue key", () => {
+            const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection);
+            const result = listener[tasks.PluginTask.OUTGOING_REQUEST]({
+                test: "This is a test CYP-123",
+                filename: "outgoingRequest.json",
+                request: {
+                    url: "https://example.org",
+                },
+            });
+            expect(evidenceCollection.addEvidence).to.have.been.calledOnceWithExactly("CYP-123", {
+                filename: "outgoingRequest.json",
+                contentType: "application/json",
+                data: "ewogICJ1cmwiOiAiaHR0cHM6Ly9leGFtcGxlLm9yZyIKfQ==",
+            });
+            expect(result).to.deep.eq({
+                url: "https://example.org",
+            });
+        });
+
+        it("handles multiple outgoing requests for tests with the same issue key", () => {
+            const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection);
+            const result1 = listener[tasks.PluginTask.OUTGOING_REQUEST]({
+                test: "This is a test CYP-123: GET",
+                filename: "outgoingRequest1.json",
+                request: {
+                    url: "https://example.org",
+                    method: "GET",
+                },
+            });
+            const result2 = listener[tasks.PluginTask.OUTGOING_REQUEST]({
+                test: "This is a test CYP-123: POST",
+                filename: "outgoingRequest2.json",
+                request: {
+                    url: "https://example.org",
+                    method: "POST",
+                    body: { name: "John Doe" },
+                },
+            });
+            expect(evidenceCollection.addEvidence).to.have.been.calledTwice;
+            expect(evidenceCollection.addEvidence.getCall(0)).to.have.been.calledWithExactly(
+                "CYP-123",
+                {
+                    filename: "outgoingRequest1.json",
+                    contentType: "application/json",
+                    data: "ewogICJ1cmwiOiAiaHR0cHM6Ly9leGFtcGxlLm9yZyIsCiAgIm1ldGhvZCI6ICJHRVQiCn0=",
+                }
+            );
+            expect(evidenceCollection.addEvidence.getCall(1)).to.have.been.calledWithExactly(
+                "CYP-123",
+                {
+                    filename: "outgoingRequest2.json",
+                    contentType: "application/json",
+                    data: "ewogICJ1cmwiOiAiaHR0cHM6Ly9leGFtcGxlLm9yZyIsCiAgIm1ldGhvZCI6ICJQT1NUIiwKICAiYm9keSI6IHsKICAgICJuYW1lIjogIkpvaG4gRG9lIgogIH0KfQ==",
+                }
+            );
+            expect(result1).to.deep.eq({
+                url: "https://example.org",
+                method: "GET",
+            });
+            expect(result2).to.deep.eq({
+                url: "https://example.org",
+                method: "POST",
+                body: { name: "John Doe" },
+            });
+        });
+
+        it("handles single outgoing requests for tests without issue key", () => {
+            const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection);
+            listener[tasks.PluginTask.OUTGOING_REQUEST]({
+                test: "This is a test",
+                filename: "outgoingRequest.json",
+                request: {
+                    url: "https://example.org",
+                },
+            });
+            expect(evidenceCollection.addEvidence).to.not.have.been.called;
+            expect(logger.message).to.have.been.calledOnceWithExactly(
+                Level.WARNING,
+                dedent(`
+                    Encountered a cy.request call which will not be included as evidence for test: This is a test
+
+                    No test issue keys found in title of test: This is a test
+                    You can target existing test issues by adding a corresponding issue key:
+
+                    it("CYP-123 This is a test", () => {
+                      // ...
+                    });
+
+                    For more information, visit:
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                `)
+            );
+        });
+
+        it("handles multiple outgoing requests for tests without issue key", () => {
+            const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection);
+            listener[tasks.PluginTask.OUTGOING_REQUEST]({
+                test: "This is a test",
+                filename: "outgoingRequest.json",
+                request: {
+                    url: "https://example.org",
+                    method: "GET",
+                },
+            });
+            listener[tasks.PluginTask.OUTGOING_REQUEST]({
+                test: "This is a test",
+                filename: "outgoingRequest.json",
+                request: {
+                    url: "https://example.org",
+                    method: "POST",
+                    body: { username: "Jane Doe" },
+                },
+            });
+            expect(evidenceCollection.addEvidence).to.not.have.been.called;
+            expect(logger.message).to.have.been.calledOnceWithExactly(
+                Level.WARNING,
+                dedent(`
+                    Encountered a cy.request call which will not be included as evidence for test: This is a test
+
+                    No test issue keys found in title of test: This is a test
+                    You can target existing test issues by adding a corresponding issue key:
+
+                    it("CYP-123 This is a test", () => {
+                      // ...
+                    });
+
+                    For more information, visit:
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                `)
             );
         });
     });
