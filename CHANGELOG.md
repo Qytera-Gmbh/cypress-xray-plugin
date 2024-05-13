@@ -6,7 +6,7 @@
 
 - Removed `addResultsUpload` function
 
-- Changed `configureXrayPlugin` function which now expects Cypress' on as first parameter:
+- Changed `configureXrayPlugin` function which now expects Cypress' `on` as first parameter:
 
   <table>
   <thead>
