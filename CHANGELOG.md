@@ -1,5 +1,147 @@
 # Changelog
 
+# `7.0.0`
+
+## Breaking changes
+
+- Removed `addResultsUpload` function
+
+- Changed `configureXrayPlugin` function which now expects Cypress' on as first parameter:
+
+  <table>
+  <thead>
+  <tr>
+  <th>
+  <pre>6.0.0</pre>
+  </th>
+  <th>
+  <pre>7.0.0</pre>
+  </th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+  <td>
+
+  ```ts
+  // cypress.config.js
+  import { configureXrayPlugin, addXrayResultUpload } from "cypress-xray-plugin";
+
+  async setupNodeEvents(on, config) {
+    await configureXrayPlugin(
+      config,
+      {
+        jira: {
+          url: "https://example.org",
+          projectKey: "ABC"
+        }
+      }
+    );
+    await addXrayResultUpload(on);
+  }
+  ```
+  </td>
+  <td>
+
+  ```ts
+  // cypress.config.js
+  import { configureXrayPlugin } from "cypress-xray-plugin";
+
+  async setupNodeEvents(on, config) {
+    await configureXrayPlugin(
+      on,
+      config,
+      {
+        jira: {
+          url: "https://example.org",
+          projectKey: "ABC"
+        }
+      }
+    );
+  }
+  ```
+  </td>
+  </tr>
+  </tbody>
+  </table>
+
+- Removed `openSSL` options:
+
+  <table>
+  <thead>
+  <tr>
+  <th>
+  <pre>6.0.0</pre>
+  </th>
+  <th>
+  <pre>7.0.0</pre>
+  </th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+  <td>
+
+  ```ts
+  // cypress.config.js
+  import { configureXrayPlugin } from "cypress-xray-plugin";
+  import { constants } from "node:crypto";
+
+  async setupNodeEvents(on, config) {
+    await configureXrayPlugin(
+      config,
+      {
+        openSSL: {
+          rootCAPath: "/home/me/cert.pem",
+          secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT
+        }
+      }
+    );
+  }
+  ```
+  </td>
+  <td>
+
+  ```ts
+  // cypress.config.js
+  import { configureXrayPlugin } from "cypress-xray-plugin";
+  import { constants } from "node:crypto";
+  import { Agent } from "node:https";
+
+  async setupNodeEvents(on, config) {
+    await configureXrayPlugin(
+      on,
+      config,
+      {
+        http: {
+          httpAgent: new Agent({
+            ca: "/home/somewhere/ca.pem",
+            secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+          }),
+        }
+      }
+    );
+  }
+  ```
+  </td>
+  </tr>
+  </tbody>
+  </table>
+
+## Notable changes
+
+- Added `xray.uploadRequests` option ([#324](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/324))
+
+- Added `http` options ([#322](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/322))
+
+## Dependency updates
+
+- Bump @cucumber/messages from 23.0.0 to 24.0.0
+
+- Bump @badeball/cypress-cucumber-preprocessor from 19.0.1 to 19.2.0
+
+- Bump axios from 1.6.0 to 1.6.2
+
 # `6.0.0`
 
 > [!NOTE]
