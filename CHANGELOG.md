@@ -92,7 +92,7 @@
       config,
       {
         openSSL: {
-          rootCAPath: "/home/me/cert.pem",
+          rootCAPath: "/home/somewhere/cert.pem",
           secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT
         }
       }
@@ -115,7 +115,7 @@
       {
         http: {
           httpAgent: new Agent({
-            ca: "/home/somewhere/ca.pem",
+            ca: "/home/somewhere/cert.pem",
             secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
           }),
         }
