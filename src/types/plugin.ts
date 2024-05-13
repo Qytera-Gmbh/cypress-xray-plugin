@@ -276,11 +276,13 @@ export interface XrayOptions {
      */
     testEnvironments?: [string, ...string[]];
     /**
-     * Turns on or off the upload of manually performed requests using `cy.request`. If `true`,
-     * requests and responses will be attached as evidence to the corresponding test. If `false` or
-     * if left `undefined`, neither requests nor responses will be attached.
+     * Enables or disables the upload of manually executed requests using `cy.request`. If `true`,
+     * requests and responses will be attached to the corresponding test as evidence. If `false` or
+     * left `undefined`, neither requests nor responses are attached.
      *
      * *Note: For this option to work properly, you need to overwrite the `cy.request` command.*
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadRequestData/
      */
     uploadRequests?: boolean;
     /**
