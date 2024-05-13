@@ -16,12 +16,12 @@ import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
 import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
 import { CachingJiraIssueFetcher } from "./repository/jira/fields/jiraIssueFetcher";
 import { CachingJiraRepository } from "./repository/jira/jiraRepository";
-import { Options, PluginContext } from "./types/plugin";
+import { CypressXrayPluginOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
 
 describe("the plugin", () => {
     let config: Cypress.PluginConfigOptions;
-    let pluginContext: PluginContext;
+    let pluginContext: context.PluginContext;
 
     beforeEach(() => {
         config = JSON.parse(
@@ -51,20 +51,21 @@ describe("the plugin", () => {
             jiraOptions.fields
         );
         const jiraRepository = new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher);
-        pluginContext = {
-            cypress: config,
-            internal: {
-                jira: jiraOptions,
-                plugin: context.initPluginOptions({}, {}),
-                xray: context.initXrayOptions({}, {}),
-            },
-            clients: {
+        pluginContext = new context.PluginContext(
+            {
                 kind: "server",
                 jiraClient: jiraClient,
                 xrayClient: xrayClient,
                 jiraRepository: jiraRepository,
             },
-        };
+            {
+                jira: jiraOptions,
+                plugin: context.initPluginOptions({}, {}),
+                xray: context.initXrayOptions({}, {}),
+                http: {},
+            },
+            config
+        );
         resetPlugin();
     });
 
@@ -94,8 +95,8 @@ describe("the plugin", () => {
             };
             const stubbedContext = stub(context, "setPluginContext");
             const stubbedClients = stub(context, "initClients");
-            stubbedClients.onFirstCall().resolves(pluginContext.clients);
-            const options: Options = {
+            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
+            const options: CypressXrayPluginOptions = {
                 jira: {
                     attachVideos: true,
                     fields: {
@@ -129,6 +130,7 @@ describe("the plugin", () => {
                         skipped: "OMITTED",
                     },
                     testEnvironments: ["A", "B"],
+                    uploadRequests: false,
                     uploadResults: false,
                     uploadScreenshots: false,
                 },
@@ -145,8 +147,8 @@ describe("the plugin", () => {
                 },
             };
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
-            expect(stubbedContext.firstCall.args[0].cypress).to.eq(config);
-            expect(stubbedContext.firstCall.args[0].internal.jira).to.deep.eq({
+            expect(stubbedContext.firstCall.args[0]?.getCypressOptions()).to.eq(config);
+            expect(stubbedContext.firstCall.args[0]?.getOptions().jira).to.deep.eq({
                 attachVideos: true,
                 fields: {
                     summary: "bonjour",
@@ -168,26 +170,31 @@ describe("the plugin", () => {
                 testPlanIssueType: "QA-2",
                 url: "https://example.org",
             });
-            expect(stubbedContext.firstCall.args[0].internal.plugin).to.deep.eq(options.plugin);
-            expect(stubbedContext.firstCall.args[0].internal.xray).to.deep.eq(options.xray);
-            expect(stubbedContext.firstCall.args[0].internal.cucumber?.featureFileExtension).to.eq(
-                ".cucumber"
+            expect(stubbedContext.firstCall.args[0]?.getOptions().plugin).to.deep.eq(
+                options.plugin
             );
-            expect(stubbedContext.firstCall.args[0].internal.cucumber?.downloadFeatures).to.be
-                .false;
-            expect(stubbedContext.firstCall.args[0].internal.cucumber?.uploadFeatures).to.be.false;
+            expect(stubbedContext.firstCall.args[0]?.getOptions().xray).to.deep.eq(options.xray);
             expect(
-                stubbedContext.firstCall.args[0].internal.cucumber?.preprocessor?.json
+                stubbedContext.firstCall.args[0]?.getOptions().cucumber?.featureFileExtension
+            ).to.eq(".cucumber");
+            expect(stubbedContext.firstCall.args[0]?.getOptions().cucumber?.downloadFeatures).to.be
+                .false;
+            expect(stubbedContext.firstCall.args[0]?.getOptions().cucumber?.uploadFeatures).to.be
+                .false;
+            expect(
+                stubbedContext.firstCall.args[0]?.getOptions().cucumber?.preprocessor?.json
             ).to.deep.eq({
                 enabled: true,
                 output: "somewhere",
             });
-            expect(stubbedContext.firstCall.args[0].internal.http).to.deep.eq(options.http);
-            expect(stubbedContext.firstCall.args[0].clients).to.eq(pluginContext.clients);
+            expect(stubbedContext.firstCall.args[0]?.getOptions().http).to.deep.eq(options.http);
+            expect(stubbedContext.firstCall.args[0]?.getClients()).to.eq(
+                pluginContext.getClients()
+            );
         });
 
         it("initializes the clients with different http configurations", async () => {
-            const options: Options = {
+            const options: CypressXrayPluginOptions = {
                 jira: {
                     projectKey: "ABC",
                     url: "https://example.org",
@@ -208,7 +215,7 @@ describe("the plugin", () => {
                 },
             };
             const stubbedClients = stub(context, "initClients");
-            stubbedClients.onFirstCall().resolves(pluginContext.clients);
+            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
             expect(stubbedClients).to.have.been.calledOnce;
             expect(stubbedClients.getCall(0).args[2]).to.deep.eq({
@@ -236,8 +243,8 @@ describe("the plugin", () => {
         it("initializes the logging module", async () => {
             const stubbedClients = stub(context, "initClients");
             const logger = getMockedLogger();
-            stubbedClients.onFirstCall().resolves(pluginContext.clients);
-            const options: Options = {
+            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
+            const options: CypressXrayPluginOptions = {
                 jira: {
                     projectKey: "ABC",
                     url: "https://example.org",
@@ -245,8 +252,8 @@ describe("the plugin", () => {
             };
             logger.configure
                 .withArgs({
-                    debug: pluginContext.internal.plugin.debug,
-                    logDirectory: pluginContext.internal.plugin.logDirectory,
+                    debug: pluginContext.getOptions().plugin.debug,
+                    logDirectory: pluginContext.getOptions().plugin.logDirectory,
                 })
                 .onFirstCall()
                 .returns();
@@ -260,13 +267,13 @@ describe("the plugin", () => {
                 fs.readFileSync("./test/resources/beforeRunMixed.json", "utf-8")
             ) as Cypress.BeforeRunDetails;
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            stub(context, "initClients").resolves(pluginContext.clients);
+            stub(context, "initClients").resolves(pluginContext.getClients());
             context.setPluginContext(pluginContext);
             beforeRunDetails.specs = undefined;
             await configureXrayPlugin(
                 mockedCypressEventEmitter("before:run", beforeRunDetails),
                 config,
-                pluginContext.internal
+                pluginContext.getOptions()
             );
             expect(logger.message).to.have.been.calledOnceWithExactly(
                 Level.WARNING,
@@ -280,20 +287,20 @@ describe("the plugin", () => {
             ) as Cypress.BeforeRunDetails;
             const stubbedHook = stub(hooks, "beforeRunHook");
             context.setPluginContext(pluginContext);
-            stub(context, "initClients").resolves(pluginContext.clients);
+            stub(context, "initClients").resolves(pluginContext.getClients());
             await configureXrayPlugin(
                 mockedCypressEventEmitter("before:run", beforeRunDetails),
                 config,
-                pluginContext.internal
+                pluginContext.getOptions()
             );
             expect(stubbedHook).to.have.been.calledOnceWithExactly(
                 beforeRunDetails.specs,
                 {
-                    ...pluginContext.internal,
+                    ...pluginContext.getOptions(),
                     cucumber: undefined,
-                    http: undefined,
+                    http: {},
                 },
-                pluginContext.clients
+                pluginContext.getClients()
             );
         });
 
@@ -304,12 +311,12 @@ describe("the plugin", () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const stubbedHook = stub(hooks, "beforeRunHook");
             context.setPluginContext(pluginContext);
-            pluginContext.internal.xray.uploadResults = false;
-            stub(context, "initClients").resolves(pluginContext.clients);
+            pluginContext.getOptions().xray.uploadResults = false;
+            stub(context, "initClients").resolves(pluginContext.getClients());
             await configureXrayPlugin(
                 mockedCypressEventEmitter("before:run", beforeRunDetails),
                 config,
-                pluginContext.internal
+                pluginContext.getOptions()
             );
             expect(stubbedHook).to.not.have.been.called;
             expect(logger.message).to.have.been.calledOnceWithExactly(
@@ -328,11 +335,11 @@ describe("the plugin", () => {
             };
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             context.setPluginContext(pluginContext);
-            stub(context, "initClients").resolves(pluginContext.clients);
+            stub(context, "initClients").resolves(pluginContext.getClients());
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", failedResults),
                 config,
-                pluginContext.internal
+                pluginContext.getOptions()
             );
             expect(logger.message).to.have.been.calledOnceWithExactly(
                 Level.ERROR,
@@ -350,20 +357,25 @@ describe("the plugin", () => {
             ) as CypressCommandLine.CypressRunResult;
             const stubbedHook = stub(hooks, "afterRunHook");
             context.setPluginContext(pluginContext);
-            stub(context, "initClients").resolves(pluginContext.clients);
+            stub(context, "initClients").resolves(pluginContext.getClients());
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", afterRunResult),
                 config,
-                pluginContext.internal
+                pluginContext.getOptions()
+            );
+            const expectedContext = new context.PluginContext(
+                pluginContext.getClients(),
+                {
+                    ...pluginContext.getOptions(),
+                    cucumber: undefined,
+                },
+                config
             );
             expect(stubbedHook).to.have.been.calledOnceWithExactly(
                 afterRunResult,
-                {
-                    ...pluginContext.internal,
-                    cucumber: undefined,
-                    http: undefined,
-                },
-                pluginContext.clients
+                expectedContext.getOptions(),
+                expectedContext.getClients(),
+                expectedContext
             );
         });
 
@@ -374,12 +386,12 @@ describe("the plugin", () => {
             const stubbedHook = stub(hooks, "afterRunHook");
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             context.setPluginContext(pluginContext);
-            pluginContext.internal.xray.uploadResults = false;
-            stub(context, "initClients").resolves(pluginContext.clients);
+            pluginContext.getOptions().xray.uploadResults = false;
+            stub(context, "initClients").resolves(pluginContext.getClients());
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", afterRunResult),
                 config,
-                pluginContext.internal
+                pluginContext.getOptions()
             );
             expect(stubbedHook).to.not.have.been.called;
             expect(logger.message).to.have.been.calledOnceWithExactly(
@@ -434,7 +446,7 @@ describe("the plugin", () => {
         it("does not do anything if disabled", async () => {
             file.filePath = "./test/resources/features/taggedCloud.feature";
             const logger = getMockedLogger();
-            pluginContext.internal.plugin.enabled = false;
+            pluginContext.getOptions().plugin.enabled = false;
             context.setPluginContext(pluginContext);
             logger.message
                 .withArgs(
@@ -452,9 +464,9 @@ describe("the plugin", () => {
             await syncFeatureFile(file);
             expect(stubbedHook).to.have.been.calledOnceWithExactly(
                 file,
-                pluginContext.cypress.projectRoot,
-                pluginContext.internal,
-                pluginContext.clients
+                pluginContext.getCypressOptions().projectRoot,
+                pluginContext.getOptions(),
+                pluginContext.getClients()
             );
         });
     });

@@ -3,6 +3,8 @@ import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { getMockedLogger } from "../../../test/mocks";
 import {
+    EvidenceCollection,
+    SimpleEvidenceCollection,
     initCucumberOptions,
     initJiraOptions,
     initPluginOptions,
@@ -10,7 +12,6 @@ import {
 } from "../../context";
 import { Level } from "../../logging/logging";
 import { CypressRunResult as CypressRunResult_V12 } from "../../types/cypress/12.0.0/api";
-import { CypressRunResult as CypressRunResult_V13 } from "../../types/cypress/13.0.0/api";
 import { InternalOptions } from "../../types/plugin";
 import { dedent } from "../../util/dedent";
 import { TestConverter } from "./testConverter";
@@ -19,6 +20,7 @@ chai.use(chaiAsPromised);
 
 describe("the test converter", () => {
     let options: InternalOptions;
+    let evidenceCollection: EvidenceCollection;
     beforeEach(() => {
         options = {
             jira: initJiraOptions(
@@ -36,13 +38,14 @@ describe("the test converter", () => {
             ),
             plugin: initPluginOptions({}, {}),
         };
+        evidenceCollection = new SimpleEvidenceCollection();
     });
 
     it("warns about skipped screenshots", async () => {
-        const result: CypressRunResult_V13 = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0_manualScreenshot.json", "utf-8")
-        ) as CypressRunResult_V13;
-        const converter = new TestConverter(options, false);
+        ) as CypressCommandLine.CypressRunResult;
+        const converter = new TestConverter(options, false, evidenceCollection);
         const logger = getMockedLogger();
         logger.message
             .withArgs(
@@ -81,16 +84,16 @@ describe("the test converter", () => {
             },
             { featureFileExtension: ".feature" }
         );
-        const converter = new TestConverter(options, true);
+        const converter = new TestConverter(options, true, evidenceCollection);
         await expect(converter.toXrayTests(result)).to.eventually.be.rejectedWith(
             "Failed to extract test run data: Only Cucumber tests were executed"
         );
     });
 
     it("throws if the run results only contain Cucumber tests =13.0.0", async () => {
-        const result: CypressRunResult_V13 = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-        ) as CypressRunResult_V13;
+        ) as CypressCommandLine.CypressRunResult;
         options.cucumber = await initCucumberOptions(
             {
                 testingType: "e2e",
@@ -102,7 +105,7 @@ describe("the test converter", () => {
             },
             { featureFileExtension: ".ts" }
         );
-        const converter = new TestConverter(options, false);
+        const converter = new TestConverter(options, false, evidenceCollection);
         await expect(converter.toXrayTests(result)).to.eventually.be.rejectedWith(
             "Failed to extract test run data: Only Cucumber tests were executed"
         );
@@ -112,7 +115,7 @@ describe("the test converter", () => {
         const result: CypressRunResult_V12 = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         ) as CypressRunResult_V12;
-        const converter = new TestConverter(options, false);
+        const converter = new TestConverter(options, false, evidenceCollection);
         const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
             {
@@ -143,10 +146,10 @@ describe("the test converter", () => {
     });
 
     it("converts server run results for Cypress =13.0.0", async () => {
-        const result: CypressRunResult_V13 = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-        ) as CypressRunResult_V13;
-        const converter = new TestConverter(options, false);
+        ) as CypressCommandLine.CypressRunResult;
+        const converter = new TestConverter(options, false, evidenceCollection);
         const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
             {
@@ -192,7 +195,7 @@ describe("the test converter", () => {
         const result: CypressRunResult_V12 = JSON.parse(
             readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
         ) as CypressRunResult_V12;
-        const converter = new TestConverter(options, true);
+        const converter = new TestConverter(options, true, evidenceCollection);
         const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
             {
@@ -223,10 +226,10 @@ describe("the test converter", () => {
     });
 
     it("converts cloud run results for Cypress =13.0.0", async () => {
-        const result: CypressRunResult_V13 = JSON.parse(
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
             readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-        ) as CypressRunResult_V13;
-        const converter = new TestConverter(options, true);
+        ) as CypressCommandLine.CypressRunResult;
+        const converter = new TestConverter(options, true, evidenceCollection);
         const json = await converter.toXrayTests(result);
         expect(json).to.deep.eq([
             {
@@ -258,6 +261,74 @@ describe("the test converter", () => {
                 start: "2023-09-09T10:59:29Z",
                 finish: "2023-09-09T10:59:29Z",
                 status: "FAILED",
+            },
+            {
+                testKey: "CYP-333",
+                start: "2023-09-09T10:59:29Z",
+                finish: "2023-09-09T10:59:29Z",
+                status: "TODO",
+            },
+        ]);
+    });
+
+    it("includes all evidence", async () => {
+        const result: CypressCommandLine.CypressRunResult = JSON.parse(
+            readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
+        ) as CypressCommandLine.CypressRunResult;
+        evidenceCollection.addEvidence("CYP-452", {
+            data: "aGkgdGhlcmU=",
+            filename: "hi.txt",
+            contentType: "text/plain",
+        });
+        evidenceCollection.addEvidence("CYP-237", {
+            data: "Z29vZGJ5ZQ==",
+            filename: "goodbye.txt",
+            contentType: "text/plain",
+        });
+        const converter = new TestConverter(options, false, evidenceCollection);
+        const json = await converter.toXrayTests(result);
+        expect(json).to.deep.eq([
+            {
+                testKey: "CYP-452",
+                start: "2023-09-09T10:59:28Z",
+                finish: "2023-09-09T10:59:29Z",
+                status: "PASS",
+                evidence: [
+                    {
+                        data: "aGkgdGhlcmU=",
+                        filename: "hi.txt",
+                        contentType: "text/plain",
+                    },
+                ],
+            },
+            {
+                testKey: "CYP-268",
+                start: "2023-09-09T10:59:29Z",
+                finish: "2023-09-09T10:59:29Z",
+                status: "PASS",
+            },
+            {
+                testKey: "CYP-237",
+                start: "2023-09-09T10:59:29Z",
+                finish: "2023-09-09T10:59:29Z",
+                status: "FAIL",
+                evidence: [
+                    {
+                        filename: "small CYP-237.png",
+                        data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
+                    },
+                    {
+                        data: "Z29vZGJ5ZQ==",
+                        filename: "goodbye.txt",
+                        contentType: "text/plain",
+                    },
+                ],
+            },
+            {
+                testKey: "CYP-332",
+                start: "2023-09-09T10:59:29Z",
+                finish: "2023-09-09T10:59:29Z",
+                status: "FAIL",
             },
             {
                 testKey: "CYP-333",

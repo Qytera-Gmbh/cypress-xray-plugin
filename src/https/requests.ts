@@ -1,6 +1,7 @@
 import axios, {
     AxiosInstance,
     AxiosRequestConfig,
+    AxiosRequestHeaders,
     AxiosResponse,
     InternalAxiosRequestConfig,
     isAxiosError,
@@ -27,6 +28,28 @@ export interface RequestsOptions {
      * Additional options for controlling HTTP behaviour.
      */
     http?: AxiosRequestConfig;
+}
+
+/**
+ * Models a request that was logged to a file.
+ */
+export interface LoggedRequest {
+    /**
+     * The request's URL.
+     */
+    url?: string;
+    /**
+     * The request's headers.
+     */
+    headers: AxiosRequestHeaders;
+    /**
+     * The request's parameters.
+     */
+    params: unknown;
+    /**
+     * The request's body.
+     */
+    body: unknown;
 }
 
 export class AxiosRestClient {
@@ -86,11 +109,10 @@ export class AxiosRestClient {
                             prefix = `${prefix}_${url}`;
                         }
                         const filename = normalizedFilename(`${prefix}_request.json`);
-                        const data = {
+                        const data: LoggedRequest = {
                             url: url,
                             headers: request.headers,
                             params: request.params as unknown,
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             body: request.data,
                         };
                         const resolvedFilename = LOG.logToFile(data, filename);

@@ -28,16 +28,18 @@
     ],
     "exports": {
         ".": "./index.js",
-        "./register": "./src/register.js"
+        "./commands": "./src/cypress/commands.js",
+        "./commands/tasks": "./src/cypress/index.js"
     },
     "directories": {
         "lib": "src"
     },
     "scripts": {
-        "test": "mocha --reporter list",
-        "coverage": "nyc mocha",
+        "test": "mocha --ignore 'test/integration/**/*'",
+        "test:coverage": "nyc npm run test",
+        "test:integration": "mocha --ignore 'src/**/*' --ignore index.spec.ts test/integration",
         "build": "tsc --project tsconfigBuild.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
-        "eslint": "eslint"
+        "eslint": "eslint src/**/*.ts test/**/*.ts index.ts index.spec.ts"
     },
     "engines": {
         "node": ">=18.0.0"
@@ -65,6 +67,8 @@
         "@typescript-eslint/parser": "^7.8.0",
         "chai": "^4.4.1",
         "chai-as-promised": "^7.1.1",
+        "cypress": "^13.9.0",
+        "dotenv": "^16.4.5",
         "eslint": "^8.57.0",
         "eslint-plugin-tsdoc": "^0.2.17",
         "mocha": "^10.4.0",

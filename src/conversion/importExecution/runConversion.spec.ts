@@ -1,7 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { RunResult as RunResult_V12 } from "../../types/cypress/12.0.0/api";
-import { RunResult as RunResult_V13 } from "../../types/cypress/13.0.0/api";
 import { Status } from "../../types/testStatus";
 import { getTestRunData_V12, getTestRunData_V13 } from "./runConversion";
 
@@ -215,7 +214,7 @@ describe("the run conversion", () => {
     });
 
     describe("v13", () => {
-        const passedResult: RunResult_V13 = {
+        const passedResult: CypressCommandLine.RunResult = {
             error: null,
             reporter: "spec",
             reporterStats: {
@@ -265,7 +264,7 @@ describe("the run conversion", () => {
             ],
             video: null,
         };
-        const failedResult: RunResult_V13 = {
+        const failedResult: CypressCommandLine.RunResult = {
             error: null,
             reporter: "spec",
             reporterStats: {
@@ -330,7 +329,7 @@ describe("the run conversion", () => {
             ],
             video: null,
         };
-        const invalidResult: RunResult_V13 = {
+        const invalidResult: CypressCommandLine.RunResult = {
             error: null,
             reporter: "spec",
             reporterStats: {

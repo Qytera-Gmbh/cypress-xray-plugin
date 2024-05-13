@@ -6,7 +6,10 @@ import { AxiosRestClient } from "../https/requests";
 import { JiraRepository } from "../repository/jira/jiraRepository";
 import { IssueTypeDetails } from "./jira/responses/issueTypeDetails";
 
-export interface Options {
+/**
+ * Models all options for configuring the behaviour of the plugin.
+ */
+export interface CypressXrayPluginOptions {
     /**
      * Defines Jira-specific options that control how the plugin interacts with Jira.
      *
@@ -273,6 +276,16 @@ export interface XrayOptions {
      */
     testEnvironments?: [string, ...string[]];
     /**
+     * Enables or disables the upload of manually executed requests using `cy.request`. If `true`,
+     * requests and responses will be attached to the corresponding test as evidence. If `false` or
+     * left `undefined`, neither requests nor responses are attached.
+     *
+     * *Note: For this option to work properly, you need to overwrite the `cy.request` command.*
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadRequestData/
+     */
+    uploadRequests?: boolean;
+    /**
      * Turns execution results upload on or off. Useful when switching upload on or off from the
      * command line (via environment variables).
      */
@@ -288,7 +301,9 @@ export interface XrayOptions {
  * default/fallback values are used by the plugin.
  */
 export type InternalXrayOptions = XrayOptions &
-    Required<Pick<XrayOptions, "status" | "uploadResults" | "uploadScreenshots">>;
+    Required<
+        Pick<XrayOptions, "status" | "uploadRequests" | "uploadResults" | "uploadScreenshots">
+    >;
 
 /**
  * When Cucumber is enabled, these options are used to configure how the plugin works with
@@ -503,10 +518,4 @@ export interface ClientCombination {
 export interface HttpClientCombination {
     jira: AxiosRestClient;
     xray: AxiosRestClient;
-}
-
-export interface PluginContext {
-    cypress: Cypress.PluginConfigOptions;
-    internal: InternalOptions;
-    clients: ClientCombination;
 }

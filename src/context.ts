@@ -19,20 +19,72 @@ import {
 import { CachingJiraRepository } from "./repository/jira/jiraRepository";
 import {
     ClientCombination,
+    CypressXrayPluginOptions,
     HttpClientCombination,
     InternalCucumberOptions,
     InternalHttpOptions,
     InternalJiraOptions,
+    InternalOptions,
     InternalPluginOptions,
     InternalXrayOptions,
-    Options,
-    PluginContext,
 } from "./types/plugin";
+import { XrayEvidenceItem } from "./types/xray/importTestExecutionResults";
 import { dedent } from "./util/dedent";
 import { errorMessage } from "./util/errors";
 import { HELP } from "./util/help";
 import { asArrayOfStrings, asBoolean, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
+
+export interface EvidenceCollection {
+    addEvidence(issueKey: string, evidence: XrayEvidenceItem): void;
+    getEvidence(issueKey: string): XrayEvidenceItem[];
+}
+
+export class SimpleEvidenceCollection {
+    private readonly collectedEvidence = new Map<string, XrayEvidenceItem[]>();
+    addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
+        const currentEvidence = this.collectedEvidence.get(issueKey);
+        if (!currentEvidence) {
+            this.collectedEvidence.set(issueKey, [evidence]);
+        } else {
+            currentEvidence.push(evidence);
+        }
+    }
+    getEvidence(issueKey: string): XrayEvidenceItem[] {
+        return this.collectedEvidence.get(issueKey) ?? [];
+    }
+}
+
+export class PluginContext implements EvidenceCollection {
+    private readonly evidenceCollection: EvidenceCollection = new SimpleEvidenceCollection();
+
+    constructor(
+        private readonly clients: ClientCombination,
+        private readonly internalOptions: InternalOptions,
+        private readonly cypressOptions: Cypress.PluginConfigOptions
+    ) {}
+
+    public getClients(): ClientCombination {
+        return this.clients;
+    }
+
+    public getOptions(): InternalOptions {
+        return this.internalOptions;
+    }
+
+    public getCypressOptions(): Cypress.PluginConfigOptions {
+        return this.cypressOptions;
+    }
+
+    public addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
+        this.evidenceCollection.addEvidence(issueKey, evidence);
+        LOG.message(Level.DEBUG, `Added evidence for test ${issueKey}: ${evidence.filename}`);
+    }
+
+    public getEvidence(issueKey: string): XrayEvidenceItem[] {
+        return this.evidenceCollection.getEvidence(issueKey);
+    }
+}
 
 let context: PluginContext | undefined = undefined;
 
@@ -40,12 +92,8 @@ export function getPluginContext(): PluginContext | undefined {
     return context;
 }
 
-export function setPluginContext(newContext: PluginContext): void {
+export function setPluginContext(newContext?: PluginContext): void {
     context = newContext;
-}
-
-export function clearPluginContext(): void {
-    context = undefined;
 }
 
 /**
@@ -59,7 +107,7 @@ export function clearPluginContext(): void {
  */
 export function initJiraOptions(
     env: Cypress.ObjectLike,
-    options: Options["jira"]
+    options: CypressXrayPluginOptions["jira"]
 ): InternalJiraOptions {
     const projectKey = parse(env, ENV_NAMES.jira.projectKey, asString) ?? options.projectKey;
     if (!projectKey) {
@@ -129,7 +177,7 @@ export function initJiraOptions(
  */
 export function initPluginOptions(
     env: Cypress.ObjectLike,
-    options: Options["plugin"]
+    options: CypressXrayPluginOptions["plugin"]
 ): InternalPluginOptions {
     return {
         debug: parse(env, ENV_NAMES.plugin.debug, asBoolean) ?? options?.debug ?? false,
@@ -154,7 +202,7 @@ export function initPluginOptions(
  */
 export function initXrayOptions(
     env: Cypress.ObjectLike,
-    options: Options["xray"]
+    options: CypressXrayPluginOptions["xray"]
 ): InternalXrayOptions {
     return {
         status: {
@@ -168,6 +216,10 @@ export function initXrayOptions(
         testEnvironments:
             parse(env, ENV_NAMES.xray.testEnvironments, asArrayOfStrings) ??
             options?.testEnvironments,
+        uploadRequests:
+            parse(env, ENV_NAMES.xray.uploadRequests, asBoolean) ??
+            options?.uploadRequests ??
+            false,
         uploadResults:
             parse(env, ENV_NAMES.xray.uploadResults, asBoolean) ?? options?.uploadResults ?? true,
         uploadScreenshots:
@@ -188,7 +240,7 @@ export function initXrayOptions(
  */
 export async function initCucumberOptions(
     config: CucumberPreprocessorArgs[0],
-    options: Options["cucumber"]
+    options: CypressXrayPluginOptions["cucumber"]
 ): Promise<InternalCucumberOptions | undefined> {
     // Check if the user has chosen to upload Cucumber results, too.
     const featureFileExtension =

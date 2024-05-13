@@ -1,5 +1,5 @@
 import {
-    clearPluginContext,
+    PluginContext,
     getPluginContext,
     initClients,
     initCucumberOptions,
@@ -9,10 +9,11 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
+import { PluginTask, PluginTaskListener, PluginTaskParameterType } from "./cypress/tasks";
 import { afterRunHook, beforeRunHook } from "./hooks/hooks";
 import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
 import { LOG, Level } from "./logging/logging";
-import { InternalOptions, InternalPluginOptions, Options } from "./types/plugin";
+import { CypressXrayPluginOptions, InternalOptions, InternalPluginOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { HELP } from "./util/help";
 
@@ -22,8 +23,12 @@ let canShowInitializationWarning = true;
  * Resets the plugin including its context.
  */
 export function resetPlugin(): void {
-    clearPluginContext();
+    setPluginContext(undefined);
     canShowInitializationWarning = true;
+}
+
+function showInitializationWarnings(): boolean {
+    return canShowInitializationWarning;
 }
 
 /**
@@ -31,9 +36,9 @@ export function resetPlugin(): void {
  * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with those specified in
  * `options`. Environment variables always override values specified in `options`.
  *
- * *Note: This method will register upload hooks under the Cypress `before:run` and `after:run`
- * events. Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if you
- * have other hooks registered to prevent the plugin from replacing them.*
+ * *Note: This method will register upload hooks under the Cypress `before:run`, `after:run` and
+ * `task` events. Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if
+ * you have these hooks registered to prevent the plugin from replacing them.*
  *
  * @param on - the Cypress plugin events
  * @param config - the Cypress configuration
@@ -44,7 +49,7 @@ export function resetPlugin(): void {
 export async function configureXrayPlugin(
     on: Cypress.PluginEvents,
     config: Cypress.PluginConfigOptions,
-    options: Options
+    options: CypressXrayPluginOptions
 ): Promise<void> {
     canShowInitializationWarning = false;
     // Resolve these before all other options for correct enabledness.
@@ -73,12 +78,27 @@ export async function configureXrayPlugin(
         internalOptions.http
     );
     const clients = await initClients(internalOptions.jira, config.env, httpClients);
-    const context = {
-        cypress: config,
-        internal: internalOptions,
-        clients: clients,
-    };
+    const context = new PluginContext(clients, internalOptions, config);
     setPluginContext(context);
+    const listener = new PluginTaskListener(internalOptions.jira.projectKey, context);
+    on("task", {
+        [PluginTask.OUTGOING_REQUEST]: (
+            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
+        ) => {
+            if (internalOptions.xray.uploadRequests) {
+                return listener[PluginTask.OUTGOING_REQUEST](args);
+            }
+            return args.request;
+        },
+        [PluginTask.INCOMING_RESPONSE]: (
+            args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
+        ) => {
+            if (internalOptions.xray.uploadRequests) {
+                return listener[PluginTask.INCOMING_RESPONSE](args);
+            }
+            return args.response;
+        },
+    });
     if (internalOptions.xray.uploadResults) {
         on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
             if (!runDetails.specs) {
@@ -88,7 +108,7 @@ export async function configureXrayPlugin(
                 );
                 return;
             }
-            await beforeRunHook(runDetails.specs, context.internal, context.clients);
+            await beforeRunHook(runDetails.specs, context.getOptions(), context.getClients());
         });
         on(
             "after:run",
@@ -113,8 +133,9 @@ export async function configureXrayPlugin(
                 }
                 await afterRunHook(
                     results as CypressCommandLine.CypressRunResult,
-                    context.internal,
-                    context.clients
+                    context.getOptions(),
+                    context.getClients(),
+                    context
                 );
             }
         );
@@ -134,12 +155,12 @@ export async function configureXrayPlugin(
 export async function syncFeatureFile(file: Cypress.FileObject): Promise<string> {
     const context = getPluginContext();
     if (!context) {
-        if (canShowInitializationWarning) {
+        if (showInitializationWarnings()) {
             logInitializationWarning("file:preprocessor");
         }
         return file.filePath;
     }
-    if (!context.internal.plugin.enabled) {
+    if (!context.getOptions().plugin.enabled) {
         LOG.message(
             Level.INFO,
             `Plugin disabled. Skipping feature file synchronization triggered by: ${file.filePath}`
@@ -148,9 +169,9 @@ export async function syncFeatureFile(file: Cypress.FileObject): Promise<string>
     }
     return await synchronizeFeatureFile(
         file,
-        context.cypress.projectRoot,
-        context.internal,
-        context.clients
+        context.getCypressOptions().projectRoot,
+        context.getOptions(),
+        context.getClients()
     );
 }
 
