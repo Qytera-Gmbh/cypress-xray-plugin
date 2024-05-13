@@ -38,7 +38,7 @@ function showInitializationWarnings(): boolean {
  *
  * *Note: This method will register upload hooks under the Cypress `before:run`, `after:run` and
  * `task` events. Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if
- * you have other hooks registered to prevent the plugin from replacing them.*
+ * you have these hooks registered to prevent the plugin from replacing them.*
  *
  * @param on - the Cypress plugin events
  * @param config - the Cypress configuration
@@ -81,16 +81,24 @@ export async function configureXrayPlugin(
     const context = new PluginContext(clients, internalOptions, config);
     setPluginContext(context);
     const listener = new PluginTaskListener(internalOptions.jira.projectKey, context);
-    if (internalOptions.xray.uploadRequests) {
-        on("task", {
-            [PluginTask.OUTGOING_REQUEST]: (
-                args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
-            ) => listener[PluginTask.OUTGOING_REQUEST](args),
-            [PluginTask.INCOMING_RESPONSE]: (
-                args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
-            ) => listener[PluginTask.INCOMING_RESPONSE](args),
-        });
-    }
+    on("task", {
+        [PluginTask.OUTGOING_REQUEST]: (
+            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
+        ) => {
+            if (internalOptions.xray.uploadRequests) {
+                return listener[PluginTask.OUTGOING_REQUEST](args);
+            }
+            return args.request;
+        },
+        [PluginTask.INCOMING_RESPONSE]: (
+            args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
+        ) => {
+            if (internalOptions.xray.uploadRequests) {
+                return listener[PluginTask.INCOMING_RESPONSE](args);
+            }
+            return args.response;
+        },
+    });
     if (internalOptions.xray.uploadResults) {
         on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
             if (!runDetails.specs) {
