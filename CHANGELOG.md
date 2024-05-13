@@ -136,11 +136,15 @@
 
 ## Dependency updates
 
-- Bump @cucumber/messages from 23.0.0 to 24.0.0
+- Bump @cucumber/gherkin from 27.0.0 to 28.0.0
 
-- Bump @badeball/cypress-cucumber-preprocessor from 19.0.1 to 19.2.0
+- Bump @cucumber/messages from 24.0.0 to 24.1.0
 
-- Bump axios from 1.6.0 to 1.6.2
+- Bump axios from 1.6.2 to 1.6.8
+
+- Bump semver from 7.5.4 to 7.6.0
+
+- Bump @badeball/cypress-cucumber-preprocessor from 19.2.0 to 20.0.3
 
 # `6.0.0`
 
