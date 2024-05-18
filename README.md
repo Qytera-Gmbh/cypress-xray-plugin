@@ -10,13 +10,14 @@
 
 # Cypress Xray Plugin
 
-> A plugin for coupling together Cypress and Xray.
+> A Cypress plugin for Xray integration.
 > Supports Xray Server/DC and Xray Cloud.
 
 Features include:
 
   - upload test results to Xray
     - attach screenshots as test execution evidence
+    - attach web requests as test execution evidence
     - attach videos to test execution issues
     - reuse existing test execution and test plan issues
   - CI/CD ready
