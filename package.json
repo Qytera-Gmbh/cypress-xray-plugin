@@ -47,10 +47,10 @@
     "dependencies": {
         "@cucumber/gherkin": "^28.0.0",
         "@cucumber/messages": "^24.1.0",
-        "axios": "^1.6.8",
+        "axios": "^1.7.2",
         "chalk": "^4.1.2",
         "form-data": "^4.0.0",
-        "semver": "^7.6.0"
+        "semver": "^7.6.2"
     },
     "peerDependencies": {
         "cypress": ">=10.0.0 < 14"
@@ -64,13 +64,13 @@
         "@types/node": "^20.10.6",
         "@types/sinon-chai": "^3.2.12",
         "@typescript-eslint/eslint-plugin": "^7.8.0",
-        "@typescript-eslint/parser": "^7.8.0",
+        "@typescript-eslint/parser": "^7.11.0",
         "chai": "^4.4.1",
         "chai-as-promised": "^7.1.1",
-        "cypress": "^13.9.0",
+        "cypress": "^13.10.0",
         "dotenv": "^16.4.5",
         "eslint": "^8.57.0",
-        "eslint-plugin-tsdoc": "^0.2.17",
+        "eslint-plugin-tsdoc": "^0.3.0",
         "mocha": "^10.4.0",
         "nyc": "^15.1.0",
         "shx": "^0.3.4",
