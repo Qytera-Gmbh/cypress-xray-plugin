@@ -12,11 +12,13 @@ chai.use(chaiAsPromised);
 describe(path.relative(process.cwd(), __filename), () => {
     describe(GetSummaryValuesCommand.name, () => {
         it("fetches summaries", async () => {
+            const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetSummaryValuesCommand(
                 { jiraClient: jiraClient },
-                new ConstantCommand("customfield_12345"),
-                new ConstantCommand(["CYP-123", "CYP-456", "CYP-789"])
+                logger,
+                new ConstantCommand(logger, "customfield_12345"),
+                new ConstantCommand(logger, ["CYP-123", "CYP-456", "CYP-789"])
             );
             jiraClient.search
                 .withArgs({
@@ -37,11 +39,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("displays a warning for issues which do not exist", async () => {
+            const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetSummaryValuesCommand(
                 { jiraClient: jiraClient },
-                new ConstantCommand("customfield_12345"),
-                new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
+                logger,
+                new ConstantCommand(logger, "customfield_12345"),
+                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
             );
             jiraClient.search
                 .withArgs({
@@ -49,7 +53,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     fields: ["customfield_12345"],
                 })
                 .resolves([{ key: "CYP-123", fields: { ["customfield_12345"]: "Hello" } }]);
-            const logger = getMockedLogger();
             expect(await command.compute()).to.deep.eq({
                 ["CYP-123"]: "Hello",
             });
@@ -65,11 +68,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("displays a warning for issues whose fields cannot be parsed", async () => {
+            const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetSummaryValuesCommand(
                 { jiraClient: jiraClient },
-                new ConstantCommand("customfield_12345"),
-                new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
+                logger,
+                new ConstantCommand(logger, "customfield_12345"),
+                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
             );
             jiraClient.search
                 .withArgs({
@@ -85,7 +90,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     { key: "CYP-789", fields: { ["customfield_12345"]: [42, 84] } },
                     { fields: { ["customfield_12345"]: "hi" } },
                 ]);
-            const logger = getMockedLogger();
             expect(await command.compute()).to.deep.eq({});
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
@@ -101,11 +105,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws when encountering search failures", async () => {
+            const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetSummaryValuesCommand(
                 { jiraClient: jiraClient },
-                new ConstantCommand("customfield_12345"),
-                new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
+                logger,
+                new ConstantCommand(logger, "customfield_12345"),
+                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
             );
             jiraClient.search
                 .withArgs({

@@ -1,6 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
+import { getMockedLogger } from "../../../../../test/mocks";
 import { dedent } from "../../../../util/dedent";
 import { ConstantCommand } from "../constant-command";
 import { ExtractFieldIdCommand, JiraField } from "./extract-field-id-command";
@@ -10,9 +11,11 @@ chai.use(chaiAsPromised);
 describe(path.relative(process.cwd(), __filename), () => {
     describe(ExtractFieldIdCommand.name, () => {
         it("extracts fields case-insensitively", async () => {
+            const logger = getMockedLogger();
             const command = new ExtractFieldIdCommand(
                 { field: JiraField.SUMMARY },
-                new ConstantCommand([
+                logger,
+                new ConstantCommand(logger, [
                     {
                         id: "customfield_12345",
                         name: "Summary",
@@ -45,9 +48,11 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws for missing fields", async () => {
+            const logger = getMockedLogger();
             const command = new ExtractFieldIdCommand(
                 { field: JiraField.DESCRIPTION },
-                new ConstantCommand([
+                logger,
+                new ConstantCommand(logger, [
                     {
                         id: "customfield_12345",
                         name: "Summary",
@@ -84,9 +89,11 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("throws for missing fields and displays a hint", () => {
             it(JiraField.DESCRIPTION, async () => {
+                const logger = getMockedLogger();
                 const command = new ExtractFieldIdCommand(
                     { field: JiraField.DESCRIPTION },
-                    new ConstantCommand([])
+                    logger,
+                    new ConstantCommand(logger, [])
                 );
                 await expect(command.compute()).to.eventually.be.rejectedWith(
                     dedent(`
@@ -105,9 +112,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it(JiraField.SUMMARY, async () => {
+                const logger = getMockedLogger();
                 const command = new ExtractFieldIdCommand(
                     { field: JiraField.SUMMARY },
-                    new ConstantCommand([])
+                    logger,
+                    new ConstantCommand(logger, [])
                 );
                 await expect(command.compute()).to.eventually.be.rejectedWith(
                     dedent(`
@@ -126,9 +135,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it(JiraField.LABELS, async () => {
+                const logger = getMockedLogger();
                 const command = new ExtractFieldIdCommand(
                     { field: JiraField.LABELS },
-                    new ConstantCommand([])
+                    logger,
+                    new ConstantCommand(logger, [])
                 );
                 await expect(command.compute()).to.eventually.be.rejectedWith(
                     dedent(`
@@ -147,9 +158,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it(JiraField.TEST_ENVIRONMENTS, async () => {
+                const logger = getMockedLogger();
                 const command = new ExtractFieldIdCommand(
                     { field: JiraField.TEST_ENVIRONMENTS },
-                    new ConstantCommand([])
+                    logger,
+                    new ConstantCommand(logger, [])
                 );
                 await expect(command.compute()).to.eventually.be.rejectedWith(
                     dedent(`
@@ -168,9 +181,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it(JiraField.TEST_PLAN, async () => {
+                const logger = getMockedLogger();
                 const command = new ExtractFieldIdCommand(
                     { field: JiraField.TEST_PLAN },
-                    new ConstantCommand([])
+                    logger,
+                    new ConstantCommand(logger, [])
                 );
                 await expect(command.compute()).to.eventually.be.rejectedWith(
                     dedent(`
@@ -189,9 +204,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it(JiraField.TEST_TYPE, async () => {
+                const logger = getMockedLogger();
                 const command = new ExtractFieldIdCommand(
                     { field: JiraField.TEST_TYPE },
-                    new ConstantCommand([])
+                    logger,
+                    new ConstantCommand(logger, [])
                 );
                 await expect(command.compute()).to.eventually.be.rejectedWith(
                     dedent(`
@@ -211,9 +228,11 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws for multiple fields", async () => {
+            const logger = getMockedLogger();
             const command = new ExtractFieldIdCommand(
                 { field: JiraField.SUMMARY },
-                new ConstantCommand([
+                logger,
+                new ConstantCommand(logger, [
                     {
                         id: "summary",
                         name: "summary",

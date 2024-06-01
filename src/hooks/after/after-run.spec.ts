@@ -4,13 +4,13 @@ import path from "path";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks";
 import { assertIsInstanceOf } from "../../../test/util";
 import {
+    SimpleEvidenceCollection,
     initCucumberOptions,
     initJiraOptions,
     initPluginOptions,
-    initSslOptions,
     initXrayOptions,
 } from "../../context";
-import { CypressRunResultType } from "../../types/cypress/run-result";
+import { CypressRunResultType } from "../../types/cypress/cypress";
 import {
     ClientCombination,
     InternalCucumberOptions,
@@ -78,7 +78,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             ),
             plugin: initPluginOptions({}, {}),
             xray: initXrayOptions({}, {}),
-            ssl: initSslOptions({}, {}),
+            http: {},
         };
         clients = {
             kind: "server",
@@ -99,7 +99,15 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it("adds commands necessary for cypress results upload", () => {
                 const graph = new ExecutableGraph<Command>();
-                addUploadCommands(result, ".", options, clients, graph);
+                addUploadCommands(
+                    result,
+                    ".",
+                    options,
+                    clients,
+                    new SimpleEvidenceCollection(),
+                    graph,
+                    getMockedLogger()
+                );
                 // Vertices.
                 expect(graph.size("vertices")).to.eq(8);
                 const [
@@ -127,6 +135,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(resultsCommand.getValue()).to.deep.eq(result);
                 expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
                     ...options,
+                    evidenceCollection: new SimpleEvidenceCollection(),
                     useCloudStatusFallback: false,
                 });
                 expect(convertCypressInfoCommand.getParameters()).to.deep.eq(options);
@@ -171,9 +180,18 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("reuses existing commands", () => {
+                const logger = getMockedLogger();
                 const graph = new ExecutableGraph<Command>();
-                graph.place(new ConstantCommand(result));
-                addUploadCommands(result, ".", options, clients, graph);
+                graph.place(new ConstantCommand(logger, result));
+                addUploadCommands(
+                    result,
+                    ".",
+                    options,
+                    clients,
+                    new SimpleEvidenceCollection(),
+                    graph,
+                    logger
+                );
                 expect(graph.size("vertices")).to.eq(8);
                 expect(graph.size("edges")).to.eq(9);
             });
@@ -182,7 +200,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.testExecutionIssueKey = "CYP-415";
                 options.jira.testExecutionIssueType = "Test Run";
-                addUploadCommands(result, ".", options, clients, graph);
+                addUploadCommands(
+                    result,
+                    ".",
+                    options,
+                    clients,
+                    new SimpleEvidenceCollection(),
+                    graph,
+                    getMockedLogger()
+                );
                 expect(graph.size("vertices")).to.eq(9);
                 // Vertices.
                 const commands = [...graph.getVertices()];
@@ -208,7 +234,15 @@ describe(path.relative(process.cwd(), __filename), () => {
             it("attaches videos", () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.attachVideos = true;
-                addUploadCommands(result, ".", options, clients, graph);
+                addUploadCommands(
+                    result,
+                    ".",
+                    options,
+                    clients,
+                    new SimpleEvidenceCollection(),
+                    graph,
+                    getMockedLogger()
+                );
                 expect(graph.size("vertices")).to.eq(10);
                 // Vertices.
                 const commands = [...graph.getVertices()];
@@ -267,7 +301,15 @@ describe(path.relative(process.cwd(), __filename), () => {
             describe("server", () => {
                 it("adds commands necessary for cucumber results upload", () => {
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    addUploadCommands(
+                        cypressResult,
+                        ".",
+                        options,
+                        clients,
+                        new SimpleEvidenceCollection(),
+                        graph,
+                        getMockedLogger()
+                    );
                     // Vertices.
                     expect(graph.size("vertices")).to.eq(11);
                     const [
@@ -373,7 +415,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                 it("uses configured test plan data", () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    addUploadCommands(
+                        cypressResult,
+                        ".",
+                        options,
+                        clients,
+                        new SimpleEvidenceCollection(),
+                        graph,
+                        getMockedLogger()
+                    );
                     // Vertices.
                     expect(graph.size("vertices")).to.eq(13);
                     const commands = [...graph.getVertices()];
@@ -403,7 +453,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     options.jira.fields.testPlan = "customfield_12345";
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    addUploadCommands(
+                        cypressResult,
+                        ".",
+                        options,
+                        clients,
+                        new SimpleEvidenceCollection(),
+                        graph,
+                        getMockedLogger()
+                    );
                     // Vertices.
                     expect(graph.size("vertices")).to.eq(12);
                     const commands = [...graph.getVertices()];
@@ -422,7 +480,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                 it("uses configured test environment data", () => {
                     options.xray.testEnvironments = ["DEV"];
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    addUploadCommands(
+                        cypressResult,
+                        ".",
+                        options,
+                        clients,
+                        new SimpleEvidenceCollection(),
+                        graph,
+                        getMockedLogger()
+                    );
                     // Vertices.
                     expect(graph.size("vertices")).to.eq(13);
                     const commands = [...graph.getVertices()];
@@ -452,7 +518,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     options.xray.testEnvironments = ["DEV"];
                     options.jira.fields.testEnvironments = "customfield_67890";
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    addUploadCommands(
+                        cypressResult,
+                        ".",
+                        options,
+                        clients,
+                        new SimpleEvidenceCollection(),
+                        graph,
+                        getMockedLogger()
+                    );
                     // Vertices.
                     expect(graph.size("vertices")).to.eq(12);
                     const commands = [...graph.getVertices()];
@@ -472,7 +546,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     options.xray.testEnvironments = ["DEV"];
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    addUploadCommands(
+                        cypressResult,
+                        ".",
+                        options,
+                        clients,
+                        new SimpleEvidenceCollection(),
+                        graph,
+                        getMockedLogger()
+                    );
                     // Vertices.
                     expect(graph.size("vertices")).to.eq(14);
                     const commands = [...graph.getVertices()];
@@ -503,7 +585,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     options.xray.testEnvironments = ["DEV"];
                     options.jira.fields.testEnvironments = "customfield_67890";
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    addUploadCommands(
+                        cypressResult,
+                        ".",
+                        options,
+                        clients,
+                        new SimpleEvidenceCollection(),
+                        graph,
+                        getMockedLogger()
+                    );
                     // Vertices.
                     expect(graph.size("vertices")).to.eq(13);
                     const commands = [...graph.getVertices()];
@@ -533,7 +623,15 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                 it("adds commands necessary for cucumber results upload", () => {
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    addUploadCommands(
+                        cypressResult,
+                        ".",
+                        options,
+                        clients,
+                        new SimpleEvidenceCollection(),
+                        graph,
+                        getMockedLogger()
+                    );
                     // Vertices.
                     expect(graph.size("vertices")).to.eq(11);
                     const commands = [...graph.getVertices()];
@@ -557,7 +655,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     const graph = new ExecutableGraph<Command>();
                     options.jira.testExecutionIssueKey = "CYP-42";
                     options.jira.testExecutionIssueType = "Test Run";
-                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    addUploadCommands(
+                        cypressResult,
+                        ".",
+                        options,
+                        clients,
+                        new SimpleEvidenceCollection(),
+                        graph,
+                        getMockedLogger()
+                    );
                     // Vertices.
                     expect(graph.size("vertices")).to.eq(13);
                     const [
@@ -677,7 +783,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const preprocessorOptions = options.cucumber as InternalCucumberOptions;
                 preprocessorOptions.preprocessor = undefined;
                 expect(() => {
-                    addUploadCommands(cypressResult, ".", options, clients, graph);
+                    addUploadCommands(
+                        cypressResult,
+                        ".",
+                        options,
+                        clients,
+                        new SimpleEvidenceCollection(),
+                        graph,
+                        getMockedLogger()
+                    );
                 }).to.throw(
                     "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured"
                 );
@@ -687,7 +801,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const logger = getMockedLogger();
                 cypressResult.runs = [];
                 const graph = new ExecutableGraph<Command>();
-                addUploadCommands(cypressResult, ".", options, clients, graph);
+                addUploadCommands(
+                    cypressResult,
+                    ".",
+                    options,
+                    clients,
+                    new SimpleEvidenceCollection(),
+                    graph,
+                    logger
+                );
                 expect(graph.size("vertices")).to.eq(0);
                 expect(graph.size("edges")).to.eq(0);
                 expect(logger.message).to.have.been.calledWithExactly(
@@ -710,25 +832,43 @@ describe(path.relative(process.cwd(), __filename), () => {
                     prefixes: {},
                 };
                 const graph = new ExecutableGraph<Command>();
+                const logger = getMockedLogger();
                 graph.place(
-                    new ImportFeatureCommand({
-                        filePath: path.relative(".", "cypress/e2e/outline.cy.feature"),
-                        xrayClient: clients.xrayClient,
-                    })
+                    new ImportFeatureCommand(
+                        {
+                            filePath: path.relative(".", "cypress/e2e/outline.cy.feature"),
+                            xrayClient: clients.xrayClient,
+                        },
+                        logger
+                    )
                 );
                 graph.place(
-                    new ImportFeatureCommand({
-                        filePath: path.relative(".", "cypress/e2e/spec.cy.feature"),
-                        xrayClient: clients.xrayClient,
-                    })
+                    new ImportFeatureCommand(
+                        {
+                            filePath: path.relative(".", "cypress/e2e/spec.cy.feature"),
+                            xrayClient: clients.xrayClient,
+                        },
+                        logger
+                    )
                 );
                 graph.place(
-                    new ImportFeatureCommand({
-                        filePath: path.relative(".", "cypress/e2e/nonexistent.cy.feature"),
-                        xrayClient: clients.xrayClient,
-                    })
+                    new ImportFeatureCommand(
+                        {
+                            filePath: path.relative(".", "cypress/e2e/nonexistent.cy.feature"),
+                            xrayClient: clients.xrayClient,
+                        },
+                        logger
+                    )
                 );
-                addUploadCommands(cypressResult, ".", options, clients, graph);
+                addUploadCommands(
+                    cypressResult,
+                    ".",
+                    options,
+                    clients,
+                    new SimpleEvidenceCollection(),
+                    graph,
+                    logger
+                );
                 // Vertices.
                 expect(graph.size("vertices")).to.eq(14);
                 const commands = [...graph.getVertices()];
@@ -771,7 +911,15 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it("adds commands necessary for mixed results upload", () => {
                 const graph = new ExecutableGraph<Command>();
-                addUploadCommands(cypressResult, ".", options, clients, graph);
+                addUploadCommands(
+                    cypressResult,
+                    ".",
+                    options,
+                    clients,
+                    new SimpleEvidenceCollection(),
+                    graph,
+                    getMockedLogger()
+                );
                 // Vertices.
                 expect(graph.size("vertices")).to.eq(17);
                 const [
@@ -827,6 +975,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
                 expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
                     ...options,
+                    evidenceCollection: new SimpleEvidenceCollection(),
                     useCloudStatusFallback: false,
                 });
                 expect(convertCypressInfoCommand.getParameters()).to.deep.eq(options);

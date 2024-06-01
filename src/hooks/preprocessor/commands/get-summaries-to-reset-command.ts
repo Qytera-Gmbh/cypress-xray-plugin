@@ -1,18 +1,19 @@
 import { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
-import { Level } from "../../../util/logging";
+import { Level, Logger } from "../../../util/logging";
 import { unknownToString } from "../../../util/string";
 import { Command, Computable } from "../../command";
 
-export class GetSummariesToResetCommand extends Command<StringMap<string>, void> {
+export class GetSummariesToResetCommand extends Command<StringMap<string>, null> {
     private readonly oldValues: Computable<StringMap<string>>;
     private readonly newValues: Computable<StringMap<string>>;
 
     constructor(
+        logger: Logger,
         oldValues: Computable<StringMap<string>>,
         newValues: Computable<StringMap<string>>
     ) {
-        super();
+        super(null, logger);
         this.oldValues = oldValues;
         this.newValues = newValues;
     }

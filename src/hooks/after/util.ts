@@ -1,4 +1,4 @@
-import { CypressRunResultType } from "../../types/cypress/run-result";
+import { CypressRunResultType } from "../../types/cypress/cypress";
 import { dedent } from "../../util/dedent";
 import { HELP } from "../../util/help";
 

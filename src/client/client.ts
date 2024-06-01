@@ -1,6 +1,7 @@
 import { LOG, Level } from "../util/logging";
 import { startInterval } from "../util/time";
 import { HttpCredentials } from "./authentication/credentials";
+import { AxiosRestClient } from "./https/requests";
 
 /**
  * A basic client interface which stores credentials data used for communicating with a server.
@@ -14,16 +15,22 @@ export abstract class Client {
      * The credentials to use for authentication.
      */
     protected readonly credentials: HttpCredentials;
+    /**
+     * The HTTP client to use for dispatching requests.
+     */
+    protected readonly httpClient: AxiosRestClient;
 
     /**
      * Construct a new client using the provided credentials.
      *
      * @param apiBaseUrl - the base URL for all HTTP requests
      * @param credentials - the credentials to use during authentication
+     * @param httpClient - the HTTP client to use for dispatching requests
      */
-    constructor(apiBaseUrl: string, credentials: HttpCredentials) {
+    constructor(apiBaseUrl: string, credentials: HttpCredentials, httpClient: AxiosRestClient) {
         this.apiBaseUrl = apiBaseUrl;
         this.credentials = credentials;
+        this.httpClient = httpClient;
     }
 
     /**

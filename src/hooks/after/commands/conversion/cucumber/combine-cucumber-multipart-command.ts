@@ -3,17 +3,19 @@ import {
     CucumberMultipartFeature,
 } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
 import { CucumberMultipartInfo } from "../../../../../types/xray/requests/import-execution-cucumber-multipart-info";
+import { Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 
-export class CombineCucumberMultipartCommand extends Command<CucumberMultipart, void> {
+export class CombineCucumberMultipartCommand extends Command<CucumberMultipart, null> {
     private readonly cucumberMultipartInfo: Computable<CucumberMultipartInfo>;
     private readonly cucumberMultipartFeatures: Computable<CucumberMultipartFeature[]>;
 
     constructor(
+        logger: Logger,
         cucumberMultipartInfo: Computable<CucumberMultipartInfo>,
         cucumberMultipartFeatures: Computable<CucumberMultipartFeature[]>
     ) {
-        super();
+        super(null, logger);
         this.cucumberMultipartInfo = cucumberMultipartInfo;
         this.cucumberMultipartFeatures = cucumberMultipartFeatures;
     }

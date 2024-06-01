@@ -19,11 +19,13 @@ chai.use(chaiAsPromised);
 describe(path.relative(process.cwd(), __filename), () => {
     describe(GetTestTypeValuesCommandServer.name, () => {
         it("fetches test types", async () => {
+            const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetTestTypeValuesCommandServer(
                 { jiraClient: jiraClient },
-                new ConstantCommand("customfield_12345"),
-                new ConstantCommand(["CYP-123", "CYP-456", "CYP-789"])
+                logger,
+                new ConstantCommand(logger, "customfield_12345"),
+                new ConstantCommand(logger, ["CYP-123", "CYP-456", "CYP-789"])
             );
             jiraClient.search
                 .withArgs({
@@ -44,11 +46,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("displays a warning for issues which do not exist", async () => {
+            const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetTestTypeValuesCommandServer(
                 { jiraClient: jiraClient },
-                new ConstantCommand("customfield_12345"),
-                new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
+                logger,
+                new ConstantCommand(logger, "customfield_12345"),
+                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
             );
             jiraClient.search
                 .withArgs({
@@ -58,7 +62,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 .resolves([
                     { key: "CYP-123", fields: { ["customfield_12345"]: { value: "Cucumber" } } },
                 ]);
-            const logger = getMockedLogger();
             expect(await command.compute()).to.deep.eq({
                 ["CYP-123"]: "Cucumber",
             });
@@ -74,11 +77,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("displays a warning for issues whose fields cannot be parsed", async () => {
+            const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetTestTypeValuesCommandServer(
                 { jiraClient: jiraClient },
-                new ConstantCommand("customfield_12345"),
-                new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
+                logger,
+                new ConstantCommand(logger, "customfield_12345"),
+                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
             );
             jiraClient.search
                 .withArgs({
@@ -94,7 +99,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     { key: "CYP-789", fields: { ["customfield_12345"]: [42, 84] } },
                     { fields: { ["customfield_12345"]: { value: "Manual" } } },
                 ]);
-            const logger = getMockedLogger();
             expect(await command.compute()).to.deep.eq({});
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
@@ -110,11 +114,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws when encountering search failures", async () => {
+            const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetTestTypeValuesCommandServer(
                 { jiraClient: jiraClient },
-                new ConstantCommand("customfield_12345"),
-                new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
+                logger,
+                new ConstantCommand(logger, "customfield_12345"),
+                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
             );
             jiraClient.search
                 .withArgs({
@@ -128,10 +134,12 @@ describe(path.relative(process.cwd(), __filename), () => {
 
     describe(GetTestTypeValuesCommandCloud.name, () => {
         it("fetches test types", async () => {
+            const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient("cloud");
             const command = new GetTestTypeValuesCommandCloud(
                 { projectKey: "CYP", xrayClient: xrayClient },
-                new ConstantCommand(["CYP-123", "CYP-456", "CYP-789"])
+                logger,
+                new ConstantCommand(logger, ["CYP-123", "CYP-456", "CYP-789"])
             );
             xrayClient.getTestTypes.withArgs("CYP", "CYP-123", "CYP-456", "CYP-789").resolves({
                 ["CYP-123"]: "Cucumber",
@@ -147,15 +155,16 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("displays a warning for issues which do not exist", async () => {
+            const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient("cloud");
             const command = new GetTestTypeValuesCommandCloud(
                 { projectKey: "CYP", xrayClient: xrayClient },
-                new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
+                logger,
+                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
             );
             xrayClient.getTestTypes.withArgs("CYP", "CYP-123", "CYP-789", "CYP-456").resolves({
                 ["CYP-123"]: "Cucumber",
             });
-            const logger = getMockedLogger();
             expect(await command.compute()).to.deep.eq({
                 ["CYP-123"]: "Cucumber",
             });
@@ -171,10 +180,12 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws when encountering failures", async () => {
+            const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient("cloud");
             const command = new GetTestTypeValuesCommandCloud(
                 { projectKey: "CYP", xrayClient: xrayClient },
-                new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
+                logger,
+                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
             );
             xrayClient.getTestTypes
                 .withArgs("CYP", "CYP-123", "CYP-789", "CYP-456")

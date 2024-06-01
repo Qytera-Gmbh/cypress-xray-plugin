@@ -1,12 +1,13 @@
 import { CucumberMultipart } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
 import { SkippedError } from "../../../../../util/errors";
+import { Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 
-export class AssertCucumberConversionValidCommand extends Command<void, void> {
+export class AssertCucumberConversionValidCommand extends Command<void, null> {
     private readonly cucumberMultipart: Computable<CucumberMultipart>;
 
-    constructor(cucumberMultipart: Computable<CucumberMultipart>) {
-        super();
+    constructor(logger: Logger, cucumberMultipart: Computable<CucumberMultipart>) {
+        super(null, logger);
         this.cucumberMultipart = cucumberMultipart;
     }
 

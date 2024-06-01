@@ -1,11 +1,10 @@
-import { AxiosResponse } from "axios";
 import { StringMap } from "../../types/util";
 import { encode } from "../../util/base64";
 import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
 import { LOG, Level } from "../../util/logging";
 import { startInterval } from "../../util/time";
-import { REST } from "../https/requests";
+import { AxiosRestClient } from "../https/requests";
 
 /**
  * A basic HTTP header.
@@ -86,6 +85,7 @@ export class JwtCredentials implements HttpCredentials {
     private readonly clientId: string;
     private readonly clientSecret: string;
     private readonly authenticationUrl: string;
+    private readonly httpClient: AxiosRestClient;
 
     /**
      * Constructs new JWT credentials. The client ID and client secret will be used to retrieve a
@@ -94,12 +94,19 @@ export class JwtCredentials implements HttpCredentials {
      * @param clientId - the client ID
      * @param clientSecret - the client secret
      * @param authenticationUrl - the authentication URL/token endpoint
+     * @param httpClient - the HTTP client to use for fetching the token
      */
-    constructor(clientId: string, clientSecret: string, authenticationUrl: string) {
+    constructor(
+        clientId: string,
+        clientSecret: string,
+        authenticationUrl: string,
+        httpClient: AxiosRestClient
+    ) {
         this.token = undefined;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.authenticationUrl = authenticationUrl;
+        this.httpClient = httpClient;
     }
 
     /**
@@ -113,55 +120,50 @@ export class JwtCredentials implements HttpCredentials {
 
     public async getAuthorizationHeader(): Promise<HttpHeader> {
         if (!this.token) {
-            this.fetchToken();
+            this.token = this.fetchToken();
         }
         return {
-            ["Authorization"]: `Bearer ${(await this.token) ?? "undefined"}`,
+            ["Authorization"]: `Bearer ${await this.token}`,
         };
     }
 
-    private fetchToken(): void {
-        this.token = new Promise((resolve, reject) => {
-            const progressInterval = startInterval((totalTime: number) => {
-                LOG.message(
-                    Level.INFO,
-                    `Waiting for ${this.authenticationUrl} to respond... (${(
-                        totalTime / 1000
-                    ).toString()} seconds)`
-                );
-            });
+    private async fetchToken(): Promise<string> {
+        const progressInterval = startInterval((totalTime: number) => {
+            LOG.message(
+                Level.INFO,
+                `Waiting for ${this.authenticationUrl} to respond... (${(
+                    totalTime / 1000
+                ).toString()} seconds)`
+            );
+        });
+        try {
             LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
-            const body = {
+            const response = await this.httpClient.post<string>(this.authenticationUrl, {
                 ["client_id"]: this.clientId,
                 ["client_secret"]: this.clientSecret,
-            };
-            REST.post<string>(this.authenticationUrl, body)
-                .then((response: AxiosResponse<string>) => {
-                    // A JWT token is expected: https://stackoverflow.com/a/74325712
-                    const jwtRegex = /^[A-Za-z0-9_-]{2,}(?:\.[A-Za-z0-9_-]{2,}){2}$/;
-                    if (jwtRegex.test(response.data)) {
-                        LOG.message(Level.DEBUG, "Authentication successful.");
-                        resolve(response.data);
-                    } else {
-                        reject(new Error("Expected to receive a JWT token, but did not"));
-                    }
-                })
-                .catch((error: unknown) => {
-                    const message = errorMessage(error);
-                    LOG.message(
-                        Level.ERROR,
-                        dedent(`
-                            Failed to authenticate to: ${this.authenticationUrl}
+            });
+            // A JWT token is expected: https://stackoverflow.com/a/74325712
+            const jwtRegex = /^[A-Za-z0-9_-]{2,}(?:\.[A-Za-z0-9_-]{2,}){2}$/;
+            if (jwtRegex.test(response.data)) {
+                LOG.message(Level.DEBUG, "Authentication successful");
+                return response.data;
+            } else {
+                throw new Error("Expected to receive a JWT token, but did not");
+            }
+        } catch (error: unknown) {
+            const message = errorMessage(error);
+            LOG.message(
+                Level.ERROR,
+                dedent(`
+                    Failed to authenticate to: ${this.authenticationUrl}
 
-                            ${message}
-                        `)
-                    );
-                    LOG.logErrorToFile(error, "authentication");
-                    reject(new LoggedError("Authentication failed"));
-                })
-                .finally(() => {
-                    clearInterval(progressInterval);
-                });
-        });
+                    ${message}
+                `)
+            );
+            LOG.logErrorToFile(error, "authentication");
+            throw new LoggedError("Authentication failed");
+        } finally {
+            clearInterval(progressInterval);
+        }
     }
 }

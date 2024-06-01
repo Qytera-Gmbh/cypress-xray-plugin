@@ -1,8 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api";
-import { RunResult_V13 } from "../../../../../../types/cypress/13.0.0/api";
+import { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api";
 import { Status } from "../../../../../../types/test-status";
 import { getTestRunData_V12, getTestRunData_V13 } from "./run";
 
@@ -216,7 +215,7 @@ describe(path.relative(process.cwd(), __filename), () => {
     });
 
     describe(getTestRunData_V13.name, () => {
-        const passedResult: RunResult_V13 = {
+        const passedResult: CypressCommandLine.RunResult = {
             error: null,
             reporter: "spec",
             reporterStats: {
@@ -266,7 +265,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             ],
             video: null,
         };
-        const failedResult: RunResult_V13 = {
+        const failedResult: CypressCommandLine.RunResult = {
             error: null,
             reporter: "spec",
             reporterStats: {
@@ -331,7 +330,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             ],
             video: null,
         };
-        const invalidResult: RunResult_V13 = {
+        const invalidResult: CypressCommandLine.RunResult = {
             error: null,
             reporter: "spec",
             reporterStats: {

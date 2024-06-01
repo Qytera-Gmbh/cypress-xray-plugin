@@ -4,6 +4,7 @@ import {
     InternalXrayOptions,
 } from "../../../../../types/plugin";
 import { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
+import { Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 import { buildMultipartFeatures } from "./util/multipart-feature";
 
@@ -28,10 +29,11 @@ export class ConvertCucumberFeaturesCommand extends Command<
     private readonly testExecutionIssueKey?: Computable<string | undefined>;
     constructor(
         parameters: Parameters,
+        logger: Logger,
         input: Computable<CucumberMultipartFeature[]>,
         testExecutionIssueKey?: Computable<string | undefined>
     ) {
-        super(parameters);
+        super(parameters, logger);
         this.input = input;
         this.testExecutionIssueKey = testExecutionIssueKey;
     }

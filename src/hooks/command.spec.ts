@@ -2,6 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import EventEmitter from "node:events";
 import path from "path";
+import { getMockedLogger } from "../../test/mocks";
 import { SkippedError } from "../util/errors";
 import { Command, ComputableState } from "./command";
 
@@ -10,12 +11,13 @@ chai.use(chaiAsPromised);
 describe(path.relative(process.cwd(), __filename), () => {
     describe(Command.name, () => {
         it("computes the result on compute call", async () => {
-            class ArithmeticCommand extends Command<number, void> {
+            const logger = getMockedLogger();
+            class ArithmeticCommand extends Command<number, null> {
                 private readonly x: number;
                 private readonly operands: ArithmeticCommand[];
 
                 constructor(x: number, ...operands: ArithmeticCommand[]) {
-                    super();
+                    super(null, logger);
                     this.x = x;
                     this.operands = operands;
                 }
@@ -38,35 +40,38 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("returns the failure reason", async () => {
+            const logger = getMockedLogger();
             const error = new Error("Failure 123");
-            class FailingCommand extends Command<number, void> {
+            class FailingCommand extends Command<number, null> {
                 protected computeResult(): Promise<number> {
                     throw error;
                 }
             }
-            const command = new FailingCommand();
+            const command = new FailingCommand(null, logger);
             await expect(command.compute()).to.eventually.be.rejectedWith("Failure 123");
             expect(command.getFailureOrSkipReason()).to.eq(error);
             expect(command.getState()).to.eq(ComputableState.FAILED);
         });
 
         it("returns the skip reason", async () => {
+            const logger = getMockedLogger();
             const error = new SkippedError("Skip 123");
-            class SkippingCommand extends Command<number, void> {
+            class SkippingCommand extends Command<number, null> {
                 protected computeResult(): Promise<number> {
                     throw error;
                 }
             }
-            const command = new SkippingCommand();
+            const command = new SkippingCommand(null, logger);
             await expect(command.compute()).to.eventually.be.rejectedWith("Skip 123");
             expect(command.getFailureOrSkipReason()).to.eq(error);
             expect(command.getState()).to.eq(ComputableState.SKIPPED);
         });
 
         it("updates its state", async () => {
+            const logger = getMockedLogger();
             const eventEmitter = new EventEmitter();
 
-            class WaitingCommand extends Command<number, void> {
+            class WaitingCommand extends Command<number, null> {
                 protected computeResult(): Promise<number> {
                     return new Promise((resolve) => {
                         eventEmitter.once("go", () => {
@@ -75,7 +80,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     });
                 }
             }
-            const command = new WaitingCommand();
+            const command = new WaitingCommand(null, logger);
             expect(command.getState()).to.eq(ComputableState.INITIAL);
             const computePromise = command.compute();
             expect(command.getState()).to.eq(ComputableState.PENDING);
@@ -89,7 +94,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("computes its result only once", async () => {
-            class ComputingCommand extends Command<number, void> {
+            const logger = getMockedLogger();
+            class ComputingCommand extends Command<number, null> {
                 private hasComputed = false;
 
                 protected computeResult(): Promise<number> {
@@ -104,7 +110,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     });
                 }
             }
-            const command = new ComputingCommand();
+            const command = new ComputingCommand(null, logger);
             expect(await command.compute()).to.eq(42);
             expect(await command.compute()).to.eq(42);
         });

@@ -2,6 +2,7 @@ import { FieldDetail } from "../../../../types/jira/responses/field-detail";
 import { JiraFieldIds } from "../../../../types/plugin";
 import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
+import { Logger } from "../../../../util/logging";
 import { prettyPadObjects, prettyPadValues } from "../../../../util/pretty";
 import { Command, Computable } from "../../../command";
 
@@ -20,8 +21,8 @@ interface Parameters {
 
 export class ExtractFieldIdCommand extends Command<string, Parameters> {
     private readonly allFields: Computable<FieldDetail[]>;
-    constructor(parameters: Parameters, allFields: Computable<FieldDetail[]>) {
-        super(parameters);
+    constructor(parameters: Parameters, logger: Logger, allFields: Computable<FieldDetail[]>) {
+        super(parameters, logger);
         this.allFields = allFields;
     }
 

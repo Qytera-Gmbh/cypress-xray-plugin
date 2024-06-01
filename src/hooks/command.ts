@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 import { isSkippedError } from "../util/errors";
-import { CapturingLogger, Logger } from "../util/logging";
+import { Logger } from "../util/logging";
 
 /**
  * Models an entity which can compute a result.
@@ -81,7 +81,7 @@ export abstract class Command<R = unknown, P = unknown>
      * @param parameters - the command parameters
      * @param logger - the logger to use for log messages
      */
-    constructor(parameters: P, logger: Logger = new CapturingLogger()) {
+    constructor(parameters: P, logger: Logger) {
         this.parameters = parameters;
         this.logger = logger;
         this.result = new Promise<void>((resolve) => this.executeEmitter.once("execute", resolve))
@@ -98,7 +98,7 @@ export abstract class Command<R = unknown, P = unknown>
                     this.setState(ComputableState.FAILED);
                     this.failureOrSkipReason = error;
                 }
-                throw new Error("Encountered unexpected error", { cause: error });
+                throw error;
             });
     }
 

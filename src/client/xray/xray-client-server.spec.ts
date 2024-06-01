@@ -12,14 +12,16 @@ import { AxiosRestClient } from "../https/requests";
 import { XrayClientServer } from "./xray-client-server";
 
 describe("the xray server client", () => {
-    const client: XrayClientServer = new XrayClientServer(
-        "https://example.org",
-        new BasicAuthCredentials("user", "xyz")
-    );
     let restClient: SinonStubbedInstance<AxiosRestClient>;
+    let client: XrayClientServer;
 
     beforeEach(() => {
         restClient = getMockedRestClient();
+        client = new XrayClientServer(
+            "https://example.org",
+            new BasicAuthCredentials("user", "xyz"),
+            restClient
+        );
     });
 
     describe("import execution", () => {

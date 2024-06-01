@@ -1,6 +1,6 @@
 import { XrayClient } from "../../../../client/xray/xray-client";
 import { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results";
-import { Level } from "../../../../util/logging";
+import { Level, Logger } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 
 interface Parameters {
@@ -9,8 +9,12 @@ interface Parameters {
 
 export class ImportExecutionCypressCommand extends Command<string, Parameters> {
     private readonly results: Computable<XrayTestExecutionResults>;
-    constructor(parameters: Parameters, results: Computable<XrayTestExecutionResults>) {
-        super(parameters);
+    constructor(
+        parameters: Parameters,
+        logger: Logger,
+        results: Computable<XrayTestExecutionResults>
+    ) {
+        super(parameters, logger);
         this.results = results;
     }
 

@@ -13,7 +13,6 @@ import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
 import { LOG, Level } from "../../util/logging";
 import { Client } from "../client";
-import { REST } from "../https/requests";
 
 /**
  * All methods a Jira client needs to implement.
@@ -111,7 +110,7 @@ export class BaseJiraClient extends Client implements JiraClient {
             LOG.message(Level.DEBUG, "Attaching files:", ...files);
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response: AxiosResponse<Attachment[]> = await REST.post(
+                const response: AxiosResponse<Attachment[]> = await this.httpClient.post(
                     `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/attachments`,
                     form,
                     {
@@ -146,7 +145,7 @@ export class BaseJiraClient extends Client implements JiraClient {
             LOG.message(Level.DEBUG, "Getting issue types...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response: AxiosResponse<IssueTypeDetails[]> = await REST.get(
+                const response: AxiosResponse<IssueTypeDetails[]> = await this.httpClient.get(
                     `${this.apiBaseUrl}/rest/api/latest/issuetype`,
                     {
                         headers: {
@@ -194,7 +193,7 @@ export class BaseJiraClient extends Client implements JiraClient {
             LOG.message(Level.DEBUG, "Getting fields...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const response: AxiosResponse<FieldDetail[]> = await REST.get(
+                const response: AxiosResponse<FieldDetail[]> = await this.httpClient.get(
                     `${this.apiBaseUrl}/rest/api/latest/field`,
                     {
                         headers: {
@@ -240,7 +239,7 @@ export class BaseJiraClient extends Client implements JiraClient {
                         ...request,
                         startAt: startAt,
                     };
-                    const response: AxiosResponse<SearchResults> = await REST.post(
+                    const response: AxiosResponse<SearchResults> = await this.httpClient.post(
                         `${this.apiBaseUrl}/rest/api/latest/search`,
                         paginatedRequest,
                         {
@@ -280,7 +279,7 @@ export class BaseJiraClient extends Client implements JiraClient {
             LOG.message(Level.DEBUG, "Editing issue...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                await REST.put(
+                await this.httpClient.put(
                     `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}`,
                     issueUpdateData,
                     {

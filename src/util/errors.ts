@@ -164,7 +164,6 @@ export function missingTestKeyInCucumberScenarioError(
  * @param tags - the scenario tags
  * @param issueKeys - the issue keys
  * @param isCloudClient - whether Xray cloud is being used
- * @param testPrefix - the prefix of issues linked in scenario tags
  * @returns the error
  */
 export function multipleTestKeysInCucumberScenarioError(

@@ -25,7 +25,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             restClient = getMockedRestClient();
             client = new BaseJiraClient(
                 "https://example.org",
-                new BasicAuthCredentials("user", "token")
+                new BasicAuthCredentials("user", "token"),
+                restClient
             );
         });
 

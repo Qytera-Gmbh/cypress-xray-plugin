@@ -14,13 +14,10 @@ describe(path.relative(process.cwd(), __filename), () => {
     describe(VerifyResultsUploadCommand.name, () => {
         it("prints a success message for successful cypress uploads", async () => {
             const logger = getMockedLogger();
-            const command = new VerifyResultsUploadCommand(
-                { url: "https://example.org" },
-                {
-                    cypressExecutionIssueKey: new ConstantCommand("CYP-123"),
-                    cucumberExecutionIssueKey: new ConstantCommand(undefined),
-                }
-            );
+            const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
+                cypressExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
+                cucumberExecutionIssueKey: new ConstantCommand(logger, undefined),
+            });
             await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.SUCCESS,
@@ -30,13 +27,10 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("prints a success message for successful cucumber uploads", async () => {
             const logger = getMockedLogger();
-            const command = new VerifyResultsUploadCommand(
-                { url: "https://example.org" },
-                {
-                    cypressExecutionIssueKey: new ConstantCommand(undefined),
-                    cucumberExecutionIssueKey: new ConstantCommand("CYP-123"),
-                }
-            );
+            const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
+                cypressExecutionIssueKey: new ConstantCommand(logger, undefined),
+                cucumberExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
+            });
             await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.SUCCESS,
@@ -46,13 +40,10 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("prints a success message for successful uploads", async () => {
             const logger = getMockedLogger();
-            const command = new VerifyResultsUploadCommand(
-                { url: "https://example.org" },
-                {
-                    cypressExecutionIssueKey: new ConstantCommand("CYP-123"),
-                    cucumberExecutionIssueKey: new ConstantCommand("CYP-123"),
-                }
-            );
+            const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
+                cypressExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
+                cucumberExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
+            });
             await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.SUCCESS,
@@ -61,13 +52,11 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("skips for mismatched execution issue keys", async () => {
-            const command = new VerifyResultsUploadCommand(
-                { url: "https://example.org" },
-                {
-                    cypressExecutionIssueKey: new ConstantCommand("CYP-123"),
-                    cucumberExecutionIssueKey: new ConstantCommand("CYP-456"),
-                }
-            );
+            const logger = getMockedLogger();
+            const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
+                cypressExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
+                cucumberExecutionIssueKey: new ConstantCommand(logger, "CYP-456"),
+            });
             await expect(command.compute())
                 .to.eventually.be.an.instanceOf(SkippedError)
                 .and.to.eventually.be.rejectedWith(
@@ -82,13 +71,11 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("skips when there are no results", async () => {
-            const command = new VerifyResultsUploadCommand(
-                { url: "https://example.org" },
-                {
-                    cypressExecutionIssueKey: new ConstantCommand(undefined),
-                    cucumberExecutionIssueKey: new ConstantCommand(undefined),
-                }
-            );
+            const logger = getMockedLogger();
+            const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
+                cypressExecutionIssueKey: new ConstantCommand(logger, undefined),
+                cucumberExecutionIssueKey: new ConstantCommand(logger, undefined),
+            });
             await expect(command.compute())
                 .to.eventually.be.an.instanceOf(SkippedError)
                 .and.to.eventually.be.rejectedWith("No test results were uploaded");

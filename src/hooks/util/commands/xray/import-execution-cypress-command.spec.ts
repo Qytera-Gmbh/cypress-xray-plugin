@@ -25,7 +25,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     xrayClient: xrayClient,
                 },
-                new ConstantCommand(json)
+                logger,
+                new ConstantCommand(logger, json)
             );
             xrayClient.importExecution.withArgs(json).resolves("CYP-123");
             expect(await command.compute()).to.eq("CYP-123");

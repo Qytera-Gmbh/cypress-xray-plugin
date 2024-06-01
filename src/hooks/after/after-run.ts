@@ -1,11 +1,12 @@
 import fs from "fs";
 import path from "path";
-import { CypressRunResultType } from "../../types/cypress/run-result";
+import { EvidenceCollection } from "../../context";
+import { CypressRunResultType } from "../../types/cypress/cypress";
 import { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
-import { LOG, Level } from "../../util/logging";
+import { LOG, Level, Logger } from "../../util/logging";
 import { Command, Computable, ComputableState } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";
 import { FallbackCommand } from "../util/commands/fallback-command";
@@ -39,7 +40,9 @@ export function addUploadCommands(
     projectRoot: string,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
-    graph: ExecutableGraph<Command>
+    evidenceCollection: EvidenceCollection,
+    graph: ExecutableGraph<Command>,
+    logger: Logger
 ): void {
     const containsCypressTests = containsCypressTest(
         runResult,
@@ -59,7 +62,7 @@ export function addUploadCommands(
     const cypressResultsCommand = graph.findOrDefault(
         (command): command is ConstantCommand<CypressRunResultType> =>
             command instanceof ConstantCommand && command.getValue() === runResult,
-        () => graph.place(new ConstantCommand(runResult))
+        () => graph.place(new ConstantCommand(logger, runResult))
     );
     let importCypressExecutionCommand: ImportExecutionCypressCommand | null = null;
     let importCucumberExecutionCommand: ImportExecutionCucumberCommand | null = null;
@@ -68,7 +71,9 @@ export function addUploadCommands(
             cypressResultsCommand,
             options,
             clients,
-            graph
+            evidenceCollection,
+            graph,
+            logger
         );
     }
     if (containsCucumberTests) {
@@ -80,11 +85,11 @@ export function addUploadCommands(
         const cucumberResults: CucumberMultipartFeature[] = JSON.parse(
             fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
         ) as CucumberMultipartFeature[];
-        const cucumberResultsCommand = graph.place(new ConstantCommand(cucumberResults));
+        const cucumberResultsCommand = graph.place(new ConstantCommand(logger, cucumberResults));
         let testExecutionIssueKeyCommand: Command<string | undefined> | undefined = undefined;
         if (options.jira.testExecutionIssueKey) {
             testExecutionIssueKeyCommand = graph.place(
-                new ConstantCommand(options.jira.testExecutionIssueKey)
+                new ConstantCommand(logger, options.jira.testExecutionIssueKey)
             );
         } else if (importCypressExecutionCommand) {
             // Use an optional command in case the Cypress import fails. We could then still upload
@@ -95,6 +100,7 @@ export function addUploadCommands(
                         fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
                         fallbackValue: undefined,
                     },
+                    logger,
                     importCypressExecutionCommand
                 )
             );
@@ -107,6 +113,7 @@ export function addUploadCommands(
             options,
             clients,
             graph,
+            logger,
             testExecutionIssueKeyCommand
         );
         // Make sure to add an edge from any feature file imports to the execution. Otherwise, the
@@ -134,6 +141,7 @@ export function addUploadCommands(
         options,
         clients,
         graph,
+        logger,
         importCypressExecutionCommand,
         importCucumberExecutionCommand
     );
@@ -143,22 +151,30 @@ function getImportExecutionCypressCommand(
     cypressResultsCommand: Command<CypressRunResultType>,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
-    graph: ExecutableGraph<Command>
+    evidenceCollection: EvidenceCollection,
+    graph: ExecutableGraph<Command>,
+    logger: Logger
 ): ImportExecutionCypressCommand {
     const convertCypressTestsCommand = graph.place(
         new ConvertCypressTestsCommand(
-            { ...options, useCloudStatusFallback: clients.kind === "cloud" },
+            {
+                ...options,
+                useCloudStatusFallback: clients.kind === "cloud",
+                evidenceCollection: evidenceCollection,
+            },
+            logger,
             cypressResultsCommand
         )
     );
     graph.connect(cypressResultsCommand, convertCypressTestsCommand);
     const convertCypressInfoCommand = graph.place(
-        new ConvertCypressInfoCommand(options, cypressResultsCommand)
+        new ConvertCypressInfoCommand(options, logger, cypressResultsCommand)
     );
     graph.connect(cypressResultsCommand, convertCypressInfoCommand);
     const combineResultsJsonCommand = graph.place(
         new CombineCypressJsonCommand(
             { testExecutionIssueKey: options.jira.testExecutionIssueKey },
+            logger,
             convertCypressTestsCommand,
             convertCypressInfoCommand
         )
@@ -166,12 +182,13 @@ function getImportExecutionCypressCommand(
     graph.connect(convertCypressTestsCommand, combineResultsJsonCommand);
     graph.connect(convertCypressInfoCommand, combineResultsJsonCommand);
     const assertConversionValidCommand = graph.place(
-        new AssertCypressConversionValidCommand(combineResultsJsonCommand)
+        new AssertCypressConversionValidCommand(logger, combineResultsJsonCommand)
     );
     graph.connect(combineResultsJsonCommand, assertConversionValidCommand);
     const importCypressExecutionCommand = graph.place(
         new ImportExecutionCypressCommand(
             { xrayClient: clients.xrayClient },
+            logger,
             combineResultsJsonCommand
         )
     );
@@ -186,6 +203,7 @@ function getImportExecutionCypressCommand(
                     importType: "cypress",
                     displayCloudHelp: clients.kind === "cloud",
                 },
+                logger,
                 importCypressExecutionCommand
             )
         );
@@ -200,11 +218,12 @@ function getImportExecutionCucumberCommand(
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
+    logger: Logger,
     testExecutionIssueKeyCommand?: Command<string | undefined>
 ): ImportExecutionCucumberCommand {
     const fetchIssueTypesCommand = graph.findOrDefault(
         (command): command is FetchIssueTypesCommand => command instanceof FetchIssueTypesCommand,
-        () => graph.place(new FetchIssueTypesCommand({ jiraClient: clients.jiraClient }))
+        () => graph.place(new FetchIssueTypesCommand({ jiraClient: clients.jiraClient }, logger))
     );
     const extractExecutionIssueTypeCommand = graph.place(
         new ExtractExecutionIssueTypeCommand(
@@ -213,6 +232,7 @@ function getImportExecutionCucumberCommand(
                 testExecutionIssueType: options.jira.testExecutionIssueType,
                 displayCloudHelp: clients.kind === "cloud",
             },
+            logger,
             fetchIssueTypesCommand
         )
     );
@@ -221,6 +241,7 @@ function getImportExecutionCucumberCommand(
         options,
         clients,
         graph,
+        logger,
         extractExecutionIssueTypeCommand,
         cypressResultsCommand
     );
@@ -229,6 +250,7 @@ function getImportExecutionCucumberCommand(
     const convertCucumberFeaturesCommand = graph.place(
         new ConvertCucumberFeaturesCommand(
             { ...options, useCloudTags: clients.kind === "cloud" },
+            logger,
             cucumberResultsCommand,
             testExecutionIssueKeyCommand
         )
@@ -239,6 +261,7 @@ function getImportExecutionCucumberCommand(
     }
     const combineCucumberMultipartCommand = graph.place(
         new CombineCucumberMultipartCommand(
+            logger,
             convertCucumberInfoCommand,
             convertCucumberFeaturesCommand
         )
@@ -246,12 +269,13 @@ function getImportExecutionCucumberCommand(
     graph.connect(convertCucumberInfoCommand, combineCucumberMultipartCommand);
     graph.connect(convertCucumberFeaturesCommand, combineCucumberMultipartCommand);
     const assertConversionValidCommand = graph.place(
-        new AssertCucumberConversionValidCommand(combineCucumberMultipartCommand)
+        new AssertCucumberConversionValidCommand(logger, combineCucumberMultipartCommand)
     );
     graph.connect(combineCucumberMultipartCommand, assertConversionValidCommand);
     const importCucumberExecutionCommand = graph.place(
         new ImportExecutionCucumberCommand(
             { xrayClient: clients.xrayClient },
+            logger,
             combineCucumberMultipartCommand
         )
     );
@@ -266,6 +290,7 @@ function getImportExecutionCucumberCommand(
                     importType: "cucumber",
                     displayCloudHelp: clients.kind === "cloud",
                 },
+                logger,
                 importCucumberExecutionCommand
             )
         );
@@ -278,12 +303,13 @@ function getConvertCucumberInfoCommand(
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
+    logger: Logger,
     executionIssueType: Computable<IssueTypeDetails>,
     cypressResults: Computable<CypressRunResultType>
 ): ConvertCucumberInfoCommand {
     if (clients.kind === "cloud") {
         return graph.place(
-            new ConvertCucumberInfoCloudCommand(options, executionIssueType, cypressResults)
+            new ConvertCucumberInfoCloudCommand(options, logger, executionIssueType, cypressResults)
         );
     }
     let testPlanIdCommand: Command<string> | undefined = undefined;
@@ -294,21 +320,27 @@ function getConvertCucumberInfoCommand(
     ) {
         if (options.jira.testPlanIssueKey) {
             testPlanIdCommand = options.jira.fields.testPlan
-                ? graph.place(new ConstantCommand(options.jira.fields.testPlan))
-                : createExtractFieldIdCommand(JiraField.TEST_PLAN, clients.jiraClient, graph);
+                ? graph.place(new ConstantCommand(logger, options.jira.fields.testPlan))
+                : createExtractFieldIdCommand(
+                      JiraField.TEST_PLAN,
+                      clients.jiraClient,
+                      graph,
+                      logger
+                  );
         }
         if (options.xray.testEnvironments) {
             testEnvironmentsIdCommand = options.jira.fields.testEnvironments
-                ? graph.place(new ConstantCommand(options.jira.fields.testEnvironments))
+                ? graph.place(new ConstantCommand(logger, options.jira.fields.testEnvironments))
                 : createExtractFieldIdCommand(
                       JiraField.TEST_ENVIRONMENTS,
                       clients.jiraClient,
-                      graph
+                      graph,
+                      logger
                   );
         }
     }
     const convertCucumberInfoCommand = graph.place(
-        new ConvertCucumberInfoServerCommand(options, executionIssueType, cypressResults, {
+        new ConvertCucumberInfoServerCommand(options, logger, executionIssueType, cypressResults, {
             testPlanId: testPlanIdCommand,
             testEnvironmentsId: testEnvironmentsIdCommand,
         })
@@ -327,6 +359,7 @@ function addPostUploadCommands(
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
+    logger: Logger,
     importCypressExecutionCommand: ImportExecutionCypressCommand | null,
     importCucumberExecutionCommand: ImportExecutionCucumberCommand | null
 ): void {
@@ -351,6 +384,7 @@ function addPostUploadCommands(
                             fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
                             fallbackValue: undefined,
                         },
+                        logger,
                         importCypressExecutionCommand
                     )
                 );
@@ -378,6 +412,7 @@ function addPostUploadCommands(
                             fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
                             fallbackValue: undefined,
                         },
+                        logger,
                         importCucumberExecutionCommand
                     )
                 );
@@ -387,13 +422,10 @@ function addPostUploadCommands(
         );
     }
     const verifyResultsUploadCommand = graph.place(
-        new VerifyResultsUploadCommand(
-            { url: options.jira.url },
-            {
-                cypressExecutionIssueKey: fallbackCypressUploadCommand,
-                cucumberExecutionIssueKey: fallbackCucumberUploadCommand,
-            }
-        )
+        new VerifyResultsUploadCommand({ url: options.jira.url }, logger, {
+            cypressExecutionIssueKey: fallbackCypressUploadCommand,
+            cucumberExecutionIssueKey: fallbackCucumberUploadCommand,
+        })
     );
     if (fallbackCypressUploadCommand) {
         graph.connect(fallbackCypressUploadCommand, verifyResultsUploadCommand);
@@ -403,12 +435,13 @@ function addPostUploadCommands(
     }
     if (options.jira.attachVideos) {
         const extractVideoFilesCommand = graph.place(
-            new ExtractVideoFilesCommand(cypressResultsCommand)
+            new ExtractVideoFilesCommand(logger, cypressResultsCommand)
         );
         graph.connect(cypressResultsCommand, extractVideoFilesCommand);
         const attachVideosCommand = graph.place(
             new AttachFilesCommand(
                 { jiraClient: clients.jiraClient },
+                logger,
                 extractVideoFilesCommand,
                 verifyResultsUploadCommand
             )

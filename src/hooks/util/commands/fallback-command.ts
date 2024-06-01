@@ -1,3 +1,4 @@
+import { Logger } from "../../../util/logging";
 import { Command, Computable, ComputableState, Stateful } from "../../command";
 
 interface Parameters<T> {
@@ -7,8 +8,8 @@ interface Parameters<T> {
 
 export class FallbackCommand<T, R> extends Command<T | R, Parameters<T>> {
     private readonly input: Computable<R> & Stateful<ComputableState>;
-    constructor(parameters: Parameters<T>, input: Command<R>) {
-        super(parameters);
+    constructor(parameters: Parameters<T>, logger: Logger, input: Command<R>) {
+        super(parameters, logger);
         this.input = input;
     }
 

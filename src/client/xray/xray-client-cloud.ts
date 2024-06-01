@@ -14,7 +14,7 @@ import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
 import { LOG, Level } from "../../util/logging";
 import { JwtCredentials } from "../authentication/credentials";
-import { REST, RequestConfigPost } from "../https/requests";
+import { AxiosRestClient, RequestConfigPost } from "../https/requests";
 import { AbstractXrayClient } from "./xray-client";
 
 interface GetTestsJiraData {
@@ -51,9 +51,10 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
      * Construct a new Xray cloud client using the provided credentials.
      *
      * @param credentials - the credentials to use during authentication
+     * @param httpClient - the HTTP client to use for dispatching requests
      */
-    constructor(credentials: JwtCredentials) {
-        super(XrayClientCloud.URL, credentials);
+    constructor(credentials: JwtCredentials, httpClient: AxiosRestClient) {
+        super(XrayClientCloud.URL, credentials, httpClient);
     }
 
     public getUrlImportExecution(): string {
@@ -120,7 +121,7 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                         },
                     };
                     const response: AxiosResponse<GetTestsResponse<GetTestsJiraData>> =
-                        await REST.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
+                        await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
                             headers: {
                                 ...authorizationHeader,
                             },

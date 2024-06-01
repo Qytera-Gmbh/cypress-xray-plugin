@@ -12,11 +12,13 @@ chai.use(chaiAsPromised);
 describe(path.relative(process.cwd(), __filename), () => {
     describe(GetLabelValuesCommand.name, () => {
         it("fetches labels", async () => {
+            const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetLabelValuesCommand(
                 { jiraClient: jiraClient },
-                new ConstantCommand("labelId"),
-                new ConstantCommand(["CYP-123", "CYP-456", "CYP-789"])
+                logger,
+                new ConstantCommand(logger, "labelId"),
+                new ConstantCommand(logger, ["CYP-123", "CYP-456", "CYP-789"])
             );
             jiraClient.search
                 .withArgs({
@@ -37,11 +39,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("displays a warning for issues which do not exist", async () => {
+            const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetLabelValuesCommand(
                 { jiraClient: jiraClient },
-                new ConstantCommand("labelId"),
-                new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
+                logger,
+                new ConstantCommand(logger, "labelId"),
+                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
             );
             jiraClient.search
                 .withArgs({
@@ -49,7 +53,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     fields: ["labelId"],
                 })
                 .resolves([{ key: "CYP-123", fields: { labelId: ["label"] } }]);
-            const logger = getMockedLogger();
             expect(await command.compute()).to.deep.eq({
                 ["CYP-123"]: ["label"],
             });
@@ -65,11 +68,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("displays a warning for issues whose fields cannot be parsed", async () => {
+            const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetLabelValuesCommand(
                 { jiraClient: jiraClient },
-                new ConstantCommand("labelId"),
-                new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
+                logger,
+                new ConstantCommand(logger, "labelId"),
+                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
             );
             jiraClient.search
                 .withArgs({
@@ -82,7 +87,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     { key: "CYP-789", fields: { labelId: [42, 84] } },
                     { fields: { labelId: ["hi", "there"] } },
                 ]);
-            const logger = getMockedLogger();
             expect(await command.compute()).to.deep.eq({});
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
@@ -98,11 +102,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws when encountering search failures", async () => {
+            const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetLabelValuesCommand(
                 { jiraClient: jiraClient },
-                new ConstantCommand("labelId"),
-                new ConstantCommand(["CYP-123", "CYP-789", "CYP-456"])
+                logger,
+                new ConstantCommand(logger, "labelId"),
+                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
             );
             jiraClient.search
                 .withArgs({

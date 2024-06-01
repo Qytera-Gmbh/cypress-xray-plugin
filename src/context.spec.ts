@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { stub } from "sinon";
-import { getMockedLogger } from "../test/mocks";
+import { getMockedLogger, getMockedRestClient } from "../test/mocks";
 import {
     BasicAuthCredentials,
     JwtCredentials,
@@ -11,22 +11,27 @@ import { BaseJiraClient } from "./client/jira/jira-client";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud";
 import { XrayClientServer } from "./client/xray/xray-client-server";
 import {
+    PluginContext,
+    SimpleEvidenceCollection,
     initClients,
     initCucumberOptions,
+    initHttpClients,
     initJiraOptions,
     initPluginOptions,
-    initSslOptions,
     initXrayOptions,
 } from "./context";
+
+import { AxiosRestClient } from "./client/https/requests";
 import {
     InternalCucumberOptions,
+    InternalHttpOptions,
     InternalJiraOptions,
     InternalPluginOptions,
-    InternalSslOptions,
     InternalXrayOptions,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import * as dependencies from "./util/dependencies";
+import { ExecutableGraph } from "./util/graph/executable-graph";
 import { Level } from "./util/logging";
 import * as ping from "./util/ping";
 
@@ -121,6 +126,9 @@ describe("the plugin context configuration", () => {
                 it("testEnvironments", () => {
                     expect(xrayOptions.testEnvironments).to.eq(undefined);
                 });
+                it("uploadRequests", () => {
+                    expect(xrayOptions.uploadRequests).to.eq(false);
+                });
                 it("uploadResults", () => {
                     expect(xrayOptions.uploadResults).to.eq(true);
                 });
@@ -160,16 +168,6 @@ describe("the plugin context configuration", () => {
                 });
                 it("uploadFeatures", () => {
                     expect(cucumberOptions?.uploadFeatures).to.eq(false);
-                });
-            });
-
-            describe("openSSL", () => {
-                const sslOptions: InternalSslOptions = initSslOptions({}, {});
-                it("openSSL", () => {
-                    expect(sslOptions.rootCAPath).to.eq(undefined);
-                });
-                it("secureOptions", () => {
-                    expect(sslOptions.secureOptions).to.eq(undefined);
                 });
             });
         });
@@ -441,6 +439,16 @@ describe("the plugin context configuration", () => {
                     expect(xrayOptions.testEnvironments).to.deep.eq(["Test", "Prod"]);
                 });
 
+                it("uploadRequests", () => {
+                    const xrayOptions = initXrayOptions(
+                        {},
+                        {
+                            uploadRequests: true,
+                        }
+                    );
+                    expect(xrayOptions.uploadResults).to.eq(true);
+                });
+
                 it("uploadResults", () => {
                     const xrayOptions = initXrayOptions(
                         {},
@@ -450,6 +458,7 @@ describe("the plugin context configuration", () => {
                     );
                     expect(xrayOptions.uploadResults).to.eq(false);
                 });
+
                 it("uploadScreenshots", () => {
                     const xrayOptions = initXrayOptions(
                         {},
@@ -531,27 +540,6 @@ describe("the plugin context configuration", () => {
                         }
                     );
                     expect(cucumberOptions?.uploadFeatures).to.eq(true);
-                });
-            });
-
-            describe("openSSL", () => {
-                it("rootCAPath", () => {
-                    const sslOptions = initSslOptions(
-                        {},
-                        {
-                            ["rootCAPath"]: "/path/to/cert.pem",
-                        }
-                    );
-                    expect(sslOptions.rootCAPath).to.eq("/path/to/cert.pem");
-                });
-                it("secureOptions", () => {
-                    const sslOptions = initSslOptions(
-                        {},
-                        {
-                            secureOptions: 42,
-                        }
-                    );
-                    expect(sslOptions.secureOptions).to.eq(42);
                 });
             });
         });
@@ -802,6 +790,16 @@ describe("the plugin context configuration", () => {
                     expect(xrayOptions.testEnvironments).to.deep.eq(["false", "bonjour", "5"]);
                 });
 
+                it("XRAY_UPLOAD_REQUESTS", () => {
+                    const env = {
+                        ["XRAY_UPLOAD_REQUESTS"]: "true",
+                    };
+                    const xrayOptions = initXrayOptions(env, {
+                        uploadRequests: false,
+                    });
+                    expect(xrayOptions.uploadRequests).to.be.true;
+                });
+
                 it("XRAY_UPLOAD_RESULTS", () => {
                     const env = {
                         ["XRAY_UPLOAD_RESULTS"]: "false",
@@ -968,27 +966,6 @@ describe("the plugin context configuration", () => {
                     expect(pluginOptions.normalizeScreenshotNames).to.be.true;
                 });
             });
-            describe("openSSL", () => {
-                it("OPENSSL_ROOT_CA_PATH ", () => {
-                    const env = {
-                        ["OPENSSL_ROOT_CA_PATH"]: "/home/ssl/ca.pem",
-                    };
-                    const sslOptions = initSslOptions(env, {
-                        ["rootCAPath"]: "/a/b/c.pem",
-                    });
-                    expect(sslOptions.rootCAPath).to.eq("/home/ssl/ca.pem");
-                });
-
-                it("OPENSSL_SECURE_OPTIONS ", () => {
-                    const env = {
-                        ["OPENSSL_SECURE_OPTIONS"]: 415,
-                    };
-                    const sslOptions = initSslOptions(env, {
-                        secureOptions: 42,
-                    });
-                    expect(sslOptions.secureOptions).to.eq(415);
-                });
-            });
         });
         describe("detects invalid configurations", () => {
             it("detects unset project keys", () => {
@@ -1106,6 +1083,194 @@ describe("the plugin context configuration", () => {
             });
         });
     });
+
+    describe("the http clients instantiation", () => {
+        it("creates a single client by default", () => {
+            const httpClients = initHttpClients(undefined, undefined);
+            expect(httpClients.jira).to.eq(httpClients.xray);
+            expect(httpClients.jira).to.deep.eq(new AxiosRestClient({ debug: undefined }));
+        });
+        it("sets debugging to true if enabled", () => {
+            const httpClients = initHttpClients({ debug: true }, undefined);
+            expect(httpClients.jira).to.eq(httpClients.xray);
+            expect(httpClients.jira).to.deep.eq(new AxiosRestClient({ debug: true }));
+        });
+        it("sets debugging to false if disabled", () => {
+            const httpClients = initHttpClients({ debug: false }, undefined);
+            expect(httpClients.jira).to.eq(httpClients.xray);
+            expect(httpClients.jira).to.deep.eq(new AxiosRestClient({ debug: false }));
+        });
+        it("creates a single client if empty options are passed", () => {
+            const httpClients = initHttpClients(undefined, {});
+            expect(httpClients.jira).to.eq(httpClients.xray);
+            expect(httpClients.jira).to.deep.eq(
+                new AxiosRestClient({ debug: undefined, http: {} })
+            );
+        });
+        it("creates a single client using a single config", () => {
+            const httpOptions: InternalHttpOptions = {
+                proxy: {
+                    host: "https://example.org",
+                    port: 12345,
+                },
+            };
+            const httpClients = initHttpClients(undefined, httpOptions);
+            expect(httpClients.jira).to.eq(httpClients.xray);
+            expect(httpClients.jira).to.deep.eq(
+                new AxiosRestClient({
+                    debug: undefined,
+                    http: {
+                        proxy: {
+                            host: "https://example.org",
+                            port: 12345,
+                        },
+                    },
+                })
+            );
+        });
+        it("creates a different jira client if a jira config is passed", () => {
+            const httpOptions: InternalHttpOptions = {
+                jira: {
+                    proxy: {
+                        host: "https://example.org",
+                        port: 12345,
+                    },
+                },
+            };
+            const httpClients = initHttpClients(undefined, httpOptions);
+            expect(httpClients.jira).to.not.eq(httpClients.xray);
+            expect(httpClients.jira).to.deep.eq(
+                new AxiosRestClient({
+                    debug: undefined,
+                    http: {
+                        proxy: {
+                            host: "https://example.org",
+                            port: 12345,
+                        },
+                    },
+                })
+            );
+            expect(httpClients.xray).to.deep.eq(
+                new AxiosRestClient({
+                    debug: undefined,
+                    http: {},
+                })
+            );
+        });
+        it("creates a different xray client if a xray config is passed", () => {
+            const httpOptions: InternalHttpOptions = {
+                xray: {
+                    proxy: {
+                        host: "https://example.org",
+                        port: 12345,
+                    },
+                },
+            };
+            const httpClients = initHttpClients(undefined, httpOptions);
+            expect(httpClients.jira).to.not.eq(httpClients.xray);
+            expect(httpClients.jira).to.deep.eq(
+                new AxiosRestClient({
+                    debug: undefined,
+                    http: {},
+                })
+            );
+            expect(httpClients.xray).to.deep.eq(
+                new AxiosRestClient({
+                    debug: undefined,
+                    http: {
+                        proxy: {
+                            host: "https://example.org",
+                            port: 12345,
+                        },
+                    },
+                })
+            );
+        });
+        it("creates different client if individual configs are passed", () => {
+            const httpOptions: InternalHttpOptions = {
+                jira: {
+                    proxy: {
+                        host: "http://localhost",
+                        port: 98765,
+                    },
+                },
+                xray: {
+                    proxy: {
+                        host: "https://example.org",
+                        port: 12345,
+                    },
+                },
+            };
+            const httpClients = initHttpClients(undefined, httpOptions);
+            expect(httpClients.jira).to.not.eq(httpClients.xray);
+            expect(httpClients.jira).to.deep.eq(
+                new AxiosRestClient({
+                    debug: undefined,
+                    http: {
+                        proxy: {
+                            host: "http://localhost",
+                            port: 98765,
+                        },
+                    },
+                })
+            );
+            expect(httpClients.xray).to.deep.eq(
+                new AxiosRestClient({
+                    debug: undefined,
+                    http: {
+                        proxy: {
+                            host: "https://example.org",
+                            port: 12345,
+                        },
+                    },
+                })
+            );
+        });
+        it("passes common http options to both clients", () => {
+            const httpOptions: InternalHttpOptions = {
+                timeout: 42,
+                jira: {
+                    proxy: {
+                        host: "http://localhost",
+                        port: 98765,
+                    },
+                },
+                xray: {
+                    proxy: {
+                        host: "https://example.org",
+                        port: 12345,
+                    },
+                },
+            };
+            const httpClients = initHttpClients(undefined, httpOptions);
+            expect(httpClients.jira).to.not.eq(httpClients.xray);
+            expect(httpClients.jira).to.deep.eq(
+                new AxiosRestClient({
+                    debug: undefined,
+                    http: {
+                        timeout: 42,
+                        proxy: {
+                            host: "http://localhost",
+                            port: 98765,
+                        },
+                    },
+                })
+            );
+            expect(httpClients.xray).to.deep.eq(
+                new AxiosRestClient({
+                    debug: undefined,
+                    http: {
+                        timeout: 42,
+                        proxy: {
+                            host: "https://example.org",
+                            port: 12345,
+                        },
+                    },
+                })
+            );
+        });
+    });
+
     describe("the clients instantiation", () => {
         let jiraOptions: InternalJiraOptions;
         beforeEach(() => {
@@ -1126,6 +1291,7 @@ describe("the plugin context configuration", () => {
                 ["XRAY_CLIENT_SECRET"]: "xyz",
             };
             const logger = getMockedLogger();
+            const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
             const stubbedXrayPing = stub(ping, "pingXrayCloud");
             stubbedJiraPing.onFirstCall().resolves();
@@ -1144,7 +1310,7 @@ describe("the plugin context configuration", () => {
                 )
                 .onFirstCall()
                 .returns();
-            const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
+            const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
             expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
             expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
             expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
@@ -1163,6 +1329,7 @@ describe("the plugin context configuration", () => {
                 ["JIRA_API_TOKEN"]: "1337",
             };
             const logger = getMockedLogger();
+            const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
             stubbedJiraPing.onFirstCall().resolves();
             logger.message
@@ -1172,7 +1339,7 @@ describe("the plugin context configuration", () => {
                 )
                 .onFirstCall()
                 .returns();
-            await expect(initClients(jiraOptions, env)).to.eventually.be.rejectedWith(
+            await expect(initClients(jiraOptions, env, httpClients)).to.eventually.be.rejectedWith(
                 dedent(`
                     Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials
                     You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
@@ -1185,6 +1352,7 @@ describe("the plugin context configuration", () => {
                 ["JIRA_API_TOKEN"]: "1337",
             };
             const logger = getMockedLogger();
+            const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
             const stubbedXrayPing = stub(ping, "pingXrayServer");
             stubbedJiraPing.onFirstCall().resolves();
@@ -1197,7 +1365,7 @@ describe("the plugin context configuration", () => {
                 .withArgs(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials")
                 .onFirstCall()
                 .returns();
-            const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
+            const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
             expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
             expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
@@ -1216,6 +1384,7 @@ describe("the plugin context configuration", () => {
                 ["JIRA_PASSWORD"]: "1337",
             };
             const logger = getMockedLogger();
+            const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
             const stubbedXrayPing = stub(ping, "pingXrayServer");
             stubbedJiraPing.onFirstCall().resolves();
@@ -1234,7 +1403,7 @@ describe("the plugin context configuration", () => {
                 )
                 .onFirstCall()
                 .returns();
-            const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
+            const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
             expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
             expect(xrayClient).to.be.an.instanceof(XrayClientServer);
             expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
@@ -1256,11 +1425,12 @@ describe("the plugin context configuration", () => {
                 ["XRAY_CLIENT_SECRET"]: "xyz",
             };
             getMockedLogger({ allowUnstubbedCalls: true });
+            const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
             const stubbedJiraPing = stub(ping, "pingJiraInstance");
             const stubbedXrayPing = stub(ping, "pingXrayCloud");
             stubbedJiraPing.onFirstCall().resolves();
             stubbedXrayPing.onFirstCall().resolves();
-            const { jiraClient, xrayClient } = await initClients(jiraOptions, env);
+            const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
             expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
             expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
             expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
@@ -1271,8 +1441,9 @@ describe("the plugin context configuration", () => {
             );
         });
         it("should throw an error for missing jira urls", async () => {
+            const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
             jiraOptions.url = undefined as unknown as string;
-            await expect(initClients(jiraOptions, {})).to.eventually.be.rejectedWith(
+            await expect(initClients(jiraOptions, {}, httpClients)).to.eventually.be.rejectedWith(
                 dedent(`
                     Failed to configure Jira client: no Jira URL was provided
                     Make sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
@@ -1281,12 +1452,192 @@ describe("the plugin context configuration", () => {
         });
 
         it("should throw an error for missing credentials", async () => {
-            await expect(initClients(jiraOptions, {})).to.eventually.be.rejectedWith(
+            const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
+            await expect(initClients(jiraOptions, {}, httpClients)).to.eventually.be.rejectedWith(
                 dedent(`
                     Failed to configure Jira client: no viable authentication method was configured
                     You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
                 `)
             );
         });
+    });
+});
+
+describe(SimpleEvidenceCollection.name, () => {
+    it("collects evidence for single tests", () => {
+        const evidenceCollection = new SimpleEvidenceCollection();
+        evidenceCollection.addEvidence("CYP-123", {
+            filename: "hello.json",
+            contentType: "application/json",
+            data: "WyJoZWxsbyJd",
+        });
+        evidenceCollection.addEvidence("CYP-123", {
+            filename: "goodbye.json",
+            contentType: "application/json",
+            data: "WyJnb29kYnllIl0=",
+        });
+        expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+            {
+                filename: "hello.json",
+                contentType: "application/json",
+                data: "WyJoZWxsbyJd",
+            },
+            {
+                filename: "goodbye.json",
+                contentType: "application/json",
+                data: "WyJnb29kYnllIl0=",
+            },
+        ]);
+    });
+
+    it("collects evidence for multiple tests", () => {
+        const evidenceCollection = new SimpleEvidenceCollection();
+        evidenceCollection.addEvidence("CYP-123", {
+            filename: "hello.json",
+            contentType: "application/json",
+            data: "WyJoZWxsbyJd",
+        });
+        evidenceCollection.addEvidence("CYP-456", {
+            filename: "goodbye.json",
+            contentType: "application/json",
+            data: "WyJnb29kYnllIl0=",
+        });
+        expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+            {
+                filename: "hello.json",
+                contentType: "application/json",
+                data: "WyJoZWxsbyJd",
+            },
+        ]);
+        expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([
+            {
+                filename: "goodbye.json",
+                contentType: "application/json",
+                data: "WyJnb29kYnllIl0=",
+            },
+        ]);
+    });
+
+    it("returns an empty array for unknown tests", () => {
+        const evidenceCollection = new SimpleEvidenceCollection();
+        evidenceCollection.addEvidence("CYP-123", {
+            filename: "hello.json",
+            contentType: "application/json",
+            data: "WyJoZWxsbyJd",
+        });
+        expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([]);
+    });
+});
+
+describe(PluginContext.name, () => {
+    let context: PluginContext;
+
+    beforeEach(() => {
+        const jiraClient = new BaseJiraClient(
+            "https://example.org",
+            new PatCredentials("token"),
+            getMockedRestClient()
+        );
+        const xrayClient = new XrayClientServer(
+            "https://example.org",
+            new PatCredentials("token"),
+            getMockedRestClient()
+        );
+        context = new PluginContext(
+            {
+                kind: "server",
+                jiraClient: jiraClient,
+                xrayClient: xrayClient,
+            },
+            {
+                jira: {
+                    attachVideos: false,
+                    fields: {},
+                    projectKey: "CYP",
+                    url: "https://example.org",
+                    testExecutionIssueType: "Test Execution",
+                    testPlanIssueType: "Test Plan",
+                },
+                plugin: {
+                    debug: false,
+                    enabled: true,
+                    logDirectory: "./logs",
+                    normalizeScreenshotNames: false,
+                },
+                xray: {
+                    status: {},
+                    uploadRequests: false,
+                    uploadResults: false,
+                    uploadScreenshots: false,
+                },
+                http: {},
+            },
+            {} as Cypress.PluginConfigOptions,
+            new SimpleEvidenceCollection(),
+            new ExecutableGraph()
+        );
+    });
+
+    it("collects evidence for single tests", () => {
+        context.addEvidence("CYP-123", {
+            filename: "hello.json",
+            contentType: "application/json",
+            data: "WyJoZWxsbyJd",
+        });
+        context.addEvidence("CYP-123", {
+            filename: "goodbye.json",
+            contentType: "application/json",
+            data: "WyJnb29kYnllIl0=",
+        });
+        expect(context.getEvidence("CYP-123")).to.deep.eq([
+            {
+                filename: "hello.json",
+                contentType: "application/json",
+                data: "WyJoZWxsbyJd",
+            },
+            {
+                filename: "goodbye.json",
+                contentType: "application/json",
+                data: "WyJnb29kYnllIl0=",
+            },
+        ]);
+    });
+
+    it("collects evidence for multiple tests", () => {
+        const evidenceCollection = new SimpleEvidenceCollection();
+        evidenceCollection.addEvidence("CYP-123", {
+            filename: "hello.json",
+            contentType: "application/json",
+            data: "WyJoZWxsbyJd",
+        });
+        evidenceCollection.addEvidence("CYP-456", {
+            filename: "goodbye.json",
+            contentType: "application/json",
+            data: "WyJnb29kYnllIl0=",
+        });
+        expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+            {
+                filename: "hello.json",
+                contentType: "application/json",
+                data: "WyJoZWxsbyJd",
+            },
+        ]);
+        expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([
+            {
+                filename: "goodbye.json",
+                contentType: "application/json",
+                data: "WyJnb29kYnllIl0=",
+            },
+        ]);
+    });
+
+    it("returns an empty array for unknown tests", () => {
+        const evidenceCollection = new SimpleEvidenceCollection();
+        evidenceCollection.addEvidence("CYP-123", {
+            filename: "hello.json",
+            contentType: "application/json",
+            data: "WyJoZWxsbyJd",
+        });
+        expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([]);
     });
 });

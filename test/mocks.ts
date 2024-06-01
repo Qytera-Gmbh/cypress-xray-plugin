@@ -3,7 +3,7 @@ import chai from "chai";
 import { SinonStub, SinonStubbedInstance, restore, stub } from "sinon";
 import sinonChai from "sinon-chai";
 import { JwtCredentials } from "../src/client/authentication/credentials";
-import { AxiosRestClient, REST } from "../src/client/https/requests";
+import { AxiosRestClient } from "../src/client/https/requests";
 import { JiraClient } from "../src/client/jira/jira-client";
 import { XrayClient } from "../src/client/xray/xray-client";
 import { HasTestTypes, XrayClientCloud } from "../src/client/xray/xray-client-cloud";
@@ -44,7 +44,7 @@ export function getMockedLogger(
 }
 
 export function getMockedRestClient(): SinonStubbedInstance<AxiosRestClient> {
-    const client = stub(REST);
+    const client = stub(new AxiosRestClient({}));
     client.get.callsFake((url: string, config?: AxiosRequestConfig<unknown>) => {
         throw mockCalledUnexpectedlyError(url, config);
     });
@@ -148,7 +148,25 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
 }
 
 export function getMockedJwtCredentials(): SinonStubbedInstance<JwtCredentials> {
-    return makeTransparent(stub(new JwtCredentials("abc", "xyz", "https://example.org")));
+    return makeTransparent(
+        stub(new JwtCredentials("abc", "xyz", "https://example.org", getMockedRestClient()))
+    );
+}
+
+export function getMockedCypress(): {
+    cypress: Cypress.Cypress & CyEventEmitter;
+    cy: Cypress.cy & CyEventEmitter;
+} {
+    global.Cypress = {
+        currentTest: {},
+        ["Commands"]: {},
+    } as Cypress.Cypress & CyEventEmitter;
+    global.cy = {
+        task: () => {
+            throw new Error("Mock called unexpectedly");
+        },
+    } as unknown as Cypress.cy & CyEventEmitter;
+    return { cypress: global.Cypress, cy: global.cy };
 }
 
 function mockCalledUnexpectedlyError(...args: unknown[]): Error {

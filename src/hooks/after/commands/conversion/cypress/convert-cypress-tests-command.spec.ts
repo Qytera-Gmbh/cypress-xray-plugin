@@ -5,14 +5,13 @@ import path from "path";
 import { getMockedLogger } from "../../../../../../test/mocks";
 import { expectToExist } from "../../../../../../test/util";
 import {
+    SimpleEvidenceCollection,
     initJiraOptions,
     initPluginOptions,
-    initSslOptions,
     initXrayOptions,
 } from "../../../../../context";
-import { CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
-import { CypressRunResult_V13 } from "../../../../../types/cypress/13.0.0/api";
-import { CypressRunResultType } from "../../../../../types/cypress/run-result";
+import { CypressRunResult as CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
+import { CypressRunResultType } from "../../../../../types/cypress/cypress";
 import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
 import { dedent } from "../../../../../util/dedent";
 import { Level } from "../../../../../util/logging";
@@ -40,18 +39,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                     }
                 ),
                 plugin: initPluginOptions({}, {}),
-                ssl: initSslOptions({}, {}),
+                http: {},
             };
         });
 
         describe("<13", () => {
             it("converts test results into xray info json", async () => {
+                const logger = getMockedLogger();
                 const result: CypressRunResult_V12 = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 ) as CypressRunResult_V12;
                 const command = new ConvertCypressTestsCommand(
-                    options,
-                    new ConstantCommand(result)
+                    { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                    logger,
+                    new ConstantCommand(logger, result)
                 );
                 const json = await command.compute();
                 expect(json).to.deep.eq([
@@ -85,12 +86,14 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe(">=13", () => {
             it("converts test results into xray info json", async () => {
-                const result: CypressRunResult_V13 = JSON.parse(
+                const logger = getMockedLogger();
+                const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-                ) as CypressRunResult_V13;
+                ) as CypressCommandLine.CypressRunResult;
                 const command = new ConvertCypressTestsCommand(
-                    options,
-                    new ConstantCommand(result)
+                    { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                    logger,
+                    new ConstantCommand(logger, result)
                 );
                 const json = await command.compute();
                 expect(json).to.deep.eq([
@@ -134,15 +137,16 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("warns about non-attributable screenshots", async () => {
-                const result: CypressRunResult_V13 = JSON.parse(
+                const logger = getMockedLogger();
+                const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
-                ) as CypressRunResult_V13;
+                ) as CypressCommandLine.CypressRunResult;
                 result.runs[0].screenshots[0].path = "./test/resources/small.png";
                 const command = new ConvertCypressTestsCommand(
-                    options,
-                    new ConstantCommand(result)
+                    { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                    logger,
+                    new ConstantCommand(logger, result)
                 );
-                const logger = getMockedLogger();
                 const json = await command.compute();
                 expect(json).to.deep.eq([
                     {
@@ -190,11 +194,15 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("skips tests when encountering unknown statuses", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
             ) as CypressRunResultType;
-            const logger = getMockedLogger();
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
+            const command = new ConvertCypressTestsCommand(
+                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                logger,
+                new ConstantCommand(logger, result)
+            );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 "Failed to convert Cypress tests into Xray tests: No Cypress tests to upload"
             );
@@ -217,10 +225,15 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("uploads screenshots by default", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
+            const command = new ConvertCypressTestsCommand(
+                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                logger,
+                new ConstantCommand(logger, result)
+            );
             const tests = await command.compute();
             expectToExist(tests);
             expect(tests[0].evidence).to.be.undefined;
@@ -231,11 +244,16 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("skips screenshot upload if disabled", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
             options.xray.uploadScreenshots = false;
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
+            const command = new ConvertCypressTestsCommand(
+                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                logger,
+                new ConstantCommand(logger, result)
+            );
             const tests = await command.compute();
             expectToExist(tests);
             expect(tests).to.have.length(3);
@@ -245,11 +263,16 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("normalizes screenshot filenames if enabled", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
             ) as CypressRunResultType;
             options.plugin.normalizeScreenshotNames = true;
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
+            const command = new ConvertCypressTestsCommand(
+                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                logger,
+                new ConstantCommand(logger, result)
+            );
             const tests = await command.compute();
             expectToExist(tests);
             expectToExist(tests[0].evidence);
@@ -257,10 +280,15 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("does not normalize screenshot filenames by default", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
             ) as CypressRunResultType;
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
+            const command = new ConvertCypressTestsCommand(
+                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                logger,
+                new ConstantCommand(logger, result)
+            );
             const tests = await command.compute();
             expectToExist(tests);
             expectToExist(tests[0].evidence);
@@ -268,32 +296,47 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("uses custom passed statuses", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
             options.xray.status = { passed: "it worked" };
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
+            const command = new ConvertCypressTestsCommand(
+                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                logger,
+                new ConstantCommand(logger, result)
+            );
             const tests = await command.compute();
             expect(tests[0].status).to.eq("it worked");
             expect(tests[1].status).to.eq("it worked");
         });
 
         it("uses custom failed statuses", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
             options.xray.status = { failed: "it did not work" };
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
+            const command = new ConvertCypressTestsCommand(
+                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                logger,
+                new ConstantCommand(logger, result)
+            );
             const tests = await command.compute();
             expect(tests[2].status).to.eq("it did not work");
         });
 
         it("uses custom pending statuses", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultPending.json", "utf-8")
             ) as CypressRunResultType;
             options.xray.status = { pending: "still pending" };
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
+            const command = new ConvertCypressTestsCommand(
+                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                logger,
+                new ConstantCommand(logger, result)
+            );
             const tests = await command.compute();
             expect(tests[0].status).to.eq("still pending");
             expect(tests[1].status).to.eq("still pending");
@@ -302,20 +345,30 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("uses custom skipped statuses", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultSkipped.json", "utf-8")
             ) as CypressRunResultType;
             options.xray.status = { skipped: "omit" };
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
+            const command = new ConvertCypressTestsCommand(
+                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                logger,
+                new ConstantCommand(logger, result)
+            );
             const tests = await command.compute();
             expect(tests[1].status).to.eq("omit");
         });
 
         it("does not modify test information", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
+            const command = new ConvertCypressTestsCommand(
+                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                logger,
+                new ConstantCommand(logger, result)
+            );
             const tests = await command.compute();
             expect(tests[0].testInfo).to.be.undefined;
             expect(tests[1].testInfo).to.be.undefined;
@@ -323,10 +376,15 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("includes test issue keys", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
+            const command = new ConvertCypressTestsCommand(
+                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                logger,
+                new ConstantCommand(logger, result)
+            );
             const tests = await command.compute();
             expect(tests[0].testKey).to.eq("CYP-40");
             expect(tests[1].testKey).to.eq("CYP-41");
@@ -334,10 +392,15 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("defaults to server status values", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
-            const command = new ConvertCypressTestsCommand(options, new ConstantCommand(result));
+            const command = new ConvertCypressTestsCommand(
+                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                logger,
+                new ConstantCommand(logger, result)
+            );
             const tests = await command.compute();
             expect(tests[0].status).to.eq("PASS");
             expect(tests[1].status).to.eq("PASS");
@@ -345,12 +408,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("uses cloud status values", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(
-                { ...options, useCloudStatusFallback: true },
-                new ConstantCommand(result)
+                {
+                    ...options,
+                    useCloudStatusFallback: true,
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                },
+                logger,
+                new ConstantCommand(logger, result)
             );
             const tests = await command.compute();
             expect(tests[0].status).to.eq("PASSED");
@@ -359,6 +428,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws if no native cypress tests were executed", async () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
@@ -367,8 +437,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     ...options,
                     cucumber: { featureFileExtension: ".ts" },
                     useCloudStatusFallback: true,
+                    evidenceCollection: new SimpleEvidenceCollection(),
                 },
-                new ConstantCommand(result)
+                logger,
+                new ConstantCommand(logger, result)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 "Failed to extract test run data: Only Cucumber tests were executed"
@@ -376,6 +448,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("returns its parameters", () => {
+            const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
@@ -396,8 +469,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     plugin: {
                         normalizeScreenshotNames: true,
                     },
+                    evidenceCollection: new SimpleEvidenceCollection(),
                 },
-                new ConstantCommand(result)
+                logger,
+                new ConstantCommand(logger, result)
             );
             expect(command.getParameters()).to.deep.eq({
                 jira: {
@@ -415,6 +490,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 plugin: {
                     normalizeScreenshotNames: true,
                 },
+                evidenceCollection: new SimpleEvidenceCollection(),
             });
         });
     });

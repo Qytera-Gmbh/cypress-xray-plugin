@@ -2,22 +2,19 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import { stub } from "sinon";
-import {
-    getMockedJiraClient,
-    getMockedLogger,
-    getMockedRestClient,
-    getMockedXrayClient,
-} from "../test/mocks";
+import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
+import { AxiosRestClient } from "./client/https/requests";
 import * as context from "./context";
+import { PluginContext } from "./context";
 import * as afterRunHook from "./hooks/after/after-run";
 import * as synchronizeFeatureFileHook from "./hooks/preprocessor/file-preprocessor";
 import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
-import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/run-result";
-import { CypressXrayPluginOptions, PluginContext } from "./types/plugin";
+import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
+import { CypressXrayPluginOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable-graph";
-import { Level } from "./util/logging";
+import { LOG, Level } from "./util/logging";
 
 describe(path.relative(process.cwd(), __filename), () => {
     let config: Cypress.PluginConfigOptions;
@@ -36,21 +33,22 @@ describe(path.relative(process.cwd(), __filename), () => {
                 url: "https://example.org",
             }
         );
-        pluginContext = {
-            cypress: config,
-            options: {
-                jira: jiraOptions,
-                plugin: context.initPluginOptions({}, {}),
-                xray: context.initXrayOptions({}, {}),
-                ssl: context.initSslOptions({}, {}),
-            },
-            clients: {
+        pluginContext = new PluginContext(
+            {
                 kind: "server",
                 jiraClient: jiraClient,
                 xrayClient: xrayClient,
             },
-            graph: new ExecutableGraph(),
-        };
+            {
+                jira: jiraOptions,
+                plugin: context.initPluginOptions({}, {}),
+                xray: context.initXrayOptions({}, {}),
+                http: {},
+            },
+            config,
+            new context.SimpleEvidenceCollection(),
+            new ExecutableGraph()
+        );
         resetPlugin();
     });
 
@@ -80,7 +78,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             };
             const stubbedContext = stub(context, "setPluginContext");
             const stubbedClients = stub(context, "initClients");
-            stubbedClients.onFirstCall().resolves(pluginContext.clients);
+            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
             const options: CypressXrayPluginOptions = {
                 jira: {
                     attachVideos: true,
@@ -115,6 +113,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         skipped: "OMITTED",
                     },
                     testEnvironments: ["A", "B"],
+                    uploadRequests: false,
                     uploadResults: false,
                     uploadScreenshots: false,
                 },
@@ -123,14 +122,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     downloadFeatures: false,
                     uploadFeatures: false,
                 },
-                ["openSSL"]: {
-                    ["rootCAPath"]: "/home/somewhere",
-                    secureOptions: 42,
-                },
+                http: {},
             };
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
-            expect(stubbedContext.firstCall.args[0].cypress).to.eq(config);
-            expect(stubbedContext.firstCall.args[0].options.jira).to.deep.eq({
+            expect(stubbedContext.firstCall.args[0]?.getCypressOptions()).to.eq(config);
+            expect(stubbedContext.firstCall.args[0]?.getOptions().jira).to.deep.eq({
                 attachVideos: true,
                 fields: {
                     summary: "bonjour",
@@ -149,44 +145,80 @@ describe(path.relative(process.cwd(), __filename), () => {
                 testPlanIssueType: "QA-2",
                 url: "https://example.org",
             });
-            expect(stubbedContext.firstCall.args[0].options.plugin).to.deep.eq(options.plugin);
-            expect(stubbedContext.firstCall.args[0].options.xray).to.deep.eq(options.xray);
-            expect(stubbedContext.firstCall.args[0].options.cucumber?.featureFileExtension).to.eq(
-                ".cucumber"
+            expect(stubbedContext.firstCall.args[0]?.getOptions().plugin).to.deep.eq(
+                options.plugin
             );
-            expect(stubbedContext.firstCall.args[0].options.cucumber?.downloadFeatures).to.be.false;
-            expect(stubbedContext.firstCall.args[0].options.cucumber?.uploadFeatures).to.be.false;
+            expect(stubbedContext.firstCall.args[0]?.getOptions().xray).to.deep.eq(options.xray);
             expect(
-                stubbedContext.firstCall.args[0].options.cucumber?.preprocessor?.json
+                stubbedContext.firstCall.args[0]?.getOptions().cucumber?.featureFileExtension
+            ).to.eq(".cucumber");
+            expect(stubbedContext.firstCall.args[0]?.getOptions().cucumber?.downloadFeatures).to.be
+                .false;
+            expect(stubbedContext.firstCall.args[0]?.getOptions().cucumber?.uploadFeatures).to.be
+                .false;
+            expect(
+                stubbedContext.firstCall.args[0]?.getOptions().cucumber?.preprocessor?.json
             ).to.deep.eq({
                 enabled: true,
                 output: "somewhere",
             });
-            expect(stubbedContext.firstCall.args[0].options.ssl).to.deep.eq(options.openSSL);
-            expect(stubbedContext.firstCall.args[0].clients).to.eq(pluginContext.clients);
+            expect(stubbedContext.firstCall.args[0]?.getOptions().http).to.deep.eq(options.http);
+            expect(stubbedContext.firstCall.args[0]?.getClients()).to.eq(
+                pluginContext.getClients()
+            );
         });
 
-        it("initializes the requests module", async () => {
-            const restClient = getMockedRestClient();
-            const stubbedClients = stub(context, "initClients");
-            stubbedClients.onFirstCall().resolves(pluginContext.clients);
+        it("initializes the clients with different http configurations", async () => {
             const options: CypressXrayPluginOptions = {
                 jira: {
                     projectKey: "ABC",
                     url: "https://example.org",
                 },
+                http: {
+                    jira: {
+                        proxy: {
+                            host: "https://example.org",
+                            port: 1234,
+                        },
+                    },
+                    xray: {
+                        proxy: {
+                            host: "http://localhost",
+                            port: 5678,
+                        },
+                    },
+                },
             };
+            const stubbedClients = stub(context, "initClients");
+            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
-            expect(restClient.init).to.have.been.calledOnceWithExactly({
-                debug: false,
-                ssl: pluginContext.options.ssl,
+            expect(stubbedClients).to.have.been.calledOnce;
+            expect(stubbedClients.getCall(0).args[2]).to.deep.eq({
+                jira: new AxiosRestClient({
+                    debug: false,
+                    http: {
+                        proxy: {
+                            host: "https://example.org",
+                            port: 1234,
+                        },
+                    },
+                }),
+                xray: new AxiosRestClient({
+                    debug: false,
+                    http: {
+                        proxy: {
+                            host: "http://localhost",
+                            port: 5678,
+                        },
+                    },
+                }),
             });
         });
 
         it("initializes the logging module", async () => {
             const stubbedClients = stub(context, "initClients");
             const logger = getMockedLogger();
-            stubbedClients.onFirstCall().resolves(pluginContext.clients);
+            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
             const options: CypressXrayPluginOptions = {
                 jira: {
                     projectKey: "ABC",
@@ -195,13 +227,13 @@ describe(path.relative(process.cwd(), __filename), () => {
             };
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
             expect(logger.configure).to.have.been.calledWithExactly({
-                debug: pluginContext.options.plugin.debug,
-                logDirectory: pluginContext.options.plugin.logDirectory,
+                debug: pluginContext.getOptions().plugin.debug,
+                logDirectory: pluginContext.getOptions().plugin.logDirectory,
             });
         });
 
         it("adds upload commands", async () => {
-            stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
+            stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
             const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;
@@ -209,19 +241,21 @@ describe(path.relative(process.cwd(), __filename), () => {
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", afterRunResult),
                 config,
-                pluginContext.options
+                pluginContext.getOptions()
             );
             expect(stubbedHook).to.have.been.calledOnceWithExactly(
                 afterRunResult,
-                pluginContext.cypress.projectRoot,
-                { ...pluginContext.options, cucumber: undefined },
-                pluginContext.clients,
-                pluginContext.graph
+                pluginContext.getCypressOptions().projectRoot,
+                { ...pluginContext.getOptions(), cucumber: undefined },
+                pluginContext.getClients(),
+                pluginContext,
+                pluginContext.getGraph(),
+                LOG
             );
         });
 
         it("displays an error for failed runs", async () => {
-            stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
+            stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
             stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
             const failedResults: CypressFailedRunResultType = {
                 status: "failed",
@@ -232,7 +266,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", failedResults),
                 config,
-                pluginContext.options
+                pluginContext.getOptions()
             );
             expect(logger.message).to.have.been.calledOnceWithExactly(
                 Level.ERROR,
@@ -263,11 +297,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                 message: "Pretty messed up",
             };
             const logger = getMockedLogger();
-            pluginContext.options.plugin.enabled = false;
+            pluginContext.getOptions().plugin.enabled = false;
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", failedResults),
                 config,
-                pluginContext.options
+                pluginContext.getOptions()
             );
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.INFO,
@@ -276,18 +310,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("should skip the results upload if disabled", async () => {
-            stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
+            stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
             stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
             const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;
             const logger = getMockedLogger();
-            pluginContext.options.xray.uploadResults = false;
+            pluginContext.getOptions().xray.uploadResults = false;
             context.setPluginContext(pluginContext);
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", afterRunResult),
                 config,
-                pluginContext.options
+                pluginContext.getOptions()
             );
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.INFO,
@@ -296,7 +330,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("creates an execution graph and displays a warning if there are failed vertices", async () => {
-            stub(context, "initClients").onFirstCall().resolves(pluginContext.clients);
+            stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
             const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;
@@ -312,11 +346,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "execution-graph.vz"
                 )
                 .returns("execution-graph.vz");
-            pluginContext.options.plugin.debug = true;
+            pluginContext.getOptions().plugin.debug = true;
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", afterRunResult),
                 config,
-                pluginContext.options
+                pluginContext.getOptions()
             );
             // Workaround: yields control back to the configuration function so that the finally
             // block may run.
@@ -384,7 +418,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not do anything if disabled", () => {
             file.filePath = "./test/resources/features/taggedCloud.feature";
             const logger = getMockedLogger();
-            pluginContext.options.plugin.enabled = false;
+            pluginContext.getOptions().plugin.enabled = false;
             context.setPluginContext(pluginContext);
             syncFeatureFile(file);
             expect(logger.message).to.have.been.calledWithExactly(
@@ -395,7 +429,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("adds synchronization commands", () => {
             const stubbedHook = stub(synchronizeFeatureFileHook, "addSynchronizationCommands");
-            pluginContext.options.cucumber = {
+            pluginContext.getOptions().cucumber = {
                 featureFileExtension: ".feature",
                 uploadFeatures: true,
                 downloadFeatures: false,
@@ -405,16 +439,17 @@ describe(path.relative(process.cwd(), __filename), () => {
             syncFeatureFile(file);
             expect(stubbedHook).to.have.been.calledOnceWithExactly(
                 file,
-                pluginContext.cypress.projectRoot,
-                pluginContext.options,
-                pluginContext.clients,
-                pluginContext.graph
+                pluginContext.getCypressOptions().projectRoot,
+                pluginContext.getOptions(),
+                pluginContext.getClients(),
+                pluginContext.getGraph(),
+                LOG
             );
         });
 
         it("does not add synchronization commands for native test files", () => {
             const stubbedHook = stub(synchronizeFeatureFileHook, "addSynchronizationCommands");
-            pluginContext.options.cucumber = {
+            pluginContext.getOptions().cucumber = {
                 featureFileExtension: ".feature",
                 uploadFeatures: true,
                 downloadFeatures: false,

@@ -4,7 +4,7 @@ import {
     JwtCredentials,
     PatCredentials,
 } from "../client/authentication/credentials";
-import { REST } from "../client/https/requests";
+import { AxiosRestClient } from "../client/https/requests";
 import { User } from "../types/jira/responses/user";
 import { XrayLicenseStatus } from "../types/xray/responses/license";
 import { dedent } from "./dedent";
@@ -20,12 +20,14 @@ import { startInterval } from "./time";
  *
  * @param url - the base URL of the Jira instance
  * @param credentials - the credentials of a valid Jira user
+ * @param httpClient - the HTTP client to use to dispatch the ping
  * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-rest-api-3-myself-get
  * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.11.0/#api/2/myself
  */
 export async function pingJiraInstance(
     url: string,
-    credentials: BasicAuthCredentials | PatCredentials
+    credentials: BasicAuthCredentials | PatCredentials,
+    httpClient: AxiosRestClient
 ): Promise<void> {
     LOG.message(Level.DEBUG, "Pinging Jira instance...");
     const progressInterval = startInterval((totalTime: number) => {
@@ -36,11 +38,14 @@ export async function pingJiraInstance(
     });
     try {
         const header = credentials.getAuthorizationHeader();
-        const userResponse: AxiosResponse<User> = await REST.get(`${url}/rest/api/latest/myself`, {
-            headers: {
-                ...header,
-            },
-        });
+        const userResponse: AxiosResponse<User> = await httpClient.get(
+            `${url}/rest/api/latest/myself`,
+            {
+                headers: {
+                    ...header,
+                },
+            }
+        );
         const username = getUserString(userResponse.data);
         if (username) {
             LOG.message(
@@ -89,11 +94,13 @@ function getUserString(user: User): string | undefined {
  *
  * @param url - the base URL of the Xray server instance
  * @param credentials - the credentials of a user with a valid Xray license
+ * @param httpClient - the HTTP client to use to dispatch the ping
  * @see https://docs.getxray.app/display/XRAY/v2.0#/External%20Apps/get_xraylicense
  */
 export async function pingXrayServer(
     url: string,
-    credentials: BasicAuthCredentials | PatCredentials
+    credentials: BasicAuthCredentials | PatCredentials,
+    httpClient: AxiosRestClient
 ): Promise<void> {
     LOG.message(Level.DEBUG, "Pinging Xray server instance...");
     const progressInterval = startInterval((totalTime: number) => {
@@ -104,7 +111,7 @@ export async function pingXrayServer(
     });
     try {
         const header = credentials.getAuthorizationHeader();
-        const licenseResponse: AxiosResponse<XrayLicenseStatus> = await REST.get(
+        const licenseResponse: AxiosResponse<XrayLicenseStatus> = await httpClient.get(
             `${url}/rest/raven/latest/api/xraylicense`,
             {
                 headers: {

@@ -18,7 +18,7 @@ import { LoggedError, errorMessage } from "../../util/errors";
 import { HELP } from "../../util/help";
 import { LOG, Level } from "../../util/logging";
 import { Client } from "../client";
-import { REST, RequestConfigPost } from "../https/requests";
+import { RequestConfigPost } from "../https/requests";
 
 export interface XrayClient {
     /**
@@ -83,7 +83,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
             try {
                 const response: AxiosResponse<
                     ImportExecutionResponseServer | ImportExecutionResponseCloud
-                > = await REST.post(this.getUrlImportExecution(), execution, {
+                > = await this.httpClient.post(this.getUrlImportExecution(), execution, {
                     headers: {
                         ...authorizationHeader,
                     },
@@ -120,7 +120,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
 
                 const response: AxiosResponse<
                     ImportFeatureResponseServer | ImportFeatureResponseCloud
-                > = await REST.post(
+                > = await this.httpClient.post(
                     this.getUrlImportFeature(query.projectKey, query.projectId, query.source),
                     form,
                     {
@@ -172,7 +172,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
             try {
                 const response: AxiosResponse<
                     ImportExecutionResponseServer | ImportExecutionResponseCloud
-                > = await REST.post(request.url, request.data, request.config);
+                > = await this.httpClient.post(request.url, request.data, request.config);
                 const key = this.handleResponseImportExecutionCucumberMultipart(response.data);
                 LOG.message(
                     Level.DEBUG,

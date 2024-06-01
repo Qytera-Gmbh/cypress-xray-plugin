@@ -1,11 +1,12 @@
-import { CypressRunResultType } from "../../../types/cypress/run-result";
+import { CypressRunResultType } from "../../../types/cypress/cypress";
+import { Logger } from "../../../util/logging";
 import { Command, Computable } from "../../command";
 
-export class ExtractVideoFilesCommand extends Command<string[], void> {
+export class ExtractVideoFilesCommand extends Command<string[], null> {
     private readonly cypressRunResult: Computable<CypressRunResultType>;
 
-    constructor(cypressRunResult: Computable<CypressRunResultType>) {
-        super();
+    constructor(logger: Logger, cypressRunResult: Computable<CypressRunResultType>) {
+        super(null, logger);
         this.cypressRunResult = cypressRunResult;
     }
     protected async computeResult(): Promise<string[]> {

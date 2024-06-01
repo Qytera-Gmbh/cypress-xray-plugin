@@ -1,24 +1,24 @@
-import { REST } from "./client/https/requests";
 import {
-    clearPluginContext,
+    PluginContext,
+    SimpleEvidenceCollection,
     getPluginContext,
     initClients,
     initCucumberOptions,
+    initHttpClients,
     initJiraOptions,
     initPluginOptions,
-    initSslOptions,
     initXrayOptions,
     setPluginContext,
 } from "./context";
+import { PluginTask, PluginTaskListener, PluginTaskParameterType } from "./cypress/tasks";
 import { addUploadCommands } from "./hooks/after/after-run";
 import { Command } from "./hooks/command";
 import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
-import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/run-result";
+import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
 import {
     CypressXrayPluginOptions,
     InternalCypressXrayPluginOptions,
     InternalPluginOptions,
-    PluginContext,
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable-graph";
@@ -32,19 +32,18 @@ let canShowInitializationWarning = true;
  * Resets the plugin including its context.
  */
 export function resetPlugin(): void {
-    clearPluginContext();
+    setPluginContext(undefined);
     canShowInitializationWarning = true;
 }
 
 /**
- * Configures the plugin. The plugin will inspect all environment variables passed in
- * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with the ones provided in
- * `options`.
+ * Configures the plugin. The plugin will check all environment variables passed in
+ * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with those specified in
+ * `options`. Environment variables always override values specified in `options`.
  *
- * Note: Environment variables always take precedence over values specified in `options`.
- *
- * Other Cypress configuration values which the plugin typically accesses are the Cypress version or
- * the project root directory.
+ * *Note: This method will register upload hooks under the Cypress `before:run`, `after:run` and
+ * `task` events. Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if
+ * you have these hooks registered to prevent the plugin from replacing them.*
  *
  * @param on - the Cypress event registration functon
  * @param config - the Cypress configuration
@@ -75,21 +74,38 @@ export async function configureXrayPlugin(
         plugin: pluginOptions,
         xray: initXrayOptions(config.env, options.xray),
         cucumber: await initCucumberOptions(config, options.cucumber),
-        ssl: initSslOptions(config.env, options.openSSL),
+        http: options.http,
     };
-    REST.init({
-        debug: internalOptions.plugin.debug,
-        ssl: internalOptions.ssl,
-    });
-    const context: PluginContext = {
-        cypress: config,
-        options: internalOptions,
-        clients: await initClients(internalOptions.jira, config.env),
-        graph: new ExecutableGraph(),
-    };
+    const httpClients = initHttpClients(internalOptions.plugin, internalOptions.http);
+    const context = new PluginContext(
+        await initClients(internalOptions.jira, config.env, httpClients),
+        internalOptions,
+        config,
+        new SimpleEvidenceCollection(),
+        new ExecutableGraph()
+    );
     setPluginContext(context);
+    const listener = new PluginTaskListener(internalOptions.jira.projectKey, context);
+    on("task", {
+        [PluginTask.OUTGOING_REQUEST]: (
+            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
+        ) => {
+            if (internalOptions.xray.uploadRequests) {
+                return listener[PluginTask.OUTGOING_REQUEST](args);
+            }
+            return args.request;
+        },
+        [PluginTask.INCOMING_RESPONSE]: (
+            args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
+        ) => {
+            if (internalOptions.xray.uploadRequests) {
+                return listener[PluginTask.INCOMING_RESPONSE](args);
+            }
+            return args.response;
+        },
+    });
     on("after:run", async (results: CypressRunResultType | CypressFailedRunResultType) => {
-        if (context.options.xray.uploadResults) {
+        if (context.getOptions().xray.uploadResults) {
             // Cypress's status types are incomplete, there is also "finished".
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if ("status" in results && results.status === "failed") {
@@ -99,16 +115,18 @@ export async function configureXrayPlugin(
                     dedent(`
                         Skipping results upload: Failed to run ${failedResult.failures.toString()} tests
 
-                        ${failedResult.message}
-                    `)
+                            ${failedResult.message}
+                        `)
                 );
             } else {
                 addUploadCommands(
-                    results as CypressRunResultType,
-                    context.cypress.projectRoot,
-                    context.options,
-                    context.clients,
-                    context.graph
+                    results,
+                    context.getCypressOptions().projectRoot,
+                    context.getOptions(),
+                    context.getClients(),
+                    context,
+                    context.getGraph(),
+                    LOG
                 );
             }
         } else {
@@ -118,16 +136,16 @@ export async function configureXrayPlugin(
             );
         }
         try {
-            await context.graph.execute();
+            await context.getGraph().execute();
         } finally {
-            if (context.graph.hasFailedVertices()) {
+            if (context.getGraph().hasFailedVertices()) {
                 await exportGraph(
-                    context.graph,
+                    context.getGraph(),
                     Level.WARNING,
                     "Failed to execute some steps during plugin execution"
                 );
             } else if (options.plugin?.debug) {
-                await exportGraph(context.graph, Level.DEBUG);
+                await exportGraph(context.getGraph(), Level.DEBUG);
             }
         }
     });
@@ -136,7 +154,7 @@ export async function configureXrayPlugin(
 /**
  * Attempts to synchronize the Cucumber feature file with Xray. If the filename does not end with
  * the configured {@link https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#featurefileextension | feature file extension},
- * this method does not upload anything to Xray.
+ * this method will not upload anything to Xray.
  *
  * @param file - the Cypress file object
  * @returns the unmodified file's path
@@ -156,24 +174,26 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
         }
         return file.filePath;
     }
-    if (!context.options.plugin.enabled) {
+    if (!context.getOptions().plugin.enabled) {
         LOG.message(
             Level.INFO,
             `Plugin disabled. Skipping feature file synchronization triggered by: ${file.filePath}`
         );
         return file.filePath;
     }
+    const cucumberOptions = context.getOptions().cucumber;
     if (
-        context.options.cucumber &&
-        file.filePath.endsWith(context.options.cucumber.featureFileExtension) &&
-        context.options.cucumber.uploadFeatures
+        cucumberOptions &&
+        file.filePath.endsWith(cucumberOptions.featureFileExtension) &&
+        cucumberOptions.uploadFeatures
     ) {
         addSynchronizationCommands(
             file,
-            context.cypress.projectRoot,
-            context.options,
-            context.clients,
-            context.graph
+            context.getCypressOptions().projectRoot,
+            context.getOptions(),
+            context.getClients(),
+            context.getGraph(),
+            LOG
         );
     }
     return file.filePath;

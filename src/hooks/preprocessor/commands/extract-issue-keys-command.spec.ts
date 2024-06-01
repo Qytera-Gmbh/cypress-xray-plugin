@@ -1,13 +1,16 @@
 import { expect } from "chai";
 import path from "path";
+import { getMockedLogger } from "../../../../test/mocks";
 import { ConstantCommand } from "../../util/commands/constant-command";
 import { ExtractIssueKeysCommand } from "./extract-issue-keys-command";
 
 describe(path.relative(process.cwd(), __filename), () => {
     describe(ExtractIssueKeysCommand.name, () => {
         it("merges all issue keys into one array", async () => {
+            const logger = getMockedLogger();
             const extractIssueKeysCommand = new ExtractIssueKeysCommand(
-                new ConstantCommand({
+                logger,
+                new ConstantCommand(logger, {
                     tests: [
                         { key: "CYP-123", summary: "Hello", tags: [] },
                         { key: "CYP-456", summary: "There", tags: ["some tag"] },

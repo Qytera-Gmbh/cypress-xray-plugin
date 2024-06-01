@@ -33,7 +33,7 @@ describe("Jira instance ping", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-        await pingJiraInstance("https://example.org", new PatCredentials("token"));
+        await pingJiraInstance("https://example.org", new PatCredentials("token"), restClient);
     });
 
     it("returns false if no license data is returned", async () => {
@@ -45,7 +45,7 @@ describe("Jira instance ping", () => {
             config: { headers: new AxiosHeaders() },
         });
         await expect(
-            pingJiraInstance("https://example.org", new PatCredentials("token"))
+            pingJiraInstance("https://example.org", new PatCredentials("token"), restClient)
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Jira: https://example.org
@@ -72,7 +72,7 @@ describe("Jira instance ping", () => {
             config: { headers: new AxiosHeaders() },
         });
         await expect(
-            pingJiraInstance("https://example.org", new PatCredentials("token"))
+            pingJiraInstance("https://example.org", new PatCredentials("token"), restClient)
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Jira: https://example.org
@@ -120,7 +120,11 @@ describe("Jira instance ping", () => {
             )
             .onFirstCall()
             .returns();
-        const promise = pingJiraInstance("https://example.org", new PatCredentials("token"));
+        const promise = pingJiraInstance(
+            "https://example.org",
+            new PatCredentials("token"),
+            restClient
+        );
         clock.tick(10000);
         await promise;
     });
@@ -147,7 +151,7 @@ describe("Xray server ping", () => {
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
                 config: { headers: new AxiosHeaders() },
             });
-        await pingXrayServer("https://example.org", new PatCredentials("token"));
+        await pingXrayServer("https://example.org", new PatCredentials("token"), restClient);
     });
 
     it("returns false if no license data is returned", async () => {
@@ -159,7 +163,7 @@ describe("Xray server ping", () => {
             config: { headers: new AxiosHeaders() },
         });
         await expect(
-            pingXrayServer("https://example.org", new PatCredentials("token"))
+            pingXrayServer("https://example.org", new PatCredentials("token"), restClient)
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Xray: https://example.org
@@ -188,7 +192,7 @@ describe("Xray server ping", () => {
             config: { headers: new AxiosHeaders() },
         });
         await expect(
-            pingXrayServer("https://example.org", new PatCredentials("token"))
+            pingXrayServer("https://example.org", new PatCredentials("token"), restClient)
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Xray: https://example.org
@@ -240,7 +244,11 @@ describe("Xray server ping", () => {
             )
             .onFirstCall()
             .returns();
-        const promise = pingXrayServer("https://example.org", new PatCredentials("token"));
+        const promise = pingXrayServer(
+            "https://example.org",
+            new PatCredentials("token"),
+            restClient
+        );
         clock.tick(10000);
         await promise;
     });
@@ -290,7 +298,7 @@ describe("Xray cloud ping", () => {
             )
         );
         await expect(
-            pingXrayCloud(new JwtCredentials("id", "secret", "https://example.org"))
+            pingXrayCloud(new JwtCredentials("id", "secret", "https://example.org", restClient))
         ).to.eventually.be.rejectedWith(
             dedent(`
                 Failed to establish communication with Xray: https://example.org

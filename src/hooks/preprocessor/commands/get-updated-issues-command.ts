@@ -1,19 +1,20 @@
 import { ImportFeatureResponse } from "../../../types/xray/responses/import-feature";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
-import { Level } from "../../../util/logging";
+import { Level, Logger } from "../../../util/logging";
 import { computeOverlap } from "../../../util/set";
 import { Command, Computable } from "../../command";
 
-export class GetUpdatedIssuesCommand extends Command<string[], void> {
+export class GetUpdatedIssuesCommand extends Command<string[], null> {
     private readonly expectedAffectedIssues: Computable<string[]>;
     private readonly importResponse: Computable<ImportFeatureResponse>;
 
     constructor(
+        logger: Logger,
         expectedAffectedIssues: Computable<string[]>,
         importResponse: Computable<ImportFeatureResponse>
     ) {
-        super();
+        super(null, logger);
         this.expectedAffectedIssues = expectedAffectedIssues;
         this.importResponse = importResponse;
     }

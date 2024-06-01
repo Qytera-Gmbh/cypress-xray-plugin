@@ -1,12 +1,11 @@
 import axios, {
+    AxiosInstance,
     AxiosRequestConfig,
+    AxiosRequestHeaders,
     AxiosResponse,
     InternalAxiosRequestConfig,
     isAxiosError,
 } from "axios";
-import { readFileSync } from "fs";
-import { Agent } from "https";
-import { InternalSslOptions } from "../../types/plugin";
 import { normalizedFilename } from "../../util/files";
 import { LOG, Level } from "../../util/logging";
 import { unknownToString } from "../../util/string";
@@ -26,18 +25,39 @@ export interface RequestsOptions {
      */
     debug?: boolean;
     /**
-     * Additional OpenSSL options for the underlying HTTP agent.
+     * Additional options for controlling HTTP behaviour.
      */
-    ssl?: InternalSslOptions;
+    http?: AxiosRequestConfig;
+}
+
+/**
+ * Models a request that was logged to a file.
+ */
+export interface LoggedRequest {
+    /**
+     * The request's URL.
+     */
+    url?: string;
+    /**
+     * The request's headers.
+     */
+    headers: AxiosRequestHeaders;
+    /**
+     * The request's parameters.
+     */
+    params: unknown;
+    /**
+     * The request's body.
+     */
+    body: unknown;
 }
 
 export class AxiosRestClient {
-    private httpAgent: Agent | undefined = undefined;
-    private axios: typeof axios | undefined = undefined;
+    private readonly options: RequestsOptions | undefined;
 
-    private options: RequestsOptions | undefined = undefined;
+    private axios: AxiosInstance | undefined = undefined;
 
-    public init(options: RequestsOptions): void {
+    constructor(options?: RequestsOptions) {
         this.options = options;
     }
 
@@ -46,8 +66,8 @@ export class AxiosRestClient {
         config?: AxiosRequestConfig<unknown>
     ): Promise<AxiosResponse<R>> {
         return await this.getAxios().get(url, {
+            ...this.options?.http,
             ...config,
-            httpsAgent: this.getAgent(),
         });
     }
 
@@ -57,8 +77,8 @@ export class AxiosRestClient {
         config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse<R>> {
         return this.getAxios().post(url, data, {
+            ...this.options?.http,
             ...config,
-            httpsAgent: this.getAgent(),
         });
     }
 
@@ -68,28 +88,15 @@ export class AxiosRestClient {
         config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse<R>> {
         return this.getAxios().put(url, data, {
+            ...this.options?.http,
             ...config,
-            httpsAgent: this.getAgent(),
         });
     }
 
-    private getAgent(): Agent {
-        if (!this.httpAgent) {
-            this.httpAgent = new Agent({
-                ca: this.readCertificate(this.options?.ssl?.rootCAPath),
-                secureOptions: this.options?.ssl?.secureOptions,
-            });
-        }
-        return this.httpAgent;
-    }
-
-    private getAxios(): typeof axios {
-        if (!this.options) {
-            throw new Error("Requests module has not been initialized");
-        }
+    private getAxios(): AxiosInstance {
         if (!this.axios) {
-            this.axios = axios;
-            if (this.options.debug) {
+            this.axios = axios.create();
+            if (this.options?.debug) {
                 this.axios.interceptors.request.use(
                     (request: InternalAxiosRequestConfig<unknown>) => {
                         const method = request.method?.toUpperCase();
@@ -102,11 +109,11 @@ export class AxiosRestClient {
                             prefix = `${prefix}_${url}`;
                         }
                         const filename = normalizedFilename(`${prefix}_request.json`);
-                        const data = {
+                        const data: LoggedRequest = {
                             url: url,
                             headers: request.headers,
-                            params: request.params as unknown,
-                            body: request.data as unknown,
+                            params: request.params,
+                            body: request.data,
                         };
                         const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
                         LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
@@ -190,13 +197,4 @@ export class AxiosRestClient {
         }
         return this.axios;
     }
-
-    private readCertificate(path?: string): Buffer | undefined {
-        if (!path) {
-            return undefined;
-        }
-        return readFileSync(path);
-    }
 }
-
-export const REST: AxiosRestClient = new AxiosRestClient();

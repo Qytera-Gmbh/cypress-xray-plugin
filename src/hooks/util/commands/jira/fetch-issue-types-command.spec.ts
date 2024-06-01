@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { getMockedJiraClient } from "../../../../../test/mocks";
+import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks";
 import { FetchIssueTypesCommand } from "./fetch-issue-types-command";
 
 chai.use(chaiAsPromised);
@@ -43,7 +43,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
             ];
             jiraClient.getIssueTypes.onFirstCall().resolves(types);
-            const command = new FetchIssueTypesCommand({ jiraClient: jiraClient });
+            const command = new FetchIssueTypesCommand(
+                { jiraClient: jiraClient },
+                getMockedLogger()
+            );
             expect(await command.compute()).to.deep.eq(types);
         });
     });

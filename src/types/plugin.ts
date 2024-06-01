@@ -1,15 +1,65 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
+import { AxiosRequestConfig } from "axios";
+import { AxiosRestClient } from "../client/https/requests";
 import { JiraClient } from "../client/jira/jira-client";
 import { XrayClient } from "../client/xray/xray-client";
-import { Command } from "../hooks/command";
-import { ExecutableGraph } from "../util/graph/executable-graph";
 
+/**
+ * Models all options for configuring the behaviour of the plugin.
+ */
 export interface CypressXrayPluginOptions {
+    /**
+     * Defines Jira-specific options that control how the plugin interacts with Jira.
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/
+     */
     jira: JiraOptions;
+    /**
+     * Options for configuring the general behaviour of the plugin.
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/
+     */
     plugin?: PluginOptions;
+    /**
+     * Xray settings that may be required depending on your project configuration.
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/xray/
+     */
     xray?: XrayOptions;
+    /**
+     * When Cucumber is enabled, you can use these options to configure how the plugin works with
+     * your feature files.
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/
+     */
     cucumber?: CucumberOptions;
-    ["openSSL"]?: OpenSSLOptions;
+    /**
+     * HTTP configuration to be used for requests made by the plugin. You can set default options to be
+     * used for all requests and override them with individual options for Jira or Xray.
+     *
+     * @example
+     *
+     * ```ts
+     * {
+     *   // ...other plugin options
+     *   http: {
+     *     timeout: 5000,
+     *     jira: {
+     *       proxy: {
+     *         host: "http://1.2.3.4",
+     *         port: 12345
+     *       }
+     *     },
+     *     xray: {
+     *       timeout: 10000,
+     *     }
+     *   }
+     * }
+     * ```
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/http
+     */
+    http?: HttpOptions;
 }
 
 export interface JiraFieldIds {
@@ -49,6 +99,9 @@ export interface JiraFieldIds {
     testType?: string;
 }
 
+/**
+ * Jira-specific options that control how the plugin interacts with Jira.
+ */
 export interface JiraOptions {
     /**
      * The Jira project key.
@@ -163,6 +216,9 @@ export type InternalJiraOptions = JiraOptions &
         >
     >;
 
+/**
+ * Xray settings that may be required depending on the project configuration.
+ */
 export interface XrayOptions {
     /**
      * A mapping of Cypress statuses to corresponding Xray statuses.
@@ -213,6 +269,16 @@ export interface XrayOptions {
      */
     testEnvironments?: [string, ...string[]];
     /**
+     * Enables or disables the upload of manually executed requests using `cy.request`. If `true`,
+     * requests and responses will be attached to the corresponding test as evidence. If `false` or
+     * left `undefined`, neither requests nor responses are attached.
+     *
+     * *Note: For this option to work properly, you need to overwrite the `cy.request` command.*
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadRequestData/
+     */
+    uploadRequests?: boolean;
+    /**
      * Turns execution results upload on or off. Useful when switching upload on or off from the
      * command line (via environment variables).
      */
@@ -228,8 +294,14 @@ export interface XrayOptions {
  * default/fallback values are used by the plugin.
  */
 export type InternalXrayOptions = XrayOptions &
-    Required<Pick<XrayOptions, "status" | "uploadResults" | "uploadScreenshots">>;
+    Required<
+        Pick<XrayOptions, "status" | "uploadRequests" | "uploadResults" | "uploadScreenshots">
+    >;
 
+/**
+ * When Cucumber is enabled, these options are used to configure how the plugin works with
+ * encountered feature files.
+ */
 export interface CucumberOptions {
     /**
      * The file extension of feature files you want to run in Cypress. The plugin will use this to
@@ -319,21 +391,76 @@ export interface CucumberOptions {
  * A more specific Cucumber options type with optional properties converted to required ones if
  * default/fallback values are used by the plugin.
  */
-export type InternalCucumberOptions = Required<CucumberOptions> & {
+export interface InternalCucumberOptions extends Required<CucumberOptions> {
     /**
      * The Cucumber preprocessor configuration.
      */
     preprocessor?: Pick<IPreprocessorConfiguration, "json">;
-};
+}
 
+/**
+ * Options which the plugin will use when making HTTP requests. You can specify
+ * [common options](https://axios-http.com/docs/req_config) to use for all requests or choose to
+ * define specific ones for Jira or Xray.
+ */
+export interface HttpOptions extends AxiosRequestConfig {
+    /**
+     * The HTTP configuration for requests to Jira. HTTP options defined for both clients will be
+     * overridden in the Jira client by those defined here.
+     *
+     * *Note: In a Jira/Xray server environment, the Jira and Xray endpoints will reside on the same
+     * host. To avoid duplicating your HTTP configuration, it is recommended that you define a
+     * single one instead, e.g.:*
+     *
+     * ```ts
+     * {
+     *   // ...other plugin options
+     *   http: {
+     *     proxy: {
+     *       host: "http://1.2.3.4",
+     *       port: 12345
+     *     }
+     *   }
+     * }
+     * ```
+     */
+    jira?: AxiosRequestConfig;
+    /**
+     * The HTTP configuration for requests to Xray. HTTP options defined for both clients will be
+     * overridden in the Jira client by those defined here.
+     *
+     * *Note: In a Jira/Xray server environment, the Jira and Xray endpoints will reside on the same
+     * host. To avoid duplicating your HTTP configuration, it is recommended that you define a
+     * single one instead, e.g.:*
+     *
+     * ```ts
+     * {
+     *   // ...other plugin options
+     *   http: {
+     *     proxy: {
+     *       host: "http://1.2.3.4",
+     *       port: 12345
+     *     }
+     *   }
+     * }
+     * ```
+     */
+    xray?: AxiosRequestConfig;
+}
+
+export type InternalHttpOptions = HttpOptions;
+
+/**
+ * Options for configuring the general behaviour of the plugin.
+ */
 export interface PluginOptions {
     /**
-     * Enables or disables the entire plugin. Setting this option to `false` disables all plugin
+     * Enables or disables the entire plugin. Setting this option to false will disable all plugin
      * functions, including authentication checks, uploads or feature file synchronization.
      */
     enabled?: boolean;
     /**
-     * Turns on or off extensive debugging output.
+     * Enables or disables extensive debugging output.
      */
     debug?: boolean;
     /**
@@ -341,9 +468,9 @@ export interface PluginOptions {
      */
     logDirectory?: string;
     /**
-     * Some Xray setups might struggle with uploaded evidence if the filenames contain non-ASCII
-     * characters. With this option enabled, the plugin only allows characters `a-zA-Z0-9.` in
-     * screenshot names and replaces all other sequences with `_`.
+     * Some Xray setups may have problems with uploaded evidence if the filenames contain non-ASCII
+     * characters. With this option enabled, the plugin will only allow the characters `a-zA-Z0-9.`
+     * in screenshot names, and will replace all other sequences with `_`.
      */
     normalizeScreenshotNames?: boolean;
 }
@@ -357,42 +484,6 @@ export type InternalPluginOptions = PluginOptions &
         Pick<PluginOptions, "debug" | "enabled" | "logDirectory" | "normalizeScreenshotNames">
     >;
 
-/* eslint-disable @typescript-eslint/naming-convention */
-export interface OpenSSLOptions {
-    /**
-     * Specify the path to a root CA in .pem format. This will then be used to authenticate against
-     * the Xray instance.
-     */
-    rootCAPath?: string;
-    /**
-     * A {@link https://nodejs.org/api/crypto.html#crypto-constants | crypto constant} that will be
-     * used to configure the `securityOptions` of the
-     * {@link https://nodejs.org/api/https.html#class-httpsagent | https.Agent} used for sending
-     * requests to your Xray instance.
-     *
-     * *Note: Compute their bitwise OR if you need to set more than one option.*
-     *
-     * @example
-     * ```ts
-     * import { constants } from "crypto";
-     * // ...
-     *   openSSL: {
-     *     secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT |
-     *                    constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
-     *   }
-     * // ...
-     * ```
-     */
-    secureOptions?: number;
-}
-/* eslint-enable @typescript-eslint/naming-convention */
-
-/**
- * A more specific OpenSSL options type with optional properties converted to required ones if
- * default/fallback values are used by the plugin.
- */
-export type InternalSslOptions = OpenSSLOptions;
-
 /**
  * Options only intended for internal plugin use.
  */
@@ -401,7 +492,7 @@ export interface InternalCypressXrayPluginOptions {
     plugin: InternalPluginOptions;
     xray: InternalXrayOptions;
     cucumber?: InternalCucumberOptions;
-    ssl: InternalSslOptions;
+    http?: InternalHttpOptions;
 }
 
 /**
@@ -413,9 +504,10 @@ export interface ClientCombination {
     xrayClient: XrayClient;
 }
 
-export interface PluginContext {
-    cypress: Cypress.PluginConfigOptions;
-    options: InternalCypressXrayPluginOptions;
-    clients: ClientCombination;
-    graph: ExecutableGraph<Command>;
+/**
+ * Wraps the REST clients used for HTTP requests directed at Jira and Xray.
+ */
+export interface HttpClientCombination {
+    jira: AxiosRestClient;
+    xray: AxiosRestClient;
 }

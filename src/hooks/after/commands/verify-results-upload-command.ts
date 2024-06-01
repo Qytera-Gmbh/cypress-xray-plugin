@@ -1,6 +1,6 @@
 import { dedent } from "../../../util/dedent";
 import { SkippedError } from "../../../util/errors";
-import { Level } from "../../../util/logging";
+import { Level, Logger } from "../../../util/logging";
 import { Command, Computable } from "../../command";
 
 interface Parameters {
@@ -13,12 +13,13 @@ export class VerifyResultsUploadCommand extends Command<string, Parameters> {
 
     constructor(
         parameters: Parameters,
+        logger: Logger,
         inputs?: {
             cypressExecutionIssueKey?: Computable<string | undefined>;
             cucumberExecutionIssueKey?: Computable<string | undefined>;
         }
     ) {
-        super(parameters);
+        super(parameters, logger);
         this.resolvedCypressExecutionIssueKey = inputs?.cypressExecutionIssueKey;
         this.resolvedCucumberExecutionIssueKey = inputs?.cucumberExecutionIssueKey;
     }

@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import fs from "fs";
 import path from "path";
+import { getMockedLogger } from "../../../../../../test/mocks";
 import { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
 import { ConstantCommand } from "../../../../util/commands/constant-command";
 import { ConvertCucumberFeaturesCommand } from "./convert-cucumber-features-command";
@@ -8,6 +9,7 @@ import { ConvertCucumberFeaturesCommand } from "./convert-cucumber-features-comm
 describe(path.relative(process.cwd(), __filename), () => {
     describe(ConvertCucumberFeaturesCommand.name, () => {
         it("converts cucumber results into cucumber features data", async () => {
+            const logger = getMockedLogger();
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
@@ -21,13 +23,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     xray: { uploadScreenshots: false },
                 },
-                new ConstantCommand(cucumberReport.slice(0, 1))
+                logger,
+                new ConstantCommand(logger, cucumberReport.slice(0, 1))
             );
             const features = await command.compute();
             expect(features).to.be.an("array").with.length(1);
         });
 
         it("returns parameters", () => {
+            const logger = getMockedLogger();
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
@@ -41,7 +45,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     xray: { uploadScreenshots: false },
                 },
-                new ConstantCommand(cucumberReport.slice(0, 1))
+                logger,
+                new ConstantCommand(logger, cucumberReport.slice(0, 1))
             );
             expect(command.getParameters()).to.deep.eq({
                 jira: {
@@ -52,6 +57,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("converts cucumber results into cloud cucumber features data", async () => {
+            const logger = getMockedLogger();
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
@@ -67,7 +73,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                     useCloudTags: true,
                 },
-                new ConstantCommand(cucumberReport.slice(0, 1))
+                logger,
+                new ConstantCommand(logger, cucumberReport.slice(0, 1))
             );
             const features = await command.compute();
             expect(features).to.be.an("array").with.length(1);

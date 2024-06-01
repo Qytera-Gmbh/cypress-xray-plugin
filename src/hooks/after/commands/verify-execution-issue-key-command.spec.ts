@@ -17,7 +17,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     importType: "cypress",
                     displayCloudHelp: false,
                 },
-                new ConstantCommand("CYP-123")
+                logger,
+                new ConstantCommand(logger, "CYP-123")
             );
             await command.compute();
             expect(logger.message).to.not.have.been.called;
@@ -32,7 +33,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     importType: "cypress",
                     displayCloudHelp: true,
                 },
-                new ConstantCommand("CYP-456")
+                logger,
+                new ConstantCommand(logger, "CYP-456")
             );
             await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(
@@ -58,7 +60,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     importType: "cucumber",
                     displayCloudHelp: false,
                 },
-                new ConstantCommand("CYP-456")
+                logger,
+                new ConstantCommand(logger, "CYP-456")
             );
             await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(

@@ -3,7 +3,7 @@ import { Issue } from "../../../../types/jira/responses/issue";
 import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
 import { errorMessage } from "../../../../util/errors";
-import { Level } from "../../../../util/logging";
+import { Level, Logger } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 import { JiraField } from "./extract-field-id-command";
 
@@ -25,10 +25,11 @@ export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> exten
     protected readonly issueKeys: Computable<string[]>;
     constructor(
         parameters: Parameters,
+        logger: Logger,
         fieldId: Computable<string>,
         issueKeys: Computable<string[]>
     ) {
-        super(parameters);
+        super(parameters, logger);
         this.fieldId = fieldId;
         this.issueKeys = issueKeys;
     }

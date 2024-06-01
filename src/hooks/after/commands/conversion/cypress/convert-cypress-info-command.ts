@@ -1,7 +1,8 @@
-import { CypressRunResultType } from "../../../../../types/cypress/run-result";
+import { CypressRunResultType } from "../../../../../types/cypress/cypress";
 import { InternalJiraOptions, InternalXrayOptions } from "../../../../../types/plugin";
 import { XrayTestExecutionInfo } from "../../../../../types/xray/import-test-execution-results";
 import { dedent } from "../../../../../util/dedent";
+import { Logger } from "../../../../../util/logging";
 import { truncateIsoTime } from "../../../../../util/time";
 import { Command, Computable } from "../../../../command";
 
@@ -19,8 +20,8 @@ interface Parameters {
 
 export class ConvertCypressInfoCommand extends Command<XrayTestExecutionInfo, Parameters> {
     private readonly results: Computable<CypressRunResultType>;
-    constructor(parameters: Parameters, results: Computable<CypressRunResultType>) {
-        super(parameters);
+    constructor(parameters: Parameters, logger: Logger, results: Computable<CypressRunResultType>) {
+        super(parameters, logger);
         this.results = results;
     }
 

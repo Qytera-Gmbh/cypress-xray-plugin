@@ -10,10 +10,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("imports features", async () => {
             const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient();
-            const command = new ImportFeatureCommand({
-                xrayClient: xrayClient,
-                filePath: "/path/to/some/cucumber.feature",
-            });
+            const command = new ImportFeatureCommand(
+                {
+                    xrayClient: xrayClient,
+                    filePath: "/path/to/some/cucumber.feature",
+                },
+                logger
+            );
             xrayClient.importFeature.onFirstCall().resolves({
                 errors: [],
                 updatedOrCreatedIssues: ["CYP-123", "CYP-42"],
@@ -31,10 +34,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("warns about import errors", async () => {
             const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient();
-            const command = new ImportFeatureCommand({
-                xrayClient: xrayClient,
-                filePath: "/path/to/some/cucumber.feature",
-            });
+            const command = new ImportFeatureCommand(
+                {
+                    xrayClient: xrayClient,
+                    filePath: "/path/to/some/cucumber.feature",
+                },
+                logger
+            );
             xrayClient.importFeature.onFirstCall().resolves({
                 errors: ["CYP-123 does not exist", "CYP-42: Access denied", "Big\nProblem"],
                 updatedOrCreatedIssues: [],

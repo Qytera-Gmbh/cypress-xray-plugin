@@ -2,6 +2,7 @@ import { IssueTypeDetails } from "../../../types/jira/responses/issue-type-detai
 import { InternalJiraOptions } from "../../../types/plugin";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
+import { Logger } from "../../../util/logging";
 import { Command, Computable } from "../../command";
 
 type Parameters = Pick<InternalJiraOptions, "projectKey" | "testExecutionIssueType"> & {
@@ -11,8 +12,12 @@ type Parameters = Pick<InternalJiraOptions, "projectKey" | "testExecutionIssueTy
 export class ExtractExecutionIssueTypeCommand extends Command<IssueTypeDetails, Parameters> {
     private readonly allIssueDetails: Computable<IssueTypeDetails[]>;
 
-    constructor(parameters: Parameters, allIssueDetails: Computable<IssueTypeDetails[]>) {
-        super(parameters);
+    constructor(
+        parameters: Parameters,
+        logger: Logger,
+        allIssueDetails: Computable<IssueTypeDetails[]>
+    ) {
+        super(parameters, logger);
         this.allIssueDetails = allIssueDetails;
     }
 

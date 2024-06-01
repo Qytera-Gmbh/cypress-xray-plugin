@@ -1,13 +1,8 @@
 import {
-    RunResult_V12,
-    ScreenshotInformation_V12,
-    TestResult_V12,
+    RunResult as RunResult_V12,
+    ScreenshotInformation as ScreenshotInformation_V12,
+    TestResult as TestResult_V12,
 } from "../../../../../../types/cypress/12.0.0/api";
-import {
-    RunResult_V13,
-    ScreenshotInformation_V13,
-    TestResult_V13,
-} from "../../../../../../types/cypress/13.0.0/api";
 import { Status } from "../../../../../../types/test-status";
 import { StringMap } from "../../../../../../types/util";
 import { getNativeTestIssueKey } from "../../../../util";
@@ -130,22 +125,24 @@ export function getTestRunData_V12(runResult: RunResult_V12): Promise<TestRunDat
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function getTestRunData_V13(
-    runResult: RunResult_V13,
+    runResult: CypressCommandLine.RunResult,
     projectKey: string
 ): Promise<TestRunData>[] {
     const testRuns: Promise<TestRunData>[] = [];
     const testStarts = startTimesByTest(runResult);
     const testScreenshots = screenshotsByTest(runResult, projectKey);
-    runResult.tests.forEach((test: TestResult_V13) => {
+    runResult.tests.forEach((test: CypressCommandLine.TestResult) => {
         const title = test.title.join(" ");
         const screenshots = title in testScreenshots ? testScreenshots[title] : [];
         testRuns.push(
             new Promise((resolve) => {
                 resolve({
                     duration: test.duration,
-                    screenshots: screenshots.map((screenshot: ScreenshotInformation_V13) => {
-                        return { filepath: screenshot.path };
-                    }),
+                    screenshots: screenshots.map(
+                        (screenshot: CypressCommandLine.ScreenshotInformation) => {
+                            return { filepath: screenshot.path };
+                        }
+                    ),
                     spec: {
                         filepath: runResult.spec.absolute,
                     },
@@ -159,7 +156,7 @@ export function getTestRunData_V13(
     return testRuns;
 }
 
-function startTimesByTest(run: RunResult_V13): StringMap<Date> {
+function startTimesByTest(run: CypressCommandLine.RunResult): StringMap<Date> {
     const map: StringMap<Date> = {};
     const testStarts: Date[] = [];
     for (let i = 0; i < run.tests.length; i++) {
@@ -176,10 +173,10 @@ function startTimesByTest(run: RunResult_V13): StringMap<Date> {
 }
 
 function screenshotsByTest(
-    run: RunResult_V13,
+    run: CypressCommandLine.RunResult,
     projectKey: string
-): StringMap<ScreenshotInformation_V13[]> {
-    const map: StringMap<ScreenshotInformation_V13[]> = {};
+): StringMap<CypressCommandLine.ScreenshotInformation[]> {
+    const map: StringMap<CypressCommandLine.ScreenshotInformation[]> = {};
     for (const screenshot of run.screenshots) {
         for (const test of run.tests) {
             const title = test.title.join(" ");
@@ -196,7 +193,7 @@ function screenshotsByTest(
 }
 
 function screenshotNameMatchesTestTitle(
-    screenshot: ScreenshotInformation_V13,
+    screenshot: CypressCommandLine.ScreenshotInformation,
     projectKey: string,
     testTitle: string[]
 ): boolean {

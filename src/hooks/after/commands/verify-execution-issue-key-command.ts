@@ -1,7 +1,7 @@
 import { InternalJiraOptions } from "../../../types/plugin";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
-import { Level } from "../../../util/logging";
+import { Level, Logger } from "../../../util/logging";
 import { Command, Computable } from "../../command";
 
 type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey" | "testExecutionIssueType"> & {
@@ -12,8 +12,12 @@ type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey" | "testExecu
 export class VerifyExecutionIssueKeyCommand extends Command<string, Parameters> {
     private readonly resolvedExecutionIssue: Computable<string>;
 
-    constructor(parameters: Parameters, resolvedExecutionIssue: Computable<string>) {
-        super(parameters);
+    constructor(
+        parameters: Parameters,
+        logger: Logger,
+        resolvedExecutionIssue: Computable<string>
+    ) {
+        super(parameters, logger);
         this.resolvedExecutionIssue = resolvedExecutionIssue;
     }
 

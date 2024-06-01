@@ -1,7 +1,7 @@
 import { JiraClient } from "../../../../client/jira/jira-client";
 import { Attachment } from "../../../../types/jira/responses/attachment";
 import { SkippedError } from "../../../../util/errors";
-import { Level } from "../../../../util/logging";
+import { Level, Logger } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 
 interface Parameters {
@@ -13,10 +13,11 @@ export class AttachFilesCommand extends Command<Attachment[], Parameters> {
     private readonly resolvedExecutionIssueKey: Computable<string>;
     constructor(
         parameters: Parameters,
+        logger: Logger,
         files: Computable<string[]>,
         resolvedExecutionIssueKey: Computable<string>
     ) {
-        super(parameters);
+        super(parameters, logger);
         this.files = files;
         this.resolvedExecutionIssueKey = resolvedExecutionIssueKey;
     }

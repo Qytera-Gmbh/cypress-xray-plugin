@@ -1,4 +1,4 @@
-import { CypressRunResultType } from "../../../../../../types/cypress/run-result";
+import { CypressRunResultType } from "../../../../../../types/cypress/cypress";
 import { IssueTypeDetails } from "../../../../../../types/jira/responses/issue-type-details";
 import {
     CucumberMultipartInfo,

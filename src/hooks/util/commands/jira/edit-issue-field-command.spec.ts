@@ -12,8 +12,8 @@ chai.use(chaiAsPromised);
 describe(path.relative(process.cwd(), __filename), () => {
     describe(EditIssueFieldCommand.name, () => {
         it("edits issues", async () => {
-            const jiraClient = getMockedJiraClient();
             const logger = getMockedLogger();
+            const jiraClient = getMockedJiraClient();
             jiraClient.editIssue
                 .withArgs("CYP-123", { fields: { ["customfield_12345"]: "hello" } })
                 .resolves("CYP-123");
@@ -25,16 +25,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                     jiraClient: jiraClient,
                     field: JiraField.SUMMARY,
                 },
-                new ConstantCommand("customfield_12345"),
-                new ConstantCommand({ ["CYP-123"]: "hello", ["CYP-456"]: "there" })
+                logger,
+                new ConstantCommand(logger, "customfield_12345"),
+                new ConstantCommand(logger, {
+                    ["CYP-123"]: "hello",
+                    ["CYP-456"]: "there",
+                })
             );
             expect(await command.compute()).to.deep.eq(["CYP-123", "CYP-456"]);
             expect(logger.message).to.not.have.been.called;
         });
 
         it("logs errors for unsuccessful edits", async () => {
-            const jiraClient = getMockedJiraClient();
             const logger = getMockedLogger();
+            const jiraClient = getMockedJiraClient();
             jiraClient.editIssue
                 .withArgs("CYP-123", { fields: { ["customfield_12345"]: ["dev", "test"] } })
                 .resolves("CYP-123");
@@ -46,8 +50,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     jiraClient: jiraClient,
                     field: JiraField.LABELS,
                 },
-                new ConstantCommand("customfield_12345"),
-                new ConstantCommand({ ["CYP-123"]: ["dev", "test"], ["CYP-456"]: ["test"] })
+                logger,
+                new ConstantCommand(logger, "customfield_12345"),
+                new ConstantCommand(logger, {
+                    ["CYP-123"]: ["dev", "test"],
+                    ["CYP-456"]: ["test"],
+                })
             );
             expect(await command.compute()).to.deep.eq(["CYP-123"]);
             expect(logger.message).to.have.been.calledWithExactly(
@@ -57,15 +65,16 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("returns empty arrays", async () => {
-            const jiraClient = getMockedJiraClient();
             const logger = getMockedLogger();
+            const jiraClient = getMockedJiraClient();
             const command = new EditIssueFieldCommand(
                 {
                     jiraClient: jiraClient,
                     field: JiraField.LABELS,
                 },
-                new ConstantCommand("customfield_12345"),
-                new ConstantCommand({})
+                logger,
+                new ConstantCommand(logger, "customfield_12345"),
+                new ConstantCommand(logger, {})
             );
             expect(await command.compute()).to.deep.eq([]);
             expect(logger.message).to.not.have.been.called;

@@ -1,8 +1,8 @@
 import { basename, parse } from "path";
 import { gte, lt } from "semver";
-import { RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
-import { RunResult_V13, ScreenshotInformation_V13 } from "../../../../../types/cypress/13.0.0/api";
-import { CypressRunResultType } from "../../../../../types/cypress/run-result";
+import { EvidenceCollection } from "../../../../../context";
+import { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
+import { CypressRunResultType } from "../../../../../types/cypress/cypress";
 import {
     InternalCucumberOptions,
     InternalJiraOptions,
@@ -17,7 +17,7 @@ import { encodeFile } from "../../../../../util/base64";
 import { dedent } from "../../../../../util/dedent";
 import { errorMessage } from "../../../../../util/errors";
 import { normalizedFilename } from "../../../../../util/files";
-import { Level } from "../../../../../util/logging";
+import { Level, Logger } from "../../../../../util/logging";
 import { truncateIsoTime } from "../../../../../util/time";
 import { Command, Computable } from "../../../../command";
 import { getNativeTestIssueKey } from "../../../util";
@@ -30,12 +30,13 @@ interface Parameters {
     plugin: Pick<InternalPluginOptions, "normalizeScreenshotNames">;
     cucumber?: Pick<InternalCucumberOptions, "featureFileExtension">;
     useCloudStatusFallback?: boolean;
+    evidenceCollection: EvidenceCollection;
 }
 
 export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]], Parameters> {
     private readonly results: Computable<CypressRunResultType>;
-    constructor(parameters: Parameters, results: Computable<CypressRunResultType>) {
-        super(parameters);
+    constructor(parameters: Parameters, logger: Logger, results: Computable<CypressRunResultType>) {
+        super(parameters, logger);
         this.results = results;
     }
 
@@ -52,7 +53,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 const test: XrayTest = this.getTest(
                     testData,
                     issueKey,
-                    this.getXrayEvidence(testData)
+                    this.getXrayEvidence(issueKey, testData)
                 );
                 xrayTests.push(test);
             } catch (error: unknown) {
@@ -93,7 +94,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 );
             }
         } else {
-            for (const run of cypressRuns as RunResult_V13[]) {
+            for (const run of cypressRuns as CypressCommandLine.RunResult[]) {
                 getTestRunData_V13(run, this.parameters.jira.projectKey).forEach((promise, index) =>
                     conversionPromises.push([run.tests[index].title.join(" "), promise])
                 );
@@ -118,7 +119,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         });
         if (this.parameters.xray.uploadScreenshots) {
             if (gte(runResults.cypressVersion, "13.0.0")) {
-                for (const run of cypressRuns as RunResult_V13[]) {
+                for (const run of runResults.runs as CypressCommandLine.RunResult[]) {
                     for (const screenshot of run.screenshots) {
                         if (!this.willBeUploaded(screenshot, testRunData)) {
                             const path = parse(screenshot.path);
@@ -160,7 +161,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         return xrayTest;
     }
 
-    private getXrayEvidence(testRunData: TestRunData): XrayEvidenceItem[] {
+    private getXrayEvidence(issueKey: string, testRunData: TestRunData): XrayEvidenceItem[] {
         const evidence: XrayEvidenceItem[] = [];
         if (this.parameters.xray.uploadScreenshots) {
             for (const screenshot of testRunData.screenshots) {
@@ -174,11 +175,14 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 });
             }
         }
+        this.parameters.evidenceCollection
+            .getEvidence(issueKey)
+            .forEach((item) => evidence.push(item));
         return evidence;
     }
 
     private willBeUploaded(
-        screenshot: ScreenshotInformation_V13,
+        screenshot: CypressCommandLine.ScreenshotInformation,
         testRunData: TestRunData[]
     ): boolean {
         return testRunData.some((testRun: TestRunData) => {

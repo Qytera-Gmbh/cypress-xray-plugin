@@ -22,7 +22,7 @@ interface Authentication {
 /**
  * Contains a mapping of all available options to their respective environment variable names.
  */
-export const ENV_NAMES: Remap<CypressXrayPluginOptions & Authentication, string> = {
+export const ENV_NAMES: Remap<Omit<CypressXrayPluginOptions, "http"> & Authentication, string> = {
     authentication: {
         jira: {
             username: "JIRA_USERNAME",
@@ -67,6 +67,7 @@ export const ENV_NAMES: Remap<CypressXrayPluginOptions & Authentication, string>
             skipped: "XRAY_STATUS_SKIPPED",
         },
         testEnvironments: "XRAY_TEST_ENVIRONMENTS",
+        uploadRequests: "XRAY_UPLOAD_REQUESTS",
         uploadResults: "XRAY_UPLOAD_RESULTS",
         uploadScreenshots: "XRAY_UPLOAD_SCREENSHOTS",
     },
@@ -78,9 +79,5 @@ export const ENV_NAMES: Remap<CypressXrayPluginOptions & Authentication, string>
             test: "CUCUMBER_PREFIXES_TEST",
         },
         uploadFeatures: "CUCUMBER_UPLOAD_FEATURES",
-    },
-    ["openSSL"]: {
-        ["rootCAPath"]: "OPENSSL_ROOT_CA_PATH",
-        secureOptions: "OPENSSL_SECURE_OPTIONS",
     },
 };

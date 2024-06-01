@@ -2,6 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import path from "path";
+import { getMockedLogger } from "../../../../../../test/mocks";
 import {
     CucumberMultipart,
     CucumberMultipartFeature,
@@ -15,6 +16,7 @@ chai.use(chaiAsPromised);
 describe(path.relative(process.cwd(), __filename), () => {
     describe(AssertCucumberConversionValidCommand.name, () => {
         it("correctly verifies cucumber multipart data", async () => {
+            const logger = getMockedLogger();
             const cucumberFeatures: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
@@ -32,12 +34,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 features: cucumberFeatures,
             };
             const command = new AssertCucumberConversionValidCommand(
-                new ConstantCommand(cucumberMultipart)
+                logger,
+                new ConstantCommand(logger, cucumberMultipart)
             );
             await expect(command.compute()).to.not.be.rejected;
         });
 
         it("throws for empty feature arrays", async () => {
+            const logger = getMockedLogger();
             const cucumberInfo: CucumberMultipartInfo = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
@@ -49,7 +53,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 features: [],
             };
             const command = new AssertCucumberConversionValidCommand(
-                new ConstantCommand(cucumberMultipart)
+                logger,
+                new ConstantCommand(logger, cucumberMultipart)
             );
             await expect(command.compute()).to.be.rejectedWith(
                 "Skipping Cucumber results upload: No Cucumber tests were executed"

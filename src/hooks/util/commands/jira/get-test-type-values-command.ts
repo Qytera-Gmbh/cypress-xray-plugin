@@ -3,7 +3,7 @@ import { Issue } from "../../../../types/jira/responses/issue";
 import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
 import { extractNestedString } from "../../../../util/extraction";
-import { Level } from "../../../../util/logging";
+import { Level, Logger } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 import { JiraField } from "./extract-field-id-command";
 import { GetFieldValuesCommand } from "./get-field-values-command";
@@ -29,8 +29,8 @@ interface Parameters {
 
 export class GetTestTypeValuesCommandCloud extends Command<StringMap<string>, Parameters> {
     private readonly issueKeys: Computable<string[]>;
-    constructor(parameters: Parameters, issueKeys: Computable<string[]>) {
-        super(parameters);
+    constructor(parameters: Parameters, logger: Logger, issueKeys: Computable<string[]>) {
+        super(parameters, logger);
         this.issueKeys = issueKeys;
     }
 

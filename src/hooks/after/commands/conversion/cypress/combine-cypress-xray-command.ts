@@ -4,6 +4,7 @@ import {
     XrayTestExecutionInfo,
     XrayTestExecutionResults,
 } from "../../../../../types/xray/import-test-execution-results";
+import { Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 
 type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey">;
@@ -14,10 +15,11 @@ export class CombineCypressJsonCommand extends Command<XrayTestExecutionResults,
 
     constructor(
         parameters: Parameters,
+        logger: Logger,
         cypressTestsJson: Computable<[XrayTest, ...XrayTest[]]>,
         cypressTestsInfo: Computable<XrayTestExecutionInfo>
     ) {
-        super(parameters);
+        super(parameters, logger);
         this.cypressTestsJson = cypressTestsJson;
         this.cypressTestsInfo = cypressTestsInfo;
     }

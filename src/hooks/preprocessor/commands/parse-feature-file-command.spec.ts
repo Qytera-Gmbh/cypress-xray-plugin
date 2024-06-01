@@ -8,9 +8,10 @@ import { ParseFeatureFileCommand } from "./parse-feature-file-command";
 describe(path.relative(process.cwd(), __filename), () => {
     describe(ParseFeatureFileCommand.name, () => {
         it("displays errors for invalid feature files", async () => {
-            const filePath = "./test/resources/features/invalid.feature";
             const logger = getMockedLogger();
-            const command = new ParseFeatureFileCommand({ filePath: filePath });
+            const filePath = "./test/resources/features/invalid.feature";
+
+            const command = new ParseFeatureFileCommand({ filePath: filePath }, logger);
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
                 Parser errors:

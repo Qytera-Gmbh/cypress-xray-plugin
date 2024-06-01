@@ -2,6 +2,7 @@ import { Background, GherkinDocument, Scenario } from "@cucumber/messages";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
+import { getMockedLogger } from "../../../../test/mocks";
 import { dedent } from "../../../util/dedent";
 import { ConstantCommand } from "../../util/commands/constant-command";
 import { ExtractFeatureFileIssuesCommand } from "./extract-feature-file-issues-command";
@@ -12,6 +13,7 @@ chai.use(chaiAsPromised);
 describe(path.relative(process.cwd(), __filename), () => {
     describe(ExtractFeatureFileIssuesCommand.name, () => {
         it("extracts cucumber issue data", async () => {
+            const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixCorrect.feature"
             );
@@ -21,7 +23,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     prefixes: { test: "TestName:", precondition: "Precondition:" },
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(document)
+                logger,
+                new ConstantCommand(logger, document)
             );
             expect(await extractIssueKeysCommand.compute()).to.deep.eq({
                 tests: [
@@ -41,6 +44,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("skips empty feature files", async () => {
+            const logger = getMockedLogger();
             const document: GherkinDocument = {
                 comments: [],
             };
@@ -50,7 +54,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     prefixes: {},
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(document)
+                logger,
+                new ConstantCommand(logger, document)
             );
             expect(await extractIssueKeysCommand.compute()).to.deep.eq({
                 tests: [],
@@ -59,6 +64,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("handles rules", async () => {
+            const logger = getMockedLogger();
             const document: GherkinDocument = {
                 feature: {
                     location: { line: 1 },
@@ -125,7 +131,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     prefixes: {},
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(document)
+                logger,
+                new ConstantCommand(logger, document)
             );
             expect(await extractIssueKeysCommand.compute()).to.deep.eq({
                 tests: [{ key: "CYP-123", summary: "A scenario", tags: ["CYP-123"] }],
@@ -134,6 +141,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws for missing scenario tags", async () => {
+            const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMissingScenario.feature"
             );
@@ -143,7 +151,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     prefixes: { precondition: "Precondition:" },
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(document)
+                logger,
+                new ConstantCommand(logger, document)
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -184,6 +193,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws for missing scenario tags (no scenario name)", async () => {
+            const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMissingScenario.feature"
             );
@@ -196,7 +206,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     prefixes: { precondition: "Precondition:" },
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(document)
+                logger,
+                new ConstantCommand(logger, document)
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -237,6 +248,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws for wrong scenario tags", async () => {
+            const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongScenarioTags.feature"
             );
@@ -246,7 +258,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     prefixes: {},
                     displayCloudHelp: false,
                 },
-                new ConstantCommand(document)
+                logger,
+                new ConstantCommand(logger, document)
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -285,6 +298,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws for wrong scenario tags (no scenario name, no steps)", async () => {
+            const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongScenarioTags.feature"
             );
@@ -298,7 +312,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     prefixes: {},
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(document)
+                logger,
+                new ConstantCommand(logger, document)
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -337,6 +352,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws for missing background tags", async () => {
+            const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMissingBackground.feature"
             );
@@ -346,7 +362,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     prefixes: { test: "TestName:" },
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(document)
+                logger,
+                new ConstantCommand(logger, document)
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -387,6 +404,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws for missing background tags (no background steps and names)", async () => {
+            const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMissingBackground.feature"
             );
@@ -400,7 +418,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     prefixes: { test: "TestName:" },
                     displayCloudHelp: false,
                 },
-                new ConstantCommand(document)
+                logger,
+                new ConstantCommand(logger, document)
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -441,6 +460,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws for wrong background tags (no background name)", async () => {
+            const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongBackgroundTags.feature"
             );
@@ -453,7 +473,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     prefixes: {},
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(document)
+                logger,
+                new ConstantCommand(logger, document)
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -491,6 +512,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws for wrong background tags", async () => {
+            const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongBackgroundTags.feature"
             );
@@ -500,7 +522,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     prefixes: {},
                     displayCloudHelp: false,
                 },
-                new ConstantCommand(document)
+                logger,
+                new ConstantCommand(logger, document)
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -539,6 +562,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("no prefix", () => {
             it("throws for multiple scenario tags (no scenario name, no steps)", async () => {
+                const logger = getMockedLogger();
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedNoPrefixMultipleScenario.feature"
                 );
@@ -552,7 +576,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         prefixes: {},
                         displayCloudHelp: false,
                     },
-                    new ConstantCommand(document)
+                    logger,
+                    new ConstantCommand(logger, document)
                 );
                 await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                     dedent(`
@@ -573,6 +598,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("throws for multiple background tags", async () => {
+                const logger = getMockedLogger();
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
                 );
@@ -582,7 +608,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         prefixes: {},
                         displayCloudHelp: false,
                     },
-                    new ConstantCommand(document)
+                    logger,
+                    new ConstantCommand(logger, document)
                 );
                 await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                     dedent(`
@@ -606,6 +633,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("throws for multiple background tags (no background name)", async () => {
+                const logger = getMockedLogger();
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
                 );
@@ -618,7 +646,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         prefixes: {},
                         displayCloudHelp: false,
                     },
-                    new ConstantCommand(document)
+                    logger,
+                    new ConstantCommand(logger, document)
                 );
                 await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                     dedent(`
@@ -644,6 +673,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("prefixed", () => {
             it("throws for multiple scenario tags", async () => {
+                const logger = getMockedLogger();
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedPrefixMultipleScenario.feature"
                 );
@@ -653,7 +683,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         prefixes: { test: "TestName:", precondition: "Precondition:" },
                         displayCloudHelp: true,
                     },
-                    new ConstantCommand(document)
+                    logger,
+                    new ConstantCommand(logger, document)
                 );
                 await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                     dedent(`
@@ -674,6 +705,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("throws for multiple background tags", async () => {
+                const logger = getMockedLogger();
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedPrefixMultipleBackground.feature"
                 );
@@ -683,7 +715,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         prefixes: { precondition: "Precondition:" },
                         displayCloudHelp: true,
                     },
-                    new ConstantCommand(document)
+                    logger,
+                    new ConstantCommand(logger, document)
                 );
                 await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                     dedent(`

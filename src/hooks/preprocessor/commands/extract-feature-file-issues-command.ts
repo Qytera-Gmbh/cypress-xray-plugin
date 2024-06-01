@@ -7,6 +7,7 @@ import {
     multipleTestKeysInCucumberScenarioError,
 } from "../../../util/errors";
 import { HELP } from "../../../util/help";
+import { Logger } from "../../../util/logging";
 import { Command, Computable } from "../../command";
 import {
     getCucumberPreconditionIssueComments,
@@ -22,8 +23,8 @@ interface Parameters {
 
 export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueData, Parameters> {
     private readonly document: Computable<GherkinDocument>;
-    constructor(parameters: Parameters, document: Computable<GherkinDocument>) {
-        super(parameters);
+    constructor(parameters: Parameters, logger: Logger, document: Computable<GherkinDocument>) {
+        super(parameters, logger);
         this.document = document;
     }
 

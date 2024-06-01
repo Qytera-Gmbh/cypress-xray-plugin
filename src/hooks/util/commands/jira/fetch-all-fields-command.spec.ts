@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { getMockedJiraClient } from "../../../../../test/mocks";
+import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks";
 import { FetchAllFieldsCommand } from "./fetch-all-fields-command";
 
 chai.use(chaiAsPromised);
@@ -37,7 +37,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
             ];
             jiraClient.getFields.onFirstCall().resolves(fields);
-            const command = new FetchAllFieldsCommand({ jiraClient: jiraClient });
+            const command = new FetchAllFieldsCommand(
+                { jiraClient: jiraClient },
+                getMockedLogger()
+            );
             expect(await command.compute()).to.deep.eq(fields);
         });
     });

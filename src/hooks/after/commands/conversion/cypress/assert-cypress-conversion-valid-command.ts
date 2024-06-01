@@ -1,12 +1,13 @@
 import { XrayTestExecutionResults } from "../../../../../types/xray/import-test-execution-results";
 import { SkippedError } from "../../../../../util/errors";
+import { Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 
-export class AssertCypressConversionValidCommand extends Command<void, void> {
+export class AssertCypressConversionValidCommand extends Command<void, null> {
     private readonly xrayTestExecutionResults: Computable<XrayTestExecutionResults>;
 
-    constructor(xrayTestExecutionResults: Computable<XrayTestExecutionResults>) {
-        super();
+    constructor(logger: Logger, xrayTestExecutionResults: Computable<XrayTestExecutionResults>) {
+        super(null, logger);
         this.xrayTestExecutionResults = xrayTestExecutionResults;
     }
 

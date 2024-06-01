@@ -1,6 +1,6 @@
 import { XrayClient } from "../../../../client/xray/xray-client";
 import { CucumberMultipart } from "../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { Level } from "../../../../util/logging";
+import { Level, Logger } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 
 interface Parameters {
@@ -9,8 +9,12 @@ interface Parameters {
 
 export class ImportExecutionCucumberCommand extends Command<string, Parameters> {
     private readonly cucumberMultipart: Computable<CucumberMultipart>;
-    constructor(parameters: Parameters, cucumberMultipart: Computable<CucumberMultipart>) {
-        super(parameters);
+    constructor(
+        parameters: Parameters,
+        logger: Logger,
+        cucumberMultipart: Computable<CucumberMultipart>
+    ) {
+        super(parameters, logger);
         this.cucumberMultipart = cucumberMultipart;
     }
 

@@ -1,6 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
+import { getMockedLogger } from "../../../../../../test/mocks";
 import {
     XrayTest,
     XrayTestExecutionResults,
@@ -13,6 +14,7 @@ chai.use(chaiAsPromised);
 describe(path.relative(process.cwd(), __filename), () => {
     describe(AssertCypressConversionValidCommand.name, () => {
         it("correctly verifies xray json data", async () => {
+            const logger = getMockedLogger();
             const xrayJson: XrayTestExecutionResults = {
                 testExecutionKey: "CYP-123",
                 info: {
@@ -21,11 +23,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
                 tests: [{ status: "PASS" }, { status: "FAIL" }],
             };
-            const command = new AssertCypressConversionValidCommand(new ConstantCommand(xrayJson));
+            const command = new AssertCypressConversionValidCommand(
+                logger,
+                new ConstantCommand(logger, xrayJson)
+            );
             await expect(command.compute()).to.eventually.not.be.rejected;
         });
 
         it("throws for missing xray test arrays", async () => {
+            const logger = getMockedLogger();
             const xrayJson: XrayTestExecutionResults = {
                 testExecutionKey: "CYP-123",
                 info: {
@@ -33,13 +39,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                     description: "Run using Cypress",
                 },
             };
-            const command = new AssertCypressConversionValidCommand(new ConstantCommand(xrayJson));
+            const command = new AssertCypressConversionValidCommand(
+                logger,
+                new ConstantCommand(logger, xrayJson)
+            );
             await expect(command.compute()).to.be.rejectedWith(
                 "Skipping Cypress results upload: No native Cypress tests were executed"
             );
         });
 
         it("throws for empty xray test arrays", async () => {
+            const logger = getMockedLogger();
             const xrayJson: XrayTestExecutionResults = {
                 testExecutionKey: "CYP-123",
                 info: {
@@ -48,7 +58,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
                 tests: [] as unknown as [XrayTest, ...XrayTest[]],
             };
-            const command = new AssertCypressConversionValidCommand(new ConstantCommand(xrayJson));
+            const command = new AssertCypressConversionValidCommand(
+                logger,
+                new ConstantCommand(logger, xrayJson)
+            );
             await expect(command.compute()).to.be.rejectedWith(
                 "Skipping Cypress results upload: No native Cypress tests were executed"
             );

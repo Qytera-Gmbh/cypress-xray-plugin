@@ -1,7 +1,7 @@
 import { JiraClient } from "../../../../client/jira/jira-client";
 import { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
-import { Level } from "../../../../util/logging";
+import { Level, Logger } from "../../../../util/logging";
 import { unknownToString } from "../../../../util/string";
 import { Command, Computable } from "../../../command";
 import { FieldValueMap } from "./get-field-values-command";
@@ -19,10 +19,11 @@ export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Comman
     private readonly fieldValues: Computable<StringMap<FieldValueMap[F]>>;
     constructor(
         parameters: Parameters<F>,
+        logger: Logger,
         fieldId: Computable<string>,
         fieldValues: Computable<StringMap<FieldValueMap[F]>>
     ) {
-        super(parameters);
+        super(parameters, logger);
         this.fieldId = fieldId;
         this.fieldValues = fieldValues;
     }

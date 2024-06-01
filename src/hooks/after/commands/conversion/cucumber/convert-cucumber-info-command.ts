@@ -5,6 +5,7 @@ import {
     InternalXrayOptions,
 } from "../../../../../types/plugin";
 import { CucumberMultipartInfo } from "../../../../../types/xray/requests/import-execution-cucumber-multipart-info";
+import { Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 import {
     RunData,
@@ -35,10 +36,11 @@ export abstract class ConvertCucumberInfoCommand extends Command<
     private readonly runInformation: Computable<RunData>;
     constructor(
         parameters: Parameters,
+        logger: Logger,
         testExecutionIssueType: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>
     ) {
-        super(parameters);
+        super(parameters, logger);
         this.testExecutionIssueType = testExecutionIssueType;
         this.runInformation = runInformation;
     }
@@ -60,6 +62,7 @@ export class ConvertCucumberInfoServerCommand extends ConvertCucumberInfoCommand
     private readonly testEnvironmentsId?: Computable<string>;
     constructor(
         options: Parameters,
+        logger: Logger,
         testExecutionIssueType: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>,
         fieldIds?: {
@@ -67,7 +70,7 @@ export class ConvertCucumberInfoServerCommand extends ConvertCucumberInfoCommand
             testEnvironmentsId?: Computable<string>;
         }
     ) {
-        super(options, testExecutionIssueType, runInformation);
+        super(options, logger, testExecutionIssueType, runInformation);
         if (this.parameters.jira.testPlanIssueKey && !fieldIds?.testPlanId) {
             throw new Error(
                 "A test plan issue key was supplied without the test plan Jira field ID"

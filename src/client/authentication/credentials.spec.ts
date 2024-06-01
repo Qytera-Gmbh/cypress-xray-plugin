@@ -11,16 +11,22 @@ chai.use(chaiAsPromised);
 
 describe("credentials", () => {
     describe(JwtCredentials.name, () => {
-        let credentials: JwtCredentials = new JwtCredentials("id", "secret", "https://example.org");
+        let restClient = getMockedRestClient();
+        let credentials: JwtCredentials = new JwtCredentials(
+            "id",
+            "secret",
+            "https://example.org",
+            restClient
+        );
 
         beforeEach(() => {
-            credentials = new JwtCredentials("id", "secret", "https://example.org");
+            restClient = getMockedRestClient();
+            credentials = new JwtCredentials("id", "secret", "https://example.org", restClient);
         });
 
         describe(credentials.getAuthorizationHeader.name, () => {
             it("returns authorization headers", async () => {
                 getMockedLogger({ allowUnstubbedCalls: true });
-                const restClient = getMockedRestClient();
                 restClient.post.onFirstCall().resolves({
                     status: HttpStatusCode.Found,
                     data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
@@ -36,7 +42,6 @@ describe("credentials", () => {
 
             it("authorizes once only", async () => {
                 getMockedLogger({ allowUnstubbedCalls: true });
-                const restClient = getMockedRestClient();
                 restClient.post.resolves({
                     status: HttpStatusCode.Found,
                     data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
@@ -59,7 +64,6 @@ describe("credentials", () => {
 
             it("handles unparseable tokens", async () => {
                 getMockedLogger({ allowUnstubbedCalls: true });
-                const restClient = getMockedRestClient();
                 restClient.post.onFirstCall().resolves({
                     status: HttpStatusCode.Found,
                     data: "<div>Demo Page</div>",
@@ -68,13 +72,12 @@ describe("credentials", () => {
                     config: { headers: new AxiosHeaders() },
                 });
                 await expect(credentials.getAuthorizationHeader()).to.eventually.be.rejectedWith(
-                    "Expected to receive a JWT token, but did not"
+                    "Authentication failed"
                 );
             });
 
             it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
-                const restClient = getMockedRestClient();
                 restClient.post.onFirstCall().rejects(
                     new AxiosError(
                         "Request failed with status code 404",
@@ -108,7 +111,6 @@ describe("credentials", () => {
             it("logs progress", async () => {
                 const clock = useFakeTimers();
                 const logger = getMockedLogger();
-                const restClient = getMockedRestClient();
                 restClient.post.onFirstCall().returns(
                     new Promise((resolve) => {
                         setTimeout(() => {

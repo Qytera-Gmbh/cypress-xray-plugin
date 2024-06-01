@@ -9,9 +9,11 @@ import { GetUpdatedIssuesCommand } from "./get-updated-issues-command";
 describe(path.relative(process.cwd(), __filename), () => {
     describe(GetUpdatedIssuesCommand.name, () => {
         it("returns all affected issues", async () => {
+            const logger = getMockedLogger();
             const command = new GetUpdatedIssuesCommand(
-                new ConstantCommand(["CYP-123", "CYP-456", "CYP-789", "CYP-001"]),
-                new ConstantCommand({
+                logger,
+                new ConstantCommand(logger, ["CYP-123", "CYP-456", "CYP-789", "CYP-001"]),
+                new ConstantCommand(logger, {
                     errors: [],
                     updatedOrCreatedIssues: ["CYP-123", "CYP-456", "CYP-789", "CYP-001"],
                 })
@@ -26,14 +28,15 @@ describe(path.relative(process.cwd(), __filename), () => {
     });
 
     it("warns about issues not updated by Jira", async () => {
+        const logger = getMockedLogger();
         const command = new GetUpdatedIssuesCommand(
-            new ConstantCommand(["CYP-123", "CYP-756"]),
-            new ConstantCommand({
+            logger,
+            new ConstantCommand(logger, ["CYP-123", "CYP-756"]),
+            new ConstantCommand(logger, {
                 errors: [],
                 updatedOrCreatedIssues: [],
             })
         );
-        const logger = getMockedLogger();
         expect(await command.compute()).to.deep.eq([]);
         expect(logger.message).to.have.been.calledWithExactly(
             Level.WARNING,
@@ -56,14 +59,15 @@ describe(path.relative(process.cwd(), __filename), () => {
     });
 
     it("warns about unknown issues updated by Jira", async () => {
+        const logger = getMockedLogger();
         const command = new GetUpdatedIssuesCommand(
-            new ConstantCommand([]),
-            new ConstantCommand({
+            logger,
+            new ConstantCommand(logger, []),
+            new ConstantCommand(logger, {
                 errors: [],
                 updatedOrCreatedIssues: ["CYP-123", "CYP-756"],
             })
         );
-        const logger = getMockedLogger();
         expect(await command.compute()).to.deep.eq([]);
         expect(logger.message).to.have.been.calledWithExactly(
             Level.WARNING,
@@ -86,14 +90,15 @@ describe(path.relative(process.cwd(), __filename), () => {
     });
 
     it("warns about issue key mismatches", async () => {
+        const logger = getMockedLogger();
         const command = new GetUpdatedIssuesCommand(
-            new ConstantCommand(["CYP-123", "CYP-756", "CYP-42"]),
-            new ConstantCommand({
+            logger,
+            new ConstantCommand(logger, ["CYP-123", "CYP-756", "CYP-42"]),
+            new ConstantCommand(logger, {
                 errors: [],
                 updatedOrCreatedIssues: ["CYP-536", "CYP-552", "CYP-756"],
             })
         );
-        const logger = getMockedLogger();
         expect(await command.compute()).to.deep.eq(["CYP-756"]);
         expect(logger.message).to.have.been.calledWithExactly(
             Level.WARNING,

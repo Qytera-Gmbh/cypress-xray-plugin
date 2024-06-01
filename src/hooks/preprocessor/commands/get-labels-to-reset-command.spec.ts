@@ -9,13 +9,15 @@ import { GetLabelsToResetCommand } from "./get-labels-to-reset-command";
 describe(path.relative(process.cwd(), __filename), () => {
     describe(GetLabelsToResetCommand.name, () => {
         it("returns labels of issues to reset", async () => {
+            const logger = getMockedLogger();
             const command = new GetLabelsToResetCommand(
-                new ConstantCommand({
+                logger,
+                new ConstantCommand(logger, {
                     ["CYP-123"]: ["a tag"],
                     ["CYP-456"]: ["tag 1", "tag 2"],
                     ["CYP-789"]: ["another tag"],
                 }),
-                new ConstantCommand({
+                new ConstantCommand(logger, {
                     ["CYP-123"]: ["a tag"],
                     ["CYP-456"]: ["tag 2"],
                     ["CYP-789"]: [],
@@ -28,17 +30,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("warns about unknown old labels", async () => {
+            const logger = getMockedLogger();
             const command = new GetLabelsToResetCommand(
-                new ConstantCommand({
+                logger,
+                new ConstantCommand(logger, {
                     ["CYP-789"]: ["another tag"],
                 }),
-                new ConstantCommand({
+                new ConstantCommand(logger, {
                     ["CYP-123"]: ["a tag"],
                     ["CYP-456"]: ["tag 1", "tag 2"],
                     ["CYP-789"]: ["another tag"],
                 })
             );
-            const logger = getMockedLogger();
             expect(await command.compute()).to.deep.eq({});
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,

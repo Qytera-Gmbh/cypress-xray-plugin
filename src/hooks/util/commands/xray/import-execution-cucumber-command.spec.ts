@@ -31,7 +31,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     xrayClient: xrayClient,
                 },
-                new ConstantCommand(multipart)
+                logger,
+                new ConstantCommand(logger, multipart)
             );
             xrayClient.importExecutionCucumberMultipart
                 .withArgs(multipart.features, multipart.info)

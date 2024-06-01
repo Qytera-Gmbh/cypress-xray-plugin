@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-export interface ResolvedConfigOptions_V12<ComponentDevServerOpts = unknown> {
+export interface ResolvedConfigOptions<ComponentDevServerOpts = unknown> {
     baseUrl: string | null;
     env: Record<string, unknown>;
     excludeSpecPattern: string | string[];
@@ -37,8 +37,8 @@ export interface ResolvedConfigOptions_V12<ComponentDevServerOpts = unknown> {
     viewportWidth: number;
     animationDistanceThreshold: number;
     waitForAnimations: boolean;
-    scrollBehavior: scrollBehaviorOptions_V12;
-    experimentalCspAllowList: boolean | experimentalCspAllowedDirectives_V12[];
+    scrollBehavior: scrollBehaviorOptions;
+    experimentalCspAllowList: boolean | experimentalCspAllowedDirectives[];
     experimentalInteractiveRunEvents: boolean;
     experimentalModifyObstructiveThirdPartyCode: boolean;
     experimentalSkipDomainInjection: string[] | null;
@@ -54,23 +54,23 @@ export interface ResolvedConfigOptions_V12<ComponentDevServerOpts = unknown> {
     specPattern: string | string[];
     userAgent: null | string;
     experimentalFetchPolyfill: boolean;
-    component: ComponentConfigOptions_V12<ComponentDevServerOpts>;
-    e2e: EndToEndConfigOptions_V12;
-    clientCertificates: ClientCertificate_V12[];
+    component: ComponentConfigOptions<ComponentDevServerOpts>;
+    e2e: EndToEndConfigOptions;
+    clientCertificates: ClientCertificate[];
     indexHtmlFile: string;
 }
-export type TestingType_V12 = "e2e" | "component";
-export type ConfigOptions_V12<ComponentDevServerOpts = unknown> = Partial<
-    UserConfigOptions_V12<ComponentDevServerOpts>
+export type TestingType = "e2e" | "component";
+export type ConfigOptions<ComponentDevServerOpts = unknown> = Partial<
+    UserConfigOptions<ComponentDevServerOpts>
 > & {
     hosts?: null | Record<string, string>;
 };
-interface Auth_V12 {
+interface Auth {
     username: string;
     password: string;
 }
-interface RemoteState_V12 {
-    auth?: Auth_V12;
+interface RemoteState {
+    auth?: Auth;
     domainName: string;
     strategy: "file" | "http";
     origin: string;
@@ -78,13 +78,13 @@ interface RemoteState_V12 {
     props: Record<string, unknown>;
     visiting: string;
 }
-type BrowserName_V12 = "electron" | "chrome" | "chromium" | "firefox" | "edge";
-type BrowserChannel_V12 = "stable" | "canary" | "beta" | "dev" | "nightly";
-type BrowserFamily_V12 = "chromium" | "firefox" | "webkit";
-interface Browser_V12 {
-    name: BrowserName_V12;
-    family: BrowserFamily_V12;
-    channel: BrowserChannel_V12;
+type BrowserName = "electron" | "chrome" | "chromium" | "firefox" | "edge";
+type BrowserChannel = "stable" | "canary" | "beta" | "dev" | "nightly";
+type BrowserFamily = "chromium" | "firefox" | "webkit";
+interface Browser {
+    name: BrowserName;
+    family: BrowserFamily;
+    channel: BrowserChannel;
     displayName: string;
     version: string;
     majorVersion: number | string;
@@ -96,57 +96,57 @@ interface Browser_V12 {
     minSupportedVersion?: number;
     unsupportedVersion?: boolean;
 }
-type CypressSpecType_V12 = "integration" | "component";
+type CypressSpecType = "integration" | "component";
 interface Spec {
     name: string;
     relative: string;
     absolute: string;
     specFilter?: string;
-    specType?: CypressSpecType_V12;
+    specType?: CypressSpecType;
 }
-interface Cypress_V12 {
+interface Cypress {
     spec: Spec;
 }
-interface SinonSpyAgent_V12<A extends sinon.SinonSpy> {
-    log(shouldOutput?: boolean): Omit<A, "withArgs"> & Agent_V12<A>;
-    as(alias: string): Omit<A, "withArgs"> & Agent_V12<A>;
-    withArgs(...args: unknown[]): Omit<A, "withArgs"> & Agent_V12<A>;
+interface SinonSpyAgent<A extends sinon.SinonSpy> {
+    log(shouldOutput?: boolean): Omit<A, "withArgs"> & Agent<A>;
+    as(alias: string): Omit<A, "withArgs"> & Agent<A>;
+    withArgs(...args: unknown[]): Omit<A, "withArgs"> & Agent<A>;
 }
-type Agent_V12<T extends sinon.SinonSpy> = SinonSpyAgent_V12<T> & T;
-type experimentalCspAllowedDirectives_V12 =
+type Agent<T extends sinon.SinonSpy> = SinonSpyAgent<T> & T;
+type experimentalCspAllowedDirectives =
     | "default-src"
     | "child-src"
     | "frame-src"
     | "script-src"
     | "script-src-elem"
     | "form-action";
-type scrollBehaviorOptions_V12 = false | "center" | "top" | "bottom" | "nearest";
-interface PEMCert_V12 {
+type scrollBehaviorOptions = false | "center" | "top" | "bottom" | "nearest";
+interface PEMCert {
     cert: string;
     key: string;
     passphrase?: string;
 }
-interface PFXCert_V12 {
+interface PFXCert {
     pfx: string;
     passphrase?: string;
 }
-interface ClientCertificate_V12 {
+interface ClientCertificate {
     url: string;
     ca?: string[];
-    certs: PEMCert_V12[] | PFXCert_V12[];
+    certs: PEMCert[] | PFXCert[];
 }
-interface EndToEndConfigOptions_V12 extends Omit<CoreConfigOptions_V12, "indexHtmlFile"> {
+interface EndToEndConfigOptions extends Omit<CoreConfigOptions, "indexHtmlFile"> {
     experimentalRunAllSpecs?: boolean;
     experimentalOriginDependencies?: boolean;
 }
-interface RuntimeConfigOptions_V12 extends Partial<RuntimeServerConfigOptions_V12> {
+interface RuntimeConfigOptions extends Partial<RuntimeServerConfigOptions> {
     configFile: string;
     arch: string;
-    browsers: Browser_V12[];
+    browsers: Browser[];
     hosts: null | Record<string, string>;
     isInteractive: boolean;
     platform: "linux" | "darwin" | "win32";
-    remote: RemoteState_V12;
+    remote: RemoteState;
     version: string;
     namespace: string;
     projectRoot: string;
@@ -154,8 +154,8 @@ interface RuntimeConfigOptions_V12 extends Partial<RuntimeServerConfigOptions_V1
     devServerPublicPathRoute: string;
     cypressBinaryRoot: string;
 }
-interface RuntimeServerConfigOptions_V12 {
-    browser: Browser_V12;
+interface RuntimeServerConfigOptions {
+    browser: Browser;
     autoOpen: boolean;
     browserUrl: string;
     clientRoute: string;
@@ -167,73 +167,71 @@ interface RuntimeServerConfigOptions_V12 {
     parentTestsFolderDisplay: string;
     projectName: string;
     proxyUrl: string;
-    remote: RemoteState_V12;
+    remote: RemoteState;
     report: boolean;
     reporterRoute: string;
     reporterUrl: string;
     socketId: null | string;
     socketIoCookie: string;
     socketIoRoute: string;
-    spec: Cypress_V12["spec"] | null;
-    specs: Cypress_V12["spec"][];
+    spec: Cypress["spec"] | null;
+    specs: Cypress["spec"][];
 }
-type CoreConfigOptions_V12 = Partial<Omit<ResolvedConfigOptions_V12, TestingType_V12>>;
-type DefineDevServerConfig_V12 = Record<string, unknown>;
-type PickConfigOpt_V12<T> = T extends keyof DefineDevServerConfig_V12
-    ? DefineDevServerConfig_V12[T]
-    : unknown;
-interface AngularDevServerProjectConfig_V12 {
+type CoreConfigOptions = Partial<Omit<ResolvedConfigOptions, TestingType>>;
+type DefineDevServerConfig = Record<string, unknown>;
+type PickConfigOpt<T> = T extends keyof DefineDevServerConfig ? DefineDevServerConfig[T] : unknown;
+interface AngularDevServerProjectConfig {
     root: string;
     sourceRoot: string;
     buildOptions: Record<string, unknown>;
 }
-type DevServerFn_V12<ComponentDevServerOpts = unknown> = (
-    cypressDevServerConfig: DevServerConfig_V12,
+type DevServerFn<ComponentDevServerOpts = unknown> = (
+    cypressDevServerConfig: DevServerConfig,
     devServerConfig: ComponentDevServerOpts
-) => ResolvedDevServerConfig_V12 | Promise<ResolvedDevServerConfig_V12>;
-type ConfigHandler_V12<T> = T | (() => T | Promise<T>);
-type DevServerConfigOptions_V12 =
+) => ResolvedDevServerConfig | Promise<ResolvedDevServerConfig>;
+type ConfigHandler<T> = T | (() => T | Promise<T>);
+type DevServerConfigOptions =
     | {
           bundler: "webpack";
           framework: "react" | "vue" | "vue-cli" | "nuxt" | "create-react-app" | "next" | "svelte";
-          webpackConfig?: ConfigHandler_V12<PickConfigOpt_V12<"webpackConfig">>;
+          webpackConfig?: ConfigHandler<PickConfigOpt<"webpackConfig">>;
       }
     | {
           bundler: "vite";
           framework: "react" | "vue" | "svelte";
-          viteConfig?: ConfigHandler_V12<
-              Omit<Exclude<PickConfigOpt_V12<"viteConfig">, undefined>, "base" | "root">
+          viteConfig?: ConfigHandler<
+              Omit<Exclude<PickConfigOpt<"viteConfig">, undefined>, "base" | "root">
           >;
       }
     | {
           bundler: "webpack";
           framework: "angular";
-          webpackConfig?: ConfigHandler_V12<PickConfigOpt_V12<"webpackConfig">>;
+          webpackConfig?: ConfigHandler<PickConfigOpt<"webpackConfig">>;
           options?: {
-              projectConfig: AngularDevServerProjectConfig_V12;
+              projectConfig: AngularDevServerProjectConfig;
           };
       };
-interface ComponentConfigOptions_V12<ComponentDevServerOpts = unknown>
-    extends Omit<CoreConfigOptions_V12, "baseUrl" | "experimentalStudio"> {
-    devServer: DevServerFn_V12<ComponentDevServerOpts> | DevServerConfigOptions_V12;
+interface ComponentConfigOptions<ComponentDevServerOpts = unknown>
+    extends Omit<CoreConfigOptions, "baseUrl" | "experimentalStudio"> {
+    devServer: DevServerFn<ComponentDevServerOpts> | DevServerConfigOptions;
     devServerConfig?: ComponentDevServerOpts;
     experimentalSingleTabRunMode?: boolean;
 }
-type UserConfigOptions_V12<ComponentDevServerOpts = unknown> = Omit<
-    ResolvedConfigOptions_V12<ComponentDevServerOpts>,
+type UserConfigOptions<ComponentDevServerOpts = unknown> = Omit<
+    ResolvedConfigOptions<ComponentDevServerOpts>,
     "baseUrl" | "excludeSpecPattern" | "supportFile" | "specPattern" | "indexHtmlFile"
 >;
-interface PluginConfigOptions_V12 extends ResolvedConfigOptions_V12, RuntimeConfigOptions_V12 {
+interface PluginConfigOptions extends ResolvedConfigOptions, RuntimeConfigOptions {
     projectRoot: string;
-    testingType: TestingType_V12;
+    testingType: TestingType;
     version: string;
 }
-interface DevServerConfig_V12 {
+interface DevServerConfig {
     specs: Spec[];
-    cypressConfig: PluginConfigOptions_V12;
+    cypressConfig: PluginConfigOptions;
     devServerEvents: NodeJS.EventEmitter;
 }
-interface ResolvedDevServerConfig_V12 {
+interface ResolvedDevServerConfig {
     port: number;
     close: (done?: (err?: Error) => unknown) => void;
 }

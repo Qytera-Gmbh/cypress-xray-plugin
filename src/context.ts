@@ -3,20 +3,24 @@ import {
     JwtCredentials,
     PatCredentials,
 } from "./client/authentication/credentials";
+import { AxiosRestClient } from "./client/https/requests";
 import { BaseJiraClient } from "./client/jira/jira-client";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud";
 import { XrayClientServer } from "./client/xray/xray-client-server";
 import { ENV_NAMES } from "./env";
+import { Command } from "./hooks/command";
 import {
     ClientCombination,
     CypressXrayPluginOptions,
+    HttpClientCombination,
     InternalCucumberOptions,
+    InternalCypressXrayPluginOptions,
+    InternalHttpOptions,
     InternalJiraOptions,
     InternalPluginOptions,
-    InternalSslOptions,
     InternalXrayOptions,
-    PluginContext,
 } from "./types/plugin";
+import { XrayEvidenceItem } from "./types/xray/import-test-execution-results";
 import { dedent } from "./util/dedent";
 import {
     CucumberPreprocessorArgs,
@@ -24,10 +28,78 @@ import {
     importOptionalDependency,
 } from "./util/dependencies";
 import { errorMessage } from "./util/errors";
+import { ExecutableGraph } from "./util/graph/executable-graph";
 import { HELP } from "./util/help";
 import { LOG, Level } from "./util/logging";
-import { asArrayOfStrings, asBoolean, asInt, asString, parse } from "./util/parsing";
+import { asArrayOfStrings, asBoolean, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
+
+export interface EvidenceCollection {
+    addEvidence(issueKey: string, evidence: XrayEvidenceItem): void;
+    getEvidence(issueKey: string): XrayEvidenceItem[];
+}
+
+export class SimpleEvidenceCollection {
+    private readonly collectedEvidence = new Map<string, XrayEvidenceItem[]>();
+    addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
+        const currentEvidence = this.collectedEvidence.get(issueKey);
+        if (!currentEvidence) {
+            this.collectedEvidence.set(issueKey, [evidence]);
+        } else {
+            currentEvidence.push(evidence);
+        }
+    }
+    getEvidence(issueKey: string): XrayEvidenceItem[] {
+        return this.collectedEvidence.get(issueKey) ?? [];
+    }
+}
+
+export class PluginContext implements EvidenceCollection {
+    private readonly clients: ClientCombination;
+    private readonly internalOptions: InternalCypressXrayPluginOptions;
+    private readonly cypressOptions: Cypress.PluginConfigOptions;
+    private readonly evidenceCollection: EvidenceCollection;
+    private readonly graph: ExecutableGraph<Command>;
+
+    constructor(
+        clients: ClientCombination,
+        internalOptions: InternalCypressXrayPluginOptions,
+        cypressOptions: Cypress.PluginConfigOptions,
+        evidenceCollection: EvidenceCollection,
+        graph: ExecutableGraph<Command>
+    ) {
+        this.clients = clients;
+        this.internalOptions = internalOptions;
+        this.cypressOptions = cypressOptions;
+        this.evidenceCollection = evidenceCollection;
+        this.graph = graph;
+    }
+
+    public getClients(): ClientCombination {
+        return this.clients;
+    }
+
+    public getOptions(): InternalCypressXrayPluginOptions {
+        return this.internalOptions;
+    }
+
+    public getCypressOptions(): Cypress.PluginConfigOptions {
+        return this.cypressOptions;
+    }
+
+    public getGraph(): ExecutableGraph<Command> {
+        return this.graph;
+    }
+
+    public addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
+        this.evidenceCollection.addEvidence(issueKey, evidence);
+        LOG.message(Level.DEBUG, `Added evidence for test ${issueKey}: ${evidence.filename}`);
+    }
+
+    public getEvidence(issueKey: string): XrayEvidenceItem[] {
+        return this.evidenceCollection.getEvidence(issueKey);
+    }
+}
 
 let context: PluginContext | undefined = undefined;
 
@@ -35,12 +107,8 @@ export function getPluginContext(): PluginContext | undefined {
     return context;
 }
 
-export function setPluginContext(newContext: PluginContext): void {
+export function setPluginContext(newContext?: PluginContext): void {
     context = newContext;
-}
-
-export function clearPluginContext(): void {
-    context = undefined;
 }
 
 /**
@@ -162,6 +230,10 @@ export function initXrayOptions(
         testEnvironments:
             parse(env, ENV_NAMES.xray.testEnvironments, asArrayOfStrings) ??
             options?.testEnvironments,
+        uploadRequests:
+            parse(env, ENV_NAMES.xray.uploadRequests, asBoolean) ??
+            options?.uploadRequests ??
+            false,
         uploadResults:
             parse(env, ENV_NAMES.xray.uploadResults, asBoolean) ?? options?.uploadResults ?? true,
         uploadScreenshots:
@@ -260,28 +332,52 @@ export async function initCucumberOptions(
     return undefined;
 }
 
-/**
- * Returns an {@link InternalSslOptions | `InternalOpenSSLOptions`} instance based on parsed
- * environment variables and a provided options object. Environment variables will take precedence
- * over the options set in the object.
- *
- * @param env - an object containing environment variables as properties
- * @param options - an options object containing OpenSSL options
- * @returns the constructed internal OpenSSL options
- */
-export function initSslOptions(
-    env: Cypress.ObjectLike,
-    options: CypressXrayPluginOptions["openSSL"]
-): InternalSslOptions {
+export function initHttpClients(
+    pluginOptions?: Pick<InternalPluginOptions, "debug">,
+    httpOptions?: InternalHttpOptions
+): HttpClientCombination {
+    if (httpOptions) {
+        const { jira, xray, ...httpConfig } = httpOptions;
+        if (jira ?? xray) {
+            return {
+                jira: new AxiosRestClient({
+                    debug: pluginOptions?.debug,
+                    http: {
+                        ...httpConfig,
+                        ...jira,
+                    },
+                }),
+                xray: new AxiosRestClient({
+                    debug: pluginOptions?.debug,
+                    http: {
+                        ...httpConfig,
+                        ...xray,
+                    },
+                }),
+            };
+        }
+        const httpClient = new AxiosRestClient({
+            debug: pluginOptions?.debug,
+            http: httpOptions,
+        });
+        return {
+            jira: httpClient,
+            xray: httpClient,
+        };
+    }
+    const httpClient = new AxiosRestClient({
+        debug: pluginOptions?.debug,
+    });
     return {
-        ["rootCAPath"]: parse(env, ENV_NAMES.openSSL.rootCAPath, asString) ?? options?.rootCAPath,
-        secureOptions: parse(env, ENV_NAMES.openSSL.secureOptions, asInt) ?? options?.secureOptions,
+        jira: httpClient,
+        xray: httpClient,
     };
 }
 
 export async function initClients(
     jiraOptions: InternalJiraOptions,
-    env: Cypress.ObjectLike
+    env: Cypress.ObjectLike,
+    httpClients: HttpClientCombination
 ): Promise<ClientCombination> {
     if (!jiraOptions.url) {
         throw new Error(
@@ -304,8 +400,8 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.username] as string,
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
-        await pingJiraInstance(jiraOptions.url, credentials);
-        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials);
+        await pingJiraInstance(jiraOptions.url, credentials, httpClients.jira);
+        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials, httpClients.jira);
         if (
             ENV_NAMES.authentication.xray.clientId in env &&
             ENV_NAMES.authentication.xray.clientSecret in env
@@ -318,10 +414,11 @@ export async function initClients(
             const xrayCredentials = new JwtCredentials(
                 env[ENV_NAMES.authentication.xray.clientId] as string,
                 env[ENV_NAMES.authentication.xray.clientSecret] as string,
-                `${XrayClientCloud.URL}/authenticate`
+                `${XrayClientCloud.URL}/authenticate`,
+                httpClients.xray
             );
             await pingXrayCloud(xrayCredentials);
-            const xrayClient = new XrayClientCloud(xrayCredentials);
+            const xrayClient = new XrayClientCloud(xrayCredentials, httpClients.xray);
             return {
                 kind: "cloud",
                 jiraClient: jiraClient,
@@ -341,12 +438,12 @@ export async function initClients(
         const credentials = new PatCredentials(
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
-        await pingJiraInstance(jiraOptions.url, credentials);
-        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials);
+        await pingJiraInstance(jiraOptions.url, credentials, httpClients.jira);
+        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials, httpClients.jira);
         // Xray server authentication: no username, only token.
         LOG.message(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials");
-        await pingXrayServer(jiraOptions.url, credentials);
-        const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
+        await pingXrayServer(jiraOptions.url, credentials, httpClients.xray);
+        const xrayClient = new XrayClientServer(jiraOptions.url, credentials, httpClients.xray);
         return {
             kind: "server",
             jiraClient: jiraClient,
@@ -365,14 +462,14 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.username] as string,
             env[ENV_NAMES.authentication.jira.password] as string
         );
-        await pingJiraInstance(jiraOptions.url, credentials);
-        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials);
+        await pingJiraInstance(jiraOptions.url, credentials, httpClients.jira);
+        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials, httpClients.jira);
         LOG.message(
             Level.INFO,
             "Jira username and password found. Setting up Xray server basic auth credentials"
         );
-        await pingXrayServer(jiraOptions.url, credentials);
-        const xrayClient = new XrayClientServer(jiraOptions.url, credentials);
+        await pingXrayServer(jiraOptions.url, credentials, httpClients.xray);
+        const xrayClient = new XrayClientServer(jiraOptions.url, credentials, httpClients.xray);
         return {
             kind: "server",
             jiraClient: jiraClient,

@@ -2,6 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import path from "path";
+import { getMockedLogger } from "../../../../test/mocks";
 import { IssueTypeDetails } from "../../../types/jira/responses/issue-type-details";
 import { dedent } from "../../../util/dedent";
 import { ConstantCommand } from "../../util/commands/constant-command";
@@ -12,6 +13,7 @@ chai.use(chaiAsPromised);
 describe(path.relative(process.cwd(), __filename), () => {
     describe(ExtractExecutionIssueTypeCommand.name, () => {
         it("extracts test execution issue types", async () => {
+            const logger = getMockedLogger();
             const issueTypes = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/jira/responses/getIssueTypes.json",
@@ -24,7 +26,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     testExecutionIssueType: "Test Execution",
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(issueTypes)
+                logger,
+                new ConstantCommand(logger, issueTypes)
             );
             expect(await command.compute()).to.deep.eq({
                 self: "https://example.org/rest/api/2/issuetype/10008",
@@ -42,6 +45,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws when the test execution types do not exist (cloud)", async () => {
+            const logger = getMockedLogger();
             const issueTypes = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/jira/responses/getIssueTypes.json",
@@ -54,7 +58,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     testExecutionIssueType: "Nonexistent Execution",
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(issueTypes)
+                logger,
+                new ConstantCommand(logger, issueTypes)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -78,6 +83,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws when the test execution types do not exist (server)", async () => {
+            const logger = getMockedLogger();
             const issueTypes = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/jira/responses/getIssueTypes.json",
@@ -90,7 +96,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     testExecutionIssueType: "Nonexistent Execution",
                     displayCloudHelp: false,
                 },
-                new ConstantCommand(issueTypes)
+                logger,
+                new ConstantCommand(logger, issueTypes)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -114,6 +121,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws when multiple test execution types exist (cloud)", async () => {
+            const logger = getMockedLogger();
             const issueTypes = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/jira/responses/getIssueTypes.json",
@@ -126,7 +134,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     testExecutionIssueType: "Task",
                     displayCloudHelp: true,
                 },
-                new ConstantCommand(issueTypes)
+                logger,
+                new ConstantCommand(logger, issueTypes)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
@@ -153,6 +162,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("throws when multiple test execution types exist (server)", async () => {
+            const logger = getMockedLogger();
             const issueTypes = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/jira/responses/getIssueTypes.json",
@@ -165,7 +175,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     testExecutionIssueType: "Task",
                     displayCloudHelp: false,
                 },
-                new ConstantCommand(issueTypes)
+                logger,
+                new ConstantCommand(logger, issueTypes)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
