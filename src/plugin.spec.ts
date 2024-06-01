@@ -6,7 +6,6 @@ import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../te
 import { mockedCypressEventEmitter } from "../test/util";
 import { AxiosRestClient } from "./client/https/requests";
 import * as context from "./context";
-import { PluginContext } from "./context";
 import * as afterRunHook from "./hooks/after/after-run";
 import * as synchronizeFeatureFileHook from "./hooks/preprocessor/file-preprocessor";
 import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
@@ -18,7 +17,7 @@ import { LOG, Level } from "./util/logging";
 
 describe(path.relative(process.cwd(), __filename), () => {
     let config: Cypress.PluginConfigOptions;
-    let pluginContext: PluginContext;
+    let pluginContext: context.PluginContext;
 
     beforeEach(() => {
         config = JSON.parse(
@@ -33,7 +32,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 url: "https://example.org",
             }
         );
-        pluginContext = new PluginContext(
+        pluginContext = new context.PluginContext(
             {
                 kind: "server",
                 jiraClient: jiraClient,
