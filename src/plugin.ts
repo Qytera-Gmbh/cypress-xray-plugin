@@ -58,6 +58,11 @@ export async function configureXrayPlugin(
         LOG.message(Level.INFO, "Plugin disabled. Skipping further configuration");
         return;
     }
+    if (config.isInteractive) {
+        pluginOptions.enabled = false;
+        LOG.message(Level.INFO, "Interactive mode detected, disabling plugin");
+        return;
+    }
     // Init logging before all other configurations because they might require an initialized
     // logging module.
     LOG.configure({

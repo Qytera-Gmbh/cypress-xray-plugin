@@ -74,7 +74,7 @@
     "fixturesFolder": "./cypress/85/cypress/fixtures",
     "hosts": null,
     "includeShadowDom": false,
-    "isInteractive": true,
+    "isInteractive": false,
     "isTextTerminal": true,
     "keystrokeDelay": 0,
     "modifyObstructiveCode": true,

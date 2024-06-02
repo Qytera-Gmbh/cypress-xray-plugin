@@ -89,7 +89,7 @@ interface ActionCallbacks {
     ["dev-server:start"]: (
         file: Cypress.DevServerConfig
     ) => Promise<Cypress.ResolvedDevServerConfig>;
-    task: (tasks: Cypress.Tasks) => void;
+    ["task"]: (tasks: Cypress.Tasks) => void;
 }
 
 export function mockedCypressEventEmitter<A extends Action>(

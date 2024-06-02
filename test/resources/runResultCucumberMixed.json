@@ -486,7 +486,7 @@
         "cypressBinaryRoot": "/home/cache/Cypress/Cache/12.17.0/Cypress/resources/app",
         "devServerPublicPathRoute": "/__cypress/src",
         "hosts": null,
-        "isInteractive": true,
+        "isInteractive": false,
         "namespace": "__cypress",
         "reporterRoute": "/__cypress/reporter",
         "socketIoCookie": "__socket",
