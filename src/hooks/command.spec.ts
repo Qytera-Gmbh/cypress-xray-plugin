@@ -114,5 +114,18 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(await command.compute()).to.eq(42);
             expect(await command.compute()).to.eq(42);
         });
+
+        it("returns the logger", () => {
+            const logger = getMockedLogger();
+            class SomeCommand extends Command<string, null> {
+                protected computeResult(): Promise<string> {
+                    return new Promise((resolve) => {
+                        resolve("ok");
+                    });
+                }
+            }
+            const command = new SomeCommand(null, logger);
+            expect(command.getLogger()).to.eq(logger);
+        });
     });
 });
