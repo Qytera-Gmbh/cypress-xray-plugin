@@ -110,7 +110,7 @@
         ],
         "cypressBinaryRoot": "~/opt/Cypress/Cache/13.0.0/Cypress/resources/app",
         "hosts": null,
-        "isInteractive": false,
+        "isInteractive": true,
         "version": "13.0.0",
         "browser": null,
         "cypressInternalEnv": "production"

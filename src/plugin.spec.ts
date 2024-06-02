@@ -90,7 +90,7 @@ describe("the plugin", () => {
         it("does nothing if run in interactive mode", async () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const mockedOn = Sinon.spy();
-            config.isInteractive = true;
+            config.isTextTerminal = false;
             await configureXrayPlugin(mockedOn, config, {
                 jira: {
                     projectKey: "ABC",

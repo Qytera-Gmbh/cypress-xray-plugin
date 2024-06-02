@@ -58,7 +58,9 @@ export async function configureXrayPlugin(
         LOG.message(Level.INFO, "Plugin disabled. Skipping further configuration");
         return;
     }
-    if (config.isInteractive) {
+    // We should be using config.isInteractive here, but cannot currently because of a bug.
+    // See: https://github.com/cypress-io/cypress/issues/20789
+    if (!config.isTextTerminal) {
         pluginOptions.enabled = false;
         LOG.message(Level.INFO, "Interactive mode detected, disabling plugin");
         return;
