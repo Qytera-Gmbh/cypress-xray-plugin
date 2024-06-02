@@ -115,8 +115,8 @@ export async function configureXrayPlugin(
                     dedent(`
                         Skipping results upload: Failed to run ${failedResult.failures.toString()} tests
 
-                            ${failedResult.message}
-                        `)
+                        ${failedResult.message}
+                    `)
                 );
             } else {
                 addUploadCommands(
@@ -204,12 +204,10 @@ async function exportGraph<V extends Command>(
     level: Level,
     prefix?: string
 ): Promise<void> {
-    const executionGraphFile = LOG.logToFile(
-        await graphToDot(graph, commandToDot, (edge) =>
-            graph.isOptional(edge) ? "dashed" : "bold"
-        ),
-        "execution-graph.vz"
+    const dotGraph = await graphToDot(graph, commandToDot, (edge) =>
+        graph.isOptional(edge) ? "dashed" : "bold"
     );
+    const executionGraphFile = LOG.logToFile(dotGraph, "execution-graph.vz");
     LOG.message(
         level,
         dedent(`

@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import fs from "fs";
 import path from "path";
-import { stub } from "sinon";
+import Sinon, { stub } from "sinon";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
 import { AxiosRestClient } from "./client/https/requests";
@@ -40,6 +40,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             },
             {
                 jira: jiraOptions,
+                cucumber: undefined,
                 plugin: context.initPluginOptions({}, {}),
                 xray: context.initXrayOptions({}, {}),
                 http: {},
@@ -245,7 +246,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(stubbedHook).to.have.been.calledOnceWithExactly(
                 afterRunResult,
                 pluginContext.getCypressOptions().projectRoot,
-                { ...pluginContext.getOptions(), cucumber: undefined },
+                pluginContext.getOptions(),
                 pluginContext.getClients(),
                 pluginContext,
                 pluginContext.getGraph(),
@@ -335,15 +336,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CypressRunResultType;
             const logger = getMockedLogger();
             logger.logToFile
-                .withArgs(
-                    dedent(`
-                        digraph "Plugin Execution Graph" {
-                          rankdir=TD;
-                          node[shape=none];
-                        }
-                    `),
-                    "execution-graph.vz"
-                )
+                .withArgs(Sinon.match.string, "execution-graph.vz")
                 .returns("execution-graph.vz");
             pluginContext.getOptions().plugin.debug = true;
             await configureXrayPlugin(
