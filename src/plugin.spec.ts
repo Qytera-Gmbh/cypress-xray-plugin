@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import fs from "fs";
 import { Agent } from "node:https";
-import { stub } from "sinon";
+import Sinon, { stub } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
 import { PatCredentials } from "./authentication/credentials";
@@ -85,6 +85,23 @@ describe("the plugin", () => {
                 Level.INFO,
                 "Plugin disabled. Skipping further configuration"
             );
+        });
+
+        it("does nothing if run in interactive mode", async () => {
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            const mockedOn = Sinon.spy();
+            config.isTextTerminal = false;
+            await configureXrayPlugin(mockedOn, config, {
+                jira: {
+                    projectKey: "ABC",
+                    url: "https://example.org",
+                },
+            });
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Interactive mode detected, disabling plugin"
+            );
+            expect(mockedOn).to.not.have.been.called;
         });
 
         it("initializes the plugin context with the provided options", async () => {
