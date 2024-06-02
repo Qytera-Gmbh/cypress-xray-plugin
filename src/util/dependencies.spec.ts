@@ -10,7 +10,7 @@ describe(path.relative(process.cwd(), __filename), () => {
     it("throws if a package is not installed", async () => {
         await expect(
             dependencies.importOptionalDependency("nonexistent")
-        ).to.eventually.be.rejectedWith(/Cannot find package 'nonexistent'/);
+        ).to.eventually.be.rejectedWith(/Cannot find module 'nonexistent'/);
     });
 
     it("imports @badeball/cypress-cucumber-preprocessor", async () => {
