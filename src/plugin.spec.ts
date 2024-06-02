@@ -70,6 +70,23 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
+        it("does nothing if run in interactive mode", async () => {
+            const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            const mockedOn = Sinon.spy();
+            config.isTextTerminal = false;
+            await configureXrayPlugin(mockedOn, config, {
+                jira: {
+                    projectKey: "ABC",
+                    url: "https://example.org",
+                },
+            });
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Interactive mode detected, disabling plugin"
+            );
+            expect(mockedOn).to.not.have.been.called;
+        });
+
         it("initializes the plugin context with the provided options", async () => {
             config.env = {
                 jsonEnabled: true,

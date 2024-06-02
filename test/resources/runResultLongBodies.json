@@ -635,7 +635,7 @@
                 "from": "default"
             },
             "isInteractive": {
-                "value": true,
+                "value": false,
                 "from": "default"
             }
         },
