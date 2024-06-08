@@ -8,6 +8,7 @@ import { XrayTestExecutionResults } from "../../src/types/xray/importTestExecuti
 import { dedent } from "../../src/util/dedent";
 import { IntegrationTest, runCypress, setupCypressProject } from "../sh";
 import { TIMEOUT_INTEGRATION_TESTS, expectToExist } from "../util";
+import { LOCAL_SERVER } from "./server";
 
 describe(path.relative(process.cwd(), __filename), () => {
     for (const test of [
@@ -75,7 +76,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         content: dedent(`
                             describe("request", () => {
                                 it("${test.testIssueKey} does something", () => {
-                                    cy.request("https://example.org");
+                                    cy.request("${LOCAL_SERVER.url}");
                                 });
                             });
                         `),

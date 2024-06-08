@@ -56,6 +56,8 @@ export async function configureXrayPlugin(
     const pluginOptions: InternalPluginOptions = initPluginOptions(config.env, options.plugin);
     if (!pluginOptions.enabled) {
         LOG.message(Level.INFO, "Plugin disabled. Skipping further configuration");
+        // Tasks must always be registered in case users forget to comment out imported commands.
+        registerDefaultTasks(on);
         return;
     }
     // We should be using config.isInteractive here, but cannot currently because of a bug.
@@ -63,6 +65,8 @@ export async function configureXrayPlugin(
     if (!config.isTextTerminal) {
         pluginOptions.enabled = false;
         LOG.message(Level.INFO, "Interactive mode detected, disabling plugin");
+        // Tasks must always be registered in case users forget to comment out imported commands.
+        registerDefaultTasks(on);
         return;
     }
     // Init logging before all other configurations because they might require an initialized
@@ -192,4 +196,15 @@ function logInitializationWarning(hook: "before:run" | "after:run" | "file:prepr
             Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
         `)
     );
+}
+
+function registerDefaultTasks(on: Cypress.PluginEvents) {
+    on("task", {
+        [PluginTask.OUTGOING_REQUEST]: (
+            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
+        ) => args.request,
+        [PluginTask.INCOMING_RESPONSE]: (
+            args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
+        ) => args.response,
+    });
 }
