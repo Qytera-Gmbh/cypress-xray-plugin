@@ -1,11 +1,12 @@
 import fs from "fs";
+import path from "path";
 import { JiraClient } from "../client/jira/jiraClient";
 import { EvidenceCollection } from "../context";
 import { ImportExecutionConverter } from "../conversion/importExecution/importExecutionConverter";
 import { ImportExecutionCucumberMultipartConverter } from "../conversion/importExecutionCucumberMultipart/importExecutionCucumberMultipartConverter";
 import { LOG, Level } from "../logging/logging";
 import { containsCucumberTest, containsNativeTest } from "../preprocessing/preprocessing";
-import { CypressRunResultType, RunResultType } from "../types/cypress/cypress";
+import { CypressRunResultType, PluginConfigOptions, RunResultType } from "../types/cypress/cypress";
 import { IssueTypeDetails } from "../types/jira/responses/issueTypeDetails";
 import { ClientCombination, InternalOptions } from "../types/plugin";
 import { nonNull } from "../types/util";
@@ -90,7 +91,9 @@ function retrieveIssueTypeInformation(
 
 export async function afterRunHook(
     results: CypressRunResultType,
-    options: InternalOptions,
+    options: InternalOptions & {
+        cypress: PluginConfigOptions;
+    },
     clients: ClientCombination,
     evidenceCollection: EvidenceCollection
 ) {
@@ -192,7 +195,9 @@ async function uploadCypressResults(
 
 async function uploadCucumberResults(
     runResult: CypressRunResultType,
-    options: InternalOptions,
+    options: InternalOptions & {
+        cypress: PluginConfigOptions;
+    },
     clients: ClientCombination
 ) {
     if (!options.cucumber?.preprocessor?.json.output) {
@@ -200,9 +205,13 @@ async function uploadCucumberResults(
             "Failed to upload Cucumber results: Cucumber preprocessor JSON report path not configured"
         );
     }
-    const results: CucumberMultipartFeature[] = JSON.parse(
-        fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
-    ) as CucumberMultipartFeature[];
+    // Cypress might change process.cwd(), so we need to query the root directory.
+    // See: https://github.com/cypress-io/cypress/issues/22689
+    const reportPath = path.join(
+        options.cypress.projectRoot,
+        options.cucumber.preprocessor.json.output
+    );
+    const results = JSON.parse(fs.readFileSync(reportPath, "utf-8")) as CucumberMultipartFeature[];
     const converter = new ImportExecutionCucumberMultipartConverter(
         options,
         clients.kind === "cloud",

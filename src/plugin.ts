@@ -1,3 +1,4 @@
+import path from "path";
 import {
     PluginContext,
     getPluginContext,
@@ -67,6 +68,11 @@ export async function configureXrayPlugin(
     }
     // Init logging before all other configurations because they might require an initialized
     // logging module.
+    if (!path.isAbsolute(pluginOptions.logDirectory)) {
+        // Cypress might change process.cwd(), so we need to query the root directory.
+        // See: https://github.com/cypress-io/cypress/issues/22689
+        pluginOptions.logDirectory = path.resolve(config.projectRoot, pluginOptions.logDirectory);
+    }
     LOG.configure({
         debug: pluginOptions.debug,
         logDirectory: pluginOptions.logDirectory,
@@ -140,7 +146,10 @@ export async function configureXrayPlugin(
                 }
                 await afterRunHook(
                     results as CypressCommandLine.CypressRunResult,
-                    context.getOptions(),
+                    {
+                        ...context.getOptions(),
+                        cypress: config,
+                    },
                     context.getClients(),
                     context
                 );
