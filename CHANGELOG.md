@@ -1,5 +1,19 @@
 # Changelog
 
+# `7.0.1`
+
+## Notable changes
+
+- Made plugin take Cypress project root into account ([#338](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/338), fixes [#337](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/337))
+
+- Changed plugin to only run in CLI mode ([#334](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/334))
+
+## Dependency updates
+
+- Bump axios from 1.6.8 to 1.7.2
+
+- Bump semver from 7.6.0 to 7.6.2
+
 # `7.0.0`
 
 ## Breaking changes
