@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import fs from "fs";
 import { Agent } from "node:https";
+import path from "path";
 import Sinon, { stub } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
@@ -187,9 +188,10 @@ describe("the plugin", () => {
                 testPlanIssueType: "QA-2",
                 url: "https://example.org",
             });
-            expect(stubbedContext.firstCall.args[0]?.getOptions().plugin).to.deep.eq(
-                options.plugin
-            );
+            expect(stubbedContext.firstCall.args[0]?.getOptions().plugin).to.deep.eq({
+                ...options.plugin,
+                logDirectory: path.resolve(config.projectRoot, "xyz"),
+            });
             expect(stubbedContext.firstCall.args[0]?.getOptions().xray).to.deep.eq(options.xray);
             expect(
                 stubbedContext.firstCall.args[0]?.getOptions().cucumber?.featureFileExtension
@@ -270,7 +272,33 @@ describe("the plugin", () => {
             logger.configure
                 .withArgs({
                     debug: pluginContext.getOptions().plugin.debug,
-                    logDirectory: pluginContext.getOptions().plugin.logDirectory,
+                    logDirectory: path.resolve(
+                        config.projectRoot,
+                        pluginContext.getOptions().plugin.logDirectory
+                    ),
+                })
+                .onFirstCall()
+                .returns();
+            await configureXrayPlugin(mockedCypressEventEmitter, config, options);
+        });
+
+        it("initializes the logging module without resolving absolute paths", async () => {
+            const stubbedClients = stub(context, "initClients");
+            const logger = getMockedLogger();
+            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
+            const options: CypressXrayPluginOptions = {
+                jira: {
+                    projectKey: "ABC",
+                    url: "https://example.org",
+                },
+                plugin: {
+                    logDirectory: path.resolve("."),
+                },
+            };
+            logger.configure
+                .withArgs({
+                    debug: false,
+                    logDirectory: path.resolve("."),
                 })
                 .onFirstCall()
                 .returns();
@@ -313,7 +341,12 @@ describe("the plugin", () => {
             expect(stubbedHook).to.have.been.calledOnceWithExactly(
                 beforeRunDetails.specs,
                 {
-                    ...pluginContext.getOptions(),
+                    jira: pluginContext.getOptions().jira,
+                    plugin: {
+                        ...pluginContext.getOptions().plugin,
+                        logDirectory: path.resolve(config.projectRoot, "logs"),
+                    },
+                    xray: pluginContext.getOptions().xray,
                     cucumber: undefined,
                     http: {},
                 },
@@ -384,13 +417,20 @@ describe("the plugin", () => {
                 pluginContext.getClients(),
                 {
                     ...pluginContext.getOptions(),
+                    plugin: {
+                        ...pluginContext.getOptions().plugin,
+                        logDirectory: path.resolve(config.projectRoot, "logs"),
+                    },
                     cucumber: undefined,
                 },
                 config
             );
             expect(stubbedHook).to.have.been.calledOnceWithExactly(
                 afterRunResult,
-                expectedContext.getOptions(),
+                {
+                    ...expectedContext.getOptions(),
+                    cypress: config,
+                },
                 expectedContext.getClients(),
                 expectedContext
             );
