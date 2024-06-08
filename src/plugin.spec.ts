@@ -71,9 +71,10 @@ describe("the plugin", () => {
     });
 
     describe("configureXrayPlugin", () => {
-        it("does nothing if disabled", async () => {
+        it("registers tasks only if disabled", async () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            await configureXrayPlugin(mockedCypressEventEmitter, config, {
+            const mockedOn = Sinon.spy();
+            await configureXrayPlugin(mockedOn, config, {
                 jira: {
                     projectKey: "ABC",
                     url: "https://example.org",
@@ -86,9 +87,10 @@ describe("the plugin", () => {
                 Level.INFO,
                 "Plugin disabled. Skipping further configuration"
             );
+            expect(mockedOn).to.have.been.calledOnceWith("task");
         });
 
-        it("does nothing if run in interactive mode", async () => {
+        it("registers tasks only if run in interactive mode", async () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const mockedOn = Sinon.spy();
             config.isTextTerminal = false;
@@ -102,7 +104,7 @@ describe("the plugin", () => {
                 Level.INFO,
                 "Interactive mode detected, disabling plugin"
             );
-            expect(mockedOn).to.not.have.been.called;
+            expect(mockedOn).to.have.been.calledOnceWith("task");
         });
 
         it("initializes the plugin context with the provided options", async () => {
