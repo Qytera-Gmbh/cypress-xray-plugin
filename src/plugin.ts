@@ -1,3 +1,4 @@
+import path from "path";
 import {
     PluginContext,
     SimpleEvidenceCollection,
@@ -61,6 +62,8 @@ export async function configureXrayPlugin(
     const pluginOptions: InternalPluginOptions = initPluginOptions(config.env, options.plugin);
     if (!pluginOptions.enabled) {
         LOG.message(Level.INFO, "Plugin disabled. Skipping further configuration");
+        // Tasks must always be registered in case users forget to comment out imported commands.
+        registerDefaultTasks(on);
         return;
     }
     // We should be using config.isInteractive here, but cannot currently because of a bug.
@@ -68,10 +71,17 @@ export async function configureXrayPlugin(
     if (!config.isTextTerminal) {
         pluginOptions.enabled = false;
         LOG.message(Level.INFO, "Interactive mode detected, disabling plugin");
+        // Tasks must always be registered in case users forget to comment out imported commands.
+        registerDefaultTasks(on);
         return;
     }
     // Init logging before all other configurations because they might require an initialized
     // logging module.
+    if (!path.isAbsolute(pluginOptions.logDirectory)) {
+        // Cypress might change process.cwd(), so we need to query the root directory.
+        // See: https://github.com/cypress-io/cypress/issues/22689
+        pluginOptions.logDirectory = path.resolve(config.projectRoot, pluginOptions.logDirectory);
+    }
     LOG.configure({
         debug: pluginOptions.debug,
         logDirectory: pluginOptions.logDirectory,
@@ -229,4 +239,15 @@ async function exportGraph<V extends Command>(
             - https://edotor.net/
         `)
     );
+}
+
+function registerDefaultTasks(on: Cypress.PluginEvents) {
+    on("task", {
+        [PluginTask.OUTGOING_REQUEST]: (
+            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
+        ) => args.request,
+        [PluginTask.INCOMING_RESPONSE]: (
+            args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
+        ) => args.response,
+    });
 }

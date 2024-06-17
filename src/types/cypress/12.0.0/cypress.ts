@@ -65,6 +65,11 @@ export type ConfigOptions<ComponentDevServerOpts = unknown> = Partial<
 > & {
     hosts?: null | Record<string, string>;
 };
+export interface PluginConfigOptions extends ResolvedConfigOptions, RuntimeConfigOptions {
+    projectRoot: string;
+    testingType: TestingType;
+    version: string;
+}
 interface Auth {
     username: string;
     password: string;
@@ -221,11 +226,6 @@ type UserConfigOptions<ComponentDevServerOpts = unknown> = Omit<
     ResolvedConfigOptions<ComponentDevServerOpts>,
     "baseUrl" | "excludeSpecPattern" | "supportFile" | "specPattern" | "indexHtmlFile"
 >;
-interface PluginConfigOptions extends ResolvedConfigOptions, RuntimeConfigOptions {
-    projectRoot: string;
-    testingType: TestingType;
-    version: string;
-}
 interface DevServerConfig {
     specs: Spec[];
     cypressConfig: PluginConfigOptions;

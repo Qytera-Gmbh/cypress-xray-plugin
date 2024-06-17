@@ -134,11 +134,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                 // Vertex data.
                 expect(resultsCommand.getValue()).to.deep.eq(result);
                 expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
-                    ...options,
+                    jira: options.jira,
+                    cucumber: options.cucumber,
+                    plugin: options.plugin,
+                    xray: options.xray,
                     evidenceCollection: new SimpleEvidenceCollection(),
                     useCloudStatusFallback: false,
                 });
-                expect(convertCypressInfoCommand.getParameters()).to.deep.eq(options);
+                expect(convertCypressInfoCommand.getParameters()).to.deep.eq({
+                    jira: options.jira,
+                    xray: options.xray,
+                });
                 expect(combineCypressJsonCommand.getParameters()).to.deep.eq({
                     testExecutionIssueKey: undefined,
                 });
@@ -365,9 +371,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                         testExecutionIssueType: "Test Execution",
                         displayCloudHelp: false,
                     });
-                    expect(convertCucumberInfoCommand.getParameters()).to.deep.eq(options);
+                    expect(convertCucumberInfoCommand.getParameters()).to.deep.eq({
+                        jira: options.jira,
+                        xray: options.xray,
+                        cucumber: options.cucumber,
+                    });
                     expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
-                        ...options,
+                        jira: options.jira,
+                        xray: options.xray,
                         useCloudTags: false,
                     });
                     expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
@@ -644,9 +655,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                         displayCloudHelp: true,
                     });
                     assertIsInstanceOf(convertCucumberInfoCommand, ConvertCucumberInfoCloudCommand);
-                    expect(convertCucumberInfoCommand.getParameters()).to.deep.eq(options);
+                    expect(convertCucumberInfoCommand.getParameters()).to.deep.eq({
+                        jira: options.jira,
+                        xray: options.xray,
+                        cucumber: options.cucumber,
+                    });
                     expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
-                        ...options,
+                        jira: options.jira,
+                        xray: options.xray,
                         useCloudTags: true,
                     });
                 });
@@ -724,9 +740,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                         testExecutionIssueType: "Test Run",
                         displayCloudHelp: true,
                     });
-                    expect(convertCucumberInfoCommand.getParameters()).to.deep.eq(options);
+                    expect(convertCucumberInfoCommand.getParameters()).to.deep.eq({
+                        jira: options.jira,
+                        xray: options.xray,
+                        cucumber: options.cucumber,
+                    });
                     expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
-                        ...options,
+                        jira: options.jira,
+                        xray: options.xray,
                         useCloudTags: true,
                     });
                     expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
@@ -974,11 +995,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                 // Vertex data.
                 expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
                 expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
-                    ...options,
+                    jira: options.jira,
+                    cucumber: options.cucumber,
+                    plugin: options.plugin,
+                    xray: options.xray,
                     evidenceCollection: new SimpleEvidenceCollection(),
                     useCloudStatusFallback: false,
                 });
-                expect(convertCypressInfoCommand.getParameters()).to.deep.eq(options);
+                expect(convertCypressInfoCommand.getParameters()).to.deep.eq({
+                    jira: options.jira,
+                    xray: options.xray,
+                });
                 expect(combineCypressJsonCommand.getParameters()).to.deep.eq({
                     testExecutionIssueKey: undefined,
                 });

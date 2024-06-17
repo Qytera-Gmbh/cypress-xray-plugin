@@ -1,6 +1,6 @@
 {
     "name": "cypress-xray-plugin",
-    "version": "7.0.0",
+    "version": "7.0.1",
     "description": "A Cypress plugin for uploading test results to Xray (test management for Jira)",
     "types": "index.d.ts",
     "author": "csvtuda",
@@ -37,7 +37,9 @@
     "scripts": {
         "test": "mocha --ignore 'test/integration/**/*'",
         "test:coverage": "nyc npm run test",
-        "test:integration": "mocha --ignore 'src/**/*' --ignore index.spec.ts test/integration",
+        "test:integration": "npm-run-all --parallel --race start:integration-server start:integration",
+        "start:integration-server": "serve -p 8080 --no-request-logging",
+        "start:integration": "mocha -- --ignore 'src/**/*' --ignore index.spec.ts test/integration",
         "build": "tsc --project tsconfigBuild.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
         "eslint": "eslint src/**/*.ts test/**/*.ts index.ts index.spec.ts"
     },
@@ -72,7 +74,9 @@
         "eslint": "^8.57.0",
         "eslint-plugin-tsdoc": "^0.3.0",
         "mocha": "^10.4.0",
+        "npm-run-all": "^4.1.5",
         "nyc": "^15.1.0",
+        "serve": "^14.2.3",
         "shx": "^0.3.4",
         "sinon": "^17.0.1",
         "sinon-chai": "^3.7.0",

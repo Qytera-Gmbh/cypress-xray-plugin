@@ -53,9 +53,10 @@ describe(path.relative(process.cwd(), __filename), () => {
     });
 
     describe(configureXrayPlugin.name, () => {
-        it("does nothing if disabled", async () => {
+        it("registers tasks only if disabled", async () => {
             const logger = getMockedLogger();
-            await configureXrayPlugin(mockedCypressEventEmitter, config, {
+            const mockedOn = Sinon.spy();
+            await configureXrayPlugin(mockedOn, config, {
                 jira: {
                     projectKey: "ABC",
                     url: "https://example.org",
@@ -68,9 +69,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 Level.INFO,
                 "Plugin disabled. Skipping further configuration"
             );
+            expect(mockedOn).to.have.been.calledOnceWith("task");
         });
 
-        it("does nothing if run in interactive mode", async () => {
+        it("registers tasks only if run in interactive mode", async () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const mockedOn = Sinon.spy();
             config.isTextTerminal = false;
@@ -84,7 +86,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 Level.INFO,
                 "Interactive mode detected, disabling plugin"
             );
-            expect(mockedOn).to.not.have.been.called;
+            expect(mockedOn).to.have.been.calledOnceWith("task");
         });
 
         it("initializes the plugin context with the provided options", async () => {
@@ -162,9 +164,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 testPlanIssueType: "QA-2",
                 url: "https://example.org",
             });
-            expect(stubbedContext.firstCall.args[0]?.getOptions().plugin).to.deep.eq(
-                options.plugin
-            );
+            expect(stubbedContext.firstCall.args[0]?.getOptions().plugin).to.deep.eq({
+                ...options.plugin,
+                logDirectory: path.resolve(config.projectRoot, "xyz"),
+            });
             expect(stubbedContext.firstCall.args[0]?.getOptions().xray).to.deep.eq(options.xray);
             expect(
                 stubbedContext.firstCall.args[0]?.getOptions().cucumber?.featureFileExtension
@@ -245,7 +248,47 @@ describe(path.relative(process.cwd(), __filename), () => {
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
             expect(logger.configure).to.have.been.calledWithExactly({
                 debug: pluginContext.getOptions().plugin.debug,
-                logDirectory: pluginContext.getOptions().plugin.logDirectory,
+                logDirectory: path.resolve(config.projectRoot, "logs"),
+            });
+        });
+
+        it("initializes the logging module with resolved relative paths", async () => {
+            const stubbedClients = stub(context, "initClients");
+            const logger = getMockedLogger();
+            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
+            const options: CypressXrayPluginOptions = {
+                jira: {
+                    projectKey: "ABC",
+                    url: "https://example.org",
+                },
+                plugin: {
+                    logDirectory: "log-directory",
+                },
+            };
+            await configureXrayPlugin(mockedCypressEventEmitter, config, options);
+            expect(logger.configure).to.have.been.calledWithExactly({
+                debug: pluginContext.getOptions().plugin.debug,
+                logDirectory: path.resolve(config.projectRoot, "log-directory"),
+            });
+        });
+
+        it("initializes the logging module without changing absolute paths", async () => {
+            const stubbedClients = stub(context, "initClients");
+            const logger = getMockedLogger();
+            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
+            const options: CypressXrayPluginOptions = {
+                jira: {
+                    projectKey: "ABC",
+                    url: "https://example.org",
+                },
+                plugin: {
+                    logDirectory: path.resolve("."),
+                },
+            };
+            await configureXrayPlugin(mockedCypressEventEmitter, config, options);
+            expect(logger.configure).to.have.been.calledWithExactly({
+                debug: pluginContext.getOptions().plugin.debug,
+                logDirectory: path.resolve("."),
             });
         });
 
@@ -260,15 +303,34 @@ describe(path.relative(process.cwd(), __filename), () => {
                 config,
                 pluginContext.getOptions()
             );
-            expect(stubbedHook).to.have.been.calledOnceWithExactly(
-                afterRunResult,
-                pluginContext.getCypressOptions().projectRoot,
-                pluginContext.getOptions(),
+            const expectedContext = new context.PluginContext(
                 pluginContext.getClients(),
-                pluginContext,
-                pluginContext.getGraph(),
-                LOG
+                {
+                    ...pluginContext.getOptions(),
+                    plugin: {
+                        ...pluginContext.getOptions().plugin,
+                        logDirectory: path.resolve(config.projectRoot, "logs"),
+                    },
+                },
+                pluginContext.getCypressOptions(),
+                new context.SimpleEvidenceCollection(),
+                new ExecutableGraph()
             );
+            expect(stubbedHook.firstCall.args[0]).to.deep.eq(afterRunResult);
+            expect(stubbedHook.firstCall.args[1]).to.deep.eq(
+                pluginContext.getCypressOptions().projectRoot
+            );
+            expect(stubbedHook.firstCall.args[2]).to.deep.eq({
+                ...pluginContext.getOptions(),
+                plugin: {
+                    ...pluginContext.getOptions().plugin,
+                    logDirectory: path.resolve(config.projectRoot, "logs"),
+                },
+            });
+            expect(stubbedHook.firstCall.args[3]).to.deep.eq(pluginContext.getClients());
+            expect(stubbedHook.firstCall.args[4]).to.deep.eq(expectedContext);
+            expect(stubbedHook.firstCall.args[5]).to.deep.eq(pluginContext.getGraph());
+            expect(stubbedHook.firstCall.args[6]).to.deep.eq(LOG);
         });
 
         it("displays an error for failed runs", async () => {

@@ -82,8 +82,11 @@ export function addUploadCommands(
                 "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured"
             );
         }
-        const cucumberResults: CucumberMultipartFeature[] = JSON.parse(
-            fs.readFileSync(options.cucumber.preprocessor.json.output, "utf-8")
+        // Cypress might change process.cwd(), so we need to query the root directory.
+        // See: https://github.com/cypress-io/cypress/issues/22689
+        const reportPath = path.join(projectRoot, options.cucumber.preprocessor.json.output);
+        const cucumberResults = JSON.parse(
+            fs.readFileSync(reportPath, "utf-8")
         ) as CucumberMultipartFeature[];
         const cucumberResultsCommand = graph.place(new ConstantCommand(logger, cucumberResults));
         let testExecutionIssueKeyCommand: Command<string | undefined> | undefined = undefined;
@@ -158,7 +161,10 @@ function getImportExecutionCypressCommand(
     const convertCypressTestsCommand = graph.place(
         new ConvertCypressTestsCommand(
             {
-                ...options,
+                jira: options.jira,
+                plugin: options.plugin,
+                xray: options.xray,
+                cucumber: options.cucumber,
                 useCloudStatusFallback: clients.kind === "cloud",
                 evidenceCollection: evidenceCollection,
             },
@@ -168,7 +174,11 @@ function getImportExecutionCypressCommand(
     );
     graph.connect(cypressResultsCommand, convertCypressTestsCommand);
     const convertCypressInfoCommand = graph.place(
-        new ConvertCypressInfoCommand(options, logger, cypressResultsCommand)
+        new ConvertCypressInfoCommand(
+            { jira: options.jira, xray: options.xray },
+            logger,
+            cypressResultsCommand
+        )
     );
     graph.connect(cypressResultsCommand, convertCypressInfoCommand);
     const combineResultsJsonCommand = graph.place(
@@ -249,7 +259,7 @@ function getImportExecutionCucumberCommand(
     graph.connect(cypressResultsCommand, convertCucumberInfoCommand);
     const convertCucumberFeaturesCommand = graph.place(
         new ConvertCucumberFeaturesCommand(
-            { ...options, useCloudTags: clients.kind === "cloud" },
+            { jira: options.jira, xray: options.xray, useCloudTags: clients.kind === "cloud" },
             logger,
             cucumberResultsCommand,
             testExecutionIssueKeyCommand
@@ -309,7 +319,12 @@ function getConvertCucumberInfoCommand(
 ): ConvertCucumberInfoCommand {
     if (clients.kind === "cloud") {
         return graph.place(
-            new ConvertCucumberInfoCloudCommand(options, logger, executionIssueType, cypressResults)
+            new ConvertCucumberInfoCloudCommand(
+                { jira: options.jira, xray: options.xray, cucumber: options.cucumber },
+                logger,
+                executionIssueType,
+                cypressResults
+            )
         );
     }
     let testPlanIdCommand: Command<string> | undefined = undefined;
@@ -340,10 +355,16 @@ function getConvertCucumberInfoCommand(
         }
     }
     const convertCucumberInfoCommand = graph.place(
-        new ConvertCucumberInfoServerCommand(options, logger, executionIssueType, cypressResults, {
-            testPlanId: testPlanIdCommand,
-            testEnvironmentsId: testEnvironmentsIdCommand,
-        })
+        new ConvertCucumberInfoServerCommand(
+            { jira: options.jira, xray: options.xray, cucumber: options.cucumber },
+            logger,
+            executionIssueType,
+            cypressResults,
+            {
+                testPlanId: testPlanIdCommand,
+                testEnvironmentsId: testEnvironmentsIdCommand,
+            }
+        )
     );
     if (testPlanIdCommand) {
         graph.connect(testPlanIdCommand, convertCucumberInfoCommand);
