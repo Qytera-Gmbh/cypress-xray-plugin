@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { Failable } from "../../../hooks/command";
+import { dedent } from "../../dedent";
 import { SkippedError } from "../../errors";
 import { CapturingLogger, Level } from "../../logging";
 import { SimpleDirectedGraph } from "../graph";
@@ -106,6 +107,46 @@ describe(__filename, () => {
             const logger = new CapturingLogger();
             logGraph(graph, logger);
             expect(logger.getMessages()).to.deep.eq([]);
+        });
+
+        it("logs correctly indented multiline chains", () => {
+            const graph = new SimpleDirectedGraph<Failable>();
+            const a = graph.place({
+                getFailure: () =>
+                    new Error(
+                        dedent(`
+                            A failed
+
+                            for some reason
+                        `)
+                    ),
+            });
+            const b = graph.place({ getFailure: () => undefined });
+            const c = graph.place({ getFailure: () => undefined });
+            const d = graph.place({
+                getFailure: () =>
+                    new SkippedError(
+                        dedent(`
+                            D skipped
+
+                            because A failed
+                        `)
+                    ),
+            });
+            const e = graph.place({ getFailure: () => undefined });
+            const f = graph.place({ getFailure: () => new SkippedError("F skipped") });
+            graph.connect(a, b);
+            graph.connect(a, d);
+            graph.connect(b, c);
+            graph.connect(d, e);
+            graph.connect(d, f);
+            const logger = new CapturingLogger();
+            logGraph(graph, logger);
+            expect(logger.getMessages()).to.deep.eq([
+                [Level.WARNING, "F skipped"],
+                [Level.WARNING, "  D skipped\n  \n  because A failed"],
+                [Level.ERROR, "    A failed\n    \n    for some reason"],
+            ]);
         });
     });
 });

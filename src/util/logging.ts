@@ -155,7 +155,7 @@ export class PluginLogger implements Logger {
 
 /**
  * A logger which does not print anything itself but rather collects all log messages for later
- * retrieval.
+ * retrieval. Useful for testing purposes.
  */
 export class CapturingLogger implements Logger {
     private readonly messages: Parameters<Logger["message"]>[] = [];

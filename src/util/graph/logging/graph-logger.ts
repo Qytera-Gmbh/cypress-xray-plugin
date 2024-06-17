@@ -44,9 +44,6 @@ function computeLogMessageChain<V extends Failable>(
         if (message) {
             messageTree.push(message);
             for (const predecessor of graph.getPredecessors(currentVertex)) {
-                if (messageTree.some((m) => m.vertex === predecessor)) {
-                    continue;
-                }
                 if (!queue.find(([c]) => c === predecessor)) {
                     queue.enqueue([predecessor, indent + 1]);
                 }
