@@ -40,3 +40,35 @@ export function computeTopologicalOrder<V, E extends DirectedEdge<V>>(
     }
     return distances;
 }
+export function* traverse<V, E extends DirectedEdge<V>>(
+    graph: DirectedGraph<V, E>,
+    direction: "top-down" | "bottom-up"
+): Generator<V> {
+    const queue = new Queue<V>();
+    for (const vertex of graph.getVertices()) {
+        if (
+            (direction === "top-down" && !graph.hasIncoming(vertex)) ||
+            (direction === "bottom-up" && !graph.hasOutgoing(vertex))
+        ) {
+            queue.enqueue(vertex);
+        }
+    }
+    while (!queue.isEmpty()) {
+        const vertex = queue.dequeue();
+        yield vertex;
+        switch (direction) {
+            case "top-down": {
+                for (const successor of graph.getSuccessors(vertex)) {
+                    queue.enqueue(successor);
+                }
+                break;
+            }
+            case "bottom-up": {
+                for (const predecessor of graph.getPredecessors(vertex)) {
+                    queue.enqueue(predecessor);
+                }
+                break;
+            }
+        }
+    }
+}

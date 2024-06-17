@@ -5,7 +5,7 @@
  * - {@link https://github.com/datastructures-js/queue}
  * - {@link https://www.npmjs.com/package/@datastructures-js/queue}
  *
- * Extends the original queue with a `has` method and removes superfluous methods.
+ * Extends the original queue with `has` and `find` methods and removes superfluous methods.
  */
 export class Queue<T> {
     private elements: T[];
@@ -77,12 +77,22 @@ export class Queue<T> {
      * @returns `true` if the queue contains the element, otherwise `false`
      */
     public has(element: T): boolean {
+        return this.find((other) => other === element) !== undefined;
+    }
+
+    /**
+     * Searches for a specific element in the queue. Every element will be visited exactly once.
+     *
+     * @param filter - the filter function
+     * @returns the first matching element or `undefined` if no element matches the filter function
+     */
+    public find(filter: (element: T) => boolean): T | undefined {
         for (let i = this.offset; i < this.elements.length; i++) {
-            if (this.elements[i] === element) {
-                return true;
+            if (filter(this.elements[i])) {
+                return this.elements[i];
             }
         }
-        return false;
+        return undefined;
     }
 
     /**

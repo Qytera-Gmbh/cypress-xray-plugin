@@ -28,9 +28,9 @@ export interface DirectedGraph<V, E extends DirectedEdge<V>> {
      * Searches for a specific vertex in the graph. Every vertex will be visited exactly once.
      *
      * @param filter - the filter function
-     * @returns the first matching vertex or `null` if no vertex matches the filter function
+     * @returns the first matching vertex or `undefined` if no vertex matches the filter function
      */
-    find(filter: (vertex: V) => boolean): V | null;
+    find(filter: (vertex: V) => boolean): V | undefined;
     /**
      * Searches for a specific vertex in the graph. If not matching vertex can be found the fallback
      * function will be called instead. Every vertex will be visited exactly once.
@@ -207,13 +207,13 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>>
         return edge;
     }
 
-    public find(filter: (vertex: V) => boolean): V | null {
+    public find(filter: (vertex: V) => boolean): V | undefined {
         for (const vertex of this.getVertices()) {
             if (filter(vertex)) {
                 return vertex;
             }
         }
-        return null;
+        return undefined;
     }
 
     public findOrDefault<T extends V>(filter: (vertex: V) => vertex is T, fallback: () => T): T {

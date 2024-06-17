@@ -44,10 +44,6 @@ export interface UnknownDestinationParameters<V> {
 export function dfs<V, E extends DirectedEdge<V>>(
     graph: DirectedGraph<V, E>,
     parameters: KnownDestinationParameters<V> | UnknownDestinationParameters<V>
-): boolean;
-export function dfs<V, E extends DirectedEdge<V>>(
-    graph: DirectedGraph<V, E>,
-    parameters: KnownDestinationParameters<V> | UnknownDestinationParameters<V>
 ): boolean {
     const stack = new Stack<V>();
     return search(graph, parameters, {
@@ -64,10 +60,6 @@ export function dfs<V, E extends DirectedEdge<V>>(
  * @param parameters - the search parameters
  * @returns `true` if the vertex described by the parameters can be reached, otherwise `false`
  */
-export function bfs<V, E extends DirectedEdge<V>>(
-    graph: DirectedGraph<V, E>,
-    parameters: KnownDestinationParameters<V> | UnknownDestinationParameters<V>
-): boolean;
 export function bfs<V, E extends DirectedEdge<V>>(
     graph: DirectedGraph<V, E>,
     parameters: KnownDestinationParameters<V> | UnknownDestinationParameters<V>

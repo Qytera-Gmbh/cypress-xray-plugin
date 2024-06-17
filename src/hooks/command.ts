@@ -14,6 +14,15 @@ export interface Computable<R> {
     compute: () => R | Promise<R>;
 }
 
+export interface Failable {
+    /**
+     * Returns the reason why the entity failed.
+     *
+     * @returns the error or `undefined` if there was no failure
+     */
+    getFailure: () => Error | undefined;
+}
+
 /**
  * Models the different states of a command.
  */
@@ -60,7 +69,7 @@ export interface Stateful<S> {
  * {@link compute | `compute`} is triggered.
  */
 export abstract class Command<R = unknown, P = unknown>
-    implements Computable<R>, Stateful<ComputableState>
+    implements Computable<R>, Stateful<ComputableState>, Failable
 {
     /**
      * The command's parameters.
@@ -73,7 +82,7 @@ export abstract class Command<R = unknown, P = unknown>
     private readonly result: Promise<R>;
     private readonly executeEmitter: EventEmitter = new EventEmitter();
     private state: ComputableState = ComputableState.INITIAL;
-    private failureOrSkipReason: Error | null = null;
+    private failureOrSkipReason: Error | undefined = undefined;
 
     /**
      * Constructs a new command.
@@ -127,12 +136,7 @@ export abstract class Command<R = unknown, P = unknown>
         this.state = state;
     }
 
-    /**
-     * Returns the error why the command failed or was skipped.
-     *
-     * @returns the error or `null` if the command succeeded
-     */
-    public getFailureOrSkipReason(): Error | null {
+    public getFailure(): Error | undefined {
         return this.failureOrSkipReason;
     }
 

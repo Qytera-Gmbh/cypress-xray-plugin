@@ -84,7 +84,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("does not find nonexistent vertices", () => {
-                expect(graph.find((vertex: number) => vertex === 6)).to.be.null;
+                expect(graph.find((vertex: number) => vertex === 6)).to.be.undefined;
             });
         });
 

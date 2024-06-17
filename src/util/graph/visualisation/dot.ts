@@ -69,15 +69,15 @@ export async function commandToDot<R>(command: Command<R>): Promise<string> {
         result = escapeHtmlLabel(unknownToString(await command.compute(), true));
         color = "#7abf69";
     } else if (command.getState() === ComputableState.SKIPPED) {
-        if (command.getFailureOrSkipReason()) {
-            result = escapeHtmlLabel(errorMessage(command.getFailureOrSkipReason()));
+        if (command.getFailure()) {
+            result = escapeHtmlLabel(errorMessage(command.getFailure()));
         } else {
             result = "skipped";
         }
         color = "#c8b77e";
     } else if (command.getState() === ComputableState.FAILED) {
-        if (command.getFailureOrSkipReason()) {
-            result = escapeHtmlLabel(errorMessage(command.getFailureOrSkipReason()));
+        if (command.getFailure()) {
+            result = escapeHtmlLabel(errorMessage(command.getFailure()));
         } else {
             result = "failed";
         }

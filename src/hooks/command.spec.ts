@@ -49,7 +49,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             }
             const command = new FailingCommand(null, logger);
             await expect(command.compute()).to.eventually.be.rejectedWith("Failure 123");
-            expect(command.getFailureOrSkipReason()).to.eq(error);
+            expect(command.getFailure()).to.eq(error);
             expect(command.getState()).to.eq(ComputableState.FAILED);
         });
 
@@ -63,7 +63,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             }
             const command = new SkippingCommand(null, logger);
             await expect(command.compute()).to.eventually.be.rejectedWith("Skip 123");
-            expect(command.getFailureOrSkipReason()).to.eq(error);
+            expect(command.getFailure()).to.eq(error);
             expect(command.getState()).to.eq(ComputableState.SKIPPED);
         });
 
