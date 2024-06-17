@@ -21,16 +21,17 @@ export function logGraph<V extends Failable>(
         if (loggedVertices.has(vertex)) {
             continue;
         }
-        const messageTree = computeLogMessageTree(vertex, graph);
+        const messageChain = computeLogMessageChain(vertex, graph);
+        messageChain.sort((a, b) => a.indent - b.indent);
         loggedVertices.add(vertex);
-        for (const message of messageTree) {
+        for (const message of messageChain) {
             loggedVertices.add(message.vertex);
             logger.message(message.level, message.text.replace(/^/gm, "  ".repeat(message.indent)));
         }
     }
 }
 
-function computeLogMessageTree<V extends Failable>(
+function computeLogMessageChain<V extends Failable>(
     vertex: V,
     graph: DirectedGraph<V, DirectedEdge<V>>
 ): IndentedLogMessage<V>[] {

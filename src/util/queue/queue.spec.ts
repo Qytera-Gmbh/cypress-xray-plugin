@@ -75,7 +75,7 @@ describe("queue", () => {
     });
 
     describe(queue.has.name, () => {
-        it("finds elements", () => {
+        it("returns true for known elements", () => {
             queue
                 .enqueue(0)
                 .enqueue(1)
@@ -97,9 +97,23 @@ describe("queue", () => {
             expect(queue.has(8)).to.be.true;
         });
 
-        it("does not find nonexistent elements", () => {
+        it("returns false for unknown elements", () => {
             queue.enqueue(0).enqueue(1).enqueue(2);
             expect(queue.has(4)).to.be.false;
+        });
+    });
+
+    describe(queue.find.name, () => {
+        it("finds elements", () => {
+            queue.enqueue(0).enqueue(1).enqueue(2);
+            expect(queue.find((e) => e === 0)).to.eq(0);
+            expect(queue.find((e) => e === 1)).to.eq(1);
+            expect(queue.find((e) => e === 2)).to.eq(2);
+        });
+
+        it("does not find nonexistent elements", () => {
+            queue.enqueue(0).enqueue(1).enqueue(2);
+            expect(queue.find((e) => e === 4)).to.be.undefined;
         });
     });
 
