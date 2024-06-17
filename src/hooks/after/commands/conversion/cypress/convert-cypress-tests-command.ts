@@ -1,4 +1,4 @@
-import { basename, parse } from "path";
+import path from "node:path";
 import { gte, lt } from "semver";
 import { EvidenceCollection } from "../../../../../context";
 import { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
@@ -117,23 +117,27 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 );
             }
         });
-        if (this.parameters.xray.uploadScreenshots) {
-            if (gte(runResults.cypressVersion, "13.0.0")) {
-                for (const run of runResults.runs as CypressCommandLine.RunResult[]) {
-                    for (const screenshot of run.screenshots) {
-                        if (!this.willBeUploaded(screenshot, testRunData)) {
-                            const path = parse(screenshot.path);
-                            this.logger.message(
-                                Level.WARNING,
-                                dedent(`
-                                    Screenshot will not be uploaded: ${screenshot.path}
+        if (this.parameters.xray.uploadScreenshots && gte(runResults.cypressVersion, "13.0.0")) {
+            for (const run of runResults.runs as CypressCommandLine.RunResult[]) {
+                if (
+                    this.parameters.cucumber?.featureFileExtension &&
+                    run.spec.fileExtension.endsWith(this.parameters.cucumber.featureFileExtension)
+                ) {
+                    continue;
+                }
+                for (const screenshot of run.screenshots) {
+                    if (!this.willBeUploaded(screenshot, testRunData)) {
+                        const screenshotName = path.parse(screenshot.path).name;
+                        this.logger.message(
+                            Level.WARNING,
+                            dedent(`
+                                Screenshot will not be uploaded: ${screenshot.path}
 
-                                    To upload screenshots, include a test issue key anywhere in their names:
+                                To upload screenshots, include a test issue key anywhere in their names:
 
-                                      cy.screenshot("${this.parameters.jira.projectKey}-123 ${path.name}")
-                                `)
-                            );
-                        }
+                                  cy.screenshot("${this.parameters.jira.projectKey}-123 ${screenshotName}")
+                            `)
+                        );
                     }
                 }
             }
@@ -165,7 +169,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         const evidence: XrayEvidenceItem[] = [];
         if (this.parameters.xray.uploadScreenshots) {
             for (const screenshot of testRunData.screenshots) {
-                let filename = basename(screenshot.filepath);
+                let filename = path.basename(screenshot.filepath);
                 if (this.parameters.plugin.normalizeScreenshotNames) {
                     filename = normalizedFilename(filename);
                 }

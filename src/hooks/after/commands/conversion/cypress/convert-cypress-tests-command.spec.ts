@@ -1,7 +1,8 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { readFileSync } from "fs";
+import fs, { readFileSync } from "fs";
 import path from "path";
+import Sinon from "sinon";
 import { getMockedLogger } from "../../../../../../test/mocks";
 import { expectToExist } from "../../../../../../test/util";
 import {
@@ -241,6 +242,42 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(tests[2].evidence).to.be.an("array").with.length(1);
             expectToExist(tests[2].evidence);
             expect(tests[2].evidence[0].filename).to.eq("small.png");
+        });
+
+        it("skips cucumber screenshots", async () => {
+            const logger = getMockedLogger();
+            const result: CypressRunResultType = JSON.parse(
+                readFileSync("./test/resources/runResult_13_0_0_mixed.json", "utf-8")
+            ) as CypressRunResultType;
+            const mockedFs = Sinon.stub(fs);
+            mockedFs.readFileSync.onFirstCall().returns(Buffer.from("abcdef"));
+            const command = new ConvertCypressTestsCommand(
+                {
+                    jira: {
+                        projectKey: "CYP",
+                    },
+                    cucumber: {
+                        featureFileExtension: ".feature",
+                    },
+                    plugin: {
+                        normalizeScreenshotNames: false,
+                    },
+                    xray: {
+                        status: {},
+                        uploadScreenshots: true,
+                    },
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                },
+                logger,
+                new ConstantCommand(logger, result)
+            );
+            const tests = await command.compute();
+            expect(logger.message).to.not.have.been.called;
+            expect(tests).to.have.length(1);
+            expectToExist(tests[0].evidence);
+            expect(tests[0].evidence[0].filename).to.eq(
+                "CYP-665 Test results of grouped test steps -- should do A (failed).png"
+            );
         });
 
         it("skips screenshot upload if disabled", async () => {
