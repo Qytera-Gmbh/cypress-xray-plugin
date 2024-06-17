@@ -259,7 +259,25 @@ function getImportExecutionCucumberCommand(
     graph.connect(cypressResultsCommand, convertCucumberInfoCommand);
     const convertCucumberFeaturesCommand = graph.place(
         new ConvertCucumberFeaturesCommand(
-            { jira: options.jira, xray: options.xray, useCloudTags: clients.kind === "cloud" },
+            {
+                jira: {
+                    projectKey: options.jira.projectKey,
+                    testExecutionIssueSummary: options.jira.testExecutionIssueSummary,
+                    testExecutionIssueDescription: options.jira.testExecutionIssueDescription,
+                    testPlanIssueKey: options.jira.testPlanIssueKey,
+                },
+                xray: {
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    testEnvironments: options.xray.testEnvironments,
+                },
+                cucumber: {
+                    prefixes: {
+                        test: options.cucumber?.prefixes.test,
+                        precondition: options.cucumber?.prefixes.precondition,
+                    },
+                },
+                useCloudTags: clients.kind === "cloud",
+            },
             logger,
             cucumberResultsCommand,
             testExecutionIssueKeyCommand

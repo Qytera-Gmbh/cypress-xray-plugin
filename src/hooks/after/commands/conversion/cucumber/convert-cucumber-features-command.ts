@@ -16,7 +16,7 @@ interface Parameters {
         | "testExecutionIssueSummary"
         | "testPlanIssueKey"
     >;
-    cucumber?: Pick<InternalCucumberOptions, "prefixes">;
+    cucumber: Pick<InternalCucumberOptions, "prefixes">;
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
     useCloudTags?: boolean;
 }
@@ -46,7 +46,7 @@ export class ConvertCucumberFeaturesCommand extends Command<
             includeScreenshots: this.parameters.xray.uploadScreenshots,
             projectKey: this.parameters.jira.projectKey,
             useCloudTags: this.parameters.useCloudTags === true,
-            testPrefix: this.parameters.cucumber?.prefixes.test,
+            testPrefix: this.parameters.cucumber.prefixes.test,
         });
     }
 }

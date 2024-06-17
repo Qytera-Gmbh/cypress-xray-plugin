@@ -377,8 +377,22 @@ describe(path.relative(process.cwd(), __filename), () => {
                         cucumber: options.cucumber,
                     });
                     expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
-                        jira: options.jira,
-                        xray: options.xray,
+                        jira: {
+                            projectKey: "CYP",
+                            testExecutionIssueSummary: undefined,
+                            testExecutionIssueDescription: undefined,
+                            testPlanIssueKey: undefined,
+                        },
+                        cucumber: {
+                            prefixes: {
+                                test: undefined,
+                                precondition: undefined,
+                            },
+                        },
+                        xray: {
+                            testEnvironments: undefined,
+                            uploadScreenshots: true,
+                        },
                         useCloudTags: false,
                     });
                     expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
@@ -661,8 +675,22 @@ describe(path.relative(process.cwd(), __filename), () => {
                         cucumber: options.cucumber,
                     });
                     expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
-                        jira: options.jira,
-                        xray: options.xray,
+                        jira: {
+                            projectKey: "CYP",
+                            testExecutionIssueSummary: undefined,
+                            testExecutionIssueDescription: undefined,
+                            testPlanIssueKey: undefined,
+                        },
+                        cucumber: {
+                            prefixes: {
+                                test: undefined,
+                                precondition: undefined,
+                            },
+                        },
+                        xray: {
+                            testEnvironments: undefined,
+                            uploadScreenshots: true,
+                        },
                         useCloudTags: true,
                     });
                 });
@@ -746,8 +774,22 @@ describe(path.relative(process.cwd(), __filename), () => {
                         cucumber: options.cucumber,
                     });
                     expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
-                        jira: options.jira,
-                        xray: options.xray,
+                        jira: {
+                            projectKey: "CYP",
+                            testExecutionIssueSummary: undefined,
+                            testExecutionIssueDescription: undefined,
+                            testPlanIssueKey: undefined,
+                        },
+                        cucumber: {
+                            prefixes: {
+                                test: undefined,
+                                precondition: undefined,
+                            },
+                        },
+                        xray: {
+                            testEnvironments: undefined,
+                            uploadScreenshots: true,
+                        },
                         useCloudTags: true,
                     });
                     expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({

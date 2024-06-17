@@ -21,6 +21,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     jira: {
                         projectKey: "CYP",
                     },
+                    cucumber: { prefixes: { precondition: undefined, test: undefined } },
                     xray: { uploadScreenshots: false },
                 },
                 logger,
@@ -43,6 +44,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     jira: {
                         projectKey: "CYP",
                     },
+                    cucumber: { prefixes: { precondition: undefined, test: undefined } },
                     xray: { uploadScreenshots: false },
                 },
                 logger,
@@ -51,6 +53,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(command.getParameters()).to.deep.eq({
                 jira: {
                     projectKey: "CYP",
+                },
+                cucumber: {
+                    prefixes: {
+                        test: undefined,
+                        precondition: undefined,
+                    },
                 },
                 xray: { uploadScreenshots: false },
             });
