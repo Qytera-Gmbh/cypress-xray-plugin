@@ -13,7 +13,6 @@ import {
 } from "./context";
 import { PluginTask, PluginTaskListener, PluginTaskParameterType } from "./cypress/tasks";
 import { addUploadCommands } from "./hooks/after/after-run";
-import { Command } from "./hooks/command";
 import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
 import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
 import {
@@ -23,7 +22,7 @@ import {
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable-graph";
-import { commandToDot, graphToDot } from "./util/graph/visualisation/dot";
+import { logGraph } from "./util/graph/logging/graph-logger";
 import { HELP } from "./util/help";
 import { LOG, Level } from "./util/logging";
 
@@ -156,14 +155,9 @@ export async function configureXrayPlugin(
             await context.getGraph().execute();
         } finally {
             if (context.getGraph().hasFailedVertices()) {
-                await exportGraph(
-                    context.getGraph(),
-                    Level.WARNING,
-                    "Failed to execute some steps during plugin execution"
-                );
-            } else if (options.plugin?.debug) {
-                await exportGraph(context.getGraph(), Level.DEBUG);
+                LOG.message(Level.WARNING, "Failed to execute some steps during plugin execution");
             }
+            logGraph(context.getGraph(), LOG);
         }
     });
 }
@@ -214,31 +208,6 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
         );
     }
     return file.filePath;
-}
-
-async function exportGraph<V extends Command>(
-    graph: ExecutableGraph<V>,
-    level: Level,
-    prefix?: string
-): Promise<void> {
-    const dotGraph = await graphToDot(graph, commandToDot, (edge) =>
-        graph.isOptional(edge) ? "dashed" : "bold"
-    );
-    const executionGraphFile = LOG.logToFile(dotGraph, "execution-graph.vz");
-    LOG.message(
-        level,
-        dedent(`
-            ${prefix ? `${prefix}\n\n` : ""}Plugin execution graph saved to: ${executionGraphFile}
-
-            You can view it using Graphviz (https://graphviz.org/):
-
-              dot -o execution-graph.pdf -Tpdf ${executionGraphFile}
-
-            Alternatively, you can view it online under any of the following websites:
-            - https://dreampuf.github.io/GraphvizOnline
-            - https://edotor.net/
-        `)
-    );
 }
 
 function registerDefaultTasks(on: Cypress.PluginEvents) {

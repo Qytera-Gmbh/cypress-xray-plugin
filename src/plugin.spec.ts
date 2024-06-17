@@ -408,7 +408,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
-        it("creates an execution graph and displays a warning if there are failed vertices", async () => {
+        it("displays a warning if there are failed vertices", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
             const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
@@ -430,21 +430,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     resolve("ok");
                 }, 10);
             });
-            expect(logger.message).to.have.been.calledWithExactly(
+            expect(logger.message).to.have.been.calledWith(
                 Level.WARNING,
-                dedent(`
-                    Failed to execute some steps during plugin execution
-
-                    Plugin execution graph saved to: execution-graph.vz
-
-                    You can view it using Graphviz (https://graphviz.org/):
-
-                      dot -o execution-graph.pdf -Tpdf execution-graph.vz
-
-                    Alternatively, you can view it online under any of the following websites:
-                    - https://dreampuf.github.io/GraphvizOnline
-                    - https://edotor.net/
-                `)
+                "Failed to execute some steps during plugin execution"
             );
         });
     });
