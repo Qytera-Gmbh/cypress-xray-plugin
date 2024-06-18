@@ -35,11 +35,24 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = new CapturingLogger();
             new ChainingGraphLogger(logger).logGraph(graph);
             expect(logger.getMessages()).to.deep.eq([
-                [Level.ERROR, "F failed"],
-                [Level.ERROR, "  D failed"],
-                [Level.ERROR, "    A failed"],
-                [Level.WARNING, "Z skipped"],
-                [Level.ERROR, "  X failed"],
+                [
+                    Level.ERROR,
+                    dedent(`
+                        F failed
+
+                          Caused by: D failed
+
+                            Caused by: A failed
+                    `),
+                ],
+                [
+                    Level.ERROR,
+                    dedent(`
+                        Z skipped
+
+                          Caused by: X failed
+                    `),
+                ],
             ]);
         });
 
@@ -67,18 +80,38 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = new CapturingLogger();
             new ChainingGraphLogger(logger).logGraph(graph);
             expect(logger.getMessages()).to.deep.eq([
-                [Level.WARNING, "H skipped"],
-                [Level.ERROR, "  G failed"],
-                [Level.WARNING, "    E skipped"],
-                [Level.ERROR, "    F failed"],
-                [Level.ERROR, "      D failed"],
-                [Level.ERROR, "        A failed"],
-                [Level.WARNING, "I skipped"],
-                [Level.ERROR, "  G failed"],
-                [Level.WARNING, "    E skipped"],
-                [Level.ERROR, "    F failed"],
-                [Level.ERROR, "      D failed"],
-                [Level.ERROR, "        A failed"],
+                [
+                    Level.ERROR,
+                    dedent(`
+                        H skipped
+
+                          Caused by: G failed
+
+                            Caused by: E skipped
+
+                            Caused by: F failed
+
+                              Caused by: D failed
+
+                                Caused by: A failed
+                    `),
+                ],
+                [
+                    Level.ERROR,
+                    dedent(`
+                        I skipped
+
+                          Caused by: G failed
+
+                            Caused by: E skipped
+
+                            Caused by: F failed
+
+                              Caused by: D failed
+
+                                Caused by: A failed
+                    `),
+                ],
             ]);
         });
 
@@ -114,7 +147,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({
                 getFailure: () =>
-                    new Error(
+                    new SkippedError(
                         dedent(`
                             A failed
 
@@ -144,9 +177,20 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = new CapturingLogger();
             new ChainingGraphLogger(logger).logGraph(graph);
             expect(logger.getMessages()).to.deep.eq([
-                [Level.WARNING, "F skipped"],
-                [Level.WARNING, "  D skipped\n  \n  because A failed"],
-                [Level.ERROR, "    A failed\n    \n    for some reason"],
+                [
+                    Level.WARNING,
+                    dedent(`
+                        F skipped
+
+                          Caused by: D skipped
+
+                          because A failed
+
+                            Caused by: A failed
+
+                            for some reason
+                    `),
+                ],
             ]);
         });
     });
