@@ -70,14 +70,14 @@ export class ChainingGraphLogger<V extends Failable> {
         vertex: V,
         graph: DirectedGraph<V, DirectedEdge<V>>
     ): IndentedLogMessage<V>[] {
-        const messageTree: IndentedLogMessage<V>[] = [];
+        const chain: IndentedLogMessage<V>[] = [];
         const queue = new Queue<[V, number, boolean]>();
         queue.enqueue([vertex, 0, false]);
         while (!queue.isEmpty()) {
             const [currentVertex, indent, includePredecessors] = queue.dequeue();
             const message = this.getLogMessage(currentVertex);
             if (message) {
-                messageTree.push({
+                chain.push({
                     ...message,
                     vertex: currentVertex,
                     indent: indent,
@@ -95,19 +95,50 @@ export class ChainingGraphLogger<V extends Failable> {
                 }
             }
         }
-        return messageTree;
+        return chain;
     }
 
-    private logMessageChain(messageChain: IndentedLogMessage<V>[]): Set<V> {
+    private logMessageChain(chain: IndentedLogMessage<V>[]): Set<V> {
         const loggedVertices = new Set<V>();
-        messageChain.sort((a, b) => a.indent - b.indent);
-        for (const message of messageChain) {
-            loggedVertices.add(message.vertex);
-            this.logger.message(
-                message.level,
-                message.text.replace(/^/gm, "  ".repeat(message.indent))
-            );
+        if (chain.length === 0) {
+            return loggedVertices;
         }
+        chain.sort((a, b) => a.indent - b.indent);
+        let logMessage = "";
+        for (let i = chain.length - 1; i >= 0; i--) {
+            if (i === chain.length - 1) {
+                logMessage = chain[i].text;
+            } else {
+                if (chain[i + 1].indent > chain[i].indent) {
+                    logMessage = dedent(`
+                        ${chain[i].text}
+
+                          Caused by: ${logMessage}
+                    `);
+                } else {
+                    logMessage = dedent(`
+                        ${chain[i].text}
+
+                        Caused by: ${logMessage}
+                    `);
+                }
+            }
+        }
+        for (const message of chain) {
+            loggedVertices.add(message.vertex);
+        }
+        const level = chain
+            .map((message) => message.level)
+            .reduce((previous, current) => {
+                if (previous === Level.ERROR || current === Level.ERROR) {
+                    return Level.ERROR;
+                }
+                if (current === Level.WARNING) {
+                    return Level.WARNING;
+                }
+                return previous;
+            }, Level.DEBUG);
+        this.logger.message(level, logMessage);
         return loggedVertices;
     }
 }

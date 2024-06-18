@@ -1,4 +1,3 @@
-import path from "path";
 import { Command } from "../command";
 import { EditIssueFieldCommand } from "../util/commands/jira/edit-issue-field-command";
 import { JiraField } from "../util/commands/jira/extract-field-id-command";
@@ -82,7 +81,7 @@ export function addSynchronizationCommands(
         new ImportFeatureCommand(
             {
                 xrayClient: clients.xrayClient,
-                filePath: path.relative(projectRoot, file.filePath),
+                filePath: file.filePath,
                 projectKey: options.jira.projectKey,
             },
             logger
