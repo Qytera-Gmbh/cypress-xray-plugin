@@ -19,7 +19,9 @@ export class ParseFeatureFileCommand extends Command<GherkinDocument, Parameters
                 dedent(`
                     ${this.parameters.filePath}
 
-                      Caused by: ${errorMessage(error)}
+                      Failed to parse feature file.
+
+                      ${errorMessage(error)}
                 `)
             );
         }
