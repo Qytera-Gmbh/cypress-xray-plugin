@@ -5,10 +5,10 @@ import { dedent } from "../../dedent";
 import { SkippedError } from "../../errors";
 import { CapturingLogger, Level } from "../../logging";
 import { SimpleDirectedGraph } from "../graph";
-import { logGraph } from "./graph-logger";
+import { ChainingGraphLogger } from "./graph-logger";
 
 describe(path.relative(process.cwd(), __filename), () => {
-    describe(logGraph.name, () => {
+    describe(ChainingGraphLogger.name, () => {
         it("logs correctly indented message chains", () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({ getFailure: () => new Error("A failed") });
@@ -33,7 +33,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             graph.connect(x, y);
             graph.connect(x, z);
             const logger = new CapturingLogger();
-            logGraph(graph, logger);
+            new ChainingGraphLogger(logger).logGraph(graph);
             expect(logger.getMessages()).to.deep.eq([
                 [Level.ERROR, "F failed"],
                 [Level.ERROR, "  D failed"],
@@ -65,7 +65,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             graph.connect(g, i);
 
             const logger = new CapturingLogger();
-            logGraph(graph, logger);
+            new ChainingGraphLogger(logger).logGraph(graph);
             expect(logger.getMessages()).to.deep.eq([
                 [Level.WARNING, "H skipped"],
                 [Level.ERROR, "  G failed"],
@@ -106,7 +106,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             graph.connect(x, y);
             graph.connect(x, z);
             const logger = new CapturingLogger();
-            logGraph(graph, logger);
+            new ChainingGraphLogger(logger).logGraph(graph);
             expect(logger.getMessages()).to.deep.eq([]);
         });
 
@@ -142,7 +142,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             graph.connect(d, e);
             graph.connect(d, f);
             const logger = new CapturingLogger();
-            logGraph(graph, logger);
+            new ChainingGraphLogger(logger).logGraph(graph);
             expect(logger.getMessages()).to.deep.eq([
                 [Level.WARNING, "F skipped"],
                 [Level.WARNING, "  D skipped\n  \n  because A failed"],

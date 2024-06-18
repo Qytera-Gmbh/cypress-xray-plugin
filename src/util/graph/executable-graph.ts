@@ -136,7 +136,7 @@ export class ExecutableGraph<
         }
         // Only allow computation when all predecessors are done.
         // Otherwise we might end up skipping in line.
-        // An precedessor edge is:
+        // A precedessor edge is:
         // - ok iff:        success ||  (failed && optional)
         // - not okay iff: !success && !(failed && optional)
         for (const incomingEdge of this.getIncoming(vertex)) {

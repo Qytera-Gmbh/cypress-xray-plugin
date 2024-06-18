@@ -22,7 +22,7 @@ import {
 } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable-graph";
-import { logGraph } from "./util/graph/logging/graph-logger";
+import { ChainingCommandGraphLogger } from "./util/graph/logging/graph-logger";
 import { HELP } from "./util/help";
 import { CapturingLogger, LOG, Level } from "./util/logging";
 
@@ -153,22 +153,22 @@ export async function configureXrayPlugin(
         try {
             await context.getGraph().execute();
         } finally {
-            logGraph(context.getGraph(), logger);
-        }
-        const messages = logger.getMessages();
-        messages.forEach(([level, text]) => {
-            if ([Level.DEBUG, Level.INFO, Level.SUCCESS].includes(level)) {
-                LOG.message(level, text);
+            new ChainingCommandGraphLogger(logger).logGraph(context.getGraph());
+            const messages = logger.getMessages();
+            messages.forEach(([level, text]) => {
+                if ([Level.DEBUG, Level.INFO, Level.SUCCESS].includes(level)) {
+                    LOG.message(level, text);
+                }
+            });
+            if (context.getGraph().hasFailedVertices()) {
+                LOG.message(Level.WARNING, "Encountered problems during plugin execution!");
             }
-        });
-        if (context.getGraph().hasFailedVertices()) {
-            LOG.message(Level.WARNING, "Encountered problems during plugin execution!");
+            messages.forEach(([level, text]) => {
+                if ([Level.WARNING, Level.ERROR].includes(level)) {
+                    LOG.message(level, text);
+                }
+            });
         }
-        messages.forEach(([level, text]) => {
-            if ([Level.WARNING, Level.ERROR].includes(level)) {
-                LOG.message(level, text);
-            }
-        });
     });
 }
 
