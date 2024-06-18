@@ -1,3 +1,4 @@
+import path from "node:path";
 import {
     CucumberMultipartElement,
     CucumberMultipartFeature,
@@ -10,7 +11,7 @@ import {
     missingTestKeyInCucumberScenarioError,
     multipleTestKeysInCucumberScenarioError,
 } from "../../../../../../util/errors";
-import { LOG, Level } from "../../../../../../util/logging";
+import { Level, Logger } from "../../../../../../util/logging";
 import { getScenarioTagRegex } from "../../../../../preprocessor/commands/parsing/scenario";
 
 /**
@@ -25,12 +26,14 @@ import { getScenarioTagRegex } from "../../../../../preprocessor/commands/parsin
 export function buildMultipartFeatures(
     input: CucumberMultipartFeature[],
     options: {
+        projectRoot: string;
         testExecutionIssueKey?: string;
         includeScreenshots?: boolean;
         projectKey: string;
         useCloudTags: boolean;
         testPrefix?: string;
-    }
+    },
+    logger: Logger
 ): CucumberMultipartFeature[] {
     const tests: CucumberMultipartFeature[] = [];
     input.forEach((result: CucumberMultipartFeature) => {
@@ -66,12 +69,19 @@ export function buildMultipartFeatures(
                     elements.push(modifiedElement);
                 }
             } catch (error: unknown) {
-                LOG.message(
+                const elementDescription = `${element.type[0].toUpperCase()}${element.type.substring(
+                    1
+                )}: ${element.name.length > 0 ? element.name : "<no name>"}`;
+                logger.message(
                     Level.WARNING,
                     dedent(`
-                        Skipping result upload for ${element.type}: ${element.name}
+                        ${path.resolve(options.projectRoot, result.uri)}
 
-                        ${errorMessage(error)}
+                          ${elementDescription}
+
+                            Skipping result upload.
+
+                              Caused by: ${errorMessage(error)}
                     `)
                 );
             }

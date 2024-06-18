@@ -142,7 +142,7 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                 } while (start && start < total);
                 LOG.message(
                     Level.DEBUG,
-                    `Successfully retrieved test types for ${issueKeys.length.toString()} issues`
+                    `Successfully retrieved test types for ${issueKeys.length.toString()} issues.`
                 );
                 return types;
             } finally {
@@ -172,7 +172,8 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                 Level.DEBUG,
                 dedent(`
                     Encountered some errors during feature file import:
-                    ${cloudResponse.errors.map((error: string) => `- ${error}`).join("\n")}
+
+                      ${cloudResponse.errors.map((error: string) => `- ${error}`).join("\n")}
                 `)
             );
         }
@@ -185,7 +186,8 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                 Level.DEBUG,
                 dedent(`
                     Successfully updated or created test issues:
-                    ${testKeys.join("\n")}
+
+                      ${testKeys.join("\n")}
                 `)
             );
         }
@@ -198,7 +200,8 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                 Level.DEBUG,
                 dedent(`
                     Successfully updated or created precondition issues:
-                    ${preconditionKeys.join(", ")}
+
+                      ${preconditionKeys.join(", ")}
                 `)
             );
         }

@@ -12,9 +12,7 @@ export class ConstantCommand<R> extends Command<R, null> {
         return this.value;
     }
 
-    protected computeResult(): Promise<R> {
-        return new Promise((resolve) => {
-            resolve(this.getValue());
-        });
+    protected computeResult(): R {
+        return this.getValue();
     }
 }

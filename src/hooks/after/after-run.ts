@@ -6,7 +6,7 @@ import { IssueTypeDetails } from "../../types/jira/responses/issue-type-details"
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
-import { LOG, Level, Logger } from "../../util/logging";
+import { Level, Logger } from "../../util/logging";
 import { Command, Computable, ComputableState } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";
 import { FallbackCommand } from "../util/commands/fallback-command";
@@ -53,9 +53,9 @@ export function addUploadCommands(
         options.cucumber?.featureFileExtension
     );
     if (!containsCypressTests && !containsCucumberTests) {
-        LOG.message(
+        logger.message(
             Level.WARNING,
-            "No test execution results to upload, skipping results upload preparations"
+            "No test execution results to upload, skipping results upload preparations."
         );
         return;
     }
@@ -79,7 +79,7 @@ export function addUploadCommands(
     if (containsCucumberTests) {
         if (!options.cucumber?.preprocessor?.json.output) {
             throw new Error(
-                "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured"
+                "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured."
             );
         }
         // Cypress might change process.cwd(), so we need to query the root directory.
@@ -113,6 +113,7 @@ export function addUploadCommands(
         importCucumberExecutionCommand = getImportExecutionCucumberCommand(
             cypressResultsCommand,
             cucumberResultsCommand,
+            projectRoot,
             options,
             clients,
             graph,
@@ -225,6 +226,7 @@ function getImportExecutionCypressCommand(
 function getImportExecutionCucumberCommand(
     cypressResultsCommand: Command<CypressRunResultType>,
     cucumberResultsCommand: ConstantCommand<CucumberMultipartFeature[]>,
+    projectRoot: string,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
@@ -277,6 +279,7 @@ function getImportExecutionCucumberCommand(
                     },
                 },
                 useCloudTags: clients.kind === "cloud",
+                projectRoot: projectRoot,
             },
             logger,
             cucumberResultsCommand,

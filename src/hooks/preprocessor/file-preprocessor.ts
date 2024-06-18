@@ -32,6 +32,7 @@ export function addSynchronizationCommands(
     const extractIssueDataCommand = graph.place(
         new ExtractFeatureFileIssuesCommand(
             {
+                filePath: file.filePath,
                 projectKey: options.jira.projectKey,
                 prefixes: options.cucumber?.prefixes,
                 displayCloudHelp: clients.kind === "cloud",

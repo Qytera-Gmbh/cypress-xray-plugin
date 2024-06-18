@@ -27,8 +27,11 @@ export class GetSummariesToResetCommand extends Command<StringMap<string>, null>
                 this.logger.message(
                     Level.WARNING,
                     dedent(`
-                        Skipping resetting summary of issue: ${issueKey}
-                        The previous summary could not be fetched, make sure to manually restore it if needed
+                        ${issueKey}
+
+                          The plugin tried to reset the issue's summary after importing the feature file, but could not because the previous summary could not be retrieved.
+
+                          Make sure to manually restore it if needed.
                     `)
                 );
                 continue;
@@ -38,11 +41,12 @@ export class GetSummariesToResetCommand extends Command<StringMap<string>, null>
                 this.logger.message(
                     Level.DEBUG,
                     dedent(`
-                        Skipping resetting summary of issue: ${issueKey}
-                        The current summary is identical to the previous one:
+                        ${issueKey}
+
+                          Skipping resetting summary, the current summary is identical to the previous one:
 
                         Previous summary: ${unknownToString(oldSummary)}
-                        Current summary:  ${unknownToString(newSummary)}
+                        Current  summary: ${unknownToString(newSummary)}
                     `)
                 );
                 continue;

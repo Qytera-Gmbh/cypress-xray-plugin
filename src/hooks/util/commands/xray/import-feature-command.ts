@@ -30,8 +30,11 @@ export class ImportFeatureCommand extends Command<ImportFeatureResponse, Paramet
             this.logger.message(
                 Level.WARNING,
                 dedent(`
-                    Encountered errors during feature file import:
-                    ${importResponse.errors.map((error) => `- ${error}`).join("\n")}
+                    ${this.parameters.filePath}
+
+                      Encountered errors during feature file import.
+
+                      ${importResponse.errors.map((error) => `- ${error}`).join("\n")}
                 `)
             );
         }

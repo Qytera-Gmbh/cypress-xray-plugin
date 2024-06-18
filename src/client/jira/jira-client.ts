@@ -124,7 +124,8 @@ export class BaseJiraClient extends Client implements JiraClient {
                 LOG.message(
                     Level.DEBUG,
                     dedent(`
-                        Successfully attached files to issue: ${issueIdOrKey}
+                        Successfully attached the following files to issue ${issueIdOrKey}:
+
                           ${response.data.map((attachment) => attachment.filename).join("\n")}
                     `)
                 );
@@ -161,19 +162,20 @@ export class BaseJiraClient extends Client implements JiraClient {
                     Level.DEBUG,
                     dedent(`
                         Received data for issue types:
-                        ${response.data
-                            .map((issueType) => {
-                                if (issueType.name) {
-                                    if (issueType.id) {
-                                        return `${issueType.name} (id: ${issueType.id})`;
-                                    }
-                                    return `${issueType.name} (id: undefined)`;
-                                } else if (issueType.id) {
-                                    return `undefined (id: ${issueType.id})`;
-                                }
-                                return "undefined (id: undefined)";
-                            })
-                            .join("\n")}
+
+                          ${response.data
+                              .map((issueType) => {
+                                  if (issueType.name) {
+                                      if (issueType.id) {
+                                          return `${issueType.name} (id: ${issueType.id})`;
+                                      }
+                                      return `${issueType.name} (id: undefined)`;
+                                  } else if (issueType.id) {
+                                      return `undefined (id: ${issueType.id})`;
+                                  }
+                                  return "undefined (id: undefined)";
+                              })
+                              .join("\n")}
                     `)
                 );
                 return response.data;
@@ -203,15 +205,16 @@ export class BaseJiraClient extends Client implements JiraClient {
                 );
                 LOG.message(
                     Level.DEBUG,
-                    `Successfully retrieved data for ${response.data.length.toString()} fields`
+                    `Successfully retrieved data for ${response.data.length.toString()} fields.`
                 );
                 LOG.message(
                     Level.DEBUG,
                     dedent(`
                         Received data for fields:
-                        ${response.data
-                            .map((field) => `${field.name} (id: ${field.id})`)
-                            .join("\n")}
+
+                          ${response.data
+                              .map((field) => `${field.name} (id: ${field.id})`)
+                              .join("\n")}
                     `)
                 );
                 return response.data;

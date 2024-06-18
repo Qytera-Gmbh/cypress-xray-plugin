@@ -1,6 +1,5 @@
 import { JiraClient } from "../../../../client/jira/jira-client";
 import { Attachment } from "../../../../types/jira/responses/attachment";
-import { SkippedError } from "../../../../util/errors";
 import { Level, Logger } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 
@@ -26,9 +25,7 @@ export class AttachFilesCommand extends Command<Attachment[], Parameters> {
         const resolvedExecutionIssueKey = await this.resolvedExecutionIssueKey.compute();
         const files = await this.files.compute();
         if (files.length === 0) {
-            throw new SkippedError(
-                `Skipping attaching files to test execution issue ${resolvedExecutionIssueKey}: No files to attach`
-            );
+            return [];
         }
         this.logger.message(
             Level.INFO,

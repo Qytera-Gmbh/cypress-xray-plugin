@@ -151,13 +151,12 @@ export class JwtCredentials implements HttpCredentials {
                 throw new Error("Expected to receive a JWT token, but did not");
             }
         } catch (error: unknown) {
-            const message = errorMessage(error);
             LOG.message(
                 Level.ERROR,
                 dedent(`
                     Failed to authenticate to: ${this.authenticationUrl}
 
-                    ${message}
+                      Caused by: ${errorMessage(error)}
                 `)
             );
             LOG.logErrorToFile(error, "authentication");

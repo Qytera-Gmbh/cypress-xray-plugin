@@ -42,9 +42,11 @@ export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Comman
                 this.logger.message(
                     Level.ERROR,
                     dedent(`
-                        Failed to set ${unknownToString(
-                            this.parameters.field
-                        )} field of issue ${issueKey} to value: ${unknownToString(newValue)}
+                        ${issueKey}
+
+                          Failed to set ${unknownToString(
+                              this.parameters.field
+                          )} field to value: ${unknownToString(newValue)}
                     `)
                 );
             }

@@ -32,7 +32,8 @@ export class VerifyResultsUploadCommand extends Command<string, Parameters> {
                 throw new SkippedError(
                     dedent(`
                         Cucumber execution results were imported to a different test execution issue than the Cypress execution results
-                          Cypress test execution issue:  ${cypressExecutionIssueKey} ${this.parameters.url}/browse/${cypressExecutionIssueKey}
+
+                          Cypress  test execution issue: ${cypressExecutionIssueKey} ${this.parameters.url}/browse/${cypressExecutionIssueKey}
                           Cucumber test execution issue: ${cucumberExecutionIssueKey} ${this.parameters.url}/browse/${cucumberExecutionIssueKey}
 
                         Make sure your Jira configuration does not prevent modifications of existing test executions

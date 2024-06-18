@@ -27,8 +27,11 @@ export class GetLabelsToResetCommand extends Command<StringMap<string[]>, null> 
                 this.logger.message(
                     Level.WARNING,
                     dedent(`
-                        Skipping resetting labels of issue: ${issueKey}
-                        The previous labels could not be fetched, make sure to manually restore them if needed
+                        ${issueKey}
+
+                          The plugin tried to reset the issue's labels after importing the feature file, but could not because the previous labels could not be retrieved.
+
+                          Make sure to manually restore them if needed.
                     `)
                 );
                 continue;
@@ -41,11 +44,12 @@ export class GetLabelsToResetCommand extends Command<StringMap<string[]>, null> 
                 this.logger.message(
                     Level.DEBUG,
                     dedent(`
-                        Skipping resetting labels of issue: ${issueKey}
-                        The current labels are identical to the previous ones:
+                        ${issueKey}
 
-                        Previous labels: ${unknownToString(oldLabels)}
-                        Current labels:  ${unknownToString(newLabels)}
+                          Skipping resetting labels, the current labels are identical to the previous ones:
+
+                            Previous labels: ${unknownToString(oldLabels)}
+                            Current  labels: ${unknownToString(newLabels)}
                     `)
                 );
                 continue;

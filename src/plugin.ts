@@ -24,7 +24,7 @@ import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable-graph";
 import { logGraph } from "./util/graph/logging/graph-logger";
 import { HELP } from "./util/help";
-import { LOG, Level } from "./util/logging";
+import { CapturingLogger, LOG, Level } from "./util/logging";
 
 let canShowInitializationWarning = true;
 
@@ -60,7 +60,7 @@ export async function configureXrayPlugin(
     // Resolve these before all other options for correct enabledness.
     const pluginOptions: InternalPluginOptions = initPluginOptions(config.env, options.plugin);
     if (!pluginOptions.enabled) {
-        LOG.message(Level.INFO, "Plugin disabled. Skipping further configuration");
+        LOG.message(Level.INFO, "Plugin disabled. Skipping further configuration.");
         // Tasks must always be registered in case users forget to comment out imported commands.
         registerDefaultTasks(on);
         return;
@@ -69,7 +69,7 @@ export async function configureXrayPlugin(
     // See: https://github.com/cypress-io/cypress/issues/20789
     if (!config.isTextTerminal) {
         pluginOptions.enabled = false;
-        LOG.message(Level.INFO, "Interactive mode detected, disabling plugin");
+        LOG.message(Level.INFO, "Interactive mode detected, disabling plugin.");
         // Tasks must always be registered in case users forget to comment out imported commands.
         registerDefaultTasks(on);
         return;
@@ -101,7 +101,8 @@ export async function configureXrayPlugin(
         new ExecutableGraph()
     );
     setPluginContext(context);
-    const listener = new PluginTaskListener(internalOptions.jira.projectKey, context);
+    const logger = new CapturingLogger();
+    const listener = new PluginTaskListener(internalOptions.jira.projectKey, context, logger);
     on("task", {
         [PluginTask.OUTGOING_REQUEST]: (
             args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
@@ -122,16 +123,14 @@ export async function configureXrayPlugin(
     });
     on("after:run", async (results: CypressRunResultType | CypressFailedRunResultType) => {
         if (context.getOptions().xray.uploadResults) {
-            // Cypress's status types are incomplete, there is also "finished".
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if ("status" in results && results.status === "failed") {
                 const failedResult = results;
                 LOG.message(
                     Level.ERROR,
                     dedent(`
-                        Skipping results upload: Failed to run ${failedResult.failures.toString()} tests
+                        Skipping results upload: Failed to run ${failedResult.failures.toString()} tests.
 
-                        ${failedResult.message}
+                          ${failedResult.message}
                     `)
                 );
             } else {
@@ -142,23 +141,34 @@ export async function configureXrayPlugin(
                     context.getClients(),
                     context,
                     context.getGraph(),
-                    LOG
+                    logger
                 );
             }
         } else {
             LOG.message(
                 Level.INFO,
-                "Skipping results upload: Plugin is configured to not upload test results"
+                "Skipping results upload: Plugin is configured to not upload test results."
             );
         }
         try {
             await context.getGraph().execute();
         } finally {
-            if (context.getGraph().hasFailedVertices()) {
-                LOG.message(Level.WARNING, "Failed to execute some steps during plugin execution");
-            }
-            logGraph(context.getGraph(), LOG);
+            logGraph(context.getGraph(), logger);
         }
+        const messages = logger.getMessages();
+        messages.forEach(([level, text]) => {
+            if ([Level.DEBUG, Level.INFO, Level.SUCCESS].includes(level)) {
+                LOG.message(level, text);
+            }
+        });
+        if (context.getGraph().hasFailedVertices()) {
+            LOG.message(Level.WARNING, "Encountered problems during plugin execution!");
+        }
+        messages.forEach(([level, text]) => {
+            if ([Level.WARNING, Level.ERROR].includes(level)) {
+                LOG.message(level, text);
+            }
+        });
     });
 }
 
@@ -177,9 +187,11 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
             LOG.message(
                 Level.WARNING,
                 dedent(`
-                    Skipping file:preprocessor hook: Plugin misconfigured: configureXrayPlugin() was not called
+                    ${file.filePath}
 
-                    Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
+                      Skipping file:preprocessor hook: Plugin misconfigured: configureXrayPlugin() was not called.
+
+                      Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
                 `)
             );
         }
@@ -188,7 +200,11 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
     if (!context.getOptions().plugin.enabled) {
         LOG.message(
             Level.INFO,
-            `Plugin disabled. Skipping feature file synchronization triggered by: ${file.filePath}`
+            dedent(`
+                ${file.filePath}
+
+                Plugin disabled. Skipping feature file synchronization.
+            `)
         );
         return file.filePath;
     }

@@ -18,6 +18,7 @@ interface Parameters {
     >;
     cucumber: Pick<InternalCucumberOptions, "prefixes">;
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
+    projectRoot: string;
     useCloudTags?: boolean;
 }
 
@@ -41,12 +42,17 @@ export class ConvertCucumberFeaturesCommand extends Command<
     protected async computeResult(): Promise<CucumberMultipartFeature[]> {
         const input = await this.input.compute();
         const testExecutionIssueKey = await this.testExecutionIssueKey?.compute();
-        return buildMultipartFeatures(input, {
-            testExecutionIssueKey: testExecutionIssueKey,
-            includeScreenshots: this.parameters.xray.uploadScreenshots,
-            projectKey: this.parameters.jira.projectKey,
-            useCloudTags: this.parameters.useCloudTags === true,
-            testPrefix: this.parameters.cucumber.prefixes.test,
-        });
+        return buildMultipartFeatures(
+            input,
+            {
+                testExecutionIssueKey: testExecutionIssueKey,
+                includeScreenshots: this.parameters.xray.uploadScreenshots,
+                projectKey: this.parameters.jira.projectKey,
+                useCloudTags: this.parameters.useCloudTags === true,
+                testPrefix: this.parameters.cucumber.prefixes.test,
+                projectRoot: this.parameters.projectRoot,
+            },
+            this.logger
+        );
     }
 }

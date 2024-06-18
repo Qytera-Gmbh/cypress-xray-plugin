@@ -41,15 +41,18 @@ export function getNativeTestIssueKey(title: string, projectKey: string): string
     if (!matches) {
         throw new Error(
             dedent(`
-                No test issue keys found in title of test: ${title}
-                You can target existing test issues by adding a corresponding issue key:
+                ${title}
 
-                it("${projectKey}-123 ${title}", () => {
-                  // ...
-                });
+                  No test issue keys found in title.
 
-                For more information, visit:
-                - ${HELP.plugin.guides.targetingExistingIssues}
+                  You can target existing test issues by adding a corresponding issue key:
+
+                    it("${projectKey}-123 ${title}", () => {
+                      // ...
+                    });
+
+                  For more information, visit:
+                  - ${HELP.plugin.guides.targetingExistingIssues}
             `)
         );
     } else if (matches.length === 1) {
@@ -64,16 +67,17 @@ export function getNativeTestIssueKey(title: string, projectKey: string): string
         indicatorLine = indicatorLine.replaceAll(/[^^]/g, " ");
         throw new Error(
             dedent(`
-                Multiple test keys found in title of test: ${title}
-                The plugin cannot decide for you which one to use:
+                ${title}
 
-                it("${title}", () => {
-                    ${indicatorLine}
-                  // ...
-                });
+                  Multiple test keys found in title, the plugin cannot decide for you which one to use:
 
-                For more information, visit:
-                - ${HELP.plugin.guides.targetingExistingIssues}
+                    it("${title}", () => {
+                        ${indicatorLine}
+                      // ...
+                    });
+
+                  For more information, visit:
+                  - ${HELP.plugin.guides.targetingExistingIssues}
             `)
         );
     }

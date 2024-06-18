@@ -60,9 +60,13 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 this.logger.message(
                     Level.WARNING,
                     dedent(`
-                        Skipping result upload for test: ${testData.title}
+                        ${testData.spec.filepath}
 
-                        ${errorMessage(error)}
+                          Test: ${testData.title}
+
+                            Skipping result upload.
+
+                              Caused by: ${errorMessage(error)}
                     `)
                 );
             }
@@ -110,9 +114,11 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 this.logger.message(
                     Level.WARNING,
                     dedent(`
-                        Skipping result upload for test: ${conversionPromises[index][0]}
+                        Test: ${conversionPromises[index][0]}
 
-                        ${errorMessage(promise.reason)}
+                          Skipping result upload.
+
+                            Caused by: ${errorMessage(promise.reason)}
                     `)
                 );
             }
@@ -131,11 +137,13 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                         this.logger.message(
                             Level.WARNING,
                             dedent(`
-                                Screenshot will not be uploaded: ${screenshot.path}
+                                ${screenshot.path}
 
-                                To upload screenshots, include a test issue key anywhere in their names:
+                                  Screenshot cannot be attributed to a test and will not be uploaded.
 
-                                  cy.screenshot("${this.parameters.jira.projectKey}-123 ${screenshotName}")
+                                  To upload screenshots, include a test issue key anywhere in their names:
+
+                                    cy.screenshot("${this.parameters.jira.projectKey}-123 ${screenshotName}")
                             `)
                         );
                     }

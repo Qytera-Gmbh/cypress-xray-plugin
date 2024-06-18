@@ -39,7 +39,8 @@ export class XrayClientServer extends AbstractXrayClient {
                 Level.DEBUG,
                 dedent(`
                     Successfully updated or created issues:
-                    ${issueKeys.join(", ")}
+
+                      ${issueKeys.join(", ")}
                 `)
             );
             return response;
@@ -59,7 +60,8 @@ export class XrayClientServer extends AbstractXrayClient {
                 Level.DEBUG,
                 dedent(`
                     Successfully updated or created test issues:
-                    ${testKeys.join(", ")}
+
+                      ${testKeys.join(", ")}
                 `)
             );
         }
@@ -72,7 +74,8 @@ export class XrayClientServer extends AbstractXrayClient {
                 Level.DEBUG,
                 dedent(`
                     Successfully updated or created precondition issues:
-                    ${preconditionKeys.join(", ")}
+
+                      ${preconditionKeys.join(", ")}
                 `)
             );
         }

@@ -1,6 +1,6 @@
 import { XrayClient } from "../../../../client/xray/xray-client";
 import { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results";
-import { Level, Logger } from "../../../../util/logging";
+import { Logger } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 
 interface Parameters {
@@ -20,7 +20,6 @@ export class ImportExecutionCypressCommand extends Command<string, Parameters> {
 
     protected async computeResult(): Promise<string> {
         const results = await this.results.compute();
-        this.logger.message(Level.INFO, "Uploading Cypress test results");
         return await this.parameters.xrayClient.importExecution(results);
     }
 }

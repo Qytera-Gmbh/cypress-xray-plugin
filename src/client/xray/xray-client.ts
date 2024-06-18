@@ -78,7 +78,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
     public async importExecution(execution: XrayTestExecutionResults): Promise<string> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Importing execution...");
+            LOG.message(Level.INFO, "Importing Cypress execution...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<
@@ -142,10 +142,10 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
                     dedent(`
                         Failed to import Cucumber features: ${errorMessage(error)}
 
-                        The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
+                          The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
 
-                        For more information, visit:
-                        - ${HELP.plugin.configuration.cucumber.prefixes}
+                          For more information, visit:
+                          - ${HELP.plugin.configuration.cucumber.prefixes}
                     `)
                 );
             } else {
@@ -163,7 +163,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
         cucumberInfo: CucumberMultipartInfo
     ): Promise<string> {
         try {
-            LOG.message(Level.DEBUG, "Importing execution (Cucumber)...");
+            LOG.message(Level.INFO, "Importing Cucumber execution...");
             const request = await this.prepareRequestImportExecutionCucumberMultipart(
                 cucumberJson,
                 cucumberInfo

@@ -31,7 +31,7 @@ export class GetUpdatedIssuesCommand extends Command<string[], null> {
             const mismatchLinesJira: string[] = [];
             if (setOverlap.leftOnly.length > 0) {
                 mismatchLinesFeatures.push(
-                    "Issues contained in feature file tags which were not updated by Jira and might not exist:"
+                    "Issues contained in feature file tags that have not been updated by Jira and may not exist:"
                 );
                 mismatchLinesFeatures.push(
                     ...setOverlap.leftOnly.map((issueKey) => `  ${issueKey}`)
@@ -39,7 +39,7 @@ export class GetUpdatedIssuesCommand extends Command<string[], null> {
             }
             if (setOverlap.rightOnly.length > 0) {
                 mismatchLinesJira.push(
-                    "Issues updated by Jira which are not present in feature file tags and might have been created:"
+                    "Issues updated by Jira that do not exist in feature file tags and may have been created:"
                 );
                 mismatchLinesJira.push(...setOverlap.rightOnly.map((issueKey) => `  ${issueKey}`));
             }
@@ -58,13 +58,13 @@ export class GetUpdatedIssuesCommand extends Command<string[], null> {
             this.logger.message(
                 Level.WARNING,
                 dedent(`
-                    Mismatch between feature file issue tags and updated Jira issues detected
+                    Mismatch between feature file issue tags and updated Jira issues detected.
 
-                    ${mismatchLines}
+                      ${mismatchLines}
 
                     Make sure that:
                     - All issues present in feature file tags belong to existing issues
-                    - Your plugin tag prefix settings are consistent with the ones defined in Xray
+                    - Your plugin tag prefix settings match those defined in Xray
 
                     More information:
                     - ${HELP.plugin.guides.targetingExistingIssues}

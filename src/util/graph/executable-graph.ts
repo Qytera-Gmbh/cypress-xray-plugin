@@ -1,6 +1,4 @@
 import { Computable, ComputableState, Stateful } from "../../hooks/command";
-import { errorMessage, isSkippedError } from "../errors";
-import { LOG, Level } from "../logging";
 import { DirectedEdge, SimpleDirectedEdge, SimpleDirectedGraph } from "./graph";
 
 enum VertexState {
@@ -96,11 +94,6 @@ export class ExecutableGraph<
             await vertex.compute();
             this.states.set(vertex, VertexState.COMPUTED);
         } catch (error: unknown) {
-            if (isSkippedError(error)) {
-                LOG.message(Level.WARNING, errorMessage(error));
-            } else {
-                LOG.message(Level.ERROR, errorMessage(error));
-            }
             const nextRoots = this.markForbidden(vertex);
             nextRoots.forEach((root) => successors.add(root));
         } finally {

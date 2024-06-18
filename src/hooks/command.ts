@@ -149,5 +149,5 @@ export abstract class Command<R = unknown, P = unknown>
      *
      * @returns the result
      */
-    protected abstract computeResult(): Promise<R>;
+    protected abstract computeResult(): R | Promise<R>;
 }
