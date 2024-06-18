@@ -172,8 +172,7 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                 Level.DEBUG,
                 dedent(`
                     Encountered some errors during feature file import:
-
-                      ${cloudResponse.errors.map((error: string) => `- ${error}`).join("\n")}
+                    ${cloudResponse.errors.map((error: string) => `- ${error}`).join("\n")}
                 `)
             );
         }

@@ -177,17 +177,22 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(logger.message).to.have.been.calledOnceWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Encountered a cy.request call which will not be included as evidence for test: This is a test
+                    Test: This is a test
 
-                    No test issue keys found in title of test: This is a test
-                    You can target existing test issues by adding a corresponding issue key:
+                      Encountered a cy.request call which will not be included as evidence.
 
-                    it("CYP-123 This is a test", () => {
-                      // ...
-                    });
+                        Caused by: Test: This is a test
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                          No test issue keys found in title.
+
+                          You can target existing test issues by adding a corresponding issue key:
+
+                            it("CYP-123 This is a test", () => {
+                              // ...
+                            });
+
+                          For more information, visit:
+                          - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                 `)
             );
         });
@@ -217,17 +222,22 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(logger.message).to.have.been.calledOnceWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Encountered a cy.request call which will not be included as evidence for test: This is a test
+                    Test: This is a test
 
-                    No test issue keys found in title of test: This is a test
-                    You can target existing test issues by adding a corresponding issue key:
+                      Encountered a cy.request call which will not be included as evidence.
 
-                    it("CYP-123 This is a test", () => {
-                      // ...
-                    });
+                        Caused by: Test: This is a test
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                          No test issue keys found in title.
+
+                          You can target existing test issues by adding a corresponding issue key:
+
+                            it("CYP-123 This is a test", () => {
+                              // ...
+                            });
+
+                          For more information, visit:
+                          - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                 `)
             );
         });
@@ -374,17 +384,22 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(logger.message).to.have.been.calledOnceWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Encountered a cy.request call which will not be included as evidence for test: This is a test
+                    Test: This is a test
 
-                    No test issue keys found in title of test: This is a test
-                    You can target existing test issues by adding a corresponding issue key:
+                      Encountered a cy.request call which will not be included as evidence.
 
-                    it("CYP-123 This is a test", () => {
-                      // ...
-                    });
+                        Caused by: Test: This is a test
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                          No test issue keys found in title.
+
+                          You can target existing test issues by adding a corresponding issue key:
+
+                            it("CYP-123 This is a test", () => {
+                              // ...
+                            });
+
+                          For more information, visit:
+                          - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                 `)
             );
         });
@@ -429,17 +444,22 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(logger.message).to.have.been.calledOnceWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Encountered a cy.request call which will not be included as evidence for test: This is a test
+                    Test: This is a test
 
-                    No test issue keys found in title of test: This is a test
-                    You can target existing test issues by adding a corresponding issue key:
+                      Encountered a cy.request call which will not be included as evidence.
 
-                    it("CYP-123 This is a test", () => {
-                      // ...
-                    });
+                        Caused by: Test: This is a test
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                          No test issue keys found in title.
+
+                          You can target existing test issues by adding a corresponding issue key:
+
+                            it("CYP-123 This is a test", () => {
+                              // ...
+                            });
+
+                          For more information, visit:
+                          - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                 `)
             );
         });

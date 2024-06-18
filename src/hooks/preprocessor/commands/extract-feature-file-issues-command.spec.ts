@@ -160,38 +160,42 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    No test issue keys found in tags of scenario: A scenario
+                    ./test/resources/features/taggedPrefixMissingScenario.feature
 
-                    You can target existing test issues by adding a corresponding tag:
-
-                      @CYP-123
                       Scenario: A scenario
-                        Given an assumption
-                        ...
 
-                    You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+                        No test issue keys found in tags.
 
-                      Plugin configuration:
+                        You can target existing test issues by adding a corresponding tag:
 
-                        {
-                          cucumber: {
-                            prefixes: {
-                              test: "TestName:"
+                          @CYP-123
+                          Scenario: A scenario
+                            Given an assumption
+                            ...
+
+                        You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+                          Plugin configuration:
+
+                            {
+                              cucumber: {
+                                prefixes: {
+                                  test: "TestName:"
+                                }
+                              }
                             }
-                          }
-                        }
 
-                      Feature file:
+                          Feature file:
 
-                        @TestName:CYP-123
-                        Scenario: A scenario
-                          Given an assumption
-                          ...
+                            @TestName:CYP-123
+                            Scenario: A scenario
+                              Given an assumption
+                              ...
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                    - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                        - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
                 `)
             );
         });
@@ -216,38 +220,42 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    No test issue keys found in tags of scenario
+                    ./test/resources/features/taggedPrefixMissingScenario.feature
 
-                    You can target existing test issues by adding a corresponding tag:
+                      Scenario: <no name>
 
-                      @CYP-123
-                      Scenario:
-                        Given an assumption
-                        ...
+                        No test issue keys found in tags.
 
-                    You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+                        You can target existing test issues by adding a corresponding tag:
 
-                      Plugin configuration:
+                          @CYP-123
+                          Scenario:
+                            Given an assumption
+                            ...
 
-                        {
-                          cucumber: {
-                            prefixes: {
-                              test: "TestName:"
+                        You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+                          Plugin configuration:
+
+                            {
+                              cucumber: {
+                                prefixes: {
+                                  test: "TestName:"
+                                }
+                              }
                             }
-                          }
-                        }
 
-                      Feature file:
+                          Feature file:
 
-                        @TestName:CYP-123
-                        Scenario:
-                          Given an assumption
-                          ...
+                            @TestName:CYP-123
+                            Scenario:
+                              Given an assumption
+                              ...
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                    - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                        - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
                 `)
             );
         });
@@ -269,36 +277,39 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    No test issue keys found in tags of scenario: A scenario
+                    ./test/resources/features/taggedWrongScenarioTags.feature
 
-                    Available tags:
-                      @Test:CYP-123
-                      @Cool
-                      @Lucky:CYP-415
+                      Scenario: A scenario
 
-                    If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray
+                        No test issue keys found in tags:
 
-                      For example, with the following plugin configuration:
+                          @Test:CYP-123
+                          @Cool
+                          @Lucky:CYP-415
 
-                        {
-                          cucumber: {
-                            prefixes: {
-                              test: "TestName:"
+                        If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray.
+
+                          For example, with the following plugin configuration:
+
+                            {
+                              cucumber: {
+                                prefixes: {
+                                  test: "TestName:"
+                                }
+                              }
                             }
-                          }
-                        }
 
-                      The following tag will be recognized as a test issue tag by the plugin:
+                          The following tag will be recognized as a test issue tag by the plugin:
 
-                        @TestName:CYP-123
-                        Scenario: A scenario
-                          Given an assumption
-                          ...
+                            @TestName:CYP-123
+                            Scenario: A scenario
+                              Given an assumption
+                              ...
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                    - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                        - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                 `)
             );
         });
@@ -324,36 +335,39 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    No test issue keys found in tags of scenario
+                    ./test/resources/features/taggedWrongScenarioTags.feature
 
-                    Available tags:
-                      @Test:CYP-123
-                      @Cool
-                      @Lucky:CYP-415
+                      Scenario: <no name>
 
-                    If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray
+                        No test issue keys found in tags:
 
-                      For example, with the following plugin configuration:
+                          @Test:CYP-123
+                          @Cool
+                          @Lucky:CYP-415
 
-                        {
-                          cucumber: {
-                            prefixes: {
-                              test: "TestName:"
+                        If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray.
+
+                          For example, with the following plugin configuration:
+
+                            {
+                              cucumber: {
+                                prefixes: {
+                                  test: "TestName:"
+                                }
+                              }
                             }
-                          }
-                        }
 
-                      The following tag will be recognized as a test issue tag by the plugin:
+                          The following tag will be recognized as a test issue tag by the plugin:
 
-                        @TestName:CYP-123
-                        Scenario:
-                          Given A step
-                          ...
+                            @TestName:CYP-123
+                            Scenario:
+                              Given A step
+                              ...
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                    - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                        - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
                 `)
             );
         });
@@ -375,38 +389,42 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    No precondition issue keys found in comments of background: A background
-
-                    You can target existing precondition issues by adding a corresponding comment:
+                    ./test/resources/features/taggedPrefixMissingBackground.feature
 
                       Background: A background
-                        #@CYP-123
-                        Given abc123
-                        ...
 
-                    You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+                        No precondition issue keys found in comments.
 
-                      Plugin configuration:
+                        You can target existing precondition issues by adding a corresponding comment:
 
-                        {
-                          cucumber: {
-                            prefixes: {
-                              precondition: "Precondition:"
+                          Background: A background
+                            #@CYP-123
+                            Given abc123
+                            ...
+
+                        You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+                          Plugin configuration:
+
+                            {
+                              cucumber: {
+                                prefixes: {
+                                  precondition: "Precondition:"
+                                }
+                              }
                             }
-                          }
-                        }
 
-                      Feature file:
+                          Feature file:
 
-                        Background: A background
-                          #@Precondition:CYP-123
-                          Given abc123
-                          ...
+                            Background: A background
+                              #@Precondition:CYP-123
+                              Given abc123
+                              ...
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                    - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                        - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
                 `)
             );
         });
@@ -432,38 +450,42 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    No precondition issue keys found in comments of background
+                    ./test/resources/features/taggedPrefixMissingBackground.feature
 
-                    You can target existing precondition issues by adding a corresponding comment:
+                      Background: <no name>
 
-                      Background:
-                        #@CYP-123
-                        Given A step
-                        ...
+                        No precondition issue keys found in comments.
 
-                    You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+                        You can target existing precondition issues by adding a corresponding comment:
 
-                      Plugin configuration:
+                          Background:
+                            #@CYP-123
+                            Given A step
+                            ...
 
-                        {
-                          cucumber: {
-                            prefixes: {
-                              precondition: "Precondition:"
+                        You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+                          Plugin configuration:
+
+                            {
+                              cucumber: {
+                                prefixes: {
+                                  precondition: "Precondition:"
+                                }
+                              }
                             }
-                          }
-                        }
 
-                      Feature file:
+                          Feature file:
 
-                        Background:
-                          #@Precondition:CYP-123
-                          Given A step
-                          ...
+                            Background:
+                              #@Precondition:CYP-123
+                              Given A step
+                              ...
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                    - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                        - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                 `)
             );
         });
@@ -488,35 +510,38 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    No precondition issue keys found in comments of background
+                    ./test/resources/features/taggedWrongBackgroundTags.feature
 
-                    Available comments:
-                      #@HairConditioning:CYP-244
-                      #@PavlovConditioning:CYP-784
+                      Background: <no name>
 
-                    If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray
+                        No precondition issue keys found in comments:
 
-                      For example, with the following plugin configuration:
+                          #@HairConditioning:CYP-244
+                          #@PavlovConditioning:CYP-784
 
-                        {
-                          cucumber: {
-                            prefixes: {
-                              precondition: "Precondition:"
+                        If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray.
+
+                          For example, with the following plugin configuration:
+
+                            {
+                              cucumber: {
+                                prefixes: {
+                                  precondition: "Precondition:"
+                                }
+                              }
                             }
-                          }
-                        }
 
-                      The following comment will be recognized as a precondition issue tag by the plugin:
+                          The following comment will be recognized as a precondition issue tag by the plugin:
 
-                        Background:
-                          #@Precondition:CYP-123
-                          Given abc123
-                          ...
+                            Background:
+                              #@Precondition:CYP-123
+                              Given abc123
+                              ...
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                    - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                        - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
                 `)
             );
         });
@@ -538,35 +563,38 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    No precondition issue keys found in comments of background: A background
+                    ./test/resources/features/taggedWrongBackgroundTags.feature
 
-                    Available comments:
-                      #@HairConditioning:CYP-244
-                      #@PavlovConditioning:CYP-784
+                      Background: A background
 
-                    If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray
+                        No precondition issue keys found in comments:
 
-                      For example, with the following plugin configuration:
+                          #@HairConditioning:CYP-244
+                          #@PavlovConditioning:CYP-784
 
-                        {
-                          cucumber: {
-                            prefixes: {
-                              precondition: "Precondition:"
+                        If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray.
+
+                          For example, with the following plugin configuration:
+
+                            {
+                              cucumber: {
+                                prefixes: {
+                                  precondition: "Precondition:"
+                                }
+                              }
                             }
-                          }
-                        }
 
-                      The following comment will be recognized as a precondition issue tag by the plugin:
+                          The following comment will be recognized as a precondition issue tag by the plugin:
 
-                        Background: A background
-                          #@Precondition:CYP-123
-                          Given abc123
-                          ...
+                            Background: A background
+                              #@Precondition:CYP-123
+                              Given abc123
+                              ...
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                    - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                        - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                 `)
             );
         });
@@ -594,18 +622,21 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                     dedent(`
-                        Multiple test issue keys found in tags of scenario
-                        The plugin cannot decide for you which one to use:
+                        ./test/resources/features/taggedNoPrefixMultipleScenario.feature
 
-                        @CYP-123 @Some @Other @CYP-456 @Tags
-                        ^^^^^^^^              ^^^^^^^^
-                        Scenario:
-                          Given A step
-                          ...
+                          Scenario: <no name>
 
-                        For more information, visit:
-                        - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                            Multiple test issue keys found in tags, the plugin cannot decide for you which one to use:
+
+                              @CYP-123 @Some @Other @CYP-456 @Tags
+                              ^^^^^^^^              ^^^^^^^^
+                              Scenario:
+                                Given A step
+                                ...
+
+                            For more information, visit:
+                            - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                     `)
                 );
             });
@@ -628,21 +659,24 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                     dedent(`
-                        Multiple precondition issue keys found in comments of background: A background
-                        The plugin cannot decide for you which one to use:
+                        ./test/resources/features/taggedNoPrefixMultipleBackground.feature
 
-                        Background: A background
-                          #@CYP-244
-                          ^^^^^^^^^
-                          # a random comment
-                          #@CYP-262
-                          ^^^^^^^^^
-                          Given abc123
-                          ...
+                          Background: A background
 
-                        For more information, visit:
-                        - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                            Multiple precondition issue keys found in comments, the plugin cannot decide for you which one to use:
+
+                              Background: A background
+                                #@CYP-244
+                                ^^^^^^^^^
+                                # a random comment
+                                #@CYP-262
+                                ^^^^^^^^^
+                                Given abc123
+                                ...
+
+                            For more information, visit:
+                            - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                     `)
                 );
             });
@@ -668,21 +702,24 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                     dedent(`
-                        Multiple precondition issue keys found in comments of background
-                        The plugin cannot decide for you which one to use:
+                        ./test/resources/features/taggedNoPrefixMultipleBackground.feature
 
-                        Background:
-                          #@CYP-244
-                          ^^^^^^^^^
-                          # a random comment
-                          #@CYP-262
-                          ^^^^^^^^^
-                          Given abc123
-                          ...
+                          Background: <no name>
 
-                        For more information, visit:
-                        - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                            Multiple precondition issue keys found in comments, the plugin cannot decide for you which one to use:
+
+                              Background:
+                                #@CYP-244
+                                ^^^^^^^^^
+                                # a random comment
+                                #@CYP-262
+                                ^^^^^^^^^
+                                Given abc123
+                                ...
+
+                            For more information, visit:
+                            - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                     `)
                 );
             });
@@ -706,18 +743,21 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                     dedent(`
-                        Multiple test issue keys found in tags of scenario: A scenario
-                        The plugin cannot decide for you which one to use:
+                        ./test/resources/features/taggedPrefixMultipleScenario.feature
 
-                        @TestName:CYP-123 @Some @Other @TestName:CYP-456 @Tags
-                        ^^^^^^^^^^^^^^^^^              ^^^^^^^^^^^^^^^^^
-                        Scenario: A scenario
-                          Given an assumption
-                          ...
+                          Scenario: A scenario
 
-                        For more information, visit:
-                        - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                            Multiple test issue keys found in tags, the plugin cannot decide for you which one to use:
+
+                              @TestName:CYP-123 @Some @Other @TestName:CYP-456 @Tags
+                              ^^^^^^^^^^^^^^^^^              ^^^^^^^^^^^^^^^^^
+                              Scenario: A scenario
+                                Given an assumption
+                                ...
+
+                            For more information, visit:
+                            - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                     `)
                 );
             });
@@ -740,21 +780,24 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
                     dedent(`
-                        Multiple precondition issue keys found in comments of background: A background
-                        The plugin cannot decide for you which one to use:
+                        ./test/resources/features/taggedPrefixMultipleBackground.feature
 
-                        Background: A background
-                          #@Precondition:CYP-244
-                          ^^^^^^^^^^^^^^^^^^^^^^
-                          # a random comment
-                          #@Precondition:CYP-262
-                          ^^^^^^^^^^^^^^^^^^^^^^
-                          Given abc123
-                          ...
+                          Background: A background
 
-                        For more information, visit:
-                        - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                            Multiple precondition issue keys found in comments, the plugin cannot decide for you which one to use:
+
+                              Background: A background
+                                #@Precondition:CYP-244
+                                ^^^^^^^^^^^^^^^^^^^^^^
+                                # a random comment
+                                #@Precondition:CYP-262
+                                ^^^^^^^^^^^^^^^^^^^^^^
+                                Given abc123
+                                ...
+
+                            For more information, visit:
+                            - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                     `)
                 );
             });

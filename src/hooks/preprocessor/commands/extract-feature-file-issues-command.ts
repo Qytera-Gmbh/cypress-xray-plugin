@@ -3,6 +3,7 @@ import { FeatureFileIssueData } from "../../../types/cucumber/cucumber";
 import { CucumberOptions } from "../../../types/plugin";
 import { dedent } from "../../../util/dedent";
 import {
+    errorMessage,
     missingTestKeyInCucumberScenarioError,
     multipleTestKeysInCucumberScenarioError,
 } from "../../../util/errors";
@@ -82,13 +83,11 @@ export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueDat
                                   background.name.length > 0 ? background.name : "<no name>"
                               }
 
-                                No precondition issue keys found in comments.
-
-                                Available comments:
+                                No precondition issue keys found in comments:
 
                                   ${preconditionComments.join("\n")}
 
-                                If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray
+                                If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray.
 
                                   For example, with the following plugin configuration:
 
@@ -199,17 +198,33 @@ export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueDat
                 this.parameters.prefixes?.test
             );
             if (issueKeys.length === 0) {
-                throw missingTestKeyInCucumberScenarioError(
-                    scenario,
-                    this.parameters.projectKey,
-                    this.parameters.displayCloudHelp
+                throw new Error(
+                    dedent(`
+                    ${this.parameters.filePath}
+
+                      ${errorMessage(
+                          missingTestKeyInCucumberScenarioError(
+                              scenario,
+                              this.parameters.projectKey,
+                              this.parameters.displayCloudHelp
+                          )
+                      )}
+                `)
                 );
             } else if (issueKeys.length > 1) {
-                throw multipleTestKeysInCucumberScenarioError(
-                    scenario,
-                    scenario.tags,
-                    issueKeys,
-                    this.parameters.displayCloudHelp
+                throw new Error(
+                    dedent(`
+                        ${this.parameters.filePath}
+
+                          ${errorMessage(
+                              multipleTestKeysInCucumberScenarioError(
+                                  scenario,
+                                  scenario.tags,
+                                  issueKeys,
+                                  this.parameters.displayCloudHelp
+                              )
+                          )}
+                    `)
                 );
             }
             featureFileIssueKeys.tests.push({

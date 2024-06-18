@@ -63,6 +63,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 },
                 xray: { uploadScreenshots: false },
+                projectRoot: "./test/resources",
             });
         });
 

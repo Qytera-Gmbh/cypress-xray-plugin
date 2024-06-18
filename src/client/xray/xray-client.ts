@@ -142,7 +142,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
                     dedent(`
                         Failed to import Cucumber features: ${errorMessage(error)}
 
-                          The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
+                          The prefixes in Cucumber background or scenario tags might not be consistent with the scheme defined in Xray.
 
                           For more information, visit:
                           - ${HELP.plugin.configuration.cucumber.prefixes}

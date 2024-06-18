@@ -16,7 +16,7 @@ import { XrayClientCloud } from "./xray-client-cloud";
 chai.use(chaiAsPromised);
 
 describe(path.relative(process.cwd(), __filename), () => {
-    describe(XrayClientCloud.constructor.name, () => {
+    describe(XrayClientCloud.name, () => {
         let client: XrayClientCloud;
         let restClient: SinonStubbedInstance<AxiosRestClient>;
 
@@ -351,10 +351,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     dedent(`
                         Failed to import Cucumber features: Request failed with status code 400
 
-                        The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
+                          The prefixes in Cucumber background or scenario tags might not be consistent with the scheme defined in Xray.
 
-                        For more information, visit:
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                          For more information, visit:
+                          - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                     `)
                 );
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(

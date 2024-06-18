@@ -79,15 +79,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("logs warnings for missing test issue keys", () => {
             expect(() => getNativeTestIssueKey("this is a test", "CYP")).to.throw(
                 dedent(`
-                    No test issue keys found in title of test: this is a test
-                    You can target existing test issues by adding a corresponding issue key:
+                    Test: this is a test
 
-                    it("CYP-123 this is a test", () => {
-                      // ...
-                    });
+                      No test issue keys found in title.
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                      You can target existing test issues by adding a corresponding issue key:
+
+                        it("CYP-123 this is a test", () => {
+                          // ...
+                        });
+
+                      For more information, visit:
+                      - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                 `)
             );
         });
@@ -97,16 +100,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                 getNativeTestIssueKey("CYP-123 this is a CYP-456 test CYP-789", "CYP")
             ).to.throw(
                 dedent(`
-                    Multiple test keys found in title of test: CYP-123 this is a CYP-456 test CYP-789
-                    The plugin cannot decide for you which one to use:
+                    Test: CYP-123 this is a CYP-456 test CYP-789
 
-                    it("CYP-123 this is a CYP-456 test CYP-789", () => {
-                        ^^^^^^^           ^^^^^^^      ^^^^^^^
-                      // ...
-                    });
+                      Multiple test keys found in title, the plugin cannot decide for you which one to use:
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                        it("CYP-123 this is a CYP-456 test CYP-789", () => {
+                            ^^^^^^^           ^^^^^^^      ^^^^^^^
+                          // ...
+                        });
+
+                      For more information, visit:
+                      - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                 `)
             );
         });

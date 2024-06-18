@@ -141,7 +141,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
 
                                   Screenshot cannot be attributed to a test and will not be uploaded.
 
-                                  To upload screenshots, include a test issue key anywhere in their names:
+                                  To upload screenshots, include test issue keys anywhere in their name:
 
                                     cy.screenshot("${this.parameters.jira.projectKey}-123 ${screenshotName}")
                             `)

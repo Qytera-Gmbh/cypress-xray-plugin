@@ -184,11 +184,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.WARNING,
                     dedent(`
-                        Screenshot will not be uploaded: ./test/resources/small.png
+                        ./test/resources/small.png
 
-                        To upload screenshots, include a test issue key anywhere in their names:
+                          Screenshot cannot be attributed to a test and will not be uploaded.
 
-                          cy.screenshot("CYP-123 small")
+                          To upload screenshots, include test issue keys anywhere in their name:
+
+                            cy.screenshot("CYP-123 small")
                     `)
                 );
             });
@@ -210,17 +212,21 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Skipping result upload for test: TodoMVC hides footer initially
+                    Test: TodoMVC hides footer initially
 
-                    Unknown Cypress test status: broken
+                      Skipping result upload.
+
+                        Caused by: Unknown Cypress test status: broken
                 `)
             );
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Skipping result upload for test: TodoMVC adds 2 todos
+                    Test: TodoMVC adds 2 todos
 
-                    Unknown Cypress test status: california
+                      Skipping result upload.
+
+                        Caused by: Unknown Cypress test status: california
                 `)
             );
         });

@@ -61,11 +61,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 .to.eventually.be.an.instanceOf(SkippedError)
                 .and.to.eventually.be.rejectedWith(
                     dedent(`
-                        Cucumber execution results were imported to a different test execution issue than the Cypress execution results
-                          Cypress test execution issue:  CYP-123 https://example.org/browse/CYP-123
+                        Cucumber execution results were imported to a different test execution issue than the Cypress execution results:
+
+                          Cypress  test execution issue: CYP-123 https://example.org/browse/CYP-123
                           Cucumber test execution issue: CYP-456 https://example.org/browse/CYP-456
 
-                        Make sure your Jira configuration does not prevent modifications of existing test executions
+                        Make sure your Jira configuration does not prevent modifications of existing test executions.
                     `)
                 );
         });

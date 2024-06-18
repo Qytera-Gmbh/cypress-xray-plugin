@@ -41,7 +41,7 @@ export function getNativeTestIssueKey(title: string, projectKey: string): string
     if (!matches) {
         throw new Error(
             dedent(`
-                ${title}
+                Test: ${title}
 
                   No test issue keys found in title.
 
@@ -67,7 +67,7 @@ export function getNativeTestIssueKey(title: string, projectKey: string): string
         indicatorLine = indicatorLine.replaceAll(/[^^]/g, " ");
         throw new Error(
             dedent(`
-                ${title}
+                Test: ${title}
 
                   Multiple test keys found in title, the plugin cannot decide for you which one to use:
 

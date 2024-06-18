@@ -77,13 +77,11 @@ export function missingTestKeyInCucumberScenarioError(
             dedent(`
                 Scenario: ${scenario.name.length > 0 ? scenario.name : "<no name>"}
 
-                  No test issue keys found in tags.
-
-                  Available tags:
+                  No test issue keys found in tags:
 
                     ${scenario.tags.map((tag) => tag.name).join("\n")}
 
-                  If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray
+                  If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray.
 
                     For example, with the following plugin configuration:
 
@@ -185,9 +183,7 @@ export function multipleTestKeysInCucumberScenarioError(
         dedent(`
             Scenario: ${scenario.name.length > 0 ? scenario.name : "<no name>"}
 
-              Multiple test issue keys found in tags.
-
-              The plugin cannot decide for you which one to use:
+              Multiple test issue keys found in tags, the plugin cannot decide for you which one to use:
 
                 ${tags.map((tag) => tag.name).join(" ")}
                 ${tags

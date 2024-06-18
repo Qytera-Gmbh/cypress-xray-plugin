@@ -104,7 +104,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     dedent(`
                         Failed to authenticate to: https://example.org
 
-                        Request failed with status code 404
+                          Caused by: Request failed with status code 404
                     `)
                 );
             });

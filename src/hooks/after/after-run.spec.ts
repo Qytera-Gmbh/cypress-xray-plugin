@@ -394,6 +394,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             uploadScreenshots: true,
                         },
                         useCloudTags: false,
+                        projectRoot: ".",
                     });
                     expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
                         xrayClient: clients.xrayClient,
@@ -692,6 +693,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             uploadScreenshots: true,
                         },
                         useCloudTags: true,
+                        projectRoot: ".",
                     });
                 });
 
@@ -791,6 +793,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             uploadScreenshots: true,
                         },
                         useCloudTags: true,
+                        projectRoot: ".",
                     });
                     expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
                         xrayClient: clients.xrayClient,
@@ -877,7 +880,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(graph.size("edges")).to.eq(0);
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.WARNING,
-                    "No test execution results to upload, skipping results upload preparations"
+                    "No test execution results to upload, skipping results upload preparations."
                 );
             });
 

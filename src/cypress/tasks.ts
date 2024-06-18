@@ -159,7 +159,7 @@ export class PluginTaskListener implements TaskListener {
                 this.logger.message(
                     Level.WARNING,
                     dedent(`
-                        ${args.test}
+                        Test: ${args.test}
 
                           Encountered a cy.request call which will not be included as evidence.
 
@@ -187,7 +187,7 @@ export class PluginTaskListener implements TaskListener {
                 this.logger.message(
                     Level.WARNING,
                     dedent(`
-                        ${args.test}
+                        Test: ${args.test}
 
                           Encountered a cy.request call which will not be included as evidence.
 

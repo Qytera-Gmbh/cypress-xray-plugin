@@ -162,7 +162,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            delete cucumberReport[0].elements[0].tags;
             const features = buildMultipartFeatures(
                 cucumberReport,
                 {
@@ -176,50 +175,64 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Skipping result upload for scenario: Doing stuff
+                    ${path.resolve(
+                        ".",
+                        "test",
+                        "resources",
+                        "cypress",
+                        "e2e",
+                        "features",
+                        "example.feature"
+                    )}
 
-                    No test issue keys found in tags of scenario: Doing stuff
-
-                    You can target existing test issues by adding a corresponding tag:
-
-                      @CYP-123
                       Scenario: Doing stuff
-                        When I prepare something
-                        ...
 
-                    You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+                        Skipping result upload.
 
-                      Plugin configuration:
+                          Caused by: Scenario: Doing stuff
 
-                        {
-                          cucumber: {
-                            prefixes: {
-                              test: "TestName:"
-                            }
-                          }
-                        }
+                            No test issue keys found in tags.
 
-                      Feature file:
+                            You can target existing test issues by adding a corresponding tag:
 
-                        @TestName:CYP-123
-                        Scenario: Doing stuff
-                          When I prepare something
-                          ...
+                              @CYP-123
+                              Scenario: Doing stuff
+                                When I prepare something
+                                ...
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                    - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                            You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+                              Plugin configuration:
+
+                                {
+                                  cucumber: {
+                                    prefixes: {
+                                      test: "TestName:"
+                                    }
+                                  }
+                                }
+
+                              Feature file:
+
+                                @TestName:CYP-123
+                                Scenario: Doing stuff
+                                  When I prepare something
+                                  ...
+
+                            For more information, visit:
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                            - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                 `)
             );
             expect(features).to.have.length(0);
         });
 
-        it("skips scenarios without issue tags", () => {
+        it("skips scenarios without recognised issue tags", () => {
             const logger = getMockedLogger();
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 readFileSync(
-                    "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartUntagged.json",
+                    "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
@@ -236,40 +249,42 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Skipping result upload for scenario: Doing stuff
+                    ${path.resolve(".", "test", "resources", "cypress", "e2e", "spec.cy.feature")}
 
-                    No test issue keys found in tags of scenario: Doing stuff
+                      Scenario: TC - Development
 
-                    You can target existing test issues by adding a corresponding tag:
+                        Skipping result upload.
 
-                      @CYP-123
-                      Scenario: Doing stuff
-                        When I prepare something
-                        ...
+                          Caused by: Scenario: TC - Development
 
-                    You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+                            No test issue keys found in tags:
 
-                      Plugin configuration:
+                              @ABC-63
+                              @TestName:CYP-123
 
-                        {
-                          cucumber: {
-                            prefixes: {
-                              test: "TestName:"
-                            }
-                          }
-                        }
+                            If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray.
 
-                      Feature file:
+                              For example, with the following plugin configuration:
 
-                        @TestName:CYP-123
-                        Scenario: Doing stuff
-                          When I prepare something
-                          ...
+                                {
+                                  cucumber: {
+                                    prefixes: {
+                                      test: "TestName:"
+                                    }
+                                  }
+                                }
 
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                    - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+                              The following tag will be recognized as a test issue tag by the plugin:
+
+                                @TestName:CYP-123
+                                Scenario: TC - Development
+                                  Given abc123
+                                  ...
+
+                            For more information, visit:
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                            - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                 `)
             );
             expect(features).to.have.length(0);

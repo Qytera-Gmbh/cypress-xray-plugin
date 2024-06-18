@@ -54,6 +54,7 @@ export function buildMultipartFeatures(
         }
         const elements: CucumberMultipartElement[] = [];
         result.elements.forEach((element: CucumberMultipartElement) => {
+            const filepath = path.resolve(options.projectRoot, result.uri);
             try {
                 if (element.type === "scenario") {
                     assertScenarioContainsIssueKey(
@@ -75,7 +76,7 @@ export function buildMultipartFeatures(
                 logger.message(
                     Level.WARNING,
                     dedent(`
-                        ${path.resolve(options.projectRoot, result.uri)}
+                        ${filepath}
 
                           ${elementDescription}
 
