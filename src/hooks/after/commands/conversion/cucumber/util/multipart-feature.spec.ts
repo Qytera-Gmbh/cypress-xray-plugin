@@ -17,11 +17,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            const features = buildMultipartFeatures(cucumberReport, {
-                projectKey: "CYP",
-                useCloudTags: true,
-                testPrefix: "TestName:",
-            });
+            const logger = getMockedLogger();
+            const features = buildMultipartFeatures(
+                cucumberReport,
+                {
+                    projectKey: "CYP",
+                    useCloudTags: true,
+                    testPrefix: "TestName:",
+                    projectRoot: "./test/resources",
+                },
+                logger
+            );
             expect(features).to.be.an("array").with.length(2);
             expect(features[0].elements).to.be.an("array").with.length(3);
             expect(features[1].elements).to.be.an("array").with.length(1);
@@ -34,12 +40,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            const features = buildMultipartFeatures(cucumberReport, {
-                testExecutionIssueKey: "CYP-456",
-                projectKey: "CYP",
-                useCloudTags: true,
-                testPrefix: "TestName:",
-            });
+            const logger = getMockedLogger();
+            const features = buildMultipartFeatures(
+                cucumberReport,
+                {
+                    testExecutionIssueKey: "CYP-456",
+                    projectKey: "CYP",
+                    useCloudTags: true,
+                    testPrefix: "TestName:",
+                    projectRoot: "./test/resources",
+                },
+                logger
+            );
             expect(features[0].tags).to.deep.eq([{ name: "@CYP-456" }]);
             expect(features[1].tags).to.deep.eq([{ name: "@CYP-456" }]);
         });
@@ -52,12 +64,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                 )
             ) as CucumberMultipartFeature[];
             delete cucumberReport[0].tags;
-            const features = buildMultipartFeatures(cucumberReport, {
-                testExecutionIssueKey: "CYP-456",
-                projectKey: "CYP",
-                useCloudTags: true,
-                testPrefix: "TestName:",
-            });
+            const logger = getMockedLogger();
+            const features = buildMultipartFeatures(
+                cucumberReport,
+                {
+                    testExecutionIssueKey: "CYP-456",
+                    projectKey: "CYP",
+                    useCloudTags: true,
+                    testPrefix: "TestName:",
+                    projectRoot: "./test/resources",
+                },
+                logger
+            );
             expect(features[0].tags).to.deep.eq([{ name: "@CYP-456" }]);
         });
 
@@ -68,12 +86,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            const features = buildMultipartFeatures(cucumberReport, {
-                includeScreenshots: true,
-                projectKey: "CYP",
-                useCloudTags: true,
-                testPrefix: "TestName:",
-            });
+            const logger = getMockedLogger();
+            const features = buildMultipartFeatures(
+                cucumberReport,
+                {
+                    includeScreenshots: true,
+                    projectKey: "CYP",
+                    useCloudTags: true,
+                    testPrefix: "TestName:",
+                    projectRoot: "./test/resources",
+                },
+                logger
+            );
             expectToExist(features[0].elements[2].steps[1].embeddings);
             expect(features[0].elements[2].steps[1].embeddings).to.have.length(1);
             expect(features[0].elements[2].steps[1].embeddings[0].data).to.be.a("string");
@@ -88,12 +112,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                 )
             ) as CucumberMultipartFeature[];
             cucumberReport[0].elements[0].type = "background";
-            const features = buildMultipartFeatures(cucumberReport, {
-                includeScreenshots: false,
-                projectKey: "CYP",
-                useCloudTags: true,
-                testPrefix: "TestName:",
-            });
+            const logger = getMockedLogger();
+            const features = buildMultipartFeatures(
+                cucumberReport,
+                {
+                    includeScreenshots: false,
+                    projectKey: "CYP",
+                    useCloudTags: true,
+                    testPrefix: "TestName:",
+                    projectRoot: "./test/resources",
+                },
+                logger
+            );
             expect(features[0].elements).to.have.length(2);
         });
 
@@ -104,12 +134,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            const features = buildMultipartFeatures(cucumberReport, {
-                includeScreenshots: false,
-                projectKey: "CYP",
-                useCloudTags: true,
-                testPrefix: "TestName:",
-            });
+            const logger = getMockedLogger();
+            const features = buildMultipartFeatures(
+                cucumberReport,
+                {
+                    includeScreenshots: false,
+                    projectKey: "CYP",
+                    useCloudTags: true,
+                    testPrefix: "TestName:",
+                    projectRoot: "./test/resources",
+                },
+                logger
+            );
             expect(features[0].elements[0].steps[0].embeddings).to.be.empty;
             expect(features[0].elements[0].steps[1].embeddings).to.be.empty;
             expect(features[0].elements[1].steps[0].embeddings).to.be.empty;
@@ -127,11 +163,16 @@ describe(path.relative(process.cwd(), __filename), () => {
                 )
             ) as CucumberMultipartFeature[];
             delete cucumberReport[0].elements[0].tags;
-            const features = buildMultipartFeatures(cucumberReport, {
-                includeScreenshots: false,
-                projectKey: "CYP",
-                useCloudTags: false,
-            });
+            const features = buildMultipartFeatures(
+                cucumberReport,
+                {
+                    includeScreenshots: false,
+                    projectKey: "CYP",
+                    useCloudTags: false,
+                    projectRoot: "./test/resources",
+                },
+                logger
+            );
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
                 dedent(`
@@ -182,11 +223,16 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            const features = buildMultipartFeatures(cucumberReport, {
-                includeScreenshots: false,
-                projectKey: "CYP",
-                useCloudTags: false,
-            });
+            const features = buildMultipartFeatures(
+                cucumberReport,
+                {
+                    includeScreenshots: false,
+                    projectKey: "CYP",
+                    useCloudTags: false,
+                    projectRoot: "./test/resources",
+                },
+                logger
+            );
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
                 dedent(`
@@ -259,12 +305,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                 )
                 .onFirstCall()
                 .returns();
-            const features = buildMultipartFeatures(cucumberReport, {
-                includeScreenshots: false,
-                projectKey: "CYP",
-                useCloudTags: true,
-                testPrefix: "TestName:",
-            });
+            const features = buildMultipartFeatures(
+                cucumberReport,
+                {
+                    includeScreenshots: false,
+                    projectKey: "CYP",
+                    useCloudTags: true,
+                    testPrefix: "TestName:",
+                    projectRoot: "./test/resources",
+                },
+                logger
+            );
             expect(features).to.have.length(0);
         });
     });

@@ -94,7 +94,8 @@ describe(path.relative(process.cwd(), __filename), () => {
     describe(tasks.PluginTaskListener.name, () => {
         it("handles single outgoing requests for tests with issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection);
+            const logger = getMockedLogger();
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             const result = listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 test: "This is a test CYP-123",
                 filename: "outgoingRequest.json",
@@ -114,7 +115,8 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("handles multiple outgoing requests for tests with the same issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection);
+            const logger = getMockedLogger();
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             const result1 = listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 test: "This is a test CYP-123: GET",
                 filename: "outgoingRequest1.json",
@@ -163,7 +165,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles single outgoing requests for tests without issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection);
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 test: "This is a test",
                 filename: "outgoingRequest.json",
@@ -193,7 +195,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles multiple outgoing requests for tests without issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection);
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             listener[tasks.PluginTask.OUTGOING_REQUEST]({
                 test: "This is a test",
                 filename: "outgoingRequest1.json",
@@ -232,7 +234,8 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("handles single incoming responses for tests with issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection);
+            const logger = getMockedLogger();
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             const result = listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 test: "This is a test CYP-123",
                 filename: "incomingResponse.json",
@@ -270,7 +273,8 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("handles multiple incoming responses for tests with the same issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection);
+            const logger = getMockedLogger();
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             const result1 = listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 test: "This is a test CYP-123: GET",
                 filename: "incomingResponse1.json",
@@ -349,7 +353,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles single incoming responses for tests without issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection);
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 test: "This is a test",
                 filename: "incomingResponse.json",
@@ -388,7 +392,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("handles multiple incoming responses for tests without issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection);
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             listener[tasks.PluginTask.INCOMING_RESPONSE]({
                 test: "This is a test",
                 filename: "incomingResponse1.json",

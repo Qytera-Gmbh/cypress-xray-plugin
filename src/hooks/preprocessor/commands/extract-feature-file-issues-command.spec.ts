@@ -22,6 +22,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                     prefixes: { test: "TestName:", precondition: "Precondition:" },
                     displayCloudHelp: true,
+                    filePath: "./some-file.feature",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -53,6 +54,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                     prefixes: {},
                     displayCloudHelp: true,
+                    filePath: "./some-file.feature",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -130,6 +132,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                     prefixes: {},
                     displayCloudHelp: true,
+                    filePath: "./some-file.feature",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -150,6 +153,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                     prefixes: { precondition: "Precondition:" },
                     displayCloudHelp: true,
+                    filePath: "./test/resources/features/taggedPrefixMissingScenario.feature",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -205,6 +209,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                     prefixes: { precondition: "Precondition:" },
                     displayCloudHelp: true,
+                    filePath: "./test/resources/features/taggedPrefixMissingScenario.feature",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -257,6 +262,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                     prefixes: {},
                     displayCloudHelp: false,
+                    filePath: "./test/resources/features/taggedWrongScenarioTags.feature",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -311,6 +317,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                     prefixes: {},
                     displayCloudHelp: true,
+                    filePath: "./test/resources/features/taggedWrongScenarioTags.feature",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -361,6 +368,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                     prefixes: { test: "TestName:" },
                     displayCloudHelp: true,
+                    filePath: "./test/resources/features/taggedPrefixMissingBackground.feature",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -417,6 +425,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                     prefixes: { test: "TestName:" },
                     displayCloudHelp: false,
+                    filePath: "./test/resources/features/taggedPrefixMissingBackground.feature",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -472,6 +481,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                     prefixes: {},
                     displayCloudHelp: true,
+                    filePath: "./test/resources/features/taggedWrongBackgroundTags.feature",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -521,6 +531,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                     prefixes: {},
                     displayCloudHelp: false,
+                    filePath: "./test/resources/features/taggedWrongBackgroundTags.feature",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -575,6 +586,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectKey: "CYP",
                         prefixes: {},
                         displayCloudHelp: false,
+                        filePath:
+                            "./test/resources/features/taggedNoPrefixMultipleScenario.feature",
                     },
                     logger,
                     new ConstantCommand(logger, document)
@@ -607,6 +620,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectKey: "CYP",
                         prefixes: {},
                         displayCloudHelp: false,
+                        filePath:
+                            "./test/resources/features/taggedNoPrefixMultipleBackground.feature",
                     },
                     logger,
                     new ConstantCommand(logger, document)
@@ -645,6 +660,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectKey: "CYP",
                         prefixes: {},
                         displayCloudHelp: false,
+                        filePath:
+                            "./test/resources/features/taggedNoPrefixMultipleBackground.feature",
                     },
                     logger,
                     new ConstantCommand(logger, document)
@@ -682,6 +699,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectKey: "CYP",
                         prefixes: { test: "TestName:", precondition: "Precondition:" },
                         displayCloudHelp: true,
+                        filePath: "./test/resources/features/taggedPrefixMultipleScenario.feature",
                     },
                     logger,
                     new ConstantCommand(logger, document)
@@ -714,6 +732,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectKey: "CYP",
                         prefixes: { precondition: "Precondition:" },
                         displayCloudHelp: true,
+                        filePath:
+                            "./test/resources/features/taggedPrefixMultipleBackground.feature",
                     },
                     logger,
                     new ConstantCommand(logger, document)
