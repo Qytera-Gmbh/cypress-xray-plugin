@@ -40,7 +40,7 @@ export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Comman
                 );
             } catch (error: unknown) {
                 this.logger.message(
-                    Level.ERROR,
+                    Level.WARNING,
                     dedent(`
                         ${issueKey}
 

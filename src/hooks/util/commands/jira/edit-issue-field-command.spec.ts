@@ -60,7 +60,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             expect(await command.compute()).to.deep.eq(["CYP-123"]);
             expect(logger.message).to.have.been.calledWithExactly(
-                Level.ERROR,
+                Level.WARNING,
                 dedent(`
                     CYP-456
 
