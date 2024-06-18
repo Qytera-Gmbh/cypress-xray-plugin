@@ -203,7 +203,7 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
             dedent(`
                 ${file.filePath}
 
-                Plugin disabled. Skipping feature file synchronization.
+                  Plugin disabled. Skipping feature file synchronization.
             `)
         );
         return file.filePath;

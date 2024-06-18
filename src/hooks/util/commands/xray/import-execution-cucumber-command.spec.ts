@@ -4,7 +4,6 @@ import path from "path";
 import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks";
 import { CucumberMultipartFeature } from "../../../../types/xray/requests/import-execution-cucumber-multipart";
 import { CucumberMultipartInfo } from "../../../../types/xray/requests/import-execution-cucumber-multipart-info";
-import { Level } from "../../../../util/logging";
 import { ConstantCommand } from "../constant-command";
 import { ImportExecutionCucumberCommand } from "./import-execution-cucumber-command";
 
@@ -38,10 +37,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 .withArgs(multipart.features, multipart.info)
                 .resolves("CYP-123");
             expect(await command.compute()).to.eq("CYP-123");
-            expect(logger.message).to.have.been.calledWithExactly(
-                Level.INFO,
-                "Uploading Cucumber test results"
-            );
+            expect(logger.message).to.not.have.been.called;
         });
     });
 });

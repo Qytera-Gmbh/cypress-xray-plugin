@@ -41,15 +41,16 @@ describe(path.relative(process.cwd(), __filename), () => {
         expect(logger.message).to.have.been.calledWithExactly(
             Level.WARNING,
             dedent(`
-                Mismatch between feature file issue tags and updated Jira issues detected
+                Mismatch between feature file issue tags and updated Jira issues detected.
 
-                Issues contained in feature file tags which were not updated by Jira and might not exist:
-                  CYP-123
-                  CYP-756
+                  Issues contained in feature file tags that have not been updated by Jira and may not exist:
+
+                    CYP-123
+                    CYP-756
 
                 Make sure that:
-                - All issues present in feature file tags belong to existing issues
-                - Your plugin tag prefix settings are consistent with the ones defined in Xray
+                - All issues present in feature file tags belong to existing issues.
+                - Your plugin tag prefix settings match those defined in Xray.
 
                 More information:
                 - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
@@ -72,15 +73,16 @@ describe(path.relative(process.cwd(), __filename), () => {
         expect(logger.message).to.have.been.calledWithExactly(
             Level.WARNING,
             dedent(`
-                Mismatch between feature file issue tags and updated Jira issues detected
+                Mismatch between feature file issue tags and updated Jira issues detected.
 
-                Issues updated by Jira which are not present in feature file tags and might have been created:
-                  CYP-123
-                  CYP-756
+                  Issues updated by Jira that do not exist in feature file tags and may have been created:
+
+                    CYP-123
+                    CYP-756
 
                 Make sure that:
-                - All issues present in feature file tags belong to existing issues
-                - Your plugin tag prefix settings are consistent with the ones defined in Xray
+                - All issues present in feature file tags belong to existing issues.
+                - Your plugin tag prefix settings match those defined in Xray.
 
                 More information:
                 - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
@@ -103,19 +105,21 @@ describe(path.relative(process.cwd(), __filename), () => {
         expect(logger.message).to.have.been.calledWithExactly(
             Level.WARNING,
             dedent(`
-                Mismatch between feature file issue tags and updated Jira issues detected
+                Mismatch between feature file issue tags and updated Jira issues detected.
 
-                Issues contained in feature file tags which were not updated by Jira and might not exist:
-                  CYP-123
-                  CYP-42
+                  Issues contained in feature file tags that have not been updated by Jira and may not exist:
 
-                Issues updated by Jira which are not present in feature file tags and might have been created:
-                  CYP-536
-                  CYP-552
+                    CYP-123
+                    CYP-42
+
+                  Issues updated by Jira that do not exist in feature file tags and may have been created:
+
+                    CYP-536
+                    CYP-552
 
                 Make sure that:
-                - All issues present in feature file tags belong to existing issues
-                - Your plugin tag prefix settings are consistent with the ones defined in Xray
+                - All issues present in feature file tags belong to existing issues.
+                - Your plugin tag prefix settings match those defined in Xray.
 
                 More information:
                 - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/

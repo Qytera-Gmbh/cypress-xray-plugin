@@ -32,8 +32,7 @@ export class ImportFeatureCommand extends Command<ImportFeatureResponse, Paramet
                 dedent(`
                     ${this.parameters.filePath}
 
-                      Encountered errors during feature file import.
-
+                      Encountered errors during feature file import:
                       ${importResponse.errors.map((error) => `- ${error}`).join("\n")}
                 `)
             );

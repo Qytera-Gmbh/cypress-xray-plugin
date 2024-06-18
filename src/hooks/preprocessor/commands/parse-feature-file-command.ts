@@ -21,7 +21,7 @@ export class ParseFeatureFileCommand extends Command<GherkinDocument, Parameters
 
                       Failed to parse feature file.
 
-                      ${errorMessage(error)}
+                        ${errorMessage(error)}
                 `)
             );
         }

@@ -14,9 +14,13 @@ describe(path.relative(process.cwd(), __filename), () => {
             const command = new ParseFeatureFileCommand({ filePath: filePath }, logger);
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                Parser errors:
-                (9:3): expected: #EOF, #TableRow, #DocStringSeparator, #StepLine, #TagLine, #ScenarioLine, #RuleLine, #Comment, #Empty, got 'Invalid: Element'
-            `)
+                    ./test/resources/features/invalid.feature
+
+                      Failed to parse feature file.
+
+                        Parser errors:
+                        (9:3): expected: #EOF, #TableRow, #DocStringSeparator, #StepLine, #TagLine, #ScenarioLine, #RuleLine, #Comment, #Empty, got 'Invalid: Element'
+                `)
             );
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.INFO,

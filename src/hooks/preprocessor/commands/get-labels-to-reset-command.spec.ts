@@ -46,15 +46,21 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Skipping resetting labels of issue: CYP-123
-                    The previous labels could not be fetched, make sure to manually restore them if needed
+                    CYP-123
+
+                      The plugin tried to reset the issue's labels after importing the feature file, but could not because the previous labels could not be retrieved.
+
+                      Make sure to manually restore them if needed.
                 `)
             );
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Skipping resetting labels of issue: CYP-456
-                    The previous labels could not be fetched, make sure to manually restore them if needed
+                    CYP-456
+
+                      The plugin tried to reset the issue's labels after importing the feature file, but could not because the previous labels could not be retrieved.
+
+                      Make sure to manually restore them if needed.
                 `)
             );
         });

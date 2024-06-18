@@ -92,6 +92,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     precondition: "Precondition:",
                 },
                 displayCloudHelp: false,
+                filePath: "./path/to/file.feature",
             });
             assertIsInstanceOf(commands[2], ExtractIssueKeysCommand);
             assertIsInstanceOf(commands[3], FetchAllFieldsCommand);

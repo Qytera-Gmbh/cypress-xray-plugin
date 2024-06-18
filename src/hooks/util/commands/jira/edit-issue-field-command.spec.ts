@@ -2,6 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
 import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks";
+import { dedent } from "../../../../util/dedent";
 import { Level } from "../../../../util/logging";
 import { ConstantCommand } from "../constant-command";
 import { EditIssueFieldCommand } from "./edit-issue-field-command";
@@ -60,7 +61,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(await command.compute()).to.deep.eq(["CYP-123"]);
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.ERROR,
-                'Failed to set labels field of issue CYP-456 to value: ["test"]'
+                dedent(`
+                    CYP-456
+
+                      Failed to set labels field to value: ["test"]
+                `)
             );
         });
 

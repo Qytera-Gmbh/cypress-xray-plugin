@@ -39,8 +39,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Skipping resetting summary of issue: CYP-123
-                    The previous summary could not be fetched, make sure to manually restore it if needed
+                    CYP-123
+
+                      The plugin tried to reset the issue's summary after importing the feature file, but could not because the previous summary could not be retrieved.
+
+                      Make sure to manually restore it if needed.
                 `)
             );
         });

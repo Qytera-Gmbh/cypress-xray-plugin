@@ -33,7 +33,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
-        it("throws without files to attach", async () => {
+        it("does not throw without files to attach", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new AttachFilesCommand(
@@ -42,9 +42,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 new ConstantCommand(logger, []),
                 new ConstantCommand(logger, "CYP-123")
             );
-            await expect(command.compute()).to.eventually.be.rejectedWith(
-                "Skipping attaching files to test execution issue CYP-123: No files to attach"
-            );
+            expect(await command.compute()).to.deep.eq([]);
             expect(jiraClient.addAttachment).to.not.have.been.called;
         });
     });

@@ -2,7 +2,6 @@ import { expect } from "chai";
 import path from "path";
 import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks";
 import { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results";
-import { Level } from "../../../../util/logging";
 import { ConstantCommand } from "../constant-command";
 import { ImportExecutionCypressCommand } from "./import-execution-cypress-command";
 
@@ -30,10 +29,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             xrayClient.importExecution.withArgs(json).resolves("CYP-123");
             expect(await command.compute()).to.eq("CYP-123");
-            expect(logger.message).to.have.been.calledWithExactly(
-                Level.INFO,
-                "Uploading Cypress test results"
-            );
+            expect(logger.message).to.not.have.been.called;
         });
     });
 });

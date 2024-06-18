@@ -13,7 +13,7 @@ import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypres
 import { CypressXrayPluginOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable-graph";
-import { LOG, Level } from "./util/logging";
+import { CapturingLogger, LOG, Level } from "./util/logging";
 
 describe(path.relative(process.cwd(), __filename), () => {
     let config: Cypress.PluginConfigOptions;
@@ -67,7 +67,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.INFO,
-                "Plugin disabled. Skipping further configuration"
+                "Plugin disabled. Skipping further configuration."
             );
             expect(mockedOn).to.have.been.calledOnceWith("task");
         });
@@ -84,7 +84,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.INFO,
-                "Interactive mode detected, disabling plugin"
+                "Interactive mode detected, disabling plugin."
             );
             expect(mockedOn).to.have.been.calledOnceWith("task");
         });
@@ -330,7 +330,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(stubbedHook.firstCall.args[3]).to.deep.eq(pluginContext.getClients());
             expect(stubbedHook.firstCall.args[4]).to.deep.eq(expectedContext);
             expect(stubbedHook.firstCall.args[5]).to.deep.eq(pluginContext.getGraph());
-            expect(stubbedHook.firstCall.args[6]).to.deep.eq(LOG);
+            expect(stubbedHook.firstCall.args[6]).to.be.an.instanceOf(CapturingLogger);
         });
 
         it("displays an error for failed runs", async () => {
@@ -350,9 +350,9 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(logger.message).to.have.been.calledOnceWithExactly(
                 Level.ERROR,
                 dedent(`
-                    Skipping results upload: Failed to run 47 tests
+                    Skipping results upload: Failed to run 47 tests.
 
-                    Pretty messed up
+                      Pretty messed up
                 `)
             );
         });
@@ -365,7 +365,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.INFO,
-                "Plugin disabled. Skipping further configuration"
+                "Plugin disabled. Skipping further configuration."
             );
         });
 
@@ -384,7 +384,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.INFO,
-                "Plugin disabled. Skipping further configuration"
+                "Plugin disabled. Skipping further configuration."
             );
         });
 
@@ -404,7 +404,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.INFO,
-                "Skipping results upload: Plugin is configured to not upload test results"
+                "Skipping results upload: Plugin is configured to not upload test results."
             );
         });
 
@@ -432,7 +432,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
             expect(logger.message).to.have.been.calledWith(
                 Level.WARNING,
-                "Failed to execute some steps during plugin execution"
+                "Encountered problems during plugin execution!"
             );
         });
     });
@@ -454,9 +454,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Skipping file:preprocessor hook: Plugin misconfigured: configureXrayPlugin() was not called
+                    ./test/resources/features/taggedCloud.feature
 
-                    Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
+                      Skipping file:preprocessor hook: Plugin misconfigured: configureXrayPlugin() was not called.
+
+                      Make sure your project is set up correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/introduction/
                 `)
             );
         });
@@ -470,7 +472,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             syncFeatureFile(file);
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.INFO,
-                "Plugin disabled. Skipping further configuration"
+                "Plugin disabled. Skipping further configuration."
             );
         });
 
@@ -482,7 +484,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             syncFeatureFile(file);
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.INFO,
-                "Plugin disabled. Skipping feature file synchronization triggered by: ./test/resources/features/taggedCloud.feature"
+                dedent(`
+                    ./test/resources/features/taggedCloud.feature
+
+                      Plugin disabled. Skipping feature file synchronization.
+                `)
             );
         });
 

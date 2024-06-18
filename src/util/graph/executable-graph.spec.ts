@@ -1,9 +1,7 @@
 import { expect } from "chai";
 import path from "node:path";
-import { getMockedLogger } from "../../../test/mocks";
 import { Computable, ComputableState, Stateful } from "../../hooks/command";
 import { SkippedError } from "../errors";
-import { Level } from "../logging";
 import { ExecutableGraph } from "./executable-graph";
 
 class ComputableVertex implements Computable<unknown>, Stateful<ComputableState> {
@@ -32,7 +30,7 @@ class ComputableVertex implements Computable<unknown>, Stateful<ComputableState>
 }
 
 describe(path.relative(process.cwd(), __filename), () => {
-    describe(ExecutableGraph.constructor.name, () => {
+    describe(ExecutableGraph.name, () => {
         it("executes vertices in post-order", async () => {
             const messages: string[] = [];
             const logger = (message: string) => messages.push(message);
@@ -53,8 +51,6 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         it("does not execute successors on partial failure", async () => {
-            const pluginLogger = getMockedLogger();
-
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1") {
@@ -75,16 +71,9 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             await g.execute();
             expect(messages).to.deep.eq(["vertex 2", "vertex 4"]);
-
-            expect(pluginLogger.message).to.have.been.calledWithExactly(
-                Level.ERROR,
-                "Error in vertex 1"
-            );
         });
 
         it("does not execute successors on full failure", async () => {
-            const pluginLogger = getMockedLogger();
-
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1" || message === "vertex 4") {
@@ -105,19 +94,9 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             await g.execute();
             expect(messages).to.deep.eq(["vertex 2"]);
-            expect(pluginLogger.message).to.have.been.calledWithExactly(
-                Level.ERROR,
-                "Error in vertex 1"
-            );
-            expect(pluginLogger.message).to.have.been.calledWithExactly(
-                Level.ERROR,
-                "Error in vertex 4"
-            );
         });
 
         it("does not execute successors on skip", async () => {
-            const pluginLogger = getMockedLogger();
-
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1") {
@@ -138,16 +117,9 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             await g.execute();
             expect(messages).to.deep.eq(["vertex 2", "vertex 4"]);
-
-            expect(pluginLogger.message).to.have.been.calledWithExactly(
-                Level.WARNING,
-                "Error in vertex 1"
-            );
         });
 
         it("still executes successors on failure if marked as optional", async () => {
-            const pluginLogger = getMockedLogger();
-
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1") {
@@ -169,16 +141,9 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             await g.execute();
             expect(messages).to.deep.eq(["vertex 2", "vertex 4", "vertex 3"]);
-
-            expect(pluginLogger.message).to.have.been.calledWithExactly(
-                Level.ERROR,
-                "Error in vertex 1"
-            );
         });
 
         it("still executes successors on skip if marked as optional", async () => {
-            const pluginLogger = getMockedLogger();
-
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1") {
@@ -199,11 +164,6 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             await g.execute();
             expect(messages).to.deep.eq(["vertex 2", "vertex 4", "vertex 3"]);
-
-            expect(pluginLogger.message).to.have.been.calledWithExactly(
-                Level.WARNING,
-                "Error in vertex 1"
-            );
         });
     });
 });

@@ -49,10 +49,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(logger.message).to.have.been.calledWithExactly(
                 Level.WARNING,
                 dedent(`
-                    Encountered errors during feature file import:
-                    - CYP-123 does not exist
-                    - CYP-42: Access denied
-                    - Big\nProblem
+                    /path/to/some/cucumber.feature
+
+                      Encountered errors during feature file import:
+                      - CYP-123 does not exist
+                      - CYP-42: Access denied
+                      - Big\nProblem
                 `)
             );
         });
