@@ -140,7 +140,7 @@
                 {
                     "height": 720,
                     "name": null,
-                    "path": "C:\\Repositories\\cypress\\integration\\cypress\\screenshots\\325.spec.cy.ts\\CYP-665 Test results of grouped test steps -- should do A (failed).png",
+                    "path": "./cypress/screenshots/325.spec.cy.ts/CYP-665 Test results of grouped test steps -- should do A (failed).png",
                     "takenAt": "2024-06-17T17:32:13.486Z",
                     "width": 1280
                 }
