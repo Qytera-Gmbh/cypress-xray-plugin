@@ -105,7 +105,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             assertIsInstanceOf(commands[8], ImportFeatureCommand);
             expect(commands[8].getParameters()).to.deep.eq({
                 xrayClient: clients.xrayClient,
-                filePath: path.relative(".", "./path/to/file.feature"),
+                filePath: "./path/to/file.feature",
                 projectKey: "CYP",
             });
             assertIsInstanceOf(commands[9], GetUpdatedIssuesCommand);
