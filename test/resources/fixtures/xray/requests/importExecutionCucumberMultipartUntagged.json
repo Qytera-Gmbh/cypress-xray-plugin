@@ -58,6 +58,6 @@
         "keyword": "Feature",
         "name": "Example",
         "tags": [],
-        "uri": "cypress\\e2e\\features\\example.feature"
+        "uri": "cypress/e2e/features/example.feature"
     }
 ]
