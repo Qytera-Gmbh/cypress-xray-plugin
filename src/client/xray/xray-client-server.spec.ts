@@ -1,6 +1,7 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
+import path from "node:path";
 import { SinonStubbedInstance } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
@@ -11,333 +12,335 @@ import { BasicAuthCredentials } from "../authentication/credentials";
 import { AxiosRestClient } from "../https/requests";
 import { XrayClientServer } from "./xray-client-server";
 
-describe("the xray server client", () => {
-    let restClient: SinonStubbedInstance<AxiosRestClient>;
-    let client: XrayClientServer;
+describe(path.relative(process.cwd(), __filename), () => {
+    describe(XrayClientServer.constructor.name, () => {
+        let restClient: SinonStubbedInstance<AxiosRestClient>;
+        let client: XrayClientServer;
 
-    beforeEach(() => {
-        restClient = getMockedRestClient();
-        client = new XrayClientServer(
-            "https://example.org",
-            new BasicAuthCredentials("user", "xyz"),
-            restClient
-        );
-    });
-
-    describe("import execution", () => {
-        it("should handle successful responses", async () => {
-            restClient.post.resolves({
-                status: HttpStatusCode.Ok,
-                data: {
-                    testExecIssue: {
-                        id: "12345",
-                        key: "CYP-123",
-                        self: "http://www.example.org/jira/rest/api/2/issue/12345",
-                    },
-                },
-                headers: {},
-                statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
-            });
-            const response = await client.importExecution({
-                testExecutionKey: "CYP-42",
-                info: {
-                    project: "CYP",
-                    startDate: "2022-11-28T17:41:12Z",
-                    finishDate: "2022-11-28T17:41:19Z",
-                    description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
-                    summary: "Test Execution Here",
-                },
-                tests: [
-                    {
-                        start: "2022-11-28T17:41:15Z",
-                        finish: "2022-11-28T17:41:15Z",
-                        status: "PASSED",
-                    },
-                    {
-                        start: "2022-11-28T17:41:15Z",
-                        finish: "2022-11-28T17:41:15Z",
-                        status: "PASSED",
-                    },
-                    {
-                        start: "2022-11-28T17:41:15Z",
-                        finish: "2022-11-28T17:41:19Z",
-                        status: "FAILED",
-                    },
-                ],
-            });
-            expect(response).to.eq("CYP-123");
-        });
-    });
-
-    describe("import execution cucumber multipart", () => {
-        it("should handle successful responses", async () => {
-            restClient.post.resolves({
-                status: HttpStatusCode.Ok,
-                data: {
-                    testExecIssue: {
-                        id: "12345",
-                        key: "CYP-123",
-                        self: "http://www.example.org/jira/rest/api/2/issue/12345",
-                    },
-                },
-                headers: {},
-                statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
-            });
-            const response = await client.importExecutionCucumberMultipart(
-                JSON.parse(
-                    fs.readFileSync(
-                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
-                        "utf-8"
-                    )
-                ) as CucumberMultipartFeature[],
-                JSON.parse(
-                    fs.readFileSync(
-                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
-                        "utf-8"
-                    )
-                ) as CucumberMultipartInfo
-            );
-            expect(response).to.eq("CYP-123");
-        });
-    });
-
-    describe("import feature", () => {
-        it("handles successful responses", async () => {
-            restClient.post.onFirstCall().resolves({
-                status: HttpStatusCode.Ok,
-                data: [
-                    {
-                        id: "14400",
-                        key: "CYP-333",
-                        self: "http://localhost:8727/rest/api/2/issue/14400",
-                        issueType: {
-                            id: "10100",
-                            name: "Test",
-                        },
-                    },
-                    {
-                        id: "14401",
-                        key: "CYP-555",
-                        self: "http://localhost:8727/rest/api/2/issue/14401",
-                        issueType: {
-                            id: "10103",
-                            name: "Test",
-                        },
-                    },
-                    {
-                        id: "14401",
-                        key: "CYP-222",
-                        self: "http://localhost:8727/rest/api/2/issue/14401",
-                        issueType: {
-                            id: "10103",
-                            name: "Pre-Condition",
-                        },
-                    },
-                ],
-                headers: {},
-                statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
-            });
-            const response = await client.importFeature(
-                "./test/resources/features/taggedPrefixCorrect.feature",
-                { projectKey: "CYP" }
-            );
-            expect(response).to.deep.eq({
-                errors: [],
-                updatedOrCreatedIssues: ["CYP-333", "CYP-555", "CYP-222"],
-            });
-        });
-
-        it("handles responses with errors", async () => {
-            const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            restClient.post.onFirstCall().resolves({
-                status: HttpStatusCode.Ok,
-                data: {
-                    message: "Test with key CYP-333 was not found!",
-                    testIssues: [
-                        {
-                            id: "14401",
-                            key: "CYP-555",
-                            self: "http://localhost:8727/rest/api/2/issue/14401",
-                            issueType: {
-                                id: "10103",
-                                name: "Test",
-                            },
-                        },
-                    ],
-                    preconditionIssues: [
-                        {
-                            id: "14401",
-                            key: "CYP-222",
-                            self: "http://localhost:8727/rest/api/2/issue/14401",
-                            issueType: {
-                                id: "10103",
-                                name: "Pre-Condition",
-                            },
-                        },
-                    ],
-                },
-                headers: {},
-                statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
-            });
-            const response = await client.importFeature(
-                "./test/resources/features/taggedPrefixCorrect.feature",
-                { projectKey: "CYP" }
-            );
-            expect(response).to.deep.eq({
-                errors: ["Test with key CYP-333 was not found!"],
-                updatedOrCreatedIssues: ["CYP-555", "CYP-222"],
-            });
-            expect(logger.message).to.have.been.calledWithExactly(
-                Level.DEBUG,
-                "Encountered an error during feature file import: Test with key CYP-333 was not found!"
+        beforeEach(() => {
+            restClient = getMockedRestClient();
+            client = new XrayClientServer(
+                "https://example.org",
+                new BasicAuthCredentials("user", "xyz"),
+                restClient
             );
         });
 
-        it("handles responses with empty messages", async () => {
-            restClient.post.onFirstCall().resolves({
-                status: HttpStatusCode.Ok,
-                data: {
-                    testIssues: [
-                        {
-                            id: "14401",
-                            key: "CYP-555",
-                            self: "http://localhost:8727/rest/api/2/issue/14401",
-                            issueType: {
-                                id: "10103",
-                                name: "Test",
-                            },
-                        },
-                    ],
-                    preconditionIssues: [
-                        {
-                            id: "14401",
-                            key: "CYP-222",
-                            self: "http://localhost:8727/rest/api/2/issue/14401",
-                            issueType: {
-                                id: "10103",
-                                name: "Pre-Condition",
-                            },
-                        },
-                    ],
-                },
-                headers: {},
-                statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
-            });
-            const response = await client.importFeature(
-                "./test/resources/features/taggedPrefixCorrect.feature",
-                { projectKey: "CYP" }
-            );
-            expect(response).to.deep.eq({
-                errors: [],
-                updatedOrCreatedIssues: ["CYP-555", "CYP-222"],
-            });
-        });
-
-        it("handles responses without any updated issues", async () => {
-            const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            restClient.post.onFirstCall().resolves({
-                status: HttpStatusCode.Ok,
-                data: {
-                    message:
-                        "Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!",
-                    testIssues: [],
-                    preconditionIssues: [],
-                },
-                headers: {},
-                statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
-            });
-            const response = await client.importFeature(
-                "./test/resources/features/taggedPrefixCorrect.feature",
-                { projectKey: "CYP" }
-            );
-            expect(response).to.deep.eq({
-                errors: [
-                    "Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!",
-                ],
-                updatedOrCreatedIssues: [],
-            });
-            expect(logger.message).to.have.been.calledWithExactly(
-                Level.DEBUG,
-                "Encountered an error during feature file import: Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!"
-            );
-        });
-
-        it("handles bad responses", async () => {
-            const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            const error = new AxiosError(
-                "Request failed with status code 400",
-                "400",
-                { headers: new AxiosHeaders() },
-                null,
-                {
-                    status: 400,
-                    statusText: "Bad Request",
-                    config: { headers: new AxiosHeaders() },
-                    headers: {},
+        describe("import execution", () => {
+            it("should handle successful responses", async () => {
+                restClient.post.resolves({
+                    status: HttpStatusCode.Ok,
                     data: {
-                        error: "There are no valid tests imported", // sic
+                        testExecIssue: {
+                            id: "12345",
+                            key: "CYP-123",
+                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                        },
                     },
-                }
-            );
-            restClient.post.onFirstCall().rejects(error);
-            await expect(
-                client.importFeature("./test/resources/features/taggedPrefixCorrect.feature", {
-                    projectKey: "CYP",
-                })
-            ).to.eventually.be.rejectedWith("Feature file import failed");
-            expect(logger.message).to.have.been.calledWithExactly(
-                Level.ERROR,
-                dedent(`
-                    Failed to import Cucumber features: Request failed with status code 400
-
-                    The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
-
-                    For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                `)
-            );
-            expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
-                error,
-                "importFeatureError"
-            );
+                    headers: {},
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    config: { headers: new AxiosHeaders() },
+                });
+                const response = await client.importExecution({
+                    testExecutionKey: "CYP-42",
+                    info: {
+                        project: "CYP",
+                        startDate: "2022-11-28T17:41:12Z",
+                        finishDate: "2022-11-28T17:41:19Z",
+                        description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
+                        summary: "Test Execution Here",
+                    },
+                    tests: [
+                        {
+                            start: "2022-11-28T17:41:15Z",
+                            finish: "2022-11-28T17:41:15Z",
+                            status: "PASSED",
+                        },
+                        {
+                            start: "2022-11-28T17:41:15Z",
+                            finish: "2022-11-28T17:41:15Z",
+                            status: "PASSED",
+                        },
+                        {
+                            start: "2022-11-28T17:41:15Z",
+                            finish: "2022-11-28T17:41:19Z",
+                            status: "FAILED",
+                        },
+                    ],
+                });
+                expect(response).to.eq("CYP-123");
+            });
         });
 
-        it("handles network failures", async () => {
-            const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            const error = new Error("Connection timeout");
-            restClient.post.onFirstCall().rejects(error);
-            await expect(
-                client.importFeature("./test/resources/features/taggedPrefixCorrect.feature", {
-                    projectKey: "CYP",
-                })
-            ).to.eventually.be.rejectedWith("Feature file import failed");
-            expect(logger.message).to.have.been.calledWithExactly(
-                Level.ERROR,
-                "Failed to import Cucumber features: Connection timeout"
-            );
-            expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
-                error,
-                "importFeatureError"
-            );
+        describe("import execution cucumber multipart", () => {
+            it("should handle successful responses", async () => {
+                restClient.post.resolves({
+                    status: HttpStatusCode.Ok,
+                    data: {
+                        testExecIssue: {
+                            id: "12345",
+                            key: "CYP-123",
+                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                        },
+                    },
+                    headers: {},
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    config: { headers: new AxiosHeaders() },
+                });
+                const response = await client.importExecutionCucumberMultipart(
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
+                            "utf-8"
+                        )
+                    ) as CucumberMultipartFeature[],
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
+                            "utf-8"
+                        )
+                    ) as CucumberMultipartInfo
+                );
+                expect(response).to.eq("CYP-123");
+            });
         });
-    });
 
-    describe("the urls", () => {
-        it("import execution", () => {
-            expect(client.getUrlImportExecution()).to.eq(
-                "https://example.org/rest/raven/latest/import/execution"
-            );
+        describe("import feature", () => {
+            it("handles successful responses", async () => {
+                restClient.post.onFirstCall().resolves({
+                    status: HttpStatusCode.Ok,
+                    data: [
+                        {
+                            id: "14400",
+                            key: "CYP-333",
+                            self: "http://localhost:8727/rest/api/2/issue/14400",
+                            issueType: {
+                                id: "10100",
+                                name: "Test",
+                            },
+                        },
+                        {
+                            id: "14401",
+                            key: "CYP-555",
+                            self: "http://localhost:8727/rest/api/2/issue/14401",
+                            issueType: {
+                                id: "10103",
+                                name: "Test",
+                            },
+                        },
+                        {
+                            id: "14401",
+                            key: "CYP-222",
+                            self: "http://localhost:8727/rest/api/2/issue/14401",
+                            issueType: {
+                                id: "10103",
+                                name: "Pre-Condition",
+                            },
+                        },
+                    ],
+                    headers: {},
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    config: { headers: new AxiosHeaders() },
+                });
+                const response = await client.importFeature(
+                    "./test/resources/features/taggedPrefixCorrect.feature",
+                    { projectKey: "CYP" }
+                );
+                expect(response).to.deep.eq({
+                    errors: [],
+                    updatedOrCreatedIssues: ["CYP-333", "CYP-555", "CYP-222"],
+                });
+            });
+
+            it("handles responses with errors", async () => {
+                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+                restClient.post.onFirstCall().resolves({
+                    status: HttpStatusCode.Ok,
+                    data: {
+                        message: "Test with key CYP-333 was not found!",
+                        testIssues: [
+                            {
+                                id: "14401",
+                                key: "CYP-555",
+                                self: "http://localhost:8727/rest/api/2/issue/14401",
+                                issueType: {
+                                    id: "10103",
+                                    name: "Test",
+                                },
+                            },
+                        ],
+                        preconditionIssues: [
+                            {
+                                id: "14401",
+                                key: "CYP-222",
+                                self: "http://localhost:8727/rest/api/2/issue/14401",
+                                issueType: {
+                                    id: "10103",
+                                    name: "Pre-Condition",
+                                },
+                            },
+                        ],
+                    },
+                    headers: {},
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    config: { headers: new AxiosHeaders() },
+                });
+                const response = await client.importFeature(
+                    "./test/resources/features/taggedPrefixCorrect.feature",
+                    { projectKey: "CYP" }
+                );
+                expect(response).to.deep.eq({
+                    errors: ["Test with key CYP-333 was not found!"],
+                    updatedOrCreatedIssues: ["CYP-555", "CYP-222"],
+                });
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.DEBUG,
+                    "Encountered an error during feature file import: Test with key CYP-333 was not found!"
+                );
+            });
+
+            it("handles responses with empty messages", async () => {
+                restClient.post.onFirstCall().resolves({
+                    status: HttpStatusCode.Ok,
+                    data: {
+                        testIssues: [
+                            {
+                                id: "14401",
+                                key: "CYP-555",
+                                self: "http://localhost:8727/rest/api/2/issue/14401",
+                                issueType: {
+                                    id: "10103",
+                                    name: "Test",
+                                },
+                            },
+                        ],
+                        preconditionIssues: [
+                            {
+                                id: "14401",
+                                key: "CYP-222",
+                                self: "http://localhost:8727/rest/api/2/issue/14401",
+                                issueType: {
+                                    id: "10103",
+                                    name: "Pre-Condition",
+                                },
+                            },
+                        ],
+                    },
+                    headers: {},
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    config: { headers: new AxiosHeaders() },
+                });
+                const response = await client.importFeature(
+                    "./test/resources/features/taggedPrefixCorrect.feature",
+                    { projectKey: "CYP" }
+                );
+                expect(response).to.deep.eq({
+                    errors: [],
+                    updatedOrCreatedIssues: ["CYP-555", "CYP-222"],
+                });
+            });
+
+            it("handles responses without any updated issues", async () => {
+                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+                restClient.post.onFirstCall().resolves({
+                    status: HttpStatusCode.Ok,
+                    data: {
+                        message:
+                            "Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!",
+                        testIssues: [],
+                        preconditionIssues: [],
+                    },
+                    headers: {},
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    config: { headers: new AxiosHeaders() },
+                });
+                const response = await client.importFeature(
+                    "./test/resources/features/taggedPrefixCorrect.feature",
+                    { projectKey: "CYP" }
+                );
+                expect(response).to.deep.eq({
+                    errors: [
+                        "Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!",
+                    ],
+                    updatedOrCreatedIssues: [],
+                });
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.DEBUG,
+                    "Encountered an error during feature file import: Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!"
+                );
+            });
+
+            it("handles bad responses", async () => {
+                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+                const error = new AxiosError(
+                    "Request failed with status code 400",
+                    "400",
+                    { headers: new AxiosHeaders() },
+                    null,
+                    {
+                        status: 400,
+                        statusText: "Bad Request",
+                        config: { headers: new AxiosHeaders() },
+                        headers: {},
+                        data: {
+                            error: "There are no valid tests imported", // sic
+                        },
+                    }
+                );
+                restClient.post.onFirstCall().rejects(error);
+                await expect(
+                    client.importFeature("./test/resources/features/taggedPrefixCorrect.feature", {
+                        projectKey: "CYP",
+                    })
+                ).to.eventually.be.rejectedWith("Feature file import failed");
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.ERROR,
+                    dedent(`
+                        Failed to import Cucumber features: Request failed with status code 400
+
+                        The prefixes in Cucumber background or scenario tags might be inconsistent with the scheme defined in Xray
+
+                        For more information, visit:
+                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                    `)
+                );
+                expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                    error,
+                    "importFeatureError"
+                );
+            });
+
+            it("handles network failures", async () => {
+                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+                const error = new Error("Connection timeout");
+                restClient.post.onFirstCall().rejects(error);
+                await expect(
+                    client.importFeature("./test/resources/features/taggedPrefixCorrect.feature", {
+                        projectKey: "CYP",
+                    })
+                ).to.eventually.be.rejectedWith("Feature file import failed");
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.ERROR,
+                    "Failed to import Cucumber features: Connection timeout"
+                );
+                expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                    error,
+                    "importFeatureError"
+                );
+            });
         });
-        it("import feature", () => {
-            expect(client.getUrlImportFeature("CYP")).to.eq(
-                "https://example.org/rest/raven/latest/import/feature?projectKey=CYP"
-            );
+
+        describe("the urls", () => {
+            it("import execution", () => {
+                expect(client.getUrlImportExecution()).to.eq(
+                    "https://example.org/rest/raven/latest/import/execution"
+                );
+            });
+            it("import feature", () => {
+                expect(client.getUrlImportFeature("CYP")).to.eq(
+                    "https://example.org/rest/raven/latest/import/feature?projectKey=CYP"
+                );
+            });
         });
     });
 });

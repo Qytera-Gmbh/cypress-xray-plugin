@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import path from "node:path";
 import { SimpleDirectedGraph } from "../graph";
 import { bfs, dfs } from "./search";
 
@@ -14,7 +15,7 @@ class Vertex {
     }
 }
 
-describe("search", () => {
+describe(path.relative(process.cwd(), __filename), () => {
     const graph = new SimpleDirectedGraph<Vertex>();
     const v0 = graph.place(new Vertex(0));
     const v1 = graph.place(new Vertex(1));

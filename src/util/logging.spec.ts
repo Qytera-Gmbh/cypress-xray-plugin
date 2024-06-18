@@ -1,14 +1,14 @@
 import { AxiosError, AxiosHeaders, AxiosResponse } from "axios";
 import { expect } from "chai";
 import chalk from "chalk";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { stub } from "sinon";
 import { resolveTestDirPath } from "../../test/util";
 import { LoggedError } from "./errors";
 import { Level, PluginLogger } from "./logging";
 
-describe("logging", () => {
+describe(path.relative(process.cwd(), __filename), () => {
     describe("the plugin logger", () => {
         describe("message", () => {
             it("handles single line messages", () => {

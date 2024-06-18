@@ -1,6 +1,7 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import path from "node:path";
 import { useFakeTimers } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { dedent } from "../../util/dedent";
@@ -9,7 +10,7 @@ import { JwtCredentials } from "./credentials";
 
 chai.use(chaiAsPromised);
 
-describe("credentials", () => {
+describe(path.relative(process.cwd(), __filename), () => {
     describe(JwtCredentials.name, () => {
         let restClient = getMockedRestClient();
         let credentials: JwtCredentials = new JwtCredentials(

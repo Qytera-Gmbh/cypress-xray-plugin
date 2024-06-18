@@ -1,7 +1,8 @@
 import { expect } from "chai";
+import path from "node:path";
 import { extractArrayOfStrings, extractNestedString, extractString } from "./extraction";
 
-describe("extraction", () => {
+describe(path.relative(process.cwd(), __filename), () => {
     describe("extractString", () => {
         it("extracts string properties", () => {
             const data = {

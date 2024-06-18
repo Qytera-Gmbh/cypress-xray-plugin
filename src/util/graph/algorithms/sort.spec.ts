@@ -1,8 +1,9 @@
 import { expect } from "chai";
+import path from "node:path";
 import { SimpleDirectedGraph } from "../graph";
 import { computeTopologicalOrder, traverse } from "./sort";
 
-describe("sort", () => {
+describe(path.relative(process.cwd(), __filename), () => {
     describe(computeTopologicalOrder.name, () => {
         it("computes the order for directed graphs", () => {
             const graph = new SimpleDirectedGraph<number>();

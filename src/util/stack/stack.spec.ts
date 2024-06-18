@@ -1,7 +1,8 @@
 import { expect } from "chai";
+import path from "node:path";
 import { Stack } from "./stack";
 
-describe("stack", () => {
+describe(path.relative(process.cwd(), __filename), () => {
     let stack = new Stack<number>();
 
     beforeEach(() => {

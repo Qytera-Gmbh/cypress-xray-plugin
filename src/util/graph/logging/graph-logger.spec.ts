@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import path from "node:path";
 import { Failable } from "../../../hooks/command";
 import { dedent } from "../../dedent";
 import { SkippedError } from "../../errors";
@@ -6,7 +7,7 @@ import { CapturingLogger, Level } from "../../logging";
 import { SimpleDirectedGraph } from "../graph";
 import { logGraph } from "./graph-logger";
 
-describe(__filename, () => {
+describe(path.relative(process.cwd(), __filename), () => {
     describe(logGraph.name, () => {
         it("logs correctly indented message chains", () => {
             const graph = new SimpleDirectedGraph<Failable>();
