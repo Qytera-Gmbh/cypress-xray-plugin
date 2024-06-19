@@ -129,8 +129,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 282",
                 },
             });
-            expect(output).to.include("Uploaded test results to issue");
-            expect(output).not.to.include("WARNING");
+            expect(output.join("\n")).to.include("Uploaded test results to issue");
+            expect(output.join("\n")).not.to.include("WARNING");
         });
     }
 });
