@@ -1,6 +1,6 @@
 import { Queue } from "../../queue/queue";
 import { Stack } from "../../stack/stack";
-import { DirectedEdge, DirectedGraph } from "../graph";
+import { DirectedGraph } from "../graph";
 
 /**
  * Models search parameters for when the destination vertex is known.
@@ -41,8 +41,8 @@ export interface UnknownDestinationParameters<V> {
  * @param parameters - the search parameters
  * @returns `true` if the vertex described by the parameters can be reached, otherwise `false`
  */
-export function dfs<V, E extends DirectedEdge<V>>(
-    graph: DirectedGraph<V, E>,
+export function dfs<V>(
+    graph: DirectedGraph<V>,
     parameters: KnownDestinationParameters<V> | UnknownDestinationParameters<V>
 ): boolean {
     const stack = new Stack<V>();
@@ -60,8 +60,8 @@ export function dfs<V, E extends DirectedEdge<V>>(
  * @param parameters - the search parameters
  * @returns `true` if the vertex described by the parameters can be reached, otherwise `false`
  */
-export function bfs<V, E extends DirectedEdge<V>>(
-    graph: DirectedGraph<V, E>,
+export function bfs<V>(
+    graph: DirectedGraph<V>,
     parameters: KnownDestinationParameters<V> | UnknownDestinationParameters<V>
 ): boolean {
     const queue = new Queue<V>();
@@ -78,8 +78,8 @@ interface VertexWorklist<V> {
     isEmpty: () => boolean;
 }
 
-function search<V, E extends DirectedEdge<V>>(
-    graph: DirectedGraph<V, E>,
+function search<V>(
+    graph: DirectedGraph<V>,
     parameters: KnownDestinationParameters<V> | UnknownDestinationParameters<V>,
     worklist: VertexWorklist<V>
 ): boolean {

@@ -3,9 +3,9 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
 import { stub, useFakeTimers } from "sinon";
-import { getMockedLogger } from "../../test/mocks";
-import { AxiosRestClient } from "../client/https/requests";
-import { Level } from "../util/logging";
+import { getMockedLogger } from "../../../test/mocks";
+import { Level } from "../../util/logging";
+import { AxiosRestClient } from "./requests";
 
 chai.use(chaiAsPromised);
 

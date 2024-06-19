@@ -7,7 +7,7 @@ import { isSkippedError } from "../../errors";
 import { Level, Logger } from "../../logging";
 import { Queue } from "../../queue/queue";
 import { traverse } from "../algorithms/sort";
-import { DirectedEdge, DirectedGraph } from "../graph";
+import { DirectedGraph } from "../graph";
 
 interface IndentedLogMessage<V extends Failable> {
     vertex: V;
@@ -29,7 +29,7 @@ export class ChainingGraphLogger<V extends Failable> {
         this.hasPriority = hasPriority;
     }
 
-    public logGraph(graph: DirectedGraph<V, DirectedEdge<V>>): void {
+    public logGraph(graph: DirectedGraph<V>): void {
         const loggedVertices = new Set<V>();
         const prioritizedVertices: V[] = [];
         for (const vertex of graph.getVertices()) {
@@ -66,10 +66,7 @@ export class ChainingGraphLogger<V extends Failable> {
         }
     }
 
-    private computeLogMessageChain(
-        vertex: V,
-        graph: DirectedGraph<V, DirectedEdge<V>>
-    ): IndentedLogMessage<V>[] {
+    private computeLogMessageChain(vertex: V, graph: DirectedGraph<V>): IndentedLogMessage<V>[] {
         const chain: IndentedLogMessage<V>[] = [];
         const queue = new Queue<[V, number, boolean]>();
         queue.enqueue([vertex, 0, false]);

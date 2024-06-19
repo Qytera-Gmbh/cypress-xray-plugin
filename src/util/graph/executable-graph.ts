@@ -65,20 +65,6 @@ export class ExecutableGraph<
     }
 
     /**
-     * Returns whether any vertex failed its computation.
-     *
-     * @returns `true` if the graph contains failed vertices, `false` otherwise
-     */
-    public hasFailedVertices(): boolean {
-        for (const state of this.states.values()) {
-            if (state === VertexState.FORBIDDEN) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Returns whether an edge is an optional edge.
      *
      * @param edge - the edge

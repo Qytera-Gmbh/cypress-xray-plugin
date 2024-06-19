@@ -160,13 +160,19 @@ export async function configureXrayPlugin(
                     LOG.message(level, text);
                 }
             });
-            if (context.getGraph().hasFailedVertices()) {
+            if (messages.some(([level]) => level === Level.WARNING || level === Level.ERROR)) {
                 LOG.message(Level.WARNING, "Encountered problems during plugin execution!");
+                messages.forEach(([level, text]) => {
+                    if ([Level.WARNING, Level.ERROR].includes(level)) {
+                        LOG.message(level, text);
+                    }
+                });
             }
-            messages.forEach(([level, text]) => {
-                if ([Level.WARNING, Level.ERROR].includes(level)) {
-                    LOG.message(level, text);
-                }
+            logger.getFileLogErrorMessages().forEach(([error, filename]) => {
+                LOG.logErrorToFile(error, filename);
+            });
+            logger.getFileLogMessages().forEach(([data, filename]) => {
+                LOG.logToFile(data, filename);
             });
         }
     });

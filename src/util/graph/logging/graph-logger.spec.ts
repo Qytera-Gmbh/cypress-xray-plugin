@@ -1,11 +1,17 @@
 import { expect } from "chai";
 import path from "node:path";
-import { Failable } from "../../../hooks/command";
+import { getMockedXrayClient } from "../../../../test/mocks";
+import { Command, ComputableState, Failable } from "../../../hooks/command";
+import { ImportExecutionCucumberCommand } from "../../../hooks/util/commands/xray/import-execution-cucumber-command";
+import { ImportExecutionCypressCommand } from "../../../hooks/util/commands/xray/import-execution-cypress-command";
+import { ImportFeatureCommand } from "../../../hooks/util/commands/xray/import-feature-command";
+import { XrayTestExecutionResults } from "../../../types/xray/import-test-execution-results";
+import { CucumberMultipart } from "../../../types/xray/requests/import-execution-cucumber-multipart";
 import { dedent } from "../../dedent";
 import { SkippedError } from "../../errors";
 import { CapturingLogger, Level } from "../../logging";
 import { SimpleDirectedGraph } from "../graph";
-import { ChainingGraphLogger } from "./graph-logger";
+import { ChainingCommandGraphLogger, ChainingGraphLogger } from "./graph-logger";
 
 describe(path.relative(process.cwd(), __filename), () => {
     describe(ChainingGraphLogger.name, () => {
@@ -189,6 +195,99 @@ describe(path.relative(process.cwd(), __filename), () => {
                             Caused by: A failed
 
                             for some reason
+                    `),
+                ],
+            ]);
+        });
+    });
+
+    describe(ChainingCommandGraphLogger.name, () => {
+        class FailingCommand<R> extends Command<R, { message: string }> {
+            protected computeResult(): R {
+                throw new Error(`No computing today: ${this.parameters.message}`);
+            }
+        }
+
+        it("adds additional information to cucumber import command failures", async () => {
+            const logger = new CapturingLogger();
+            const graph = new SimpleDirectedGraph<Command>();
+            const a = graph.place(
+                new FailingCommand<CucumberMultipart>({ message: "generic failure" }, logger)
+            );
+            const b = graph.place(
+                new ImportExecutionCucumberCommand({ xrayClient: getMockedXrayClient() }, logger, a)
+            );
+            graph.connect(a, b);
+            await Promise.allSettled([a.compute()]);
+            b.setState(ComputableState.SKIPPED);
+            new ChainingCommandGraphLogger(logger).logGraph(graph);
+            expect(logger.getMessages()).to.deep.eq([
+                [
+                    Level.ERROR,
+                    dedent(`
+                        Failed to upload Cucumber execution results.
+
+                          Caused by: No computing today: generic failure
+                    `),
+                ],
+            ]);
+        });
+
+        it("adds additional information to cypress import command failures", async () => {
+            const logger = new CapturingLogger();
+            const graph = new SimpleDirectedGraph<Command>();
+            const a = graph.place(
+                new FailingCommand<XrayTestExecutionResults>({ message: "generic failure" }, logger)
+            );
+            const b = graph.place(
+                new ImportExecutionCypressCommand({ xrayClient: getMockedXrayClient() }, logger, a)
+            );
+            graph.connect(a, b);
+            await Promise.allSettled([a.compute()]);
+            b.setState(ComputableState.SKIPPED);
+            new ChainingCommandGraphLogger(logger).logGraph(graph);
+            expect(logger.getMessages()).to.deep.eq([
+                [
+                    Level.ERROR,
+                    dedent(`
+                        Failed to upload Cypress execution results.
+
+                          Caused by: No computing today: generic failure
+                    `),
+                ],
+            ]);
+        });
+
+        it("adds additional information to feature file import command failures", async () => {
+            const logger = new CapturingLogger();
+            const xrayClient = getMockedXrayClient();
+            xrayClient.importFeature.rejects(new Error("the feature does not exist"));
+            const graph = new SimpleDirectedGraph<Command>();
+            const a = graph.place(
+                new FailingCommand<XrayTestExecutionResults>(
+                    { message: "cannot parse file" },
+                    logger
+                )
+            );
+            const b = graph.place(
+                new ImportFeatureCommand(
+                    { xrayClient: xrayClient, filePath: "/path/to/file.feature" },
+                    logger
+                )
+            );
+            graph.connect(a, b);
+            await Promise.allSettled([a.compute()]);
+            b.setState(ComputableState.SKIPPED);
+            new ChainingCommandGraphLogger(logger).logGraph(graph);
+            expect(logger.getMessages()).to.deep.eq([
+                [
+                    Level.ERROR,
+                    dedent(`
+                        /path/to/file.feature
+
+                          Failed to import feature file.
+
+                          Caused by: No computing today: cannot parse file
                     `),
                 ],
             ]);

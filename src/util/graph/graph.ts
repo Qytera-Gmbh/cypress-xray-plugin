@@ -4,7 +4,7 @@ import { dfs } from "./algorithms/search";
 /**
  * Models a directed acyclic graph containing arbitrary vertices.
  */
-export interface DirectedGraph<V, E extends DirectedEdge<V>> {
+export interface DirectedGraph<V> {
     /**
      * Inserts a vertex into the graph without connecting it to any existing vertex.
      *
@@ -12,7 +12,7 @@ export interface DirectedGraph<V, E extends DirectedEdge<V>> {
      * @returns the vertex
      * @throws if the graph contains the vertex already
      */
-    place<T extends V>(vertex: T): T;
+    place(vertex: V): V;
     /**
      * Connects two vertices in the graph with an edge. The vertices must exist in the graph already
      * to connect them (using {@link place | `place`}).
@@ -23,7 +23,7 @@ export interface DirectedGraph<V, E extends DirectedEdge<V>> {
      * @throws if the graph does not contain one of the vertices or if the connection would
      * introduce a duplicate edge or a cycle
      */
-    connect(source: V, destination: V): E;
+    connect(source: V, destination: V): DirectedEdge<V>;
     /**
      * Searches for a specific vertex in the graph. Every vertex will be visited exactly once.
      *
@@ -32,7 +32,7 @@ export interface DirectedGraph<V, E extends DirectedEdge<V>> {
      */
     find(filter: (vertex: V) => boolean): V | undefined;
     /**
-     * Searches for a specific vertex in the graph. If not matching vertex can be found the fallback
+     * Searches for a specific vertex in the graph. If no matching vertex can be found the fallback
      * function will be called instead. Every vertex will be visited exactly once.
      *
      * @param filter - the vertex filter
@@ -51,7 +51,7 @@ export interface DirectedGraph<V, E extends DirectedEdge<V>> {
      *
      * @returns the generator
      */
-    getEdges(): Generator<E>;
+    getEdges(): Generator<DirectedEdge<V>>;
     /**
      * Returns the size of the graph. The size can either denote the number of vertices or the
      * number of edges (the cardinality of either set).
@@ -70,14 +70,14 @@ export interface DirectedGraph<V, E extends DirectedEdge<V>> {
      * @param vertex - the source vertex
      * @returns the generator
      */
-    getOutgoing(vertex: V): Generator<E>;
+    getOutgoing(vertex: V): Generator<DirectedEdge<V>>;
     /**
      * Returns a generator which iterates through all incoming edges of a vertex.
      *
      * @param vertex - the destination vertex
      * @returns the generator
      */
-    getIncoming(vertex: V): Generator<E>;
+    getIncoming(vertex: V): Generator<DirectedEdge<V>>;
     /**
      * Returns whether a vertex has any outgoing edges.
      *
@@ -157,7 +157,7 @@ export class SimpleDirectedEdge<V> implements DirectedEdge<V> {
 /**
  * A basic implementation of a directed acyclic graph.
  */
-export class SimpleDirectedGraph<V> implements DirectedGraph<V, DirectedEdge<V>> {
+export class SimpleDirectedGraph<V> implements DirectedGraph<V> {
     private readonly outgoingEdges: Map<V, Set<DirectedEdge<V>>>;
     private readonly incomingEdges: Map<V, Set<DirectedEdge<V>>>;
 

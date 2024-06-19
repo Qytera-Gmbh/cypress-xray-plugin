@@ -1,5 +1,5 @@
 import { Queue } from "../../queue/queue";
-import { DirectedEdge, DirectedGraph } from "../graph";
+import { DirectedGraph } from "../graph";
 
 /**
  * Computes a topological order for all vertices contained in a directed graph.
@@ -10,9 +10,7 @@ import { DirectedEdge, DirectedGraph } from "../graph";
  * @param graph - the graph
  * @returns a mapping of vertices to their index in the computed order
  */
-export function computeTopologicalOrder<V, E extends DirectedEdge<V>>(
-    graph: DirectedGraph<V, E>
-): Map<V, number> {
+export function computeTopologicalOrder<V>(graph: DirectedGraph<V>): Map<V, number> {
     const distances = new Map<V, number>();
     const queue = new Queue<V>();
     for (const vertex of graph.getVertices()) {
@@ -40,8 +38,8 @@ export function computeTopologicalOrder<V, E extends DirectedEdge<V>>(
     }
     return distances;
 }
-export function* traverse<V, E extends DirectedEdge<V>>(
-    graph: DirectedGraph<V, E>,
+export function* traverse<V>(
+    graph: DirectedGraph<V>,
     direction: "top-down" | "bottom-up"
 ): Generator<V> {
     const queue = new Queue<V>();
