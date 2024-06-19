@@ -51,6 +51,10 @@ export function setupCypressProject(project: {
     commandFileContent?: string;
     e2eFileContent?: string;
     testFiles: { fileName: string; content: string }[];
+    cucumber?: {
+        configFileContent?: string;
+        stepDefinitions?: { filename: string; content: string }[];
+    };
 }): {
     projectDirectory: string;
     logDirectory: string;
@@ -74,11 +78,10 @@ export function setupCypressProject(project: {
     fs.writeFileSync(path.join(supportDirectory, "e2e.js"), project.e2eFileContent ?? E2E_FILE);
 
     fs.mkdirSync(path.join(directory, "node_modules"), { recursive: true });
-    for (const entry of fs.readdirSync(path.join(__dirname, "..", "node_modules"), {
-        withFileTypes: true,
-    })) {
+    const sourceNodeModulesDirectory = path.join(__dirname, "..", "node_modules");
+    for (const entry of fs.readdirSync(sourceNodeModulesDirectory, { withFileTypes: true })) {
         fs.symlinkSync(
-            path.join(entry.path, entry.name),
+            path.join(sourceNodeModulesDirectory, entry.name),
             path.join(directory, "node_modules", entry.name)
         );
     }
@@ -89,6 +92,23 @@ export function setupCypressProject(project: {
 
     for (const testFile of project.testFiles) {
         fs.writeFileSync(path.join(directory, testFile.fileName), testFile.content);
+    }
+
+    if (project.cucumber?.stepDefinitions) {
+        const stepDefinitionDirectory = path.join(supportDirectory, "step_definitions");
+        fs.mkdirSync(stepDefinitionDirectory, { recursive: true });
+        for (const stepDefinitionFile of project.cucumber.stepDefinitions) {
+            fs.writeFileSync(
+                path.join(stepDefinitionDirectory, stepDefinitionFile.filename),
+                stepDefinitionFile.content
+            );
+        }
+    }
+    if (project.cucumber?.configFileContent) {
+        fs.writeFileSync(
+            path.join(directory, ".cypress-cucumber-preprocessorrc.json"),
+            project.cucumber.configFileContent
+        );
     }
 
     return {
@@ -119,18 +139,18 @@ const ENV_SERVER = [
 
 export function runCypress(
     cwd: string,
-    options?: { includeEnv?: "cloud" | "server"; env?: Record<string, string | undefined> }
-): void {
+    options?: { includeDefaultEnv?: "cloud" | "server"; env?: Record<string, string | undefined> }
+): string[] {
     let mergedEnv = {
         ...ENV_BACKUP,
     };
-    if (options?.includeEnv === "cloud") {
+    if (options?.includeDefaultEnv === "cloud") {
         mergedEnv = {
             ...mergedEnv,
             ...getEnv(ENV_CLOUD),
         };
     }
-    if (options?.includeEnv === "server") {
+    if (options?.includeDefaultEnv === "server") {
         mergedEnv = {
             ...mergedEnv,
             ...getEnv(ENV_SERVER),
@@ -181,6 +201,9 @@ export function runCypress(
             `)
         );
     }
+    return result.output
+        .filter((buffer): buffer is Buffer => buffer !== null)
+        .map((buffer) => buffer.toString("utf8"));
 }
 
 function getEnv(names: string[]): Record<string, string | undefined> {

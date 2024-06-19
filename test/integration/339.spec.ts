@@ -4,7 +4,6 @@ import path from "path";
 import process from "process";
 import { dedent } from "../../src/util/dedent";
 import { IntegrationTest, runCypress, setupCypressProject } from "../sh";
-import { TIMEOUT_INTEGRATION_TESTS } from "../util";
 import { LOCAL_SERVER } from "./server";
 
 describe(path.relative(process.cwd(), __filename), () => {
@@ -16,6 +15,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             env: {
                 ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
                 ["CYPRESS_PLUGIN_ENABLED"]: "false",
+                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 339",
             },
         },
         {
@@ -25,6 +25,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             env: {
                 ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
                 ["CYPRESS_PLUGIN_ENABLED"]: "false",
+                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 339",
             },
         },
     ] as IntegrationTest[]) {
@@ -44,8 +45,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 ],
             });
-            runCypress(project.projectDirectory, { includeEnv: test.service, env: test.env });
+            runCypress(project.projectDirectory, {
+                includeDefaultEnv: test.service,
+                env: test.env,
+            });
             expect(fs.existsSync(project.logDirectory)).to.be.false;
-        }).timeout(TIMEOUT_INTEGRATION_TESTS);
+        });
     }
 });

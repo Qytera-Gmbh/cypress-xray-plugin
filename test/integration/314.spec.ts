@@ -7,7 +7,7 @@ import { LoggedRequest } from "../../src/client/https/requests";
 import { XrayTestExecutionResults } from "../../src/types/xray/import-test-execution-results";
 import { dedent } from "../../src/util/dedent";
 import { IntegrationTest, runCypress, setupCypressProject } from "../sh";
-import { TIMEOUT_INTEGRATION_TESTS, expectToExist } from "../util";
+import { expectToExist } from "../util";
 import { LOCAL_SERVER } from "./server";
 
 describe(path.relative(process.cwd(), __filename), () => {
@@ -18,6 +18,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             testIssueKey: "CYP-666",
             env: {
                 ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
             },
         },
         {
@@ -26,6 +27,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             testIssueKey: "CYPLUG-107",
             env: {
                 ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
             },
         },
         {
@@ -34,6 +36,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             testIssueKey: "CYP-692",
             env: {
                 ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
             },
             commandFileContent: dedent(`
                 import { enqueueTask, PluginTask } from "cypress-xray-plugin/commands/tasks";
@@ -53,6 +56,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             testIssueKey: "CYPLUG-117",
             env: {
                 ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
             },
             commandFileContent: dedent(`
                 import { enqueueTask, PluginTask } from "cypress-xray-plugin/commands/tasks";
@@ -83,7 +87,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 ],
             });
-            runCypress(project.projectDirectory, { includeEnv: test.service, env: test.env });
+            runCypress(project.projectDirectory, {
+                includeDefaultEnv: test.service,
+                env: test.env,
+            });
             for (const entry of fs.readdirSync(project.logDirectory, {
                 withFileTypes: true,
             })) {
@@ -105,6 +112,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     project.logDirectory
                 )}, but did not find any`
             );
-        }).timeout(TIMEOUT_INTEGRATION_TESTS);
+        });
     }
 });
