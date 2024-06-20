@@ -6,10 +6,10 @@ import path from "node:path";
 import { stub } from "sinon";
 import { resolveTestDirPath } from "../../test/util";
 import { LoggedError } from "./errors";
-import { Level, PluginLogger } from "./logging";
+import { CapturingLogger, Level, PluginLogger } from "./logging";
 
 describe(path.relative(process.cwd(), __filename), () => {
-    describe("the plugin logger", () => {
+    describe(PluginLogger.name, () => {
         describe("message", () => {
             it("handles single line messages", () => {
                 const stdout = stub(console, "info");
@@ -255,6 +255,55 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 expect(stderr).to.not.have.been.called;
                 expect(fs.existsSync(expectedPath)).to.be.false;
+            });
+        });
+    });
+
+    describe(CapturingLogger.name, () => {
+        describe("message", () => {
+            it("stores calls", () => {
+                const logger = new CapturingLogger();
+                logger.message(Level.INFO, "hello");
+                logger.message(Level.ERROR, "alarm");
+                expect(logger.getMessages()).to.deep.eq([
+                    [Level.INFO, "hello"],
+                    [Level.ERROR, "alarm"],
+                ]);
+            });
+        });
+
+        describe("logToFile", () => {
+            it("stores calls", () => {
+                const logger = new CapturingLogger();
+                expect([
+                    logger.logToFile("[1, 2, 3]", "logToFile1.json"),
+                    logger.logToFile("[5, 6, 7]", "logToFile2.json"),
+                ]).to.deep.eq(["logToFile1.json", "logToFile2.json"]);
+                expect(logger.getFileLogMessages()).to.deep.eq([
+                    ["[1, 2, 3]", "logToFile1.json"],
+                    ["[5, 6, 7]", "logToFile2.json"],
+                ]);
+            });
+        });
+
+        describe("logErrorToFile", () => {
+            it("stores calls", () => {
+                const logger = new CapturingLogger();
+                logger.logErrorToFile(new Error("I failed"), "logToFile1.json");
+                logger.logErrorToFile(new Error("I failed, too"), "logToFile2.json");
+                expect(logger.getFileLogErrorMessages()).to.deep.eq([
+                    [new Error("I failed"), "logToFile1.json"],
+                    [new Error("I failed, too"), "logToFile2.json"],
+                ]);
+            });
+        });
+
+        describe("configure", () => {
+            it("does nothing", () => {
+                const unconfiguredLogger = new CapturingLogger();
+                const configuredLogger = new CapturingLogger();
+                configuredLogger.configure();
+                expect(unconfiguredLogger).to.deep.eq(configuredLogger);
             });
         });
     });

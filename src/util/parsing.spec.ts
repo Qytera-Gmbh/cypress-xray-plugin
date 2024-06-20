@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import path from "path";
 import { dedent } from "./dedent";
-import { asArrayOfStrings, asBoolean, asFloat } from "./parsing";
+import { asArrayOfStrings, asBoolean, asFloat, asInt } from "./parsing";
 
 describe(path.relative(process.cwd(), __filename), () => {
     describe(asBoolean.name, () => {
@@ -52,6 +52,17 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
         it("returns NaN for unknown values", () => {
             expect(asFloat("hi")).to.be.NaN;
+        });
+    });
+    describe(asInt.name, () => {
+        it("10", () => {
+            expect(asInt("10")).to.eq(10);
+        });
+        it("-1242.0535", () => {
+            expect(asInt("-1242.0535")).to.eq(-1242);
+        });
+        it("returns NaN for unknown values", () => {
+            expect(asInt("hi")).to.be.NaN;
         });
     });
     describe(asArrayOfStrings.name, () => {

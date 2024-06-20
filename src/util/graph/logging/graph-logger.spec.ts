@@ -199,6 +199,47 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ],
             ]);
         });
+
+        it("logs vertices with priority first", () => {
+            const graph = new SimpleDirectedGraph<Failable>();
+            const a = graph.place({ getFailure: () => new Error("A failed") });
+            const b = graph.place({ getFailure: () => new SkippedError("B skipped") });
+            const c = graph.place({ getFailure: () => undefined });
+            const d = graph.place({ getFailure: () => undefined });
+            const e = graph.place({ getFailure: () => new Error("E failed") });
+            const f = graph.place({ getFailure: () => new SkippedError("F skipped") });
+            graph.connect(a, b);
+            graph.connect(a, d);
+            graph.connect(b, c);
+            graph.connect(d, e);
+            graph.connect(d, f);
+            const logger = new CapturingLogger();
+            new ChainingGraphLogger(logger, (vertex) => vertex === f || vertex === e).logGraph(
+                graph
+            );
+            expect(logger.getMessages()).to.deep.eq([
+                [
+                    Level.ERROR,
+                    dedent(`
+                        E failed
+                    `),
+                ],
+                [
+                    Level.WARNING,
+                    dedent(`
+                        F skipped
+                    `),
+                ],
+                [
+                    Level.ERROR,
+                    dedent(`
+                        B skipped
+
+                          Caused by: A failed
+                    `),
+                ],
+            ]);
+        });
     });
 
     describe(ChainingCommandGraphLogger.name, () => {

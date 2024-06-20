@@ -58,16 +58,14 @@ export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> exten
         const results: StringMap<FieldValueMap[F]> = {};
         const issuesWithUnparseableField: string[] = [];
         for (const issue of issues) {
-            try {
-                if (issue.key) {
+            if (!issue.key) {
+                issuesWithUnparseableField.push(`Unknown: ${JSON.stringify(issue)}`);
+            } else {
+                try {
                     results[issue.key] = await extractor(issue, fieldId);
-                } else {
-                    issuesWithUnparseableField.push(`Unknown: ${JSON.stringify(issue)}`);
+                } catch (error: unknown) {
+                    issuesWithUnparseableField.push(`${issue.key}: ${errorMessage(error)}`);
                 }
-            } catch (error: unknown) {
-                issuesWithUnparseableField.push(
-                    `${issue.key ?? "undefined"}: ${errorMessage(error)}`
-                );
             }
         }
         if (issuesWithUnparseableField.length > 0) {

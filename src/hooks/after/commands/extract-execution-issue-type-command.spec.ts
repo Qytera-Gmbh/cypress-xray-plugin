@@ -142,6 +142,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     Failed to retrieve Jira issue type information of test execution issue type: Task
 
                     There are multiple issue types with this name, make sure to only make a single one available in project CYP:
+
                       Task: {"self":"https://example.org/rest/api/2/issuetype/10002","id":"10002","description":"Ein kleine, bestimmte Aufgabe.","iconUrl":"https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium","name":"Task","untranslatedName":"Task","subtask":false,"avatarId":10318,"hierarchyLevel":0}
                       Task: {"self":"https://example.org/rest/api/2/issuetype/10014","id":"10014","description":"Ein kleine, bestimmte Aufgabe.","iconUrl":"https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium","name":"Task","untranslatedName":"Task","subtask":false,"avatarId":10318,"hierarchyLevel":0,"scope":{"type":"PROJECT","project":{"id":"10008"}}}
                       Task: {"self":"https://example.org/rest/api/2/issuetype/10018","id":"10018","description":"Ein kleine, bestimmte Aufgabe.","iconUrl":"https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium","name":"Task","untranslatedName":"Task","subtask":false,"avatarId":10318,"hierarchyLevel":0,"scope":{"type":"PROJECT","project":{"id":"10009"}}}
@@ -183,6 +184,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     Failed to retrieve Jira issue type information of test execution issue type: Task
 
                     There are multiple issue types with this name, make sure to only make a single one available in project CYP:
+
                       Task: {"self":"https://example.org/rest/api/2/issuetype/10002","id":"10002","description":"Ein kleine, bestimmte Aufgabe.","iconUrl":"https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium","name":"Task","untranslatedName":"Task","subtask":false,"avatarId":10318,"hierarchyLevel":0}
                       Task: {"self":"https://example.org/rest/api/2/issuetype/10014","id":"10014","description":"Ein kleine, bestimmte Aufgabe.","iconUrl":"https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium","name":"Task","untranslatedName":"Task","subtask":false,"avatarId":10318,"hierarchyLevel":0,"scope":{"type":"PROJECT","project":{"id":"10008"}}}
                       Task: {"self":"https://example.org/rest/api/2/issuetype/10018","id":"10018","description":"Ein kleine, bestimmte Aufgabe.","iconUrl":"https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium","name":"Task","untranslatedName":"Task","subtask":false,"avatarId":10318,"hierarchyLevel":0,"scope":{"type":"PROJECT","project":{"id":"10009"}}}

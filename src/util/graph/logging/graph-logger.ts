@@ -12,7 +12,7 @@ import { DirectedGraph } from "../graph";
 interface IndentedLogMessage<V extends Failable> {
     vertex: V;
     text: string;
-    level: Level;
+    level: Level.ERROR | Level.WARNING;
     indent: number;
 }
 
@@ -130,11 +130,8 @@ export class ChainingGraphLogger<V extends Failable> {
                 if (previous === Level.ERROR || current === Level.ERROR) {
                     return Level.ERROR;
                 }
-                if (current === Level.WARNING) {
-                    return Level.WARNING;
-                }
                 return previous;
-            }, Level.DEBUG);
+            }, chain[0].level);
         this.logger.message(level, logMessage);
         return loggedVertices;
     }

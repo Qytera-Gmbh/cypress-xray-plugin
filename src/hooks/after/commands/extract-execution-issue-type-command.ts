@@ -9,6 +9,8 @@ type Parameters = Pick<InternalJiraOptions, "projectKey" | "testExecutionIssueTy
     displayCloudHelp: boolean;
 };
 
+type IssueTypeDetailsWithName = IssueTypeDetails & { name: string };
+
 export class ExtractExecutionIssueTypeCommand extends Command<IssueTypeDetails, Parameters> {
     private readonly allIssueDetails: Computable<IssueTypeDetails[]>;
 
@@ -24,7 +26,8 @@ export class ExtractExecutionIssueTypeCommand extends Command<IssueTypeDetails, 
     protected async computeResult(): Promise<IssueTypeDetails> {
         const allIssueDetails = await this.allIssueDetails.compute();
         const executionIssueDetails = allIssueDetails.filter(
-            (details: IssueTypeDetails) => details.name === this.parameters.testExecutionIssueType
+            (details: IssueTypeDetails): details is IssueTypeDetailsWithName =>
+                details.name === this.parameters.testExecutionIssueType
         );
         if (executionIssueDetails.length === 0) {
             throw new Error(
@@ -64,11 +67,9 @@ export class ExtractExecutionIssueTypeCommand extends Command<IssueTypeDetails, 
                     There are multiple issue types with this name, make sure to only make a single one available in project ${
                         this.parameters.projectKey
                     }:
+
                       ${executionIssueDetails
-                          .map(
-                              (details) =>
-                                  `${details.name ?? "undefined"}: ${JSON.stringify(details)}`
-                          )
+                          .map((details) => `${details.name}: ${JSON.stringify(details)}`)
                           .join("\n")}
 
                     If none of them is the test execution issue type you're using in project ${
