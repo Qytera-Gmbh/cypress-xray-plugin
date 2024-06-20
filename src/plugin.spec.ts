@@ -416,10 +416,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;
             const logger = getMockedLogger();
-            logger.logToFile
-                .withArgs(Sinon.match.string, "execution-graph.vz")
-                .returns("execution-graph.vz");
-            pluginContext.getOptions().plugin.debug = true;
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", afterRunResult),
                 config,
@@ -432,11 +428,214 @@ describe(path.relative(process.cwd(), __filename), () => {
                     resolve("ok");
                 }, 10);
             });
-            expect(logger.message).to.have.been.calledWith(
+            expect(logger.message.getCall(0).args).to.deep.eq([
                 Level.WARNING,
-                "Encountered problems during plugin execution!"
-            );
+                "Encountered problems during plugin execution!",
+            ]);
+            expect(logger.message.getCall(1).args).to.deep.eq([
+                Level.WARNING,
+                dedent(`
+                    ~/repositories/xray/cypress/e2e/demo/example.cy.ts
+
+                      Test: xray upload demo should look for paragraph elements
+
+                        Skipping result upload.
+
+                          Caused by: Test: xray upload demo should look for paragraph elements
+
+                            No test issue keys found in title.
+
+                            You can target existing test issues by adding a corresponding issue key:
+
+                              it("CYP-123 xray upload demo should look for paragraph elements", () => {
+                                // ...
+                              });
+
+                            For more information, visit:
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                `),
+            ]);
+            expect(logger.message.getCall(2).args).to.deep.eq([
+                Level.WARNING,
+                dedent(`
+                    ~/repositories/xray/cypress/e2e/demo/example.cy.ts
+
+                      Test: xray upload demo should look for the anchor element
+
+                        Skipping result upload.
+
+                          Caused by: Test: xray upload demo should look for the anchor element
+
+                            No test issue keys found in title.
+
+                            You can target existing test issues by adding a corresponding issue key:
+
+                              it("CYP-123 xray upload demo should look for the anchor element", () => {
+                                // ...
+                              });
+
+                            For more information, visit:
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                `),
+            ]);
+            expect(logger.message.getCall(3).args).to.deep.eq([
+                Level.WARNING,
+                dedent(`
+                    ~/repositories/xray/cypress/e2e/demo/example.cy.ts
+
+                      Test: xray upload demo should fail
+
+                        Skipping result upload.
+
+                          Caused by: Test: xray upload demo should fail
+
+                            No test issue keys found in title.
+
+                            You can target existing test issues by adding a corresponding issue key:
+
+                              it("CYP-123 xray upload demo should fail", () => {
+                                // ...
+                              });
+
+                            For more information, visit:
+                            - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                `),
+            ]);
+            expect(logger.message.getCall(4).args).to.deep.eq([
+                Level.ERROR,
+                dedent(`
+                    Failed to upload Cypress execution results.
+
+                      Caused by: Failed to convert Cypress tests into Xray tests: No Cypress tests to upload
+                `),
+            ]);
+            expect(logger.message.getCall(5).args).to.deep.eq([
+                Level.WARNING,
+                "No test results were uploaded",
+            ]);
         });
+    });
+
+    it("displays warning and errors after other log messages", async () => {
+        const logger = getMockedLogger();
+        const xrayClient = getMockedXrayClient();
+        const jiraClient = getMockedJiraClient();
+        stub(context, "initClients").onFirstCall().resolves({
+            kind: "cloud",
+            xrayClient: xrayClient,
+            jiraClient: jiraClient,
+        });
+        stub(context, "initCucumberOptions")
+            .onFirstCall()
+            .resolves({
+                downloadFeatures: false,
+                featureFileExtension: ".feature",
+                prefixes: {
+                    test: "TestName:",
+                    precondition: "Precondition:",
+                },
+                uploadFeatures: true,
+                preprocessor: {
+                    json: {
+                        enabled: true,
+                        output: path.resolve(
+                            "./test/resources/fixtures/cucumber/empty-report.json"
+                        ),
+                    },
+                },
+            });
+        jiraClient.getFields.resolves([
+            {
+                name: "summary",
+                id: "12345",
+                clauseNames: [],
+                custom: false,
+                navigable: false,
+                orderable: false,
+                schema: {},
+                searchable: false,
+            },
+            {
+                name: "labels",
+                id: "98765",
+                clauseNames: [],
+                custom: false,
+                navigable: false,
+                orderable: false,
+                schema: {},
+                searchable: false,
+            },
+        ]);
+        jiraClient.getIssueTypes.resolves([{ subtask: false, name: "Test Execution" }]);
+        xrayClient.importExecution.onFirstCall().resolves("CYP-123");
+        xrayClient.importExecutionCucumberMultipart.onFirstCall().resolves("CYP-123");
+        xrayClient.importFeature
+            .onFirstCall()
+            .resolves({ errors: [], updatedOrCreatedIssues: ["CYP-222", "CYP-333", "CYP-555"] });
+        const afterRunResult = JSON.parse(
+            fs.readFileSync("./test/resources/runResult_13_0_0_mixed.json", "utf-8")
+        ) as CypressRunResultType;
+        const spy = Sinon.spy();
+        await configureXrayPlugin(spy, config, {
+            jira: {
+                projectKey: "CYP",
+                url: "https://example.org",
+            },
+            cucumber: {
+                featureFileExtension: ".feature",
+                uploadFeatures: true,
+            },
+            plugin: {
+                debug: true,
+            },
+            xray: {
+                uploadScreenshots: false,
+            },
+        });
+        syncFeatureFile({
+            filePath: "./test/resources/features/invalid.feature",
+        } as Cypress.FileObject);
+        const [eventName, callback] = spy.secondCall.args as [
+            string,
+            (results: CypressRunResultType | CypressFailedRunResultType) => void | Promise<void>
+        ];
+        expect(eventName).to.eq("after:run");
+        await callback(afterRunResult);
+        expect(logger.message.getCall(0).args).to.deep.eq([
+            Level.INFO,
+            "Parsing feature file: ./test/resources/features/invalid.feature",
+        ]);
+        expect(logger.message.getCall(1).args).to.deep.eq([
+            Level.SUCCESS,
+            "Uploaded Cypress test results to issue: CYP-123 (https://example.org/browse/CYP-123)",
+        ]);
+        expect(logger.message.getCall(2).args).to.deep.eq([
+            Level.WARNING,
+            "Encountered problems during plugin execution!",
+        ]);
+        expect(logger.message.getCall(3).args).to.deep.eq([
+            Level.ERROR,
+            dedent(`
+                Failed to upload Cucumber execution results.
+
+                  Caused by: Skipping Cucumber results upload: No Cucumber tests were executed
+            `),
+        ]);
+        expect(logger.message.getCall(4).args).to.deep.eq([
+            Level.ERROR,
+            dedent(`
+                ./test/resources/features/invalid.feature
+
+                  Failed to import feature file.
+
+                  Caused by: ./test/resources/features/invalid.feature
+
+                    Failed to parse feature file.
+
+                      Parser errors:
+                      (9:3): expected: #EOF, #TableRow, #DocStringSeparator, #StepLine, #TagLine, #ScenarioLine, #RuleLine, #Comment, #Empty, got 'Invalid: Element'
+            `),
+        ]);
     });
 
     describe(syncFeatureFile.name, () => {

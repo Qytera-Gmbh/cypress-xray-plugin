@@ -163,11 +163,16 @@ export async function configureXrayPlugin(
             });
             if (messages.some(([level]) => level === Level.WARNING || level === Level.ERROR)) {
                 LOG.message(Level.WARNING, "Encountered problems during plugin execution!");
-                messages.forEach(([level, text]) => {
-                    if ([Level.WARNING, Level.ERROR].includes(level)) {
+                messages
+                    .filter(([level]) => level === Level.WARNING)
+                    .forEach(([level, text]) => {
                         LOG.message(level, text);
-                    }
-                });
+                    });
+                messages
+                    .filter(([level]) => level === Level.ERROR)
+                    .forEach(([level, text]) => {
+                        LOG.message(level, text);
+                    });
             }
             logger.getFileLogErrorMessages().forEach(([error, filename]) => {
                 LOG.logErrorToFile(error, filename);

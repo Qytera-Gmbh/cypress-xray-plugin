@@ -84,7 +84,7 @@ export function addUploadCommands(
         }
         // Cypress might change process.cwd(), so we need to query the root directory.
         // See: https://github.com/cypress-io/cypress/issues/22689
-        const reportPath = path.join(projectRoot, options.cucumber.preprocessor.json.output);
+        const reportPath = path.resolve(projectRoot, options.cucumber.preprocessor.json.output);
         const cucumberResults = JSON.parse(
             fs.readFileSync(reportPath, "utf-8")
         ) as CucumberMultipartFeature[];
