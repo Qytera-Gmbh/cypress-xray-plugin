@@ -19,7 +19,6 @@ import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command";
 
 export function addSynchronizationCommands(
     file: Cypress.FileObject,
-    projectRoot: string,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,

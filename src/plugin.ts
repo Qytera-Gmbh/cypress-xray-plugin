@@ -222,7 +222,6 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
     ) {
         addSynchronizationCommands(
             file,
-            context.getCypressOptions().projectRoot,
             context.getOptions(),
             context.getClients(),
             context.getGraph(),

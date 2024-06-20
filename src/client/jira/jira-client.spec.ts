@@ -240,6 +240,24 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(await client.getIssueTypes()).to.eq(issueTypes);
             });
 
+            it("handles issues without name or id", async () => {
+                const issueTypes: IssueTypeDetails[] = [
+                    { subtask: false, id: "12345" },
+                    { subtask: false, name: "Custom issue" },
+                    { subtask: true, description: "A legacy subtask" },
+                ];
+                restClient.get.onFirstCall().resolves({
+                    status: HttpStatusCode.Ok,
+                    data: issueTypes,
+                    headers: {},
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    config: {
+                        headers: new AxiosHeaders(),
+                    },
+                });
+                expect(await client.getIssueTypes()).to.eq(issueTypes);
+            });
+
             it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
