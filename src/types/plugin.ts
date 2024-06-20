@@ -1,10 +1,8 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import { AxiosRequestConfig } from "axios";
-import { JiraClient } from "../client/jira/jiraClient";
-import { XrayClient } from "../client/xray/xrayClient";
-import { AxiosRestClient } from "../https/requests";
-import { JiraRepository } from "../repository/jira/jiraRepository";
-import { IssueTypeDetails } from "./jira/responses/issueTypeDetails";
+import { AxiosRestClient } from "../client/https/requests";
+import { JiraClient } from "../client/jira/jira-client";
+import { XrayClient } from "../client/xray/xray-client";
 
 /**
  * Models all options for configuring the behaviour of the plugin.
@@ -216,12 +214,7 @@ export type InternalJiraOptions = JiraOptions &
             | "testPlanIssueType"
             | "url"
         >
-    > & {
-        /**
-         * The details of the test execution issue type.
-         */
-        testExecutionIssueDetails: IssueTypeDetails;
-    };
+    >;
 
 /**
  * Xray settings that may be required depending on the project configuration.
@@ -402,7 +395,7 @@ export interface InternalCucumberOptions extends Required<CucumberOptions> {
     /**
      * The Cucumber preprocessor configuration.
      */
-    preprocessor?: IPreprocessorConfiguration;
+    preprocessor?: Pick<IPreprocessorConfiguration, "json">;
 }
 
 /**
@@ -494,7 +487,7 @@ export type InternalPluginOptions = PluginOptions &
 /**
  * Options only intended for internal plugin use.
  */
-export interface InternalOptions {
+export interface InternalCypressXrayPluginOptions {
     jira: InternalJiraOptions;
     plugin: InternalPluginOptions;
     xray: InternalXrayOptions;
@@ -509,7 +502,6 @@ export interface ClientCombination {
     kind: "server" | "cloud";
     jiraClient: JiraClient;
     xrayClient: XrayClient;
-    jiraRepository: JiraRepository;
 }
 
 /**

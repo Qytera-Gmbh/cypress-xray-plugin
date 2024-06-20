@@ -1,37 +1,36 @@
-import { BasicAuthCredentials, JwtCredentials, PatCredentials } from "./authentication/credentials";
-import { JiraClientCloud } from "./client/jira/jiraClientCloud";
-import { JiraClientServer } from "./client/jira/jiraClientServer";
-import { XrayClientCloud } from "./client/xray/xrayClientCloud";
-import { XrayClientServer } from "./client/xray/xrayClientServer";
 import {
-    CucumberPreprocessorArgs,
-    CucumberPreprocessorExports,
-    importOptionalDependency,
-} from "./dependencies";
+    BasicAuthCredentials,
+    JwtCredentials,
+    PatCredentials,
+} from "./client/authentication/credentials";
+import { AxiosRestClient } from "./client/https/requests";
+import { BaseJiraClient } from "./client/jira/jira-client";
+import { XrayClientCloud } from "./client/xray/xray-client-cloud";
+import { XrayClientServer } from "./client/xray/xray-client-server";
 import { ENV_NAMES } from "./env";
-import { AxiosRestClient } from "./https/requests";
-import { LOG, Level } from "./logging/logging";
-import { CachingJiraFieldRepository } from "./repository/jira/fields/jiraFieldRepository";
-import {
-    CachingJiraIssueFetcher,
-    CachingJiraIssueFetcherCloud,
-} from "./repository/jira/fields/jiraIssueFetcher";
-import { CachingJiraRepository } from "./repository/jira/jiraRepository";
+import { Command } from "./hooks/command";
 import {
     ClientCombination,
     CypressXrayPluginOptions,
     HttpClientCombination,
     InternalCucumberOptions,
+    InternalCypressXrayPluginOptions,
     InternalHttpOptions,
     InternalJiraOptions,
-    InternalOptions,
     InternalPluginOptions,
     InternalXrayOptions,
 } from "./types/plugin";
-import { XrayEvidenceItem } from "./types/xray/importTestExecutionResults";
+import { XrayEvidenceItem } from "./types/xray/import-test-execution-results";
 import { dedent } from "./util/dedent";
+import {
+    CucumberPreprocessorArgs,
+    CucumberPreprocessorExports,
+    importOptionalDependency,
+} from "./util/dependencies";
 import { errorMessage } from "./util/errors";
+import { ExecutableGraph } from "./util/graph/executable-graph";
 import { HELP } from "./util/help";
+import { LOG, Level, Logger } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
 
@@ -56,24 +55,47 @@ export class SimpleEvidenceCollection {
 }
 
 export class PluginContext implements EvidenceCollection {
-    private readonly evidenceCollection: EvidenceCollection = new SimpleEvidenceCollection();
+    private readonly clients: ClientCombination;
+    private readonly internalOptions: InternalCypressXrayPluginOptions;
+    private readonly cypressOptions: Cypress.PluginConfigOptions;
+    private readonly evidenceCollection: EvidenceCollection;
+    private readonly graph: ExecutableGraph<Command>;
+    private readonly logger: Logger;
 
     constructor(
-        private readonly clients: ClientCombination,
-        private readonly internalOptions: InternalOptions,
-        private readonly cypressOptions: Cypress.PluginConfigOptions
-    ) {}
+        clients: ClientCombination,
+        internalOptions: InternalCypressXrayPluginOptions,
+        cypressOptions: Cypress.PluginConfigOptions,
+        evidenceCollection: EvidenceCollection,
+        graph: ExecutableGraph<Command>,
+        logger: Logger
+    ) {
+        this.clients = clients;
+        this.internalOptions = internalOptions;
+        this.cypressOptions = cypressOptions;
+        this.evidenceCollection = evidenceCollection;
+        this.graph = graph;
+        this.logger = logger;
+    }
 
     public getClients(): ClientCombination {
         return this.clients;
     }
 
-    public getOptions(): InternalOptions {
+    public getOptions(): InternalCypressXrayPluginOptions {
         return this.internalOptions;
     }
 
     public getCypressOptions(): Cypress.PluginConfigOptions {
         return this.cypressOptions;
+    }
+
+    public getGraph(): ExecutableGraph<Command> {
+        return this.graph;
+    }
+
+    public getLogger(): Logger {
+        return this.logger;
     }
 
     public addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
@@ -148,7 +170,6 @@ export function initJiraOptions(
         testExecutionIssueDescription:
             parse(env, ENV_NAMES.jira.testExecutionIssueDescription, asString) ??
             options.testExecutionIssueDescription,
-        testExecutionIssueDetails: { subtask: false },
         testExecutionIssueKey: testExecutionIssueKey,
         testExecutionIssueSummary:
             parse(env, ENV_NAMES.jira.testExecutionIssueSummary, asString) ??
@@ -387,7 +408,7 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
         await pingJiraInstance(jiraOptions.url, credentials, httpClients.jira);
-        const jiraClient = new JiraClientCloud(jiraOptions.url, credentials, httpClients.jira);
+        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials, httpClients.jira);
         if (
             ENV_NAMES.authentication.xray.clientId in env &&
             ENV_NAMES.authentication.xray.clientSecret in env
@@ -405,18 +426,10 @@ export async function initClients(
             );
             await pingXrayCloud(xrayCredentials);
             const xrayClient = new XrayClientCloud(xrayCredentials, httpClients.xray);
-            const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-            const jiraFieldFetcher = new CachingJiraIssueFetcherCloud(
-                jiraClient,
-                jiraFieldRepository,
-                xrayClient,
-                jiraOptions
-            );
             return {
                 kind: "cloud",
                 jiraClient: jiraClient,
                 xrayClient: xrayClient,
-                jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
             };
         } else {
             throw new Error(
@@ -433,22 +446,15 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
         await pingJiraInstance(jiraOptions.url, credentials, httpClients.jira);
-        const jiraClient = new JiraClientServer(jiraOptions.url, credentials, httpClients.jira);
+        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials, httpClients.jira);
         // Xray server authentication: no username, only token.
         LOG.message(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials");
         await pingXrayServer(jiraOptions.url, credentials, httpClients.xray);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials, httpClients.xray);
-        const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-        const jiraFieldFetcher = new CachingJiraIssueFetcher(
-            jiraClient,
-            jiraFieldRepository,
-            jiraOptions.fields
-        );
         return {
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
         };
     } else if (
         ENV_NAMES.authentication.jira.username in env &&
@@ -464,24 +470,17 @@ export async function initClients(
             env[ENV_NAMES.authentication.jira.password] as string
         );
         await pingJiraInstance(jiraOptions.url, credentials, httpClients.jira);
-        const jiraClient = new JiraClientServer(jiraOptions.url, credentials, httpClients.jira);
+        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials, httpClients.jira);
         LOG.message(
             Level.INFO,
             "Jira username and password found. Setting up Xray server basic auth credentials"
         );
         await pingXrayServer(jiraOptions.url, credentials, httpClients.xray);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials, httpClients.xray);
-        const jiraFieldRepository = new CachingJiraFieldRepository(jiraClient);
-        const jiraFieldFetcher = new CachingJiraIssueFetcher(
-            jiraClient,
-            jiraFieldRepository,
-            jiraOptions.fields
-        );
         return {
             kind: "server",
             jiraClient: jiraClient,
             xrayClient: xrayClient,
-            jiraRepository: new CachingJiraRepository(jiraFieldRepository, jiraFieldFetcher),
         };
     } else {
         throw new Error(

@@ -1,9 +1,9 @@
 import { EvidenceCollection } from "../context";
-import { LOG, Level } from "../logging/logging";
-import { getNativeTestIssueKey } from "../preprocessing/preprocessing";
+import { getNativeTestIssueKey } from "../hooks/after/util";
 import { encode } from "../util/base64";
 import { dedent } from "../util/dedent";
 import { errorMessage } from "../util/errors";
+import { Level, Logger } from "../util/logging";
 
 /**
  * All tasks which are available within the plugin.
@@ -133,12 +133,16 @@ type TaskListener = {
 };
 
 export class PluginTaskListener implements TaskListener {
+    private readonly projectKey: string;
+    private readonly evidenceCollection: EvidenceCollection;
+    private readonly logger: Logger;
     private readonly ignoredTests = new Set<string>();
 
-    constructor(
-        private readonly projectKey: string,
-        private readonly evidenceCollection: EvidenceCollection
-    ) {}
+    constructor(projectKey: string, evidenceCollection: EvidenceCollection, logger: Logger) {
+        this.projectKey = projectKey;
+        this.evidenceCollection = evidenceCollection;
+        this.logger = logger;
+    }
 
     public [PluginTask.OUTGOING_REQUEST](
         args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
@@ -152,14 +156,14 @@ export class PluginTaskListener implements TaskListener {
             });
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {
-                LOG.message(
+                this.logger.message(
                     Level.WARNING,
                     dedent(`
-                        Encountered a cy.request call which will not be included as evidence for test: ${
-                            args.test
-                        }
+                        Test: ${args.test}
 
-                        ${errorMessage(error)}
+                          Encountered a cy.request call which will not be included as evidence.
+
+                            Caused by: ${errorMessage(error)}
                     `)
                 );
                 this.ignoredTests.add(args.test);
@@ -180,14 +184,14 @@ export class PluginTaskListener implements TaskListener {
             });
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {
-                LOG.message(
+                this.logger.message(
                     Level.WARNING,
                     dedent(`
-                        Encountered a cy.request call which will not be included as evidence for test: ${
-                            args.test
-                        }
+                        Test: ${args.test}
 
-                        ${errorMessage(error)}
+                          Encountered a cy.request call which will not be included as evidence.
+
+                            Caused by: ${errorMessage(error)}
                     `)
                 );
                 this.ignoredTests.add(args.test);

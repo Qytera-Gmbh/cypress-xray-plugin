@@ -1,0 +1,245 @@
+{
+    "browserName": "electron",
+    "browserPath": "",
+    "browserVersion": "118.0.5993.159",
+    "config": {
+        "configFile": "C:\\Repositories\\cypress\\integration\\cypress.config.ts",
+        "env": {
+            "__cypress_cucumber_preprocessor_dont_use_this_suite": {
+                "isEventHandlersAttached": true
+            }
+        },
+        "testingType": "e2e",
+        "video": false,
+        "supportFile": false,
+        "specPattern": "**/*.{feature,features,cy.js,cy.ts}",
+        "projectRoot": "C:\\Repositories\\cypress\\integration",
+        "projectName": "integration",
+        "isTextTerminal": true,
+        "animationDistanceThreshold": 5,
+        "arch": "x64",
+        "baseUrl": null,
+        "blockHosts": null,
+        "chromeWebSecurity": true,
+        "clientCertificates": [],
+        "defaultCommandTimeout": 4000,
+        "downloadsFolder": "C:\\Repositories\\cypress\\integration\\cypress\\downloads",
+        "execTimeout": 60000,
+        "experimentalCspAllowList": false,
+        "experimentalFetchPolyfill": false,
+        "experimentalInteractiveRunEvents": false,
+        "experimentalRunAllSpecs": false,
+        "experimentalMemoryManagement": false,
+        "experimentalModifyObstructiveThirdPartyCode": false,
+        "experimentalSkipDomainInjection": null,
+        "experimentalOriginDependencies": false,
+        "experimentalSourceRewriting": false,
+        "experimentalSingleTabRunMode": false,
+        "experimentalStudio": false,
+        "experimentalWebKitSupport": false,
+        "fileServerFolder": "C:\\Repositories\\cypress\\integration",
+        "fixturesFolder": "C:\\Repositories\\cypress\\integration\\cypress\\fixtures",
+        "excludeSpecPattern": "*.hot-update.js",
+        "includeShadowDom": false,
+        "keystrokeDelay": 0,
+        "modifyObstructiveCode": true,
+        "numTestsKeptInMemory": 0,
+        "platform": "win32",
+        "pageLoadTimeout": 60000,
+        "port": 56465,
+        "projectId": null,
+        "redirectionLimit": 20,
+        "reporter": "spec",
+        "reporterOptions": null,
+        "requestTimeout": 5000,
+        "resolvedNodePath": "C:\\Tools\\Node\\20.9.0\\node.exe",
+        "resolvedNodeVersion": "20.9.0",
+        "responseTimeout": 30000,
+        "retries": {
+            "runMode": 0,
+            "openMode": 0
+        },
+        "screenshotOnRunFailure": true,
+        "screenshotsFolder": "C:\\Repositories\\cypress\\integration\\cypress\\screenshots",
+        "slowTestThreshold": 10000,
+        "scrollBehavior": "top",
+        "taskTimeout": 60000,
+        "testIsolation": true,
+        "trashAssetsBeforeRuns": true,
+        "userAgent": null,
+        "videoCompression": false,
+        "videosFolder": "C:\\Repositories\\cypress\\integration\\cypress\\videos",
+        "viewportHeight": 660,
+        "viewportWidth": 1000,
+        "waitForAnimations": true,
+        "watchForFileChanges": false,
+        "browsers": [
+            {
+                "channel": "stable",
+                "displayName": "Chrome",
+                "family": "chromium",
+                "majorVersion": "125",
+                "name": "chrome",
+                "path": "C:\\Tools\\Google\\Chrome\\Application\\chrome.exe",
+                "version": "125.0.6422.142"
+            },
+            {
+                "channel": "stable",
+                "displayName": "Firefox",
+                "family": "firefox",
+                "majorVersion": "127",
+                "name": "firefox",
+                "path": "C:\\Tools\\Mozilla Firefox\\firefox.exe",
+                "version": "127.0"
+            },
+            {
+                "channel": "stable",
+                "displayName": "Edge",
+                "family": "chromium",
+                "majorVersion": "126",
+                "name": "edge",
+                "path": "C:\\Tools\\Microsoft\\Edge\\Application\\msedge.exe",
+                "version": "126.0.2592.56"
+            },
+            {
+                "channel": "stable",
+                "displayName": "Electron",
+                "family": "chromium",
+                "majorVersion": 118,
+                "name": "electron",
+                "path": "",
+                "version": "118.0.5993.159"
+            }
+        ],
+        "cypressBinaryRoot": "C:\\Tools\\Cypress\\Cache\\13.10.0\\Cypress\\resources\\app",
+        "hosts": null,
+        "isInteractive": true,
+        "version": "13.10.0",
+        "browser": null,
+        "cypressInternalEnv": "production"
+    },
+    "cypressVersion": "13.10.0",
+    "endedTestsAt": "2024-06-17T17:32:28.030Z",
+    "osName": "win32",
+    "osVersion": "10.0.19045",
+    "runs": [
+        {
+            "error": null,
+            "reporter": "spec",
+            "reporterStats": {
+                "suites": 1,
+                "tests": 2,
+                "passes": 1,
+                "pending": 0,
+                "failures": 1,
+                "start": "2024-06-17T17:32:13.449Z",
+                "end": "2024-06-17T17:32:13.837Z",
+                "duration": 388
+            },
+            "screenshots": [
+                {
+                    "height": 720,
+                    "name": null,
+                    "path": "./cypress/screenshots/325.spec.cy.ts/CYP-665 Test results of grouped test steps -- should do A (failed).png",
+                    "takenAt": "2024-06-17T17:32:13.486Z",
+                    "width": 1280
+                }
+            ],
+            "spec": {
+                "absolute": "C:/Repositories/cypress/integration/cypress/325.spec.cy.ts",
+                "fileExtension": ".ts",
+                "fileName": "325.spec",
+                "name": "325.spec.cy.ts",
+                "relative": "cypress\\325.spec.cy.ts"
+            },
+            "stats": {
+                "duration": 391,
+                "endedAt": "2024-06-17T17:32:13.834Z",
+                "failures": 1,
+                "passes": 0,
+                "pending": 0,
+                "skipped": 0,
+                "startedAt": "2024-06-17T17:32:13.443Z",
+                "suites": 1,
+                "tests": 1
+            },
+            "tests": [
+                {
+                    "attempts": [
+                        {
+                            "state": "failed"
+                        }
+                    ],
+                    "displayError": "AssertionError: expected true to be false\n    at Context.eval (http://localhost:56465/__cypress/tests?p=cypress\\325.spec.cy.ts:6:25)",
+                    "duration": 327,
+                    "state": "failed",
+                    "title": ["Test results of grouped test steps", "CYP-665 should do A"]
+                }
+            ],
+            "video": null
+        },
+        {
+            "error": null,
+            "reporter": "spec",
+            "reporterStats": {
+                "suites": 1,
+                "tests": 1,
+                "passes": 0,
+                "pending": 0,
+                "failures": 1,
+                "start": "2024-06-17T17:32:23.355Z",
+                "end": "2024-06-17T17:32:23.627Z",
+                "duration": 272
+            },
+            "screenshots": [
+                {
+                    "height": 720,
+                    "name": null,
+                    "path": "C:\\Repositories\\cypress\\integration\\cypress\\screenshots\\singleScenario.feature\\Single scenario -- Single scenario test (failed).png",
+                    "takenAt": "2024-06-17T17:32:23.469Z",
+                    "width": 1280
+                }
+            ],
+            "spec": {
+                "absolute": "C:/Repositories/cypress/integration/cypress/singleScenario.feature",
+                "fileExtension": ".feature",
+                "fileName": "singleScenario",
+                "name": "singleScenario.feature",
+                "relative": "cypress\\singleScenario.feature"
+            },
+            "stats": {
+                "duration": 276,
+                "endedAt": "2024-06-17T17:32:23.625Z",
+                "failures": 1,
+                "passes": 0,
+                "pending": 0,
+                "skipped": 0,
+                "startedAt": "2024-06-17T17:32:23.349Z",
+                "suites": 1,
+                "tests": 1
+            },
+            "tests": [
+                {
+                    "attempts": [
+                        {
+                            "state": "failed"
+                        }
+                    ],
+                    "displayError": "AssertionError: expected false to be true\n    at Context.eval (http://localhost:56465/__cypress/tests?p=cypress\\singleScenario.feature:15802:28)\n    at Registry.runStepDefininition (http://localhost:56465/__cypress/tests?p=cypress\\singleScenario.feature:8576:48)\n    at Object.fn (http://localhost:56465/__cypress/tests?p=cypress\\singleScenario.feature:15041:43)\n    at runStepWithLogGroup (http://localhost:56465/__cypress/tests?p=cypress\\singleScenario.feature:14659:29)\n    at Context.eval (http://localhost:56465/__cypress/tests?p=cypress\\singleScenario.feature:15037:62)",
+                    "duration": 265,
+                    "state": "failed",
+                    "title": ["Single scenario", "Single scenario test"]
+                }
+            ],
+            "video": null
+        }
+    ],
+    "startedTestsAt": "2024-06-17T17:32:13.443Z",
+    "totalDuration": 3605,
+    "totalFailed": 1,
+    "totalPassed": 1,
+    "totalPending": 0,
+    "totalSkipped": 0,
+    "totalSuites": 2,
+    "totalTests": 2
+}

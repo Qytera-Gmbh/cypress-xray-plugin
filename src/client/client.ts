@@ -1,7 +1,7 @@
-import { HttpCredentials } from "../authentication/credentials";
-import { AxiosRestClient } from "../https/requests";
-import { LOG, Level } from "../logging/logging";
+import { LOG, Level } from "../util/logging";
 import { startInterval } from "../util/time";
+import { HttpCredentials } from "./authentication/credentials";
+import { AxiosRestClient } from "./https/requests";
 
 /**
  * A basic client interface which stores credentials data used for communicating with a server.
@@ -49,7 +49,7 @@ export abstract class Client {
      * @param url - the request URL
      * @returns the timer's handler
      */
-    protected startResponseInterval(url: string): NodeJS.Timer {
+    protected startResponseInterval(url: string): ReturnType<typeof setInterval> {
         return startInterval((totalTime: number) => {
             LOG.message(
                 Level.INFO,

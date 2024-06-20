@@ -1,4 +1,3 @@
-import { Background, Comment } from "@cucumber/messages";
 import { dedent } from "./dedent";
 import { HELP } from "./help";
 import { unknownToString } from "./string";
@@ -31,68 +30,25 @@ export function isLoggedError(error: unknown): boolean {
     return error instanceof LoggedError;
 }
 
+/**
+ * An error which is thrown when a command is skipped.
+ */
+
+export class SkippedError extends Error {}
+/**
+ * Assesses whether the given error is an instance of a {@link SkippedError | `SkippedError`}.
+ *
+ * @param error - the error
+ * @returns `true` if the error is a {@link SkippedError | `SkippedError`}, otherwise `false`
+ */
+
+export function isSkippedError(error: unknown): error is SkippedError {
+    return error instanceof SkippedError;
+}
+
 // ============================================================================================== //
 // COLLECTION OF USEFUL ERRORS                                                                    //
 // ============================================================================================== //
-
-/**
- * Returns an error describing that a test issue key is missing in the title of a native Cypress
- * test case.
- *
- * @param title - the Cypress test title
- * @param projectKey - the project key
- * @returns the error
- */
-export function missingTestKeyInNativeTestTitleError(title: string, projectKey: string): Error {
-    return new Error(
-        dedent(`
-            No test issue keys found in title of test: ${title}
-            You can target existing test issues by adding a corresponding issue key:
-
-            it("${projectKey}-123 ${title}", () => {
-              // ...
-            });
-
-            For more information, visit:
-            - ${HELP.plugin.guides.targetingExistingIssues}
-        `)
-    );
-}
-
-/**
- * Returns an error describing that multiple test issue keys are present in the title of a native
- * Cypress test case.
- *
- * @param title - the Cypress test title
- * @param issueKeys - the issue keys
- * @returns the error
- */
-export function multipleTestKeysInNativeTestTitleError(
-    title: string,
-    issueKeys: readonly string[]
-): Error {
-    // Remove any circumflexes currently present in the title.
-    let indicatorLine = title.replaceAll("^", " ");
-    issueKeys.forEach((issueKey: string) => {
-        indicatorLine = indicatorLine.replaceAll(issueKey, "^".repeat(issueKey.length));
-    });
-    // Replace everything but circumflexes with space.
-    indicatorLine = indicatorLine.replaceAll(/[^^]/g, " ");
-    return new Error(
-        dedent(`
-            Multiple test keys found in title of test: ${title}
-            The plugin cannot decide for you which one to use:
-
-            it("${title}", () => {
-                ${indicatorLine}
-              // ...
-            });
-
-            For more information, visit:
-            - ${HELP.plugin.guides.targetingExistingIssues}
-        `)
-    );
-}
 
 /**
  * Returns an error describing that a test issue key is missing in the tags of a Cucumber scenario.
@@ -119,83 +75,82 @@ export function missingTestKeyInCucumberScenarioError(
     if (scenario.tags && scenario.tags.length > 0) {
         return new Error(
             dedent(`
-                No test issue keys found in tags of scenario${
-                    scenario.name.length > 0 ? `: ${scenario.name}` : ""
-                }
+                Scenario: ${scenario.name.length > 0 ? scenario.name : "<no name>"}
 
-                Available tags:
-                  ${scenario.tags.map((tag) => tag.name).join("\n")}
+                  No test issue keys found in tags:
 
-                If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray
+                    ${scenario.tags.map((tag) => tag.name).join("\n")}
 
-                  For example, with the following plugin configuration:
+                  If a tag contains the test issue key already, specify a global prefix to align the plugin with Xray.
 
-                    {
-                      cucumber: {
-                        prefixes: {
-                          test: "TestName:"
+                    For example, with the following plugin configuration:
+
+                      {
+                        cucumber: {
+                          prefixes: {
+                            test: "TestName:"
+                          }
                         }
                       }
-                    }
 
-                  The following tag will be recognized as a test issue tag by the plugin:
+                    The following tag will be recognized as a test issue tag by the plugin:
 
-                    @TestName:${projectKey}-123
-                    ${scenario.keyword}: ${scenario.name}
-                      ${firstStepLine}
-                      ...
+                      @TestName:${projectKey}-123
+                      ${scenario.keyword}: ${scenario.name}
+                        ${firstStepLine}
+                        ...
 
-                For more information, visit:
-                - ${HELP.plugin.guides.targetingExistingIssues}
-                - ${HELP.plugin.configuration.cucumber.prefixes}
-                - ${
-                    isCloudClient
-                        ? HELP.xray.importCucumberTests.cloud
-                        : HELP.xray.importCucumberTests.server
-                }
+                  For more information, visit:
+                  - ${HELP.plugin.guides.targetingExistingIssues}
+                  - ${HELP.plugin.configuration.cucumber.prefixes}
+                  - ${
+                      isCloudClient
+                          ? HELP.xray.importCucumberTests.cloud
+                          : HELP.xray.importCucumberTests.server
+                  }
             `)
         );
     }
     return new Error(
         dedent(`
-            No test issue keys found in tags of scenario${
-                scenario.name.length > 0 ? `: ${scenario.name}` : ""
-            }
+            Scenario: ${scenario.name.length > 0 ? scenario.name : "<no name>"}
 
-            You can target existing test issues by adding a corresponding tag:
+              No test issue keys found in tags.
 
-              @${projectKey}-123
-              ${scenario.keyword}: ${scenario.name}
-                ${firstStepLine}
-                ...
+              You can target existing test issues by adding a corresponding tag:
 
-            You can also specify a prefix to match the tagging scheme configured in your Xray instance:
-
-              Plugin configuration:
-
-                {
-                  cucumber: {
-                    prefixes: {
-                      test: "TestName:"
-                    }
-                  }
-                }
-
-              Feature file:
-
-                @TestName:${projectKey}-123
+                @${projectKey}-123
                 ${scenario.keyword}: ${scenario.name}
                   ${firstStepLine}
                   ...
 
-            For more information, visit:
-            - ${HELP.plugin.guides.targetingExistingIssues}
-            - ${HELP.plugin.configuration.cucumber.prefixes}
-            - ${
-                isCloudClient
-                    ? HELP.xray.importCucumberTests.cloud
-                    : HELP.xray.importCucumberTests.server
-            }
+              You can also specify a prefix to match the tagging scheme configured in your Xray instance:
+
+                Plugin configuration:
+
+                  {
+                    cucumber: {
+                      prefixes: {
+                        test: "TestName:"
+                      }
+                    }
+                  }
+
+                Feature file:
+
+                  @TestName:${projectKey}-123
+                  ${scenario.keyword}: ${scenario.name}
+                    ${firstStepLine}
+                    ...
+
+              For more information, visit:
+              - ${HELP.plugin.guides.targetingExistingIssues}
+              - ${HELP.plugin.configuration.cucumber.prefixes}
+              - ${
+                  isCloudClient
+                      ? HELP.xray.importCucumberTests.cloud
+                      : HELP.xray.importCucumberTests.server
+              }
         `)
     );
 }
@@ -226,198 +181,31 @@ export function multipleTestKeysInCucumberScenarioError(
             : "Given A step";
     return new Error(
         dedent(`
-            Multiple test issue keys found in tags of scenario${
-                scenario.name.length > 0 ? `: ${scenario.name}` : ""
-            }
-            The plugin cannot decide for you which one to use:
+            Scenario: ${scenario.name.length > 0 ? scenario.name : "<no name>"}
 
-            ${tags.map((tag) => tag.name).join(" ")}
-            ${tags
-                .map((tag) => {
-                    if (issueKeys.some((key) => tag.name.endsWith(key))) {
-                        return "^".repeat(tag.name.length);
-                    }
-                    return " ".repeat(tag.name.length);
-                })
-                .join(" ")
-                .trimEnd()}
-            ${scenario.keyword}: ${scenario.name}
-              ${firstStepLine}
-              ...
+              Multiple test issue keys found in tags, the plugin cannot decide for you which one to use:
 
-            For more information, visit:
-            - ${
-                isCloudClient
-                    ? HELP.xray.importCucumberTests.cloud
-                    : HELP.xray.importCucumberTests.server
-            }
-            - ${HELP.plugin.guides.targetingExistingIssues}
-        `)
-    );
-}
-
-/**
- * Returns an error describing that a test issue key is missing in the comments of a Cucumber
- * background.
- *
- * @param background - the Cucumber background
- * @param projectKey - the project key
- * @param isCloudClient - whether Xray cloud is being used
- * @param comments - the comments containing precondition issue keys
- * @returns the error
- */
-export function missingPreconditionKeyInCucumberBackgroundError(
-    background: Background,
-    projectKey: string,
-    isCloudClient: boolean,
-    comments?: readonly string[]
-): Error {
-    const firstStepLine =
-        background.steps.length > 0
-            ? `${background.steps[0].keyword.trim()} ${background.steps[0].text}`
-            : "Given A step";
-    if (comments && comments.length > 0) {
-        return new Error(
-            dedent(`
-                No precondition issue keys found in comments of background${
-                    background.name.length > 0 ? `: ${background.name}` : ""
-                }
-
-                Available comments:
-                  ${comments.join("\n")}
-
-                If a comment contains the precondition issue key already, specify a global prefix to align the plugin with Xray
-
-                  For example, with the following plugin configuration:
-
-                    {
-                      cucumber: {
-                        prefixes: {
-                          precondition: "Precondition:"
+                ${tags.map((tag) => tag.name).join(" ")}
+                ${tags
+                    .map((tag) => {
+                        if (issueKeys.some((key) => tag.name.endsWith(key))) {
+                            return "^".repeat(tag.name.length);
                         }
-                      }
-                    }
-
-                  The following comment will be recognized as a precondition issue tag by the plugin:
-
-                    ${background.keyword}: ${background.name}
-                      #@Precondition:${projectKey}-123
-                      ${firstStepLine}
-                      ...
-
-                For more information, visit:
-                - ${HELP.plugin.guides.targetingExistingIssues}
-                - ${HELP.plugin.configuration.cucumber.prefixes}
-                - ${
-                    isCloudClient
-                        ? HELP.xray.importCucumberTests.cloud
-                        : HELP.xray.importCucumberTests.server
-                }
-            `)
-        );
-    }
-    return new Error(
-        dedent(`
-            No precondition issue keys found in comments of background${
-                background.name.length > 0 ? `: ${background.name}` : ""
-            }
-
-            You can target existing precondition issues by adding a corresponding comment:
-
-              ${background.keyword}: ${background.name}
-                #@${projectKey}-123
-                ${firstStepLine}
-                ...
-
-            You can also specify a prefix to match the tagging scheme configured in your Xray instance:
-
-              Plugin configuration:
-
-                {
-                  cucumber: {
-                    prefixes: {
-                      precondition: "Precondition:"
-                    }
-                  }
-                }
-
-              Feature file:
-
-                ${background.keyword}: ${background.name}
-                  #@Precondition:${projectKey}-123
+                        return " ".repeat(tag.name.length);
+                    })
+                    .join(" ")
+                    .trimEnd()}
+                ${scenario.keyword}: ${scenario.name}
                   ${firstStepLine}
                   ...
 
-            For more information, visit:
-            - ${HELP.plugin.guides.targetingExistingIssues}
-            - ${HELP.plugin.configuration.cucumber.prefixes}
-            - ${
-                isCloudClient
-                    ? HELP.xray.importCucumberTests.cloud
-                    : HELP.xray.importCucumberTests.server
-            }
+              For more information, visit:
+              - ${
+                  isCloudClient
+                      ? HELP.xray.importCucumberTests.cloud
+                      : HELP.xray.importCucumberTests.server
+              }
+              - ${HELP.plugin.guides.targetingExistingIssues}
         `)
     );
-}
-
-/**
- * Returns an error describing that multiple test issue keys are present in the comments of a
- * Cucumber background.
- *
- * @param background - the Cucumber background
- * @param preconditionKeys - the issue keys
- * @param comments - the precondition comments
- * @param isCloudClient - whether Xray cloud is being used
- * @returns the error
- */
-export function multiplePreconditionKeysInCucumberBackgroundError(
-    background: Background,
-    preconditionKeys: readonly string[],
-    comments: readonly Comment[],
-    isCloudClient: boolean
-): Error {
-    return new Error(
-        dedent(`
-            Multiple precondition issue keys found in comments of background${
-                background.name.length > 0 ? `: ${background.name}` : ""
-            }
-            The plugin cannot decide for you which one to use:
-
-            ${reconstructMultipleTagsBackground(background, preconditionKeys, comments)}
-
-            For more information, visit:
-            - ${
-                isCloudClient
-                    ? HELP.xray.importCucumberTests.cloud
-                    : HELP.xray.importCucumberTests.server
-            }
-            - ${HELP.plugin.guides.targetingExistingIssues}
-        `)
-    );
-}
-
-function reconstructMultipleTagsBackground(
-    background: Background,
-    preconditionIssueKeys: readonly string[],
-    comments: readonly Comment[]
-): string {
-    const example: string[] = [];
-    const backgroundLine = background.location.line;
-    const firstStepLine = background.steps[0].location.line;
-    example.push(`${background.keyword}: ${background.name}`);
-    for (const comment of comments) {
-        if (comment.location.line > backgroundLine && comment.location.line < firstStepLine) {
-            example.push(`  ${comment.text.trimStart()}`);
-            if (preconditionIssueKeys.some((key: string) => comment.text.endsWith(key))) {
-                example.push(`  ${comment.text.replaceAll(/\S/g, "^").trimStart()}`);
-            }
-        }
-    }
-    example.push(
-        background.steps.length > 0
-            ? `  ${background.steps[0].keyword.trim()} ${background.steps[0].text}`
-            : "  Given A step"
-    );
-    example.push("  ...");
-    return example.join("\n");
 }

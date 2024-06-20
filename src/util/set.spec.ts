@@ -1,7 +1,8 @@
 import { expect } from "chai";
+import path from "node:path";
 import { computeOverlap } from "./set";
 
-describe("set", () => {
+describe(path.relative(process.cwd(), __filename), () => {
     describe("computeOverlap", () => {
         it("computes the overlap of arrays", () => {
             expect(computeOverlap([1, 2, 3], [2, 5, 9, 1])).to.deep.eq({

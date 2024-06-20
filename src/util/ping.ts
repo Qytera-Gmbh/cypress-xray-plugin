@@ -3,14 +3,14 @@ import {
     BasicAuthCredentials,
     JwtCredentials,
     PatCredentials,
-} from "../authentication/credentials";
-import { AxiosRestClient } from "../https/requests";
-import { LOG, Level } from "../logging/logging";
+} from "../client/authentication/credentials";
+import { AxiosRestClient } from "../client/https/requests";
 import { User } from "../types/jira/responses/user";
 import { XrayLicenseStatus } from "../types/xray/responses/license";
 import { dedent } from "./dedent";
 import { errorMessage } from "./errors";
 import { HELP } from "./help";
+import { LOG, Level } from "./logging";
 import { startInterval } from "./time";
 
 /**

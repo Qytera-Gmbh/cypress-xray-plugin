@@ -1,6 +1,7 @@
 import path from "path";
 import {
     PluginContext,
+    SimpleEvidenceCollection,
     getPluginContext,
     initClients,
     initCucumberOptions,
@@ -11,12 +12,19 @@ import {
     setPluginContext,
 } from "./context";
 import { PluginTask, PluginTaskListener, PluginTaskParameterType } from "./cypress/tasks";
-import { afterRunHook, beforeRunHook } from "./hooks/hooks";
-import { synchronizeFeatureFile } from "./hooks/preprocessor/synchronizeFeatureFile";
-import { LOG, Level } from "./logging/logging";
-import { CypressXrayPluginOptions, InternalOptions, InternalPluginOptions } from "./types/plugin";
+import { addUploadCommands } from "./hooks/after/after-run";
+import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
+import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
+import {
+    CypressXrayPluginOptions,
+    InternalCypressXrayPluginOptions,
+    InternalPluginOptions,
+} from "./types/plugin";
 import { dedent } from "./util/dedent";
+import { ExecutableGraph } from "./util/graph/executable-graph";
+import { ChainingCommandGraphLogger } from "./util/graph/logging/graph-logger";
 import { HELP } from "./util/help";
+import { CapturingLogger, LOG, Level } from "./util/logging";
 
 let canShowInitializationWarning = true;
 
@@ -28,10 +36,6 @@ export function resetPlugin(): void {
     canShowInitializationWarning = true;
 }
 
-function showInitializationWarnings(): boolean {
-    return canShowInitializationWarning;
-}
-
 /**
  * Configures the plugin. The plugin will check all environment variables passed in
  * {@link Cypress.PluginConfigOptions.env | `config.env`} and merge them with those specified in
@@ -41,7 +45,7 @@ function showInitializationWarnings(): boolean {
  * `task` events. Consider using [`cypress-on-fix`](https://github.com/bahmutov/cypress-on-fix) if
  * you have these hooks registered to prevent the plugin from replacing them.*
  *
- * @param on - the Cypress plugin events
+ * @param on - the Cypress event registration functon
  * @param config - the Cypress configuration
  * @param options - the plugin options
  *
@@ -56,7 +60,7 @@ export async function configureXrayPlugin(
     // Resolve these before all other options for correct enabledness.
     const pluginOptions: InternalPluginOptions = initPluginOptions(config.env, options.plugin);
     if (!pluginOptions.enabled) {
-        LOG.message(Level.INFO, "Plugin disabled. Skipping further configuration");
+        LOG.message(Level.INFO, "Plugin disabled. Skipping further configuration.");
         // Tasks must always be registered in case users forget to comment out imported commands.
         registerDefaultTasks(on);
         return;
@@ -65,7 +69,7 @@ export async function configureXrayPlugin(
     // See: https://github.com/cypress-io/cypress/issues/20789
     if (!config.isTextTerminal) {
         pluginOptions.enabled = false;
-        LOG.message(Level.INFO, "Interactive mode detected, disabling plugin");
+        LOG.message(Level.INFO, "Interactive mode detected, disabling plugin.");
         // Tasks must always be registered in case users forget to comment out imported commands.
         registerDefaultTasks(on);
         return;
@@ -81,23 +85,25 @@ export async function configureXrayPlugin(
         debug: pluginOptions.debug,
         logDirectory: pluginOptions.logDirectory,
     });
-    const internalOptions: InternalOptions = {
+    const internalOptions: InternalCypressXrayPluginOptions = {
         jira: initJiraOptions(config.env, options.jira),
         plugin: pluginOptions,
         xray: initXrayOptions(config.env, options.xray),
         cucumber: await initCucumberOptions(config, options.cucumber),
         http: options.http,
     };
-    const httpClients = initHttpClients(
-        {
-            debug: internalOptions.plugin.debug,
-        },
-        internalOptions.http
+    const httpClients = initHttpClients(internalOptions.plugin, internalOptions.http);
+    const logger = new CapturingLogger();
+    const context = new PluginContext(
+        await initClients(internalOptions.jira, config.env, httpClients),
+        internalOptions,
+        config,
+        new SimpleEvidenceCollection(),
+        new ExecutableGraph(),
+        logger
     );
-    const clients = await initClients(internalOptions.jira, config.env, httpClients);
-    const context = new PluginContext(clients, internalOptions, config);
     setPluginContext(context);
-    const listener = new PluginTaskListener(internalOptions.jira.projectKey, context);
+    const listener = new PluginTaskListener(internalOptions.jira.projectKey, context, logger);
     on("task", {
         [PluginTask.OUTGOING_REQUEST]: (
             args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
@@ -116,52 +122,66 @@ export async function configureXrayPlugin(
             return args.response;
         },
     });
-    if (internalOptions.xray.uploadResults) {
-        on("before:run", async (runDetails: Cypress.BeforeRunDetails) => {
-            if (!runDetails.specs) {
+    on("after:run", async (results: CypressRunResultType | CypressFailedRunResultType) => {
+        if (context.getOptions().xray.uploadResults) {
+            if ("status" in results && results.status === "failed") {
+                const failedResult = results;
                 LOG.message(
-                    Level.WARNING,
-                    "No specs about to be executed. Skipping before:run hook"
-                );
-                return;
-            }
-            await beforeRunHook(runDetails.specs, context.getOptions(), context.getClients());
-        });
-        on(
-            "after:run",
-            async (
-                results:
-                    | CypressCommandLine.CypressRunResult
-                    | CypressCommandLine.CypressFailedRunResult
-            ) => {
-                // Cypress's status types are incomplete, there is also "finished".
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                if ("status" in results && results.status === "failed") {
-                    const failedResult = results;
-                    LOG.message(
-                        Level.ERROR,
-                        dedent(`
-                            Skipping after:run hook: Failed to run ${failedResult.failures.toString()} tests
+                    Level.ERROR,
+                    dedent(`
+                        Skipping results upload: Failed to run ${failedResult.failures.toString()} tests.
 
-                            ${failedResult.message}
-                        `)
-                    );
-                    return;
-                }
-                await afterRunHook(
-                    results as CypressCommandLine.CypressRunResult,
-                    {
-                        ...context.getOptions(),
-                        cypress: config,
-                    },
+                          ${failedResult.message}
+                    `)
+                );
+            } else {
+                addUploadCommands(
+                    results,
+                    context.getCypressOptions().projectRoot,
+                    context.getOptions(),
                     context.getClients(),
-                    context
+                    context,
+                    context.getGraph(),
+                    logger
                 );
             }
-        );
-    } else {
-        LOG.message(Level.INFO, "Xray results upload disabled. No results will be uploaded");
-    }
+        } else {
+            LOG.message(
+                Level.INFO,
+                "Skipping results upload: Plugin is configured to not upload test results."
+            );
+        }
+        try {
+            await context.getGraph().execute();
+        } finally {
+            new ChainingCommandGraphLogger(logger).logGraph(context.getGraph());
+            const messages = logger.getMessages();
+            messages.forEach(([level, text]) => {
+                if ([Level.DEBUG, Level.INFO, Level.SUCCESS].includes(level)) {
+                    LOG.message(level, text);
+                }
+            });
+            if (messages.some(([level]) => level === Level.WARNING || level === Level.ERROR)) {
+                LOG.message(Level.WARNING, "Encountered problems during plugin execution!");
+                messages
+                    .filter(([level]) => level === Level.WARNING)
+                    .forEach(([level, text]) => {
+                        LOG.message(level, text);
+                    });
+                messages
+                    .filter(([level]) => level === Level.ERROR)
+                    .forEach(([level, text]) => {
+                        LOG.message(level, text);
+                    });
+            }
+            logger.getFileLogErrorMessages().forEach(([error, filename]) => {
+                LOG.logErrorToFile(error, filename);
+            });
+            logger.getFileLogMessages().forEach(([data, filename]) => {
+                LOG.logToFile(data, filename);
+            });
+        }
+    });
 }
 
 /**
@@ -172,39 +192,49 @@ export async function configureXrayPlugin(
  * @param file - the Cypress file object
  * @returns the unmodified file's path
  */
-export async function syncFeatureFile(file: Cypress.FileObject): Promise<string> {
+export function syncFeatureFile(file: Cypress.FileObject): string {
     const context = getPluginContext();
     if (!context) {
-        if (showInitializationWarnings()) {
-            logInitializationWarning("file:preprocessor");
+        if (canShowInitializationWarning) {
+            LOG.message(
+                Level.WARNING,
+                dedent(`
+                    ${file.filePath}
+
+                      Skipping file:preprocessor hook: Plugin misconfigured: configureXrayPlugin() was not called.
+
+                      Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
+                `)
+            );
         }
         return file.filePath;
     }
     if (!context.getOptions().plugin.enabled) {
         LOG.message(
             Level.INFO,
-            `Plugin disabled. Skipping feature file synchronization triggered by: ${file.filePath}`
+            dedent(`
+                ${file.filePath}
+
+                  Plugin disabled. Skipping feature file synchronization.
+            `)
         );
         return file.filePath;
     }
-    return await synchronizeFeatureFile(
-        file,
-        context.getCypressOptions().projectRoot,
-        context.getOptions(),
-        context.getClients()
-    );
-}
-
-function logInitializationWarning(hook: "before:run" | "after:run" | "file:preprocessor"): void {
-    // Do not throw in case someone does not want the plugin to run but forgot to remove a hook.
-    LOG.message(
-        Level.WARNING,
-        dedent(`
-            Skipping ${hook} hook: Plugin misconfigured: configureXrayPlugin() was not called
-
-            Make sure your project is set up correctly: ${HELP.plugin.configuration.introduction}
-        `)
-    );
+    const cucumberOptions = context.getOptions().cucumber;
+    if (
+        cucumberOptions &&
+        file.filePath.endsWith(cucumberOptions.featureFileExtension) &&
+        cucumberOptions.uploadFeatures
+    ) {
+        addSynchronizationCommands(
+            file,
+            context.getOptions(),
+            context.getClients(),
+            context.getGraph(),
+            context.getLogger()
+        );
+    }
+    return file.filePath;
 }
 
 function registerDefaultTasks(on: Cypress.PluginEvents) {

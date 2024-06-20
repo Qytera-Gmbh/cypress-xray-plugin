@@ -86,3 +86,8 @@ export interface CypressRunResult {
     cypressVersion: string;
     config: ResolvedConfigOptions;
 }
+export interface CypressFailedRunResult {
+    status: "failed";
+    failures: number;
+    message: string;
+}

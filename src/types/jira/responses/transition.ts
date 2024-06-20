@@ -1,5 +1,5 @@
-import { FieldMeta } from "./fieldMeta";
-import { StatusDetails } from "./statusDetails";
+import { FieldMeta } from "./field-meta";
+import { StatusDetails } from "./status-details";
 
 export interface Transition {
     /**

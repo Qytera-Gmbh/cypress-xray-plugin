@@ -39,7 +39,7 @@
         "test:coverage": "nyc npm run test",
         "test:integration": "npm-run-all --parallel --race start:integration-server start:integration",
         "start:integration-server": "serve -p 8080 --no-request-logging",
-        "start:integration": "mocha -- --ignore 'src/**/*' --ignore index.spec.ts test/integration",
+        "start:integration": "mocha -- --timeout 180000 --ignore 'src/**/*' --ignore index.spec.ts test/integration",
         "build": "tsc --project tsconfigBuild.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
         "eslint": "eslint src/**/*.ts test/**/*.ts index.ts index.spec.ts"
     },
@@ -61,15 +61,17 @@
         "@badeball/cypress-cucumber-preprocessor": "^20.0.3"
     },
     "devDependencies": {
+        "@bahmutov/cypress-esbuild-preprocessor": "^2.2.1",
         "@types/chai": "^4.3.11",
         "@types/chai-as-promised": "^7.1.8",
-        "@types/mocha": "^10.0.6",
+        "@types/node": "^20.10.6",
         "@types/sinon-chai": "^3.2.12",
         "@typescript-eslint/eslint-plugin": "^7.8.0",
         "@typescript-eslint/parser": "^7.11.0",
         "chai": "^4.4.1",
         "chai-as-promised": "^7.1.1",
         "cypress": "^13.10.0",
+        "cypress-on-fix": "^1.0.3",
         "dotenv": "^16.4.5",
         "eslint": "^8.57.0",
         "eslint-plugin-tsdoc": "^0.3.0",
