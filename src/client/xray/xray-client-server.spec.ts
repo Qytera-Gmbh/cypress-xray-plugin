@@ -10,16 +10,16 @@ import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
 import { BasicAuthCredentials } from "../authentication/credentials";
 import { AxiosRestClient } from "../https/requests";
-import { XrayClientServer } from "./xray-client-server";
+import { ServerClient, XrayClientServer } from "./xray-client-server";
 
 describe(path.relative(process.cwd(), __filename), () => {
-    describe(XrayClientServer.name, () => {
+    describe(ServerClient.name, () => {
         let restClient: SinonStubbedInstance<AxiosRestClient>;
         let client: XrayClientServer;
 
         beforeEach(() => {
             restClient = getMockedRestClient();
-            client = new XrayClientServer(
+            client = new ServerClient(
                 "https://example.org",
                 new BasicAuthCredentials("user", "xyz"),
                 restClient
