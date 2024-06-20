@@ -502,16 +502,16 @@ describe(path.relative(process.cwd(), __filename), () => {
                 `),
             ]);
             expect(logger.message.getCall(4).args).to.deep.eq([
+                Level.WARNING,
+                "No test results were uploaded",
+            ]);
+            expect(logger.message.getCall(5).args).to.deep.eq([
                 Level.ERROR,
                 dedent(`
                     Failed to upload Cypress execution results.
 
                       Caused by: Failed to convert Cypress tests into Xray tests: No Cypress tests to upload
                 `),
-            ]);
-            expect(logger.message.getCall(5).args).to.deep.eq([
-                Level.WARNING,
-                "No test results were uploaded",
             ]);
         });
     });
