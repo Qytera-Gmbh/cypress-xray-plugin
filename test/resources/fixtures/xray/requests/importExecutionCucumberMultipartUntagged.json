@@ -7,7 +7,7 @@
                 "id": "example;doing-stuff",
                 "keyword": "Scenario",
                 "line": 6,
-                "name": "Doing stuff",
+                "name": "",
                 "steps": [
                     {
                         "arguments": [],
@@ -49,7 +49,6 @@
                         }
                     }
                 ],
-                "tags": [],
                 "type": "scenario"
             }
         ],
@@ -57,7 +56,6 @@
         "line": 1,
         "keyword": "Feature",
         "name": "Example",
-        "tags": [],
         "uri": "cypress/e2e/features/example.feature"
     }
 ]

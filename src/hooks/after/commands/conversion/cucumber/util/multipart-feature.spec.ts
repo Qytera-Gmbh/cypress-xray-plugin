@@ -185,18 +185,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                         "example.feature"
                     )}
 
-                      Scenario: Doing stuff
+                      Scenario: <no name>
 
                         Skipping result upload.
 
-                          Caused by: Scenario: Doing stuff
+                          Caused by: Scenario: <no name>
 
                             No test issue keys found in tags.
 
                             You can target existing test issues by adding a corresponding tag:
 
                               @CYP-123
-                              Scenario: Doing stuff
+                              Scenario:
                                 When I prepare something
                                 ...
 
@@ -215,7 +215,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                               Feature file:
 
                                 @TestName:CYP-123
-                                Scenario: Doing stuff
+                                Scenario:
                                   When I prepare something
                                   ...
 

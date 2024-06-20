@@ -1,6 +1,7 @@
 import { EventEmitter } from "node:events";
 import { isSkippedError } from "../util/errors";
 import { Logger } from "../util/logging";
+import { unknownToString } from "../util/string";
 
 /**
  * Models an entity which can compute a result.
@@ -100,14 +101,18 @@ export abstract class Command<R = unknown, P = unknown>
                 return result;
             })
             .catch((error: unknown) => {
-                if (isSkippedError(error)) {
-                    this.setState(ComputableState.SKIPPED);
+                if (error instanceof Error) {
+                    if (isSkippedError(error)) {
+                        this.setState(ComputableState.SKIPPED);
+                    } else {
+                        this.setState(ComputableState.FAILED);
+                    }
                     this.failureOrSkipReason = error;
-                } else if (error instanceof Error) {
+                } else {
                     this.setState(ComputableState.FAILED);
-                    this.failureOrSkipReason = error;
+                    this.failureOrSkipReason = new Error(unknownToString(error));
                 }
-                throw error;
+                throw this.failureOrSkipReason;
             });
     }
 

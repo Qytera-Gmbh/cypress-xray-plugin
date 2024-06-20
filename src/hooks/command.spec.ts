@@ -53,6 +53,21 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(command.getState()).to.eq(ComputableState.FAILED);
         });
 
+        it("returns arbitrary failure reasons", async () => {
+            const logger = getMockedLogger();
+            class FailingCommand extends Command<number, null> {
+                protected computeResult(): Promise<number> {
+                    throw "Oh no someone messed up" as unknown as Error;
+                }
+            }
+            const command = new FailingCommand(null, logger);
+            await expect(command.compute()).to.eventually.be.rejectedWith(
+                "Oh no someone messed up"
+            );
+            expect(command.getFailure()).to.deep.eq(new Error("Oh no someone messed up"));
+            expect(command.getState()).to.eq(ComputableState.FAILED);
+        });
+
         it("returns the skip reason", async () => {
             const logger = getMockedLogger();
             const error = new SkippedError("Skip 123");
