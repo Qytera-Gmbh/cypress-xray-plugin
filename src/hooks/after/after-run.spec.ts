@@ -51,6 +51,25 @@ describe(path.relative(process.cwd(), __filename), () => {
     let options: InternalCypressXrayPluginOptions;
     beforeEach(async () => {
         options = {
+            cucumber: await initCucumberOptions(
+                {
+                    env: { jsonEnabled: true },
+                    excludeSpecPattern: "",
+                    projectRoot: "",
+                    reporter: "",
+                    specPattern: "",
+                    testingType: "component",
+                },
+                {
+                    featureFileExtension: ".feature",
+                    prefixes: {
+                        precondition: "Precondition:",
+                        test: "TestName:",
+                    },
+                    uploadFeatures: true,
+                }
+            ),
+            http: {},
             jira: initJiraOptions(
                 {},
                 {
@@ -58,31 +77,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     url: "https://example.org",
                 }
             ),
-            cucumber: await initCucumberOptions(
-                {
-                    testingType: "component",
-                    projectRoot: "",
-                    reporter: "",
-                    specPattern: "",
-                    excludeSpecPattern: "",
-                    env: { jsonEnabled: true },
-                },
-                {
-                    featureFileExtension: ".feature",
-                    prefixes: {
-                        test: "TestName:",
-                        precondition: "Precondition:",
-                    },
-                    uploadFeatures: true,
-                }
-            ),
             plugin: initPluginOptions({}, {}),
             xray: initXrayOptions({}, {}),
-            http: {},
         };
         clients = {
-            kind: "server",
             jiraClient: getMockedJiraClient(),
+            kind: "server",
             xrayClient: getMockedXrayClient(),
         };
     });
@@ -134,12 +134,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 // Vertex data.
                 expect(resultsCommand.getValue()).to.deep.eq(result);
                 expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
-                    jira: options.jira,
                     cucumber: options.cucumber,
-                    plugin: options.plugin,
-                    xray: options.xray,
                     evidenceCollection: new SimpleEvidenceCollection(),
+                    jira: options.jira,
+                    plugin: options.plugin,
                     useCloudStatusFallback: false,
+                    xray: options.xray,
                 });
                 expect(convertCypressInfoCommand.getParameters()).to.deep.eq({
                     jira: options.jira,
@@ -224,10 +224,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 assertIsInstanceOf(verifyExecutionIssueKeyCommand, VerifyExecutionIssueKeyCommand);
                 // Vertex data.
                 expect(verifyExecutionIssueKeyCommand.getParameters()).to.deep.eq({
+                    displayCloudHelp: false,
+                    importType: "cypress",
                     testExecutionIssueKey: "CYP-415",
                     testExecutionIssueType: "Test Run",
-                    importType: "cypress",
-                    displayCloudHelp: false,
                 });
                 // Edges.
                 expect(graph.size("edges")).to.eq(10);
@@ -285,16 +285,16 @@ describe(path.relative(process.cwd(), __filename), () => {
                     readFileSync("./test/resources/runResultCucumber.json", "utf-8")
                 ) as CypressRunResultType;
                 options.cucumber = {
+                    downloadFeatures: false,
                     featureFileExtension: ".feature",
+                    prefixes: {},
                     preprocessor: {
                         json: {
                             enabled: true,
                             output: "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                         },
                     },
-                    downloadFeatures: false,
                     uploadFeatures: false,
-                    prefixes: {},
                 };
                 cucumberResult = JSON.parse(
                     readFileSync(
@@ -367,34 +367,34 @@ describe(path.relative(process.cwd(), __filename), () => {
                         jiraClient: clients.jiraClient,
                     });
                     expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
+                        displayCloudHelp: false,
                         projectKey: "CYP",
                         testExecutionIssueType: "Test Execution",
-                        displayCloudHelp: false,
                     });
                     expect(convertCucumberInfoCommand.getParameters()).to.deep.eq({
+                        cucumber: options.cucumber,
                         jira: options.jira,
                         xray: options.xray,
-                        cucumber: options.cucumber,
                     });
                     expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
-                        jira: {
-                            projectKey: "CYP",
-                            testExecutionIssueSummary: undefined,
-                            testExecutionIssueDescription: undefined,
-                            testPlanIssueKey: undefined,
-                        },
                         cucumber: {
                             prefixes: {
-                                test: undefined,
                                 precondition: undefined,
+                                test: undefined,
                             },
                         },
+                        jira: {
+                            projectKey: "CYP",
+                            testExecutionIssueDescription: undefined,
+                            testExecutionIssueSummary: undefined,
+                            testPlanIssueKey: undefined,
+                        },
+                        projectRoot: ".",
+                        useCloudTags: false,
                         xray: {
                             testEnvironments: undefined,
                             uploadScreenshots: true,
                         },
-                        useCloudTags: false,
-                        projectRoot: ".",
                     });
                     expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
                         xrayClient: clients.xrayClient,
@@ -665,35 +665,35 @@ describe(path.relative(process.cwd(), __filename), () => {
                     const convertCucumberInfoCommand = commands[4];
                     const convertCucumberFeaturesCommand = commands[5];
                     expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
+                        displayCloudHelp: true,
                         projectKey: "CYP",
                         testExecutionIssueType: "Test Execution",
-                        displayCloudHelp: true,
                     });
                     assertIsInstanceOf(convertCucumberInfoCommand, ConvertCucumberInfoCloudCommand);
                     expect(convertCucumberInfoCommand.getParameters()).to.deep.eq({
+                        cucumber: options.cucumber,
                         jira: options.jira,
                         xray: options.xray,
-                        cucumber: options.cucumber,
                     });
                     expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
-                        jira: {
-                            projectKey: "CYP",
-                            testExecutionIssueSummary: undefined,
-                            testExecutionIssueDescription: undefined,
-                            testPlanIssueKey: undefined,
-                        },
                         cucumber: {
                             prefixes: {
-                                test: undefined,
                                 precondition: undefined,
+                                test: undefined,
                             },
                         },
+                        jira: {
+                            projectKey: "CYP",
+                            testExecutionIssueDescription: undefined,
+                            testExecutionIssueSummary: undefined,
+                            testPlanIssueKey: undefined,
+                        },
+                        projectRoot: ".",
+                        useCloudTags: true,
                         xray: {
                             testEnvironments: undefined,
                             uploadScreenshots: true,
                         },
-                        useCloudTags: true,
-                        projectRoot: ".",
                     });
                 });
 
@@ -766,43 +766,43 @@ describe(path.relative(process.cwd(), __filename), () => {
                         jiraClient: clients.jiraClient,
                     });
                     expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
+                        displayCloudHelp: true,
                         projectKey: "CYP",
                         testExecutionIssueType: "Test Run",
-                        displayCloudHelp: true,
                     });
                     expect(convertCucumberInfoCommand.getParameters()).to.deep.eq({
+                        cucumber: options.cucumber,
                         jira: options.jira,
                         xray: options.xray,
-                        cucumber: options.cucumber,
                     });
                     expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
-                        jira: {
-                            projectKey: "CYP",
-                            testExecutionIssueSummary: undefined,
-                            testExecutionIssueDescription: undefined,
-                            testPlanIssueKey: undefined,
-                        },
                         cucumber: {
                             prefixes: {
-                                test: undefined,
                                 precondition: undefined,
+                                test: undefined,
                             },
                         },
+                        jira: {
+                            projectKey: "CYP",
+                            testExecutionIssueDescription: undefined,
+                            testExecutionIssueSummary: undefined,
+                            testPlanIssueKey: undefined,
+                        },
+                        projectRoot: ".",
+                        useCloudTags: true,
                         xray: {
                             testEnvironments: undefined,
                             uploadScreenshots: true,
                         },
-                        useCloudTags: true,
-                        projectRoot: ".",
                     });
                     expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
                         xrayClient: clients.xrayClient,
                     });
                     expect(verifyExecutionIssueKeyCommand.getParameters()).to.deep.eq({
+                        displayCloudHelp: true,
+                        importType: "cucumber",
                         testExecutionIssueKey: "CYP-42",
                         testExecutionIssueType: "Test Run",
-                        importType: "cucumber",
-                        displayCloudHelp: true,
                     });
                     // Edges.
                     expect(graph.size("edges")).to.eq(13);
@@ -886,16 +886,16 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it("adds connections from feature file imports to execution uploads", () => {
                 options.cucumber = {
+                    downloadFeatures: false,
                     featureFileExtension: ".feature",
+                    prefixes: {},
                     preprocessor: {
                         json: {
                             enabled: true,
                             output: "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                         },
                     },
-                    downloadFeatures: false,
                     uploadFeatures: true,
-                    prefixes: {},
                 };
                 const graph = new ExecutableGraph<Command>();
                 const logger = getMockedLogger();
@@ -962,16 +962,16 @@ describe(path.relative(process.cwd(), __filename), () => {
                     readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
                 ) as CypressRunResultType;
                 options.cucumber = {
+                    downloadFeatures: false,
                     featureFileExtension: ".feature",
+                    prefixes: {},
                     preprocessor: {
                         json: {
                             enabled: true,
                             output: "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                         },
                     },
-                    downloadFeatures: false,
                     uploadFeatures: false,
-                    prefixes: {},
                 };
             });
 
@@ -1040,12 +1040,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 // Vertex data.
                 expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
                 expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
-                    jira: options.jira,
                     cucumber: options.cucumber,
-                    plugin: options.plugin,
-                    xray: options.xray,
                     evidenceCollection: new SimpleEvidenceCollection(),
+                    jira: options.jira,
+                    plugin: options.plugin,
                     useCloudStatusFallback: false,
+                    xray: options.xray,
                 });
                 expect(convertCypressInfoCommand.getParameters()).to.deep.eq({
                     jira: options.jira,

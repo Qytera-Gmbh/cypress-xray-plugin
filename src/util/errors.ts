@@ -60,8 +60,8 @@ export function isSkippedError(error: unknown): error is SkippedError {
  */
 export function missingTestKeyInCucumberScenarioError(
     scenario: {
-        name: string;
         keyword: string;
+        name: string;
         steps: readonly { keyword: string; text: string }[];
         tags?: readonly { name: string }[];
     },
@@ -167,8 +167,8 @@ export function missingTestKeyInCucumberScenarioError(
  */
 export function multipleTestKeysInCucumberScenarioError(
     scenario: {
-        name: string;
         keyword: string;
+        name: string;
         steps: readonly { keyword: string; text: string }[];
     },
     tags: readonly { name: string }[],

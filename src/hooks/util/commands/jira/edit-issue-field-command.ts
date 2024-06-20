@@ -7,8 +7,8 @@ import { Command, Computable } from "../../../command";
 import { FieldValueMap } from "./get-field-values-command";
 
 interface Parameters<F extends keyof FieldValueMap> {
-    jiraClient: JiraClient;
     field: F;
+    jiraClient: JiraClient;
 }
 
 export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Command<

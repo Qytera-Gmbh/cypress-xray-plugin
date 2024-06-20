@@ -8,19 +8,19 @@ import { LOCAL_SERVER } from "./server";
 describe(path.relative(process.cwd(), __filename), () => {
     for (const test of [
         {
-            title: "results upload works for mixed cypress and cucumber projects (cloud)",
+            cucumberTestPrefix: "TestName:",
+            scenarioLabel: "TestName:CYP-756",
             service: "cloud",
             testIssueKey: "CYP-757",
-            scenarioLabel: "TestName:CYP-756",
-            cucumberTestPrefix: "TestName:",
+            title: "results upload works for mixed cypress and cucumber projects (cloud)",
             xrayPassedStatus: "PASSED",
         },
         {
-            title: "results upload works for mixed cypress and cucumber projects (server)",
+            cucumberTestPrefix: "TEST_",
+            scenarioLabel: "TEST_CYPLUG-165",
             service: "server",
             testIssueKey: "CYPLUG-166",
-            scenarioLabel: "TEST_CYPLUG-165",
-            cucumberTestPrefix: "TEST_",
+            title: "results upload works for mixed cypress and cucumber projects (server)",
             xrayPassedStatus: "EXECUTING", // Must be a non-final status
         },
     ]) {
@@ -79,28 +79,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         },
                     });
                 `),
-                testFiles: [
-                    {
-                        fileName: "spec.cy.js",
-                        content: dedent(`
-                            describe("${test.testIssueKey} template spec", () => {
-                                it("passes", () => {
-                                    cy.visit("${LOCAL_SERVER.url}");
-                                });
-                            });
-                        `),
-                    },
-                    {
-                        fileName: "cucumber.feature",
-                        content: dedent(`
-                            Feature: Testing a single scenario
-
-                                @${test.scenarioLabel}
-                                Scenario: Single scenario test
-                                    Given Something
-                        `),
-                    },
-                ],
                 cucumber: {
                     configFileContent: dedent(`
                         {
@@ -111,7 +89,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     `),
                     stepDefinitions: [
                         {
-                            filename: "steps.js",
                             content: dedent(`
                                 import { Given } from "@badeball/cypress-cucumber-preprocessor";
 
@@ -119,15 +96,38 @@ describe(path.relative(process.cwd(), __filename), () => {
                                     expect(true).to.be.true;
                                 });
                             `),
+                            filename: "steps.js",
                         },
                     ],
                 },
+                testFiles: [
+                    {
+                        content: dedent(`
+                            describe("${test.testIssueKey} template spec", () => {
+                                it("passes", () => {
+                                    cy.visit("${LOCAL_SERVER.url}");
+                                });
+                            });
+                        `),
+                        fileName: "spec.cy.js",
+                    },
+                    {
+                        content: dedent(`
+                            Feature: Testing a single scenario
+
+                                @${test.scenarioLabel}
+                                Scenario: Single scenario test
+                                    Given Something
+                        `),
+                        fileName: "cucumber.feature",
+                    },
+                ],
             });
             const output = runCypress(project.projectDirectory, {
-                includeDefaultEnv: test.service as IntegrationTest["service"],
                 env: {
                     ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 282",
                 },
+                includeDefaultEnv: test.service as IntegrationTest["service"],
             });
             expect(output.join("\n")).to.include("Uploaded test results to issue");
             expect(output.join("\n")).not.to.include("WARNING");

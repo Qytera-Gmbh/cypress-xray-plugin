@@ -45,8 +45,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("finds vertices by reference", () => {
             expect(
                 bfs(graph, {
-                    source: v1,
                     destination: v9,
+                    source: v1,
                 })
             ).to.be.true;
         });
@@ -54,8 +54,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not find nonexistent vertices by reference", () => {
             expect(
                 bfs(graph, {
-                    source: v1,
                     destination: new Vertex(17),
+                    source: v1,
                 })
             ).to.be.false;
         });
@@ -63,8 +63,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not find unreachable vertices by reference", () => {
             expect(
                 bfs(graph, {
-                    source: v1,
                     destination: v0,
+                    source: v1,
                 })
             ).to.be.false;
         });
@@ -72,8 +72,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("finds vertices by filtering", () => {
             expect(
                 bfs(graph, {
-                    source: v1,
                     filter: (vertex: Vertex) => vertex.id() === 6,
+                    source: v1,
                 })
             ).to.be.true;
         });
@@ -81,8 +81,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not find nonexistent vertices by filtering", () => {
             expect(
                 bfs(graph, {
-                    source: v1,
                     filter: (vertex: Vertex) => vertex.id() === 17,
+                    source: v1,
                 })
             ).to.be.false;
         });
@@ -90,8 +90,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not find unreachable vertices by filtering", () => {
             expect(
                 bfs(graph, {
-                    source: v1,
                     filter: (vertex: Vertex) => vertex.id() === 0,
+                    source: v1,
                 })
             ).to.be.false;
         });
@@ -115,8 +115,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("finds the starting vertex by reference", () => {
             expect(
                 dfs(graph, {
-                    source: v0,
                     destination: v0,
+                    source: v0,
                 })
             ).to.be.true;
         });
@@ -124,8 +124,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("finds the starting vertex by filtering", () => {
             expect(
                 dfs(graph, {
-                    source: v0,
                     filter: (vertex: Vertex) => vertex.id() === 0,
+                    source: v0,
                 })
             ).to.be.true;
         });
@@ -135,8 +135,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("finds vertices by reference", () => {
             expect(
                 dfs(graph, {
-                    source: v1,
                     destination: v9,
+                    source: v1,
                 })
             ).to.be.true;
         });
@@ -144,8 +144,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not find nonexistent vertices by reference", () => {
             expect(
                 dfs(graph, {
-                    source: v1,
                     destination: new Vertex(17),
+                    source: v1,
                 })
             ).to.be.false;
         });
@@ -153,8 +153,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not find unreachable vertices by reference", () => {
             expect(
                 dfs(graph, {
-                    source: v1,
                     destination: v0,
+                    source: v1,
                 })
             ).to.be.false;
         });
@@ -162,8 +162,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("finds vertices by filtering", () => {
             expect(
                 dfs(graph, {
-                    source: v1,
                     filter: (vertex: Vertex) => vertex.id() === 6,
+                    source: v1,
                 })
             ).to.be.true;
         });
@@ -171,8 +171,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not find nonexistent vertices by filtering", () => {
             expect(
                 dfs(graph, {
-                    source: v1,
                     filter: (vertex: Vertex) => vertex.id() === 17,
+                    source: v1,
                 })
             ).to.be.false;
         });
@@ -180,8 +180,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not find unreachable vertices by filtering", () => {
             expect(
                 dfs(graph, {
-                    source: v1,
                     filter: (vertex: Vertex) => vertex.id() === 0,
+                    source: v1,
                 })
             ).to.be.false;
         });
@@ -205,8 +205,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("finds the starting vertex by reference", () => {
             expect(
                 dfs(graph, {
-                    source: v0,
                     destination: v0,
+                    source: v0,
                 })
             ).to.be.true;
         });
@@ -214,8 +214,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("finds the starting vertex by filtering", () => {
             expect(
                 dfs(graph, {
-                    source: v0,
                     filter: (vertex: Vertex) => vertex.id() === 0,
+                    source: v0,
                 })
             ).to.be.true;
         });

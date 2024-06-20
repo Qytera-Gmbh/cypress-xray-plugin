@@ -34,16 +34,16 @@ describe(path.relative(process.cwd(), __filename), () => {
         );
         pluginContext = new context.PluginContext(
             {
-                kind: "server",
                 jiraClient: jiraClient,
+                kind: "server",
                 xrayClient: xrayClient,
             },
             {
-                jira: jiraOptions,
                 cucumber: undefined,
+                http: {},
+                jira: jiraOptions,
                 plugin: context.initPluginOptions({}, {}),
                 xray: context.initXrayOptions({}, {}),
-                http: {},
             },
             config,
             new context.SimpleEvidenceCollection(),
@@ -92,20 +92,26 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("initializes the plugin context with the provided options", async () => {
             config.env = {
+                ["JIRA_API_TOKEN"]: "token",
                 jsonEnabled: true,
                 jsonOutput: "somewhere",
-                ["JIRA_API_TOKEN"]: "token",
             };
             const stubbedContext = stub(context, "setPluginContext");
             const stubbedClients = stub(context, "initClients");
             stubbedClients.onFirstCall().resolves(pluginContext.getClients());
             const options: CypressXrayPluginOptions = {
+                cucumber: {
+                    downloadFeatures: false,
+                    featureFileExtension: ".cucumber",
+                    uploadFeatures: false,
+                },
+                http: {},
                 jira: {
                     attachVideos: true,
                     fields: {
-                        summary: "bonjour",
                         description: "somewhere",
                         labels: "out",
+                        summary: "bonjour",
                         testEnvironments: "field_123",
                         testPlan: "there",
                         testType: "!",
@@ -121,9 +127,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
                 plugin: {
                     debug: false,
+                    enabled: true,
                     logDirectory: "xyz",
                     normalizeScreenshotNames: true,
-                    enabled: true,
                 },
                 xray: {
                     status: {
@@ -137,21 +143,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     uploadResults: false,
                     uploadScreenshots: false,
                 },
-                cucumber: {
-                    featureFileExtension: ".cucumber",
-                    downloadFeatures: false,
-                    uploadFeatures: false,
-                },
-                http: {},
             };
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
             expect(stubbedContext.firstCall.args[0]?.getCypressOptions()).to.eq(config);
             expect(stubbedContext.firstCall.args[0]?.getOptions().jira).to.deep.eq({
                 attachVideos: true,
                 fields: {
-                    summary: "bonjour",
                     description: "somewhere",
                     labels: "out",
+                    summary: "bonjour",
                     testEnvironments: "field_123",
                     testPlan: "there",
                     testType: "!",
@@ -191,10 +191,6 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("initializes the clients with different http configurations", async () => {
             const options: CypressXrayPluginOptions = {
-                jira: {
-                    projectKey: "ABC",
-                    url: "https://example.org",
-                },
                 http: {
                     jira: {
                         proxy: {
@@ -208,6 +204,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                             port: 5678,
                         },
                     },
+                },
+                jira: {
+                    projectKey: "ABC",
+                    url: "https://example.org",
                 },
             };
             const stubbedClients = stub(context, "initClients");
@@ -339,9 +339,9 @@ describe(path.relative(process.cwd(), __filename), () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
             stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
             const failedResults: CypressFailedRunResultType = {
-                status: "failed",
                 failures: 47,
                 message: "Pretty messed up",
+                status: "failed",
             };
             const logger = getMockedLogger();
             await configureXrayPlugin(
@@ -373,9 +373,9 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("does not display an error for failed runs if disabled", async () => {
             const failedResults: CypressFailedRunResultType = {
-                status: "failed",
                 failures: 47,
                 message: "Pretty messed up",
+                status: "failed",
             };
             const logger = getMockedLogger();
             pluginContext.getOptions().plugin.enabled = false;
@@ -521,9 +521,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         const xrayClient = getMockedXrayClient();
         const jiraClient = getMockedJiraClient();
         stub(context, "initClients").onFirstCall().resolves({
+            jiraClient: jiraClient,
             kind: "cloud",
             xrayClient: xrayClient,
-            jiraClient: jiraClient,
         });
         stub(context, "initCucumberOptions")
             .onFirstCall()
@@ -531,10 +531,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 downloadFeatures: false,
                 featureFileExtension: ".feature",
                 prefixes: {
-                    test: "TestName:",
                     precondition: "Precondition:",
+                    test: "TestName:",
                 },
-                uploadFeatures: true,
                 preprocessor: {
                     json: {
                         enabled: true,
@@ -543,30 +542,31 @@ describe(path.relative(process.cwd(), __filename), () => {
                         ),
                     },
                 },
+                uploadFeatures: true,
             });
         jiraClient.getFields.resolves([
             {
-                name: "summary",
-                id: "12345",
                 clauseNames: [],
                 custom: false,
+                id: "12345",
+                name: "summary",
                 navigable: false,
                 orderable: false,
                 schema: {},
                 searchable: false,
             },
             {
-                name: "labels",
-                id: "98765",
                 clauseNames: [],
                 custom: false,
+                id: "98765",
+                name: "labels",
                 navigable: false,
                 orderable: false,
                 schema: {},
                 searchable: false,
             },
         ]);
-        jiraClient.getIssueTypes.resolves([{ subtask: false, name: "Test Execution" }]);
+        jiraClient.getIssueTypes.resolves([{ name: "Test Execution", subtask: false }]);
         xrayClient.importExecution.onFirstCall().resolves("CYP-123");
         xrayClient.importExecutionCucumberMultipart.onFirstCall().resolves("CYP-123");
         xrayClient.importFeature
@@ -577,13 +577,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         ) as CypressRunResultType;
         const spy = Sinon.spy();
         await configureXrayPlugin(spy, config, {
-            jira: {
-                projectKey: "CYP",
-                url: "https://example.org",
-            },
             cucumber: {
                 featureFileExtension: ".feature",
                 uploadFeatures: true,
+            },
+            jira: {
+                projectKey: "CYP",
+                url: "https://example.org",
             },
             plugin: {
                 debug: true,
@@ -597,7 +597,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         } as Cypress.FileObject);
         const [eventName, callback] = spy.secondCall.args as [
             string,
-            (results: CypressRunResultType | CypressFailedRunResultType) => void | Promise<void>
+            (results: CypressFailedRunResultType | CypressRunResultType) => Promise<void> | void
         ];
         expect(eventName).to.eq("after:run");
         await callback(afterRunResult);
@@ -696,10 +696,10 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("adds synchronization commands", () => {
             const stubbedHook = stub(synchronizeFeatureFileHook, "addSynchronizationCommands");
             pluginContext.getOptions().cucumber = {
-                featureFileExtension: ".feature",
-                uploadFeatures: true,
                 downloadFeatures: false,
+                featureFileExtension: ".feature",
                 prefixes: {},
+                uploadFeatures: true,
             };
             context.setPluginContext(pluginContext);
             syncFeatureFile(file);
@@ -715,10 +715,10 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("does not add synchronization commands for native test files", () => {
             const stubbedHook = stub(synchronizeFeatureFileHook, "addSynchronizationCommands");
             pluginContext.getOptions().cucumber = {
-                featureFileExtension: ".feature",
-                uploadFeatures: true,
                 downloadFeatures: false,
+                featureFileExtension: ".feature",
                 prefixes: {},
+                uploadFeatures: true,
             };
             context.setPluginContext(pluginContext);
             file.filePath = "/something.js";

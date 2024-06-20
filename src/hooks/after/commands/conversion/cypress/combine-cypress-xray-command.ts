@@ -29,8 +29,8 @@ export class CombineCypressJsonCommand extends Command<XrayTestExecutionResults,
         const cypressTestsInfo = await this.cypressTestsInfo.compute();
         return {
             info: cypressTestsInfo,
-            tests: cypressTestsJson,
             testExecutionKey: this.parameters.testExecutionIssueKey,
+            tests: cypressTestsJson,
         };
     }
 }

@@ -5,11 +5,11 @@ import { Level } from "../../../../util/logging";
 import { Command } from "../../../command";
 
 interface Parameters {
-    xrayClient: XrayClient;
     filePath: string;
-    projectKey?: string;
     projectId?: string;
+    projectKey?: string;
     source?: string;
+    xrayClient: XrayClient;
 }
 
 export class ImportFeatureCommand extends Command<ImportFeatureResponse, Parameters> {
@@ -21,8 +21,8 @@ export class ImportFeatureCommand extends Command<ImportFeatureResponse, Paramet
         const importResponse = await this.parameters.xrayClient.importFeature(
             this.parameters.filePath,
             {
-                projectKey: this.parameters.projectKey,
                 projectId: this.parameters.projectId,
+                projectKey: this.parameters.projectKey,
                 source: this.parameters.source,
             }
         );

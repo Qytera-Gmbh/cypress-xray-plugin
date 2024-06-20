@@ -6,14 +6,6 @@ import { dfs } from "./algorithms/search";
  */
 export interface DirectedGraph<V> {
     /**
-     * Inserts a vertex into the graph without connecting it to any existing vertex.
-     *
-     * @param vertex - the new vertex
-     * @returns the vertex
-     * @throws if the graph contains the vertex already
-     */
-    place(vertex: V): V;
-    /**
      * Connects two vertices in the graph with an edge. The vertices must exist in the graph already
      * to connect them (using {@link place | `place`}).
      *
@@ -30,7 +22,7 @@ export interface DirectedGraph<V> {
      * @param filter - the filter function
      * @returns the first matching vertex or `undefined` if no vertex matches the filter function
      */
-    find(filter: (vertex: V) => boolean): V | undefined;
+    find(filter: (vertex: V) => boolean): undefined | V;
     /**
      * Searches for a specific vertex in the graph. If no matching vertex can be found the fallback
      * function will be called instead. Every vertex will be visited exactly once.
@@ -41,36 +33,11 @@ export interface DirectedGraph<V> {
      */
     findOrDefault<T extends V>(filter: (vertex: V) => vertex is T, fallback: () => T): T;
     /**
-     * Returns a generator which iterates through all vertices.
-     *
-     * @returns the generator
-     */
-    getVertices(): Generator<V>;
-    /**
      * Returns a generator which iterates through all edges.
      *
      * @returns the generator
      */
     getEdges(): Generator<DirectedEdge<V>>;
-    /**
-     * Returns the size of the graph. The size can either denote the number of vertices or the
-     * number of edges (the cardinality of either set).
-     *
-     * Calling this function is guaranteed to be _at most_ as computationally expensive as counting
-     * the vertices or edges using {@link getVertices | `getVertices`} or
-     * {@link getEdges | `getEdges`}.
-     *
-     * @param set - the target set whose size to return
-     * @returns the size
-     */
-    size(set: "vertices" | "edges"): number;
-    /**
-     * Returns a generator which iterates through all outgoing edges of a vertex.
-     *
-     * @param vertex - the source vertex
-     * @returns the generator
-     */
-    getOutgoing(vertex: V): Generator<DirectedEdge<V>>;
     /**
      * Returns a generator which iterates through all incoming edges of a vertex.
      *
@@ -79,19 +46,12 @@ export interface DirectedGraph<V> {
      */
     getIncoming(vertex: V): Generator<DirectedEdge<V>>;
     /**
-     * Returns whether a vertex has any outgoing edges.
+     * Returns a generator which iterates through all outgoing edges of a vertex.
      *
      * @param vertex - the source vertex
-     * @returns `true` if the vertex has at least one outgoing edge, otherwise `false`
+     * @returns the generator
      */
-    hasOutgoing(vertex: V): boolean;
-    /**
-     * Returns whether a vertex has any incoming edges.
-     *
-     * @param vertex - the destination vertex
-     * @returns `true` if the vertex has at least one incoming edge, otherwise `false`
-     */
-    hasIncoming(vertex: V): boolean;
+    getOutgoing(vertex: V): Generator<DirectedEdge<V>>;
     /**
      * Returns a generator which iterates through all predecessors of a vertex, i.e. the source
      * vertices of all incoming edges.
@@ -108,6 +68,46 @@ export interface DirectedGraph<V> {
      * @returns the generator
      */
     getSuccessors(vertex: V): Generator<V>;
+    /**
+     * Returns a generator which iterates through all vertices.
+     *
+     * @returns the generator
+     */
+    getVertices(): Generator<V>;
+    /**
+     * Returns whether a vertex has any incoming edges.
+     *
+     * @param vertex - the destination vertex
+     * @returns `true` if the vertex has at least one incoming edge, otherwise `false`
+     */
+    hasIncoming(vertex: V): boolean;
+    /**
+     * Returns whether a vertex has any outgoing edges.
+     *
+     * @param vertex - the source vertex
+     * @returns `true` if the vertex has at least one outgoing edge, otherwise `false`
+     */
+    hasOutgoing(vertex: V): boolean;
+    /**
+     * Inserts a vertex into the graph without connecting it to any existing vertex.
+     *
+     * @param vertex - the new vertex
+     * @returns the vertex
+     * @throws if the graph contains the vertex already
+     */
+    place(vertex: V): V;
+    /**
+     * Returns the size of the graph. The size can either denote the number of vertices or the
+     * number of edges (the cardinality of either set).
+     *
+     * Calling this function is guaranteed to be _at most_ as computationally expensive as counting
+     * the vertices or edges using {@link getVertices | `getVertices`} or
+     * {@link getEdges | `getEdges`}.
+     *
+     * @param set - the target set whose size to return
+     * @returns the size
+     */
+    size(set: "edges" | "vertices"): number;
 }
 
 /**
@@ -115,17 +115,17 @@ export interface DirectedGraph<V> {
  */
 export interface DirectedEdge<V> {
     /**
-     * Returns the edge's source vertex.
-     *
-     * @returns the source vertex
-     */
-    getSource(): V;
-    /**
      * Returns the edge's destination vertex.
      *
      * @returns the destination vertex
      */
     getDestination(): V;
+    /**
+     * Returns the edge's source vertex.
+     *
+     * @returns the source vertex
+     */
+    getSource(): V;
 }
 
 /**
@@ -185,7 +185,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V> {
         if (!this.outgoingEdges.has(destination)) {
             throw new Error("Failed to connect vertices: the destination vertex does not exist");
         }
-        if (dfs(this, { source: destination, destination: source })) {
+        if (dfs(this, { destination: source, source: destination })) {
             throw new Error(
                 `Failed to connect vertices ${unknownToString(source)} -> ${unknownToString(
                     destination
@@ -207,7 +207,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V> {
         return edge;
     }
 
-    public find(filter: (vertex: V) => boolean): V | undefined {
+    public find(filter: (vertex: V) => boolean): undefined | V {
         for (const vertex of this.getVertices()) {
             if (filter(vertex)) {
                 return vertex;
@@ -239,7 +239,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V> {
         }
     }
 
-    public size(type: "vertices" | "edges"): number {
+    public size(type: "edges" | "vertices"): number {
         if (type === "vertices") {
             return this.outgoingEdges.size;
         }

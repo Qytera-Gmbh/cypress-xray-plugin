@@ -2,10 +2,6 @@ import { StatusCategory } from "./status-category";
 
 export interface StatusDetails {
     /**
-     * The URL of the status.
-     */
-    self?: string;
-    /**
      * The description of the status.
      */
     description?: string;
@@ -14,13 +10,17 @@ export interface StatusDetails {
      */
     iconUrl?: string;
     /**
+     * The ID of the status.
+     */
+    id?: string;
+    /**
      * The name of the status.
      */
     name?: string;
     /**
-     * The ID of the status.
+     * The URL of the status.
      */
-    id?: string;
+    self?: string;
     /**
      * The category assigned to the status.
      */

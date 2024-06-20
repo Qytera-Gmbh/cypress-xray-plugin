@@ -1,8 +1,8 @@
 export interface HistoryMetadataParticipant {
     /**
-     * The ID of the user or system associated with a history record.
+     * The URL to an avatar for the user or system associated with a history record.
      */
-    id?: string;
+    avatarUrl?: string;
     /**
      * The display name of the user or system associated with a history record.
      */
@@ -12,13 +12,13 @@ export interface HistoryMetadataParticipant {
      */
     displayNameKey?: string;
     /**
+     * The ID of the user or system associated with a history record.
+     */
+    id?: string;
+    /**
      * The type of the user or system associated with a history record.
      */
     type?: string;
-    /**
-     * The URL to an avatar for the user or system associated with a history record.
-     */
-    avatarUrl?: string;
     /**
      * The URL of the user or system associated with a history record.
      */

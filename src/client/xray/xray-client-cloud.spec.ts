@@ -30,39 +30,39 @@ describe(path.relative(process.cwd(), __filename), () => {
         describe("import execution", () => {
             it("should handle successful responses", async () => {
                 restClient.post.onFirstCall().resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         id: "12345",
                         key: "CYP-123",
                         self: "http://www.example.org/jira/rest/api/2/issue/12345",
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
                 const response = await client.importExecution({
-                    testExecutionKey: "CYP-42",
                     info: {
+                        description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
+                        finishDate: "2022-11-28T17:41:19Z",
                         project: "CYP",
                         startDate: "2022-11-28T17:41:12Z",
-                        finishDate: "2022-11-28T17:41:19Z",
-                        description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
                         summary: "Test Execution Here",
                     },
+                    testExecutionKey: "CYP-42",
                     tests: [
                         {
-                            start: "2022-11-28T17:41:15Z",
                             finish: "2022-11-28T17:41:15Z",
+                            start: "2022-11-28T17:41:15Z",
                             status: "PASSED",
                         },
                         {
-                            start: "2022-11-28T17:41:15Z",
                             finish: "2022-11-28T17:41:15Z",
+                            start: "2022-11-28T17:41:15Z",
                             status: "PASSED",
                         },
                         {
-                            start: "2022-11-28T17:41:15Z",
                             finish: "2022-11-28T17:41:19Z",
+                            start: "2022-11-28T17:41:15Z",
                             status: "FAILED",
                         },
                     ],
@@ -77,30 +77,30 @@ describe(path.relative(process.cwd(), __filename), () => {
                     { headers: new AxiosHeaders() },
                     null,
                     {
-                        status: 400,
-                        statusText: "Bad Request",
                         config: { headers: new AxiosHeaders() },
-                        headers: {},
                         data: {
                             error: "Must provide a project key",
                         },
+                        headers: {},
+                        status: 400,
+                        statusText: "Bad Request",
                     }
                 );
                 restClient.post.onFirstCall().rejects(error);
                 await expect(
                     client.importExecution({
-                        testExecutionKey: "CYP-42",
                         info: {
-                            startDate: "2022-11-28T17:41:12Z",
-                            finishDate: "2022-11-28T17:41:19Z",
                             description:
                                 "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
+                            finishDate: "2022-11-28T17:41:19Z",
+                            startDate: "2022-11-28T17:41:12Z",
                             summary: "Test Execution Here",
                         },
+                        testExecutionKey: "CYP-42",
                         tests: [
                             {
-                                start: "2022-11-28T17:41:15Z",
                                 finish: "2022-11-28T17:41:15Z",
+                                start: "2022-11-28T17:41:15Z",
                                 status: "PASSED",
                             },
                         ],
@@ -120,15 +120,15 @@ describe(path.relative(process.cwd(), __filename), () => {
         describe("import execution cucumber multipart", () => {
             it("should handle successful responses", async () => {
                 restClient.post.onFirstCall().resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         id: "12345",
                         key: "CYP-123",
                         self: "http://www.example.org/jira/rest/api/2/issue/12345",
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
                 const response = await client.importExecutionCucumberMultipart(
                     JSON.parse(
@@ -155,13 +155,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     { headers: new AxiosHeaders() },
                     null,
                     {
-                        status: 400,
-                        statusText: "Bad Request",
                         config: { headers: new AxiosHeaders() },
-                        headers: {},
                         data: {
                             error: "There are no valid tests imported", // sic
                         },
+                        headers: {},
+                        status: 400,
+                        statusText: "Bad Request",
                     }
                 );
                 restClient.post.onFirstCall().rejects(error);
@@ -195,9 +195,16 @@ describe(path.relative(process.cwd(), __filename), () => {
         describe("import feature", () => {
             it("handles successful responses", async () => {
                 restClient.post.onFirstCall().resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         errors: [],
+                        updatedOrCreatedPreconditions: [
+                            {
+                                id: "12345",
+                                key: "CYP-222",
+                                self: "https://devxray3.atlassian.net/rest/api/2/issue/12345",
+                            },
+                        ],
                         updatedOrCreatedTests: [
                             {
                                 id: "32495",
@@ -210,17 +217,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 self: "https://devxray3.atlassian.net/rest/api/2/issue/32493",
                             },
                         ],
-                        updatedOrCreatedPreconditions: [
-                            {
-                                id: "12345",
-                                key: "CYP-222",
-                                self: "https://devxray3.atlassian.net/rest/api/2/issue/12345",
-                            },
-                        ],
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
                 const response = await client.importFeature(
                     "./test/resources/features/taggedPrefixCorrect.feature",
@@ -240,12 +240,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     )
                     .onFirstCall()
                     .resolves({
-                        status: HttpStatusCode.Ok,
+                        config: { headers: new AxiosHeaders() },
                         data: {
                             errors: [
                                 "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
                                 "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
                             ],
+                            updatedOrCreatedPreconditions: [],
                             updatedOrCreatedTests: [
                                 {
                                     id: "32493",
@@ -253,11 +254,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                                     self: "https://devxray3.atlassian.net/rest/api/2/issue/32493",
                                 },
                             ],
-                            updatedOrCreatedPreconditions: [],
                         },
                         headers: {},
+                        status: HttpStatusCode.Ok,
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        config: { headers: new AxiosHeaders() },
                     });
                 const response = await client.importFeature(
                     "./test/resources/features/taggedPrefixCorrect.feature",
@@ -286,19 +286,19 @@ describe(path.relative(process.cwd(), __filename), () => {
                     .withArgs("https://xray.cloud.getxray.app/api/v2/import/feature?source=CYP")
                     .onFirstCall()
                     .resolves({
-                        status: HttpStatusCode.Ok,
+                        config: { headers: new AxiosHeaders() },
                         data: {
                             errors: [
                                 "Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!",
                                 "Error in file taggedPrefixCorrect.feature: Test with key CYP-333 was not found!",
                                 "Error in file taggedPrefixCorrect.feature: Test with key CYP-555 was not found!",
                             ],
-                            updatedOrCreatedTests: [],
                             updatedOrCreatedPreconditions: [],
+                            updatedOrCreatedTests: [],
                         },
                         headers: {},
+                        status: HttpStatusCode.Ok,
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        config: { headers: new AxiosHeaders() },
                     });
                 const response = await client.importFeature(
                     "./test/resources/features/taggedPrefixCorrect.feature",
@@ -331,13 +331,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     { headers: new AxiosHeaders() },
                     null,
                     {
-                        status: 400,
-                        statusText: "Bad Request",
                         config: { headers: new AxiosHeaders() },
-                        headers: {},
                         data: {
                             error: "There are no valid tests imported", // sic
                         },
+                        headers: {},
+                        status: 400,
+                        statusText: "Bad Request",
                     }
                 );
                 restClient.post.onFirstCall().rejects(error);
@@ -386,7 +386,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         describe("get test types", () => {
             it("should handle successful responses", async () => {
                 restClient.post.onFirstCall().resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/xray/responses/getTestsTypes.json",
@@ -394,8 +394,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         )
                     ),
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
                 const response = await client.getTestTypes(
                     "CYP",
@@ -420,7 +420,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     )
                 ) as GetTestsResponse<unknown>;
                 restClient.post.onCall(0).resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         data: {
                             getTests: {
@@ -430,41 +430,41 @@ describe(path.relative(process.cwd(), __filename), () => {
                         },
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
                 restClient.post.onCall(1).resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         data: {
                             getTests: {
                                 ...mockedData.data.getTests,
-                                start: 1,
                                 results: mockedData.data.getTests.results?.slice(1, 2),
+                                start: 1,
                             },
                         },
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
                 restClient.post.onCall(2).resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         data: {
                             getTests: {
                                 ...mockedData.data.getTests,
-                                start: 2,
                                 results: mockedData.data.getTests.results?.slice(2, 3),
+                                start: 2,
                             },
                         },
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
                 restClient.post.onCall(3).resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         data: {
                             getTests: {
@@ -474,54 +474,54 @@ describe(path.relative(process.cwd(), __filename), () => {
                         },
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
                 restClient.post.onCall(4).resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         data: {
                             getTests: {
                                 ...mockedData.data.getTests,
+                                results: mockedData.data.getTests.results?.slice(3, 4),
                                 start: undefined,
                                 total: undefined,
-                                results: mockedData.data.getTests.results?.slice(3, 4),
                             },
                         },
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
                 restClient.post.onCall(5).resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         data: {
                             getTests: {
                                 ...mockedData.data.getTests,
-                                start: 3,
                                 results: mockedData.data.getTests.results?.slice(3, 4),
+                                start: 3,
                             },
                         },
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
                 restClient.post.onCall(6).resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         data: {
                             getTests: {
                                 ...mockedData.data.getTests,
-                                start: 4,
                                 results: mockedData.data.getTests.results?.slice(4, 5),
+                                start: 4,
                             },
                         },
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
                 const response = await client.getTestTypes(
                     "CYP",
@@ -547,13 +547,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     { headers: new AxiosHeaders() },
                     null,
                     {
-                        status: 400,
-                        statusText: "Bad Request",
                         config: { headers: new AxiosHeaders() },
-                        headers: {},
                         data: {
                             error: "Must provide a project key",
                         },
+                        headers: {},
+                        status: 400,
+                        statusText: "Bad Request",
                     }
                 );
                 restClient.post.onFirstCall().rejects(error);

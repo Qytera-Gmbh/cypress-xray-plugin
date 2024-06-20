@@ -12,7 +12,7 @@ export interface Computable<R> {
      *
      * @returns the result
      */
-    compute: () => R | Promise<R>;
+    compute: () => Promise<R> | R;
 }
 
 export interface Failable {
@@ -29,6 +29,10 @@ export interface Failable {
  */
 export enum ComputableState {
     /**
+     * The command encountered problems during execution.
+     */
+    FAILED = "failed",
+    /**
      * The command has neither been told to compute, nor is it done computing.
      */
     INITIAL = "initial",
@@ -37,17 +41,13 @@ export enum ComputableState {
      */
     PENDING = "pending",
     /**
-     * The command is done computing.
-     */
-    SUCCEEDED = "succeeded",
-    /**
-     * The command encountered problems during execution.
-     */
-    FAILED = "failed",
-    /**
      * The command was skipped.
      */
     SKIPPED = "skipped",
+    /**
+     * The command is done computing.
+     */
+    SUCCEEDED = "succeeded",
 }
 
 export interface Stateful<S> {
@@ -154,5 +154,5 @@ export abstract class Command<R = unknown, P = unknown>
      *
      * @returns the result
      */
-    protected abstract computeResult(): R | Promise<R>;
+    protected abstract computeResult(): Promise<R> | R;
 }

@@ -16,11 +16,11 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("correctly verifies xray json data", async () => {
             const logger = getMockedLogger();
             const xrayJson: XrayTestExecutionResults = {
-                testExecutionKey: "CYP-123",
                 info: {
-                    summary: "A test execution",
                     description: "Run using Cypress",
+                    summary: "A test execution",
                 },
+                testExecutionKey: "CYP-123",
                 tests: [{ status: "PASS" }, { status: "FAIL" }],
             };
             const command = new AssertCypressConversionValidCommand(
@@ -33,11 +33,11 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("throws for missing xray test arrays", async () => {
             const logger = getMockedLogger();
             const xrayJson: XrayTestExecutionResults = {
-                testExecutionKey: "CYP-123",
                 info: {
-                    summary: "A test execution",
                     description: "Run using Cypress",
+                    summary: "A test execution",
                 },
+                testExecutionKey: "CYP-123",
             };
             const command = new AssertCypressConversionValidCommand(
                 logger,
@@ -51,11 +51,11 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("throws for empty xray test arrays", async () => {
             const logger = getMockedLogger();
             const xrayJson: XrayTestExecutionResults = {
-                testExecutionKey: "CYP-123",
                 info: {
-                    summary: "A test execution",
                     description: "Run using Cypress",
+                    summary: "A test execution",
                 },
+                testExecutionKey: "CYP-123",
                 tests: [] as unknown as [XrayTest, ...XrayTest[]],
             };
             const command = new AssertCypressConversionValidCommand(

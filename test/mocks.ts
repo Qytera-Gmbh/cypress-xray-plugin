@@ -62,25 +62,25 @@ export function getMockedJiraClient(): SinonStubbedInstance<JiraClient> {
         addAttachment: function (issueIdOrKey: string, ...files: string[]) {
             throw mockCalledUnexpectedlyError(issueIdOrKey, files);
         },
-        getIssueTypes: function () {
-            throw mockCalledUnexpectedlyError();
+        editIssue: function (issueIdOrKey: string, issueUpdateData: IssueUpdate) {
+            throw mockCalledUnexpectedlyError(issueIdOrKey, issueUpdateData);
         },
         getFields: function () {
             throw mockCalledUnexpectedlyError();
         },
+        getIssueTypes: function () {
+            throw mockCalledUnexpectedlyError();
+        },
         search: function (request: SearchRequest) {
             throw mockCalledUnexpectedlyError(request);
-        },
-        editIssue: function (issueIdOrKey: string, issueUpdateData: IssueUpdate) {
-            throw mockCalledUnexpectedlyError(issueIdOrKey, issueUpdateData);
         },
     };
     return makeTransparent(stub(client));
 }
 
 interface XrayClientMap {
-    server: SinonStubbedInstance<XrayClient>;
     cloud: SinonStubbedInstance<XrayClientCloud>;
+    server: SinonStubbedInstance<XrayClient>;
 }
 export function getMockedXrayClient<T extends keyof XrayClientMap>(kind?: T): XrayClientMap[T];
 export function getMockedXrayClient<T extends keyof XrayClientMap>(
@@ -91,11 +91,17 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             importExecution: function (execution: XrayTestExecutionResults) {
                 throw mockCalledUnexpectedlyError(execution);
             },
+            importExecutionCucumberMultipart: function (
+                cucumberJson: CucumberMultipartFeature[],
+                cucumberInfo: CucumberMultipartInfo
+            ) {
+                throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
+            },
             importFeature: function (
                 file: string,
                 query: {
-                    projectKey?: string;
                     projectId?: string;
+                    projectKey?: string;
                     source?: string;
                 }
             ) {
@@ -106,24 +112,27 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
                     query.source
                 );
             },
-            importExecutionCucumberMultipart: function (
-                cucumberJson: CucumberMultipartFeature[],
-                cucumberInfo: CucumberMultipartInfo
-            ) {
-                throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
-            },
         };
         return makeTransparent(stub(client));
     }
     const client: XrayClient & HasTestTypes = {
+        getTestTypes: function (projectKey: string, ...issueKeys: string[]) {
+            throw mockCalledUnexpectedlyError(projectKey, issueKeys);
+        },
         importExecution: function (execution: XrayTestExecutionResults) {
             throw mockCalledUnexpectedlyError(execution);
+        },
+        importExecutionCucumberMultipart: function (
+            cucumberJson: CucumberMultipartFeature[],
+            cucumberInfo: CucumberMultipartInfo
+        ) {
+            throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
         },
         importFeature: function (
             file: string,
             query: {
-                projectKey?: string;
                 projectId?: string;
+                projectKey?: string;
                 source?: string;
             }
         ) {
@@ -133,15 +142,6 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
                 query.projectId,
                 query.source
             );
-        },
-        importExecutionCucumberMultipart: function (
-            cucumberJson: CucumberMultipartFeature[],
-            cucumberInfo: CucumberMultipartInfo
-        ) {
-            throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
-        },
-        getTestTypes: function (projectKey: string, ...issueKeys: string[]) {
-            throw mockCalledUnexpectedlyError(projectKey, issueKeys);
         },
     };
     return makeTransparent(stub(client));
@@ -154,19 +154,19 @@ export function getMockedJwtCredentials(): SinonStubbedInstance<JwtCredentials> 
 }
 
 export function getMockedCypress(): {
-    cypress: Cypress.Cypress & CyEventEmitter;
     cy: Cypress.cy & CyEventEmitter;
+    cypress: Cypress.Cypress & CyEventEmitter;
 } {
     global.Cypress = {
-        currentTest: {},
         ["Commands"]: {},
+        currentTest: {},
     } as Cypress.Cypress & CyEventEmitter;
     global.cy = {
         task: () => {
             throw new Error("Mock called unexpectedly");
         },
     } as unknown as Cypress.cy & CyEventEmitter;
-    return { cypress: global.Cypress, cy: global.cy };
+    return { cy: global.cy, cypress: global.Cypress };
 }
 
 function mockCalledUnexpectedlyError(...args: unknown[]): Error {

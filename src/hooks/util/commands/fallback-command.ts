@@ -6,14 +6,14 @@ interface Parameters<T> {
     fallbackValue: T;
 }
 
-export class FallbackCommand<T, R> extends Command<T | R, Parameters<T>> {
+export class FallbackCommand<T, R> extends Command<R | T, Parameters<T>> {
     private readonly input: Computable<R> & Stateful<ComputableState>;
     constructor(parameters: Parameters<T>, logger: Logger, input: Command<R>) {
         super(parameters, logger);
         this.input = input;
     }
 
-    protected async computeResult(): Promise<T | R> {
+    protected async computeResult(): Promise<R | T> {
         if (this.parameters.fallbackOn.includes(this.input.getState())) {
             return this.parameters.fallbackValue;
         }

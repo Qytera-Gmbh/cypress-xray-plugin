@@ -8,25 +8,21 @@ import { User } from "./user";
  */
 export interface Attachment {
     /**
-     * The URL of the attachment details response.
-     */
-    self?: string;
-    /**
-     * The file name of the attachment.
-     */
-    filename?: string;
-    /**
      * Details of the user who added the attachment.
      */
     author?: User;
+    /**
+     * The content of the attachment.
+     */
+    content?: string;
     /**
      * The datetime the attachment was created.
      */
     created?: DateTimeIso;
     /**
-     * The size of the attachment.
+     * The file name of the attachment.
      */
-    size: number;
+    filename?: string;
     /**
      * The MIME type of the attachment.
      */
@@ -36,9 +32,13 @@ export interface Attachment {
      */
     properties?: Record<string, unknown>;
     /**
-     * The content of the attachment.
+     * The URL of the attachment details response.
      */
-    content?: string;
+    self?: string;
+    /**
+     * The size of the attachment.
+     */
+    size: number;
     /**
      * The URL of a thumbnail representing the attachment.
      */

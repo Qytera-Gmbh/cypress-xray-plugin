@@ -321,7 +321,6 @@ export async function initCucumberOptions(
                 options?.downloadFeatures ??
                 false,
             featureFileExtension: featureFileExtension,
-            preprocessor: preprocessorConfiguration,
             prefixes: {
                 precondition:
                     parse(config.env, ENV_NAMES.cucumber.prefixes.precondition, asString) ??
@@ -330,6 +329,7 @@ export async function initCucumberOptions(
                     parse(config.env, ENV_NAMES.cucumber.prefixes.test, asString) ??
                     options?.prefixes?.test,
             },
+            preprocessor: preprocessorConfiguration,
             uploadFeatures:
                 parse(config.env, ENV_NAMES.cucumber.uploadFeatures, asBoolean) ??
                 options?.uploadFeatures ??
@@ -427,8 +427,8 @@ export async function initClients(
             await pingXrayCloud(xrayCredentials);
             const xrayClient = new XrayClientCloud(xrayCredentials, httpClients.xray);
             return {
-                kind: "cloud",
                 jiraClient: jiraClient,
+                kind: "cloud",
                 xrayClient: xrayClient,
             };
         } else {
@@ -452,8 +452,8 @@ export async function initClients(
         await pingXrayServer(jiraOptions.url, credentials, httpClients.xray);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials, httpClients.xray);
         return {
-            kind: "server",
             jiraClient: jiraClient,
+            kind: "server",
             xrayClient: xrayClient,
         };
     } else if (
@@ -478,8 +478,8 @@ export async function initClients(
         await pingXrayServer(jiraOptions.url, credentials, httpClients.xray);
         const xrayClient = new XrayClientServer(jiraOptions.url, credentials, httpClients.xray);
         return {
-            kind: "server",
             jiraClient: jiraClient,
+            kind: "server",
             xrayClient: xrayClient,
         };
     } else {

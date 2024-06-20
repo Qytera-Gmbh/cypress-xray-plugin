@@ -18,13 +18,13 @@ describe(path.relative(process.cwd(), __filename), () => {
     describe("get", () => {
         it("returns the response", async () => {
             const response: BaseAxios.AxiosResponse<string> = {
-                status: BaseAxios.HttpStatusCode.Ok,
-                data: "Example domain 123",
-                headers: {},
-                statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Ok],
                 config: {
                     headers: new BaseAxios.AxiosHeaders(),
                 },
+                data: "Example domain 123",
+                headers: {},
+                status: BaseAxios.HttpStatusCode.Ok,
+                statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Ok],
             };
             const restClient = stub(BaseAxios.default.create());
             stub(BaseAxios.default, "create").returns(restClient);
@@ -78,13 +78,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("returns the response", async () => {
             const client = new AxiosRestClient();
             const response: BaseAxios.AxiosResponse<string> = {
-                status: BaseAxios.HttpStatusCode.Ok,
-                data: "Example domain 123",
-                headers: {},
-                statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Ok],
                 config: {
                     headers: new BaseAxios.AxiosHeaders(),
                 },
+                data: "Example domain 123",
+                headers: {},
+                status: BaseAxios.HttpStatusCode.Ok,
+                statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Ok],
             };
             const restClient = stub(BaseAxios.default.create());
             stub(BaseAxios.default, "create").returns(restClient);
@@ -106,10 +106,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             const client = new AxiosRestClient({ debug: true });
             await expect(
                 client.post("https://localhost:1234", {
-                    hello: "!",
-                    there: "!",
                     five: 6,
+                    hello: "!",
                     seven: [1, 2, 3],
+                    there: "!",
                 })
             ).to.eventually.be.rejected;
             expect(logger.message).to.have.been.calledTwice;
@@ -118,10 +118,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(requestBody).to.have.property("url", "https://localhost:1234");
             expect(requestBody).to.not.have.property("params");
             expect(requestBody).to.have.deep.property("body", {
-                hello: "!",
-                there: "!",
                 five: 6,
+                hello: "!",
                 seven: [1, 2, 3],
+                there: "!",
             });
             expect(logger.logToFile.getCall(0).args[1]).to.eq(
                 "12345_POST_https_localhost_1234_request.json"
@@ -149,13 +149,13 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("returns the response", async () => {
             const client = new AxiosRestClient();
             const response: BaseAxios.AxiosResponse<string> = {
-                status: BaseAxios.HttpStatusCode.Ok,
-                data: "Example domain 123",
-                headers: {},
-                statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Ok],
                 config: {
                     headers: new BaseAxios.AxiosHeaders(),
                 },
+                data: "Example domain 123",
+                headers: {},
+                status: BaseAxios.HttpStatusCode.Ok,
+                statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Ok],
             };
             const restClient = stub(BaseAxios.default.create());
             stub(BaseAxios.default, "create").returns(restClient);
@@ -177,10 +177,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             const client = new AxiosRestClient({ debug: true });
             await expect(
                 client.put("https://localhost:1234", {
-                    hello: "!",
-                    there: "!",
                     five: 6,
+                    hello: "!",
                     seven: [1, 2, 3],
+                    there: "!",
                 })
             ).to.eventually.be.rejected;
             expect(logger.message).to.have.been.calledTwice;
@@ -189,10 +189,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(requestBody).to.have.property("url", "https://localhost:1234");
             expect(requestBody).to.not.have.property("params");
             expect(requestBody).to.have.deep.property("body", {
-                hello: "!",
-                there: "!",
                 five: 6,
+                hello: "!",
                 seven: [1, 2, 3],
+                there: "!",
             });
             expect(logger.logToFile.getCall(0).args[1]).to.eq(
                 "12345_PUT_https_localhost_1234_request.json"

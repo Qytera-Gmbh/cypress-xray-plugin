@@ -30,8 +30,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 )
             ) as CucumberMultipartInfo;
             const cucumberMultipart: CucumberMultipart = {
-                info: cucumberInfo,
                 features: cucumberFeatures,
+                info: cucumberInfo,
             };
             const command = new AssertCucumberConversionValidCommand(
                 logger,
@@ -49,8 +49,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 )
             ) as CucumberMultipartInfo;
             const cucumberMultipart: CucumberMultipart = {
-                info: cucumberInfo,
                 features: [],
+                info: cucumberInfo,
             };
             const command = new AssertCucumberConversionValidCommand(
                 logger,

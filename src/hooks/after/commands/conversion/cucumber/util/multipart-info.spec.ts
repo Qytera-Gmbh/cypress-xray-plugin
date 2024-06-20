@@ -8,25 +8,21 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("adds default information", () => {
             const info = buildMultipartInfoCloud(
                 {
-                    startedTestsAt: "2023-09-28T15:51:36.000Z",
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    startedTestsAt: "2023-09-28T15:51:36.000Z",
                 },
                 {
-                    projectKey: "CYP",
                     issuetype: {
                         name: "Test Execution (QA)",
                         subtask: false,
                     },
+                    projectKey: "CYP",
                 }
             );
             expect(info).to.deep.eq({
                 fields: {
-                    project: {
-                        key: "CYP",
-                    },
-                    summary: "Execution Results [1695916296000]",
                     description: dedent(`
                         Cypress version: 13.2.0
                         Browser: Chromium (1.2.3)
@@ -35,10 +31,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                         name: "Test Execution (QA)",
                         subtask: false,
                     },
+                    project: {
+                        key: "CYP",
+                    },
+                    summary: "Execution Results [1695916296000]",
                 },
                 xrayFields: {
-                    testPlanKey: undefined,
                     environments: undefined,
+                    testPlanKey: undefined,
                 },
             });
         });
@@ -46,17 +46,17 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("uses provided summaries", () => {
             const info = buildMultipartInfoCloud(
                 {
-                    startedTestsAt: "2023-09-28 17:51:36",
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    projectKey: "CYP",
-                    summary: "Hello",
                     issuetype: {
                         subtask: false,
                     },
+                    projectKey: "CYP",
+                    summary: "Hello",
                 }
             );
             expect(info.fields.summary).to.eq("Hello");
@@ -65,17 +65,17 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("uses provided descriptions", () => {
             const info = buildMultipartInfoCloud(
                 {
-                    startedTestsAt: "2023-09-28 17:51:36",
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    projectKey: "CYP",
                     description: "Hello There",
                     issuetype: {
                         subtask: false,
                     },
+                    projectKey: "CYP",
                 }
             );
             expect(info.fields.description).to.eq("Hello There");
@@ -84,22 +84,22 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("uses provided test plans", () => {
             const info = buildMultipartInfoCloud(
                 {
-                    startedTestsAt: "2023-09-28 17:51:36",
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    projectKey: "CYP",
                     issuetype: {
                         subtask: false,
                     },
+                    projectKey: "CYP",
                     testPlan: {
                         issueKey: "CYP-123",
                     },
                 }
             );
-            expect(info.xrayFields).to.deep.eq({ testPlanKey: "CYP-123", environments: undefined });
+            expect(info.xrayFields).to.deep.eq({ environments: undefined, testPlanKey: "CYP-123" });
         });
     });
 
@@ -107,24 +107,20 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("adds default information", () => {
             const info = buildMultipartInfoServer(
                 {
-                    startedTestsAt: "2023-09-28T15:51:36.000Z",
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    startedTestsAt: "2023-09-28T15:51:36.000Z",
                 },
                 {
-                    projectKey: "CYP",
                     issuetype: {
                         subtask: false,
                     },
+                    projectKey: "CYP",
                 }
             );
             expect(info).to.deep.eq({
                 fields: {
-                    project: {
-                        key: "CYP",
-                    },
-                    summary: "Execution Results [1695916296000]",
                     description: dedent(`
                         Cypress version: 13.2.0
                         Browser: Chromium (1.2.3)
@@ -132,6 +128,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     issuetype: {
                         subtask: false,
                     },
+                    project: {
+                        key: "CYP",
+                    },
+                    summary: "Execution Results [1695916296000]",
                 },
             });
         });
@@ -139,17 +139,17 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("uses provided summaries", () => {
             const info = buildMultipartInfoServer(
                 {
-                    startedTestsAt: "2023-09-28 17:51:36",
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    projectKey: "CYP",
-                    summary: "Hello",
                     issuetype: {
                         subtask: false,
                     },
+                    projectKey: "CYP",
+                    summary: "Hello",
                 }
             );
             expect(info.fields.summary).to.eq("Hello");
@@ -158,17 +158,17 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("uses provided descriptions", () => {
             const info = buildMultipartInfoServer(
                 {
-                    startedTestsAt: "2023-09-28 17:51:36",
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    projectKey: "CYP",
                     description: "Hello There",
                     issuetype: {
                         subtask: false,
                     },
+                    projectKey: "CYP",
                 }
             );
             expect(info.fields.description).to.eq("Hello There");
@@ -177,19 +177,19 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("uses provided test plans", () => {
             const info = buildMultipartInfoServer(
                 {
-                    startedTestsAt: "2023-09-28 17:51:36",
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    projectKey: "CYP",
                     issuetype: {
                         subtask: false,
                     },
+                    projectKey: "CYP",
                     testPlan: {
-                        issueKey: "CYP-123",
                         fieldId: "customField_12345",
+                        issueKey: "CYP-123",
                     },
                 }
             );
@@ -199,16 +199,16 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("uses provided test environments", () => {
             const info = buildMultipartInfoServer(
                 {
-                    startedTestsAt: "2023-09-28 17:51:36",
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    projectKey: "CYP",
                     issuetype: {
                         subtask: false,
                     },
+                    projectKey: "CYP",
                     testEnvironments: {
                         environments: ["DEV"],
                         fieldId: "customField_12345",

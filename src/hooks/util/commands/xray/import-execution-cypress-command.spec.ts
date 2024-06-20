@@ -11,8 +11,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient();
             const json: XrayTestExecutionResults = {
+                info: { description: "Hello", summary: "Test Execution Summary" },
                 testExecutionKey: "CYP-123",
-                info: { summary: "Test Execution Summary", description: "Hello" },
                 tests: [
                     { status: "PASSED" },
                     { status: "PASSED" },

@@ -7,14 +7,14 @@ import { DirectedGraph } from "../graph";
  */
 export interface KnownDestinationParameters<V> {
     /**
+     * The destination vertex.
+     */
+    destination: V;
+    /**
      * The starting vertex. If left `undefined`, the search will be performed for every vertex in
      * the graph which does not have any incoming edges.
      */
     source?: V;
-    /**
-     * The destination vertex.
-     */
-    destination: V;
 }
 
 /**
@@ -22,16 +22,16 @@ export interface KnownDestinationParameters<V> {
  */
 export interface UnknownDestinationParameters<V> {
     /**
-     * The starting vertex. If left `undefined`, the search will be performed for every vertex in
-     * the graph which does not have any incoming edges.
-     */
-    source?: V;
-    /**
      * A filter describing the destination vertex.
      *
      * @returns `true` for vertices which are considered the destination, `false` otherwise
      */
     filter: (vertex: V) => boolean;
+    /**
+     * The starting vertex. If left `undefined`, the search will be performed for every vertex in
+     * the graph which does not have any incoming edges.
+     */
+    source?: V;
 }
 
 /**
@@ -47,9 +47,9 @@ export function dfs<V>(
 ): boolean {
     const stack = new Stack<V>();
     return search(graph, parameters, {
-        push: stack.push.bind(stack),
-        pop: stack.pop.bind(stack),
         isEmpty: stack.isEmpty.bind(stack),
+        pop: stack.pop.bind(stack),
+        push: stack.push.bind(stack),
     });
 }
 
@@ -66,16 +66,16 @@ export function bfs<V>(
 ): boolean {
     const queue = new Queue<V>();
     return search(graph, parameters, {
-        push: queue.enqueue.bind(queue),
-        pop: queue.dequeue.bind(queue),
         isEmpty: queue.isEmpty.bind(queue),
+        pop: queue.dequeue.bind(queue),
+        push: queue.enqueue.bind(queue),
     });
 }
 
 interface VertexWorklist<V> {
-    push: (vertex: V) => unknown;
-    pop: () => V;
     isEmpty: () => boolean;
+    pop: () => V;
+    push: (vertex: V) => unknown;
 }
 
 function search<V>(

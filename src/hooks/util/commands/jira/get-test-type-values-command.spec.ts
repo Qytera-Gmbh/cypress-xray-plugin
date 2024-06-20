@@ -29,13 +29,13 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             jiraClient.search
                 .withArgs({
-                    jql: "issue in (CYP-123,CYP-456,CYP-789)",
                     fields: ["customfield_12345"],
+                    jql: "issue in (CYP-123,CYP-456,CYP-789)",
                 })
                 .resolves([
-                    { key: "CYP-123", fields: { ["customfield_12345"]: { value: "Cucumber" } } },
-                    { key: "CYP-456", fields: { ["customfield_12345"]: { value: "Generic" } } },
-                    { key: "CYP-789", fields: { ["customfield_12345"]: { value: "Manual" } } },
+                    { fields: { ["customfield_12345"]: { value: "Cucumber" } }, key: "CYP-123" },
+                    { fields: { ["customfield_12345"]: { value: "Generic" } }, key: "CYP-456" },
+                    { fields: { ["customfield_12345"]: { value: "Manual" } }, key: "CYP-789" },
                 ]);
             const summaries = await command.compute();
             expect(summaries).to.deep.eq({
@@ -56,11 +56,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             jiraClient.search
                 .withArgs({
-                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
                     fields: ["customfield_12345"],
+                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
                 })
                 .resolves([
-                    { key: "CYP-123", fields: { ["customfield_12345"]: { value: "Cucumber" } } },
+                    { fields: { ["customfield_12345"]: { value: "Cucumber" } }, key: "CYP-123" },
                 ]);
             expect(await command.compute()).to.deep.eq({
                 ["CYP-123"]: "Cucumber",
@@ -87,16 +87,16 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             jiraClient.search
                 .withArgs({
-                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
                     fields: ["customfield_12345"],
+                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
                 })
                 .resolves([
-                    { key: "CYP-123", fields: { ["customfield_12345"]: { an: "object" } } },
+                    { fields: { ["customfield_12345"]: { an: "object" } }, key: "CYP-123" },
                     {
-                        key: "CYP-456",
                         fields: { bonjour: ["Where", "did", "I", "come", "from?"] },
+                        key: "CYP-456",
                     },
-                    { key: "CYP-789", fields: { ["customfield_12345"]: [42, 84] } },
+                    { fields: { ["customfield_12345"]: [42, 84] }, key: "CYP-789" },
                     { fields: { ["customfield_12345"]: { value: "Manual" } } },
                 ]);
             expect(await command.compute()).to.deep.eq({});
@@ -124,8 +124,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             jiraClient.search
                 .withArgs({
-                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
                     fields: ["customfield_12345"],
+                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
                 })
                 .rejects(new Error("Connection timeout"));
             await expect(command.compute()).to.eventually.be.rejectedWith("Connection timeout");

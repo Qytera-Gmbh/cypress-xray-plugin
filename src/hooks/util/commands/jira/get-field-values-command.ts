@@ -8,8 +8,8 @@ import { Command, Computable } from "../../../command";
 import { JiraField } from "./extract-field-id-command";
 
 export interface FieldValueMap {
-    [JiraField.SUMMARY]: string;
     [JiraField.LABELS]: string[];
+    [JiraField.SUMMARY]: string;
     [JiraField.TEST_TYPE]: string;
 }
 
@@ -40,8 +40,8 @@ export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> exten
         const fieldId = await this.fieldId.compute();
         const issueKeys = await this.issueKeys.compute();
         const issues: Issue[] = await this.parameters.jiraClient.search({
-            jql: `issue in (${issueKeys.join(",")})`,
             fields: [fieldId],
+            jql: `issue in (${issueKeys.join(",")})`,
         });
         const unknownIssues = issueKeys.filter((key) => issues.every((issue) => issue.key !== key));
         if (unknownIssues.length > 0) {

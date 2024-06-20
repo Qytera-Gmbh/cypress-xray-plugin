@@ -12,10 +12,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             const command = new VerifyExecutionIssueKeyCommand(
                 {
+                    displayCloudHelp: false,
+                    importType: "cypress",
                     testExecutionIssueKey: "CYP-123",
                     testExecutionIssueType: "Test Execution",
-                    importType: "cypress",
-                    displayCloudHelp: false,
                 },
                 logger,
                 new ConstantCommand(logger, "CYP-123")
@@ -28,10 +28,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             const command = new VerifyExecutionIssueKeyCommand(
                 {
+                    displayCloudHelp: true,
+                    importType: "cypress",
                     testExecutionIssueKey: "CYP-123",
                     testExecutionIssueType: "Test Execution",
-                    importType: "cypress",
-                    displayCloudHelp: true,
                 },
                 logger,
                 new ConstantCommand(logger, "CYP-456")
@@ -55,10 +55,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             const command = new VerifyExecutionIssueKeyCommand(
                 {
+                    displayCloudHelp: false,
+                    importType: "cucumber",
                     testExecutionIssueKey: "CYP-123",
                     testExecutionIssueType: "Test Execution",
-                    importType: "cucumber",
-                    displayCloudHelp: false,
                 },
                 logger,
                 new ConstantCommand(logger, "CYP-456")

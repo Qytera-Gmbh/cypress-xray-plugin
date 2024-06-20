@@ -1,8 +1,8 @@
 export interface StatusCategory {
     /**
-     * The URL of the status category.
+     * The name of the color used to represent the status category.
      */
-    self?: string;
+    colorName?: string;
     /**
      * The ID of the status category.
      */
@@ -12,11 +12,11 @@ export interface StatusCategory {
      */
     key?: string;
     /**
-     * The name of the color used to represent the status category.
-     */
-    colorName?: string;
-    /**
      * The name of the status category.
      */
     name?: string;
+    /**
+     * The URL of the status category.
+     */
+    self?: string;
 }

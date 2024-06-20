@@ -3,6 +3,15 @@ import { StatusDetails } from "./status-details";
 
 export interface Transition {
     /**
+     * Expand options that include additional transition details in the response.
+     */
+    expand?: string;
+    /**
+     * Details of the fields associated with the issue transition screen. Use this information to
+     * populate `fields` and `update` in a transition request.
+     */
+    fields?: Record<string, FieldMeta>;
+    /**
      * The ID of the issue transition. Required when specifying a transition to undertake.
      */
     id?: string;
@@ -14,15 +23,6 @@ export interface Transition {
      * Details of the issue status after the transition.
      */
     to?: StatusDetails;
-    /**
-     * Details of the fields associated with the issue transition screen. Use this information to
-     * populate `fields` and `update` in a transition request.
-     */
-    fields?: Record<string, FieldMeta>;
-    /**
-     * Expand options that include additional transition details in the response.
-     */
-    expand?: string;
 }
 export interface TransitionServer extends Transition {
     opsbarSequence?: number;

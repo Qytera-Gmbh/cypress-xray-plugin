@@ -15,8 +15,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("prints a success message for successful cypress uploads", async () => {
             const logger = getMockedLogger();
             const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
-                cypressExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
                 cucumberExecutionIssueKey: new ConstantCommand(logger, undefined),
+                cypressExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
             });
             await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(
@@ -28,8 +28,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("prints a success message for successful cucumber uploads", async () => {
             const logger = getMockedLogger();
             const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
-                cypressExecutionIssueKey: new ConstantCommand(logger, undefined),
                 cucumberExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
+                cypressExecutionIssueKey: new ConstantCommand(logger, undefined),
             });
             await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(
@@ -41,8 +41,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("prints a success message for successful uploads", async () => {
             const logger = getMockedLogger();
             const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
-                cypressExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
                 cucumberExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
+                cypressExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
             });
             await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(
@@ -54,8 +54,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("skips for mismatched execution issue keys", async () => {
             const logger = getMockedLogger();
             const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
-                cypressExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
                 cucumberExecutionIssueKey: new ConstantCommand(logger, "CYP-456"),
+                cypressExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
             });
             await expect(command.compute())
                 .to.eventually.be.an.instanceOf(SkippedError)
@@ -74,8 +74,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("skips when there are no results", async () => {
             const logger = getMockedLogger();
             const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
-                cypressExecutionIssueKey: new ConstantCommand(logger, undefined),
                 cucumberExecutionIssueKey: new ConstantCommand(logger, undefined),
+                cypressExecutionIssueKey: new ConstantCommand(logger, undefined),
             });
             await expect(command.compute())
                 .to.eventually.be.an.instanceOf(SkippedError)

@@ -32,6 +32,25 @@ describe(path.relative(process.cwd(), __filename), () => {
 
     beforeEach(async () => {
         options = {
+            cucumber: await initCucumberOptions(
+                {
+                    env: { jsonEnabled: true },
+                    excludeSpecPattern: "",
+                    projectRoot: "",
+                    reporter: "",
+                    specPattern: "",
+                    testingType: "component",
+                },
+                {
+                    featureFileExtension: ".feature",
+                    prefixes: {
+                        precondition: "Precondition:",
+                        test: "TestName:",
+                    },
+                    uploadFeatures: true,
+                }
+            ),
+            http: {},
             jira: initJiraOptions(
                 {},
                 {
@@ -39,31 +58,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     url: "https://example.org",
                 }
             ),
-            cucumber: await initCucumberOptions(
-                {
-                    testingType: "component",
-                    projectRoot: "",
-                    reporter: "",
-                    specPattern: "",
-                    excludeSpecPattern: "",
-                    env: { jsonEnabled: true },
-                },
-                {
-                    featureFileExtension: ".feature",
-                    prefixes: {
-                        test: "TestName:",
-                        precondition: "Precondition:",
-                    },
-                    uploadFeatures: true,
-                }
-            ),
             plugin: initPluginOptions({}, {}),
             xray: initXrayOptions({}, {}),
-            http: {},
         };
         clients = {
-            kind: "server",
             jiraClient: getMockedJiraClient(),
+            kind: "server",
             xrayClient: getMockedXrayClient(),
         };
     });
@@ -86,13 +86,13 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(commands[0].getParameters()).to.deep.eq({ filePath: "./path/to/file.feature" });
             assertIsInstanceOf(commands[1], ExtractFeatureFileIssuesCommand);
             expect(commands[1].getParameters()).to.deep.eq({
-                projectKey: "CYP",
-                prefixes: {
-                    test: "TestName:",
-                    precondition: "Precondition:",
-                },
                 displayCloudHelp: false,
                 filePath: "./path/to/file.feature",
+                prefixes: {
+                    precondition: "Precondition:",
+                    test: "TestName:",
+                },
+                projectKey: "CYP",
             });
             assertIsInstanceOf(commands[2], ExtractIssueKeysCommand);
             assertIsInstanceOf(commands[3], FetchAllFieldsCommand);
@@ -104,9 +104,9 @@ describe(path.relative(process.cwd(), __filename), () => {
             assertIsInstanceOf(commands[7], GetLabelValuesCommand);
             assertIsInstanceOf(commands[8], ImportFeatureCommand);
             expect(commands[8].getParameters()).to.deep.eq({
-                xrayClient: clients.xrayClient,
                 filePath: "./path/to/file.feature",
                 projectKey: "CYP",
+                xrayClient: clients.xrayClient,
             });
             assertIsInstanceOf(commands[9], GetUpdatedIssuesCommand);
             assertIsInstanceOf(commands[10], GetSummaryValuesCommand);
@@ -115,13 +115,13 @@ describe(path.relative(process.cwd(), __filename), () => {
             assertIsInstanceOf(commands[13], GetLabelsToResetCommand);
             assertIsInstanceOf(commands[14], EditIssueFieldCommand);
             expect(commands[14].getParameters()).to.deep.eq({
-                jiraClient: clients.jiraClient,
                 field: JiraField.SUMMARY,
+                jiraClient: clients.jiraClient,
             });
             assertIsInstanceOf(commands[15], EditIssueFieldCommand);
             expect(commands[15].getParameters()).to.deep.eq({
-                jiraClient: clients.jiraClient,
                 field: JiraField.LABELS,
+                jiraClient: clients.jiraClient,
             });
         });
 

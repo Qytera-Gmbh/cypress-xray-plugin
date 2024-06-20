@@ -22,9 +22,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 cucumberReport,
                 {
                     projectKey: "CYP",
-                    useCloudTags: true,
-                    testPrefix: "TestName:",
                     projectRoot: "./test/resources",
+                    testPrefix: "TestName:",
+                    useCloudTags: true,
                 },
                 logger
             );
@@ -44,11 +44,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             const features = buildMultipartFeatures(
                 cucumberReport,
                 {
-                    testExecutionIssueKey: "CYP-456",
                     projectKey: "CYP",
-                    useCloudTags: true,
-                    testPrefix: "TestName:",
                     projectRoot: "./test/resources",
+                    testExecutionIssueKey: "CYP-456",
+                    testPrefix: "TestName:",
+                    useCloudTags: true,
                 },
                 logger
             );
@@ -68,11 +68,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             const features = buildMultipartFeatures(
                 cucumberReport,
                 {
-                    testExecutionIssueKey: "CYP-456",
                     projectKey: "CYP",
-                    useCloudTags: true,
-                    testPrefix: "TestName:",
                     projectRoot: "./test/resources",
+                    testExecutionIssueKey: "CYP-456",
+                    testPrefix: "TestName:",
+                    useCloudTags: true,
                 },
                 logger
             );
@@ -92,9 +92,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     includeScreenshots: true,
                     projectKey: "CYP",
-                    useCloudTags: true,
-                    testPrefix: "TestName:",
                     projectRoot: "./test/resources",
+                    testPrefix: "TestName:",
+                    useCloudTags: true,
                 },
                 logger
             );
@@ -118,9 +118,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     includeScreenshots: false,
                     projectKey: "CYP",
-                    useCloudTags: true,
-                    testPrefix: "TestName:",
                     projectRoot: "./test/resources",
+                    testPrefix: "TestName:",
+                    useCloudTags: true,
                 },
                 logger
             );
@@ -140,9 +140,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     includeScreenshots: false,
                     projectKey: "CYP",
-                    useCloudTags: true,
-                    testPrefix: "TestName:",
                     projectRoot: "./test/resources",
+                    testPrefix: "TestName:",
+                    useCloudTags: true,
                 },
                 logger
             );
@@ -167,8 +167,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     includeScreenshots: false,
                     projectKey: "CYP",
-                    useCloudTags: false,
                     projectRoot: "./test/resources",
+                    useCloudTags: false,
                 },
                 logger
             );
@@ -241,8 +241,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     includeScreenshots: false,
                     projectKey: "CYP",
-                    useCloudTags: false,
                     projectRoot: "./test/resources",
+                    useCloudTags: false,
                 },
                 logger
             );
@@ -325,9 +325,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     includeScreenshots: false,
                     projectKey: "CYP",
-                    useCloudTags: true,
-                    testPrefix: "TestName:",
                     projectRoot: "./test/resources",
+                    testPrefix: "TestName:",
+                    useCloudTags: true,
                 },
                 logger
             );

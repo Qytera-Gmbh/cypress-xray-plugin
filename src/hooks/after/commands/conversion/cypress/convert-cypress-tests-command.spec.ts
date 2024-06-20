@@ -26,6 +26,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         let options: InternalCypressXrayPluginOptions;
         beforeEach(() => {
             options = {
+                http: {},
                 jira: initJiraOptions(
                     {},
                     {
@@ -33,14 +34,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                         url: "https://example.org",
                     }
                 ),
+                plugin: initPluginOptions({}, {}),
                 xray: initXrayOptions(
                     {},
                     {
                         uploadResults: true,
                     }
                 ),
-                plugin: initPluginOptions({}, {}),
-                http: {},
             };
         });
 
@@ -58,28 +58,28 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const json = await command.compute();
                 expect(json).to.deep.eq([
                     {
+                        finish: "2022-11-28T17:41:15Z",
+                        start: "2022-11-28T17:41:15Z",
+                        status: "PASS",
                         testKey: "CYP-40",
-                        start: "2022-11-28T17:41:15Z",
-                        finish: "2022-11-28T17:41:15Z",
-                        status: "PASS",
                     },
                     {
+                        finish: "2022-11-28T17:41:15Z",
+                        start: "2022-11-28T17:41:15Z",
+                        status: "PASS",
                         testKey: "CYP-41",
-                        start: "2022-11-28T17:41:15Z",
-                        finish: "2022-11-28T17:41:15Z",
-                        status: "PASS",
                     },
                     {
-                        testKey: "CYP-49",
-                        start: "2022-11-28T17:41:15Z",
-                        finish: "2022-11-28T17:41:19Z",
-                        status: "FAIL",
                         evidence: [
                             {
                                 data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
                                 filename: "small.png",
                             },
                         ],
+                        finish: "2022-11-28T17:41:19Z",
+                        start: "2022-11-28T17:41:15Z",
+                        status: "FAIL",
+                        testKey: "CYP-49",
                     },
                 ]);
             });
@@ -99,40 +99,40 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const json = await command.compute();
                 expect(json).to.deep.eq([
                     {
-                        testKey: "CYP-452",
+                        finish: "2023-09-09T10:59:29Z",
                         start: "2023-09-09T10:59:28Z",
-                        finish: "2023-09-09T10:59:29Z",
                         status: "PASS",
+                        testKey: "CYP-452",
                     },
                     {
+                        finish: "2023-09-09T10:59:29Z",
+                        start: "2023-09-09T10:59:29Z",
+                        status: "PASS",
                         testKey: "CYP-268",
-                        start: "2023-09-09T10:59:29Z",
-                        finish: "2023-09-09T10:59:29Z",
-                        status: "PASS",
                     },
                     {
-                        testKey: "CYP-237",
-                        start: "2023-09-09T10:59:29Z",
-                        finish: "2023-09-09T10:59:29Z",
-                        status: "FAIL",
                         evidence: [
                             {
                                 data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
                                 filename: "small CYP-237.png",
                             },
                         ],
-                    },
-                    {
-                        testKey: "CYP-332",
-                        start: "2023-09-09T10:59:29Z",
                         finish: "2023-09-09T10:59:29Z",
+                        start: "2023-09-09T10:59:29Z",
                         status: "FAIL",
+                        testKey: "CYP-237",
                     },
                     {
-                        testKey: "CYP-333",
-                        start: "2023-09-09T10:59:29Z",
                         finish: "2023-09-09T10:59:29Z",
+                        start: "2023-09-09T10:59:29Z",
+                        status: "FAIL",
+                        testKey: "CYP-332",
+                    },
+                    {
+                        finish: "2023-09-09T10:59:29Z",
+                        start: "2023-09-09T10:59:29Z",
                         status: "TODO",
+                        testKey: "CYP-333",
                     },
                 ]);
             });
@@ -151,34 +151,34 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const json = await command.compute();
                 expect(json).to.deep.eq([
                     {
-                        testKey: "CYP-452",
+                        finish: "2023-09-09T10:59:29Z",
                         start: "2023-09-09T10:59:28Z",
-                        finish: "2023-09-09T10:59:29Z",
                         status: "PASS",
+                        testKey: "CYP-452",
                     },
                     {
+                        finish: "2023-09-09T10:59:29Z",
+                        start: "2023-09-09T10:59:29Z",
+                        status: "PASS",
                         testKey: "CYP-268",
-                        start: "2023-09-09T10:59:29Z",
-                        finish: "2023-09-09T10:59:29Z",
-                        status: "PASS",
                     },
                     {
+                        finish: "2023-09-09T10:59:29Z",
+                        start: "2023-09-09T10:59:29Z",
+                        status: "FAIL",
                         testKey: "CYP-237",
-                        start: "2023-09-09T10:59:29Z",
-                        finish: "2023-09-09T10:59:29Z",
-                        status: "FAIL",
                     },
                     {
+                        finish: "2023-09-09T10:59:29Z",
+                        start: "2023-09-09T10:59:29Z",
+                        status: "FAIL",
                         testKey: "CYP-332",
-                        start: "2023-09-09T10:59:29Z",
-                        finish: "2023-09-09T10:59:29Z",
-                        status: "FAIL",
                     },
                     {
-                        testKey: "CYP-333",
-                        start: "2023-09-09T10:59:29Z",
                         finish: "2023-09-09T10:59:29Z",
+                        start: "2023-09-09T10:59:29Z",
                         status: "TODO",
+                        testKey: "CYP-333",
                     },
                 ]);
                 expect(logger.message).to.have.been.calledWithExactly(
@@ -259,11 +259,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             mockedFs.readFileSync.onFirstCall().returns(Buffer.from("abcdef"));
             const command = new ConvertCypressTestsCommand(
                 {
-                    jira: {
-                        projectKey: "CYP",
-                    },
                     cucumber: {
                         featureFileExtension: ".feature",
+                    },
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    jira: {
+                        projectKey: "CYP",
                     },
                     plugin: {
                         normalizeScreenshotNames: false,
@@ -272,7 +273,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         status: {},
                         uploadScreenshots: true,
                     },
-                    evidenceCollection: new SimpleEvidenceCollection(),
                 },
                 logger,
                 new ConstantCommand(logger, result)
@@ -345,14 +345,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CypressCommandLine.CypressRunResult;
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-452", {
+                contentType: "text/plain",
                 data: "aGkgdGhlcmU=",
                 filename: "hi.txt",
-                contentType: "text/plain",
             });
             evidenceCollection.addEvidence("CYP-237", {
+                contentType: "text/plain",
                 data: "Z29vZGJ5ZQ==",
                 filename: "goodbye.txt",
-                contentType: "text/plain",
             });
             const command = new ConvertCypressTestsCommand(
                 { ...options, evidenceCollection: evidenceCollection },
@@ -362,52 +362,52 @@ describe(path.relative(process.cwd(), __filename), () => {
             const tests = await command.compute();
             expect(tests).to.deep.eq([
                 {
-                    testKey: "CYP-452",
-                    start: "2023-09-09T10:59:28Z",
-                    finish: "2023-09-09T10:59:29Z",
-                    status: "PASS",
                     evidence: [
                         {
+                            contentType: "text/plain",
                             data: "aGkgdGhlcmU=",
                             filename: "hi.txt",
-                            contentType: "text/plain",
                         },
                     ],
-                },
-                {
-                    testKey: "CYP-268",
-                    start: "2023-09-09T10:59:29Z",
                     finish: "2023-09-09T10:59:29Z",
+                    start: "2023-09-09T10:59:28Z",
                     status: "PASS",
+                    testKey: "CYP-452",
                 },
                 {
-                    testKey: "CYP-237",
-                    start: "2023-09-09T10:59:29Z",
                     finish: "2023-09-09T10:59:29Z",
-                    status: "FAIL",
+                    start: "2023-09-09T10:59:29Z",
+                    status: "PASS",
+                    testKey: "CYP-268",
+                },
+                {
                     evidence: [
                         {
-                            filename: "small CYP-237.png",
                             data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
+                            filename: "small CYP-237.png",
                         },
                         {
+                            contentType: "text/plain",
                             data: "Z29vZGJ5ZQ==",
                             filename: "goodbye.txt",
-                            contentType: "text/plain",
                         },
                     ],
-                },
-                {
-                    testKey: "CYP-332",
-                    start: "2023-09-09T10:59:29Z",
                     finish: "2023-09-09T10:59:29Z",
+                    start: "2023-09-09T10:59:29Z",
                     status: "FAIL",
+                    testKey: "CYP-237",
                 },
                 {
-                    testKey: "CYP-333",
-                    start: "2023-09-09T10:59:29Z",
                     finish: "2023-09-09T10:59:29Z",
+                    start: "2023-09-09T10:59:29Z",
+                    status: "FAIL",
+                    testKey: "CYP-332",
+                },
+                {
+                    finish: "2023-09-09T10:59:29Z",
+                    start: "2023-09-09T10:59:29Z",
                     status: "TODO",
+                    testKey: "CYP-333",
                 },
             ]);
         });
@@ -532,8 +532,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             const command = new ConvertCypressTestsCommand(
                 {
                     ...options,
-                    useCloudStatusFallback: true,
                     evidenceCollection: new SimpleEvidenceCollection(),
+                    useCloudStatusFallback: true,
                 },
                 logger,
                 new ConstantCommand(logger, result)
@@ -553,8 +553,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     ...options,
                     cucumber: { featureFileExtension: ".ts" },
-                    useCloudStatusFallback: true,
                     evidenceCollection: new SimpleEvidenceCollection(),
+                    useCloudStatusFallback: true,
                 },
                 logger,
                 new ConstantCommand(logger, result)
@@ -571,8 +571,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(
                 {
+                    evidenceCollection: new SimpleEvidenceCollection(),
                     jira: {
                         projectKey: "CYP",
+                    },
+                    plugin: {
+                        normalizeScreenshotNames: true,
                     },
                     xray: {
                         status: {
@@ -583,17 +587,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                         },
                         uploadScreenshots: false,
                     },
-                    plugin: {
-                        normalizeScreenshotNames: true,
-                    },
-                    evidenceCollection: new SimpleEvidenceCollection(),
                 },
                 logger,
                 new ConstantCommand(logger, result)
             );
             expect(command.getParameters()).to.deep.eq({
+                evidenceCollection: new SimpleEvidenceCollection(),
                 jira: {
                     projectKey: "CYP",
+                },
+                plugin: {
+                    normalizeScreenshotNames: true,
                 },
                 xray: {
                     status: {
@@ -604,10 +608,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     uploadScreenshots: false,
                 },
-                plugin: {
-                    normalizeScreenshotNames: true,
-                },
-                evidenceCollection: new SimpleEvidenceCollection(),
             });
         });
     });

@@ -15,8 +15,8 @@ export class VerifyResultsUploadCommand extends Command<string, Parameters> {
         parameters: Parameters,
         logger: Logger,
         inputs?: {
-            cypressExecutionIssueKey?: Computable<string | undefined>;
             cucumberExecutionIssueKey?: Computable<string | undefined>;
+            cypressExecutionIssueKey?: Computable<string | undefined>;
         }
     ) {
         super(parameters, logger);

@@ -1,10 +1,10 @@
 export interface SimpleLink {
-    id?: string;
-    styleClass?: string;
-    iconClass?: string;
-    label?: string;
-    title?: string;
     href?: string;
-    weight?: number;
+    iconClass?: string;
+    id?: string;
+    label?: string;
     params?: Record<string, string>;
+    styleClass?: string;
+    title?: string;
+    weight?: number;
 }

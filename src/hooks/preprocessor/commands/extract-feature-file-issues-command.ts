@@ -17,10 +17,10 @@ import {
 import { getCucumberScenarioIssueTags } from "./parsing/scenario";
 
 interface Parameters {
-    filePath: string;
-    projectKey: string;
-    prefixes: Readonly<CucumberOptions["prefixes"]>;
     displayCloudHelp: boolean;
+    filePath: string;
+    prefixes: Readonly<CucumberOptions["prefixes"]>;
+    projectKey: string;
 }
 
 export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueData, Parameters> {
@@ -33,8 +33,8 @@ export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueDat
     protected async computeResult(): Promise<FeatureFileIssueData> {
         const parsedDocument = await this.document.compute();
         const featureFileIssueKeys: FeatureFileIssueData = {
-            tests: [],
             preconditions: [],
+            tests: [],
         };
         const backgrounds: Background[] = [];
         const scenarios: Scenario[] = [];

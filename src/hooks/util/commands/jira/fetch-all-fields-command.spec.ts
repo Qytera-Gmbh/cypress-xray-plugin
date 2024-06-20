@@ -12,28 +12,28 @@ describe(path.relative(process.cwd(), __filename), () => {
             const jiraClient = getMockedJiraClient();
             const fields = [
                 {
+                    clauseNames: ["labels"],
+                    custom: false,
                     id: "labels",
                     name: "Labels",
-                    custom: false,
-                    orderable: true,
                     navigable: true,
+                    orderable: true,
+                    schema: { items: "string", system: "labels", type: "array" },
                     searchable: true,
-                    clauseNames: ["labels"],
-                    schema: { type: "array", items: "string", system: "labels" },
                 },
                 {
+                    clauseNames: ["cf[12126]", "Test Plan"],
+                    custom: true,
                     id: "customfield_12126",
                     name: "Test Plan",
-                    custom: true,
-                    orderable: true,
                     navigable: true,
-                    searchable: true,
-                    clauseNames: ["cf[12126]", "Test Plan"],
+                    orderable: true,
                     schema: {
-                        type: "array",
                         custom: "com.xpandit.plugins.xray:test-plan-custom-field",
                         customId: 12126,
+                        type: "array",
                     },
+                    searchable: true,
                 },
             ];
             jiraClient.getFields.onFirstCall().resolves(fields);

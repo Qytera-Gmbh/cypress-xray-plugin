@@ -7,68 +7,68 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("pretty pad object arrays", () => {
             const array = [
                 {
+                    clauseNames: ["summary"],
+                    custom: false,
                     id: "summary",
                     name: "Summary",
-                    custom: false,
-                    orderable: true,
                     navigable: true,
-                    searchable: true,
-                    clauseNames: ["summary"],
+                    orderable: true,
                     schema: {
-                        type: "string",
                         system: "summary",
+                        type: "string",
                     },
+                    searchable: true,
                 },
                 {
-                    id: "description",
-                    orderable: true,
-                    name: "Description",
-                    schema: {
-                        type: "string",
-                        system: "description",
-                    },
-                    individualProperty: "I'm a space traveller",
                     custom: false,
+                    id: "description",
+                    individualProperty: "I'm a space traveller",
+                    name: "Description",
+                    orderable: true,
+                    schema: {
+                        system: "description",
+                        type: "string",
+                    },
                 },
             ];
             expect(prettyPadObjects(array)).to.deep.eq([
                 {
+                    clauseNames: '["summary"]',
+                    custom: "false",
                     id: '"summary"    ',
                     name: '"Summary"    ',
-                    custom: "false",
-                    orderable: "true",
                     navigable: "true",
+                    orderable: "true",
+                    schema: '{"system":"summary","type":"string"}    ',
                     searchable: "true",
-                    clauseNames: '["summary"]',
-                    schema: '{"type":"string","system":"summary"}    ',
                 },
                 {
-                    id: '"description"',
-                    name: '"Description"',
                     custom: "false",
-                    orderable: "true",
+                    id: '"description"',
                     individualProperty: '"I\'m a space traveller"',
-                    schema: '{"type":"string","system":"description"}',
+                    name: '"Description"',
+                    orderable: "true",
+                    schema: '{"system":"description","type":"string"}',
                 },
             ]);
         });
         it("pretty pad object values", () => {
             expect(
                 prettyPadValues({
-                    x: 12345,
                     a: [1, 2, false, true, "george"],
-                    y: "hello gooood Morning",
                     somethingLong: {
                         i: 1,
                         j: 2,
                         k: "snake",
                     },
+                    x: 12345,
+                    y: "hello gooood Morning",
                 })
             ).to.deep.eq({
-                x: "12345                    ",
                 a: '[1,2,false,true,"george"]',
-                y: '"hello gooood Morning"   ',
                 somethingLong: '{"i":1,"j":2,"k":"snake"}',
+                x: "12345                    ",
+                y: '"hello gooood Morning"   ',
             });
         });
     });

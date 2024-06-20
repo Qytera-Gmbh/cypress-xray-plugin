@@ -86,11 +86,11 @@ export async function configureXrayPlugin(
         logDirectory: pluginOptions.logDirectory,
     });
     const internalOptions: InternalCypressXrayPluginOptions = {
+        cucumber: await initCucumberOptions(config, options.cucumber),
+        http: options.http,
         jira: initJiraOptions(config.env, options.jira),
         plugin: pluginOptions,
         xray: initXrayOptions(config.env, options.xray),
-        cucumber: await initCucumberOptions(config, options.cucumber),
-        http: options.http,
     };
     const httpClients = initHttpClients(internalOptions.plugin, internalOptions.http);
     const logger = new CapturingLogger();
@@ -105,14 +105,6 @@ export async function configureXrayPlugin(
     setPluginContext(context);
     const listener = new PluginTaskListener(internalOptions.jira.projectKey, context, logger);
     on("task", {
-        [PluginTask.OUTGOING_REQUEST]: (
-            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
-        ) => {
-            if (internalOptions.xray.uploadRequests) {
-                return listener[PluginTask.OUTGOING_REQUEST](args);
-            }
-            return args.request;
-        },
         [PluginTask.INCOMING_RESPONSE]: (
             args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
         ) => {
@@ -121,8 +113,16 @@ export async function configureXrayPlugin(
             }
             return args.response;
         },
+        [PluginTask.OUTGOING_REQUEST]: (
+            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
+        ) => {
+            if (internalOptions.xray.uploadRequests) {
+                return listener[PluginTask.OUTGOING_REQUEST](args);
+            }
+            return args.request;
+        },
     });
-    on("after:run", async (results: CypressRunResultType | CypressFailedRunResultType) => {
+    on("after:run", async (results: CypressFailedRunResultType | CypressRunResultType) => {
         if (context.getOptions().xray.uploadResults) {
             if ("status" in results && results.status === "failed") {
                 const failedResult = results;
@@ -239,11 +239,11 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
 
 function registerDefaultTasks(on: Cypress.PluginEvents) {
     on("task", {
-        [PluginTask.OUTGOING_REQUEST]: (
-            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
-        ) => args.request,
         [PluginTask.INCOMING_RESPONSE]: (
             args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
         ) => args.response,
+        [PluginTask.OUTGOING_REQUEST]: (
+            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
+        ) => args.request,
     });
 }

@@ -4,18 +4,18 @@ import { IssueUpdate } from "../../jira/responses/issue-update";
 export interface CucumberMultipartInfo extends IssueUpdate {
     fields: {
         [k: string]: unknown;
+        description?: string;
+        issuetype: IssueTypeDetails;
+        labels?: string[];
         project: {
             key: string;
         };
         summary: string;
-        description?: string;
-        issuetype: IssueTypeDetails;
-        labels?: string[];
     };
 }
 export interface CucumberMultipartInfoCloud extends CucumberMultipartInfo {
     xrayFields?: {
-        testPlanKey?: string;
         environments?: string[];
+        testPlanKey?: string;
     };
 }

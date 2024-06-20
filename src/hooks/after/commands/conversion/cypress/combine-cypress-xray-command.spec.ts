@@ -13,8 +13,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("combines cucumber multipart data", async () => {
             const logger = getMockedLogger();
             const xrayInfo: XrayTestExecutionInfo = {
-                summary: "A test execution",
                 description: "Run using Cypress",
+                summary: "A test execution",
             };
             const xrayTests: [XrayTest, ...XrayTest[]] = [{ status: "PASS" }, { status: "FAIL" }];
             const command = new CombineCypressJsonCommand(
@@ -24,11 +24,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                 new ConstantCommand(logger, xrayInfo)
             );
             expect(await command.compute()).to.deep.eq({
-                testExecutionKey: "CYP-123",
                 info: {
-                    summary: "A test execution",
                     description: "Run using Cypress",
+                    summary: "A test execution",
                 },
+                testExecutionKey: "CYP-123",
                 tests: [{ status: "PASS" }, { status: "FAIL" }],
             });
         });

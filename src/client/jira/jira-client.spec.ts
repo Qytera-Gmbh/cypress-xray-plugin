@@ -33,7 +33,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         describe("add attachment", () => {
             it("should use the correct headers", async () => {
                 restClient.post.resolves({
-                    status: HttpStatusCode.Ok,
+                    config: {
+                        headers: new AxiosHeaders(),
+                    },
                     data: JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/singleAttachment.json",
@@ -41,10 +43,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         )
                     ),
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
                 });
                 await client.addAttachment("CYP-123", "./test/resources/turtle.png");
                 const headers = restClient.post.getCalls()[0].args[2]?.headers;
@@ -63,13 +63,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                         )
                     ) as unknown;
                     restClient.post.resolves({
-                        status: HttpStatusCode.Ok,
-                        data: mockedData,
-                        headers: {},
-                        statusText: HttpStatusCode[HttpStatusCode.Ok],
                         config: {
                             headers: new AxiosHeaders(),
                         },
+                        data: mockedData,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
                     });
                     const response = await client.addAttachment(
                         "CYP-123",
@@ -88,13 +88,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                         )
                     ) as unknown;
                     restClient.post.resolves({
-                        status: HttpStatusCode.Ok,
-                        data: mockedData,
-                        headers: {},
-                        statusText: HttpStatusCode[HttpStatusCode.Ok],
                         config: {
                             headers: new AxiosHeaders(),
                         },
+                        data: mockedData,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
                     });
                     const response = await client.addAttachment(
                         "CYP-123",
@@ -114,13 +114,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     )
                 ) as unknown;
                 restClient.post.resolves({
-                    status: HttpStatusCode.Ok,
-                    data: mockedData,
-                    headers: {},
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                     config: {
                         headers: new AxiosHeaders(),
                     },
+                    data: mockedData,
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                 });
                 const response = await client.addAttachment(
                     "CYP-123",
@@ -144,13 +144,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     )
                 ) as unknown;
                 restClient.post.resolves({
-                    status: HttpStatusCode.Ok,
-                    data: mockedData,
-                    headers: {},
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                     config: {
                         headers: new AxiosHeaders(),
                     },
+                    data: mockedData,
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                 });
                 const response = await client.addAttachment(
                     "CYP-123",
@@ -196,13 +196,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     undefined,
                     null,
                     {
-                        status: HttpStatusCode.PayloadTooLarge,
-                        statusText: HttpStatusCode[HttpStatusCode.PayloadTooLarge],
                         config: { headers: new AxiosHeaders() },
-                        headers: {},
                         data: {
                             errorMessages: ["The file is way too big."],
                         },
+                        headers: {},
+                        status: HttpStatusCode.PayloadTooLarge,
+                        statusText: HttpStatusCode[HttpStatusCode.PayloadTooLarge],
                     }
                 );
                 restClient.post.rejects(error);
@@ -229,31 +229,31 @@ describe(path.relative(process.cwd(), __filename), () => {
                     )
                 ) as IssueTypeDetails[];
                 restClient.get.onFirstCall().resolves({
-                    status: HttpStatusCode.Ok,
-                    data: issueTypes,
-                    headers: {},
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                     config: {
                         headers: new AxiosHeaders(),
                     },
+                    data: issueTypes,
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                 });
                 expect(await client.getIssueTypes()).to.eq(issueTypes);
             });
 
             it("handles issues without name or id", async () => {
                 const issueTypes: IssueTypeDetails[] = [
-                    { subtask: false, id: "12345" },
-                    { subtask: false, name: "Custom issue" },
-                    { subtask: true, description: "A legacy subtask" },
+                    { id: "12345", subtask: false },
+                    { name: "Custom issue", subtask: false },
+                    { description: "A legacy subtask", subtask: true },
                 ];
                 restClient.get.onFirstCall().resolves({
-                    status: HttpStatusCode.Ok,
-                    data: issueTypes,
-                    headers: {},
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                     config: {
                         headers: new AxiosHeaders(),
                     },
+                    data: issueTypes,
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                 });
                 expect(await client.getIssueTypes()).to.eq(issueTypes);
             });
@@ -266,13 +266,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     undefined,
                     null,
                     {
-                        status: HttpStatusCode.Conflict,
-                        statusText: HttpStatusCode[HttpStatusCode.Conflict],
                         config: { headers: new AxiosHeaders() },
-                        headers: {},
                         data: {
                             errorMessages: ["There is a conflict or something"],
                         },
+                        headers: {},
+                        status: HttpStatusCode.Conflict,
+                        statusText: HttpStatusCode[HttpStatusCode.Conflict],
                     }
                 );
                 restClient.get.onFirstCall().rejects(error);
@@ -299,13 +299,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     )
                 ) as unknown;
                 restClient.get.onFirstCall().resolves({
-                    status: HttpStatusCode.Ok,
-                    data: mockedData,
-                    headers: {},
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                     config: {
                         headers: new AxiosHeaders(),
                     },
+                    data: mockedData,
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                 });
                 const fields = await client.getFields();
                 expect(fields).to.eq(mockedData);
@@ -319,13 +319,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     undefined,
                     null,
                     {
-                        status: HttpStatusCode.Conflict,
-                        statusText: HttpStatusCode[HttpStatusCode.Conflict],
                         config: { headers: new AxiosHeaders() },
-                        headers: {},
                         data: {
                             errorMessages: ["There is a conflict or something"],
                         },
+                        headers: {},
+                        status: HttpStatusCode.Conflict,
+                        statusText: HttpStatusCode[HttpStatusCode.Conflict],
                     }
                 );
                 restClient.get.onFirstCall().rejects(error);
@@ -346,7 +346,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         describe("search", () => {
             it("should return all issues without pagination", async () => {
                 restClient.post.onFirstCall().resolves({
-                    status: HttpStatusCode.Ok,
+                    config: {
+                        headers: new AxiosHeaders(),
+                    },
                     data: JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/search.json",
@@ -354,14 +356,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                         )
                     ),
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
                 });
                 const response = await client.search({
-                    jql: "project = CYP AND issue in (CYP-268,CYP-237,CYP-332,CYP-333,CYP-338)",
                     fields: ["customfield_12100"],
+                    jql: "project = CYP AND issue in (CYP-268,CYP-237,CYP-332,CYP-333,CYP-338)",
                 });
                 expect(restClient.post).to.have.been.calledOnce;
                 expect(response).to.be.an("array").with.length(4);
@@ -376,79 +376,79 @@ describe(path.relative(process.cwd(), __filename), () => {
                     fs.readFileSync("./test/resources/fixtures/jira/responses/search.json", "utf-8")
                 ) as SearchResults;
                 restClient.post.onCall(0).resolves({
-                    status: HttpStatusCode.Ok,
-                    data: {
-                        ...mockedData,
-                        startAt: 0,
-                        maxResults: 1,
-                        issues: mockedData.issues?.slice(0, 1),
-                    },
-                    headers: {},
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                     config: {
                         headers: new AxiosHeaders(),
                     },
+                    data: {
+                        ...mockedData,
+                        issues: mockedData.issues?.slice(0, 1),
+                        maxResults: 1,
+                        startAt: 0,
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                 });
                 restClient.post.onCall(1).resolves({
-                    status: HttpStatusCode.Ok,
-                    data: {
-                        ...mockedData,
-                        total: undefined,
-                        startAt: 1,
-                        maxResults: 0,
-                        issues: undefined,
-                    },
-                    headers: {},
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                     config: {
                         headers: new AxiosHeaders(),
                     },
+                    data: {
+                        ...mockedData,
+                        issues: undefined,
+                        maxResults: 0,
+                        startAt: 1,
+                        total: undefined,
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                 });
                 restClient.post.onCall(2).resolves({
-                    status: HttpStatusCode.Ok,
-                    data: {
-                        ...mockedData,
-                        startAt: undefined,
-                        maxResults: 1,
-                        issues: mockedData.issues?.slice(1, 2),
-                    },
-                    headers: {},
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                     config: {
                         headers: new AxiosHeaders(),
                     },
+                    data: {
+                        ...mockedData,
+                        issues: mockedData.issues?.slice(1, 2),
+                        maxResults: 1,
+                        startAt: undefined,
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                 });
                 restClient.post.onCall(3).resolves({
-                    status: HttpStatusCode.Ok,
-                    data: {
-                        ...mockedData,
-                        startAt: 1,
-                        maxResults: 1,
-                        issues: mockedData.issues?.slice(1, 2),
-                    },
-                    headers: {},
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                     config: {
                         headers: new AxiosHeaders(),
                     },
+                    data: {
+                        ...mockedData,
+                        issues: mockedData.issues?.slice(1, 2),
+                        maxResults: 1,
+                        startAt: 1,
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                 });
                 restClient.post.onCall(4).resolves({
-                    status: HttpStatusCode.Ok,
-                    data: {
-                        ...mockedData,
-                        startAt: 2,
-                        maxResults: 3,
-                        issues: mockedData.issues?.slice(2),
-                    },
-                    headers: {},
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                     config: {
                         headers: new AxiosHeaders(),
                     },
+                    data: {
+                        ...mockedData,
+                        issues: mockedData.issues?.slice(2),
+                        maxResults: 3,
+                        startAt: 2,
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
                 });
                 const response = await client.search({
-                    jql: "project = CYP AND issue in (CYP-268,CYP-237,CYP-332,CYP-333,CYP-338)",
                     fields: ["customfield_12100"],
+                    jql: "project = CYP AND issue in (CYP-268,CYP-237,CYP-332,CYP-333,CYP-338)",
                 });
                 expect(restClient.post).to.have.callCount(5);
                 expect(restClient.post.getCall(0).args[1]).to.have.property("startAt", 0);
@@ -471,13 +471,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     undefined,
                     null,
                     {
-                        status: HttpStatusCode.Unauthorized,
-                        statusText: HttpStatusCode[HttpStatusCode.Unauthorized],
                         config: { headers: new AxiosHeaders() },
-                        headers: {},
                         data: {
                             errorMessages: ["You're not authenticated"],
                         },
+                        headers: {},
+                        status: HttpStatusCode.Unauthorized,
+                        statusText: HttpStatusCode[HttpStatusCode.Unauthorized],
                     }
                 );
                 restClient.post.onFirstCall().rejects(error);
@@ -503,13 +503,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     })
                     .onFirstCall()
                     .resolves({
-                        status: HttpStatusCode.NoContent,
-                        data: undefined,
-                        headers: {},
-                        statusText: HttpStatusCode[HttpStatusCode.NoContent],
                         config: {
                             headers: new AxiosHeaders(),
                         },
+                        data: undefined,
+                        headers: {},
+                        status: HttpStatusCode.NoContent,
+                        statusText: HttpStatusCode[HttpStatusCode.NoContent],
                     });
                 expect(
                     await client.editIssue("CYP-XYZ", {
@@ -526,13 +526,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     undefined,
                     null,
                     {
-                        status: HttpStatusCode.BadRequest,
-                        statusText: HttpStatusCode[HttpStatusCode.BadRequest],
                         config: { headers: new AxiosHeaders() },
-                        headers: {},
                         data: {
                             errorMessages: ["issue CYP-XYZ does not exist"],
                         },
+                        headers: {},
+                        status: HttpStatusCode.BadRequest,
+                        statusText: HttpStatusCode[HttpStatusCode.BadRequest],
                     }
                 );
                 restClient.put.onFirstCall().rejects(error);
@@ -562,13 +562,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                 new Promise((resolve) => {
                     setTimeout(() => {
                         resolve({
-                            status: HttpStatusCode.Ok,
-                            data: mockedData.slice(0, 2),
-                            headers: {},
-                            statusText: HttpStatusCode[HttpStatusCode.Ok],
                             config: {
                                 headers: new AxiosHeaders(),
                             },
+                            data: mockedData.slice(0, 2),
+                            headers: {},
+                            status: HttpStatusCode.Ok,
+                            statusText: HttpStatusCode[HttpStatusCode.Ok],
                         });
                     }, 23000);
                 })

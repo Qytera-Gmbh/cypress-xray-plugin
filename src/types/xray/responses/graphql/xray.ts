@@ -5,7 +5,7 @@ import { StringMap } from "../../../util";
  * Generated using: https://transform.tools/graphql-to-typescript
  * Some type parameters have been added manually.
  */
-export type Maybe<T> = T | null;
+export type Maybe<T> = null | T;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends StringMap<unknown>> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
@@ -14,36 +14,36 @@ export type MakeEmpty<T extends StringMap<unknown>, K extends keyof T> = {
     [_ in K]?: never;
 };
 export type Incremental<T> =
-    | T
-    | { [P in keyof T]?: P extends " $fragmentName" | "__typename" ? T[P] : never };
+    | { [P in keyof T]?: P extends " $fragmentName" | "__typename" ? T[P] : never }
+    | T;
 /** All built-in and custom scalars, mapped to their actual values */
 export interface Scalars {
-    ID: { input: string; output: string };
-    String: { input: string; output: string };
     Boolean: { input: boolean; output: boolean };
-    Int: { input: number; output: number };
     Float: { input: number; output: number };
+    ID: { input: string; output: string };
+    Int: { input: number; output: number };
     JSON: { input: unknown; output: unknown };
+    String: { input: string; output: string };
 }
 
 export interface Test<JiraDataType> {
     __typename?: "Test";
-    issueId?: Maybe<Scalars["String"]["output"]>;
-    projectId?: Maybe<Scalars["String"]["output"]>;
-    testType?: Maybe<TestType>;
-    steps?: Maybe<Maybe<Step>[]>;
-    unstructured?: Maybe<Scalars["String"]["output"]>;
-    gherkin?: Maybe<Scalars["String"]["output"]>;
     folder?: Maybe<Folder>;
-    scenarioType?: Maybe<Scalars["String"]["output"]>;
-    preconditions?: Maybe<PreconditionResults<JiraDataType>>;
-    testSets?: Maybe<TestSetResults<JiraDataType>>;
-    testPlans?: Maybe<TestPlanResults<JiraDataType>>;
-    testExecutions?: Maybe<TestExecutionResults<JiraDataType>>;
-    testRuns?: Maybe<TestRunResults<JiraDataType>>;
+    gherkin?: Maybe<Scalars["String"]["output"]>;
+    issueId?: Maybe<Scalars["String"]["output"]>;
     jira: JiraDataType;
-    status?: Maybe<TestStatusType>;
     lastModified?: Maybe<Scalars["String"]["output"]>;
+    preconditions?: Maybe<PreconditionResults<JiraDataType>>;
+    projectId?: Maybe<Scalars["String"]["output"]>;
+    scenarioType?: Maybe<Scalars["String"]["output"]>;
+    status?: Maybe<TestStatusType>;
+    steps?: Maybe<Maybe<Step>[]>;
+    testExecutions?: Maybe<TestExecutionResults<JiraDataType>>;
+    testPlans?: Maybe<TestPlanResults<JiraDataType>>;
+    testRuns?: Maybe<TestRunResults<JiraDataType>>;
+    testSets?: Maybe<TestSetResults<JiraDataType>>;
+    testType?: Maybe<TestType>;
+    unstructured?: Maybe<Scalars["String"]["output"]>;
 }
 
 export interface TestPreconditionsArgs {
@@ -82,26 +82,26 @@ export interface TestJiraArgs {
 export interface TestStatusArgs {
     environment?: InputMaybe<Scalars["String"]["input"]>;
     isFinal?: InputMaybe<Scalars["Boolean"]["input"]>;
-    version?: InputMaybe<Scalars["String"]["input"]>;
     testPlan?: InputMaybe<Scalars["String"]["input"]>;
+    version?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface TestType {
     __typename?: "TestType";
     id?: Maybe<Scalars["String"]["output"]>;
-    name?: Maybe<Scalars["String"]["output"]>;
     kind?: Maybe<Scalars["String"]["output"]>;
+    name?: Maybe<Scalars["String"]["output"]>;
 }
 
 export interface Step {
     __typename?: "Step";
-    id?: Maybe<Scalars["String"]["output"]>;
     action?: Maybe<Scalars["String"]["output"]>;
-    data?: Maybe<Scalars["String"]["output"]>;
-    result?: Maybe<Scalars["String"]["output"]>;
     attachments?: Maybe<Maybe<Attachment>[]>;
-    customFields?: Maybe<Maybe<CustomStepField>[]>;
     callTestIssueId?: Maybe<Scalars["String"]["output"]>;
+    customFields?: Maybe<Maybe<CustomStepField>[]>;
+    data?: Maybe<Scalars["String"]["output"]>;
+    id?: Maybe<Scalars["String"]["output"]>;
+    result?: Maybe<Scalars["String"]["output"]>;
 }
 
 export interface Folder {
@@ -112,58 +112,58 @@ export interface Folder {
 
 export interface PreconditionResults<JiraDataType> {
     __typename?: "PreconditionResults";
-    total?: Maybe<Scalars["Int"]["output"]>;
-    start?: Maybe<Scalars["Int"]["output"]>;
     limit?: Maybe<Scalars["Int"]["output"]>;
     results?: Maybe<Maybe<Precondition<JiraDataType>>[]>;
+    start?: Maybe<Scalars["Int"]["output"]>;
+    total?: Maybe<Scalars["Int"]["output"]>;
 }
 
 export interface TestSetResults<JiraDataType> {
     __typename?: "TestSetResults";
-    total?: Maybe<Scalars["Int"]["output"]>;
-    start?: Maybe<Scalars["Int"]["output"]>;
     limit?: Maybe<Scalars["Int"]["output"]>;
     results?: Maybe<Maybe<TestSet<JiraDataType>>[]>;
+    start?: Maybe<Scalars["Int"]["output"]>;
+    total?: Maybe<Scalars["Int"]["output"]>;
 }
 
 export interface TestPlanResults<JiraDataType> {
     __typename?: "TestPlanResults";
-    total?: Maybe<Scalars["Int"]["output"]>;
-    start?: Maybe<Scalars["Int"]["output"]>;
     limit?: Maybe<Scalars["Int"]["output"]>;
     results?: Maybe<Maybe<TestPlan<JiraDataType>>[]>;
+    start?: Maybe<Scalars["Int"]["output"]>;
+    total?: Maybe<Scalars["Int"]["output"]>;
 }
 
 export interface TestExecutionResults<JiraDataType> {
     __typename?: "TestExecutionResults";
-    total?: Maybe<Scalars["Int"]["output"]>;
-    start?: Maybe<Scalars["Int"]["output"]>;
     limit?: Maybe<Scalars["Int"]["output"]>;
     results?: Maybe<Maybe<TestExecution<JiraDataType>>[]>;
+    start?: Maybe<Scalars["Int"]["output"]>;
+    total?: Maybe<Scalars["Int"]["output"]>;
 }
 
 export interface TestRunResults<JiraDataType> {
     __typename?: "TestRunResults";
-    total?: Maybe<Scalars["Int"]["output"]>;
-    start?: Maybe<Scalars["Int"]["output"]>;
     limit?: Maybe<Scalars["Int"]["output"]>;
     results?: Maybe<Maybe<TestRun<JiraDataType>>[]>;
+    start?: Maybe<Scalars["Int"]["output"]>;
+    total?: Maybe<Scalars["Int"]["output"]>;
 }
 
 export interface TestStatusType {
     __typename?: "TestStatusType";
-    name?: Maybe<Scalars["String"]["output"]>;
+    color?: Maybe<Scalars["String"]["output"]>;
     description?: Maybe<Scalars["String"]["output"]>;
     final?: Maybe<Scalars["Boolean"]["output"]>;
-    color?: Maybe<Scalars["String"]["output"]>;
+    name?: Maybe<Scalars["String"]["output"]>;
 }
 
 export interface Attachment {
     __typename?: "Attachment";
-    id?: Maybe<Scalars["String"]["output"]>;
-    filename?: Maybe<Scalars["String"]["output"]>;
-    storedInJira?: Maybe<Scalars["Boolean"]["output"]>;
     downloadLink?: Maybe<Scalars["String"]["output"]>;
+    filename?: Maybe<Scalars["String"]["output"]>;
+    id?: Maybe<Scalars["String"]["output"]>;
+    storedInJira?: Maybe<Scalars["Boolean"]["output"]>;
 }
 
 export interface CustomStepField {
@@ -175,14 +175,14 @@ export interface CustomStepField {
 
 export interface Precondition<JiraDataType> {
     __typename?: "Precondition";
-    issueId?: Maybe<Scalars["String"]["output"]>;
-    projectId?: Maybe<Scalars["String"]["output"]>;
-    preconditionType?: Maybe<TestType>;
     definition?: Maybe<Scalars["String"]["output"]>;
-    tests?: Maybe<TestResults<JiraDataType>>;
+    folder?: Maybe<Folder>;
+    issueId?: Maybe<Scalars["String"]["output"]>;
     jira?: Maybe<JiraDataType>;
     lastModified?: Maybe<Scalars["String"]["output"]>;
-    folder?: Maybe<Folder>;
+    preconditionType?: Maybe<TestType>;
+    projectId?: Maybe<Scalars["String"]["output"]>;
+    tests?: Maybe<TestResults<JiraDataType>>;
 }
 
 export interface PreconditionTestsArgs {
@@ -198,10 +198,10 @@ export interface PreconditionJiraArgs {
 export interface TestSet<JiraDataType> {
     __typename?: "TestSet";
     issueId?: Maybe<Scalars["String"]["output"]>;
-    projectId?: Maybe<Scalars["String"]["output"]>;
-    tests?: Maybe<TestResults<JiraDataType>>;
     jira?: Maybe<JiraDataType>;
     lastModified?: Maybe<Scalars["String"]["output"]>;
+    projectId?: Maybe<Scalars["String"]["output"]>;
+    tests?: Maybe<TestResults<JiraDataType>>;
 }
 
 export interface TestSetTestsArgs {
@@ -216,13 +216,13 @@ export interface TestSetJiraArgs {
 
 export interface TestPlan<JiraDataType> {
     __typename?: "TestPlan";
-    issueId?: Maybe<Scalars["String"]["output"]>;
-    projectId?: Maybe<Scalars["String"]["output"]>;
-    tests?: Maybe<TestResults<JiraDataType>>;
-    testExecutions?: Maybe<TestExecutionResults<JiraDataType>>;
-    jira?: Maybe<JiraDataType>;
     folders?: Maybe<FolderResults>;
+    issueId?: Maybe<Scalars["String"]["output"]>;
+    jira?: Maybe<JiraDataType>;
     lastModified?: Maybe<Scalars["String"]["output"]>;
+    projectId?: Maybe<Scalars["String"]["output"]>;
+    testExecutions?: Maybe<TestExecutionResults<JiraDataType>>;
+    tests?: Maybe<TestResults<JiraDataType>>;
 }
 
 export interface TestPlanTestsArgs {
@@ -244,13 +244,13 @@ export interface TestPlanJiraArgs {
 export interface TestExecution<JiraDataType> {
     __typename?: "TestExecution";
     issueId?: Maybe<Scalars["String"]["output"]>;
-    projectId?: Maybe<Scalars["String"]["output"]>;
-    testEnvironments?: Maybe<Maybe<Scalars["String"]["output"]>[]>;
-    tests?: Maybe<TestResults<JiraDataType>>;
-    testPlans?: Maybe<TestPlanResults<JiraDataType>>;
-    testRuns?: Maybe<TestRunResults<JiraDataType>>;
     jira?: Maybe<JiraDataType>;
     lastModified?: Maybe<Scalars["String"]["output"]>;
+    projectId?: Maybe<Scalars["String"]["output"]>;
+    testEnvironments?: Maybe<Maybe<Scalars["String"]["output"]>[]>;
+    testPlans?: Maybe<TestPlanResults<JiraDataType>>;
+    testRuns?: Maybe<TestRunResults<JiraDataType>>;
+    tests?: Maybe<TestResults<JiraDataType>>;
 }
 
 export interface TestExecutionTestsArgs {
@@ -276,29 +276,29 @@ export interface TestExecutionJiraArgs {
 
 export interface TestRun<JiraDataType> {
     __typename?: "TestRun";
-    id?: Maybe<Scalars["String"]["output"]>;
-    status?: Maybe<Status>;
-    unstructured?: Maybe<Scalars["String"]["output"]>;
-    gherkin?: Maybe<Scalars["String"]["output"]>;
-    scenarioType?: Maybe<Scalars["String"]["output"]>;
-    comment?: Maybe<Scalars["String"]["output"]>;
-    startedOn?: Maybe<Scalars["String"]["output"]>;
-    evidence?: Maybe<Maybe<Evidence>[]>;
-    defects?: Maybe<Maybe<Scalars["String"]["output"]>[]>;
-    steps?: Maybe<Maybe<TestRunStep>[]>;
-    examples?: Maybe<Maybe<Example>[]>;
-    results?: Maybe<Maybe<Result>[]>;
-    testType?: Maybe<TestType>;
-    executedById?: Maybe<Scalars["String"]["output"]>;
     assigneeId?: Maybe<Scalars["String"]["output"]>;
+    comment?: Maybe<Scalars["String"]["output"]>;
+    customFields?: Maybe<Maybe<TestRunCustomFieldValue>[]>;
+    defects?: Maybe<Maybe<Scalars["String"]["output"]>[]>;
+    evidence?: Maybe<Maybe<Evidence>[]>;
+    examples?: Maybe<Maybe<Example>[]>;
+    executedById?: Maybe<Scalars["String"]["output"]>;
     finishedOn?: Maybe<Scalars["String"]["output"]>;
+    gherkin?: Maybe<Scalars["String"]["output"]>;
+    id?: Maybe<Scalars["String"]["output"]>;
+    iterations?: Maybe<TestRunIterationResults>;
+    lastModified?: Maybe<Scalars["String"]["output"]>;
+    parameters?: Maybe<Maybe<TestRunParameter>[]>;
     preconditions?: Maybe<TestRunPreconditionResults<JiraDataType>>;
+    results?: Maybe<Maybe<Result>[]>;
+    scenarioType?: Maybe<Scalars["String"]["output"]>;
+    startedOn?: Maybe<Scalars["String"]["output"]>;
+    status?: Maybe<Status>;
+    steps?: Maybe<Maybe<TestRunStep>[]>;
     test?: Maybe<Test<JiraDataType>>;
     testExecution?: Maybe<TestExecution<JiraDataType>>;
-    lastModified?: Maybe<Scalars["String"]["output"]>;
-    customFields?: Maybe<Maybe<TestRunCustomFieldValue>[]>;
-    parameters?: Maybe<Maybe<TestRunParameter>[]>;
-    iterations?: Maybe<TestRunIterationResults>;
+    testType?: Maybe<TestType>;
+    unstructured?: Maybe<Scalars["String"]["output"]>;
 }
 
 export interface TestRunPreconditionsArgs {
@@ -313,82 +313,82 @@ export interface TestRunIterationsArgs {
 
 export interface TestResults<JiraDataType> {
     __typename?: "TestResults";
-    total?: Maybe<Scalars["Int"]["output"]>;
-    start?: Maybe<Scalars["Int"]["output"]>;
     limit?: Maybe<Scalars["Int"]["output"]>;
     results?: Maybe<Maybe<Test<JiraDataType>>[]>;
+    start?: Maybe<Scalars["Int"]["output"]>;
+    total?: Maybe<Scalars["Int"]["output"]>;
 }
 
 export interface FolderResults {
     __typename?: "FolderResults";
+    folders?: Maybe<Scalars["JSON"]["output"]>;
+    issuesCount?: Maybe<Scalars["Int"]["output"]>;
     name?: Maybe<Scalars["String"]["output"]>;
     path?: Maybe<Scalars["String"]["output"]>;
-    issuesCount?: Maybe<Scalars["Int"]["output"]>;
-    testsCount?: Maybe<Scalars["Int"]["output"]>;
     preconditionsCount?: Maybe<Scalars["Int"]["output"]>;
-    folders?: Maybe<Scalars["JSON"]["output"]>;
+    testsCount?: Maybe<Scalars["Int"]["output"]>;
 }
 
 export interface Status {
     __typename?: "Status";
-    name?: Maybe<Scalars["String"]["output"]>;
-    description?: Maybe<Scalars["String"]["output"]>;
-    final?: Maybe<Scalars["Boolean"]["output"]>;
     color?: Maybe<Scalars["String"]["output"]>;
     coverageStatus?: Maybe<Scalars["String"]["output"]>;
+    description?: Maybe<Scalars["String"]["output"]>;
+    final?: Maybe<Scalars["Boolean"]["output"]>;
+    name?: Maybe<Scalars["String"]["output"]>;
 }
 
 export interface Evidence {
     __typename?: "Evidence";
-    id?: Maybe<Scalars["String"]["output"]>;
-    filename?: Maybe<Scalars["String"]["output"]>;
-    storedInJira?: Maybe<Scalars["Boolean"]["output"]>;
-    downloadLink?: Maybe<Scalars["String"]["output"]>;
-    size?: Maybe<Scalars["Int"]["output"]>;
     createdOn?: Maybe<Scalars["String"]["output"]>;
+    downloadLink?: Maybe<Scalars["String"]["output"]>;
+    filename?: Maybe<Scalars["String"]["output"]>;
+    id?: Maybe<Scalars["String"]["output"]>;
+    size?: Maybe<Scalars["Int"]["output"]>;
+    storedInJira?: Maybe<Scalars["Boolean"]["output"]>;
 }
 
 export interface TestRunStep {
     __typename?: "TestRunStep";
-    id?: Maybe<Scalars["String"]["output"]>;
-    status?: Maybe<StepStatus>;
     action?: Maybe<Scalars["String"]["output"]>;
-    data?: Maybe<Scalars["String"]["output"]>;
-    result?: Maybe<Scalars["String"]["output"]>;
-    customFields?: Maybe<Maybe<TestRunCustomStepField>[]>;
-    comment?: Maybe<Scalars["String"]["output"]>;
-    evidence?: Maybe<Maybe<Evidence>[]>;
-    attachments?: Maybe<Maybe<Attachment>[]>;
-    defects?: Maybe<Maybe<Scalars["String"]["output"]>[]>;
     actualResult?: Maybe<Scalars["String"]["output"]>;
+    attachments?: Maybe<Maybe<Attachment>[]>;
+    comment?: Maybe<Scalars["String"]["output"]>;
+    customFields?: Maybe<Maybe<TestRunCustomStepField>[]>;
+    data?: Maybe<Scalars["String"]["output"]>;
+    defects?: Maybe<Maybe<Scalars["String"]["output"]>[]>;
+    evidence?: Maybe<Maybe<Evidence>[]>;
+    id?: Maybe<Scalars["String"]["output"]>;
+    result?: Maybe<Scalars["String"]["output"]>;
+    status?: Maybe<StepStatus>;
 }
 
 export interface Example {
     __typename?: "Example";
+    duration?: Maybe<Scalars["Float"]["output"]>;
     id?: Maybe<Scalars["String"]["output"]>;
     status?: Maybe<StepStatus>;
-    duration?: Maybe<Scalars["Float"]["output"]>;
 }
 
 export interface Result {
     __typename?: "Result";
-    log?: Maybe<Scalars["String"]["output"]>;
-    examples?: Maybe<Maybe<ResultsExample>[]>;
-    wasImported?: Maybe<Scalars["String"]["output"]>;
-    duration?: Maybe<Scalars["Float"]["output"]>;
-    status?: Maybe<StepStatus>;
-    name?: Maybe<Scalars["String"]["output"]>;
-    hooks?: Maybe<Maybe<ResultsStep>[]>;
     backgrounds?: Maybe<Maybe<ResultsStep>[]>;
+    duration?: Maybe<Scalars["Float"]["output"]>;
+    examples?: Maybe<Maybe<ResultsExample>[]>;
+    hooks?: Maybe<Maybe<ResultsStep>[]>;
+    log?: Maybe<Scalars["String"]["output"]>;
+    name?: Maybe<Scalars["String"]["output"]>;
+    status?: Maybe<StepStatus>;
     steps?: Maybe<Maybe<ResultsStep>[]>;
+    wasImported?: Maybe<Scalars["String"]["output"]>;
 }
 
 export interface TestRunPreconditionResults<JiraDataType> {
     __typename?: "TestRunPreconditionResults";
-    total?: Maybe<Scalars["Int"]["output"]>;
-    start?: Maybe<Scalars["Int"]["output"]>;
     limit?: Maybe<Scalars["Int"]["output"]>;
     results?: Maybe<Maybe<TestRunPrecondition<JiraDataType>>[]>;
+    start?: Maybe<Scalars["Int"]["output"]>;
+    total?: Maybe<Scalars["Int"]["output"]>;
 }
 
 export interface TestRunCustomFieldValue {
@@ -406,17 +406,17 @@ export interface TestRunParameter {
 
 export interface TestRunIterationResults {
     __typename?: "TestRunIterationResults";
-    total?: Maybe<Scalars["Int"]["output"]>;
-    start?: Maybe<Scalars["Int"]["output"]>;
     limit?: Maybe<Scalars["Int"]["output"]>;
     results?: Maybe<Maybe<TestRunIteration>[]>;
+    start?: Maybe<Scalars["Int"]["output"]>;
+    total?: Maybe<Scalars["Int"]["output"]>;
 }
 
 export interface StepStatus {
     __typename?: "StepStatus";
-    name?: Maybe<Scalars["String"]["output"]>;
-    description?: Maybe<Scalars["String"]["output"]>;
     color?: Maybe<Scalars["String"]["output"]>;
+    description?: Maybe<Scalars["String"]["output"]>;
+    name?: Maybe<Scalars["String"]["output"]>;
     testStatus?: Maybe<Status>;
 }
 
@@ -429,35 +429,35 @@ export interface TestRunCustomStepField {
 
 export interface ResultsExample {
     __typename?: "ResultsExample";
-    wasImported?: Maybe<Scalars["String"]["output"]>;
-    duration?: Maybe<Scalars["Float"]["output"]>;
-    status?: Maybe<StepStatus>;
-    hooks?: Maybe<Maybe<ResultsStep>[]>;
     backgrounds?: Maybe<Maybe<ResultsStep>[]>;
+    duration?: Maybe<Scalars["Float"]["output"]>;
+    hooks?: Maybe<Maybe<ResultsStep>[]>;
+    status?: Maybe<StepStatus>;
     steps?: Maybe<Maybe<ResultsStep>[]>;
+    wasImported?: Maybe<Scalars["String"]["output"]>;
 }
 
 export interface ResultsStep {
     __typename?: "ResultsStep";
-    keyword?: Maybe<Scalars["String"]["output"]>;
-    name?: Maybe<Scalars["String"]["output"]>;
-    embeddings?: Maybe<Maybe<ResultsEmbedding>[]>;
     duration?: Maybe<Scalars["Float"]["output"]>;
+    embeddings?: Maybe<Maybe<ResultsEmbedding>[]>;
     error?: Maybe<Scalars["String"]["output"]>;
-    status?: Maybe<StepStatus>;
+    keyword?: Maybe<Scalars["String"]["output"]>;
     log?: Maybe<Scalars["String"]["output"]>;
+    name?: Maybe<Scalars["String"]["output"]>;
+    status?: Maybe<StepStatus>;
 }
 
 export interface TestRunPrecondition<JiraDataType> {
     __typename?: "TestRunPrecondition";
-    preconditionRef?: Maybe<Precondition<JiraDataType>>;
     definition?: Maybe<Scalars["String"]["output"]>;
+    preconditionRef?: Maybe<Precondition<JiraDataType>>;
 }
 
 export interface TestRunIteration {
     __typename?: "TestRunIteration";
-    rank?: Maybe<Scalars["String"]["output"]>;
     parameters?: Maybe<Maybe<TestRunParameter>[]>;
+    rank?: Maybe<Scalars["String"]["output"]>;
     status?: Maybe<StepStatus>;
     stepResults?: Maybe<TestRunIterationStepResults>;
 }
@@ -469,26 +469,26 @@ export interface TestRunIterationStepResultsArgs {
 
 export interface ResultsEmbedding {
     __typename?: "ResultsEmbedding";
-    filename?: Maybe<Scalars["String"]["output"]>;
-    mimeType?: Maybe<Scalars["String"]["output"]>;
     data?: Maybe<Scalars["String"]["output"]>;
     downloadLink?: Maybe<Scalars["String"]["output"]>;
+    filename?: Maybe<Scalars["String"]["output"]>;
+    mimeType?: Maybe<Scalars["String"]["output"]>;
 }
 
 export interface TestRunIterationStepResults {
     __typename?: "TestRunIterationStepResults";
-    total?: Maybe<Scalars["Int"]["output"]>;
-    start?: Maybe<Scalars["Int"]["output"]>;
     limit?: Maybe<Scalars["Int"]["output"]>;
     results?: Maybe<Maybe<TestRunIterationStepResult>[]>;
+    start?: Maybe<Scalars["Int"]["output"]>;
+    total?: Maybe<Scalars["Int"]["output"]>;
 }
 
 export interface TestRunIterationStepResult {
     __typename?: "TestRunIterationStepResult";
+    actualResult?: Maybe<Scalars["String"]["output"]>;
+    comment?: Maybe<Scalars["String"]["output"]>;
+    defects?: Maybe<Maybe<Scalars["String"]["output"]>[]>;
+    evidence?: Maybe<Maybe<Evidence>[]>;
     id?: Maybe<Scalars["String"]["output"]>;
     status?: Maybe<StepStatus>;
-    comment?: Maybe<Scalars["String"]["output"]>;
-    evidence?: Maybe<Maybe<Evidence>[]>;
-    defects?: Maybe<Maybe<Scalars["String"]["output"]>[]>;
-    actualResult?: Maybe<Scalars["String"]["output"]>;
 }

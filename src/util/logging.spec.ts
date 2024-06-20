@@ -182,17 +182,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                         { headers: new AxiosHeaders() },
                         null,
                         {
-                            status: 400,
-                            statusText: "Bad Request",
                             config: {
                                 headers: new AxiosHeaders({
                                     ["Authorization"]: "Bearer 123456790",
                                 }),
                             },
-                            headers: {},
                             data: {
                                 error: "Must provide a project key",
                             },
+                            headers: {},
+                            status: 400,
+                            statusText: "Bad Request",
                         }
                     ),
                     "logErrorToFileAxios"

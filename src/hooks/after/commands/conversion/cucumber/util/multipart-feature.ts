@@ -26,12 +26,12 @@ import { getScenarioTagRegex } from "../../../../../preprocessor/commands/parsin
 export function buildMultipartFeatures(
     input: CucumberMultipartFeature[],
     options: {
-        projectRoot: string;
-        testExecutionIssueKey?: string;
         includeScreenshots?: boolean;
         projectKey: string;
-        useCloudTags: boolean;
+        projectRoot: string;
+        testExecutionIssueKey?: string;
         testPrefix?: string;
+        useCloudTags: boolean;
     },
     logger: Logger
 ): CucumberMultipartFeature[] {
@@ -114,8 +114,8 @@ function assertScenarioContainsIssueKey(
         if (issueKeys.length > 1) {
             throw multipleTestKeysInCucumberScenarioError(
                 {
-                    name: element.name,
                     keyword: element.keyword,
+                    name: element.name,
                     steps: element.steps.map((step: CucumberMultipartStep) => {
                         return { keyword: step.keyword, text: step.name };
                     }),
@@ -129,8 +129,8 @@ function assertScenarioContainsIssueKey(
     if (issueKeys.length === 0) {
         throw missingTestKeyInCucumberScenarioError(
             {
-                name: element.name,
                 keyword: element.keyword,
+                name: element.name,
                 steps: element.steps.map((step: CucumberMultipartStep) => {
                     return { keyword: step.keyword, text: step.name };
                 }),

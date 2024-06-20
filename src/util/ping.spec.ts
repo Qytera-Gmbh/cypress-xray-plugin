@@ -26,25 +26,25 @@ describe(path.relative(process.cwd(), __filename), () => {
                     headers: { ["Authorization"]: "Bearer token" },
                 })
                 .resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         active: true,
                         displayName: "Demo User",
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
             await pingJiraInstance("https://example.org", new PatCredentials("token"), restClient);
         });
 
         it("returns false if no license data is returned", async () => {
             restClient.get.resolves({
-                status: HttpStatusCode.Ok,
+                config: { headers: new AxiosHeaders() },
                 data: "<div>Welcome</div>",
                 headers: {},
+                status: HttpStatusCode.Ok,
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
             });
             await expect(
                 pingJiraInstance("https://example.org", new PatCredentials("token"), restClient)
@@ -65,13 +65,13 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("returns false if user data is missing", async () => {
             restClient.get.resolves({
-                status: HttpStatusCode.Ok,
+                config: { headers: new AxiosHeaders() },
                 data: {
                     active: true,
                 },
                 headers: {},
+                status: HttpStatusCode.Ok,
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
             });
             await expect(
                 pingJiraInstance("https://example.org", new PatCredentials("token"), restClient)
@@ -98,14 +98,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     headers: { ["Authorization"]: "Bearer token" },
                 })
                 .resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         active: true,
                         displayName: "Demo User",
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
             logger.message
                 .withArgs(Level.INFO, "Waiting for https://example.org to respond... (10 seconds)")
@@ -147,25 +147,25 @@ describe(path.relative(process.cwd(), __filename), () => {
                     headers: { ["Authorization"]: "Bearer token" },
                 })
                 .resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         active: true,
                         licenseType: "Demo License",
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
             await pingXrayServer("https://example.org", new PatCredentials("token"), restClient);
         });
 
         it("returns false if no license data is returned", async () => {
             restClient.get.resolves({
-                status: HttpStatusCode.Ok,
+                config: { headers: new AxiosHeaders() },
                 data: "<div>Welcome</div>",
                 headers: {},
+                status: HttpStatusCode.Ok,
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
             });
             await expect(
                 pingXrayServer("https://example.org", new PatCredentials("token"), restClient)
@@ -187,14 +187,14 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("returns false if the license is not active", async () => {
             restClient.get.resolves({
-                status: HttpStatusCode.Ok,
+                config: { headers: new AxiosHeaders() },
                 data: {
                     active: false,
                     licenseType: "Basic",
                 },
                 headers: {},
+                status: HttpStatusCode.Ok,
                 statusText: HttpStatusCode[HttpStatusCode.Ok],
-                config: { headers: new AxiosHeaders() },
             });
             await expect(
                 pingXrayServer("https://example.org", new PatCredentials("token"), restClient)
@@ -222,14 +222,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     headers: { ["Authorization"]: "Bearer token" },
                 })
                 .resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: {
                         active: true,
                         licenseType: "Demo License",
                     },
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
             logger.message
                 .withArgs(Level.INFO, "Waiting for https://example.org to respond... (10 seconds)")
@@ -272,11 +272,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     ["client_secret"]: "token",
                 })
                 .resolves({
-                    status: HttpStatusCode.Ok,
+                    config: { headers: new AxiosHeaders() },
                     data: "ey.123.xyz",
                     headers: {},
+                    status: HttpStatusCode.Ok,
                     statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    config: { headers: new AxiosHeaders() },
                 });
             const credentials = getMockedJwtCredentials();
             credentials.getAuthorizationHeader.resolves({ ["Authorization"]: "ey12345" });
@@ -292,13 +292,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     undefined,
                     null,
                     {
-                        status: HttpStatusCode.NotFound,
-                        statusText: HttpStatusCode[HttpStatusCode.NotFound],
                         config: { headers: new AxiosHeaders() },
-                        headers: {},
                         data: {
                             errorMessages: ["not found"],
                         },
+                        headers: {},
+                        status: HttpStatusCode.NotFound,
+                        statusText: HttpStatusCode[HttpStatusCode.NotFound],
                     }
                 )
             );

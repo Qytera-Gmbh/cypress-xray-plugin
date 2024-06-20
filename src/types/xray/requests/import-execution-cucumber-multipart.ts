@@ -25,16 +25,16 @@ export interface CucumberMultipartFeature {
     uri: string;
 }
 export interface CucumberMultipartElement {
+    after?: CucumberMultipartHook[];
+    before?: CucumberMultipartHook[];
     description: string;
     id?: string;
     keyword: string;
     line: number;
     name: string;
-    before?: CucumberMultipartHook[];
     steps: CucumberMultipartStep[];
-    after?: CucumberMultipartHook[];
-    type: "background" | "scenario";
     tags?: CucumberMultipartTag[];
+    type: "background" | "scenario";
 }
 export interface CucumberMultipartStep {
     ["doc_string"]?: CucumberMultipartDocString;
@@ -57,24 +57,24 @@ export interface CucumberMultipartDataTableRow {
 }
 export interface CucumberMultipartStepResult {
     duration?: number;
-    status: "passed" | "failed" | "skipped" | "undefined" | "pending" | "unknown";
     ["error_message"]?: string;
+    status: "failed" | "passed" | "pending" | "skipped" | "undefined" | "unknown";
 }
 export interface CucumberMultipartMatch {
-    location: string;
     arguments?: CucumberMultipartArgument[];
+    location: string;
 }
 export interface CucumberMultipartTag {
-    name: string;
     line?: number;
+    name: string;
 }
 export interface CucumberMultipartHook {
     match?: CucumberMultipartMatch;
     result: CucumberMultipartStepResult;
 }
 export interface CucumberMultipartArgument {
-    value: string;
     offset: number;
+    value: string;
 }
 export interface CucumberMultipartEmbedding {
     data: string;

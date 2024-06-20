@@ -28,7 +28,7 @@ export interface ProjectDetails {
     /**
      * The project type of the project.
      */
-    projectTypeKey?: "software" | "service_desk" | "business";
+    projectTypeKey?: "business" | "service_desk" | "software";
     /**
      * The URL of the project details.
      */

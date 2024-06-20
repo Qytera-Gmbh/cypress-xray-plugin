@@ -2,26 +2,9 @@ import { SimpleListWrapper } from "./simple-list-wrapper";
 
 export interface User {
     /**
-     * The URL of the user.
+     * Whether the user is active.
      */
-    self?: string;
-    /**
-     * This property is no longer available and will be removed from the documentation soon. See the
-     * {@link https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/ | deprecation notice}
-     * for details.
-     */
-    key?: string;
-    /**
-     * This property is no longer available and will be removed from the documentation soon. See the
-     * {@link https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/ | deprecation notice}
-     * for details.
-     */
-    name?: string;
-    /**
-     * The email address of the user. Depending on the user’s privacy settings, this may be returned
-     * as null.
-     */
-    emailAddress?: string;
+    active: boolean;
     /**
      * The avatars of the user.
      */
@@ -37,9 +20,26 @@ export interface User {
      */
     displayName?: string;
     /**
-     * Whether the user is active.
+     * The email address of the user. Depending on the user’s privacy settings, this may be returned
+     * as null.
      */
-    active: boolean;
+    emailAddress?: string;
+    /**
+     * This property is no longer available and will be removed from the documentation soon. See the
+     * {@link https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/ | deprecation notice}
+     * for details.
+     */
+    key?: string;
+    /**
+     * This property is no longer available and will be removed from the documentation soon. See the
+     * {@link https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/ | deprecation notice}
+     * for details.
+     */
+    name?: string;
+    /**
+     * The URL of the user.
+     */
+    self?: string;
     /**
      * The time zone specified in the user's profile. Depending on the user’s privacy settings, this
      * may be returned as null.
@@ -47,11 +47,11 @@ export interface User {
     timeZone?: string;
 }
 export interface UserServer extends User {
-    locale?: string;
-    groups?: SimpleListWrapper;
     applicationRoles?: SimpleListWrapper;
-    expand?: string;
     deleted?: boolean;
+    expand?: string;
+    groups?: SimpleListWrapper;
+    locale?: string;
 }
 export interface UserCloud extends User {
     /**
@@ -62,5 +62,5 @@ export interface UserCloud extends User {
     /**
      * The type of account represented by this user.
      */
-    accountType?: "atlassian" | "app" | "customer";
+    accountType?: "app" | "atlassian" | "customer";
 }

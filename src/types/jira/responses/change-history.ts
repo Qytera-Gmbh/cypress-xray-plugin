@@ -4,10 +4,6 @@ import { User } from "./user";
 
 export interface ChangeHistory {
     /**
-     * The ID of the changelog.
-     */
-    id?: string;
-    /**
      * The user who made the change.
      */
     author?: User;
@@ -16,11 +12,15 @@ export interface ChangeHistory {
      */
     created?: string;
     /**
-     * The list of items changed.
-     */
-    items?: ChangeItem[];
-    /**
      * The history metadata associated with the changed.
      */
     historyMetadata?: HistoryMetadata;
+    /**
+     * The ID of the changelog.
+     */
+    id?: string;
+    /**
+     * The list of items changed.
+     */
+    items?: ChangeItem[];
 }

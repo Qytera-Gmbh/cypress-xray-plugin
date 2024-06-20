@@ -30,10 +30,10 @@ export function addSynchronizationCommands(
     const extractIssueDataCommand = graph.place(
         new ExtractFeatureFileIssuesCommand(
             {
-                filePath: file.filePath,
-                projectKey: options.jira.projectKey,
-                prefixes: options.cucumber?.prefixes,
                 displayCloudHelp: clients.kind === "cloud",
+                filePath: file.filePath,
+                prefixes: options.cucumber?.prefixes,
+                projectKey: options.jira.projectKey,
             },
             logger,
             parseFeatureFileCommand
@@ -79,9 +79,9 @@ export function addSynchronizationCommands(
     const importFeatureCommand = graph.place(
         new ImportFeatureCommand(
             {
-                xrayClient: clients.xrayClient,
                 filePath: file.filePath,
                 projectKey: options.jira.projectKey,
+                xrayClient: clients.xrayClient,
             },
             logger
         )
@@ -128,7 +128,7 @@ export function addSynchronizationCommands(
     graph.connect(getNewLabelsCommand, getLabelsToResetCommand);
     const editSummariesCommand = graph.place(
         new EditIssueFieldCommand(
-            { jiraClient: clients.jiraClient, field: JiraField.SUMMARY },
+            { field: JiraField.SUMMARY, jiraClient: clients.jiraClient },
             logger,
             getSummaryFieldIdCommand,
             getSummariesToResetCommand
@@ -138,7 +138,7 @@ export function addSynchronizationCommands(
     graph.connect(getSummariesToResetCommand, editSummariesCommand);
     const editLabelsCommand = graph.place(
         new EditIssueFieldCommand(
-            { jiraClient: clients.jiraClient, field: JiraField.LABELS },
+            { field: JiraField.LABELS, jiraClient: clients.jiraClient },
             logger,
             getLabelsFieldIdCommand,
             getLabelsToResetCommand
