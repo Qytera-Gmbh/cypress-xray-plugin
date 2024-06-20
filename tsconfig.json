@@ -12,6 +12,6 @@
         "skipLibCheck": true,
         "strict": true,
         "target": "ESNext",
-        "types": ["cypress", "node"],
+        "types": ["cypress", "node"]
     }
 }
