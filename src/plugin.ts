@@ -93,15 +93,16 @@ export async function configureXrayPlugin(
         http: options.http,
     };
     const httpClients = initHttpClients(internalOptions.plugin, internalOptions.http);
+    const logger = new CapturingLogger();
     const context = new PluginContext(
         await initClients(internalOptions.jira, config.env, httpClients),
         internalOptions,
         config,
         new SimpleEvidenceCollection(),
-        new ExecutableGraph()
+        new ExecutableGraph(),
+        logger
     );
     setPluginContext(context);
-    const logger = new CapturingLogger();
     const listener = new PluginTaskListener(internalOptions.jira.projectKey, context, logger);
     on("task", {
         [PluginTask.OUTGOING_REQUEST]: (
@@ -225,7 +226,7 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
             context.getOptions(),
             context.getClients(),
             context.getGraph(),
-            LOG
+            context.getLogger()
         );
     }
     return file.filePath;

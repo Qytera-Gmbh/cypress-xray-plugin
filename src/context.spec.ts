@@ -33,7 +33,7 @@ import {
 import { dedent } from "./util/dedent";
 import * as dependencies from "./util/dependencies";
 import { ExecutableGraph } from "./util/graph/executable-graph";
-import { Level } from "./util/logging";
+import { CapturingLogger, Level } from "./util/logging";
 import * as ping from "./util/ping";
 
 chai.use(chaiAsPromised);
@@ -1584,7 +1584,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
                 {} as Cypress.PluginConfigOptions,
                 new SimpleEvidenceCollection(),
-                new ExecutableGraph()
+                new ExecutableGraph(),
+                new CapturingLogger()
             );
         });
 

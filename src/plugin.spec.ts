@@ -13,7 +13,7 @@ import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypres
 import { CypressXrayPluginOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable-graph";
-import { CapturingLogger, LOG, Level } from "./util/logging";
+import { CapturingLogger, Level } from "./util/logging";
 
 describe(path.relative(process.cwd(), __filename), () => {
     let config: Cypress.PluginConfigOptions;
@@ -47,7 +47,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             },
             config,
             new context.SimpleEvidenceCollection(),
-            new ExecutableGraph()
+            new ExecutableGraph(),
+            new CapturingLogger()
         );
         resetPlugin();
     });
@@ -314,7 +315,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
                 pluginContext.getCypressOptions(),
                 new context.SimpleEvidenceCollection(),
-                new ExecutableGraph()
+                new ExecutableGraph(),
+                new CapturingLogger()
             );
             expect(stubbedHook.firstCall.args[0]).to.deep.eq(afterRunResult);
             expect(stubbedHook.firstCall.args[1]).to.deep.eq(
@@ -504,11 +506,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             syncFeatureFile(file);
             expect(stubbedHook).to.have.been.calledOnceWithExactly(
                 file,
-                pluginContext.getCypressOptions().projectRoot,
                 pluginContext.getOptions(),
                 pluginContext.getClients(),
                 pluginContext.getGraph(),
-                LOG
+                pluginContext.getLogger()
             );
         });
 

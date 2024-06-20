@@ -79,7 +79,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("adds all commands necessary for feature file upload", () => {
             const logger = getMockedLogger();
             const graph = new ExecutableGraph<Command>();
-            addSynchronizationCommands(file, ".", options, clients, graph, logger);
+            addSynchronizationCommands(file, options, clients, graph, logger);
             expect(graph.size("vertices")).to.eq(16);
             const commands = [...graph.getVertices()];
             assertIsInstanceOf(commands[0], ParseFeatureFileCommand);
@@ -128,7 +128,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("correctly connects all commands", () => {
             const logger = getMockedLogger();
             const graph = new ExecutableGraph<Command>();
-            addSynchronizationCommands(file, ".", options, clients, graph, logger);
+            addSynchronizationCommands(file, options, clients, graph, logger);
             expect(graph.size("edges")).to.eq(26);
             const [
                 parseFeatureFileCommand,
@@ -228,7 +228,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             graph.connect(fetchAllFieldsCommand, getSummaryFieldIdCommand);
             graph.connect(fetchAllFieldsCommand, getLabelsFieldIdCommand);
-            addSynchronizationCommands(file, ".", options, clients, graph, logger);
+            addSynchronizationCommands(file, options, clients, graph, logger);
             const commands = [...graph.getVertices()];
             const getCurrentSummariesCommand = commands[6];
             const getCurrentLabelsCommand = commands[7];
@@ -264,7 +264,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             const graph = new ExecutableGraph<Command>();
             options.jira.fields.summary = "customfield_12345";
             options.jira.fields.labels = "customfield_98765";
-            addSynchronizationCommands(file, ".", options, clients, graph, logger);
+            addSynchronizationCommands(file, options, clients, graph, logger);
             expect(graph.size("vertices")).to.eq(15);
             const commands = [...graph.getVertices()];
             const extractIssueKeysCommand = commands[2];

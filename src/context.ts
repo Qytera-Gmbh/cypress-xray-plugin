@@ -30,7 +30,7 @@ import {
 import { errorMessage } from "./util/errors";
 import { ExecutableGraph } from "./util/graph/executable-graph";
 import { HELP } from "./util/help";
-import { LOG, Level } from "./util/logging";
+import { LOG, Level, Logger } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asString, parse } from "./util/parsing";
 import { pingJiraInstance, pingXrayCloud, pingXrayServer } from "./util/ping";
 
@@ -60,19 +60,22 @@ export class PluginContext implements EvidenceCollection {
     private readonly cypressOptions: Cypress.PluginConfigOptions;
     private readonly evidenceCollection: EvidenceCollection;
     private readonly graph: ExecutableGraph<Command>;
+    private readonly logger: Logger;
 
     constructor(
         clients: ClientCombination,
         internalOptions: InternalCypressXrayPluginOptions,
         cypressOptions: Cypress.PluginConfigOptions,
         evidenceCollection: EvidenceCollection,
-        graph: ExecutableGraph<Command>
+        graph: ExecutableGraph<Command>,
+        logger: Logger
     ) {
         this.clients = clients;
         this.internalOptions = internalOptions;
         this.cypressOptions = cypressOptions;
         this.evidenceCollection = evidenceCollection;
         this.graph = graph;
+        this.logger = logger;
     }
 
     public getClients(): ClientCombination {
@@ -89,6 +92,10 @@ export class PluginContext implements EvidenceCollection {
 
     public getGraph(): ExecutableGraph<Command> {
         return this.graph;
+    }
+
+    public getLogger(): Logger {
+        return this.logger;
     }
 
     public addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
