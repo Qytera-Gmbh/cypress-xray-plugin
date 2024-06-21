@@ -10,16 +10,16 @@ import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
 import { BasicAuthCredentials } from "../authentication/credentials";
 import { AxiosRestClient } from "../https/requests";
-import { XrayClientServer } from "./xray-client-server";
+import { ServerClient, XrayClientServer } from "./xray-client-server";
 
 describe(path.relative(process.cwd(), __filename), () => {
-    describe(XrayClientServer.name, () => {
+    describe(ServerClient.name, () => {
         let restClient: SinonStubbedInstance<AxiosRestClient>;
         let client: XrayClientServer;
 
         beforeEach(() => {
             restClient = getMockedRestClient();
-            client = new XrayClientServer(
+            client = new ServerClient(
                 "https://example.org",
                 new BasicAuthCredentials("user", "xyz"),
                 restClient
@@ -28,19 +28,21 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("import execution", () => {
             it("should handle successful responses", async () => {
-                restClient.post.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        testExecIssue: {
-                            id: "12345",
-                            key: "CYP-123",
-                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                restClient.post
+                    .withArgs("https://example.org/rest/raven/latest/import/execution")
+                    .resolves({
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            testExecIssue: {
+                                id: "12345",
+                                key: "CYP-123",
+                                self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                            },
                         },
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
-                });
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    });
                 const response = await client.importExecution({
                     info: {
                         description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
@@ -107,41 +109,44 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("import feature", () => {
             it("handles successful responses", async () => {
-                restClient.post.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: [
-                        {
-                            id: "14400",
-                            issueType: {
-                                id: "10100",
-                                name: "Test",
+                restClient.post
+                    .withArgs("https://example.org/rest/raven/latest/import/feature?projectKey=CYP")
+                    .onFirstCall()
+                    .resolves({
+                        config: { headers: new AxiosHeaders() },
+                        data: [
+                            {
+                                id: "14400",
+                                issueType: {
+                                    id: "10100",
+                                    name: "Test",
+                                },
+                                key: "CYP-333",
+                                self: "http://localhost:8727/rest/api/2/issue/14400",
                             },
-                            key: "CYP-333",
-                            self: "http://localhost:8727/rest/api/2/issue/14400",
-                        },
-                        {
-                            id: "14401",
-                            issueType: {
-                                id: "10103",
-                                name: "Test",
+                            {
+                                id: "14401",
+                                issueType: {
+                                    id: "10103",
+                                    name: "Test",
+                                },
+                                key: "CYP-555",
+                                self: "http://localhost:8727/rest/api/2/issue/14401",
                             },
-                            key: "CYP-555",
-                            self: "http://localhost:8727/rest/api/2/issue/14401",
-                        },
-                        {
-                            id: "14401",
-                            issueType: {
-                                id: "10103",
-                                name: "Pre-Condition",
+                            {
+                                id: "14401",
+                                issueType: {
+                                    id: "10103",
+                                    name: "Pre-Condition",
+                                },
+                                key: "CYP-222",
+                                self: "http://localhost:8727/rest/api/2/issue/14401",
                             },
-                            key: "CYP-222",
-                            self: "http://localhost:8727/rest/api/2/issue/14401",
-                        },
-                    ],
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
-                });
+                        ],
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    });
                 const response = await client.importFeature(
                     "./test/resources/features/taggedPrefixCorrect.feature",
                     { projectKey: "CYP" }
@@ -330,15 +335,59 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
         });
 
-        describe("the urls", () => {
-            it("import execution", () => {
-                expect(client.getUrlImportExecution()).to.eq(
-                    "https://example.org/rest/raven/latest/import/execution"
+        describe("get xray license", () => {
+            it("returns the license", async () => {
+                restClient.get.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        active: true,
+                        licenseType: "Demo License",
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                const response = await client.getXrayLicense();
+                expect(response).to.deep.eq({
+                    active: true,
+                    licenseType: "Demo License",
+                });
+                expect(restClient.get).to.have.been.calledOnceWithExactly(
+                    "https://example.org/rest/raven/latest/api/xraylicense",
+                    {
+                        headers: { ["Authorization"]: "Basic dXNlcjp4eXo=" },
+                    }
                 );
             });
-            it("import feature", () => {
-                expect(client.getUrlImportFeature("CYP")).to.eq(
-                    "https://example.org/rest/raven/latest/import/feature?projectKey=CYP"
+
+            it("handles bad responses", async () => {
+                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+                const error = new AxiosError(
+                    "Request failed with status code 400",
+                    "400",
+                    { headers: new AxiosHeaders() },
+                    null,
+                    {
+                        config: { headers: new AxiosHeaders() },
+                        data: "Xray app not configured",
+                        headers: {},
+                        status: 400,
+                        statusText: "Bad Request",
+                    }
+                );
+                restClient.get.onFirstCall().rejects(error);
+                await expect(client.getXrayLicense()).to.eventually.be.rejectedWith(
+                    "Failed to get Xray license"
+                );
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.ERROR,
+                    dedent(`
+                        Failed to retrieve license information: Request failed with status code 400
+                    `)
+                );
+                expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                    error,
+                    "getXrayLicenseError"
                 );
             });
         });

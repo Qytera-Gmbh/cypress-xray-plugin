@@ -8,6 +8,7 @@ import { Issue } from "../../types/jira/responses/issue";
 import { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
 import { IssueUpdate } from "../../types/jira/responses/issue-update";
 import { SearchResults } from "../../types/jira/responses/search-results";
+import { User } from "../../types/jira/responses/user";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
@@ -65,6 +66,14 @@ export interface JiraClient {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-rest-api-3-issuetype-get
      */
     getIssueTypes(): Promise<IssueTypeDetails[]>;
+    /**
+     * Returns details for the current user.
+     *
+     * @returns the user details
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-rest-api-3-myself-get
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.11.0/#api/2/myself
+     */
+    getMyself(): Promise<User>;
     /**
      * Searches for issues using JQL. Automatically performs pagination if necessary.
      *
@@ -225,6 +234,32 @@ export class BaseJiraClient extends Client implements JiraClient {
             LOG.message(Level.ERROR, `Failed to get fields: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "getFieldsError");
             throw new LoggedError("Failed to fetch Jira fields");
+        }
+    }
+
+    public async getMyself(): Promise<User> {
+        try {
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
+            LOG.message(Level.DEBUG, "Getting user details...");
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
+            try {
+                const response: AxiosResponse<User> = await this.httpClient.get(
+                    `${this.apiBaseUrl}/rest/api/latest/myself`,
+                    {
+                        headers: {
+                            ...authorizationHeader,
+                        },
+                    }
+                );
+                LOG.message(Level.DEBUG, "Successfully retrieved user details.");
+                return response.data;
+            } finally {
+                clearInterval(progressInterval);
+            }
+        } catch (error: unknown) {
+            LOG.message(Level.ERROR, `Failed to get user details: ${errorMessage(error)}`);
+            LOG.logErrorToFile(error, "getMyselfError");
+            throw new LoggedError("Failed to fetch user details");
         }
     }
 

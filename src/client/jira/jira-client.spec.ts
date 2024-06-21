@@ -9,6 +9,7 @@ import { expectToExist } from "../../../test/util";
 import { FieldDetail } from "../../types/jira/responses/field-detail";
 import { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
 import { SearchResults } from "../../types/jira/responses/search-results";
+import { User } from "../../types/jira/responses/user";
 import { Level } from "../../util/logging";
 import { BasicAuthCredentials } from "../authentication/credentials";
 import { AxiosRestClient } from "../https/requests";
@@ -339,6 +340,64 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                     error,
                     "getFieldsError"
+                );
+            });
+        });
+
+        describe("get myself", () => {
+            it("returns user details", async () => {
+                restClient.get.onFirstCall().resolves({
+                    config: {
+                        headers: new AxiosHeaders(),
+                    },
+                    data: {
+                        active: true,
+                        displayName: "Demo User",
+                    } as User,
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                expect(await client.getMyself()).to.deep.eq({
+                    active: true,
+                    displayName: "Demo User",
+                });
+                expect(restClient.get).to.have.been.calledOnceWithExactly(
+                    "https://example.org/rest/api/latest/myself",
+                    {
+                        headers: { ["Authorization"]: "Basic dXNlcjp0b2tlbg==" },
+                    }
+                );
+            });
+
+            it("handles bad responses", async () => {
+                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+                const error = new AxiosError(
+                    "Request failed with status code 409",
+                    HttpStatusCode.BadRequest.toString(),
+                    undefined,
+                    null,
+                    {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            errorMessages: ["There is a conflict or something"],
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Conflict,
+                        statusText: HttpStatusCode[HttpStatusCode.Conflict],
+                    }
+                );
+                restClient.get.onFirstCall().rejects(error);
+                await expect(client.getMyself()).to.eventually.be.rejectedWith(
+                    "Failed to fetch user details"
+                );
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.ERROR,
+                    "Failed to get user details: Request failed with status code 409"
+                );
+                expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                    error,
+                    "getMyselfError"
                 );
             });
         });

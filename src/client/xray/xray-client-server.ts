@@ -1,3 +1,4 @@
+import { AxiosResponse } from "axios";
 import FormData from "form-data";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
@@ -7,12 +8,52 @@ import {
     ImportFeatureResponseServer,
     IssueDetails,
 } from "../../types/xray/responses/import-feature";
+import { XrayLicenseStatus } from "../../types/xray/responses/license";
 import { dedent } from "../../util/dedent";
+import { LoggedError, errorMessage } from "../../util/errors";
 import { LOG, Level } from "../../util/logging";
 import { RequestConfigPost } from "../https/requests";
-import { AbstractXrayClient } from "./xray-client";
+import { AbstractXrayClient, XrayClient } from "./xray-client";
 
-export class XrayClientServer extends AbstractXrayClient {
+export interface XrayClientServer extends XrayClient {
+    /**
+     * Returns information about the Xray license, including its status and type.
+     *
+     * @returns the license status
+     * @see https://docs.getxray.app/display/XRAY/v2.0#/External%20Apps/get_xraylicense
+     */
+    getXrayLicense(): Promise<XrayLicenseStatus>;
+}
+
+export class ServerClient extends AbstractXrayClient implements XrayClientServer {
+    public async getXrayLicense(): Promise<XrayLicenseStatus> {
+        try {
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
+            LOG.message(Level.DEBUG, "Getting Xray license status...");
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
+            try {
+                const licenseResponse: AxiosResponse<XrayLicenseStatus> = await this.httpClient.get(
+                    `${this.apiBaseUrl}/rest/raven/latest/api/xraylicense`,
+                    {
+                        headers: {
+                            ...authorizationHeader,
+                        },
+                    }
+                );
+                return licenseResponse.data;
+            } finally {
+                clearInterval(progressInterval);
+            }
+        } catch (error: unknown) {
+            LOG.message(
+                Level.ERROR,
+                `Failed to retrieve license information: ${errorMessage(error)}`
+            );
+            LOG.logErrorToFile(error, "getXrayLicenseError");
+            throw new LoggedError("Failed to get Xray license");
+        }
+    }
+
     public getUrlImportExecution(): string {
         return `${this.apiBaseUrl}/rest/raven/latest/import/execution`;
     }
