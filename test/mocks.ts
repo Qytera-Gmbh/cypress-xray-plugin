@@ -9,6 +9,7 @@ import { XrayClient } from "../src/client/xray/xray-client";
 import { HasTestTypes, XrayClientCloud } from "../src/client/xray/xray-client-cloud";
 import { SearchRequest } from "../src/types/jira/requests/search";
 import { IssueUpdate } from "../src/types/jira/responses/issue-update";
+import { User } from "../src/types/jira/responses/user";
 import { XrayTestExecutionResults } from "../src/types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../src/types/xray/requests/import-execution-cucumber-multipart";
 import { CucumberMultipartInfo } from "../src/types/xray/requests/import-execution-cucumber-multipart-info";
@@ -69,6 +70,9 @@ export function getMockedJiraClient(): SinonStubbedInstance<JiraClient> {
             throw mockCalledUnexpectedlyError();
         },
         getIssueTypes: function () {
+            throw mockCalledUnexpectedlyError();
+        },
+        getMyself: function (): Promise<User> {
             throw mockCalledUnexpectedlyError();
         },
         search: function (request: SearchRequest) {

@@ -1,10 +1,11 @@
 import {
     BasicAuthCredentials,
+    HttpCredentials,
     JwtCredentials,
     PatCredentials,
 } from "./client/authentication/credentials";
 import { AxiosRestClient } from "./client/https/requests";
-import { BaseJiraClient } from "./client/jira/jira-client";
+import { BaseJiraClient, JiraClient } from "./client/jira/jira-client";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud";
 import { ServerClient, XrayClientServer } from "./client/xray/xray-client-server";
 import { ENV_NAMES } from "./env";
@@ -32,7 +33,6 @@ import { ExecutableGraph } from "./util/graph/executable-graph";
 import { HELP } from "./util/help";
 import { LOG, Level, Logger } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asString, parse } from "./util/parsing";
-import { pingJiraInstance } from "./util/ping";
 
 export interface EvidenceCollection {
     addEvidence(issueKey: string, evidence: XrayEvidenceItem): void;
@@ -386,38 +386,26 @@ export async function initClients(
     env: Cypress.ObjectLike,
     httpClients: HttpClientCombination
 ): Promise<ClientCombination> {
-    if (!jiraOptions.url) {
-        throw new Error(
-            dedent(`
-                Failed to configure Jira client: no Jira URL was provided
-
-                Make sure Jira was configured correctly: ${HELP.plugin.configuration.authentication.jira.root}
-            `)
-        );
-    }
     if (
         ENV_NAMES.authentication.jira.username in env &&
         ENV_NAMES.authentication.jira.apiToken in env
     ) {
-        // Jira cloud authentication: username (Email) and token.
         LOG.message(
             Level.INFO,
-            "Jira username and API token found. Setting up Jira cloud basic auth credentials"
+            "Jira username and API token found. Setting up Jira cloud basic auth credentials."
         );
         const credentials = new BasicAuthCredentials(
             env[ENV_NAMES.authentication.jira.username] as string,
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
-        await pingJiraInstance(jiraOptions.url, credentials, httpClients.jira);
-        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials, httpClients.jira);
+        const jiraClient = await getJiraClient(jiraOptions.url, credentials, httpClients.jira);
         if (
             ENV_NAMES.authentication.xray.clientId in env &&
             ENV_NAMES.authentication.xray.clientSecret in env
         ) {
-            // Xray cloud authentication: client ID and client secret.
             LOG.message(
                 Level.INFO,
-                "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
+                "Xray client ID and client secret found. Setting up Xray cloud JWT credentials."
             );
             const xrayCredentials = new JwtCredentials(
                 env[ENV_NAMES.authentication.xray.clientId] as string,
@@ -431,25 +419,21 @@ export async function initClients(
                 kind: "cloud",
                 xrayClient: xrayClient,
             };
-        } else {
-            throw new Error(
-                dedent(`
-                    Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials
-
-                      You can find all configurations currently supported at: ${HELP.plugin.configuration.authentication.root}
-                `)
-            );
         }
-    } else if (ENV_NAMES.authentication.jira.apiToken in env && jiraOptions.url) {
-        // Jira server authentication: no username, only token.
-        LOG.message(Level.INFO, "Jira PAT found. Setting up Jira server PAT credentials");
+        throw new Error(
+            dedent(`
+                Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials.
+
+                  You can find all configurations currently supported at: ${HELP.plugin.configuration.authentication.root}
+            `)
+        );
+    } else if (ENV_NAMES.authentication.jira.apiToken in env) {
+        LOG.message(Level.INFO, "Jira PAT found. Setting up Jira server PAT credentials.");
         const credentials = new PatCredentials(
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
-        await pingJiraInstance(jiraOptions.url, credentials, httpClients.jira);
-        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials, httpClients.jira);
-        // Xray server authentication: no username, only token.
-        LOG.message(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials");
+        const jiraClient = await getJiraClient(jiraOptions.url, credentials, httpClients.jira);
+        LOG.message(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials.");
         const xrayClient = await getXrayServerClient(
             jiraOptions.url,
             credentials,
@@ -462,22 +446,20 @@ export async function initClients(
         };
     } else if (
         ENV_NAMES.authentication.jira.username in env &&
-        ENV_NAMES.authentication.jira.password in env &&
-        jiraOptions.url
+        ENV_NAMES.authentication.jira.password in env
     ) {
         LOG.message(
             Level.INFO,
-            "Jira username and password found. Setting up Jira server basic auth credentials"
+            "Jira username and password found. Setting up Jira server basic auth credentials."
         );
         const credentials = new BasicAuthCredentials(
             env[ENV_NAMES.authentication.jira.username] as string,
             env[ENV_NAMES.authentication.jira.password] as string
         );
-        await pingJiraInstance(jiraOptions.url, credentials, httpClients.jira);
-        const jiraClient = new BaseJiraClient(jiraOptions.url, credentials, httpClients.jira);
+        const jiraClient = await getJiraClient(jiraOptions.url, credentials, httpClients.jira);
         LOG.message(
             Level.INFO,
-            "Jira username and password found. Setting up Xray server basic auth credentials"
+            "Jira username and password found. Setting up Xray server basic auth credentials."
         );
         const xrayClient = await getXrayServerClient(
             jiraOptions.url,
@@ -489,15 +471,14 @@ export async function initClients(
             kind: "server",
             xrayClient: xrayClient,
         };
-    } else {
-        throw new Error(
-            dedent(`
-                Failed to configure Jira client: no viable authentication method was configured
-
-                  You can find all configurations currently supported at: ${HELP.plugin.configuration.authentication.root}
-            `)
-        );
     }
+    throw new Error(
+        dedent(`
+            Failed to configure Jira client: No viable authentication method was configured.
+
+              You can find all configurations currently supported at: ${HELP.plugin.configuration.authentication.root}
+        `)
+    );
 }
 
 async function getXrayCloudClient(
@@ -560,7 +541,7 @@ async function getXrayServerClient(
         }
         throw new Error(
             dedent(`
-                Xray did not return a valid response: JSON containing basic Xray license information was expected, but not received
+                Xray did not return a valid response: JSON containing basic Xray license information was expected, but not received.
             `)
         );
     } catch (error: unknown) {
@@ -576,6 +557,51 @@ async function getXrayServerClient(
                     HELP.plugin.configuration.authentication.xray.server
                 }
                 - Xray itself: ${HELP.xray.installation.server}
+
+                For more information, set the plugin to debug mode: ${
+                    HELP.plugin.configuration.plugin.debug
+                }
+            `)
+        );
+    }
+}
+
+async function getJiraClient(
+    url: string,
+    credentials: HttpCredentials,
+    httpClient: AxiosRestClient
+): Promise<JiraClient> {
+    const jiraClient = new BaseJiraClient(url, credentials, httpClient);
+    try {
+        const userDetails = await jiraClient.getMyself();
+        const username = userDetails.displayName ?? userDetails.emailAddress ?? userDetails.name;
+        if (username) {
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Successfully established communication with: ${url}
+
+                      The provided Jira credentials belong to: ${username}
+               `)
+            );
+            return jiraClient;
+        } else {
+            throw new Error(
+                dedent(`
+                Jira did not return a valid response: JSON containing a username was expected, but not received.
+            `)
+            );
+        }
+    } catch (error: unknown) {
+        throw new Error(
+            dedent(`
+                Failed to establish communication with Jira: ${url}
+
+                  ${errorMessage(error)}
+
+                Make sure you have correctly set up:
+                - Jira base URL: ${HELP.plugin.configuration.jira.url}
+                - Jira authentication: ${HELP.plugin.configuration.authentication.jira.root}
 
                 For more information, set the plugin to debug mode: ${
                     HELP.plugin.configuration.plugin.debug

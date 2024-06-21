@@ -9,7 +9,7 @@ import {
 } from "./client/authentication/credentials";
 import { BaseJiraClient } from "./client/jira/jira-client";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud";
-import { XrayClientServer } from "./client/xray/xray-client-server";
+import { ServerClient } from "./client/xray/xray-client-server";
 import {
     PluginContext,
     SimpleEvidenceCollection,
@@ -21,8 +21,10 @@ import {
     initXrayOptions,
 } from "./context";
 
+import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import path from "node:path";
 import { AxiosRestClient } from "./client/https/requests";
+import { User } from "./types/jira/responses/user";
 import {
     InternalCucumberOptions,
     InternalHttpOptions,
@@ -34,7 +36,6 @@ import { dedent } from "./util/dedent";
 import * as dependencies from "./util/dependencies";
 import { ExecutableGraph } from "./util/graph/executable-graph";
 import { CapturingLogger, Level } from "./util/logging";
-import * as ping from "./util/ping";
 
 chai.use(chaiAsPromised);
 
@@ -1296,24 +1297,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                 };
                 const logger = getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                const stubbedJiraPing = stub(ping, "pingJiraInstance");
-                const stubbedXrayPing = stub(ping, "pingXrayCloud");
-                stubbedJiraPing.onFirstCall().resolves();
-                stubbedXrayPing.onFirstCall().resolves();
-                logger.message
-                    .withArgs(
-                        Level.INFO,
-                        "Jira username and API token found. Setting up Jira cloud basic auth credentials"
-                    )
-                    .onFirstCall()
-                    .returns();
-                logger.message
-                    .withArgs(
-                        Level.INFO,
-                        "Xray client ID and client secret found. Setting up Xray cloud JWT credentials"
-                    )
-                    .onFirstCall()
-                    .returns();
+                httpClients.jira.get.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: { active: true, displayName: "Jeff" } as User,
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                httpClients.xray.post.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
                 const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
                 expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
                 expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
@@ -1323,8 +1320,16 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect((xrayClient as XrayClientCloud).getCredentials()).to.be.an.instanceof(
                     JwtCredentials
                 );
-                expect(stubbedJiraPing).to.have.been.calledOnce;
-                expect(stubbedXrayPing).to.have.been.calledOnce;
+                expect(httpClients.jira.get).to.have.been.calledOnce;
+                expect(httpClients.xray.post).to.have.been.calledOnce;
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.INFO,
+                    "Jira username and API token found. Setting up Jira cloud basic auth credentials."
+                );
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.INFO,
+                    "Xray client ID and client secret found. Setting up Xray cloud JWT credentials."
+                );
             });
 
             it("should throw for missing xray cloud credentials", async () => {
@@ -1334,22 +1339,25 @@ describe(path.relative(process.cwd(), __filename), () => {
                 };
                 const logger = getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                const stubbedJiraPing = stub(ping, "pingJiraInstance");
-                stubbedJiraPing.onFirstCall().resolves();
-                logger.message
-                    .withArgs(
-                        Level.INFO,
-                        "Jira username and API token found. Setting up Jira cloud basic auth credentials"
-                    )
-                    .onFirstCall()
-                    .returns();
+                httpClients.jira.get.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: { active: true, displayName: "Jeff" } as User,
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
                 await expect(
                     initClients(jiraOptions, env, httpClients)
                 ).to.eventually.be.rejectedWith(
                     dedent(`
-                        Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials
-                        You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                        Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials.
+
+                          You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
                     `)
+                );
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.INFO,
+                    "Jira username and API token found. Setting up Jira cloud basic auth credentials."
                 );
             });
 
@@ -1359,29 +1367,42 @@ describe(path.relative(process.cwd(), __filename), () => {
                 };
                 const logger = getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                const stubbedJiraPing = stub(ping, "pingJiraInstance");
-                const stubbedXrayPing = stub(ping, "pingXrayServer");
-                stubbedJiraPing.onFirstCall().resolves();
-                stubbedXrayPing.onFirstCall().resolves();
-                logger.message
-                    .withArgs(Level.INFO, "Jira PAT found. Setting up Jira server PAT credentials")
-                    .onFirstCall()
-                    .returns();
-                logger.message
-                    .withArgs(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials")
-                    .onFirstCall()
-                    .returns();
+                httpClients.jira.get.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: { active: true, displayName: "Jeff" } as User,
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                httpClients.xray.get.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        active: true,
+                        licenseType: "Demo License",
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
                 const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
                 expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
-                expect(xrayClient).to.be.an.instanceof(XrayClientServer);
+                expect(xrayClient).to.be.an.instanceof(ServerClient);
                 expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
                     PatCredentials
                 );
-                expect((xrayClient as XrayClientServer).getCredentials()).to.be.an.instanceof(
+                expect((xrayClient as ServerClient).getCredentials()).to.be.an.instanceof(
                     PatCredentials
                 );
-                expect(stubbedJiraPing).to.have.been.calledOnce;
-                expect(stubbedXrayPing).to.have.been.calledOnce;
+                expect(httpClients.jira.get).to.have.been.calledOnce;
+                expect(httpClients.xray.get).to.have.been.calledOnce;
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.INFO,
+                    "Jira PAT found. Setting up Jira server PAT credentials."
+                );
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.INFO,
+                    "Jira PAT found. Setting up Xray server PAT credentials."
+                );
             });
 
             it("should detect basic auth credentials", async () => {
@@ -1391,35 +1412,42 @@ describe(path.relative(process.cwd(), __filename), () => {
                 };
                 const logger = getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                const stubbedJiraPing = stub(ping, "pingJiraInstance");
-                const stubbedXrayPing = stub(ping, "pingXrayServer");
-                stubbedJiraPing.onFirstCall().resolves();
-                stubbedXrayPing.onFirstCall().resolves();
-                logger.message
-                    .withArgs(
-                        Level.INFO,
-                        "Jira username and password found. Setting up Jira server basic auth credentials"
-                    )
-                    .onFirstCall()
-                    .returns();
-                logger.message
-                    .withArgs(
-                        Level.INFO,
-                        "Jira username and password found. Setting up Xray server basic auth credentials"
-                    )
-                    .onFirstCall()
-                    .returns();
+                httpClients.jira.get.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: { active: true, displayName: "Jeff" } as User,
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                httpClients.xray.get.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        active: true,
+                        licenseType: "Demo License",
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
                 const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
                 expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
-                expect(xrayClient).to.be.an.instanceof(XrayClientServer);
+                expect(xrayClient).to.be.an.instanceof(ServerClient);
                 expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
                     BasicAuthCredentials
                 );
-                expect((xrayClient as XrayClientServer).getCredentials()).to.be.an.instanceof(
+                expect((xrayClient as ServerClient).getCredentials()).to.be.an.instanceof(
                     BasicAuthCredentials
                 );
-                expect(stubbedJiraPing).to.have.been.calledOnce;
-                expect(stubbedXrayPing).to.have.been.calledOnce;
+                expect(httpClients.jira.get).to.have.been.calledOnce;
+                expect(httpClients.xray.get).to.have.been.calledOnce;
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.INFO,
+                    "Jira username and password found. Setting up Jira server basic auth credentials."
+                );
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.INFO,
+                    "Jira username and password found. Setting up Xray server basic auth credentials."
+                );
             });
 
             it("should choose cloud credentials over server credentials", async () => {
@@ -1432,10 +1460,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                 };
                 getMockedLogger({ allowUnstubbedCalls: true });
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                const stubbedJiraPing = stub(ping, "pingJiraInstance");
-                const stubbedXrayPing = stub(ping, "pingXrayCloud");
-                stubbedJiraPing.onFirstCall().resolves();
-                stubbedXrayPing.onFirstCall().resolves();
+                httpClients.jira.get.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: { active: true, displayName: "Jeff" } as User,
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                httpClients.xray.post.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
                 const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
                 expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
                 expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
@@ -1446,18 +1484,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     JwtCredentials
                 );
             });
-            it("should throw an error for missing jira urls", async () => {
-                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                jiraOptions.url = undefined as unknown as string;
-                await expect(
-                    initClients(jiraOptions, {}, httpClients)
-                ).to.eventually.be.rejectedWith(
-                    dedent(`
-                        Failed to configure Jira client: no Jira URL was provided
-                        Make sure Jira was configured correctly: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
-                    `)
-                );
-            });
 
             it("should throw an error for missing credentials", async () => {
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
@@ -1465,8 +1491,221 @@ describe(path.relative(process.cwd(), __filename), () => {
                     initClients(jiraOptions, {}, httpClients)
                 ).to.eventually.be.rejectedWith(
                     dedent(`
-                        Failed to configure Jira client: no viable authentication method was configured
-                        You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                        Failed to configure Jira client: No viable authentication method was configured.
+
+                          You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
+                    `)
+                );
+            });
+
+            it("throws if no user details are returned from jira", async () => {
+                getMockedLogger();
+                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
+                httpClients.jira.get.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: "<div>Welcome</div>",
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await expect(
+                    initClients(
+                        jiraOptions,
+                        {
+                            ["JIRA_API_TOKEN"]: "1337",
+                        },
+                        httpClients
+                    )
+                ).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Failed to establish communication with Jira: https://example.org
+
+                          Jira did not return a valid response: JSON containing a username was expected, but not received.
+
+                        Make sure you have correctly set up:
+                        - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
+                        - Jira authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
+
+                        For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
+                    `)
+                );
+            });
+
+            it("throws if no usernames are returned from jira", async () => {
+                getMockedLogger();
+                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
+                httpClients.jira.get.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        active: true,
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await expect(
+                    initClients(
+                        jiraOptions,
+                        {
+                            ["JIRA_API_TOKEN"]: "1337",
+                        },
+                        httpClients
+                    )
+                ).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Failed to establish communication with Jira: https://example.org
+
+                          Jira did not return a valid response: JSON containing a username was expected, but not received.
+
+                        Make sure you have correctly set up:
+                        - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
+                        - Jira authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
+
+                        For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
+                    `)
+                );
+            });
+
+            it("throws if no license data is returned from xray server", async () => {
+                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
+                httpClients.jira.get.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        active: true,
+                        displayName: "Demo User",
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                httpClients.xray.get.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: "<div>Welcome</div>",
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await expect(
+                    initClients(
+                        jiraOptions,
+                        {
+                            ["JIRA_API_TOKEN"]: "1337",
+                        },
+                        httpClients
+                    )
+                ).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Failed to establish communication with Xray: https://example.org
+
+                          Xray did not return a valid response: JSON containing basic Xray license information was expected, but not received.
+
+                        Make sure you have correctly set up:
+                        - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
+                        - Xray server authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#xray-server
+                        - Xray itself: https://docs.getxray.app/display/XRAY/Installation
+
+                        For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
+                    `)
+                );
+            });
+
+            it("throws if an inactive license is returned from xray server", async () => {
+                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
+                httpClients.jira.get.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        active: true,
+                        displayName: "Demo User",
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                httpClients.xray.get.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        active: false,
+                        licenseType: "Basic",
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await expect(
+                    initClients(
+                        jiraOptions,
+                        {
+                            ["JIRA_API_TOKEN"]: "1337",
+                        },
+                        httpClients
+                    )
+                ).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Failed to establish communication with Xray: https://example.org
+
+                          The Xray license is not active
+
+                        Make sure you have correctly set up:
+                        - Jira base URL: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#url
+                        - Xray server authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#xray-server
+                        - Xray itself: https://docs.getxray.app/display/XRAY/Installation
+
+                        For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
+                    `)
+                );
+            });
+
+            it("throws if the xray credentials are invalid", async () => {
+                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
+                httpClients.jira.get.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        active: true,
+                        displayName: "Demo User",
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                httpClients.xray.post.rejects(
+                    new AxiosError(
+                        "Request failed with status code 404",
+                        HttpStatusCode.BadRequest.toString(),
+                        undefined,
+                        null,
+                        {
+                            config: { headers: new AxiosHeaders() },
+                            data: {
+                                errorMessages: ["not found"],
+                            },
+                            headers: {},
+                            status: HttpStatusCode.NotFound,
+                            statusText: HttpStatusCode[HttpStatusCode.NotFound],
+                        }
+                    )
+                );
+                await expect(
+                    initClients(
+                        jiraOptions,
+                        {
+                            ["JIRA_API_TOKEN"]: "1337",
+                            ["JIRA_USERNAME"]: "user",
+                            ["XRAY_CLIENT_ID"]: "abc",
+                            ["XRAY_CLIENT_SECRET"]: "xyz",
+                        },
+                        httpClients
+                    )
+                ).to.eventually.be.rejectedWith(
+                    dedent(`
+                        Failed to establish communication with Xray: https://xray.cloud.getxray.app/api/v2/authenticate
+
+                          Authentication failed
+
+                        Make sure you have correctly set up:
+                        - Xray cloud authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#xray-cloud
+                        - Xray itself: https://docs.getxray.app/display/XRAYCLOUD/Installation
+
+                        For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
                     `)
                 );
             });
@@ -1548,7 +1787,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 new PatCredentials("token"),
                 getMockedRestClient()
             );
-            const xrayClient = new XrayClientServer(
+            const xrayClient = new ServerClient(
                 "https://example.org",
                 new PatCredentials("token"),
                 getMockedRestClient()
