@@ -181,6 +181,11 @@
     </tbody>
     </table>
 
+> [!NOTE]
+> Up to version 7, this import did nothing, the imported module was completely empty.
+> From version 7, this import allows `cy.request` data to be uploaded as Xray execution evidence.
+> It can simply be omitted entirely if no request data needs to be uploaded.
+
 ## Notable changes
 
 -   Added `xray.uploadRequests` option ([#324](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/324))
