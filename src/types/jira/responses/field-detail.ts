@@ -3,6 +3,14 @@ import { Scope } from "./scope";
 
 export interface FieldDetail {
     /**
+     * The names that can be used to reference the field in an advanced search.
+     */
+    clauseNames: string[];
+    /**
+     * Whether the field is a custom field.
+     */
+    custom: boolean;
+    /**
      * The ID of the field.
      */
     id: string;
@@ -11,29 +19,21 @@ export interface FieldDetail {
      */
     name: string;
     /**
-     * Whether the field is a custom field.
+     * Whether the field can be used as a column on the issue navigator.
      */
-    custom: boolean;
+    navigable: boolean;
     /**
      * Whether the content of the field can be used to order lists.
      */
     orderable: boolean;
     /**
-     * Whether the field can be used as a column on the issue navigator.
+     * The data schema for the field.
      */
-    navigable: boolean;
+    schema: JsonType;
     /**
      * Whether the content of the field can be searched.
      */
     searchable: boolean;
-    /**
-     * The names that can be used to reference the field in an advanced search.
-     */
-    clauseNames: string[];
-    /**
-     * The data schema for the field.
-     */
-    schema: JsonType;
 }
 export interface FieldDetailCloud extends FieldDetail {
     /**

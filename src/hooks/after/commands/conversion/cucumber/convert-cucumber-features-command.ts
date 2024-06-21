@@ -9,6 +9,7 @@ import { Command, Computable } from "../../../../command";
 import { buildMultipartFeatures } from "./util/multipart-feature";
 
 interface Parameters {
+    cucumber: Pick<InternalCucumberOptions, "prefixes">;
     jira: Pick<
         InternalJiraOptions,
         | "projectKey"
@@ -16,10 +17,9 @@ interface Parameters {
         | "testExecutionIssueSummary"
         | "testPlanIssueKey"
     >;
-    cucumber: Pick<InternalCucumberOptions, "prefixes">;
-    xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
     projectRoot: string;
     useCloudTags?: boolean;
+    xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 
 export class ConvertCucumberFeaturesCommand extends Command<
@@ -45,12 +45,12 @@ export class ConvertCucumberFeaturesCommand extends Command<
         return buildMultipartFeatures(
             input,
             {
-                testExecutionIssueKey: testExecutionIssueKey,
                 includeScreenshots: this.parameters.xray.uploadScreenshots,
                 projectKey: this.parameters.jira.projectKey,
-                useCloudTags: this.parameters.useCloudTags === true,
-                testPrefix: this.parameters.cucumber.prefixes.test,
                 projectRoot: this.parameters.projectRoot,
+                testExecutionIssueKey: testExecutionIssueKey,
+                testPrefix: this.parameters.cucumber.prefixes.test,
+                useCloudTags: this.parameters.useCloudTags === true,
             },
             this.logger
         );

@@ -144,14 +144,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     beforeEach(async () => {
                         cucumberOptions = await initCucumberOptions(
                             {
-                                testingType: "e2e",
-                                projectRoot: "",
-                                reporter: "",
-                                specPattern: "",
-                                excludeSpecPattern: "",
                                 env: {
                                     jsonEnabled: true,
                                 },
+                                excludeSpecPattern: "",
+                                projectRoot: "",
+                                reporter: "",
+                                specPattern: "",
+                                testingType: "e2e",
                             },
                             { featureFileExtension: ".feature" }
                         );
@@ -179,8 +179,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         const jiraOptions = initJiraOptions(
                             {},
                             {
-                                projectKey: "PRJ",
                                 attachVideos: true,
+                                projectKey: "PRJ",
                                 url: "https://example.org",
                             }
                         );
@@ -191,11 +191,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                             const jiraOptions = initJiraOptions(
                                 {},
                                 {
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
                                     fields: {
                                         description: "Beschreibung",
                                     },
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
                                 }
                             );
                             expect(jiraOptions.fields.description).to.eq("Beschreibung");
@@ -204,11 +204,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                             const jiraOptions = initJiraOptions(
                                 {},
                                 {
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
                                     fields: {
                                         labels: "Stichworte",
                                     },
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
                                 }
                             );
                             expect(jiraOptions.fields.labels).to.eq("Stichworte");
@@ -217,11 +217,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                             const jiraOptions = initJiraOptions(
                                 {},
                                 {
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
                                     fields: {
                                         summary: "Résumé",
                                     },
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
                                 }
                             );
                             expect(jiraOptions.fields.summary).to.eq("Résumé");
@@ -230,11 +230,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                             const jiraOptions = initJiraOptions(
                                 {},
                                 {
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
                                     fields: {
                                         testEnvironments: "Testumgebungen",
                                     },
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
                                 }
                             );
                             expect(jiraOptions.fields.testEnvironments).to.eq("Testumgebungen");
@@ -243,11 +243,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                             const jiraOptions = initJiraOptions(
                                 {},
                                 {
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
                                     fields: {
                                         testPlan: "Plan de Test",
                                     },
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
                                 }
                             );
                             expect(jiraOptions.fields.testPlan).to.eq("Plan de Test");
@@ -256,11 +256,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                             const jiraOptions = initJiraOptions(
                                 {},
                                 {
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
                                     fields: {
                                         testType: "Xray Test Type",
                                     },
+                                    projectKey: "PRJ",
+                                    url: "https://example.org",
                                 }
                             );
                             expect(jiraOptions.fields.testType).to.eq("Xray Test Type");
@@ -476,16 +476,16 @@ describe(path.relative(process.cwd(), __filename), () => {
                     it("downloadFeatures", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
-                                testingType: "component",
+                                env: { jsonEnabled: true },
+                                excludeSpecPattern: "",
                                 projectRoot: "",
                                 reporter: "",
                                 specPattern: "",
-                                excludeSpecPattern: "",
-                                env: { jsonEnabled: true },
+                                testingType: "component",
                             },
                             {
-                                featureFileExtension: ".feature",
                                 downloadFeatures: true,
+                                featureFileExtension: ".feature",
                             }
                         );
                         expect(cucumberOptions?.downloadFeatures).to.eq(true);
@@ -494,12 +494,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                         it("precondition", async () => {
                             const cucumberOptions = await initCucumberOptions(
                                 {
-                                    testingType: "component",
+                                    env: { jsonEnabled: true },
+                                    excludeSpecPattern: "",
                                     projectRoot: "",
                                     reporter: "",
                                     specPattern: "",
-                                    excludeSpecPattern: "",
-                                    env: { jsonEnabled: true },
+                                    testingType: "component",
                                 },
                                 {
                                     featureFileExtension: ".feature",
@@ -513,12 +513,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                         it("test", async () => {
                             const cucumberOptions = await initCucumberOptions(
                                 {
-                                    testingType: "component",
+                                    env: { jsonEnabled: true },
+                                    excludeSpecPattern: "",
                                     projectRoot: "",
                                     reporter: "",
                                     specPattern: "",
-                                    excludeSpecPattern: "",
-                                    env: { jsonEnabled: true },
+                                    testingType: "component",
                                 },
                                 {
                                     featureFileExtension: ".feature",
@@ -531,12 +531,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     it("uploadFeatures", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
-                                testingType: "component",
+                                env: { jsonEnabled: true },
+                                excludeSpecPattern: "",
                                 projectRoot: "",
                                 reporter: "",
                                 specPattern: "",
-                                excludeSpecPattern: "",
-                                env: { jsonEnabled: true },
+                                testingType: "component",
                             },
                             {
                                 featureFileExtension: ".feature",
@@ -565,8 +565,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                             ["JIRA_ATTACH_VIDEOS"]: "true",
                         };
                         const jiraOptions = initJiraOptions(env, {
-                            projectKey: "CYP",
                             attachVideos: false,
+                            projectKey: "CYP",
                             url: "https://example.org",
                         });
                         expect(jiraOptions.attachVideos).to.be.true;
@@ -578,11 +578,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 ["JIRA_FIELDS_DESCRIPTION"]: "customfield_98765",
                             };
                             const jiraOptions = initJiraOptions(env, {
-                                projectKey: "PRJ",
-                                url: "https://example.org",
                                 fields: {
                                     description: "customfield_12345",
                                 },
+                                projectKey: "PRJ",
+                                url: "https://example.org",
                             });
                             expect(jiraOptions.fields.description).to.eq("customfield_98765");
                         });
@@ -591,11 +591,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 ["JIRA_FIELDS_LABELS"]: "customfield_98765",
                             };
                             const jiraOptions = initJiraOptions(env, {
-                                projectKey: "PRJ",
-                                url: "https://example.org",
                                 fields: {
                                     labels: "customfield_12345",
                                 },
+                                projectKey: "PRJ",
+                                url: "https://example.org",
                             });
                             expect(jiraOptions.fields.labels).to.eq("customfield_98765");
                         });
@@ -604,11 +604,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 ["JIRA_FIELDS_SUMMARY"]: "customfield_98765",
                             };
                             const jiraOptions = initJiraOptions(env, {
-                                projectKey: "PRJ",
-                                url: "https://example.org",
                                 fields: {
                                     summary: "customfield_12345",
                                 },
+                                projectKey: "PRJ",
+                                url: "https://example.org",
                             });
                             expect(jiraOptions.fields.summary).to.eq("customfield_98765");
                         });
@@ -617,11 +617,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 ["JIRA_FIELDS_TEST_ENVIRONMENTS"]: "customfield_98765",
                             };
                             const jiraOptions = initJiraOptions(env, {
-                                projectKey: "PRJ",
-                                url: "https://example.org",
                                 fields: {
                                     testEnvironments: "customfield_12345",
                                 },
+                                projectKey: "PRJ",
+                                url: "https://example.org",
                             });
                             expect(jiraOptions.fields.testEnvironments).to.eq("customfield_98765");
                         });
@@ -630,11 +630,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 ["JIRA_FIELDS_TEST_PLAN"]: "customfield_98765",
                             };
                             const jiraOptions = initJiraOptions(env, {
-                                projectKey: "PRJ",
-                                url: "https://example.org",
                                 fields: {
                                     testPlan: "customfield_12345",
                                 },
+                                projectKey: "PRJ",
+                                url: "https://example.org",
                             });
                             expect(jiraOptions.fields.testPlan).to.eq("customfield_98765");
                         });
@@ -643,11 +643,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 ["JIRA_FIELDS_TEST_TYPE"]: "customfield_98765",
                             };
                             const jiraOptions = initJiraOptions(env, {
-                                projectKey: "PRJ",
-                                url: "https://example.org",
                                 fields: {
                                     testType: "customfield_12345",
                                 },
+                                projectKey: "PRJ",
+                                url: "https://example.org",
                             });
                             expect(jiraOptions.fields.testType).to.eq("customfield_98765");
                         });
@@ -828,15 +828,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     it("CUCUMBER_FEATURE_FILE_EXTENSION", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
-                                testingType: "e2e",
-                                projectRoot: "",
-                                reporter: "",
-                                specPattern: "",
-                                excludeSpecPattern: "",
                                 env: {
                                     ["CUCUMBER_FEATURE_FILE_EXTENSION"]: ".feature.file",
                                     jsonEnabled: true,
                                 },
+                                excludeSpecPattern: "",
+                                projectRoot: "",
+                                reporter: "",
+                                specPattern: "",
+                                testingType: "e2e",
                             },
                             {
                                 featureFileExtension: ".feature",
@@ -848,19 +848,19 @@ describe(path.relative(process.cwd(), __filename), () => {
                     it("CUCUMBER_DOWNLOAD_FEATURES", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
-                                testingType: "e2e",
-                                projectRoot: "",
-                                reporter: "",
-                                specPattern: "",
-                                excludeSpecPattern: "",
                                 env: {
                                     ["CUCUMBER_DOWNLOAD_FEATURES"]: "true",
                                     jsonEnabled: true,
                                 },
+                                excludeSpecPattern: "",
+                                projectRoot: "",
+                                reporter: "",
+                                specPattern: "",
+                                testingType: "e2e",
                             },
                             {
-                                featureFileExtension: ".feature",
                                 downloadFeatures: false,
+                                featureFileExtension: ".feature",
                             }
                         );
                         expect(cucumberOptions?.downloadFeatures).to.be.true;
@@ -869,15 +869,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     it("CUCUMBER_PREFIXES_PRECONDITION", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
-                                testingType: "e2e",
-                                projectRoot: "",
-                                reporter: "",
-                                specPattern: "",
-                                excludeSpecPattern: "",
                                 env: {
                                     ["CUCUMBER_PREFIXES_PRECONDITION"]: "BigPrecondition:",
                                     jsonEnabled: true,
                                 },
+                                excludeSpecPattern: "",
+                                projectRoot: "",
+                                reporter: "",
+                                specPattern: "",
+                                testingType: "e2e",
                             },
                             {
                                 featureFileExtension: ".feature",
@@ -890,15 +890,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     it("CUCUMBER_PREFIXES_TEST", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
-                                testingType: "e2e",
-                                projectRoot: "",
-                                reporter: "",
-                                specPattern: "",
-                                excludeSpecPattern: "",
                                 env: {
                                     ["CUCUMBER_PREFIXES_TEST"]: "BigTest:",
                                     jsonEnabled: true,
                                 },
+                                excludeSpecPattern: "",
+                                projectRoot: "",
+                                reporter: "",
+                                specPattern: "",
+                                testingType: "e2e",
                             },
                             {
                                 featureFileExtension: ".feature",
@@ -911,15 +911,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     it("CUCUMBER_UPLOAD_FEATURES", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
-                                testingType: "e2e",
-                                projectRoot: "",
-                                reporter: "",
-                                specPattern: "",
-                                excludeSpecPattern: "",
                                 env: {
                                     ["CUCUMBER_UPLOAD_FEATURES"]: "true",
                                     jsonEnabled: true,
                                 },
+                                excludeSpecPattern: "",
+                                projectRoot: "",
+                                reporter: "",
+                                specPattern: "",
+                                testingType: "e2e",
                             },
                             {
                                 featureFileExtension: ".feature",
@@ -1016,12 +1016,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     await expect(
                         initCucumberOptions(
                             {
-                                testingType: "e2e",
+                                env: {},
+                                excludeSpecPattern: "",
                                 projectRoot: "",
                                 reporter: "",
                                 specPattern: "",
-                                excludeSpecPattern: "",
-                                env: {},
+                                testingType: "e2e",
                             },
                             {
                                 featureFileExtension: ".feature",
@@ -1043,12 +1043,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     await expect(
                         initCucumberOptions(
                             {
-                                testingType: "e2e",
+                                env: { jsonEnabled: false },
+                                excludeSpecPattern: "",
                                 projectRoot: "",
                                 reporter: "",
                                 specPattern: "",
-                                excludeSpecPattern: "",
-                                env: { jsonEnabled: false },
+                                testingType: "e2e",
                             },
                             {
                                 featureFileExtension: ".feature",
@@ -1066,12 +1066,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     await expect(
                         initCucumberOptions(
                             {
-                                testingType: "e2e",
+                                env: { jsonEnabled: true, jsonOutput: "" },
+                                excludeSpecPattern: "",
                                 projectRoot: "",
                                 reporter: "",
                                 specPattern: "",
-                                excludeSpecPattern: "",
-                                env: { jsonEnabled: true, jsonOutput: "" },
+                                testingType: "e2e",
                             },
                             {
                                 featureFileExtension: ".feature",
@@ -1232,13 +1232,13 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
             it("passes common http options to both clients", () => {
                 const httpOptions: InternalHttpOptions = {
-                    timeout: 42,
                     jira: {
                         proxy: {
                             host: "http://localhost",
                             port: 98765,
                         },
                     },
+                    timeout: 42,
                     xray: {
                         proxy: {
                             host: "https://example.org",
@@ -1252,11 +1252,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     new AxiosRestClient({
                         debug: undefined,
                         http: {
-                            timeout: 42,
                             proxy: {
                                 host: "http://localhost",
                                 port: 98765,
                             },
+                            timeout: 42,
                         },
                     })
                 );
@@ -1264,11 +1264,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     new AxiosRestClient({
                         debug: undefined,
                         http: {
-                            timeout: 42,
                             proxy: {
                                 host: "https://example.org",
                                 port: 12345,
                             },
+                            timeout: 42,
                         },
                     })
                 );
@@ -1289,8 +1289,8 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it("should detect cloud credentials", async () => {
                 const env = {
-                    ["JIRA_USERNAME"]: "user@somewhere.xyz",
                     ["JIRA_API_TOKEN"]: "1337",
+                    ["JIRA_USERNAME"]: "user@somewhere.xyz",
                     ["XRAY_CLIENT_ID"]: "abc",
                     ["XRAY_CLIENT_SECRET"]: "xyz",
                 };
@@ -1329,8 +1329,8 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it("should throw for missing xray cloud credentials", async () => {
                 const env = {
-                    ["JIRA_USERNAME"]: "user@somewhere.xyz",
                     ["JIRA_API_TOKEN"]: "1337",
+                    ["JIRA_USERNAME"]: "user@somewhere.xyz",
                 };
                 const logger = getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
@@ -1386,8 +1386,8 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it("should detect basic auth credentials", async () => {
                 const env = {
-                    ["JIRA_USERNAME"]: "user",
                     ["JIRA_PASSWORD"]: "1337",
+                    ["JIRA_USERNAME"]: "user",
                 };
                 const logger = getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
@@ -1424,9 +1424,9 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it("should choose cloud credentials over server credentials", async () => {
                 const env = {
-                    ["JIRA_USERNAME"]: "user",
-                    ["JIRA_PASSWORD"]: "xyz",
                     ["JIRA_API_TOKEN"]: "1337",
+                    ["JIRA_PASSWORD"]: "xyz",
+                    ["JIRA_USERNAME"]: "user",
                     ["XRAY_CLIENT_ID"]: "abc",
                     ["XRAY_CLIENT_SECRET"]: "xyz",
                 };
@@ -1477,25 +1477,25 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("collects evidence for single tests", () => {
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-123", {
-                filename: "hello.json",
                 contentType: "application/json",
                 data: "WyJoZWxsbyJd",
+                filename: "hello.json",
             });
             evidenceCollection.addEvidence("CYP-123", {
-                filename: "goodbye.json",
                 contentType: "application/json",
                 data: "WyJnb29kYnllIl0=",
+                filename: "goodbye.json",
             });
             expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
                 {
-                    filename: "hello.json",
                     contentType: "application/json",
                     data: "WyJoZWxsbyJd",
+                    filename: "hello.json",
                 },
                 {
-                    filename: "goodbye.json",
                     contentType: "application/json",
                     data: "WyJnb29kYnllIl0=",
+                    filename: "goodbye.json",
                 },
             ]);
         });
@@ -1503,27 +1503,27 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("collects evidence for multiple tests", () => {
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-123", {
-                filename: "hello.json",
                 contentType: "application/json",
                 data: "WyJoZWxsbyJd",
+                filename: "hello.json",
             });
             evidenceCollection.addEvidence("CYP-456", {
-                filename: "goodbye.json",
                 contentType: "application/json",
                 data: "WyJnb29kYnllIl0=",
+                filename: "goodbye.json",
             });
             expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
                 {
-                    filename: "hello.json",
                     contentType: "application/json",
                     data: "WyJoZWxsbyJd",
+                    filename: "hello.json",
                 },
             ]);
             expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([
                 {
-                    filename: "goodbye.json",
                     contentType: "application/json",
                     data: "WyJnb29kYnllIl0=",
+                    filename: "goodbye.json",
                 },
             ]);
         });
@@ -1531,9 +1531,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("returns an empty array for unknown tests", () => {
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-123", {
-                filename: "hello.json",
                 contentType: "application/json",
                 data: "WyJoZWxsbyJd",
+                filename: "hello.json",
             });
             expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([]);
         });
@@ -1555,18 +1555,19 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             context = new PluginContext(
                 {
-                    kind: "server",
                     jiraClient: jiraClient,
+                    kind: "server",
                     xrayClient: xrayClient,
                 },
                 {
+                    http: {},
                     jira: {
                         attachVideos: false,
                         fields: {},
                         projectKey: "CYP",
-                        url: "https://example.org",
                         testExecutionIssueType: "Test Execution",
                         testPlanIssueType: "Test Plan",
+                        url: "https://example.org",
                     },
                     plugin: {
                         debug: false,
@@ -1580,7 +1581,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         uploadResults: false,
                         uploadScreenshots: false,
                     },
-                    http: {},
                 },
                 {} as Cypress.PluginConfigOptions,
                 new SimpleEvidenceCollection(),
@@ -1591,25 +1591,25 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("collects evidence for single tests", () => {
             context.addEvidence("CYP-123", {
-                filename: "hello.json",
                 contentType: "application/json",
                 data: "WyJoZWxsbyJd",
+                filename: "hello.json",
             });
             context.addEvidence("CYP-123", {
-                filename: "goodbye.json",
                 contentType: "application/json",
                 data: "WyJnb29kYnllIl0=",
+                filename: "goodbye.json",
             });
             expect(context.getEvidence("CYP-123")).to.deep.eq([
                 {
-                    filename: "hello.json",
                     contentType: "application/json",
                     data: "WyJoZWxsbyJd",
+                    filename: "hello.json",
                 },
                 {
-                    filename: "goodbye.json",
                     contentType: "application/json",
                     data: "WyJnb29kYnllIl0=",
+                    filename: "goodbye.json",
                 },
             ]);
         });
@@ -1617,27 +1617,27 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("collects evidence for multiple tests", () => {
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-123", {
-                filename: "hello.json",
                 contentType: "application/json",
                 data: "WyJoZWxsbyJd",
+                filename: "hello.json",
             });
             evidenceCollection.addEvidence("CYP-456", {
-                filename: "goodbye.json",
                 contentType: "application/json",
                 data: "WyJnb29kYnllIl0=",
+                filename: "goodbye.json",
             });
             expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
                 {
-                    filename: "hello.json",
                     contentType: "application/json",
                     data: "WyJoZWxsbyJd",
+                    filename: "hello.json",
                 },
             ]);
             expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([
                 {
-                    filename: "goodbye.json",
                     contentType: "application/json",
                     data: "WyJnb29kYnllIl0=",
+                    filename: "goodbye.json",
                 },
             ]);
         });
@@ -1645,9 +1645,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("returns an empty array for unknown tests", () => {
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-123", {
-                filename: "hello.json",
                 contentType: "application/json",
                 data: "WyJoZWxsbyJd",
+                filename: "hello.json",
             });
             expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([]);
         });

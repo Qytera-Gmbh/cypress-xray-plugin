@@ -18,30 +18,30 @@ export type RunData = Pick<
  * Additional information used by test execution issues when uploading Cucumber results.
  */
 export interface TestExecutionIssueData {
-    projectKey: string;
-    issuetype: IssueTypeDetails;
-    summary?: string;
     description?: string;
-    testPlan?: {
-        issueKey: string;
-    };
+    issuetype: IssueTypeDetails;
+    labels?: string[];
+    projectKey: string;
+    summary?: string;
     testEnvironments?: {
         environments: [string, ...string[]];
     };
-    labels?: string[];
+    testPlan?: {
+        issueKey: string;
+    };
 }
 
 /**
  * Additional information used by test execution issues when uploading Cucumber results.
  */
 export interface TestExecutionIssueDataServer extends TestExecutionIssueData {
-    testPlan?: {
-        issueKey: string;
-        fieldId: string;
-    };
     testEnvironments?: {
         environments: [string, ...string[]];
         fieldId: string;
+    };
+    testPlan?: {
+        fieldId: string;
+        issueKey: string;
     };
 }
 
@@ -59,12 +59,6 @@ export function buildMultipartInfoServer(
 ): CucumberMultipartInfo {
     const multipartInfo: CucumberMultipartInfo = {
         fields: {
-            project: {
-                key: testExecutionIssueData.projectKey,
-            },
-            summary:
-                testExecutionIssueData.summary ??
-                defaultSummary(new Date(runData.startedTestsAt).getTime()),
             description:
                 testExecutionIssueData.description ??
                 defaultDescription(
@@ -73,6 +67,12 @@ export function buildMultipartInfoServer(
                     runData.browserVersion
                 ),
             issuetype: testExecutionIssueData.issuetype,
+            project: {
+                key: testExecutionIssueData.projectKey,
+            },
+            summary:
+                testExecutionIssueData.summary ??
+                defaultSummary(new Date(runData.startedTestsAt).getTime()),
         },
     };
     if (testExecutionIssueData.testPlan) {
@@ -100,12 +100,6 @@ export function buildMultipartInfoCloud(
 ): CucumberMultipartInfoCloud {
     return {
         fields: {
-            project: {
-                key: testExecutionIssueData.projectKey,
-            },
-            summary:
-                testExecutionIssueData.summary ??
-                defaultSummary(new Date(runData.startedTestsAt).getTime()),
             description:
                 testExecutionIssueData.description ??
                 defaultDescription(
@@ -114,10 +108,16 @@ export function buildMultipartInfoCloud(
                     runData.browserVersion
                 ),
             issuetype: testExecutionIssueData.issuetype,
+            project: {
+                key: testExecutionIssueData.projectKey,
+            },
+            summary:
+                testExecutionIssueData.summary ??
+                defaultSummary(new Date(runData.startedTestsAt).getTime()),
         },
         xrayFields: {
-            testPlanKey: testExecutionIssueData.testPlan?.issueKey,
             environments: testExecutionIssueData.testEnvironments?.environments,
+            testPlanKey: testExecutionIssueData.testPlan?.issueKey,
         },
     };
 }

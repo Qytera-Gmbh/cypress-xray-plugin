@@ -116,8 +116,8 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                         query: query,
                         variables: {
                             jql: jql,
-                            start: start,
                             limit: XrayClientCloud.GRAPHQL_LIMITS.getTests,
+                            start: start,
                         },
                     };
                     const response: AxiosResponse<GetTestsResponse<GetTestsJiraData>> =
@@ -222,14 +222,14 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
         });
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         return {
-            url: `${this.apiBaseUrl}/import/execution/cucumber/multipart`,
-            data: formData,
             config: {
                 headers: {
                     ...authorizationHeader,
                     ...formData.getHeaders(),
                 },
             },
+            data: formData,
+            url: `${this.apiBaseUrl}/import/execution/cucumber/multipart`,
         };
     }
 

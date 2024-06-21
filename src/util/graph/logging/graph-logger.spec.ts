@@ -312,7 +312,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             const b = graph.place(
                 new ImportFeatureCommand(
-                    { xrayClient: xrayClient, filePath: "/path/to/file.feature" },
+                    { filePath: "/path/to/file.feature", xrayClient: xrayClient },
                     logger
                 )
             );

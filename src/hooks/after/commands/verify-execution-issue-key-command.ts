@@ -6,7 +6,7 @@ import { Command, Computable } from "../../command";
 
 type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey" | "testExecutionIssueType"> & {
     displayCloudHelp: boolean;
-    importType: "cypress" | "cucumber";
+    importType: "cucumber" | "cypress";
 };
 
 export class VerifyExecutionIssueKeyCommand extends Command<string, Parameters> {

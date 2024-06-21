@@ -1,65 +1,65 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 export interface ResolvedConfigOptions<ComponentDevServerOpts = unknown> {
-    baseUrl: string | null;
+    animationDistanceThreshold: number;
+    baseUrl: null | string;
+    blockHosts: null | string | string[];
+    chromeWebSecurity: boolean;
+    clientCertificates: ClientCertificate[];
+    component: ComponentConfigOptions<ComponentDevServerOpts>;
+    defaultCommandTimeout: number;
+    downloadsFolder: string;
+    e2e: EndToEndConfigOptions;
     env: Record<string, unknown>;
     excludeSpecPattern: string | string[];
-    numTestsKeptInMemory: number;
-    port: number | null;
-    reporter: string;
-    reporterOptions: Record<string, unknown>;
-    slowTestThreshold: number;
-    watchForFileChanges: boolean;
-    defaultCommandTimeout: number;
     execTimeout: number;
-    pageLoadTimeout: number;
-    modifyObstructiveCode: boolean;
-    requestTimeout: number;
-    responseTimeout: number;
-    taskTimeout: number;
-    fileServerFolder: string;
-    fixturesFolder: string | false;
-    downloadsFolder: string;
-    nodeVersion: "system" | "bundled";
-    redirectionLimit: number;
-    resolvedNodePath: string;
-    resolvedNodeVersion: string;
-    screenshotOnRunFailure: boolean;
-    screenshotsFolder: string | false;
-    supportFile: string | false;
-    testIsolation: boolean;
-    videosFolder: string;
-    trashAssetsBeforeRuns: boolean;
-    videoCompression: number | boolean;
-    video: boolean;
-    videoUploadOnPasses: boolean;
-    chromeWebSecurity: boolean;
-    viewportHeight: number;
-    viewportWidth: number;
-    animationDistanceThreshold: number;
-    waitForAnimations: boolean;
-    scrollBehavior: scrollBehaviorOptions;
     experimentalCspAllowList: boolean | experimentalCspAllowedDirectives[];
+    experimentalFetchPolyfill: boolean;
     experimentalInteractiveRunEvents: boolean;
+    experimentalMemoryManagement: boolean;
     experimentalModifyObstructiveThirdPartyCode: boolean;
-    experimentalSkipDomainInjection: string[] | null;
+    experimentalSkipDomainInjection: null | string[];
     experimentalSourceRewriting: boolean;
     experimentalStudio: boolean;
     experimentalWebKitSupport: boolean;
-    experimentalMemoryManagement: boolean;
-    retries: number | { runMode?: number | null; openMode?: number | null } | null;
+    fileServerFolder: string;
+    fixturesFolder: false | string;
     includeShadowDom: boolean;
-    blockHosts: null | string | string[];
-    projectId: null | string;
-    supportFolder: string;
-    specPattern: string | string[];
-    userAgent: null | string;
-    experimentalFetchPolyfill: boolean;
-    component: ComponentConfigOptions<ComponentDevServerOpts>;
-    e2e: EndToEndConfigOptions;
-    clientCertificates: ClientCertificate[];
     indexHtmlFile: string;
+    modifyObstructiveCode: boolean;
+    nodeVersion: "bundled" | "system";
+    numTestsKeptInMemory: number;
+    pageLoadTimeout: number;
+    port: null | number;
+    projectId: null | string;
+    redirectionLimit: number;
+    reporter: string;
+    reporterOptions: Record<string, unknown>;
+    requestTimeout: number;
+    resolvedNodePath: string;
+    resolvedNodeVersion: string;
+    responseTimeout: number;
+    retries: { openMode?: null | number; runMode?: null | number } | null | number;
+    screenshotOnRunFailure: boolean;
+    screenshotsFolder: false | string;
+    scrollBehavior: scrollBehaviorOptions;
+    slowTestThreshold: number;
+    specPattern: string | string[];
+    supportFile: false | string;
+    supportFolder: string;
+    taskTimeout: number;
+    testIsolation: boolean;
+    trashAssetsBeforeRuns: boolean;
+    userAgent: null | string;
+    video: boolean;
+    videoCompression: boolean | number;
+    videosFolder: string;
+    videoUploadOnPasses: boolean;
+    viewportHeight: number;
+    viewportWidth: number;
+    waitForAnimations: boolean;
+    watchForFileChanges: boolean;
 }
-export type TestingType = "e2e" | "component";
+export type TestingType = "component" | "e2e";
 export type ConfigOptions<ComponentDevServerOpts = unknown> = Partial<
     UserConfigOptions<ComponentDevServerOpts>
 > & {
@@ -71,41 +71,41 @@ export interface PluginConfigOptions extends ResolvedConfigOptions, RuntimeConfi
     version: string;
 }
 interface Auth {
-    username: string;
     password: string;
+    username: string;
 }
 interface RemoteState {
     auth?: Auth;
     domainName: string;
-    strategy: "file" | "http";
+    fileServer: null | string;
     origin: string;
-    fileServer: string | null;
     props: Record<string, unknown>;
+    strategy: "file" | "http";
     visiting: string;
 }
-type BrowserName = "electron" | "chrome" | "chromium" | "firefox" | "edge";
-type BrowserChannel = "stable" | "canary" | "beta" | "dev" | "nightly";
+type BrowserName = "chrome" | "chromium" | "edge" | "electron" | "firefox";
+type BrowserChannel = "beta" | "canary" | "dev" | "nightly" | "stable";
 type BrowserFamily = "chromium" | "firefox" | "webkit";
 interface Browser {
-    name: BrowserName;
-    family: BrowserFamily;
     channel: BrowserChannel;
     displayName: string;
-    version: string;
-    majorVersion: number | string;
-    path: string;
+    family: BrowserFamily;
+    info?: string;
     isHeaded: boolean;
     isHeadless: boolean;
-    info?: string;
-    warning?: string;
+    majorVersion: number | string;
     minSupportedVersion?: number;
+    name: BrowserName;
+    path: string;
     unsupportedVersion?: boolean;
+    version: string;
+    warning?: string;
 }
-type CypressSpecType = "integration" | "component";
+type CypressSpecType = "component" | "integration";
 interface Spec {
+    absolute: string;
     name: string;
     relative: string;
-    absolute: string;
     specFilter?: string;
     specType?: CypressSpecType;
 }
@@ -113,55 +113,55 @@ interface Cypress {
     spec: Spec;
 }
 interface SinonSpyAgent<A extends sinon.SinonSpy> {
-    log(shouldOutput?: boolean): Omit<A, "withArgs"> & Agent<A>;
     as(alias: string): Omit<A, "withArgs"> & Agent<A>;
+    log(shouldOutput?: boolean): Omit<A, "withArgs"> & Agent<A>;
     withArgs(...args: unknown[]): Omit<A, "withArgs"> & Agent<A>;
 }
 type Agent<T extends sinon.SinonSpy> = SinonSpyAgent<T> & T;
 type experimentalCspAllowedDirectives =
-    | "default-src"
     | "child-src"
+    | "default-src"
+    | "form-action"
     | "frame-src"
-    | "script-src"
     | "script-src-elem"
-    | "form-action";
-type scrollBehaviorOptions = false | "center" | "top" | "bottom" | "nearest";
+    | "script-src";
+type scrollBehaviorOptions = "bottom" | "center" | "nearest" | "top" | false;
 interface PEMCert {
     cert: string;
     key: string;
     passphrase?: string;
 }
 interface PFXCert {
-    pfx: string;
     passphrase?: string;
+    pfx: string;
 }
 interface ClientCertificate {
-    url: string;
     ca?: string[];
     certs: PEMCert[] | PFXCert[];
+    url: string;
 }
 interface EndToEndConfigOptions extends Omit<CoreConfigOptions, "indexHtmlFile"> {
-    experimentalRunAllSpecs?: boolean;
     experimentalOriginDependencies?: boolean;
+    experimentalRunAllSpecs?: boolean;
 }
 interface RuntimeConfigOptions extends Partial<RuntimeServerConfigOptions> {
-    configFile: string;
     arch: string;
     browsers: Browser[];
+    configFile: string;
+    cypressBinaryRoot: string;
+    devServerPublicPathRoute: string;
     hosts: null | Record<string, string>;
     isInteractive: boolean;
-    platform: "linux" | "darwin" | "win32";
-    remote: RemoteState;
-    version: string;
     namespace: string;
+    platform: "darwin" | "linux" | "win32";
     projectRoot: string;
-    repoRoot: string | null;
-    devServerPublicPathRoute: string;
-    cypressBinaryRoot: string;
+    remote: RemoteState;
+    repoRoot: null | string;
+    version: string;
 }
 interface RuntimeServerConfigOptions {
-    browser: Browser;
     autoOpen: boolean;
+    browser: Browser;
     browserUrl: string;
     clientRoute: string;
     cypressEnv: string;
@@ -186,24 +186,19 @@ type CoreConfigOptions = Partial<Omit<ResolvedConfigOptions, TestingType>>;
 type DefineDevServerConfig = Record<string, unknown>;
 type PickConfigOpt<T> = T extends keyof DefineDevServerConfig ? DefineDevServerConfig[T] : unknown;
 interface AngularDevServerProjectConfig {
+    buildOptions: Record<string, unknown>;
     root: string;
     sourceRoot: string;
-    buildOptions: Record<string, unknown>;
 }
 type DevServerFn<ComponentDevServerOpts = unknown> = (
     cypressDevServerConfig: DevServerConfig,
     devServerConfig: ComponentDevServerOpts
-) => ResolvedDevServerConfig | Promise<ResolvedDevServerConfig>;
-type ConfigHandler<T> = T | (() => T | Promise<T>);
+) => Promise<ResolvedDevServerConfig> | ResolvedDevServerConfig;
+type ConfigHandler<T> = (() => Promise<T> | T) | T;
 type DevServerConfigOptions =
     | {
-          bundler: "webpack";
-          framework: "react" | "vue" | "vue-cli" | "nuxt" | "create-react-app" | "next" | "svelte";
-          webpackConfig?: ConfigHandler<PickConfigOpt<"webpackConfig">>;
-      }
-    | {
           bundler: "vite";
-          framework: "react" | "vue" | "svelte";
+          framework: "react" | "svelte" | "vue";
           viteConfig?: ConfigHandler<
               Omit<Exclude<PickConfigOpt<"viteConfig">, undefined>, "base" | "root">
           >;
@@ -211,27 +206,32 @@ type DevServerConfigOptions =
     | {
           bundler: "webpack";
           framework: "angular";
-          webpackConfig?: ConfigHandler<PickConfigOpt<"webpackConfig">>;
           options?: {
               projectConfig: AngularDevServerProjectConfig;
           };
+          webpackConfig?: ConfigHandler<PickConfigOpt<"webpackConfig">>;
+      }
+    | {
+          bundler: "webpack";
+          framework: "create-react-app" | "next" | "nuxt" | "react" | "svelte" | "vue-cli" | "vue";
+          webpackConfig?: ConfigHandler<PickConfigOpt<"webpackConfig">>;
       };
 interface ComponentConfigOptions<ComponentDevServerOpts = unknown>
     extends Omit<CoreConfigOptions, "baseUrl" | "experimentalStudio"> {
-    devServer: DevServerFn<ComponentDevServerOpts> | DevServerConfigOptions;
+    devServer: DevServerConfigOptions | DevServerFn<ComponentDevServerOpts>;
     devServerConfig?: ComponentDevServerOpts;
     experimentalSingleTabRunMode?: boolean;
 }
 type UserConfigOptions<ComponentDevServerOpts = unknown> = Omit<
     ResolvedConfigOptions<ComponentDevServerOpts>,
-    "baseUrl" | "excludeSpecPattern" | "supportFile" | "specPattern" | "indexHtmlFile"
+    "baseUrl" | "excludeSpecPattern" | "indexHtmlFile" | "specPattern" | "supportFile"
 >;
 interface DevServerConfig {
-    specs: Spec[];
     cypressConfig: PluginConfigOptions;
     devServerEvents: NodeJS.EventEmitter;
+    specs: Spec[];
 }
 interface ResolvedDevServerConfig {
-    port: number;
     close: (done?: (err?: Error) => unknown) => void;
+    port: number;
 }

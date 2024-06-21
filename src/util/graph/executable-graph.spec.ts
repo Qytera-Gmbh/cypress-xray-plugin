@@ -13,7 +13,7 @@ class ComputableVertex implements Computable<unknown>, Stateful<ComputableState>
         this.logger = logger;
     }
 
-    public compute(): void | Promise<void> {
+    public compute(): Promise<void> | void {
         this.logger(this.message);
     }
 

@@ -15,6 +15,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         beforeEach(() => {
             options = {
+                http: {},
                 jira: initJiraOptions(
                     {},
                     {
@@ -22,14 +23,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                         url: "https://example.org",
                     }
                 ),
+                plugin: initPluginOptions({}, {}),
                 xray: initXrayOptions(
                     {},
                     {
                         uploadResults: true,
                     }
                 ),
-                plugin: initPluginOptions({}, {}),
-                http: {},
             };
         });
 
@@ -216,8 +216,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     jira: {
                         projectKey: "CYP",
-                        testExecutionIssueKey: "CYP-123",
                         testExecutionIssueDescription: "desription",
+                        testExecutionIssueKey: "CYP-123",
                         testExecutionIssueSummary: "summary",
                         testPlanIssueKey: "CYP-456",
                     },
@@ -231,8 +231,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(command.getParameters()).to.deep.eq({
                 jira: {
                     projectKey: "CYP",
-                    testExecutionIssueKey: "CYP-123",
                     testExecutionIssueDescription: "desription",
+                    testExecutionIssueKey: "CYP-123",
                     testExecutionIssueSummary: "summary",
                     testPlanIssueKey: "CYP-456",
                 },

@@ -19,15 +19,16 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                 {
-                    projectKey: "CYP",
-                    prefixes: { test: "TestName:", precondition: "Precondition:" },
                     displayCloudHelp: true,
                     filePath: "./some-file.feature",
+                    prefixes: { precondition: "Precondition:", test: "TestName:" },
+                    projectKey: "CYP",
                 },
                 logger,
                 new ConstantCommand(logger, document)
             );
             expect(await extractIssueKeysCommand.compute()).to.deep.eq({
+                preconditions: [{ key: "CYP-222", summary: "" }],
                 tests: [
                     {
                         key: "CYP-333",
@@ -40,7 +41,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         tags: ["TestName:CYP-555", "TestSet:CYP-444"],
                     },
                 ],
-                preconditions: [{ key: "CYP-222", summary: "" }],
             });
         });
 
@@ -51,52 +51,41 @@ describe(path.relative(process.cwd(), __filename), () => {
             };
             const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                 {
-                    projectKey: "CYP",
-                    prefixes: {},
                     displayCloudHelp: true,
                     filePath: "./some-file.feature",
+                    prefixes: {},
+                    projectKey: "CYP",
                 },
                 logger,
                 new ConstantCommand(logger, document)
             );
             expect(await extractIssueKeysCommand.compute()).to.deep.eq({
-                tests: [],
                 preconditions: [],
+                tests: [],
             });
         });
 
         it("handles rules", async () => {
             const logger = getMockedLogger();
             const document: GherkinDocument = {
+                comments: [{ location: { line: 5 }, text: "@CYP-456" }],
                 feature: {
-                    location: { line: 1 },
-                    tags: [],
-                    language: "en",
-                    keyword: "Feature",
-                    name: "Rule feature",
-                    description: "",
                     children: [
                         {
                             rule: {
-                                id: "123242-rule",
-                                location: { line: 3 },
-                                tags: [],
-                                keyword: "Rule",
-                                name: "A rule",
-                                description: "",
                                 children: [
                                     {
                                         background: {
-                                            id: "123242-background",
-                                            location: { line: 4 },
-                                            keyword: "Background",
-                                            name: "A background",
                                             description: "",
+                                            id: "123242-background",
+                                            keyword: "Background",
+                                            location: { line: 4 },
+                                            name: "A background",
                                             steps: [
                                                 {
                                                     id: "123242-background-given",
-                                                    location: { line: 6 },
                                                     keyword: "Given",
+                                                    location: { line: 6 },
                                                     text: "Something",
                                                 },
                                             ],
@@ -104,42 +93,53 @@ describe(path.relative(process.cwd(), __filename), () => {
                                     },
                                     {
                                         scenario: {
+                                            description: "",
+                                            examples: [],
                                             id: "123242-scenario",
+                                            keyword: "Scenario",
                                             location: { line: 8 },
+                                            name: "A scenario",
+                                            steps: [],
                                             tags: [
                                                 {
-                                                    name: "@CYP-123",
-                                                    location: { line: 7 },
                                                     id: "123242-scenario-tag",
+                                                    location: { line: 7 },
+                                                    name: "@CYP-123",
                                                 },
                                             ],
-                                            keyword: "Scenario",
-                                            name: "A scenario",
-                                            description: "",
-                                            steps: [],
-                                            examples: [],
                                         },
                                     },
                                 ],
+                                description: "",
+                                id: "123242-rule",
+                                keyword: "Rule",
+                                location: { line: 3 },
+                                name: "A rule",
+                                tags: [],
                             },
                         },
                     ],
+                    description: "",
+                    keyword: "Feature",
+                    language: "en",
+                    location: { line: 1 },
+                    name: "Rule feature",
+                    tags: [],
                 },
-                comments: [{ location: { line: 5 }, text: "@CYP-456" }],
             };
             const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                 {
-                    projectKey: "CYP",
-                    prefixes: {},
                     displayCloudHelp: true,
                     filePath: "./some-file.feature",
+                    prefixes: {},
+                    projectKey: "CYP",
                 },
                 logger,
                 new ConstantCommand(logger, document)
             );
             expect(await extractIssueKeysCommand.compute()).to.deep.eq({
-                tests: [{ key: "CYP-123", summary: "A scenario", tags: ["CYP-123"] }],
                 preconditions: [{ key: "CYP-456", summary: "A background" }],
+                tests: [{ key: "CYP-123", summary: "A scenario", tags: ["CYP-123"] }],
             });
         });
 
@@ -150,10 +150,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                 {
-                    projectKey: "CYP",
-                    prefixes: { precondition: "Precondition:" },
                     displayCloudHelp: true,
                     filePath: "./test/resources/features/taggedPrefixMissingScenario.feature",
+                    prefixes: { precondition: "Precondition:" },
+                    projectKey: "CYP",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -210,10 +210,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             scenario.name = "";
             const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                 {
-                    projectKey: "CYP",
-                    prefixes: { precondition: "Precondition:" },
                     displayCloudHelp: true,
                     filePath: "./test/resources/features/taggedPrefixMissingScenario.feature",
+                    prefixes: { precondition: "Precondition:" },
+                    projectKey: "CYP",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -267,10 +267,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                 {
-                    projectKey: "CYP",
-                    prefixes: {},
                     displayCloudHelp: false,
                     filePath: "./test/resources/features/taggedWrongScenarioTags.feature",
+                    prefixes: {},
+                    projectKey: "CYP",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -325,10 +325,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             scenario.steps = [];
             const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                 {
-                    projectKey: "CYP",
-                    prefixes: {},
                     displayCloudHelp: true,
                     filePath: "./test/resources/features/taggedWrongScenarioTags.feature",
+                    prefixes: {},
+                    projectKey: "CYP",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -379,10 +379,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                 {
-                    projectKey: "CYP",
-                    prefixes: { test: "TestName:" },
                     displayCloudHelp: true,
                     filePath: "./test/resources/features/taggedPrefixMissingBackground.feature",
+                    prefixes: { test: "TestName:" },
+                    projectKey: "CYP",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -440,10 +440,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             background.name = "";
             const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                 {
-                    projectKey: "CYP",
-                    prefixes: { test: "TestName:" },
                     displayCloudHelp: false,
                     filePath: "./test/resources/features/taggedPrefixMissingBackground.feature",
+                    prefixes: { test: "TestName:" },
+                    projectKey: "CYP",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -500,10 +500,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             background.name = "";
             const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                 {
-                    projectKey: "CYP",
-                    prefixes: {},
                     displayCloudHelp: true,
                     filePath: "./test/resources/features/taggedWrongBackgroundTags.feature",
+                    prefixes: {},
+                    projectKey: "CYP",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -553,10 +553,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                 {
-                    projectKey: "CYP",
-                    prefixes: {},
                     displayCloudHelp: false,
                     filePath: "./test/resources/features/taggedWrongBackgroundTags.feature",
+                    prefixes: {},
+                    projectKey: "CYP",
                 },
                 logger,
                 new ConstantCommand(logger, document)
@@ -611,11 +611,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                 scenario.steps = [];
                 const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                     {
-                        projectKey: "CYP",
-                        prefixes: {},
                         displayCloudHelp: false,
                         filePath:
                             "./test/resources/features/taggedNoPrefixMultipleScenario.feature",
+                        prefixes: {},
+                        projectKey: "CYP",
                     },
                     logger,
                     new ConstantCommand(logger, document)
@@ -648,11 +648,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                     {
-                        projectKey: "CYP",
-                        prefixes: {},
                         displayCloudHelp: false,
                         filePath:
                             "./test/resources/features/taggedNoPrefixMultipleBackground.feature",
+                        prefixes: {},
+                        projectKey: "CYP",
                     },
                     logger,
                     new ConstantCommand(logger, document)
@@ -691,11 +691,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                 background.name = "";
                 const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                     {
-                        projectKey: "CYP",
-                        prefixes: {},
                         displayCloudHelp: false,
                         filePath:
                             "./test/resources/features/taggedNoPrefixMultipleBackground.feature",
+                        prefixes: {},
+                        projectKey: "CYP",
                     },
                     logger,
                     new ConstantCommand(logger, document)
@@ -733,10 +733,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                     {
-                        projectKey: "CYP",
-                        prefixes: { test: "TestName:", precondition: "Precondition:" },
                         displayCloudHelp: true,
                         filePath: "./test/resources/features/taggedPrefixMultipleScenario.feature",
+                        prefixes: { precondition: "Precondition:", test: "TestName:" },
+                        projectKey: "CYP",
                     },
                     logger,
                     new ConstantCommand(logger, document)
@@ -769,11 +769,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 const extractIssueKeysCommand = new ExtractFeatureFileIssuesCommand(
                     {
-                        projectKey: "CYP",
-                        prefixes: { precondition: "Precondition:" },
                         displayCloudHelp: true,
                         filePath:
                             "./test/resources/features/taggedPrefixMultipleBackground.feature",
+                        prefixes: { precondition: "Precondition:" },
+                        projectKey: "CYP",
                     },
                     logger,
                     new ConstantCommand(logger, document)

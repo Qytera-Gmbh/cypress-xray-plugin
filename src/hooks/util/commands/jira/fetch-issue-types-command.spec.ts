@@ -12,34 +12,34 @@ describe(path.relative(process.cwd(), __filename), () => {
             const jiraClient = getMockedJiraClient();
             const types = [
                 {
-                    self: "https://example.org/rest/api/2/issuetype/10017",
-                    id: "10017",
+                    avatarId: 10314,
                     description: "Test",
+                    hierarchyLevel: 0,
                     iconUrl:
                         "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10314?size=medium",
+                    id: "10017",
                     name: "Test",
-                    untranslatedName: "Test",
-                    subtask: false,
-                    avatarId: 10314,
-                    hierarchyLevel: 0,
                     scope: {
-                        type: "PROJECT",
                         project: {
                             id: "10008",
                         },
+                        type: "PROJECT",
                     },
+                    self: "https://example.org/rest/api/2/issuetype/10017",
+                    subtask: false,
+                    untranslatedName: "Test",
                 },
                 {
-                    self: "https://example.org/rest/api/2/issuetype/10001",
-                    id: "10001",
+                    avatarId: 10315,
                     description: "Eine Funktionalität oder Funktion, ausgedrückt als Benutzerziel.",
+                    hierarchyLevel: 0,
                     iconUrl:
                         "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10315?size=medium",
+                    id: "10001",
                     name: "Story",
-                    untranslatedName: "Story",
+                    self: "https://example.org/rest/api/2/issuetype/10001",
                     subtask: false,
-                    avatarId: 10315,
-                    hierarchyLevel: 0,
+                    untranslatedName: "Story",
                 },
             ];
             jiraClient.getIssueTypes.onFirstCall().resolves(types);

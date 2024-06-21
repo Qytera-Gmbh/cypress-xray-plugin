@@ -11,13 +11,13 @@ import { DateTimeIso } from "../util";
  */
 export interface XrayTestExecutionResults {
     /**
-     * The test execution key where to import the execution results.
-     */
-    testExecutionKey?: string;
-    /**
      * The info object for creating new test execution issues.
      */
     info?: XrayTestExecutionInfo;
+    /**
+     * The test execution key where to import the execution results.
+     */
+    testExecutionKey?: string;
     /**
      * The test run result details.
      */
@@ -30,92 +30,60 @@ export interface XrayTestExecutionResults {
  */
 export interface XrayTestExecutionInfo {
     /**
-     * The project key where the test execution will be created.
-     */
-    project?: string;
-    /**
-     * The summary for the test execution issue.
-     */
-    summary?: string;
-    /**
      * The description for the test execution issue.
      */
     description?: string;
-    /**
-     * The version name for the fix version field of the test execution issue.
-     */
-    version?: string;
-    /**
-     * A revision for the revision custom field.
-     */
-    revision?: string;
-    /**
-     * The username for the Jira user who executed the tests.
-     */
-    user?: string;
-    /**
-     * The start date for the test execution issue.
-     */
-    startDate?: DateTimeIso;
     /**
      * The finish date for the test execution issue.
      */
     finishDate?: DateTimeIso;
     /**
-     * The test plan key for associating the test execution issue.
+     * The project key where the test execution will be created.
      */
-    testPlanKey?: string;
+    project?: string;
+    /**
+     * A revision for the revision custom field.
+     */
+    revision?: string;
+    /**
+     * The start date for the test execution issue.
+     */
+    startDate?: DateTimeIso;
+    /**
+     * The summary for the test execution issue.
+     */
+    summary?: string;
     /**
      * The test environments for the test execution issue.
      */
     testEnvironments?: string[];
+    /**
+     * The test plan key for associating the test execution issue.
+     */
+    testPlanKey?: string;
+    /**
+     * The username for the Jira user who executed the tests.
+     */
+    user?: string;
+    /**
+     * The version name for the fix version field of the test execution issue.
+     */
+    version?: string;
 }
 
 export interface XrayTest {
-    /**
-     * The test issue key.
-     */
-    testKey?: string;
-    /**
-     * The test info element.
-     */
-    testInfo?: XrayTestInfo;
-    /**
-     * The start date for the test run.
-     */
-    start?: DateTimeIso;
-    /**
-     * The finish date for the test run.
-     */
-    finish?: DateTimeIso;
-    /**
-     * The comment for the test run.
-     */
-    comment?: string;
-    /**
-     * The user id who executed the test run.
-     */
-    executedBy?: string;
     /**
      * The user id for the assignee of the test run.
      */
     assignee?: string;
     /**
-     * The test run status.
+     * The comment for the test run.
      */
-    status: string;
+    comment?: string;
     /**
-     * The step results.
+     * An array of custom fields for the test run.
      */
-    steps?: XrayManualTestStepResult[];
-    /**
-     * The example results for BDD tests.
-     */
-    examples?: (XrayExamplesTypeServer | XrayExamplesTypeCloud)[];
-    /**
-     * The iteration containing data-driven test results.
-     */
-    iterations?: XrayIterationResult[];
+    customFields?: XrayCustomField[];
     /**
      * An array of defect issue keys to associate with the test run.
      */
@@ -125,26 +93,62 @@ export interface XrayTest {
      */
     evidence?: XrayEvidenceItem[];
     /**
-     * An array of custom fields for the test run.
+     * The example results for BDD tests.
      */
-    customFields?: XrayCustomField[];
+    examples?: (XrayExamplesTypeCloud | XrayExamplesTypeServer)[];
+    /**
+     * The user id who executed the test run.
+     */
+    executedBy?: string;
+    /**
+     * The finish date for the test run.
+     */
+    finish?: DateTimeIso;
+    /**
+     * The iteration containing data-driven test results.
+     */
+    iterations?: XrayIterationResult[];
+    /**
+     * The start date for the test run.
+     */
+    start?: DateTimeIso;
+    /**
+     * The test run status.
+     */
+    status: string;
+    /**
+     * The step results.
+     */
+    steps?: XrayManualTestStepResult[];
+    /**
+     * The test info element.
+     */
+    testInfo?: XrayTestInfo;
+    /**
+     * The test issue key.
+     */
+    testKey?: string;
 }
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22tests%22object-TestRundetails
  */
 export type XrayTestServer = XrayTest;
-export type XrayExamplesTypeServer = "TODO" | "FAIL" | "PASS" | "EXECUTING";
+export type XrayExamplesTypeServer = "EXECUTING" | "FAIL" | "PASS" | "TODO";
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22test%22object-TestRundetails
  */
 export type XrayTestCloud = XrayTest;
-export type XrayExamplesTypeCloud = "TODO" | "FAILED" | "PASSED" | "EXECUTING";
+export type XrayExamplesTypeCloud = "EXECUTING" | "FAILED" | "PASSED" | "TODO";
 
 export interface XrayTestInfo {
     /**
-     * The summary for the test issue.
+     * The generic test definition.
      */
-    summary: string;
+    definition?: string;
+    /**
+     * The test issue labels.
+     */
+    labels?: string[];
     /**
      * The project key where the test issue will be created.
      */
@@ -154,9 +158,9 @@ export interface XrayTestInfo {
      */
     requirementKeys?: string[];
     /**
-     * The test issue labels.
+     * The BDD scenario.
      */
-    labels?: string[];
+    scenario?: string;
     /**
      * An array of test steps (for manual tests).
      */
@@ -175,13 +179,9 @@ export interface XrayTestInfo {
         result?: string;
     }[];
     /**
-     * The BDD scenario.
+     * The summary for the test issue.
      */
-    scenario?: string;
-    /**
-     * The generic test definition.
-     */
-    definition?: string;
+    summary: string;
 }
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22testInfo%22object-CreatingTestissues
@@ -192,22 +192,18 @@ export interface XrayTestInfoServer extends XrayTestInfo {
      */
     description?: string;
     /**
-     * The test type (e.g. Manual, Cucumber, Generic).
-     */
-    testType: string;
-    /**
      * The BDD scenario type (scenario or scenario outline).
      */
     scenarioType?: string;
+    /**
+     * The test type (e.g. Manual, Cucumber, Generic).
+     */
+    testType: string;
 }
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22testInfo%22object-CreatingTestissues
  */
 export interface XrayTestInfoCloud extends XrayTestInfo {
-    /**
-     * The test type (e.g. Manual, Cucumber, Generic).
-     */
-    type: string;
     /**
      * An array of test steps (for manual tests).
      */
@@ -221,13 +217,17 @@ export interface XrayTestInfoCloud extends XrayTestInfo {
          */
         action: string;
     }[];
+    /**
+     * The test type (e.g. Manual, Cucumber, Generic).
+     */
+    type: string;
 }
 
 export interface XrayManualTestStepResult {
     /**
-     * The status for the test step.
+     * The actual result field for the step result.
      */
-    status: string;
+    actualResult?: string;
     /**
      * The comment for the step result.
      */
@@ -237,9 +237,9 @@ export interface XrayManualTestStepResult {
      */
     defects?: string[];
     /**
-     * The actual result field for the step result.
+     * The status for the test step.
      */
-    actualResult?: string;
+    status: string;
 }
 export interface XrayManualTestStepResultServer extends XrayManualTestStepResult {
     /**
@@ -262,6 +262,11 @@ export interface XrayManualTestStepResultCloud extends XrayManualTestStepResult 
  */
 export interface XrayEvidenceItem {
     /**
+     * The Content-Type representation header is used to indicate the original
+     * media type of the resource.
+     */
+    contentType?: string;
+    /**
      * The attachment data encoded in base64.
      */
     data: Base64String;
@@ -269,11 +274,6 @@ export interface XrayEvidenceItem {
      * The file name for the attachment.
      */
     filename: string;
-    /**
-     * The Content-Type representation header is used to indicate the original
-     * media type of the resource.
-     */
-    contentType?: string;
 }
 
 export interface XrayIterationResult {
@@ -318,6 +318,14 @@ export interface XrayIterationResultServer extends XrayIterationResult {
  */
 export interface XrayIterationResultCloud extends XrayIterationResult {
     /**
+     * A duration for the iteration.
+     */
+    duration?: string;
+    /**
+     * The log for the iteration.
+     */
+    log?: string;
+    /**
      * The iteration name.
      */
     name?: string;
@@ -334,14 +342,6 @@ export interface XrayIterationResultCloud extends XrayIterationResult {
          */
         value?: string;
     }[];
-    /**
-     * The log for the iteration.
-     */
-    log?: string;
-    /**
-     * A duration for the iteration.
-     */
-    duration?: string;
 }
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22customFields%22object-storetestruncustomfields

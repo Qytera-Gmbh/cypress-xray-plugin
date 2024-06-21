@@ -97,14 +97,14 @@ export class XrayClientServer extends AbstractXrayClient {
         });
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         return {
-            url: `${this.apiBaseUrl}/rest/raven/latest/import/execution/cucumber/multipart`,
-            data: formData,
             config: {
                 headers: {
                     ...authorizationHeader,
                     ...formData.getHeaders(),
                 },
             },
+            data: formData,
+            url: `${this.apiBaseUrl}/rest/raven/latest/import/execution/cucumber/multipart`,
         };
     }
 

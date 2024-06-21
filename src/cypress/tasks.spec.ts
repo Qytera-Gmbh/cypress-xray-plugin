@@ -12,7 +12,7 @@ import * as tasks from "./tasks";
 describe(path.relative(process.cwd(), __filename), () => {
     describe(tasks.enqueueTask.name, () => {
         it("enqueues tasks for outgoing requests (url only)", () => {
-            const { cypress, cy } = getMockedCypress();
+            const { cy, cypress } = getMockedCypress();
             cypress.currentTest.title = "A test title";
             const stubbedTask = sinon.stub(cy, "task");
             tasks.enqueueTask(
@@ -23,69 +23,69 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(stubbedTask).to.have.been.calledOnceWithExactly(
                 tasks.PluginTask.OUTGOING_REQUEST,
                 {
-                    test: "A test title",
                     filename: "urlOnly.json",
                     request: "https://example.org",
+                    test: "A test title",
                 }
             );
         });
 
         it("enqueues tasks for outgoing requests (object)", () => {
-            const { cypress, cy } = getMockedCypress();
+            const { cy, cypress } = getMockedCypress();
             cypress.currentTest.title = "Another test title";
             const stubbedTask = sinon.stub(cy, "task");
             tasks.enqueueTask(tasks.PluginTask.OUTGOING_REQUEST, "requestObject.json", {
-                url: "https://example.org",
-                method: "POST",
                 body: { data: "cool data" },
+                method: "POST",
+                url: "https://example.org",
             });
             expect(stubbedTask).to.have.been.calledOnceWithExactly(
                 tasks.PluginTask.OUTGOING_REQUEST,
                 {
-                    test: "Another test title",
                     filename: "requestObject.json",
                     request: {
-                        url: "https://example.org",
-                        method: "POST",
                         body: { data: "cool data" },
+                        method: "POST",
+                        url: "https://example.org",
                     },
+                    test: "Another test title",
                 }
             );
         });
 
         it("enqueues tasks for incoming responses", () => {
-            const { cypress, cy } = getMockedCypress();
+            const { cy, cypress } = getMockedCypress();
             cypress.currentTest.title = "Incoming test title";
             const stubbedTask = sinon.stub(cy, "task");
             tasks.enqueueTask(tasks.PluginTask.INCOMING_RESPONSE, "responseObject.json", {
                 allRequestResponses: [],
+                body: "This is example text",
                 duration: 12345,
+                headers: {
+                    ["Content-Type"]: "text/plain",
+                },
                 isOkStatusCode: true,
                 requestHeaders: { ["Accept"]: "text/plain" },
                 status: 200,
                 statusText: "Ok",
-                body: "This is example text",
-                headers: {
-                    ["Content-Type"]: "text/plain",
-                },
             });
             expect(stubbedTask).to.have.been.calledOnceWithExactly(
                 tasks.PluginTask.INCOMING_RESPONSE,
                 {
-                    test: "Incoming test title",
                     filename: "responseObject.json",
                     response: {
                         allRequestResponses: [],
+                        body: "This is example text",
                         duration: 12345,
+                        headers: {
+                            ["Content-Type"]: "text/plain",
+                        },
                         isOkStatusCode: true,
                         requestHeaders: { ["Accept"]: "text/plain" },
                         status: 200,
                         statusText: "Ok",
-                        body: "This is example text",
-                        headers: {
-                            ["Content-Type"]: "text/plain",
-                        },
                     },
+                    test: "Incoming test title",
                 }
             );
         });
@@ -97,16 +97,16 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             const result = listener[tasks.PluginTask.OUTGOING_REQUEST]({
-                test: "This is a test CYP-123",
                 filename: "outgoingRequest.json",
                 request: {
                     url: "https://example.org",
                 },
+                test: "This is a test CYP-123",
             });
             expect(evidenceCollection.addEvidence).to.have.been.calledOnceWithExactly("CYP-123", {
-                filename: "outgoingRequest.json",
                 contentType: "application/json",
                 data: "ewogICJ1cmwiOiAiaHR0cHM6Ly9leGFtcGxlLm9yZyIKfQ==",
+                filename: "outgoingRequest.json",
             });
             expect(result).to.deep.eq({
                 url: "https://example.org",
@@ -118,47 +118,47 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             const result1 = listener[tasks.PluginTask.OUTGOING_REQUEST]({
-                test: "This is a test CYP-123: GET",
                 filename: "outgoingRequest1.json",
                 request: {
-                    url: "https://example.org",
                     method: "GET",
+                    url: "https://example.org",
                 },
+                test: "This is a test CYP-123: GET",
             });
             const result2 = listener[tasks.PluginTask.OUTGOING_REQUEST]({
-                test: "This is a test CYP-123: POST",
                 filename: "outgoingRequest2.json",
                 request: {
-                    url: "https://example.org",
-                    method: "POST",
                     body: { name: "John Doe" },
+                    method: "POST",
+                    url: "https://example.org",
                 },
+                test: "This is a test CYP-123: POST",
             });
             expect(evidenceCollection.addEvidence).to.have.been.calledTwice;
             expect(evidenceCollection.addEvidence.getCall(0)).to.have.been.calledWithExactly(
                 "CYP-123",
                 {
-                    filename: "outgoingRequest1.json",
                     contentType: "application/json",
-                    data: "ewogICJ1cmwiOiAiaHR0cHM6Ly9leGFtcGxlLm9yZyIsCiAgIm1ldGhvZCI6ICJHRVQiCn0=",
+                    data: "ewogICJtZXRob2QiOiAiR0VUIiwKICAidXJsIjogImh0dHBzOi8vZXhhbXBsZS5vcmciCn0=",
+                    filename: "outgoingRequest1.json",
                 }
             );
             expect(evidenceCollection.addEvidence.getCall(1)).to.have.been.calledWithExactly(
                 "CYP-123",
                 {
-                    filename: "outgoingRequest2.json",
                     contentType: "application/json",
-                    data: "ewogICJ1cmwiOiAiaHR0cHM6Ly9leGFtcGxlLm9yZyIsCiAgIm1ldGhvZCI6ICJQT1NUIiwKICAiYm9keSI6IHsKICAgICJuYW1lIjogIkpvaG4gRG9lIgogIH0KfQ==",
+                    data: "ewogICJib2R5IjogewogICAgIm5hbWUiOiAiSm9obiBEb2UiCiAgfSwKICAibWV0aG9kIjogIlBPU1QiLAogICJ1cmwiOiAiaHR0cHM6Ly9leGFtcGxlLm9yZyIKfQ==",
+                    filename: "outgoingRequest2.json",
                 }
             );
             expect(result1).to.deep.eq({
-                url: "https://example.org",
                 method: "GET",
+                url: "https://example.org",
             });
             expect(result2).to.deep.eq({
-                url: "https://example.org",
-                method: "POST",
                 body: { name: "John Doe" },
+                method: "POST",
+                url: "https://example.org",
             });
         });
 
@@ -167,11 +167,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             listener[tasks.PluginTask.OUTGOING_REQUEST]({
-                test: "This is a test",
                 filename: "outgoingRequest.json",
                 request: {
                     url: "https://example.org",
                 },
+                test: "This is a test",
             });
             expect(evidenceCollection.addEvidence).to.not.have.been.called;
             expect(logger.message).to.have.been.calledOnceWithExactly(
@@ -202,21 +202,21 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             listener[tasks.PluginTask.OUTGOING_REQUEST]({
-                test: "This is a test",
                 filename: "outgoingRequest1.json",
                 request: {
-                    url: "https://example.org",
                     method: "GET",
+                    url: "https://example.org",
                 },
+                test: "This is a test",
             });
             listener[tasks.PluginTask.OUTGOING_REQUEST]({
-                test: "This is a test",
                 filename: "outgoingRequest2.json",
                 request: {
-                    url: "https://example.org",
-                    method: "POST",
                     body: { username: "Jane Doe" },
+                    method: "POST",
+                    url: "https://example.org",
                 },
+                test: "This is a test",
             });
             expect(evidenceCollection.addEvidence).to.not.have.been.called;
             expect(logger.message).to.have.been.calledOnceWithExactly(
@@ -247,37 +247,37 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             const result = listener[tasks.PluginTask.INCOMING_RESPONSE]({
-                test: "This is a test CYP-123",
                 filename: "incomingResponse.json",
                 response: {
                     allRequestResponses: [],
+                    body: "This is example text",
                     duration: 12345,
+                    headers: {
+                        ["Content-Type"]: "text/plain",
+                    },
                     isOkStatusCode: true,
                     requestHeaders: { ["Accept"]: "text/plain" },
                     status: 200,
                     statusText: "Ok",
-                    body: "This is example text",
-                    headers: {
-                        ["Content-Type"]: "text/plain",
-                    },
                 },
+                test: "This is a test CYP-123",
             });
             expect(evidenceCollection.addEvidence).to.have.been.calledOnceWithExactly("CYP-123", {
-                filename: "incomingResponse.json",
                 contentType: "application/json",
-                data: "ewogICJhbGxSZXF1ZXN0UmVzcG9uc2VzIjogW10sCiAgImR1cmF0aW9uIjogMTIzNDUsCiAgImlzT2tTdGF0dXNDb2RlIjogdHJ1ZSwKICAicmVxdWVzdEhlYWRlcnMiOiB7CiAgICAiQWNjZXB0IjogInRleHQvcGxhaW4iCiAgfSwKICAic3RhdHVzIjogMjAwLAogICJzdGF0dXNUZXh0IjogIk9rIiwKICAiYm9keSI6ICJUaGlzIGlzIGV4YW1wbGUgdGV4dCIsCiAgImhlYWRlcnMiOiB7CiAgICAiQ29udGVudC1UeXBlIjogInRleHQvcGxhaW4iCiAgfQp9",
+                data: "ewogICJhbGxSZXF1ZXN0UmVzcG9uc2VzIjogW10sCiAgImJvZHkiOiAiVGhpcyBpcyBleGFtcGxlIHRleHQiLAogICJkdXJhdGlvbiI6IDEyMzQ1LAogICJoZWFkZXJzIjogewogICAgIkNvbnRlbnQtVHlwZSI6ICJ0ZXh0L3BsYWluIgogIH0sCiAgImlzT2tTdGF0dXNDb2RlIjogdHJ1ZSwKICAicmVxdWVzdEhlYWRlcnMiOiB7CiAgICAiQWNjZXB0IjogInRleHQvcGxhaW4iCiAgfSwKICAic3RhdHVzIjogMjAwLAogICJzdGF0dXNUZXh0IjogIk9rIgp9",
+                filename: "incomingResponse.json",
             });
             expect(result).to.deep.eq({
                 allRequestResponses: [],
+                body: "This is example text",
                 duration: 12345,
+                headers: {
+                    ["Content-Type"]: "text/plain",
+                },
                 isOkStatusCode: true,
                 requestHeaders: { ["Accept"]: "text/plain" },
                 status: 200,
                 statusText: "Ok",
-                body: "This is example text",
-                headers: {
-                    ["Content-Type"]: "text/plain",
-                },
             });
         });
 
@@ -286,77 +286,77 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             const result1 = listener[tasks.PluginTask.INCOMING_RESPONSE]({
-                test: "This is a test CYP-123: GET",
                 filename: "incomingResponse1.json",
                 response: {
                     allRequestResponses: [],
+                    body: "This is example text",
                     duration: 12345,
+                    headers: {
+                        ["Content-Type"]: "text/plain",
+                    },
                     isOkStatusCode: true,
                     requestHeaders: { ["Accept"]: "text/plain" },
                     status: 200,
                     statusText: "Ok",
-                    body: "This is example text",
-                    headers: {
-                        ["Content-Type"]: "text/plain",
-                    },
                 },
+                test: "This is a test CYP-123: GET",
             });
             const result2 = listener[tasks.PluginTask.INCOMING_RESPONSE]({
-                test: "This is a test CYP-123: POST",
                 filename: "incomingResponse2.json",
                 response: {
                     allRequestResponses: [],
+                    body: "This page does not exist",
                     duration: 12345,
+                    headers: {
+                        ["Content-Type"]: "text/plain",
+                    },
                     isOkStatusCode: false,
                     requestHeaders: { ["Accept"]: "text/plain" },
                     status: 404,
                     statusText: "Not found",
-                    body: "This page does not exist",
-                    headers: {
-                        ["Content-Type"]: "text/plain",
-                    },
                 },
+                test: "This is a test CYP-123: POST",
             });
             expect(evidenceCollection.addEvidence).to.have.been.calledTwice;
             expect(evidenceCollection.addEvidence.getCall(0)).to.have.been.calledWithExactly(
                 "CYP-123",
                 {
-                    filename: "incomingResponse1.json",
                     contentType: "application/json",
-                    data: "ewogICJhbGxSZXF1ZXN0UmVzcG9uc2VzIjogW10sCiAgImR1cmF0aW9uIjogMTIzNDUsCiAgImlzT2tTdGF0dXNDb2RlIjogdHJ1ZSwKICAicmVxdWVzdEhlYWRlcnMiOiB7CiAgICAiQWNjZXB0IjogInRleHQvcGxhaW4iCiAgfSwKICAic3RhdHVzIjogMjAwLAogICJzdGF0dXNUZXh0IjogIk9rIiwKICAiYm9keSI6ICJUaGlzIGlzIGV4YW1wbGUgdGV4dCIsCiAgImhlYWRlcnMiOiB7CiAgICAiQ29udGVudC1UeXBlIjogInRleHQvcGxhaW4iCiAgfQp9",
+                    data: "ewogICJhbGxSZXF1ZXN0UmVzcG9uc2VzIjogW10sCiAgImJvZHkiOiAiVGhpcyBpcyBleGFtcGxlIHRleHQiLAogICJkdXJhdGlvbiI6IDEyMzQ1LAogICJoZWFkZXJzIjogewogICAgIkNvbnRlbnQtVHlwZSI6ICJ0ZXh0L3BsYWluIgogIH0sCiAgImlzT2tTdGF0dXNDb2RlIjogdHJ1ZSwKICAicmVxdWVzdEhlYWRlcnMiOiB7CiAgICAiQWNjZXB0IjogInRleHQvcGxhaW4iCiAgfSwKICAic3RhdHVzIjogMjAwLAogICJzdGF0dXNUZXh0IjogIk9rIgp9",
+                    filename: "incomingResponse1.json",
                 }
             );
             expect(evidenceCollection.addEvidence.getCall(1)).to.have.been.calledWithExactly(
                 "CYP-123",
                 {
-                    filename: "incomingResponse2.json",
                     contentType: "application/json",
-                    data: "ewogICJhbGxSZXF1ZXN0UmVzcG9uc2VzIjogW10sCiAgImR1cmF0aW9uIjogMTIzNDUsCiAgImlzT2tTdGF0dXNDb2RlIjogZmFsc2UsCiAgInJlcXVlc3RIZWFkZXJzIjogewogICAgIkFjY2VwdCI6ICJ0ZXh0L3BsYWluIgogIH0sCiAgInN0YXR1cyI6IDQwNCwKICAic3RhdHVzVGV4dCI6ICJOb3QgZm91bmQiLAogICJib2R5IjogIlRoaXMgcGFnZSBkb2VzIG5vdCBleGlzdCIsCiAgImhlYWRlcnMiOiB7CiAgICAiQ29udGVudC1UeXBlIjogInRleHQvcGxhaW4iCiAgfQp9",
+                    data: "ewogICJhbGxSZXF1ZXN0UmVzcG9uc2VzIjogW10sCiAgImJvZHkiOiAiVGhpcyBwYWdlIGRvZXMgbm90IGV4aXN0IiwKICAiZHVyYXRpb24iOiAxMjM0NSwKICAiaGVhZGVycyI6IHsKICAgICJDb250ZW50LVR5cGUiOiAidGV4dC9wbGFpbiIKICB9LAogICJpc09rU3RhdHVzQ29kZSI6IGZhbHNlLAogICJyZXF1ZXN0SGVhZGVycyI6IHsKICAgICJBY2NlcHQiOiAidGV4dC9wbGFpbiIKICB9LAogICJzdGF0dXMiOiA0MDQsCiAgInN0YXR1c1RleHQiOiAiTm90IGZvdW5kIgp9",
+                    filename: "incomingResponse2.json",
                 }
             );
             expect(result1).to.deep.eq({
                 allRequestResponses: [],
+                body: "This is example text",
                 duration: 12345,
+                headers: {
+                    ["Content-Type"]: "text/plain",
+                },
                 isOkStatusCode: true,
                 requestHeaders: { ["Accept"]: "text/plain" },
                 status: 200,
                 statusText: "Ok",
-                body: "This is example text",
-                headers: {
-                    ["Content-Type"]: "text/plain",
-                },
             });
             expect(result2).to.deep.eq({
                 allRequestResponses: [],
+                body: "This page does not exist",
                 duration: 12345,
+                headers: {
+                    ["Content-Type"]: "text/plain",
+                },
                 isOkStatusCode: false,
                 requestHeaders: { ["Accept"]: "text/plain" },
                 status: 404,
                 statusText: "Not found",
-                body: "This page does not exist",
-                headers: {
-                    ["Content-Type"]: "text/plain",
-                },
             });
         });
 
@@ -365,20 +365,20 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             listener[tasks.PluginTask.INCOMING_RESPONSE]({
-                test: "This is a test",
                 filename: "incomingResponse.json",
                 response: {
                     allRequestResponses: [],
+                    body: "This page does not exist",
                     duration: 12345,
+                    headers: {
+                        ["Content-Type"]: "text/plain",
+                    },
                     isOkStatusCode: false,
                     requestHeaders: { ["Accept"]: "text/plain" },
                     status: 404,
                     statusText: "Not found",
-                    body: "This page does not exist",
-                    headers: {
-                        ["Content-Type"]: "text/plain",
-                    },
                 },
+                test: "This is a test",
             });
             expect(evidenceCollection.addEvidence).to.not.have.been.called;
             expect(logger.message).to.have.been.calledOnceWithExactly(
@@ -409,36 +409,36 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             listener[tasks.PluginTask.INCOMING_RESPONSE]({
-                test: "This is a test",
                 filename: "incomingResponse1.json",
                 response: {
                     allRequestResponses: [],
+                    body: "This is example text",
                     duration: 12345,
+                    headers: {
+                        ["Content-Type"]: "text/plain",
+                    },
                     isOkStatusCode: true,
                     requestHeaders: { ["Accept"]: "text/plain" },
                     status: 200,
                     statusText: "Ok",
-                    body: "This is example text",
-                    headers: {
-                        ["Content-Type"]: "text/plain",
-                    },
                 },
+                test: "This is a test",
             });
             listener[tasks.PluginTask.INCOMING_RESPONSE]({
-                test: "This is a test",
                 filename: "incomingResponse2.json",
                 response: {
                     allRequestResponses: [],
+                    body: "This page does not exist",
                     duration: 12345,
+                    headers: {
+                        ["Content-Type"]: "text/plain",
+                    },
                     isOkStatusCode: false,
                     requestHeaders: { ["Accept"]: "text/plain" },
                     status: 404,
                     statusText: "Not found",
-                    body: "This page does not exist",
-                    headers: {
-                        ["Content-Type"]: "text/plain",
-                    },
                 },
+                test: "This is a test",
             });
             expect(evidenceCollection.addEvidence).to.not.have.been.called;
             expect(logger.message).to.have.been.calledOnceWithExactly(

@@ -10,13 +10,13 @@ import { traverse } from "../algorithms/sort";
 import { DirectedGraph } from "../graph";
 
 interface IndentedLogMessage<V extends Failable> {
-    vertex: V;
-    text: string;
-    level: Level.ERROR | Level.WARNING;
     indent: number;
+    level: Level.ERROR | Level.WARNING;
+    text: string;
+    vertex: V;
 }
 
-type UnfinishedLogMessage<V extends Failable> = Pick<IndentedLogMessage<V>, "text" | "level"> & {
+type UnfinishedLogMessage<V extends Failable> = Pick<IndentedLogMessage<V>, "level" | "text"> & {
     includePredecessors: boolean;
 };
 
@@ -55,13 +55,13 @@ export class ChainingGraphLogger<V extends Failable> {
         }
     }
 
-    protected getLogMessage(vertex: V): UnfinishedLogMessage<V> | undefined {
+    protected getLogMessage(vertex: V): undefined | UnfinishedLogMessage<V> {
         const error = vertex.getFailure();
         if (error) {
             return {
-                text: error.message,
-                level: isSkippedError(error) ? Level.WARNING : Level.ERROR,
                 includePredecessors: false,
+                level: isSkippedError(error) ? Level.WARNING : Level.ERROR,
+                text: error.message,
             };
         }
     }
@@ -76,8 +76,8 @@ export class ChainingGraphLogger<V extends Failable> {
             if (message) {
                 chain.push({
                     ...message,
-                    vertex: currentVertex,
                     indent: indent,
+                    vertex: currentVertex,
                 });
                 for (const predecessor of graph.getPredecessors(currentVertex)) {
                     if (!queue.find(([v]) => v === predecessor)) {
@@ -148,7 +148,7 @@ export class ChainingCommandGraphLogger extends ChainingGraphLogger<Command> {
         });
     }
 
-    protected getLogMessage(vertex: Command): UnfinishedLogMessage<Command> | undefined {
+    protected getLogMessage(vertex: Command): undefined | UnfinishedLogMessage<Command> {
         const message = super.getLogMessage(vertex);
         if (message) {
             return message;
@@ -156,27 +156,27 @@ export class ChainingCommandGraphLogger extends ChainingGraphLogger<Command> {
         if (vertex.getState() === ComputableState.SKIPPED) {
             if (vertex instanceof ImportExecutionCypressCommand) {
                 return {
-                    text: "Failed to upload Cypress execution results.",
-                    level: Level.ERROR,
                     includePredecessors: true,
+                    level: Level.ERROR,
+                    text: "Failed to upload Cypress execution results.",
                 };
             }
             if (vertex instanceof ImportExecutionCucumberCommand) {
                 return {
-                    text: "Failed to upload Cucumber execution results.",
-                    level: Level.ERROR,
                     includePredecessors: true,
+                    level: Level.ERROR,
+                    text: "Failed to upload Cucumber execution results.",
                 };
             }
             if (vertex instanceof ImportFeatureCommand) {
                 return {
+                    includePredecessors: true,
+                    level: Level.ERROR,
                     text: dedent(`
                         ${vertex.getParameters().filePath}
 
                           Failed to import feature file.
                     `),
-                    level: Level.ERROR,
-                    includePredecessors: true,
                 };
             }
         }

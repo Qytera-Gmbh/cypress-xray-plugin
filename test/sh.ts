@@ -47,17 +47,17 @@ const COMMANDS_FILE = dedent(`
 `);
 
 export function setupCypressProject(project: {
-    configFileContent?: string;
     commandFileContent?: string;
-    e2eFileContent?: string;
-    testFiles: { fileName: string; content: string }[];
+    configFileContent?: string;
     cucumber?: {
         configFileContent?: string;
-        stepDefinitions?: { filename: string; content: string }[];
+        stepDefinitions?: { content: string; filename: string }[];
     };
+    e2eFileContent?: string;
+    testFiles: { content: string; fileName: string }[];
 }): {
-    projectDirectory: string;
     logDirectory: string;
+    projectDirectory: string;
 } {
     if (!fs.existsSync(TEST_TMP_DIR)) {
         fs.mkdirSync(TEST_TMP_DIR, { recursive: true });
@@ -112,8 +112,8 @@ export function setupCypressProject(project: {
     }
 
     return {
-        projectDirectory: directory,
         logDirectory: path.join(directory, "logs"),
+        projectDirectory: directory,
     };
 }
 
@@ -139,7 +139,7 @@ const ENV_SERVER = [
 
 export function runCypress(
     cwd: string,
-    options?: { includeDefaultEnv?: "cloud" | "server"; env?: Record<string, string | undefined> }
+    options?: { env?: Record<string, string | undefined>; includeDefaultEnv?: "cloud" | "server" }
 ): string[] {
     let mergedEnv = {
         ...ENV_BACKUP,
@@ -217,9 +217,9 @@ function getEnv(names: string[]): Record<string, string | undefined> {
 }
 
 export interface IntegrationTest {
-    service: "cloud" | "server";
-    title: string;
-    testIssueKey: string;
-    env?: Record<string, string | undefined>;
     commandFileContent?: string;
+    env?: Record<string, string | undefined>;
+    service: "cloud" | "server";
+    testIssueKey: string;
+    title: string;
 }

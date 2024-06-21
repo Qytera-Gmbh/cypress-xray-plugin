@@ -8,8 +8,8 @@ import { Command, Computable } from "../../../command";
 
 export enum JiraField {
     DESCRIPTION = "description",
-    SUMMARY = "summary",
     LABELS = "labels",
+    SUMMARY = "summary",
     TEST_ENVIRONMENTS = "test environments",
     TEST_PLAN = "test plan",
     TEST_TYPE = "test type",

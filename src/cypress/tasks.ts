@@ -10,14 +10,14 @@ import { Level, Logger } from "../util/logging";
  */
 export enum PluginTask {
     /**
-     * The task which handles outgoing requests dispatched through `cy.request` within a test.
-     */
-    OUTGOING_REQUEST = "cypress-xray-plugin:task:request",
-    /**
      * The task which handles incoming responses from requests dispatched through `cy.request`
      * within a test.
      */
     INCOMING_RESPONSE = "cypress-xray-plugin:task:response",
+    /**
+     * The task which handles outgoing requests dispatched through `cy.request` within a test.
+     */
+    OUTGOING_REQUEST = "cypress-xray-plugin:task:request",
 }
 
 /**
@@ -60,17 +60,17 @@ export function enqueueTask<T>(
     switch (task) {
         case PluginTask.OUTGOING_REQUEST: {
             const parameters: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST] = {
-                test: Cypress.currentTest.title,
                 filename: filename,
                 request: arg as Partial<Cypress.RequestOptions>,
+                test: Cypress.currentTest.title,
             };
             return cy.task(task, parameters);
         }
         case PluginTask.INCOMING_RESPONSE: {
             const parameters: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE] = {
-                test: Cypress.currentTest.title,
                 filename: filename,
                 response: arg as Cypress.Response<unknown>,
+                test: Cypress.currentTest.title,
             };
             return cy.task(task, parameters);
         }
@@ -82,30 +82,9 @@ export function enqueueTask<T>(
  */
 export interface PluginTaskParameterType {
     /**
-     * The parameters for an outgoing request task.
-     */
-    [PluginTask.OUTGOING_REQUEST]: {
-        /**
-         * The test name where `cy.request` was called.
-         */
-        test: string;
-        /**
-         * The filename of the file where the request data should be saved to.
-         */
-        filename: string;
-        /**
-         * The request data.
-         */
-        request: Partial<Cypress.RequestOptions>;
-    };
-    /**
      * The parameters for an incoming response task.
      */
     [PluginTask.INCOMING_RESPONSE]: {
-        /**
-         * The test name where `cy.request` was called.
-         */
-        test: string;
         /**
          * The filename of the file where the response data should be saved to.
          */
@@ -114,18 +93,39 @@ export interface PluginTaskParameterType {
          * The response data.
          */
         response: Cypress.Response<unknown>;
+        /**
+         * The test name where `cy.request` was called.
+         */
+        test: string;
+    };
+    /**
+     * The parameters for an outgoing request task.
+     */
+    [PluginTask.OUTGOING_REQUEST]: {
+        /**
+         * The filename of the file where the request data should be saved to.
+         */
+        filename: string;
+        /**
+         * The request data.
+         */
+        request: Partial<Cypress.RequestOptions>;
+        /**
+         * The test name where `cy.request` was called.
+         */
+        test: string;
     };
 }
 
 interface PluginTaskReturnType {
     /**
-     * The result of an outgoing request task.
-     */
-    [PluginTask.OUTGOING_REQUEST]: Partial<Cypress.RequestOptions>;
-    /**
      * The result of an incoming response task.
      */
     [PluginTask.INCOMING_RESPONSE]: Cypress.Response<unknown>;
+    /**
+     * The result of an outgoing request task.
+     */
+    [PluginTask.OUTGOING_REQUEST]: Partial<Cypress.RequestOptions>;
 }
 
 type TaskListener = {
@@ -150,9 +150,9 @@ export class PluginTaskListener implements TaskListener {
         try {
             const issueKey = getNativeTestIssueKey(args.test, this.projectKey);
             this.evidenceCollection.addEvidence(issueKey, {
-                filename: args.filename,
                 contentType: "application/json",
                 data: encode(JSON.stringify(args.request, null, 2)),
+                filename: args.filename,
             });
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {
@@ -178,9 +178,9 @@ export class PluginTaskListener implements TaskListener {
         try {
             const issueKey = getNativeTestIssueKey(args.test, this.projectKey);
             this.evidenceCollection.addEvidence(issueKey, {
-                filename: args.filename,
                 contentType: "application/json",
                 data: encode(JSON.stringify(args.response, null, 2)),
+                filename: args.filename,
             });
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {

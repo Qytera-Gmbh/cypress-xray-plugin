@@ -29,11 +29,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             it("returns authorization headers", async () => {
                 getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post.onFirstCall().resolves({
-                    status: HttpStatusCode.Found,
+                    config: { headers: new AxiosHeaders() },
                     data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
                     headers: {},
+                    status: HttpStatusCode.Found,
                     statusText: HttpStatusCode[HttpStatusCode.Found],
-                    config: { headers: new AxiosHeaders() },
                 });
                 await expect(credentials.getAuthorizationHeader()).to.eventually.deep.eq({
                     ["Authorization"]:
@@ -44,11 +44,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             it("authorizes once only", async () => {
                 getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post.resolves({
-                    status: HttpStatusCode.Found,
+                    config: { headers: new AxiosHeaders() },
                     data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
                     headers: {},
+                    status: HttpStatusCode.Found,
                     statusText: HttpStatusCode[HttpStatusCode.Found],
-                    config: { headers: new AxiosHeaders() },
                 });
                 const header1 = credentials.getAuthorizationHeader();
                 const header2 = credentials.getAuthorizationHeader();
@@ -66,11 +66,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             it("handles unparseable tokens", async () => {
                 getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post.onFirstCall().resolves({
-                    status: HttpStatusCode.Found,
+                    config: { headers: new AxiosHeaders() },
                     data: "<div>Demo Page</div>",
                     headers: {},
+                    status: HttpStatusCode.Found,
                     statusText: HttpStatusCode[HttpStatusCode.Found],
-                    config: { headers: new AxiosHeaders() },
                 });
                 await expect(credentials.getAuthorizationHeader()).to.eventually.be.rejectedWith(
                     "Authentication failed"
@@ -86,13 +86,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                         undefined,
                         null,
                         {
-                            status: HttpStatusCode.NotFound,
-                            statusText: HttpStatusCode[HttpStatusCode.NotFound],
                             config: { headers: new AxiosHeaders() },
-                            headers: {},
                             data: {
                                 errorMessages: ["not found"],
                             },
+                            headers: {},
+                            status: HttpStatusCode.NotFound,
+                            statusText: HttpStatusCode[HttpStatusCode.NotFound],
                         }
                     )
                 );
@@ -116,11 +116,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     new Promise((resolve) => {
                         setTimeout(() => {
                             resolve({
-                                status: HttpStatusCode.Found,
+                                config: { headers: new AxiosHeaders() },
                                 data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
                                 headers: {},
+                                status: HttpStatusCode.Found,
                                 statusText: HttpStatusCode[HttpStatusCode.Found],
-                                config: { headers: new AxiosHeaders() },
                             });
                         }, 23000);
                     })

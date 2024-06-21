@@ -16,6 +16,7 @@ import {
 } from "./util/multipart-info";
 
 interface Parameters {
+    cucumber?: Pick<InternalCucumberOptions, "prefixes">;
     jira: Pick<
         InternalJiraOptions,
         | "projectKey"
@@ -24,7 +25,6 @@ interface Parameters {
         | "testExecutionIssueSummary"
         | "testPlanIssueKey"
     >;
-    cucumber?: Pick<InternalCucumberOptions, "prefixes">;
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 
@@ -66,8 +66,8 @@ export class ConvertCucumberInfoServerCommand extends ConvertCucumberInfoCommand
         testExecutionIssueType: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>,
         fieldIds?: {
-            testPlanId?: Computable<string>;
             testEnvironmentsId?: Computable<string>;
+            testPlanId?: Computable<string>;
         }
     ) {
         super(options, logger, testExecutionIssueType, runInformation);
@@ -90,16 +90,16 @@ export class ConvertCucumberInfoServerCommand extends ConvertCucumberInfoCommand
         runInformation: RunData
     ): Promise<CucumberMultipartInfo> {
         const testExecutionIssueData: TestExecutionIssueDataServer = {
-            projectKey: this.parameters.jira.projectKey,
-            summary: this.parameters.jira.testExecutionIssueSummary,
             description: this.parameters.jira.testExecutionIssueDescription,
             issuetype: testExecutionIssueType,
+            projectKey: this.parameters.jira.projectKey,
+            summary: this.parameters.jira.testExecutionIssueSummary,
         };
         if (this.parameters.jira.testPlanIssueKey && this.testPlanId) {
             const testPlandId = await this.testPlanId.compute();
             testExecutionIssueData.testPlan = {
-                issueKey: this.parameters.jira.testPlanIssueKey,
                 fieldId: testPlandId,
+                issueKey: this.parameters.jira.testPlanIssueKey,
             };
         }
         if (this.parameters.xray.testEnvironments && this.testEnvironmentsId) {
@@ -119,10 +119,10 @@ export class ConvertCucumberInfoCloudCommand extends ConvertCucumberInfoCommand 
         runInformation: RunData
     ): CucumberMultipartInfo {
         const testExecutionIssueData: TestExecutionIssueData = {
-            projectKey: this.parameters.jira.projectKey,
-            summary: this.parameters.jira.testExecutionIssueSummary,
             description: this.parameters.jira.testExecutionIssueDescription,
             issuetype: testExecutionIssueType,
+            projectKey: this.parameters.jira.projectKey,
+            summary: this.parameters.jira.testExecutionIssueSummary,
         };
         if (this.parameters.jira.testPlanIssueKey) {
             testExecutionIssueData.testPlan = {

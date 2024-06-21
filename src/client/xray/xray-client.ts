@@ -30,33 +30,6 @@ export interface XrayClient {
      */
     importExecution(execution: XrayTestExecutionResults): Promise<string>;
     /**
-     * Uploads (zipped) feature file(s) to corresponding Xray issues.
-     *
-     * @param file - the (zipped) Cucumber feature file(s)
-     * @param query - the query parameters
-     * @returns the response containing updated issues
-     * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-     * @see https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-     */
-    importFeature(
-        file: string,
-        query: {
-            /**
-             * The key of the project where the tests and pre-conditions are located.
-             */
-            projectKey?: string;
-            /**
-             * The ID of the project where the tests and pre-conditions are located.
-             */
-            projectId?: string;
-            /**
-             * A name designating the source of the features being imported (e.g. the source
-             * project name).
-             */
-            source?: string;
-        }
-    ): Promise<ImportFeatureResponse>;
-    /**
      * Uploads Cucumber test results to the Xray instance.
      *
      * @param cucumberJson - the test results as provided by the `cypress-cucumber-preprocessor`
@@ -69,6 +42,33 @@ export interface XrayClient {
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: CucumberMultipartInfo
     ): Promise<string>;
+    /**
+     * Uploads (zipped) feature file(s) to corresponding Xray issues.
+     *
+     * @param file - the (zipped) Cucumber feature file(s)
+     * @param query - the query parameters
+     * @returns the response containing updated issues
+     * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
+     * @see https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
+     */
+    importFeature(
+        file: string,
+        query: {
+            /**
+             * The ID of the project where the tests and pre-conditions are located.
+             */
+            projectId?: string;
+            /**
+             * The key of the project where the tests and pre-conditions are located.
+             */
+            projectKey?: string;
+            /**
+             * A name designating the source of the features being imported (e.g. the source
+             * project name).
+             */
+            source?: string;
+        }
+    ): Promise<ImportFeatureResponse>;
 }
 
 /**
@@ -82,7 +82,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<
-                    ImportExecutionResponseServer | ImportExecutionResponseCloud
+                    ImportExecutionResponseCloud | ImportExecutionResponseServer
                 > = await this.httpClient.post(this.getUrlImportExecution(), execution, {
                     headers: {
                         ...authorizationHeader,
@@ -104,8 +104,8 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
     public async importFeature(
         file: string,
         query: {
-            projectKey?: string;
             projectId?: string;
+            projectKey?: string;
             source?: string;
         }
     ): Promise<ImportFeatureResponse> {
@@ -119,7 +119,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
                 form.append("file", fileContent);
 
                 const response: AxiosResponse<
-                    ImportFeatureResponseServer | ImportFeatureResponseCloud
+                    ImportFeatureResponseCloud | ImportFeatureResponseServer
                 > = await this.httpClient.post(
                     this.getUrlImportFeature(query.projectKey, query.projectId, query.source),
                     form,
@@ -171,7 +171,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<
-                    ImportExecutionResponseServer | ImportExecutionResponseCloud
+                    ImportExecutionResponseCloud | ImportExecutionResponseServer
                 > = await this.httpClient.post(request.url, request.data, request.config);
                 const key = this.handleResponseImportExecutionCucumberMultipart(response.data);
                 LOG.message(
@@ -216,7 +216,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
      * @param response - the import feature response or `undefined` in case of errors
      */
     protected abstract handleResponseImportFeature(
-        response: ImportFeatureResponseServer | ImportFeatureResponseCloud
+        response: ImportFeatureResponseCloud | ImportFeatureResponseServer
     ): ImportFeatureResponse;
 
     /**
@@ -226,7 +226,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
      * @returns the test execution issue key
      */
     protected abstract handleResponseImportExecution(
-        response: ImportExecutionResponseServer | ImportExecutionResponseCloud
+        response: ImportExecutionResponseCloud | ImportExecutionResponseServer
     ): string;
 
     /**
@@ -248,6 +248,6 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
      * @returns the test execution issue key
      */
     protected abstract handleResponseImportExecutionCucumberMultipart(
-        response: ImportExecutionResponseServer | ImportExecutionResponseCloud
+        response: ImportExecutionResponseCloud | ImportExecutionResponseServer
     ): string;
 }

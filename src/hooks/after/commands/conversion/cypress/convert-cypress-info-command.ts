@@ -28,13 +28,13 @@ export class ConvertCypressInfoCommand extends Command<XrayTestExecutionInfo, Pa
     protected async computeResult(): Promise<XrayTestExecutionInfo> {
         const results = await this.results.compute();
         return {
+            description: this.getDescription(results),
+            finishDate: truncateIsoTime(results.endedTestsAt),
             project: this.parameters.jira.projectKey,
             startDate: truncateIsoTime(results.startedTestsAt),
-            finishDate: truncateIsoTime(results.endedTestsAt),
-            description: this.getDescription(results),
             summary: this.getTextExecutionResultSummary(results),
-            testPlanKey: this.parameters.jira.testPlanIssueKey,
             testEnvironments: this.parameters.xray.testEnvironments,
+            testPlanKey: this.parameters.jira.testPlanIssueKey,
         };
     }
 

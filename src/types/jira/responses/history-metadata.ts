@@ -5,9 +5,21 @@ import { HistoryMetadataParticipant } from "./history-metadata-participant";
  */
 export interface HistoryMetadata {
     /**
-     * The type of the history record.
+     * The activity described in the history record.
      */
-    type?: string;
+    activityDescription?: string;
+    /**
+     * The key of the activity described in the history record.
+     */
+    activityDescriptionKey?: string;
+    /**
+     * Details of the user whose action created the history record.
+     */
+    actor?: HistoryMetadataParticipant;
+    /**
+     * Details of the cause that triggered the creation the history record.
+     */
+    cause?: HistoryMetadataParticipant;
     /**
      * The description of the history record.
      */
@@ -17,14 +29,6 @@ export interface HistoryMetadata {
      */
     descriptionKey?: string;
     /**
-     * The activity described in the history record.
-     */
-    activityDescription?: string;
-    /**
-     * The key of the activity described in the history record.
-     */
-    activityDescriptionKey?: string;
-    /**
      * The description of the email address associated the history record.
      */
     emailDescription?: string;
@@ -33,19 +37,15 @@ export interface HistoryMetadata {
      */
     emailDescriptionKey?: string;
     /**
-     * Details of the user whose action created the history record.
+     * Additional arbitrary information about the history record.
      */
-    actor?: HistoryMetadataParticipant;
+    extraData?: Record<string, string>;
     /**
      * Details of the system that generated the history record.
      */
     generator?: HistoryMetadataParticipant;
     /**
-     * Details of the cause that triggered the creation the history record.
+     * The type of the history record.
      */
-    cause?: HistoryMetadataParticipant;
-    /**
-     * Additional arbitrary information about the history record.
-     */
-    extraData?: Record<string, string>;
+    type?: string;
 }

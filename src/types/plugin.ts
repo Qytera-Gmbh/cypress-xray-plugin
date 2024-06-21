@@ -9,24 +9,6 @@ import { XrayClient } from "../client/xray/xray-client";
  */
 export interface CypressXrayPluginOptions {
     /**
-     * Defines Jira-specific options that control how the plugin interacts with Jira.
-     *
-     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/
-     */
-    jira: JiraOptions;
-    /**
-     * Options for configuring the general behaviour of the plugin.
-     *
-     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/
-     */
-    plugin?: PluginOptions;
-    /**
-     * Xray settings that may be required depending on your project configuration.
-     *
-     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/xray/
-     */
-    xray?: XrayOptions;
-    /**
      * When Cucumber is enabled, you can use these options to configure how the plugin works with
      * your feature files.
      *
@@ -60,6 +42,24 @@ export interface CypressXrayPluginOptions {
      * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/http
      */
     http?: HttpOptions;
+    /**
+     * Defines Jira-specific options that control how the plugin interacts with Jira.
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/
+     */
+    jira: JiraOptions;
+    /**
+     * Options for configuring the general behaviour of the plugin.
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/
+     */
+    plugin?: PluginOptions;
+    /**
+     * Xray settings that may be required depending on your project configuration.
+     *
+     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/xray/
+     */
+    xray?: XrayOptions;
 }
 
 export interface JiraFieldIds {
@@ -104,12 +104,6 @@ export interface JiraFieldIds {
  */
 export interface JiraOptions {
     /**
-     * The Jira project key.
-     *
-     * @example "CYP"
-     */
-    projectKey: string;
-    /**
      * Whether any videos Cypress captured during test execution should be attached to the test
      * execution issue on results upload.
      */
@@ -140,6 +134,12 @@ export interface JiraOptions {
      * ```
      */
     fields?: JiraFieldIds;
+    /**
+     * The Jira project key.
+     *
+     * @example "CYP"
+     */
+    projectKey: string;
     /**
      * The description of the test execution issue, which will be used both for new test execution
      * issues as well as for updating existing issues (if provided through
@@ -304,6 +304,13 @@ export type InternalXrayOptions = XrayOptions &
  */
 export interface CucumberOptions {
     /**
+     * Set it to true to automatically download feature files from Xray for Cypress to execute.
+     *
+     * *Note: Enable this option if the source of truth for test cases are step definitions in Xray
+     * and Cypress is only used for running tests.*
+     */
+    downloadFeatures?: boolean;
+    /**
      * The file extension of feature files you want to run in Cypress. The plugin will use this to
      * parse all matching files with to extract any tags contained within them. Such tags are
      * needed to identify to which test issue a feature file belongs.
@@ -311,13 +318,6 @@ export interface CucumberOptions {
      * @example ".cy.feature"
      */
     featureFileExtension: string;
-    /**
-     * Set it to true to automatically download feature files from Xray for Cypress to execute.
-     *
-     * *Note: Enable this option if the source of truth for test cases are step definitions in Xray
-     * and Cypress is only used for running tests.*
-     */
-    downloadFeatures?: boolean;
     /**
      * These settings allow specifying tag prefixes used by Xray when exporting or importing feature
      * files and Cucumber test results. The plugin will access these options to verify that your
@@ -455,14 +455,14 @@ export type InternalHttpOptions = HttpOptions;
  */
 export interface PluginOptions {
     /**
+     * Enables or disables extensive debugging output.
+     */
+    debug?: boolean;
+    /**
      * Enables or disables the entire plugin. Setting this option to false will disable all plugin
      * functions, including authentication checks, uploads or feature file synchronization.
      */
     enabled?: boolean;
-    /**
-     * Enables or disables extensive debugging output.
-     */
-    debug?: boolean;
     /**
      * The directory which all error and debug log files will be written to.
      */
@@ -488,19 +488,19 @@ export type InternalPluginOptions = PluginOptions &
  * Options only intended for internal plugin use.
  */
 export interface InternalCypressXrayPluginOptions {
+    cucumber?: InternalCucumberOptions;
+    http?: InternalHttpOptions;
     jira: InternalJiraOptions;
     plugin: InternalPluginOptions;
     xray: InternalXrayOptions;
-    cucumber?: InternalCucumberOptions;
-    http?: InternalHttpOptions;
 }
 
 /**
  * Type describing the possible client combinations.
  */
 export interface ClientCombination {
-    kind: "server" | "cloud";
     jiraClient: JiraClient;
+    kind: "cloud" | "server";
     xrayClient: XrayClient;
 }
 

@@ -29,8 +29,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 new ConstantCommand(logger, cucumberFeatures)
             );
             expect(await command.compute()).to.deep.eq({
-                info: cucumberInfo,
                 features: cucumberFeatures,
+                info: cucumberInfo,
             });
         });
     });

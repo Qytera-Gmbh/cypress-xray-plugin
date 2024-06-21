@@ -5,11 +5,11 @@ import path from "path";
 import { isLoggedError } from "./errors";
 
 export enum Level {
-    INFO = "INFO",
+    DEBUG = "DEBUG",
     ERROR = "ERROR",
+    INFO = "INFO",
     SUCCESS = "SUCCESS",
     WARNING = "WARNING",
-    DEBUG = "DEBUG",
 }
 
 /**
@@ -17,20 +17,11 @@ export enum Level {
  */
 export interface Logger {
     /**
-     * Logs a log message.
+     * Configures the logger.
      *
-     * @param text - the individual messages
+     * @param options - the logging options to use from now on
      */
-    message(level: Level, ...text: string[]): void;
-    /**
-     * Writes arbitrary data to a file under the log path configured in
-     * {@link configure | `configure`}.
-     *
-     * @param data - the data to write
-     * @param filename - the filename to use for the file
-     * @returns the file path
-     */
-    logToFile(data: string, filename: string): string;
+    configure(options: LoggingOptions): void;
     /**
      * Writes an error to a file under the log path configured in
      * {@link configure | `configure`}.
@@ -41,11 +32,20 @@ export interface Logger {
      */
     logErrorToFile(error: unknown, filename: string): void;
     /**
-     * Configures the logger.
+     * Writes arbitrary data to a file under the log path configured in
+     * {@link configure | `configure`}.
      *
-     * @param options - the logging options to use from now on
+     * @param data - the data to write
+     * @param filename - the filename to use for the file
+     * @returns the file path
      */
-    configure(options: LoggingOptions): void;
+    logToFile(data: string, filename: string): string;
+    /**
+     * Logs a log message.
+     *
+     * @param text - the individual messages
+     */
+    message(level: Level, ...text: string[]): void;
 }
 
 export interface LoggingOptions {
@@ -66,25 +66,25 @@ export class PluginLogger implements Logger {
         this.loggingOptions = options;
         const maxPrefixLength = Math.max(...Object.values(Level).map((s) => s.length));
         this.prefixes = {
-            [Level.INFO]: this.prefix(Level.INFO, maxPrefixLength),
+            [Level.DEBUG]: this.prefix(Level.DEBUG, maxPrefixLength),
             [Level.ERROR]: this.prefix(Level.ERROR, maxPrefixLength),
+            [Level.INFO]: this.prefix(Level.INFO, maxPrefixLength),
             [Level.SUCCESS]: this.prefix(Level.SUCCESS, maxPrefixLength),
             [Level.WARNING]: this.prefix(Level.WARNING, maxPrefixLength),
-            [Level.DEBUG]: this.prefix(Level.DEBUG, maxPrefixLength),
         };
         this.colorizers = {
-            [Level.INFO]: chalk.gray,
+            [Level.DEBUG]: chalk.cyan,
             [Level.ERROR]: chalk.red,
+            [Level.INFO]: chalk.gray,
             [Level.SUCCESS]: chalk.green,
             [Level.WARNING]: chalk.yellow,
-            [Level.DEBUG]: chalk.cyan,
         };
         this.logFunctions = {
-            [Level.INFO]: console.info,
+            [Level.DEBUG]: console.debug,
             [Level.ERROR]: console.error,
+            [Level.INFO]: console.info,
             [Level.SUCCESS]: console.log,
             [Level.WARNING]: console.warn,
-            [Level.DEBUG]: console.debug,
         };
     }
 

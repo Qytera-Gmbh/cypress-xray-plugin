@@ -8,9 +8,9 @@ import { Remap } from "./types/util";
 interface Authentication {
     authentication: {
         jira: {
-            username: string;
-            password: string;
             apiToken: string;
+            password: string;
+            username: string;
         };
         xray: {
             clientId: string;
@@ -25,14 +25,23 @@ interface Authentication {
 export const ENV_NAMES: Remap<Omit<CypressXrayPluginOptions, "http"> & Authentication, string> = {
     authentication: {
         jira: {
-            username: "JIRA_USERNAME",
-            password: "JIRA_PASSWORD",
             apiToken: "JIRA_API_TOKEN",
+            password: "JIRA_PASSWORD",
+            username: "JIRA_USERNAME",
         },
         xray: {
             clientId: "XRAY_CLIENT_ID",
             clientSecret: "XRAY_CLIENT_SECRET",
         },
+    },
+    cucumber: {
+        downloadFeatures: "CUCUMBER_DOWNLOAD_FEATURES",
+        featureFileExtension: "CUCUMBER_FEATURE_FILE_EXTENSION",
+        prefixes: {
+            precondition: "CUCUMBER_PREFIXES_PRECONDITION",
+            test: "CUCUMBER_PREFIXES_TEST",
+        },
+        uploadFeatures: "CUCUMBER_UPLOAD_FEATURES",
     },
     jira: {
         attachVideos: "JIRA_ATTACH_VIDEOS",
@@ -70,14 +79,5 @@ export const ENV_NAMES: Remap<Omit<CypressXrayPluginOptions, "http"> & Authentic
         uploadRequests: "XRAY_UPLOAD_REQUESTS",
         uploadResults: "XRAY_UPLOAD_RESULTS",
         uploadScreenshots: "XRAY_UPLOAD_SCREENSHOTS",
-    },
-    cucumber: {
-        downloadFeatures: "CUCUMBER_DOWNLOAD_FEATURES",
-        featureFileExtension: "CUCUMBER_FEATURE_FILE_EXTENSION",
-        prefixes: {
-            precondition: "CUCUMBER_PREFIXES_PRECONDITION",
-            test: "CUCUMBER_PREFIXES_TEST",
-        },
-        uploadFeatures: "CUCUMBER_UPLOAD_FEATURES",
     },
 };

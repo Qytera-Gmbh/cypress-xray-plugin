@@ -25,12 +25,12 @@ import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./util/run"
 import { getXrayStatus } from "./util/status";
 
 interface Parameters {
-    jira: Pick<InternalJiraOptions, "projectKey">;
-    xray: Pick<InternalXrayOptions, "status" | "uploadScreenshots">;
-    plugin: Pick<InternalPluginOptions, "normalizeScreenshotNames">;
     cucumber?: Pick<InternalCucumberOptions, "featureFileExtension">;
-    useCloudStatusFallback?: boolean;
     evidenceCollection: EvidenceCollection;
+    jira: Pick<InternalJiraOptions, "projectKey">;
+    plugin: Pick<InternalPluginOptions, "normalizeScreenshotNames">;
+    useCloudStatusFallback?: boolean;
+    xray: Pick<InternalXrayOptions, "status" | "uploadScreenshots">;
 }
 
 export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]], Parameters> {
@@ -156,16 +156,16 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
     private getTest(test: TestRunData, issueKey: string, evidence: XrayEvidenceItem[]): XrayTest {
         // TODO: Support multiple iterations.
         const xrayTest: XrayTest = {
-            testKey: issueKey,
-            start: truncateIsoTime(test.startedAt.toISOString()),
             finish: truncateIsoTime(
                 new Date(test.startedAt.getTime() + test.duration).toISOString()
             ),
+            start: truncateIsoTime(test.startedAt.toISOString()),
             status: getXrayStatus(
                 test.status,
                 this.parameters.useCloudStatusFallback === true,
                 this.parameters.xray.status
             ),
+            testKey: issueKey,
         };
         if (evidence.length > 0) {
             xrayTest.evidence = evidence;
@@ -182,8 +182,8 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                     filename = normalizedFilename(filename);
                 }
                 evidence.push({
-                    filename: filename,
                     data: encodeFile(screenshot.filepath),
+                    filename: filename,
                 });
             }
         }

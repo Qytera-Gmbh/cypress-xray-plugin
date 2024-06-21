@@ -2,19 +2,19 @@ import { ChangeHistory } from "./change-history";
 
 export interface Changelog {
     /**
-     * The index of the first item returned on the page.
+     * The list of changelogs.
      */
-    startAt?: number;
+    histories?: ChangeHistory[];
     /**
      * The maximum number of results that could be on the page.
      */
     maxResults?: number;
     /**
+     * The index of the first item returned on the page.
+     */
+    startAt?: number;
+    /**
      * The number of results on the page.
      */
     total?: number;
-    /**
-     * The list of changelogs.
-     */
-    histories?: ChangeHistory[];
 }

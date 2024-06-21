@@ -18,12 +18,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CucumberMultipartFeature[];
             const command = new ConvertCucumberFeaturesCommand(
                 {
+                    cucumber: { prefixes: { precondition: undefined, test: undefined } },
                     jira: {
                         projectKey: "CYP",
                     },
-                    cucumber: { prefixes: { precondition: undefined, test: undefined } },
-                    xray: { uploadScreenshots: false },
                     projectRoot: "./test/resources",
+                    xray: { uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport.slice(0, 1))
@@ -42,28 +42,28 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CucumberMultipartFeature[];
             const command = new ConvertCucumberFeaturesCommand(
                 {
+                    cucumber: { prefixes: { precondition: undefined, test: undefined } },
                     jira: {
                         projectKey: "CYP",
                     },
-                    cucumber: { prefixes: { precondition: undefined, test: undefined } },
-                    xray: { uploadScreenshots: false },
                     projectRoot: "./test/resources",
+                    xray: { uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport.slice(0, 1))
             );
             expect(command.getParameters()).to.deep.eq({
+                cucumber: {
+                    prefixes: {
+                        precondition: undefined,
+                        test: undefined,
+                    },
+                },
                 jira: {
                     projectKey: "CYP",
                 },
-                cucumber: {
-                    prefixes: {
-                        test: undefined,
-                        precondition: undefined,
-                    },
-                },
-                xray: { uploadScreenshots: false },
                 projectRoot: "./test/resources",
+                xray: { uploadScreenshots: false },
             });
         });
 
@@ -77,13 +77,13 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CucumberMultipartFeature[];
             const command = new ConvertCucumberFeaturesCommand(
                 {
+                    cucumber: { prefixes: { test: "TestName:" } },
                     jira: {
                         projectKey: "CYP",
                     },
-                    cucumber: { prefixes: { test: "TestName:" } },
-                    xray: { uploadScreenshots: false },
-                    useCloudTags: true,
                     projectRoot: "./test/resources",
+                    useCloudTags: true,
+                    xray: { uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport.slice(0, 1))

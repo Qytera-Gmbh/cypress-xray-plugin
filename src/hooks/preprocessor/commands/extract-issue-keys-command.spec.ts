@@ -11,6 +11,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             const extractIssueKeysCommand = new ExtractIssueKeysCommand(
                 logger,
                 new ConstantCommand(logger, {
+                    preconditions: [{ key: "CYP-001", summary: "Background" }],
                     tests: [
                         { key: "CYP-123", summary: "Hello", tags: [] },
                         { key: "CYP-456", summary: "There", tags: ["some tag"] },
@@ -20,7 +21,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             tags: ["another tag", "and another one"],
                         },
                     ],
-                    preconditions: [{ key: "CYP-001", summary: "Background" }],
                 })
             );
             expect(await extractIssueKeysCommand.compute()).to.deep.eq([

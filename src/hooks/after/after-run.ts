@@ -162,12 +162,12 @@ function getImportExecutionCypressCommand(
     const convertCypressTestsCommand = graph.place(
         new ConvertCypressTestsCommand(
             {
+                cucumber: options.cucumber,
+                evidenceCollection: evidenceCollection,
                 jira: options.jira,
                 plugin: options.plugin,
-                xray: options.xray,
-                cucumber: options.cucumber,
                 useCloudStatusFallback: clients.kind === "cloud",
-                evidenceCollection: evidenceCollection,
+                xray: options.xray,
             },
             logger,
             cypressResultsCommand
@@ -209,10 +209,10 @@ function getImportExecutionCypressCommand(
         const verifyExecutionIssueKeyCommand = graph.place(
             new VerifyExecutionIssueKeyCommand(
                 {
+                    displayCloudHelp: clients.kind === "cloud",
+                    importType: "cypress",
                     testExecutionIssueKey: options.jira.testExecutionIssueKey,
                     testExecutionIssueType: options.jira.testExecutionIssueType,
-                    importType: "cypress",
-                    displayCloudHelp: clients.kind === "cloud",
                 },
                 logger,
                 importCypressExecutionCommand
@@ -240,9 +240,9 @@ function getImportExecutionCucumberCommand(
     const extractExecutionIssueTypeCommand = graph.place(
         new ExtractExecutionIssueTypeCommand(
             {
+                displayCloudHelp: clients.kind === "cloud",
                 projectKey: options.jira.projectKey,
                 testExecutionIssueType: options.jira.testExecutionIssueType,
-                displayCloudHelp: clients.kind === "cloud",
             },
             logger,
             fetchIssueTypesCommand
@@ -262,24 +262,24 @@ function getImportExecutionCucumberCommand(
     const convertCucumberFeaturesCommand = graph.place(
         new ConvertCucumberFeaturesCommand(
             {
-                jira: {
-                    projectKey: options.jira.projectKey,
-                    testExecutionIssueSummary: options.jira.testExecutionIssueSummary,
-                    testExecutionIssueDescription: options.jira.testExecutionIssueDescription,
-                    testPlanIssueKey: options.jira.testPlanIssueKey,
-                },
-                xray: {
-                    uploadScreenshots: options.xray.uploadScreenshots,
-                    testEnvironments: options.xray.testEnvironments,
-                },
                 cucumber: {
                     prefixes: {
-                        test: options.cucumber?.prefixes.test,
                         precondition: options.cucumber?.prefixes.precondition,
+                        test: options.cucumber?.prefixes.test,
                     },
                 },
-                useCloudTags: clients.kind === "cloud",
+                jira: {
+                    projectKey: options.jira.projectKey,
+                    testExecutionIssueDescription: options.jira.testExecutionIssueDescription,
+                    testExecutionIssueSummary: options.jira.testExecutionIssueSummary,
+                    testPlanIssueKey: options.jira.testPlanIssueKey,
+                },
                 projectRoot: projectRoot,
+                useCloudTags: clients.kind === "cloud",
+                xray: {
+                    testEnvironments: options.xray.testEnvironments,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                },
             },
             logger,
             cucumberResultsCommand,
@@ -316,10 +316,10 @@ function getImportExecutionCucumberCommand(
         const verifyExecutionIssueKeyCommand = graph.place(
             new VerifyExecutionIssueKeyCommand(
                 {
+                    displayCloudHelp: clients.kind === "cloud",
+                    importType: "cucumber",
                     testExecutionIssueKey: options.jira.testExecutionIssueKey,
                     testExecutionIssueType: options.jira.testExecutionIssueType,
-                    importType: "cucumber",
-                    displayCloudHelp: clients.kind === "cloud",
                 },
                 logger,
                 importCucumberExecutionCommand
@@ -341,7 +341,7 @@ function getConvertCucumberInfoCommand(
     if (clients.kind === "cloud") {
         return graph.place(
             new ConvertCucumberInfoCloudCommand(
-                { jira: options.jira, xray: options.xray, cucumber: options.cucumber },
+                { cucumber: options.cucumber, jira: options.jira, xray: options.xray },
                 logger,
                 executionIssueType,
                 cypressResults
@@ -377,13 +377,13 @@ function getConvertCucumberInfoCommand(
     }
     const convertCucumberInfoCommand = graph.place(
         new ConvertCucumberInfoServerCommand(
-            { jira: options.jira, xray: options.xray, cucumber: options.cucumber },
+            { cucumber: options.cucumber, jira: options.jira, xray: options.xray },
             logger,
             executionIssueType,
             cypressResults,
             {
-                testPlanId: testPlanIdCommand,
                 testEnvironmentsId: testEnvironmentsIdCommand,
+                testPlanId: testPlanIdCommand,
             }
         )
     );
@@ -465,8 +465,8 @@ function addPostUploadCommands(
     }
     const verifyResultsUploadCommand = graph.place(
         new VerifyResultsUploadCommand({ url: options.jira.url }, logger, {
-            cypressExecutionIssueKey: fallbackCypressUploadCommand,
             cucumberExecutionIssueKey: fallbackCucumberUploadCommand,
+            cypressExecutionIssueKey: fallbackCypressUploadCommand,
         })
     );
     if (fallbackCypressUploadCommand) {

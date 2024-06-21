@@ -61,8 +61,8 @@ type Action =
     | "before:browser:launch"
     | "before:run"
     | "before:spec"
-    | "file:preprocessor"
     | "dev-server:start"
+    | "file:preprocessor"
     | "task";
 
 interface ActionCallbacks {
@@ -70,7 +70,7 @@ interface ActionCallbacks {
         browser: Cypress.Browser,
         browserLaunchOptions: Cypress.AfterBrowserLaunchDetails
     ) => Promise<Cypress.BeforeBrowserLaunchOptions>;
-    ["after:run"]: (results: CypressRunResultType | CypressFailedRunResultType) => Promise<void>;
+    ["after:run"]: (results: CypressFailedRunResultType | CypressRunResultType) => Promise<void>;
     ["after:screenshot"]: (
         details: Cypress.ScreenshotDetails
     ) => Promise<Cypress.AfterScreenshotReturnObject>;
@@ -81,10 +81,10 @@ interface ActionCallbacks {
     ) => Promise<Cypress.BeforeBrowserLaunchOptions>;
     ["before:run"]: (runDetails: Cypress.BeforeRunDetails) => Promise<void>;
     ["before:spec"]: (spec: Cypress.Spec) => Promise<void>;
-    ["file:preprocessor"]: (file: Cypress.FileObject) => Promise<string>;
     ["dev-server:start"]: (
         file: Cypress.DevServerConfig
     ) => Promise<Cypress.ResolvedDevServerConfig>;
+    ["file:preprocessor"]: (file: Cypress.FileObject) => Promise<string>;
     ["task"]: (tasks: Cypress.Tasks) => void;
 }
 

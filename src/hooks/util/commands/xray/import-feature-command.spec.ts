@@ -12,8 +12,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             const xrayClient = getMockedXrayClient();
             const command = new ImportFeatureCommand(
                 {
-                    xrayClient: xrayClient,
                     filePath: "/path/to/some/cucumber.feature",
+                    xrayClient: xrayClient,
                 },
                 logger
             );
@@ -36,8 +36,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             const xrayClient = getMockedXrayClient();
             const command = new ImportFeatureCommand(
                 {
-                    xrayClient: xrayClient,
                     filePath: "/path/to/some/cucumber.feature",
+                    xrayClient: xrayClient,
                 },
                 logger
             );

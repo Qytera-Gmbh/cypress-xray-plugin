@@ -1,13 +1,13 @@
 import { SimpleLink } from "./simple-link";
 
 export interface LinkGroup {
-    id?: string;
-    styleClass?: string;
+    groups?: LinkGroup[];
     /**
      * Details about the operations available in this version.
      */
     header?: SimpleLink;
-    weight?: number;
+    id?: string;
     links?: SimpleLink[];
-    groups?: LinkGroup[];
+    styleClass?: string;
+    weight?: number;
 }

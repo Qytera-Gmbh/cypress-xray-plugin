@@ -13,51 +13,44 @@ import { LOCAL_SERVER } from "./server";
 describe(path.relative(process.cwd(), __filename), () => {
     for (const test of [
         {
-            title: "cy.request gets overwritten in cloud environments",
+            env: {
+                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
+                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+            },
             service: "cloud",
             testIssueKey: "CYP-666",
-            env: {
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
-            },
+            title: "cy.request gets overwritten in cloud environments",
         },
         {
-            title: "cy.request gets overwritten in server environments",
+            env: {
+                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
+                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+            },
             service: "server",
             testIssueKey: "CYPLUG-107",
-            env: {
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
-            },
+            title: "cy.request gets overwritten in server environments",
         },
         {
-            title: "cy.request gets overwritten in cloud environments using manual task calls",
+            commandFileContent: dedent(`
+                import { enqueueTask, PluginTask } from "cypress-xray-plugin/commands/tasks";
+
+                Cypress.Commands.overwrite("request", (originalFn, options) => {
+                    return enqueueTask(PluginTask.OUTGOING_REQUEST, "request.json", options)
+                    .then(originalFn)
+                    .then((response) =>
+                        enqueueTask(PluginTask.INCOMING_RESPONSE, "response.json", response)
+                    );
+                });
+            `),
+            env: {
+                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
+                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+            },
             service: "cloud",
             testIssueKey: "CYP-692",
-            env: {
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
-            },
-            commandFileContent: dedent(`
-                import { enqueueTask, PluginTask } from "cypress-xray-plugin/commands/tasks";
-
-                Cypress.Commands.overwrite("request", (originalFn, options) => {
-                    return enqueueTask(PluginTask.OUTGOING_REQUEST, "request.json", options)
-                    .then(originalFn)
-                    .then((response) =>
-                        enqueueTask(PluginTask.INCOMING_RESPONSE, "response.json", response)
-                    );
-                });
-            `),
+            title: "cy.request gets overwritten in cloud environments using manual task calls",
         },
         {
-            title: "cy.request gets overwritten in server environments using manual task calls",
-            service: "server",
-            testIssueKey: "CYPLUG-117",
-            env: {
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
-            },
             commandFileContent: dedent(`
                 import { enqueueTask, PluginTask } from "cypress-xray-plugin/commands/tasks";
 
@@ -69,6 +62,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                 });
             `),
+            env: {
+                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
+                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+            },
+            service: "server",
+            testIssueKey: "CYPLUG-117",
+            title: "cy.request gets overwritten in server environments using manual task calls",
         },
     ] as IntegrationTest[]) {
         it(test.title, () => {
@@ -76,7 +76,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 commandFileContent: test.commandFileContent,
                 testFiles: [
                     {
-                        fileName: "cy.request.cy.js",
                         content: dedent(`
                             describe("request", () => {
                                 it("${test.testIssueKey} does something", () => {
@@ -84,12 +83,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 });
                             });
                         `),
+                        fileName: "cy.request.cy.js",
                     },
                 ],
             });
             runCypress(project.projectDirectory, {
-                includeDefaultEnv: test.service,
                 env: test.env,
+                includeDefaultEnv: test.service,
             });
             for (const entry of fs.readdirSync(project.logDirectory, {
                 withFileTypes: true,

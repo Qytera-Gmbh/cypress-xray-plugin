@@ -21,13 +21,13 @@ export type ImportFeatureResponseServerSuccess = (IssueDetails & {
  * @see https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
  */
 export interface ImportFeatureResponseServerFailure {
-    testIssues?: IssueDetails[];
-    preconditionIssues?: IssueDetails[];
     message: string;
+    preconditionIssues?: IssueDetails[];
+    testIssues?: IssueDetails[];
 }
 export type ImportFeatureResponseServer =
-    | ImportFeatureResponseServerSuccess
-    | ImportFeatureResponseServerFailure;
+    | ImportFeatureResponseServerFailure
+    | ImportFeatureResponseServerSuccess;
 /**
  * The cucumber features were successfully imported.
  *
@@ -35,8 +35,8 @@ export type ImportFeatureResponseServer =
  */
 export interface ImportFeatureResponseCloud {
     errors: string[];
-    updatedOrCreatedTests: IssueDetails[];
     updatedOrCreatedPreconditions: IssueDetails[];
+    updatedOrCreatedTests: IssueDetails[];
 }
 
 /**

@@ -5,9 +5,9 @@ import {
 } from "./12.0.0/api";
 import { PluginConfigOptions as PluginConfigOptions_V_12 } from "./12.0.0/cypress";
 
-export type RunResultType = RunResult_V_12 | CypressCommandLine.RunResult;
-export type CypressRunResultType = CypressRunResult_V_12 | CypressCommandLine.CypressRunResult;
+export type RunResultType = CypressCommandLine.RunResult | RunResult_V_12;
+export type CypressRunResultType = CypressCommandLine.CypressRunResult | CypressRunResult_V_12;
 export type CypressFailedRunResultType =
-    | CypressFailedRunResult_V_12
-    | CypressCommandLine.CypressFailedRunResult;
-export type PluginConfigOptions = PluginConfigOptions_V_12 | Cypress.PluginConfigOptions;
+    | CypressCommandLine.CypressFailedRunResult
+    | CypressFailedRunResult_V_12;
+export type PluginConfigOptions = Cypress.PluginConfigOptions | PluginConfigOptions_V_12;

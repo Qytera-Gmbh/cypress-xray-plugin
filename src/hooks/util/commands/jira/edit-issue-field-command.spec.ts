@@ -23,8 +23,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 .resolves("CYP-456");
             const command = new EditIssueFieldCommand(
                 {
-                    jiraClient: jiraClient,
                     field: JiraField.SUMMARY,
+                    jiraClient: jiraClient,
                 },
                 logger,
                 new ConstantCommand(logger, "customfield_12345"),
@@ -48,8 +48,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 .rejects(new Error("No editing allowed"));
             const command = new EditIssueFieldCommand(
                 {
-                    jiraClient: jiraClient,
                     field: JiraField.LABELS,
+                    jiraClient: jiraClient,
                 },
                 logger,
                 new ConstantCommand(logger, "customfield_12345"),
@@ -74,8 +74,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             const jiraClient = getMockedJiraClient();
             const command = new EditIssueFieldCommand(
                 {
-                    jiraClient: jiraClient,
                     field: JiraField.LABELS,
+                    jiraClient: jiraClient,
                 },
                 logger,
                 new ConstantCommand(logger, "customfield_12345"),

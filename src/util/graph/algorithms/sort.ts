@@ -40,7 +40,7 @@ export function computeTopologicalOrder<V>(graph: DirectedGraph<V>): Map<V, numb
 }
 export function* traverse<V>(
     graph: DirectedGraph<V>,
-    direction: "top-down" | "bottom-up"
+    direction: "bottom-up" | "top-down"
 ): Generator<V> {
     const queue = new Queue<V>();
     for (const vertex of graph.getVertices()) {

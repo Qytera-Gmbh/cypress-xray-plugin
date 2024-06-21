@@ -5,19 +5,6 @@
  */
 export interface SearchRequest {
     /**
-     * A JQL expression.
-     */
-    jql?: string;
-    /**
-     * The index of the first item to return in the page of results (page offset). The base index is
-     * `0`.
-     */
-    startAt?: number;
-    /**
-     * The maximum number of items to return per page.
-     */
-    maxResults?: number;
-    /**
      * A list of fields to return for each issue, use it to retrieve a subset of fields. This
      * parameter accepts a comma-separated list. Expand options include:
      * - `*all` returns all fields
@@ -27,6 +14,19 @@ export interface SearchRequest {
      * The default is `*navigable`.
      */
     fields?: string[];
+    /**
+     * A JQL expression.
+     */
+    jql?: string;
+    /**
+     * The maximum number of items to return per page.
+     */
+    maxResults?: number;
+    /**
+     * The index of the first item to return in the page of results (page offset). The base index is
+     * `0`.
+     */
+    startAt?: number;
 }
 export interface SearchRequestServer extends SearchRequest {
     /**
@@ -75,5 +75,5 @@ export interface SearchRequestCloud extends SearchRequest {
      *
      * The default is `strict`.
      */
-    validateQuery?: "strict" | "warn" | "none";
+    validateQuery?: "none" | "strict" | "warn";
 }

@@ -24,8 +24,8 @@ export class CombineCucumberMultipartCommand extends Command<CucumberMultipart, 
         const cucumberMultipartInfo = await this.cucumberMultipartInfo.compute();
         const cucumberMultipartFeatures = await this.cucumberMultipartFeatures.compute();
         return {
-            info: cucumberMultipartInfo,
             features: cucumberMultipartFeatures,
+            info: cucumberMultipartInfo,
         };
     }
 }

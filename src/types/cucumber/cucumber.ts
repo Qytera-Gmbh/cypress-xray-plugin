@@ -1,6 +1,6 @@
 export interface FeatureFileIssueData {
-    tests: FeatureFileIssueDataTest[];
     preconditions: FeatureFileIssueDataPrecondition[];
+    tests: FeatureFileIssueDataTest[];
 }
 
 export interface FeatureFileIssueDataTest {

@@ -16,6 +16,13 @@
         "editor.suggest.insertMode": "replace",
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
+    "[jsonc]": {
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.suggest.insertMode": "replace",
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
     "[yaml]": {
         "editor.insertSpaces": true,
         "editor.tabSize": 2,

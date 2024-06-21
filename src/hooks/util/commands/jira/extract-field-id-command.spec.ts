@@ -17,30 +17,30 @@ describe(path.relative(process.cwd(), __filename), () => {
                 logger,
                 new ConstantCommand(logger, [
                     {
+                        clauseNames: ["summary"],
+                        custom: false,
                         id: "customfield_12345",
                         name: "Summary",
-                        custom: false,
-                        orderable: true,
                         navigable: true,
-                        searchable: true,
-                        clauseNames: ["summary"],
+                        orderable: true,
                         schema: {
-                            type: "string",
                             system: "summary",
+                            type: "string",
                         },
+                        searchable: true,
                     },
                     {
+                        clauseNames: ["description"],
+                        custom: false,
                         id: "description",
                         name: "Description",
-                        custom: false,
-                        orderable: true,
                         navigable: true,
-                        searchable: true,
-                        clauseNames: ["description"],
+                        orderable: true,
                         schema: {
-                            type: "string",
                             system: "description",
+                            type: "string",
                         },
+                        searchable: true,
                     },
                 ])
             );
@@ -54,17 +54,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                 logger,
                 new ConstantCommand(logger, [
                     {
+                        clauseNames: ["summary"],
+                        custom: false,
                         id: "customfield_12345",
                         name: "Summary",
-                        custom: false,
-                        orderable: true,
                         navigable: true,
-                        searchable: true,
-                        clauseNames: ["summary"],
+                        orderable: true,
                         schema: {
-                            type: "string",
                             system: "summary",
+                            type: "string",
                         },
+                        searchable: true,
                     },
                 ])
             );
@@ -234,30 +234,30 @@ describe(path.relative(process.cwd(), __filename), () => {
                 logger,
                 new ConstantCommand(logger, [
                     {
+                        clauseNames: ["summary"],
+                        custom: false,
                         id: "summary",
                         name: "summary",
-                        custom: false,
-                        orderable: true,
                         navigable: true,
-                        searchable: true,
-                        clauseNames: ["summary"],
+                        orderable: true,
                         schema: {
-                            type: "string",
                             system: "summary",
+                            type: "string",
                         },
+                        searchable: true,
                     },
                     {
+                        clauseNames: ["summary (custom)"],
+                        custom: false,
                         id: "customfield_12345",
                         name: "Summary",
-                        custom: false,
-                        orderable: true,
                         navigable: true,
-                        searchable: true,
-                        clauseNames: ["summary (custom)"],
+                        orderable: true,
                         schema: {
-                            type: "string",
                             customId: 5125,
+                            type: "string",
                         },
+                        searchable: true,
                     },
                 ])
             );
@@ -267,8 +267,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     There are multiple fields with this name
 
                     Duplicates:
-                      id: "customfield_12345", name: "Summary", custom: false, orderable: true, navigable: true, searchable: true, clauseNames: ["summary (custom)"], schema: {"type":"string","customId":5125}
-                      id: "summary"          , name: "summary", custom: false, orderable: true, navigable: true, searchable: true, clauseNames: ["summary"]         , schema: {"type":"string","system":"summary"}
+                      clauseNames: ["summary (custom)"], custom: false, id: "customfield_12345", name: "Summary", navigable: true, orderable: true, schema: {"customId":5125,"type":"string"}   , searchable: true
+                      clauseNames: ["summary"]         , custom: false, id: "summary"          , name: "summary", navigable: true, orderable: true, schema: {"system":"summary","type":"string"}, searchable: true
 
                     You can provide field IDs in the options:
 

@@ -11,9 +11,9 @@ import { LOG, Level } from "../../util/logging";
 import { unknownToString } from "../../util/string";
 
 export interface RequestConfigPost<D = unknown> {
-    url: string;
-    data?: D;
     config?: AxiosRequestConfig<D>;
+    data?: D;
+    url: string;
 }
 
 /**
@@ -35,9 +35,9 @@ export interface RequestsOptions {
  */
 export interface LoggedRequest {
     /**
-     * The request's URL.
+     * The request's body.
      */
-    url?: string;
+    body: unknown;
     /**
      * The request's headers.
      */
@@ -47,9 +47,9 @@ export interface LoggedRequest {
      */
     params: unknown;
     /**
-     * The request's body.
+     * The request's URL.
      */
-    body: unknown;
+    url?: string;
 }
 
 export class AxiosRestClient {
@@ -110,10 +110,10 @@ export class AxiosRestClient {
                         }
                         const filename = normalizedFilename(`${prefix}_request.json`);
                         const data: LoggedRequest = {
-                            url: url,
+                            body: request.data,
                             headers: request.headers,
                             params: request.params,
-                            body: request.data,
+                            url: url,
                         };
                         const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
                         LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);

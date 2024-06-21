@@ -22,13 +22,13 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             jiraClient.search
                 .withArgs({
-                    jql: "issue in (CYP-123,CYP-456,CYP-789)",
                     fields: ["labelId"],
+                    jql: "issue in (CYP-123,CYP-456,CYP-789)",
                 })
                 .resolves([
-                    { key: "CYP-123", fields: { labelId: ["label", "two labels"] } },
-                    { key: "CYP-456", fields: { labelId: ["three labels"] } },
-                    { key: "CYP-789", fields: { labelId: [] } },
+                    { fields: { labelId: ["label", "two labels"] }, key: "CYP-123" },
+                    { fields: { labelId: ["three labels"] }, key: "CYP-456" },
+                    { fields: { labelId: [] }, key: "CYP-789" },
                 ]);
             const summaries = await command.compute();
             expect(summaries).to.deep.eq({
@@ -49,10 +49,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             jiraClient.search
                 .withArgs({
-                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
                     fields: ["labelId"],
+                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
                 })
-                .resolves([{ key: "CYP-123", fields: { labelId: ["label"] } }]);
+                .resolves([{ fields: { labelId: ["label"] }, key: "CYP-123" }]);
             expect(await command.compute()).to.deep.eq({
                 ["CYP-123"]: ["label"],
             });
@@ -78,13 +78,13 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             jiraClient.search
                 .withArgs({
-                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
                     fields: ["labelId"],
+                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
                 })
                 .resolves([
-                    { key: "CYP-123", fields: { labelId: "string" } },
-                    { key: "CYP-456", fields: { bonjour: 42 } },
-                    { key: "CYP-789", fields: { labelId: [42, 84] } },
+                    { fields: { labelId: "string" }, key: "CYP-123" },
+                    { fields: { bonjour: 42 }, key: "CYP-456" },
+                    { fields: { labelId: [42, 84] }, key: "CYP-789" },
                     { fields: { labelId: ["hi", "there"] } },
                 ]);
             expect(await command.compute()).to.deep.eq({});
@@ -112,8 +112,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             jiraClient.search
                 .withArgs({
-                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
                     fields: ["labelId"],
+                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
                 })
                 .rejects(new Error("Connection timeout"));
             await expect(command.compute()).to.eventually.be.rejectedWith("Connection timeout");

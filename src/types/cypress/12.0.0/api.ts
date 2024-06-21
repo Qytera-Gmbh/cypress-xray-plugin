@@ -1,93 +1,93 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { ResolvedConfigOptions } from "./cypress";
 
-type HookName = "before" | "beforeEach" | "afterEach" | "after";
+type HookName = "after" | "afterEach" | "before" | "beforeEach";
 interface TestError {
-    name: string;
     message: string;
+    name: string;
     stack: string;
 }
 type dateTimeISO = string;
 type ms = number;
 type pixels = number;
 export interface TestResult {
-    title: string[];
-    state: string;
-    body: string;
-    displayError: string | null;
     attempts: AttemptResult[];
+    body: string;
+    displayError: null | string;
+    state: string;
+    title: string[];
 }
 export interface AttemptResult {
-    state: string;
-    error: TestError | null;
-    startedAt: dateTimeISO;
     duration: ms;
-    videoTimestamp: ms;
+    error: null | TestError;
     screenshots: ScreenshotInformation[];
+    startedAt: dateTimeISO;
+    state: string;
+    videoTimestamp: ms;
 }
 interface HookInformation {
+    body: string;
     hookName: HookName;
     title: string[];
-    body: string;
 }
 export interface ScreenshotInformation {
-    name: string;
-    takenAt: dateTimeISO;
-    path: string;
     height: pixels;
+    name: string;
+    path: string;
+    takenAt: dateTimeISO;
     width: pixels;
 }
 export interface RunResult {
+    error: null | string;
+    hooks: HookInformation[];
+    reporter: string;
+    reporterStats: object;
+    shouldUploadVideo: boolean;
+    skippedSpec: boolean;
+    spec: {
+        absolute: string;
+        name: string;
+        relative: string;
+        relativeToCommonRoot: string;
+    };
     stats: {
-        suites: number;
-        tests: number;
+        duration: ms;
+        endedAt: dateTimeISO;
+        failures: number;
         passes: number;
         pending: number;
         skipped: number;
-        failures: number;
         startedAt: dateTimeISO;
-        endedAt: dateTimeISO;
-        duration: ms;
+        suites: number;
+        tests: number;
         wallClockDuration?: number;
     };
-    reporter: string;
-    reporterStats: object;
-    hooks: HookInformation[];
     tests: TestResult[];
-    error: string | null;
-    video: string | null;
-    spec: {
-        name: string;
-        relative: string;
-        absolute: string;
-        relativeToCommonRoot: string;
-    };
-    shouldUploadVideo: boolean;
-    skippedSpec: boolean;
+    video: null | string;
 }
 export interface CypressRunResult {
-    status: "finished";
-    startedTestsAt: dateTimeISO;
+    browserName: string;
+    browserPath: string;
+    browserVersion: string;
+    config: ResolvedConfigOptions;
+    cypressVersion: string;
     endedTestsAt: dateTimeISO;
+    osName: string;
+    osVersion: string;
+    runs: RunResult[];
+    runUrl?: string;
+    startedTestsAt: dateTimeISO;
+    status: "finished";
     totalDuration: ms;
-    totalSuites: number;
-    totalTests: number;
     totalFailed: number;
     totalPassed: number;
     totalPending: number;
     totalSkipped: number;
-    runUrl?: string;
-    runs: RunResult[];
-    browserPath: string;
-    browserName: string;
-    browserVersion: string;
-    osName: string;
-    osVersion: string;
-    cypressVersion: string;
-    config: ResolvedConfigOptions;
+    totalSuites: number;
+    totalTests: number;
 }
 export interface CypressFailedRunResult {
-    status: "failed";
     failures: number;
     message: string;
+    status: "failed";
 }

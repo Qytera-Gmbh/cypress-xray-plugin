@@ -12,25 +12,13 @@ export interface SearchResults {
      */
     expand?: string;
     /**
-     * The index of the first item returned on the page.
-     */
-    startAt?: number;
-    /**
-     * The maximum number of results that could be on the page.
-     */
-    maxResults?: number;
-    /**
-     * The number of results on the page.
-     */
-    total?: number;
-    /**
      * The list of issues found by the search.
      */
     issues?: Issue[];
     /**
-     * Any warnings related to the JQL query.
+     * The maximum number of results that could be on the page.
      */
-    warningMessages?: string[];
+    maxResults?: number;
     /**
      * The ID and name of each field in the search results.
      */
@@ -39,4 +27,16 @@ export interface SearchResults {
      * The schema describing the field types in the search results.
      */
     schema?: Record<string, JsonType>;
+    /**
+     * The index of the first item returned on the page.
+     */
+    startAt?: number;
+    /**
+     * The number of results on the page.
+     */
+    total?: number;
+    /**
+     * Any warnings related to the JQL query.
+     */
+    warningMessages?: string[];
 }

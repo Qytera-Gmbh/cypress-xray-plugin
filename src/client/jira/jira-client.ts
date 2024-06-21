@@ -29,13 +29,19 @@ export interface JiraClient {
      */
     addAttachment(issueIdOrKey: string, ...files: string[]): Promise<Attachment[]>;
     /**
-     * Returns all issue types.
+     * Edits an issue. A transition may be applied and issue properties updated as part of the edit.
+     * The edits to the issue's fields are defined using `update` and `fields`.
      *
-     * @returns the issue types
-     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/issuetype-getIssueAllTypes
-     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-rest-api-3-issuetype-get
+     * The parent field may be set by key or ID. For standard issue types, the parent may be removed
+     * by setting `update.parent.set.none` to `true`.
+     *
+     * @param issueIdOrKey - the ID or key of the issue
+     * @param issueUpdateData - the edit data
+     * @returns the ID or key of the edited issue
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-put
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.10.0/#api/2/issue-editIssue
      */
-    getIssueTypes(): Promise<IssueTypeDetails[]>;
+    editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string>;
     /**
      * Returns system and custom issue fields according to the following rules:
      * - Fields that cannot be added to the issue navigator are always returned
@@ -52,6 +58,14 @@ export interface JiraClient {
      */
     getFields(): Promise<FieldDetail[]>;
     /**
+     * Returns all issue types.
+     *
+     * @returns the issue types
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/issuetype-getIssueAllTypes
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-rest-api-3-issuetype-get
+     */
+    getIssueTypes(): Promise<IssueTypeDetails[]>;
+    /**
      * Searches for issues using JQL. Automatically performs pagination if necessary.
      *
      * @param request - the search request
@@ -60,20 +74,6 @@ export interface JiraClient {
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
      */
     search(request: SearchRequest): Promise<Issue[]>;
-    /**
-     * Edits an issue. A transition may be applied and issue properties updated as part of the edit.
-     * The edits to the issue's fields are defined using `update` and `fields`.
-     *
-     * The parent field may be set by key or ID. For standard issue types, the parent may be removed
-     * by setting `update.parent.set.none` to `true`.
-     *
-     * @param issueIdOrKey - the ID or key of the issue
-     * @param issueUpdateData - the edit data
-     * @returns the ID or key of the edited issue
-     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-put
-     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.10.0/#api/2/issue-editIssue
-     */
-    editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string>;
 }
 
 /**

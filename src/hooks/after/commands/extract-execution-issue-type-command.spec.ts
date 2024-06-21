@@ -22,25 +22,25 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as IssueTypeDetails[];
             const command = new ExtractExecutionIssueTypeCommand(
                 {
+                    displayCloudHelp: true,
                     projectKey: "CYP",
                     testExecutionIssueType: "Test Execution",
-                    displayCloudHelp: true,
                 },
                 logger,
                 new ConstantCommand(logger, issueTypes)
             );
             expect(await command.compute()).to.deep.eq({
-                self: "https://example.org/rest/api/2/issuetype/10008",
-                id: "10008",
+                avatarId: 10515,
                 description:
                     "This is the Xray Test Execution Issue Type. Used to execute test cases already defined.",
+                hierarchyLevel: 0,
                 iconUrl:
                     "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10515?size=medium",
+                id: "10008",
                 name: "Test Execution",
-                untranslatedName: "Test Execution",
+                self: "https://example.org/rest/api/2/issuetype/10008",
                 subtask: false,
-                avatarId: 10515,
-                hierarchyLevel: 0,
+                untranslatedName: "Test Execution",
             });
         });
 
@@ -54,9 +54,9 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as IssueTypeDetails[];
             const command = new ExtractExecutionIssueTypeCommand(
                 {
+                    displayCloudHelp: true,
                     projectKey: "CYP",
                     testExecutionIssueType: "Nonexistent Execution",
-                    displayCloudHelp: true,
                 },
                 logger,
                 new ConstantCommand(logger, issueTypes)
@@ -92,9 +92,9 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as IssueTypeDetails[];
             const command = new ExtractExecutionIssueTypeCommand(
                 {
+                    displayCloudHelp: false,
                     projectKey: "CYP",
                     testExecutionIssueType: "Nonexistent Execution",
-                    displayCloudHelp: false,
                 },
                 logger,
                 new ConstantCommand(logger, issueTypes)
@@ -130,9 +130,9 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as IssueTypeDetails[];
             const command = new ExtractExecutionIssueTypeCommand(
                 {
+                    displayCloudHelp: true,
                     projectKey: "CYP",
                     testExecutionIssueType: "Task",
-                    displayCloudHelp: true,
                 },
                 logger,
                 new ConstantCommand(logger, issueTypes)
@@ -172,9 +172,9 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as IssueTypeDetails[];
             const command = new ExtractExecutionIssueTypeCommand(
                 {
+                    displayCloudHelp: false,
                     projectKey: "CYP",
                     testExecutionIssueType: "Task",
-                    displayCloudHelp: false,
                 },
                 logger,
                 new ConstantCommand(logger, issueTypes)

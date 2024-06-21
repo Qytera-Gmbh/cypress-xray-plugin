@@ -1,8 +1,12 @@
 export interface JsonType {
     /**
-     * The data type of the field.
+     * If the field is a custom field, the URI of the field.
      */
-    type?: string;
+    custom?: string;
+    /**
+     * If the field is a custom field, the custom ID of the field.
+     */
+    customId?: number;
     /**
      * When the data type is an array, the name of the field items within the array.
      */
@@ -12,13 +16,9 @@ export interface JsonType {
      */
     system?: string;
     /**
-     * If the field is a custom field, the URI of the field.
+     * The data type of the field.
      */
-    custom?: string;
-    /**
-     * If the field is a custom field, the custom ID of the field.
-     */
-    customId?: number;
+    type?: string;
 }
 export interface JsonTypeCloud extends JsonType {
     /**

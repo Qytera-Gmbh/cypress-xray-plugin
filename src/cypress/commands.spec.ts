@@ -27,16 +27,20 @@ describe(path.relative(process.cwd(), __filename), () => {
 
     const timestamp = normalizedFilename(new Date(12345).toLocaleTimeString());
     const tests: {
+        expectedFilenames: [string, string];
         name: string;
         request: Partial<Cypress.RequestOptions>;
         response: Cypress.Response<unknown>;
-        expectedFilenames: [string, string];
     }[] = [
         {
+            expectedFilenames: [
+                `GET https_example.org ${timestamp} request.json`,
+                `GET https_example.org ${timestamp} response.json`,
+            ],
             name: "a request object",
             request: {
-                url: "https://example.org",
                 method: "GET",
+                url: "https://example.org",
             },
             response: {
                 allRequestResponses: [],
@@ -50,12 +54,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 status: 200,
                 statusText: "Ok",
             },
+        },
+        {
             expectedFilenames: [
                 `GET https_example.org ${timestamp} request.json`,
                 `GET https_example.org ${timestamp} response.json`,
             ],
-        },
-        {
             name: "a request string",
             request: "https://example.org" as Partial<Cypress.RequestOptions>,
             response: {
@@ -70,12 +74,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 status: 404,
                 statusText: "Not found",
             },
-            expectedFilenames: [
-                `GET https_example.org ${timestamp} request.json`,
-                `GET https_example.org ${timestamp} response.json`,
-            ],
         },
         {
+            expectedFilenames: [
+                `UNKNOWN_METHOD UNKNOWN_URL ${timestamp} request.json`,
+                `UNKNOWN_METHOD UNKNOWN_URL ${timestamp} response.json`,
+            ],
             name: "an undefined request object",
             request: {},
             response: {
@@ -90,10 +94,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 status: 302,
                 statusText: "Found",
             },
-            expectedFilenames: [
-                `UNKNOWN_METHOD UNKNOWN_URL ${timestamp} request.json`,
-                `UNKNOWN_METHOD UNKNOWN_URL ${timestamp} response.json`,
-            ],
         },
     ];
 

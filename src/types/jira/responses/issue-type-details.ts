@@ -5,13 +5,9 @@ import { Scope } from "./scope";
  */
 export interface IssueTypeDetails {
     /**
-     * The URL of these issue type details.
+     * The ID of the issue type's avatar.
      */
-    self?: string;
-    /**
-     * The ID of the issue type.
-     */
-    id?: string;
+    avatarId?: number;
     /**
      * The description of the issue type.
      */
@@ -21,17 +17,21 @@ export interface IssueTypeDetails {
      */
     iconUrl?: string;
     /**
+     * The ID of the issue type.
+     */
+    id?: string;
+    /**
      * The name of the issue type.
      */
     name?: string;
     /**
+     * The URL of these issue type details.
+     */
+    self?: string;
+    /**
      * Whether this issue type is used to create subtasks.
      */
     subtask: boolean;
-    /**
-     * The ID of the issue type's avatar.
-     */
-    avatarId?: number;
 }
 export interface IssueTypeDetailsCloud extends IssueTypeDetails {
     /**
