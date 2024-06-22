@@ -60,9 +60,9 @@ export function addUploadCommands(
         return;
     }
     const cypressResultsCommand = graph.findOrDefault(
-        (command): command is ConstantCommand<CypressRunResultType> =>
-            command instanceof ConstantCommand && command.getValue() === runResult,
-        () => graph.place(new ConstantCommand(logger, runResult))
+        ConstantCommand<CypressRunResultType>,
+        () => graph.place(new ConstantCommand(logger, runResult)),
+        (command) => command.getValue() === runResult
     );
     let importCypressExecutionCommand: ImportExecutionCypressCommand | null = null;
     let importCucumberExecutionCommand: ImportExecutionCucumberCommand | null = null;
@@ -233,9 +233,8 @@ function getImportExecutionCucumberCommand(
     logger: Logger,
     testExecutionIssueKeyCommand?: Command<string | undefined>
 ): ImportExecutionCucumberCommand {
-    const fetchIssueTypesCommand = graph.findOrDefault(
-        (command): command is FetchIssueTypesCommand => command instanceof FetchIssueTypesCommand,
-        () => graph.place(new FetchIssueTypesCommand({ jiraClient: clients.jiraClient }, logger))
+    const fetchIssueTypesCommand = graph.findOrDefault(FetchIssueTypesCommand, () =>
+        graph.place(new FetchIssueTypesCommand({ jiraClient: clients.jiraClient }, logger))
     );
     const extractExecutionIssueTypeCommand = graph.place(
         new ExtractExecutionIssueTypeCommand(
@@ -409,16 +408,7 @@ function addPostUploadCommands(
     let fallbackCucumberUploadCommand: Command<string | undefined> | undefined = undefined;
     if (importCypressExecutionCommand) {
         fallbackCypressUploadCommand = graph.findOrDefault(
-            (command): command is Command<string | undefined> => {
-                if (!(command instanceof FallbackCommand)) {
-                    return false;
-                }
-                const predecessors = [...graph.getPredecessors(command)];
-                return (
-                    predecessors.length === 1 &&
-                    predecessors.includes(importCypressExecutionCommand)
-                );
-            },
+            FallbackCommand<undefined, string>,
             () => {
                 const fallbackCommand = graph.place(
                     new FallbackCommand(
@@ -432,21 +422,19 @@ function addPostUploadCommands(
                 );
                 graph.connect(importCypressExecutionCommand, fallbackCommand, true);
                 return fallbackCommand;
+            },
+            (command) => {
+                const predecessors = [...graph.getPredecessors(command)];
+                return (
+                    predecessors.length === 1 &&
+                    predecessors.includes(importCypressExecutionCommand)
+                );
             }
         );
     }
     if (importCucumberExecutionCommand) {
         fallbackCucumberUploadCommand = graph.findOrDefault(
-            (command): command is Command<string | undefined> => {
-                if (!(command instanceof FallbackCommand)) {
-                    return false;
-                }
-                const predecessors = [...graph.getPredecessors(command)];
-                return (
-                    predecessors.length === 1 &&
-                    predecessors.includes(importCucumberExecutionCommand)
-                );
-            },
+            FallbackCommand<undefined, string>,
             () => {
                 const fallbackCommand = graph.place(
                     new FallbackCommand(
@@ -460,6 +448,13 @@ function addPostUploadCommands(
                 );
                 graph.connect(importCucumberExecutionCommand, fallbackCommand, true);
                 return fallbackCommand;
+            },
+            (command) => {
+                const predecessors = [...graph.getPredecessors(command)];
+                return (
+                    predecessors.length === 1 &&
+                    predecessors.includes(importCucumberExecutionCommand)
+                );
             }
         );
     }

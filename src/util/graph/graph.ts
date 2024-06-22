@@ -27,11 +27,16 @@ export interface DirectedGraph<V> {
      * Searches for a specific vertex in the graph. If no matching vertex can be found the fallback
      * function will be called instead. Every vertex will be visited exactly once.
      *
-     * @param filter - the vertex filter
+     * @param vertexClass - the vertex class type
      * @param fallback - the fallback function
+     * @param filter - an additional vertex filter
      * @returns the first matching vertex or the result of the fallback function
      */
-    findOrDefault<T extends V>(filter: (vertex: V) => vertex is T, fallback: () => T): T;
+    findOrDefault<T extends V, A extends unknown[]>(
+        vertexClass: new (...args: A) => T,
+        fallback: () => T,
+        filter?: (vertex: T) => boolean
+    ): T;
     /**
      * Returns a generator which iterates through all edges.
      *
@@ -216,9 +221,16 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V> {
         return undefined;
     }
 
-    public findOrDefault<T extends V>(filter: (vertex: V) => vertex is T, fallback: () => T): T {
+    public findOrDefault<T extends V, A extends unknown[]>(
+        vertexClass: new (...args: A) => T,
+        fallback: () => T,
+        filter?: (vertex: T) => boolean
+    ): T {
         for (const vertex of this.getVertices()) {
-            if (filter(vertex)) {
+            if (vertex instanceof vertexClass) {
+                if (filter && !filter(vertex)) {
+                    continue;
+                }
                 return vertex;
             }
         }
