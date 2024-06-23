@@ -1,12 +1,25 @@
+import { GherkinDocument } from "@cucumber/messages";
+import path from "path";
 import {
     InternalCucumberOptions,
     InternalJiraOptions,
     InternalXrayOptions,
 } from "../../../../../types/plugin";
-import { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { Logger } from "../../../../../util/logging";
+import {
+    CucumberMultipartElement,
+    CucumberMultipartFeature,
+    CucumberMultipartStep,
+    CucumberMultipartTag,
+} from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
+import { dedent } from "../../../../../util/dedent";
+import {
+    errorMessage,
+    missingTestKeyInCucumberScenarioError,
+    multipleTestKeysInCucumberScenarioError,
+} from "../../../../../util/errors";
+import { Level, Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
-import { buildMultipartFeatures } from "./util/multipart-feature";
+import { getScenarioTagRegex } from "../../../../preprocessor/commands/parsing/scenario";
 
 interface Parameters {
     cucumber: Pick<InternalCucumberOptions, "prefixes">;
@@ -26,33 +39,158 @@ export class ConvertCucumberFeaturesCommand extends Command<
     CucumberMultipartFeature[],
     Parameters
 > {
-    private readonly input: Computable<CucumberMultipartFeature[]>;
+    private readonly cucumberResults: Computable<CucumberMultipartFeature[]>;
+    private readonly gherkinDocuments: Computable<GherkinDocument>[];
     private readonly testExecutionIssueKey?: Computable<string | undefined>;
     constructor(
         parameters: Parameters,
         logger: Logger,
-        input: Computable<CucumberMultipartFeature[]>,
+        cucumberResults: Computable<CucumberMultipartFeature[]>,
+        gherkinDocuments: Computable<GherkinDocument>[],
         testExecutionIssueKey?: Computable<string | undefined>
     ) {
         super(parameters, logger);
-        this.input = input;
+        this.cucumberResults = cucumberResults;
+        this.gherkinDocuments = gherkinDocuments;
         this.testExecutionIssueKey = testExecutionIssueKey;
     }
 
     protected async computeResult(): Promise<CucumberMultipartFeature[]> {
-        const input = await this.input.compute();
+        const input = await this.cucumberResults.compute();
+        const gherkinData: GherkinDocument[] = [];
+        for (const document of this.gherkinDocuments) {
+            try {
+                gherkinData.push(await document.compute());
+            } catch (error: unknown) {
+                this.logger.message(
+                    Level.WARNING,
+                    dedent(`
+                        Failed to scan feature file for results upload.
+
+                          ${errorMessage(error)}
+                    `)
+                );
+            }
+        }
         const testExecutionIssueKey = await this.testExecutionIssueKey?.compute();
-        return buildMultipartFeatures(
-            input,
+        const tests: CucumberMultipartFeature[] = [];
+        for (const result of input) {
+            const test: CucumberMultipartFeature = {
+                ...result,
+            };
+            if (testExecutionIssueKey) {
+                const testExecutionIssueTag: CucumberMultipartTag = {
+                    name: `@${testExecutionIssueKey}`,
+                };
+                // Xray uses the first encountered issue tag for deducing the test execution issue.
+                // Note: The tag is a feature tag, not a scenario tag!
+                if (result.tags) {
+                    test.tags = [testExecutionIssueTag, ...result.tags];
+                } else {
+                    test.tags = [testExecutionIssueTag];
+                }
+            }
+            const elements: CucumberMultipartElement[] = [];
+            for (const element of result.elements) {
+                const filepath = path.resolve(this.parameters.projectRoot, result.uri);
+                try {
+                    if (element.type === "scenario") {
+                        assertScenarioContainsIssueKey(
+                            element,
+                            this.parameters.jira.projectKey,
+                            this.parameters.useCloudTags === true,
+                            this.parameters.cucumber.prefixes.test
+                        );
+                        const modifiedElement: CucumberMultipartElement = {
+                            ...element,
+                            steps: getSteps(element, this.parameters.xray.uploadScreenshots),
+                        };
+                        elements.push(modifiedElement);
+                    }
+                } catch (error: unknown) {
+                    const elementDescription = `${element.type[0].toUpperCase()}${element.type.substring(
+                        1
+                    )}: ${element.name.length > 0 ? element.name : "<no name>"}`;
+                    this.logger.message(
+                        Level.WARNING,
+                        dedent(`
+                            ${filepath}
+
+                              ${elementDescription}
+
+                                Skipping result upload.
+
+                                  Caused by: ${errorMessage(error)}
+                        `)
+                    );
+                }
+            }
+            if (elements.length > 0) {
+                test.elements = elements;
+                tests.push(test);
+            }
+        }
+        return tests;
+    }
+}
+
+function assertScenarioContainsIssueKey(
+    element: CucumberMultipartElement,
+    projectKey: string,
+    isXrayCloud: boolean,
+    testPrefix?: string
+): void {
+    const issueKeys: string[] = [];
+    if (element.tags) {
+        for (const tag of element.tags) {
+            const matches = tag.name.match(getScenarioTagRegex(projectKey, testPrefix));
+            if (!matches) {
+                continue;
+            }
+            // We know the regex: the match will contain the value in the first group.
+            issueKeys.push(matches[1]);
+        }
+        if (issueKeys.length > 1) {
+            throw multipleTestKeysInCucumberScenarioError(
+                {
+                    keyword: element.keyword,
+                    name: element.name,
+                    steps: element.steps.map((step: CucumberMultipartStep) => {
+                        return { keyword: step.keyword, text: step.name };
+                    }),
+                },
+                element.tags,
+                issueKeys,
+                isXrayCloud
+            );
+        }
+    }
+    if (issueKeys.length === 0) {
+        throw missingTestKeyInCucumberScenarioError(
             {
-                includeScreenshots: this.parameters.xray.uploadScreenshots,
-                projectKey: this.parameters.jira.projectKey,
-                projectRoot: this.parameters.projectRoot,
-                testExecutionIssueKey: testExecutionIssueKey,
-                testPrefix: this.parameters.cucumber.prefixes.test,
-                useCloudTags: this.parameters.useCloudTags === true,
+                keyword: element.keyword,
+                name: element.name,
+                steps: element.steps.map((step: CucumberMultipartStep) => {
+                    return { keyword: step.keyword, text: step.name };
+                }),
+                tags: element.tags,
             },
-            this.logger
+            projectKey,
+            isXrayCloud
         );
     }
+}
+
+function getSteps(
+    element: CucumberMultipartElement,
+    includeScreenshots?: boolean
+): CucumberMultipartStep[] {
+    const steps: CucumberMultipartStep[] = [];
+    element.steps.forEach((step: CucumberMultipartStep) => {
+        steps.push({
+            ...step,
+            embeddings: includeScreenshots ? step.embeddings : [],
+        });
+    });
+    return steps;
 }

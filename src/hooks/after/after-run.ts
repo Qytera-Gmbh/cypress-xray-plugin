@@ -1,3 +1,4 @@
+import { GherkinDocument } from "@cucumber/messages";
 import fs from "fs";
 import path from "path";
 import { EvidenceCollection } from "../../context";
@@ -8,6 +9,7 @@ import { CucumberMultipartFeature } from "../../types/xray/requests/import-execu
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Level, Logger } from "../../util/logging";
 import { Command, Computable, ComputableState } from "../command";
+import { ParseFeatureFileCommand } from "../preprocessor/commands/parse-feature-file-command";
 import { ConstantCommand } from "../util/commands/constant-command";
 import { FallbackCommand } from "../util/commands/fallback-command";
 import { AttachFilesCommand } from "../util/commands/jira/attach-files-command";
@@ -111,7 +113,7 @@ export function addUploadCommands(
             testExecutionIssueKeyCommand = fallbackExecutionIssueKeyCommand;
         }
         importCucumberExecutionCommand = getImportExecutionCucumberCommand(
-            cypressResultsCommand,
+            runResult,
             cucumberResultsCommand,
             projectRoot,
             options,
@@ -149,6 +151,33 @@ export function addUploadCommands(
         importCypressExecutionCommand,
         importCucumberExecutionCommand
     );
+}
+
+function addParseFeatureFileCommands(
+    runResult: CypressRunResultType,
+    options: InternalCypressXrayPluginOptions,
+    graph: ExecutableGraph<Command>,
+    logger: Logger
+): Computable<GherkinDocument>[] {
+    const featureFiles: Computable<GherkinDocument>[] = [];
+    if (options.cucumber?.featureFileExtension) {
+        for (const run of runResult.runs) {
+            if (run.spec.absolute.endsWith(options.cucumber.featureFileExtension)) {
+                const parseFeatureFileCommand = graph.findOrDefault(
+                    ParseFeatureFileCommand,
+                    () =>
+                        graph.place(
+                            new ParseFeatureFileCommand({ filePath: run.spec.absolute }, logger)
+                        ),
+                    (vertex) => {
+                        return vertex.getParameters().filePath === run.spec.absolute;
+                    }
+                );
+                featureFiles.push(parseFeatureFileCommand);
+            }
+        }
+    }
+    return featureFiles;
 }
 
 function getImportExecutionCypressCommand(
@@ -224,7 +253,7 @@ function getImportExecutionCypressCommand(
 }
 
 function getImportExecutionCucumberCommand(
-    cypressResultsCommand: Command<CypressRunResultType>,
+    runResult: CypressRunResultType,
     cucumberResultsCommand: ConstantCommand<CucumberMultipartFeature[]>,
     projectRoot: string,
     options: InternalCypressXrayPluginOptions,
@@ -233,6 +262,11 @@ function getImportExecutionCucumberCommand(
     logger: Logger,
     testExecutionIssueKeyCommand?: Command<string | undefined>
 ): ImportExecutionCucumberCommand {
+    const cypressResultsCommand = graph.findOrDefault(
+        ConstantCommand<CypressRunResultType>,
+        () => graph.place(new ConstantCommand(logger, runResult)),
+        (command) => command.getValue() === runResult
+    );
     const fetchIssueTypesCommand = graph.findOrDefault(FetchIssueTypesCommand, () =>
         graph.place(new FetchIssueTypesCommand({ jiraClient: clients.jiraClient }, logger))
     );
@@ -258,6 +292,7 @@ function getImportExecutionCucumberCommand(
     );
     graph.connect(extractExecutionIssueTypeCommand, convertCucumberInfoCommand);
     graph.connect(cypressResultsCommand, convertCucumberInfoCommand);
+    const parseCommands = addParseFeatureFileCommands(runResult, options, graph, logger);
     const convertCucumberFeaturesCommand = graph.place(
         new ConvertCucumberFeaturesCommand(
             {
@@ -282,6 +317,7 @@ function getImportExecutionCucumberCommand(
             },
             logger,
             cucumberResultsCommand,
+            parseCommands,
             testExecutionIssueKeyCommand
         )
     );
