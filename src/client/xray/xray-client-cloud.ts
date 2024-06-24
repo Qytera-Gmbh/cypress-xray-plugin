@@ -21,14 +21,6 @@ import { AbstractXrayClient } from "./xray-client";
 
 export interface HasTestTypes {
     /**
-     * Returns a test execution by issue ID.
-     *
-     * @param issueId - the id of the test execution issue to be returned
-     * @returns the tests contained in the test execution
-     * @see https://us.xray.cloud.getxray.app/doc/graphql/gettestexecution.doc.html
-     */
-    getTestResults(issueId: string): Promise<Test<{ key: string; summary: string }>[]>;
-    /**
      * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
      * `Generic`.
      *
@@ -39,7 +31,18 @@ export interface HasTestTypes {
     getTestTypes(projectKey: string, ...issueKeys: string[]): Promise<StringMap<string>>;
 }
 
-export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes {
+export interface HasTestResults {
+    /**
+     * Returns a test execution by issue ID.
+     *
+     * @param issueId - the id of the test execution issue to be returned
+     * @returns the tests contained in the test execution
+     * @see https://us.xray.cloud.getxray.app/doc/graphql/gettestexecution.doc.html
+     */
+    getTestResults(issueId: string): Promise<Test<{ key: string; summary: string }>[]>;
+}
+
+export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes, HasTestResults {
     /**
      * The URLs of Xray's Cloud API.
      * Note: API v1 would also work, but let's stick to the more recent one.
@@ -58,27 +61,7 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
         super(XrayClientCloud.URL, credentials, httpClient);
     }
 
-    public getUrlImportExecution(): string {
-        return `${this.apiBaseUrl}/import/execution`;
-    }
-
-    public getUrlImportFeature(projectKey?: string, projectId?: string, source?: string): string {
-        const query: string[] = [];
-        if (projectKey) {
-            query.push(`projectKey=${projectKey}`);
-        }
-        if (projectId) {
-            query.push(`projectId=${projectId}`);
-        }
-        if (source) {
-            query.push(`source=${source}`);
-        }
-        return `${this.apiBaseUrl}/import/feature?${query.join("&")}`;
-    }
-
-    public async getTestResults(
-        issueId: string
-    ): Promise<Test<{ key: string; summary: string }>[]> {
+    public async getTestResults(issueId: string): ReturnType<HasTestResults["getTestResults"]> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Retrieving test results...");
@@ -160,7 +143,7 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
     public async getTestTypes(
         projectKey: string,
         ...issueKeys: string[]
-    ): Promise<StringMap<string>> {
+    ): ReturnType<HasTestTypes["getTestTypes"]> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Retrieving test types...");
@@ -227,6 +210,28 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
             LOG.logErrorToFile(error, "getTestTypes");
             throw new LoggedError("Failed to get test types");
         }
+    }
+
+    protected getUrlImportExecution(): string {
+        return `${this.apiBaseUrl}/import/execution`;
+    }
+
+    protected getUrlImportFeature(
+        projectKey?: string,
+        projectId?: string,
+        source?: string
+    ): string {
+        const query: string[] = [];
+        if (projectKey) {
+            query.push(`projectKey=${projectKey}`);
+        }
+        if (projectId) {
+            query.push(`projectId=${projectId}`);
+        }
+        if (source) {
+            query.push(`source=${source}`);
+        }
+        return `${this.apiBaseUrl}/import/feature?${query.join("&")}`;
     }
 
     protected handleResponseImportExecution(response: ImportExecutionResponseCloud): string {

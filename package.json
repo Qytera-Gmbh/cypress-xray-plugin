@@ -36,7 +36,7 @@
     },
     "scripts": {
         "test": "mocha --ignore 'test/integration/**/*'",
-        "test:coverage": "nyc npm run test",
+        "test:coverage": "nyc --per-file npm run test",
         "test:integration": "npm-run-all --parallel --race start:integration-server start:integration",
         "start:integration-server": "serve -p 8080 --no-request-logging",
         "start:integration": "mocha -- --timeout 180000 --ignore 'src/**/*' --ignore index.spec.ts test/integration",

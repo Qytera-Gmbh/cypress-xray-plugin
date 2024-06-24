@@ -197,7 +197,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
      * @param source - a name designating the source of the features being imported (e.g. the source project name)
      * @returns the URL
      */
-    public abstract getUrlImportFeature(
+    protected abstract getUrlImportFeature(
         projectKey?: string,
         projectId?: string,
         source?: string
@@ -208,7 +208,7 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
      *
      * @returns the URL
      */
-    public abstract getUrlImportExecution(): string;
+    protected abstract getUrlImportExecution(): string;
 
     /**
      * This method is called when a feature file was successfully imported to Xray.

@@ -6,7 +6,11 @@ import { JwtCredentials } from "../src/client/authentication/credentials";
 import { AxiosRestClient } from "../src/client/https/requests";
 import { JiraClient } from "../src/client/jira/jira-client";
 import { XrayClient } from "../src/client/xray/xray-client";
-import { HasTestTypes, XrayClientCloud } from "../src/client/xray/xray-client-cloud";
+import {
+    HasTestResults,
+    HasTestTypes,
+    XrayClientCloud,
+} from "../src/client/xray/xray-client-cloud";
 import { SearchRequest } from "../src/types/jira/requests/search";
 import { IssueUpdate } from "../src/types/jira/responses/issue-update";
 import { User } from "../src/types/jira/responses/user";
@@ -119,7 +123,7 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
         };
         return makeTransparent(stub(client));
     }
-    const client: XrayClient & HasTestTypes = {
+    const client: XrayClient & HasTestTypes & HasTestResults = {
         getTestResults(issueId: string) {
             throw mockCalledUnexpectedlyError(issueId);
         },
