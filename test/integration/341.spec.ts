@@ -58,9 +58,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             specPattern: "**/*.{feature,cy.js}",
                             async setupNodeEvents(on, config) {
                                 const fixedOn = fix(on);
-                                fixedOn("after:run", (results) => {
-                                    fs.writeFileSync("results.json", JSON.stringify(results, null, 2));
-                                });
                                 await preprocessor.addCucumberPreprocessorPlugin(fixedOn, config);
                                 await configureXrayPlugin(fixedOn, config, {
                                     jira: {
