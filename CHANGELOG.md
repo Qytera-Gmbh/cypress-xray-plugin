@@ -5,7 +5,7 @@
 > [!NOTE]
 > This version includes a complete rewrite of the plugin for maintainability reasons.
 > From a user perspective, it should now be slightly faster overall due to parallelization of feature file or result uploads.
-> Its output has also been cleaned up and it will now only be jump into action at the end of a Cypress run once all tests have concluded.
+> Its output has also been cleaned up and it will now only jump into action at the end of a Cypress run once all tests have concluded.
 > If any bugs have slipped through the extensive unit and integration tests, [please file a bug](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues).
 
 ## Notable changes
