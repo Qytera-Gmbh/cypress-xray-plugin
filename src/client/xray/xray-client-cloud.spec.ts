@@ -29,6 +29,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("import execution", () => {
             it("should handle successful responses", async () => {
+                getMockedLogger();
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: {
@@ -123,6 +124,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("import execution cucumber multipart", () => {
             it("should handle successful responses", async () => {
+                getMockedLogger();
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: {

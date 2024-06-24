@@ -79,5 +79,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 })
             ).to.eq("SKIP");
         });
+        it("throws for unknown statuses", () => {
+            expect(() => getXrayStatus("hello", false)).to.throw("Unknown status: hello");
+        });
     });
 });

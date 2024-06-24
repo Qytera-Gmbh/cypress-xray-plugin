@@ -1567,6 +1567,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("throws if no license data is returned from xray server", async () => {
+                getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
                 httpClients.jira.get.resolves({
                     config: { headers: new AxiosHeaders() },
@@ -1610,6 +1611,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("throws if an inactive license is returned from xray server", async () => {
+                getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
                 httpClients.jira.get.resolves({
                     config: { headers: new AxiosHeaders() },
@@ -1656,6 +1658,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("throws if the xray credentials are invalid", async () => {
+                getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
                 httpClients.jira.get.resolves({
                     config: { headers: new AxiosHeaders() },
