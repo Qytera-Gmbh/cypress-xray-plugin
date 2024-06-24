@@ -28,6 +28,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("import execution", () => {
             it("should handle successful responses", async () => {
+                getMockedLogger();
                 restClient.post
                     .withArgs("https://example.org/rest/raven/latest/import/execution")
                     .resolves({
@@ -76,6 +77,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("import execution cucumber multipart", () => {
             it("should handle successful responses", async () => {
+                getMockedLogger();
                 restClient.post.resolves({
                     config: { headers: new AxiosHeaders() },
                     data: {
@@ -331,6 +333,111 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                     error,
                     "importFeatureError"
+                );
+            });
+        });
+
+        describe("get test execution", () => {
+            it("returns tests", async () => {
+                getMockedLogger();
+                restClient.get.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: [
+                        {
+                            archived: false,
+                            id: 9284,
+                            key: "CYP-123",
+                            rank: 1,
+                            status: "PASS",
+                        },
+                        {
+                            archived: false,
+                            id: 9285,
+                            key: "CYP-456",
+                            rank: 2,
+                            status: "TODO",
+                        },
+                    ],
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                restClient.get.onSecondCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: [],
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                const response = await client.getTestExecution("CYP-321");
+                expect(response).to.deep.eq([
+                    {
+                        archived: false,
+                        id: 9284,
+                        key: "CYP-123",
+                        rank: 1,
+                        status: "PASS",
+                    },
+                    {
+                        archived: false,
+                        id: 9285,
+                        key: "CYP-456",
+                        rank: 2,
+                        status: "TODO",
+                    },
+                ]);
+                expect(restClient.get).to.have.been.calledWithExactly(
+                    "https://example.org/rest/raven/latest/api/testexec/CYP-321/test",
+                    {
+                        headers: { ["Authorization"]: "Basic dXNlcjp4eXo=" },
+                        params: {
+                            detailed: undefined,
+                            limit: undefined,
+                            page: 1,
+                        },
+                    }
+                );
+                expect(restClient.get).to.have.been.calledWithExactly(
+                    "https://example.org/rest/raven/latest/api/testexec/CYP-321/test",
+                    {
+                        headers: { ["Authorization"]: "Basic dXNlcjp4eXo=" },
+                        params: {
+                            detailed: undefined,
+                            limit: undefined,
+                            page: 2,
+                        },
+                    }
+                );
+            });
+
+            it("handles bad responses", async () => {
+                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+                const error = new AxiosError(
+                    "Request failed with status code 400",
+                    "400",
+                    { headers: new AxiosHeaders() },
+                    null,
+                    {
+                        config: { headers: new AxiosHeaders() },
+                        data: "Xray app not configured",
+                        headers: {},
+                        status: 400,
+                        statusText: "Bad Request",
+                    }
+                );
+                restClient.get.onFirstCall().rejects(error);
+                await expect(client.getTestExecution("CYP-321")).to.eventually.be.rejectedWith(
+                    "Failed to get test execution information"
+                );
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.ERROR,
+                    dedent(`
+                        Failed to retrieve test execution information: Request failed with status code 400
+                    `)
+                );
+                expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                    error,
+                    "getTestExecutionError"
                 );
             });
         });

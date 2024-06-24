@@ -127,7 +127,7 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes,
             }
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to get test results: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "getTestResults");
+            LOG.logErrorToFile(error, "getTestResultsError");
             throw new LoggedError("Failed to get test results");
         }
     }

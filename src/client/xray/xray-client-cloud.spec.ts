@@ -869,7 +869,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                     error,
-                    "getTestResults"
+                    "getTestResultsError"
                 );
             });
         });

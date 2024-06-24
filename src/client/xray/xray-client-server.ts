@@ -91,7 +91,7 @@ export class ServerClient extends AbstractXrayClient implements XrayClientServer
                 Level.ERROR,
                 `Failed to retrieve test execution information: ${errorMessage(error)}`
             );
-            LOG.logErrorToFile(error, "getTestExecution");
+            LOG.logErrorToFile(error, "getTestExecutionError");
             throw new LoggedError("Failed to get test execution information");
         }
     }
