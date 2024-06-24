@@ -58,7 +58,7 @@ export interface CucumberMultipartDataTableRow {
 export interface CucumberMultipartStepResult {
     duration?: number;
     ["error_message"]?: string;
-    status: "failed" | "passed" | "pending" | "skipped" | "undefined" | "unknown";
+    status: string;
 }
 export interface CucumberMultipartMatch {
     arguments?: CucumberMultipartArgument[];

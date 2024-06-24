@@ -1,7 +1,7 @@
 /**
  * All test statuses Cypress assigns to test attempts.
  */
-export enum Status {
+export enum CypressStatus {
     /**
      * A test marked as failed.
      *

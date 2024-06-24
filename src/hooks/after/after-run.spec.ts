@@ -392,6 +392,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectRoot: ".",
                         useCloudTags: false,
                         xray: {
+                            status: {
+                                failed: undefined,
+                                passed: undefined,
+                                pending: undefined,
+                                skipped: undefined,
+                            },
                             testEnvironments: undefined,
                             uploadScreenshots: true,
                         },
@@ -691,6 +697,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectRoot: ".",
                         useCloudTags: true,
                         xray: {
+                            status: {
+                                failed: undefined,
+                                passed: undefined,
+                                pending: undefined,
+                                skipped: undefined,
+                            },
                             testEnvironments: undefined,
                             uploadScreenshots: true,
                         },
@@ -791,6 +803,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectRoot: ".",
                         useCloudTags: true,
                         xray: {
+                            status: {
+                                failed: undefined,
+                                passed: undefined,
+                                pending: undefined,
+                                skipped: undefined,
+                            },
                             testEnvironments: undefined,
                             uploadScreenshots: true,
                         },

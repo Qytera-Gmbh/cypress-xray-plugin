@@ -3,7 +3,7 @@ import {
     ScreenshotInformation as ScreenshotInformation_V12,
     TestResult as TestResult_V12,
 } from "../../../../../../types/cypress/12.0.0/api";
-import { Status } from "../../../../../../types/test-status";
+import { CypressStatus } from "../../../../../../types/cypress/status";
 import { StringMap } from "../../../../../../types/util";
 import { getNativeTestIssueKey } from "../../../../util";
 import { toCypressStatus } from "./status";
@@ -41,7 +41,7 @@ export interface TestRunData {
     /**
      * The test's status.
      */
-    status: Status;
+    status: CypressStatus;
     /**
      * The test's title.
      */

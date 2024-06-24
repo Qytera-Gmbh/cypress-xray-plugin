@@ -26,7 +26,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectKey: "CYP",
                     },
                     projectRoot: "./test/resources",
-                    xray: { uploadScreenshots: false },
+                    xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport.slice(0, 1))
@@ -50,7 +50,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectKey: "CYP",
                     },
                     projectRoot: "./test/resources",
-                    xray: { uploadScreenshots: false },
+                    xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport.slice(0, 1))
@@ -66,7 +66,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                 },
                 projectRoot: "./test/resources",
-                xray: { uploadScreenshots: false },
+                xray: { status: {}, uploadScreenshots: false },
             });
         });
 
@@ -86,7 +86,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     projectRoot: "./test/resources",
                     useCloudTags: true,
-                    xray: { uploadScreenshots: false },
+                    xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport.slice(0, 1))
@@ -111,7 +111,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     projectRoot: "./test/resources",
                     useCloudTags: true,
-                    xray: { uploadScreenshots: false },
+                    xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport)
@@ -138,7 +138,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     projectRoot: "./test/resources",
                     useCloudTags: true,
-                    xray: { uploadScreenshots: false },
+                    xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport),
@@ -166,7 +166,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     projectRoot: "./test/resources",
                     useCloudTags: true,
-                    xray: { uploadScreenshots: false },
+                    xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport),
@@ -192,7 +192,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     projectRoot: "./test/resources",
                     useCloudTags: true,
-                    xray: { uploadScreenshots: true },
+                    xray: { status: {}, uploadScreenshots: true },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport)
@@ -221,7 +221,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     projectRoot: "./test/resources",
                     useCloudTags: true,
-                    xray: { uploadScreenshots: false },
+                    xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport)
@@ -246,7 +246,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     projectRoot: "./test/resources",
                     useCloudTags: true,
-                    xray: { uploadScreenshots: false },
+                    xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport)
@@ -276,7 +276,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     projectRoot: "./test/resources",
                     useCloudTags: false,
-                    xray: { uploadScreenshots: false },
+                    xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport)
@@ -354,7 +354,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     projectRoot: "./test/resources",
                     useCloudTags: false,
-                    xray: { uploadScreenshots: false },
+                    xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport)
@@ -442,7 +442,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     projectRoot: "./test/resources",
                     useCloudTags: true,
-                    xray: { uploadScreenshots: false },
+                    xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport)

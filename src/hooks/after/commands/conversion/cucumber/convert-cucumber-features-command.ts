@@ -19,6 +19,7 @@ import {
 import { Level, Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 import { getScenarioTagRegex } from "../../../../preprocessor/commands/parsing/scenario";
+import { getXrayStatus } from "../cypress/util/status";
 
 interface Parameters {
     cucumber: Pick<InternalCucumberOptions, "prefixes">;
@@ -31,7 +32,7 @@ interface Parameters {
     >;
     projectRoot: string;
     useCloudTags?: boolean;
-    xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
+    xray: Pick<InternalXrayOptions, "status" | "testEnvironments" | "uploadScreenshots">;
 }
 
 export class ConvertCucumberFeaturesCommand extends Command<
@@ -76,15 +77,10 @@ export class ConvertCucumberFeaturesCommand extends Command<
                 const filepath = path.resolve(this.parameters.projectRoot, result.uri);
                 try {
                     if (element.type === "scenario") {
-                        assertScenarioContainsIssueKey(
-                            element,
-                            this.parameters.jira.projectKey,
-                            this.parameters.useCloudTags === true,
-                            this.parameters.cucumber.prefixes.test
-                        );
+                        this.assertScenarioContainsIssueKey(element);
                         const modifiedElement: CucumberMultipartElement = {
                             ...element,
-                            steps: getSteps(element, this.parameters.xray.uploadScreenshots),
+                            steps: this.getSteps(element),
                         };
                         elements.push(modifiedElement);
                     }
@@ -113,65 +109,70 @@ export class ConvertCucumberFeaturesCommand extends Command<
         }
         return tests;
     }
-}
 
-function assertScenarioContainsIssueKey(
-    element: CucumberMultipartElement,
-    projectKey: string,
-    isXrayCloud: boolean,
-    testPrefix?: string
-): void {
-    const issueKeys: string[] = [];
-    if (element.tags) {
-        for (const tag of element.tags) {
-            const matches = tag.name.match(getScenarioTagRegex(projectKey, testPrefix));
-            if (!matches) {
-                continue;
+    private getSteps(element: CucumberMultipartElement): CucumberMultipartStep[] {
+        const steps: CucumberMultipartStep[] = [];
+        element.steps.forEach((step: CucumberMultipartStep) => {
+            steps.push({
+                ...step,
+                embeddings: this.parameters.xray.uploadScreenshots ? step.embeddings : [],
+                result: {
+                    ...step.result,
+                    status: getXrayStatus(
+                        step.result.status,
+                        this.parameters.useCloudTags === true,
+                        this.parameters.xray.status
+                    ),
+                },
+            });
+        });
+        return steps;
+    }
+
+    private assertScenarioContainsIssueKey(element: CucumberMultipartElement): void {
+        const issueKeys: string[] = [];
+        if (element.tags) {
+            for (const tag of element.tags) {
+                const matches = tag.name.match(
+                    getScenarioTagRegex(
+                        this.parameters.jira.projectKey,
+                        this.parameters.cucumber.prefixes.test
+                    )
+                );
+                if (!matches) {
+                    continue;
+                }
+                // We know the regex: the match will contain the value in the first group.
+                issueKeys.push(matches[1]);
             }
-            // We know the regex: the match will contain the value in the first group.
-            issueKeys.push(matches[1]);
+            if (issueKeys.length > 1) {
+                throw multipleTestKeysInCucumberScenarioError(
+                    {
+                        keyword: element.keyword,
+                        name: element.name,
+                        steps: element.steps.map((step: CucumberMultipartStep) => {
+                            return { keyword: step.keyword, text: step.name };
+                        }),
+                    },
+                    element.tags,
+                    issueKeys,
+                    this.parameters.useCloudTags === true
+                );
+            }
         }
-        if (issueKeys.length > 1) {
-            throw multipleTestKeysInCucumberScenarioError(
+        if (issueKeys.length === 0) {
+            throw missingTestKeyInCucumberScenarioError(
                 {
                     keyword: element.keyword,
                     name: element.name,
                     steps: element.steps.map((step: CucumberMultipartStep) => {
                         return { keyword: step.keyword, text: step.name };
                     }),
+                    tags: element.tags,
                 },
-                element.tags,
-                issueKeys,
-                isXrayCloud
+                this.parameters.jira.projectKey,
+                this.parameters.useCloudTags === true
             );
         }
     }
-    if (issueKeys.length === 0) {
-        throw missingTestKeyInCucumberScenarioError(
-            {
-                keyword: element.keyword,
-                name: element.name,
-                steps: element.steps.map((step: CucumberMultipartStep) => {
-                    return { keyword: step.keyword, text: step.name };
-                }),
-                tags: element.tags,
-            },
-            projectKey,
-            isXrayCloud
-        );
-    }
-}
-
-function getSteps(
-    element: CucumberMultipartElement,
-    includeScreenshots?: boolean
-): CucumberMultipartStep[] {
-    const steps: CucumberMultipartStep[] = [];
-    element.steps.forEach((step: CucumberMultipartStep) => {
-        steps.push({
-            ...step,
-            embeddings: includeScreenshots ? step.embeddings : [],
-        });
-    });
-    return steps;
 }

@@ -281,6 +281,7 @@ function getImportExecutionCucumberCommand(
                 projectRoot: projectRoot,
                 useCloudTags: clients.kind === "cloud",
                 xray: {
+                    status: options.xray.status,
                     testEnvironments: options.xray.testEnvironments,
                     uploadScreenshots: options.xray.uploadScreenshots,
                 },
