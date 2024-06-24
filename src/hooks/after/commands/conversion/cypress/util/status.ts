@@ -49,7 +49,7 @@ export function getXrayStatus(
         case Status.FAILED:
             return statusOptions?.failed ?? (useCloudStatus ? "FAILED" : "FAIL");
         case Status.PENDING:
-            return statusOptions?.pending ?? "TODO";
+            return statusOptions?.pending ?? (useCloudStatus ? "TO DO" : "TODO");
         case Status.SKIPPED:
             return statusOptions?.skipped ?? (useCloudStatus ? "FAILED" : "FAIL");
     }

@@ -6,7 +6,7 @@ import process from "process";
 import { LoggedRequest } from "../../src/client/https/requests";
 import { XrayTestExecutionResults } from "../../src/types/xray/import-test-execution-results";
 import { dedent } from "../../src/util/dedent";
-import { IntegrationTest, runCypress, setupCypressProject } from "../sh";
+import { runCypress, setupCypressProject } from "../sh";
 import { expectToExist } from "../util";
 import { LOCAL_SERVER } from "./server";
 
@@ -70,7 +70,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             testIssueKey: "CYPLUG-117",
             title: "cy.request gets overwritten in server environments using manual task calls",
         },
-    ] as IntegrationTest[]) {
+    ] as const) {
         it(test.title, () => {
             const project = setupCypressProject({
                 commandFileContent: test.commandFileContent,

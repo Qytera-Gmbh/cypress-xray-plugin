@@ -3,7 +3,9 @@ import FormData from "form-data";
 import { StringMap } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
+import { GetTestExecutionResponseCloud } from "../../types/xray/responses/graphql/get-test-execution";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
+import { Test } from "../../types/xray/responses/graphql/xray";
 import { ImportExecutionResponseCloud } from "../../types/xray/responses/import-execution";
 import {
     ImportFeatureResponse,
@@ -17,11 +19,15 @@ import { JwtCredentials } from "../authentication/credentials";
 import { AxiosRestClient, RequestConfigPost } from "../https/requests";
 import { AbstractXrayClient } from "./xray-client";
 
-interface GetTestsJiraData {
-    key: string;
-}
-
 export interface HasTestTypes {
+    /**
+     * Returns a test execution by issue ID.
+     *
+     * @param issueId - the id of the test execution issue to be returned
+     * @returns the tests contained in the test execution
+     * @see https://us.xray.cloud.getxray.app/doc/graphql/gettestexecution.doc.html
+     */
+    getTestResults(issueId: string): Promise<Test<{ key: string; summary: string }>[]>;
     /**
      * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
      * `Generic`.
@@ -40,12 +46,7 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
      */
     public static readonly URL = "https://xray.cloud.getxray.app/api/v2";
     private static readonly URL_GRAPHQL = `${XrayClientCloud.URL}/graphql`;
-    private static readonly GRAPHQL_LIMITS = {
-        /**
-         * @see https://xray.cloud.getxray.app/doc/graphql/gettests.doc.html
-         */
-        getTests: 100,
-    };
+    private static readonly GRAPHQL_LIMIT = 100;
 
     /**
      * Construct a new Xray cloud client using the provided credentials.
@@ -73,6 +74,79 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
             query.push(`source=${source}`);
         }
         return `${this.apiBaseUrl}/import/feature?${query.join("&")}`;
+    }
+
+    public async getTestResults(
+        issueId: string
+    ): Promise<Test<{ key: string; summary: string }>[]> {
+        try {
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
+            LOG.message(Level.DEBUG, "Retrieving test results...");
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
+            try {
+                const tests: Test<{ key: string; summary: string }>[] = [];
+                let total = 0;
+                let start = 0;
+                const query = dedent(`
+                    query($issueId: String, $start: Int!, $limit: Int!) {
+                        getTestExecution(issueId: $issueId) {
+                            tests(start: $start, limit: $limit) {
+                                total
+                                start
+                                limit
+                                results {
+                                    issueId
+                                    status {
+                                        name
+                                    }
+                                    jira(fields: ["key", "summary"])
+                                }
+                            }
+                        }
+                    }
+                `);
+                do {
+                    const paginatedRequest = {
+                        query: query,
+                        variables: {
+                            issueId: issueId,
+                            limit: XrayClientCloud.GRAPHQL_LIMIT,
+                            start: start,
+                        },
+                    };
+                    const response: AxiosResponse<
+                        GetTestExecutionResponseCloud<{ key: string; summary: string }>
+                    > = await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
+                        headers: {
+                            ...authorizationHeader,
+                        },
+                    });
+                    const data = response.data.data.getTestExecution;
+                    total = data.tests?.total ?? total;
+                    if (data.tests?.results) {
+                        if (typeof data.tests.start === "number") {
+                            start = data.tests.start + data.tests.results.length;
+                        }
+                        for (const test of data.tests.results) {
+                            if (test.status?.name) {
+                                tests.push(test);
+                            }
+                        }
+                    }
+                } while (start && start < total);
+                LOG.message(
+                    Level.DEBUG,
+                    `Successfully retrieved test results for test execution issue: ${issueId}`
+                );
+                return tests;
+            } finally {
+                clearInterval(progressInterval);
+            }
+        } catch (error: unknown) {
+            LOG.message(Level.ERROR, `Failed to get test results: ${errorMessage(error)}`);
+            LOG.logErrorToFile(error, "getTestResults");
+            throw new LoggedError("Failed to get test results");
+        }
     }
 
     /**
@@ -116,11 +190,11 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                         query: query,
                         variables: {
                             jql: jql,
-                            limit: XrayClientCloud.GRAPHQL_LIMITS.getTests,
+                            limit: XrayClientCloud.GRAPHQL_LIMIT,
                             start: start,
                         },
                     };
-                    const response: AxiosResponse<GetTestsResponse<GetTestsJiraData>> =
+                    const response: AxiosResponse<GetTestsResponse<{ key: string }>> =
                         await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
                             headers: {
                                 ...authorizationHeader,
@@ -134,7 +208,7 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                                 response.data.data.getTests.results.length;
                         }
                         for (const test of response.data.data.getTests.results) {
-                            if (test?.jira.key && test.testType?.name) {
+                            if (test.testType?.name) {
                                 types[test.jira.key] = test.testType.name;
                             }
                         }
