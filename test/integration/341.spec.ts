@@ -69,8 +69,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                                     xray: {
                                         uploadResults: true,
                                         status: {
-                                            passed: "${test.xrayPassedStatus}",
-                                            skipped: "${test.xraySkippedStatus}"
+                                            step: {
+                                                passed: "${test.xrayPassedStatus}",
+                                                skipped: "${test.xraySkippedStatus}"
+                                            }
                                         }
                                     },
                                     cucumber: {
