@@ -23,7 +23,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             },
             service: "cloud",
             testIssueKey: "CYP-666",
-            title: "cy.request gets overwritten in cloud environments",
+            title: "cy.request gets overwritten (cloud)",
         },
         {
             env: {
@@ -32,7 +32,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             },
             service: "server",
             testIssueKey: "CYPLUG-107",
-            title: "cy.request gets overwritten in server environments",
+            title: "cy.request gets overwritten (server)",
         },
         {
             commandFileContent: dedent(`
@@ -52,7 +52,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             },
             service: "cloud",
             testIssueKey: "CYP-692",
-            title: "cy.request gets overwritten in cloud environments using manual task calls",
+            title: "cy.request gets overwritten using manual task calls (cloud)",
         },
         {
             commandFileContent: dedent(`
@@ -72,7 +72,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             },
             service: "server",
             testIssueKey: "CYPLUG-117",
-            title: "cy.request gets overwritten in server environments using manual task calls",
+            title: "cy.request gets overwritten using manual task calls (server)",
         },
     ] as const) {
         it(test.title, () => {
