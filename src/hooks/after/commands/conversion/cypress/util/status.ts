@@ -1,5 +1,4 @@
 import { CypressStatus } from "../../../../../../types/cypress/status";
-import { XrayOptions } from "../../../../../../types/plugin";
 
 /**
  * Converts the given status text string to a valid Cypress attempt status.
@@ -24,8 +23,8 @@ export function toCypressStatus(statusText: string): CypressStatus {
 }
 
 /**
- * Converts the given status to an Xray status. If any of the following are `undefined`, their
- * respective Xray cloud or Xray server status values will be returned instead according to
+ * Converts the given Cypress status to an Xray status. If any of the following are `undefined`,
+ * their respective Xray cloud or Xray server status values will be returned instead according to
  * `useCloudStatus`:
  *
  * - `statusOptions.passed`
@@ -39,22 +38,23 @@ export function toCypressStatus(statusText: string): CypressStatus {
  * @returns the Xray status
  */
 export function getXrayStatus(
-    status: string,
+    status: CypressStatus,
     useCloudStatus: boolean,
-    statusOptions?: XrayOptions["status"]
+    statusOptions?: {
+        failed?: string;
+        passed?: string;
+        pending?: string;
+        skipped?: string;
+    }
 ): string {
     switch (status) {
-        case "passed":
+        case CypressStatus.PASSED:
             return statusOptions?.passed ?? (useCloudStatus ? "PASSED" : "PASS");
-        case "failed":
+        case CypressStatus.FAILED:
             return statusOptions?.failed ?? (useCloudStatus ? "FAILED" : "FAIL");
-        case "pending":
-        case "undefined":
-        case "unknown":
+        case CypressStatus.PENDING:
             return statusOptions?.pending ?? (useCloudStatus ? "TO DO" : "TODO");
-        case "skipped":
+        case CypressStatus.SKIPPED:
             return statusOptions?.skipped ?? (useCloudStatus ? "FAILED" : "FAIL");
-        default:
-            throw new Error(`Unknown status: ${status}`);
     }
 }

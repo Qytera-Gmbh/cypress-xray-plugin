@@ -233,6 +233,20 @@ export function initXrayOptions(
                 parse(env, ENV_NAMES.xray.status.pending, asString) ?? options?.status?.pending,
             skipped:
                 parse(env, ENV_NAMES.xray.status.skipped, asString) ?? options?.status?.skipped,
+            step: {
+                failed:
+                    parse(env, ENV_NAMES.xray.status.step.failed, asString) ??
+                    options?.status?.step?.failed,
+                passed:
+                    parse(env, ENV_NAMES.xray.status.step.passed, asString) ??
+                    options?.status?.step?.passed,
+                pending:
+                    parse(env, ENV_NAMES.xray.status.step.pending, asString) ??
+                    options?.status?.step?.pending,
+                skipped:
+                    parse(env, ENV_NAMES.xray.status.step.skipped, asString) ??
+                    options?.status?.step?.skipped,
+            },
         },
         testEnvironments:
             parse(env, ENV_NAMES.xray.testEnvironments, asArrayOfStrings) ??

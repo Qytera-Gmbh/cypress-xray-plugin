@@ -19,7 +19,7 @@ import {
 import { Level, Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 import { getScenarioTagRegex } from "../../../../preprocessor/commands/parsing/scenario";
-import { getXrayStatus } from "../cypress/util/status";
+import { getXrayStatus } from "./util/status";
 
 interface Parameters {
     cucumber: Pick<InternalCucumberOptions, "prefixes">;
@@ -118,11 +118,7 @@ export class ConvertCucumberFeaturesCommand extends Command<
                 embeddings: this.parameters.xray.uploadScreenshots ? step.embeddings : [],
                 result: {
                     ...step.result,
-                    status: getXrayStatus(
-                        step.result.status,
-                        this.parameters.useCloudTags === true,
-                        this.parameters.xray.status
-                    ),
+                    status: getXrayStatus(step.result.status, this.parameters.xray.status.step),
                 },
             });
         });

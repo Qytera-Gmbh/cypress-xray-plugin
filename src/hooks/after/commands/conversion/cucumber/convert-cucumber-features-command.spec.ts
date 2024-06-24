@@ -204,6 +204,133 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(features[0].elements[2].steps[1].embeddings[0].mime_type).to.eq("image/png");
         });
 
+        it("respects custom statuses", async () => {
+            const logger = getMockedLogger();
+            const command = new ConvertCucumberFeaturesCommand(
+                {
+                    cucumber: { prefixes: { test: "TestName:" } },
+                    jira: {
+                        projectKey: "CYP",
+                    },
+                    projectRoot: "./test/resources",
+                    useCloudTags: true,
+                    xray: {
+                        status: {
+                            step: {
+                                failed: "DID FAIL",
+                                passed: "DID PASS",
+                                pending: "IS PENDING",
+                                skipped: "WAS SKIPPED",
+                            },
+                        },
+                        uploadScreenshots: false,
+                    },
+                },
+                logger,
+                new ConstantCommand(logger, [
+                    {
+                        description: "",
+                        elements: [
+                            {
+                                description: "",
+                                id: "a-tagged-feature;tc---development",
+                                keyword: "Scenario",
+                                line: 9,
+                                name: "TC - Development",
+                                steps: [
+                                    {
+                                        arguments: [],
+                                        embeddings: [],
+                                        keyword: "Given ",
+                                        line: 5,
+                                        name: "abc123",
+                                        result: {
+                                            duration: 0,
+                                            status: "undefined",
+                                        },
+                                    },
+                                    {
+                                        arguments: [],
+                                        keyword: "Then ",
+                                        line: 6,
+                                        name: "xyz9871",
+                                        result: {
+                                            duration: 0,
+                                            status: "skipped",
+                                        },
+                                    },
+                                    {
+                                        arguments: [],
+                                        keyword: "Given ",
+                                        line: 10,
+                                        name: "an assumption",
+                                        result: {
+                                            duration: 0,
+                                            status: "passed",
+                                        },
+                                    },
+                                    {
+                                        arguments: [],
+                                        keyword: "When ",
+                                        line: 11,
+                                        name: "a when",
+                                        result: {
+                                            duration: 0,
+                                            status: "unknown",
+                                        },
+                                    },
+                                    {
+                                        arguments: [],
+                                        keyword: "And ",
+                                        line: 12,
+                                        name: "an and",
+                                        result: {
+                                            duration: 0,
+                                            status: "failed",
+                                        },
+                                    },
+                                    {
+                                        arguments: [],
+                                        keyword: "Then ",
+                                        line: 13,
+                                        name: "a then",
+                                        result: {
+                                            duration: 0,
+                                            status: "pending",
+                                        },
+                                    },
+                                ],
+                                tags: [
+                                    {
+                                        line: 8,
+                                        name: "@ABC-63",
+                                    },
+                                    {
+                                        line: 67,
+                                        name: "@TestName:CYP-123",
+                                    },
+                                ],
+                                type: "scenario",
+                            },
+                        ],
+                        id: "a-tagged-feature",
+                        keyword: "Feature",
+                        line: 1,
+                        name: "A tagged feature",
+                        tags: [],
+                        uri: "cypress/e2e/spec.cy.feature",
+                    },
+                ])
+            );
+            const features = await command.compute();
+            expect(features[0].elements[0].steps[0].result.status).to.eq("undefined");
+            expect(features[0].elements[0].steps[1].result.status).to.eq("WAS SKIPPED");
+            expect(features[0].elements[0].steps[2].result.status).to.eq("DID PASS");
+            expect(features[0].elements[0].steps[3].result.status).to.eq("unknown");
+            expect(features[0].elements[0].steps[4].result.status).to.eq("DID FAIL");
+            expect(features[0].elements[0].steps[5].result.status).to.eq("IS PENDING");
+        });
+
         it("skips background elements", async () => {
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
