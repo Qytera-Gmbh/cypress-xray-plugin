@@ -5,8 +5,13 @@ import { dedent } from "../../src/util/dedent";
 import { runCypress, setupCypressProject } from "../sh";
 import { expectToExist } from "../util";
 import { getIntegrationClient } from "./clients";
+import { getCreatedTestExecutionIssueKey } from "./util";
 
-describe.only(path.relative(process.cwd(), __filename), () => {
+// ============================================================================================== //
+// https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/341
+// ============================================================================================== //
+
+describe(path.relative(process.cwd(), __filename), () => {
     for (const test of [
         {
             cucumberTestPrefix: "TestName:",
@@ -145,13 +150,12 @@ describe.only(path.relative(process.cwd(), __filename), () => {
                 },
                 includeDefaultEnv: test.service,
             });
-            const regex = new RegExp(
-                `Uploaded Cucumber test results to issue: (${test.projectKey}-\\d+)`
+
+            const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
+                test.projectKey,
+                output,
+                "cucumber"
             );
-            const createdIssueLine = output.find((line) => regex.test(line))?.match(regex);
-            expectToExist(createdIssueLine);
-            const testExecutionIssueKey = createdIssueLine[1];
-            expectToExist(testExecutionIssueKey);
 
             if (test.service === "cloud") {
                 const searchResult = await getIntegrationClient("jira", test.service).search({

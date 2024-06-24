@@ -6,6 +6,10 @@ import { dedent } from "../../src/util/dedent";
 import { runCypress, setupCypressProject } from "../sh";
 import { LOCAL_SERVER } from "./server";
 
+// ============================================================================================== //
+// https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/339
+// ============================================================================================== //
+
 describe(path.relative(process.cwd(), __filename), () => {
     for (const test of [
         {

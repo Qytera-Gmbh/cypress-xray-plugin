@@ -10,6 +10,10 @@ import { runCypress, setupCypressProject } from "../sh";
 import { expectToExist } from "../util";
 import { LOCAL_SERVER } from "./server";
 
+// ============================================================================================== //
+// https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/314
+// ============================================================================================== //
+
 describe(path.relative(process.cwd(), __filename), () => {
     for (const test of [
         {

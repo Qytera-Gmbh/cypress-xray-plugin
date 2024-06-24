@@ -3,13 +3,21 @@ import path from "path";
 import process from "process";
 import { dedent } from "../../src/util/dedent";
 import { runCypress, setupCypressProject } from "../sh";
+import { expectToExist } from "../util";
+import { getIntegrationClient } from "./clients";
 import { LOCAL_SERVER } from "./server";
+import { getCreatedTestExecutionIssueKey } from "./util";
+
+// ============================================================================================== //
+// https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/282
+// ============================================================================================== //
 
 describe(path.relative(process.cwd(), __filename), () => {
     for (const test of [
         {
             cucumberTestPrefix: "TestName:",
-            scenarioLabel: "TestName:CYP-756",
+            projectKey: "CYP",
+            scenarioIssueKey: "CYP-756",
             service: "cloud",
             testIssueKey: "CYP-757",
             title: "results upload works for mixed cypress and cucumber projects (cloud)",
@@ -17,14 +25,15 @@ describe(path.relative(process.cwd(), __filename), () => {
         },
         {
             cucumberTestPrefix: "TEST_",
-            scenarioLabel: "TEST_CYPLUG-165",
+            projectKey: "CYPLUG",
+            scenarioIssueKey: "CYPLUG-165",
             service: "server",
             testIssueKey: "CYPLUG-166",
             title: "results upload works for mixed cypress and cucumber projects (server)",
             xrayPassedStatus: "EXECUTING", // Must be a non-final status
         },
     ] as const) {
-        it(test.title, () => {
+        it(test.title, async () => {
             const project = setupCypressProject({
                 configFileContent: dedent(`
                     const preprocessor = require("@badeball/cypress-cucumber-preprocessor");
@@ -115,7 +124,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         content: dedent(`
                             Feature: Testing a single scenario
 
-                                @${test.scenarioLabel}
+                                @${test.cucumberTestPrefix}${test.scenarioIssueKey}
                                 Scenario: Single scenario test
                                     Given Something
                         `),
@@ -123,14 +132,45 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 ],
             });
+
             const output = runCypress(project.projectDirectory, {
                 env: {
                     ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 282",
                 },
                 includeDefaultEnv: test.service,
             });
-            expect(output.join("\n")).to.include("Uploaded test results to issue");
-            expect(output.join("\n")).not.to.include("WARNING");
+
+            const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
+                test.projectKey,
+                output,
+                "both"
+            );
+
+            if (test.service === "cloud") {
+                const searchResult = await getIntegrationClient("jira", test.service).search({
+                    fields: ["id"],
+                    jql: `issue in (${testExecutionIssueKey})`,
+                });
+                expectToExist(searchResult[0].id);
+                const testResults = await getIntegrationClient("xray", test.service).getTestResults(
+                    searchResult[0].id
+                );
+                expect(testResults.map((result) => result.jira.key)).to.deep.eq([
+                    test.testIssueKey,
+                    test.scenarioIssueKey,
+                ]);
+            }
+
+            if (test.service === "server") {
+                const testResults = await getIntegrationClient(
+                    "xray",
+                    test.service
+                ).getTestExecution(testExecutionIssueKey);
+                expect(testResults.map((result) => result.key)).to.deep.eq([
+                    test.testIssueKey,
+                    test.scenarioIssueKey,
+                ]);
+            }
         });
     }
 });
