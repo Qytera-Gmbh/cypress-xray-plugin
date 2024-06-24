@@ -24,8 +24,12 @@ export function addSynchronizationCommands(
     graph: ExecutableGraph<Command>,
     logger: Logger
 ): void {
-    const parseFeatureFileCommand = graph.place(
-        new ParseFeatureFileCommand({ filePath: file.filePath }, logger)
+    const parseFeatureFileCommand = graph.findOrDefault(
+        ParseFeatureFileCommand,
+        () => graph.place(new ParseFeatureFileCommand({ filePath: file.filePath }, logger)),
+        (vertex) => {
+            return vertex.getParameters().filePath === file.filePath;
+        }
     );
     const extractIssueDataCommand = graph.place(
         new ExtractFeatureFileIssuesCommand(

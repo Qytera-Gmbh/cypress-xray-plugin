@@ -29,6 +29,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("import execution", () => {
             it("should handle successful responses", async () => {
+                getMockedLogger();
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: {
@@ -68,7 +69,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     ],
                 });
                 expect(response).to.eq("CYP-123");
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://xray.cloud.getxray.app/api/v2/import/execution"
+                );
             });
+
             it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
@@ -119,6 +124,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("import execution cucumber multipart", () => {
             it("should handle successful responses", async () => {
+                getMockedLogger();
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: {
@@ -230,6 +236,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     errors: [],
                     updatedOrCreatedIssues: ["CYP-333", "CYP-555", "CYP-222"],
                 });
+
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://xray.cloud.getxray.app/api/v2/import/feature?projectKey=CYP"
+                );
             });
 
             it("handles responses with errors", async () => {
@@ -571,15 +581,297 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
         });
 
-        describe("the urls", () => {
-            it("import execution", () => {
-                expect(client.getUrlImportExecution()).to.eq(
-                    "https://xray.cloud.getxray.app/api/v2/import/execution"
-                );
+        describe("get test results", () => {
+            it("handles successful responses", async () => {
+                restClient.post.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        data: {
+                            getTestExecution: {
+                                tests: {
+                                    limit: 10,
+                                    results: [
+                                        {
+                                            issueId: "12345",
+                                            jira: {
+                                                key: "CYP-123",
+                                                summary: "included cucumber test",
+                                            },
+                                            status: {
+                                                color: "#95C160",
+                                                description: "The test run has passed",
+                                                final: true,
+                                                name: "PASSED",
+                                            },
+                                        },
+                                        {
+                                            issueId: "98765",
+                                            jira: {
+                                                key: "CYP-456",
+                                                summary: "skipped cucumber test",
+                                            },
+                                            status: {
+                                                color: "#afa30b",
+                                                description:
+                                                    "A custom skipped status for development purposes",
+                                                final: true,
+                                                name: "SKIPPED",
+                                            },
+                                        },
+                                    ],
+                                    start: 0,
+                                    total: 2,
+                                },
+                            },
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                const response = await client.getTestResults("13436");
+                expect(response).to.deep.eq([
+                    {
+                        issueId: "12345",
+                        jira: {
+                            key: "CYP-123",
+                            summary: "included cucumber test",
+                        },
+                        status: {
+                            color: "#95C160",
+                            description: "The test run has passed",
+                            final: true,
+                            name: "PASSED",
+                        },
+                    },
+                    {
+                        issueId: "98765",
+                        jira: {
+                            key: "CYP-456",
+                            summary: "skipped cucumber test",
+                        },
+                        status: {
+                            color: "#afa30b",
+                            description: "A custom skipped status for development purposes",
+                            final: true,
+                            name: "SKIPPED",
+                        },
+                    },
+                ]);
             });
-            it("import feature", () => {
-                expect(client.getUrlImportFeature("CYP")).to.eq(
-                    "https://xray.cloud.getxray.app/api/v2/import/feature?projectKey=CYP"
+
+            it("should paginate big requests", async () => {
+                restClient.post.onCall(0).resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        data: {
+                            getTestExecution: {
+                                tests: {
+                                    limit: 1,
+                                    results: [
+                                        {
+                                            issueId: "12345",
+                                            jira: {
+                                                key: "CYP-123",
+                                                summary: "included cucumber test",
+                                            },
+                                            status: {
+                                                color: "#95C160",
+                                                description: "The test run has passed",
+                                                final: true,
+                                                name: "PASSED",
+                                            },
+                                        },
+                                    ],
+                                    start: 0,
+                                    total: 3,
+                                },
+                            },
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                restClient.post.onCall(1).resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        data: {
+                            getTestExecution: {
+                                tests: {
+                                    limit: 1,
+                                    results: [
+                                        {
+                                            issueId: "98765",
+                                            jira: {
+                                                key: "CYP-456",
+                                                summary: "skipped cucumber test",
+                                            },
+                                            status: {
+                                                color: "#afa30b",
+                                                description:
+                                                    "A custom skipped status for development purposes",
+                                                final: true,
+                                                name: "SKIPPED",
+                                            },
+                                        },
+                                    ],
+                                    start: 1,
+                                    total: 3,
+                                },
+                            },
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                restClient.post.onCall(2).resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        data: {
+                            getTestExecution: {
+                                tests: {
+                                    limit: 1,
+                                    results: [
+                                        {
+                                            issueId: "54321",
+                                            jira: {
+                                                key: "CYP-111",
+                                                summary: "bonjour what's up",
+                                            },
+                                            status: {
+                                                color: "#95C160",
+                                                description: "The test run has passed",
+                                                final: true,
+                                                name: "PASSED",
+                                            },
+                                        },
+                                    ],
+                                    start: 2,
+                                    total: 4,
+                                },
+                            },
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                restClient.post.onCall(3).resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        data: {
+                            getTestExecution: {
+                                tests: {
+                                    limit: 1,
+                                    start: 2,
+                                },
+                            },
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                restClient.post.onCall(4).resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        data: {
+                            getTestExecution: {
+                                tests: {
+                                    limit: 1,
+                                    results: [
+                                        {
+                                            issueId: "00000",
+                                            jira: {
+                                                key: "CYP-000",
+                                                summary: "missing status",
+                                            },
+                                        },
+                                    ],
+                                    start: "7",
+                                    total: 3,
+                                },
+                            },
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                const response = await client.getTestResults("11111");
+                expect(response).to.deep.eq([
+                    {
+                        issueId: "12345",
+                        jira: {
+                            key: "CYP-123",
+                            summary: "included cucumber test",
+                        },
+                        status: {
+                            color: "#95C160",
+                            description: "The test run has passed",
+                            final: true,
+                            name: "PASSED",
+                        },
+                    },
+                    {
+                        issueId: "98765",
+                        jira: {
+                            key: "CYP-456",
+                            summary: "skipped cucumber test",
+                        },
+                        status: {
+                            color: "#afa30b",
+                            description: "A custom skipped status for development purposes",
+                            final: true,
+                            name: "SKIPPED",
+                        },
+                    },
+                    {
+                        issueId: "54321",
+                        jira: {
+                            key: "CYP-111",
+                            summary: "bonjour what's up",
+                        },
+                        status: {
+                            color: "#95C160",
+                            description: "The test run has passed",
+                            final: true,
+                            name: "PASSED",
+                        },
+                    },
+                ]);
+            });
+
+            it("should handle bad responses", async () => {
+                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+                const error = new AxiosError(
+                    "Request failed with status code 400",
+                    "400",
+                    { headers: new AxiosHeaders() },
+                    null,
+                    {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            error: "Must provide a project key",
+                        },
+                        headers: {},
+                        status: 400,
+                        statusText: "Bad Request",
+                    }
+                );
+                restClient.post.onFirstCall().rejects(error);
+                await expect(client.getTestResults("13436")).to.eventually.be.rejectedWith(
+                    "Failed to get test results"
+                );
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.ERROR,
+                    "Failed to get test results: Request failed with status code 400"
+                );
+                expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                    error,
+                    "getTestResultsError"
                 );
             });
         });

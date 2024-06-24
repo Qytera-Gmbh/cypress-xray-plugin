@@ -2,6 +2,7 @@ import { AxiosResponse } from "axios";
 import FormData from "form-data";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
+import { GetTestExecutionResponseServer } from "../../types/xray/responses/graphql/get-test-execution";
 import { ImportExecutionResponseServer } from "../../types/xray/responses/import-execution";
 import {
     ImportFeatureResponse,
@@ -17,6 +18,30 @@ import { AbstractXrayClient, XrayClient } from "./xray-client";
 
 export interface XrayClientServer extends XrayClient {
     /**
+     * Return a list of the tests associated with the test execution.
+     *
+     * @param testExecutionIssueKey - the test execution issue key
+     * @returns the tests
+     */
+    getTestExecution(
+        testExecutionIssueKey: string,
+        query?: {
+            /**
+             * Whether detailed information about the test run should be returned.
+             */
+            detailed?: boolean;
+            /**
+             * Limits the number of results per page. Should be greater or equal to 0 and lower or
+             * equal to the maximum set in Xray's global configuration.
+             */
+            limit?: number;
+            /**
+             * Number of the page to be retuned. Should be greater or equal to 1.
+             */
+            page?: number;
+        }
+    ): Promise<GetTestExecutionResponseServer>;
+    /**
      * Returns information about the Xray license, including its status and type.
      *
      * @returns the license status
@@ -26,6 +51,51 @@ export interface XrayClientServer extends XrayClient {
 }
 
 export class ServerClient extends AbstractXrayClient implements XrayClientServer {
+    public async getTestExecution(
+        testExecutionIssueKey: string,
+        query?: Parameters<XrayClientServer["getTestExecution"]>[1]
+    ): Promise<GetTestExecutionResponseServer> {
+        try {
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
+            LOG.message(Level.DEBUG, "Getting test execution results...");
+            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
+            let currentPage = query?.page ?? 1;
+            let pagedTests: GetTestExecutionResponseServer = [];
+            const allTests: GetTestExecutionResponseServer = [];
+            do {
+                try {
+                    const testsResponse: AxiosResponse<GetTestExecutionResponseServer> =
+                        await this.httpClient.get(
+                            `${this.apiBaseUrl}/rest/raven/latest/api/testexec/${testExecutionIssueKey}/test`,
+                            {
+                                headers: {
+                                    ...authorizationHeader,
+                                },
+                                params: {
+                                    detailed: query?.detailed,
+                                    limit: query?.limit,
+                                    page: currentPage,
+                                },
+                            }
+                        );
+                    allTests.push(...testsResponse.data);
+                    pagedTests = testsResponse.data;
+                    currentPage++;
+                } finally {
+                    clearInterval(progressInterval);
+                }
+            } while (pagedTests.length > 0);
+            return allTests;
+        } catch (error: unknown) {
+            LOG.message(
+                Level.ERROR,
+                `Failed to retrieve test execution information: ${errorMessage(error)}`
+            );
+            LOG.logErrorToFile(error, "getTestExecutionError");
+            throw new LoggedError("Failed to get test execution information");
+        }
+    }
+
     public async getXrayLicense(): Promise<XrayLicenseStatus> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();

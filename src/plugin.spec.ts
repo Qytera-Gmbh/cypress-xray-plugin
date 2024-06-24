@@ -169,7 +169,24 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ...options.plugin,
                 logDirectory: path.resolve(config.projectRoot, "xyz"),
             });
-            expect(stubbedContext.firstCall.args[0]?.getOptions().xray).to.deep.eq(options.xray);
+            expect(stubbedContext.firstCall.args[0]?.getOptions().xray).to.deep.eq({
+                status: {
+                    failed: "FAILURE",
+                    passed: "OK",
+                    pending: "WAITING",
+                    skipped: "OMITTED",
+                    step: {
+                        failed: undefined,
+                        passed: undefined,
+                        pending: undefined,
+                        skipped: undefined,
+                    },
+                },
+                testEnvironments: ["A", "B"],
+                uploadRequests: false,
+                uploadResults: false,
+                uploadScreenshots: false,
+            });
             expect(
                 stubbedContext.firstCall.args[0]?.getOptions().cucumber?.featureFileExtension
             ).to.eq(".cucumber");

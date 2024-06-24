@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
 import { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api";
-import { Status } from "../../../../../../types/test-status";
+import { CypressStatus } from "../../../../../../types/cypress/status";
 import { getTestRunData_V12, getTestRunData_V13 } from "./run";
 
 chai.use(chaiAsPromised);
@@ -187,7 +187,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     filepath: "~/repositories/xray/cypress/e2e/demo/example.cy.ts",
                 },
                 startedAt: new Date("2022-11-28T17:41:15.091Z"),
-                status: Status.PASSED,
+                status: CypressStatus.PASSED,
                 title: "xray upload demo should look for paragraph elements",
             });
         });
@@ -393,7 +393,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         filepath: "~/Repositories/cypress/85/cypress/e2e/cyp/cypress.spec.cy.ts",
                     },
                     startedAt: new Date("2023-09-09T10:59:28.826Z"),
-                    status: Status.PASSED,
+                    status: CypressStatus.PASSED,
                     title: "something CYP-237 happens",
                 },
                 {
@@ -403,7 +403,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         filepath: "~/Repositories/cypress/85/cypress/e2e/cyp/cypress.spec.cy.ts",
                     },
                     startedAt: new Date("2023-09-09T10:59:29.464Z"),
-                    status: Status.PENDING,
+                    status: CypressStatus.PENDING,
                     title: "something something",
                 },
             ]);

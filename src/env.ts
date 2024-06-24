@@ -74,6 +74,12 @@ export const ENV_NAMES: Remap<Omit<CypressXrayPluginOptions, "http"> & Authentic
             passed: "XRAY_STATUS_PASSED",
             pending: "XRAY_STATUS_PENDING",
             skipped: "XRAY_STATUS_SKIPPED",
+            step: {
+                failed: "XRAY_STATUS_STEP_FAILED",
+                passed: "XRAY_STATUS_STEP_PASSED",
+                pending: "XRAY_STATUS_STEP_PENDING",
+                skipped: "XRAY_STATUS_STEP_SKIPPED",
+            },
         },
         testEnvironments: "XRAY_TEST_ENVIRONMENTS",
         uploadRequests: "XRAY_UPLOAD_REQUESTS",

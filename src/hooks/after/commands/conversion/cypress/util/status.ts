@@ -1,5 +1,4 @@
-import { XrayOptions } from "../../../../../../types/plugin";
-import { Status } from "../../../../../../types/test-status";
+import { CypressStatus } from "../../../../../../types/cypress/status";
 
 /**
  * Converts the given status text string to a valid Cypress attempt status.
@@ -8,16 +7,16 @@ import { Status } from "../../../../../../types/test-status";
  * @returns the Cypress attempt status
  * @throws if the status text cannot be mapped to a valid Cypress attempt status
  */
-export function toCypressStatus(statusText: string): Status {
+export function toCypressStatus(statusText: string): CypressStatus {
     switch (statusText) {
         case "passed":
-            return Status.PASSED;
+            return CypressStatus.PASSED;
         case "failed":
-            return Status.FAILED;
+            return CypressStatus.FAILED;
         case "pending":
-            return Status.PENDING;
+            return CypressStatus.PENDING;
         case "skipped":
-            return Status.SKIPPED;
+            return CypressStatus.SKIPPED;
         default:
             throw new Error(`Unknown Cypress test status: ${statusText}`);
     }
@@ -39,18 +38,23 @@ export function toCypressStatus(statusText: string): Status {
  * @returns the Xray status
  */
 export function getXrayStatus(
-    status: Status,
+    status: CypressStatus,
     useCloudStatus: boolean,
-    statusOptions?: XrayOptions["status"]
+    statusOptions?: {
+        failed?: string;
+        passed?: string;
+        pending?: string;
+        skipped?: string;
+    }
 ): string {
     switch (status) {
-        case Status.PASSED:
+        case CypressStatus.PASSED:
             return statusOptions?.passed ?? (useCloudStatus ? "PASSED" : "PASS");
-        case Status.FAILED:
+        case CypressStatus.FAILED:
             return statusOptions?.failed ?? (useCloudStatus ? "FAILED" : "FAIL");
-        case Status.PENDING:
-            return statusOptions?.pending ?? "TODO";
-        case Status.SKIPPED:
+        case CypressStatus.PENDING:
+            return statusOptions?.pending ?? (useCloudStatus ? "TO DO" : "TODO");
+        case CypressStatus.SKIPPED:
             return statusOptions?.skipped ?? (useCloudStatus ? "FAILED" : "FAIL");
     }
 }

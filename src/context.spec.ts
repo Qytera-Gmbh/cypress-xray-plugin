@@ -125,6 +125,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                         it("skipped", () => {
                             expect(xrayOptions.status.skipped).to.eq(undefined);
                         });
+                        describe("step", () => {
+                            it("failed", () => {
+                                expect(xrayOptions.status.step?.failed).to.eq(undefined);
+                            });
+                            it("passed", () => {
+                                expect(xrayOptions.status.step?.passed).to.eq(undefined);
+                            });
+                            it("pending", () => {
+                                expect(xrayOptions.status.step?.pending).to.eq(undefined);
+                            });
+                            it("skipped", () => {
+                                expect(xrayOptions.status.step?.skipped).to.eq(undefined);
+                            });
+                        });
                     });
                     it("testEnvironments", () => {
                         expect(xrayOptions.testEnvironments).to.eq(undefined);
@@ -429,6 +443,60 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 }
                             );
                             expect(xrayOptions.status.skipped).to.eq("SKIPPING STONE");
+                        });
+                        describe("step", () => {
+                            it("failed", () => {
+                                const xrayOptions = initXrayOptions(
+                                    {},
+                                    {
+                                        status: {
+                                            step: {
+                                                failed: "BAD",
+                                            },
+                                        },
+                                    }
+                                );
+                                expect(xrayOptions.status.step?.failed).to.eq("BAD");
+                            });
+                            it("passed", () => {
+                                const xrayOptions = initXrayOptions(
+                                    {},
+                                    {
+                                        status: {
+                                            step: {
+                                                passed: "GOOD",
+                                            },
+                                        },
+                                    }
+                                );
+                                expect(xrayOptions.status.step?.passed).to.eq("GOOD");
+                            });
+                            it("pending", () => {
+                                const xrayOptions = initXrayOptions(
+                                    {},
+                                    {
+                                        status: {
+                                            step: {
+                                                pending: "PENDULUM",
+                                            },
+                                        },
+                                    }
+                                );
+                                expect(xrayOptions.status.step?.pending).to.eq("PENDULUM");
+                            });
+                            it("skipped", () => {
+                                const xrayOptions = initXrayOptions(
+                                    {},
+                                    {
+                                        status: {
+                                            step: {
+                                                skipped: "SKIPPING STONE",
+                                            },
+                                        },
+                                    }
+                                );
+                                expect(xrayOptions.status.step?.skipped).to.eq("SKIPPING STONE");
+                            });
                         });
                     });
 
@@ -783,6 +851,56 @@ describe(path.relative(process.cwd(), __filename), () => {
                             },
                         });
                         expect(xrayOptions.status.skipped).to.eq("ski-ba-bop-ba-dop-bop");
+                    });
+
+                    it("XRAY_STATUS_STEP_FAILED", () => {
+                        const env = {
+                            ["XRAY_STATUS_STEP_FAILED"]: "no",
+                        };
+                        const xrayOptions = initXrayOptions(env, {
+                            status: {
+                                step: {
+                                    failed: "ERROR",
+                                },
+                            },
+                        });
+                        expect(xrayOptions.status.step?.failed).to.eq("no");
+                    });
+
+                    it("XRAY_STATUS_STEP_PASSED", () => {
+                        const env = {
+                            ["XRAY_STATUS_STEP_PASSED"]: "ok",
+                        };
+                        const xrayOptions = initXrayOptions(env, {
+                            status: {
+                                step: { passed: "FLYBY" },
+                            },
+                        });
+                        expect(xrayOptions.status.step?.passed).to.eq("ok");
+                    });
+
+                    it("XRAY_STATUS_STEP_PENDING", () => {
+                        const env = {
+                            ["XRAY_STATUS_STEP_PENDING"]: "pendulum",
+                        };
+                        const xrayOptions = initXrayOptions(env, {
+                            status: {
+                                step: { pending: "PENCIL" },
+                            },
+                        });
+                        expect(xrayOptions.status.step?.pending).to.eq("pendulum");
+                    });
+
+                    it("XRAY_STATUS_STEP_SKIPPED", () => {
+                        const env = {
+                            ["XRAY_STATUS_STEP_SKIPPED"]: "ski-ba-bop-ba-dop-bop",
+                        };
+                        const xrayOptions = initXrayOptions(env, {
+                            status: {
+                                step: { skipped: "HOP" },
+                            },
+                        });
+                        expect(xrayOptions.status.step?.skipped).to.eq("ski-ba-bop-ba-dop-bop");
                     });
 
                     it("XRAY_TEST_ENVIRONMENTS", () => {
@@ -1567,6 +1685,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("throws if no license data is returned from xray server", async () => {
+                getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
                 httpClients.jira.get.resolves({
                     config: { headers: new AxiosHeaders() },
@@ -1610,6 +1729,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("throws if an inactive license is returned from xray server", async () => {
+                getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
                 httpClients.jira.get.resolves({
                     config: { headers: new AxiosHeaders() },
@@ -1656,6 +1776,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("throws if the xray credentials are invalid", async () => {
+                getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
                 httpClients.jira.get.resolves({
                     config: { headers: new AxiosHeaders() },

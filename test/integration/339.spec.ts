@@ -3,8 +3,12 @@ import fs from "fs";
 import path from "path";
 import process from "process";
 import { dedent } from "../../src/util/dedent";
-import { IntegrationTest, runCypress, setupCypressProject } from "../sh";
+import { runCypress, setupCypressProject } from "../sh";
 import { LOCAL_SERVER } from "./server";
+
+// ============================================================================================== //
+// https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/339
+// ============================================================================================== //
 
 describe(path.relative(process.cwd(), __filename), () => {
     for (const test of [
@@ -16,7 +20,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             },
             service: "cloud",
             testIssueKey: "CYP-741",
-            title: "the cy.request task does not do anything if disabled in cloud environments",
+            title: "the cy.request task does not do anything if disabled (cloud)",
         },
         {
             env: {
@@ -26,12 +30,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             },
             service: "server",
             testIssueKey: "CYPLUG-154",
-            title: "the cy.request task does not do anything if disabled in server environments",
+            title: "the cy.request task does not do anything if disabled (server)",
         },
-    ] as IntegrationTest[]) {
+    ] as const) {
         it(test.title, () => {
             const project = setupCypressProject({
-                commandFileContent: test.commandFileContent,
                 testFiles: [
                     {
                         content: dedent(`

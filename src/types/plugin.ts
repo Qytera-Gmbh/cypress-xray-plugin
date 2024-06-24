@@ -221,37 +221,71 @@ export type InternalJiraOptions = JiraOptions &
  */
 export interface XrayOptions {
     /**
-     * A mapping of Cypress statuses to corresponding Xray statuses.
+     * A mapping of Cypress statuses to corresponding Xray _test_ statuses.
      */
     status?: {
         /**
          * The Xray status name of a test marked as failed by Cypress. Should be used when custom
-         * status names have been setup in Xray.
+         * status names have been set up in Xray.
          *
          * @example "FEHLGESCHLAGEN" // german
          */
         failed?: string;
         /**
          * The Xray status name of a test marked as passed by Cypress. Should be used when custom
-         * status names have been setup in Xray.
+         * status names have been set up in Xray.
          *
          * @example "BESTANDEN" // german
          */
         passed?: string;
         /**
          * The Xray status name of a test marked as pending by Cypress. Should be used when custom
-         * status names have been setup in Xray.
+         * status names have been set up in Xray.
          *
          * @example "EN_ATTENTE" // french
          */
         pending?: string;
         /**
          * The Xray status name of a test marked as skipped by Cypress. Should be used when custom
-         * status names have been setup in Xray.
+         * status names have been set up in Xray.
          *
          * @example "OMIT" // french
          */
         skipped?: string;
+        /**
+         * A mapping of Cypress statuses to corresponding Xray _step_ statuses. These are currently
+         * only accessed in Cucumber report conversion.
+         */
+        step?: {
+            /**
+             * The Xray status name of a step marked as failed. Should be used when custom status
+             * names have been set up in Xray.
+             *
+             * @example "FEHLGESCHLAGEN" // german
+             */
+            failed?: string;
+            /**
+             * The Xray status name of a step marked as passed. Should be used when custom status
+             * names have been set up in Xray.
+             *
+             * @example "BESTANDEN" // german
+             */
+            passed?: string;
+            /**
+             * The Xray status name of a step marked as pending. Should be used when custom status
+             * names have been set up in Xray.
+             *
+             * @example "EN_ATTENTE" // french
+             */
+            pending?: string;
+            /**
+             * The Xray status name of a step marked as skipped. Should be used when custom status
+             * names have been set up in Xray.
+             *
+             * @example "OMIT" // french
+             */
+            skipped?: string;
+        };
     };
     /**
      * The test environments for test execution issues. These will be used as follows:

@@ -11,24 +11,20 @@ export function createExtractFieldIdCommand(
     graph: ExecutableGraph<Command>,
     logger: Logger
 ): Command<string> {
-    const fetchAllFieldsCommand = graph.findOrDefault(
-        (vertex): vertex is FetchAllFieldsCommand => {
-            return vertex instanceof FetchAllFieldsCommand;
-        },
-        () => graph.place(new FetchAllFieldsCommand({ jiraClient: jiraClient }, logger))
+    const fetchAllFieldsCommand = graph.findOrDefault(FetchAllFieldsCommand, () =>
+        graph.place(new FetchAllFieldsCommand({ jiraClient: jiraClient }, logger))
     );
     const extractFieldIdCommand = graph.findOrDefault(
-        (command): command is ExtractFieldIdCommand => {
-            return (
-                command instanceof ExtractFieldIdCommand && command.getParameters().field === field
-            );
-        },
+        ExtractFieldIdCommand,
         () => {
             const command = graph.place(
                 new ExtractFieldIdCommand({ field: field }, logger, fetchAllFieldsCommand)
             );
             graph.connect(fetchAllFieldsCommand, command);
             return command;
+        },
+        (command) => {
+            return command.getParameters().field === field;
         }
     );
     return extractFieldIdCommand;
