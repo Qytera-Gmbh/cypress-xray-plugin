@@ -18,7 +18,7 @@ describe.only(path.relative(process.cwd(), __filename), () => {
             },
             title: "results upload works for skipped cucumber tests (cloud)",
             xrayPassedStatus: "PASSED",
-            xraySkippedStatus: "TO DO",
+            xraySkippedStatus: "SKIPPED",
         },
         {
             cucumberTestPrefix: "TEST_",
@@ -30,7 +30,7 @@ describe.only(path.relative(process.cwd(), __filename), () => {
             },
             title: "results upload works for skipped cucumber tests (server)",
             xrayPassedStatus: "PASS",
-            xraySkippedStatus: "TODO",
+            xraySkippedStatus: "ABORTED",
         },
     ] as const) {
         it(test.title, async () => {
