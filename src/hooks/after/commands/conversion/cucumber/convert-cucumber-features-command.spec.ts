@@ -29,8 +29,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport.slice(0, 1)),
-                []
+                new ConstantCommand(logger, cucumberReport.slice(0, 1))
             );
             const features = await command.compute();
             expect(features).to.be.an("array").with.length(1);
@@ -54,8 +53,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport.slice(0, 1)),
-                []
+                new ConstantCommand(logger, cucumberReport.slice(0, 1))
             );
             expect(command.getParameters()).to.deep.eq({
                 cucumber: {
@@ -91,8 +89,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport.slice(0, 1)),
-                []
+                new ConstantCommand(logger, cucumberReport.slice(0, 1))
             );
             const features = await command.compute();
             expect(features).to.be.an("array").with.length(1);
@@ -117,8 +114,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport),
-                []
+                new ConstantCommand(logger, cucumberReport)
             );
             const features = await command.compute();
             expect(features).to.be.an("array").with.length(2);
@@ -146,7 +142,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport),
-                [],
                 new ConstantCommand(logger, "CYP-456")
             );
             const features = await command.compute();
@@ -175,7 +170,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
                 logger,
                 new ConstantCommand(logger, cucumberReport),
-                [],
                 new ConstantCommand(logger, "CYP-456")
             );
             const features = await command.compute();
@@ -201,8 +195,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: true },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport),
-                []
+                new ConstantCommand(logger, cucumberReport)
             );
             const features = await command.compute();
             expectToExist(features[0].elements[2].steps[1].embeddings);
@@ -231,8 +224,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport),
-                []
+                new ConstantCommand(logger, cucumberReport)
             );
             const features = await command.compute();
             expect(features[0].elements).to.have.length(2);
@@ -257,8 +249,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport),
-                []
+                new ConstantCommand(logger, cucumberReport)
             );
             const features = await command.compute();
             expect(features[0].elements[0].steps[0].embeddings).to.be.empty;
@@ -288,8 +279,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport),
-                []
+                new ConstantCommand(logger, cucumberReport)
             );
             const features = await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(
@@ -367,8 +357,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport),
-                []
+                new ConstantCommand(logger, cucumberReport)
             );
             const features = await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(
@@ -456,8 +445,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport),
-                []
+                new ConstantCommand(logger, cucumberReport)
             );
             const features = await command.compute();
             expect(features).to.have.length(0);

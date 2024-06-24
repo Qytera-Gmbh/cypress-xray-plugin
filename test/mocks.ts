@@ -120,6 +120,9 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
         return makeTransparent(stub(client));
     }
     const client: XrayClient & HasTestTypes = {
+        getTestResults(issueId: string) {
+            throw mockCalledUnexpectedlyError(issueId);
+        },
         getTestTypes: function (projectKey: string, ...issueKeys: string[]) {
             throw mockCalledUnexpectedlyError(projectKey, issueKeys);
         },

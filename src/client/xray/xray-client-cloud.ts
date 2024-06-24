@@ -208,7 +208,7 @@ export class XrayClientCloud extends AbstractXrayClient implements HasTestTypes 
                                 response.data.data.getTests.results.length;
                         }
                         for (const test of response.data.data.getTests.results) {
-                            if (test.testType?.name) {
+                            if (test.jira.key && test.testType?.name) {
                                 types[test.jira.key] = test.testType.name;
                             }
                         }

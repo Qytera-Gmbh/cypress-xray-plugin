@@ -1,6 +1,4 @@
-import { GherkinDocument } from "@cucumber/messages";
 import path from "path";
-import { CypressRunResultType, TestResultType } from "../../../../../types/cypress/cypress";
 import {
     InternalCucumberOptions,
     InternalJiraOptions,
@@ -23,7 +21,7 @@ import { Command, Computable } from "../../../../command";
 import { getScenarioTagRegex } from "../../../../preprocessor/commands/parsing/scenario";
 
 interface Parameters {
-    cucumber: Pick<InternalCucumberOptions, "featureFileExtension" | "prefixes">;
+    cucumber: Pick<InternalCucumberOptions, "prefixes">;
     jira: Pick<
         InternalJiraOptions,
         | "projectKey"
@@ -41,42 +39,20 @@ export class ConvertCucumberFeaturesCommand extends Command<
     Parameters
 > {
     private readonly cucumberResults: Computable<CucumberMultipartFeature[]>;
-    private readonly cypressResults: Computable<CypressRunResultType>;
-    private readonly gherkinDocuments: Computable<GherkinDocument>[];
     private readonly testExecutionIssueKey?: Computable<string | undefined>;
     constructor(
         parameters: Parameters,
         logger: Logger,
         cucumberResults: Computable<CucumberMultipartFeature[]>,
-        cypressResults: Computable<CypressRunResultType>,
-        gherkinDocuments: Computable<GherkinDocument>[],
         testExecutionIssueKey?: Computable<string | undefined>
     ) {
         super(parameters, logger);
         this.cucumberResults = cucumberResults;
-        this.cypressResults = cypressResults;
-        this.gherkinDocuments = gherkinDocuments;
         this.testExecutionIssueKey = testExecutionIssueKey;
     }
 
     protected async computeResult(): Promise<CucumberMultipartFeature[]> {
         const input = await this.cucumberResults.compute();
-        const cypressResults = await this.cypressResults.compute();
-        const gherkinData: GherkinDocument[] = [];
-        for (const document of this.gherkinDocuments) {
-            try {
-                gherkinData.push(await document.compute());
-            } catch (error: unknown) {
-                this.logger.message(
-                    Level.WARNING,
-                    dedent(`
-                        Failed to scan feature file for results upload.
-
-                          ${errorMessage(error)}
-                    `)
-                );
-            }
-        }
         const testExecutionIssueKey = await this.testExecutionIssueKey?.compute();
         const tests: CucumberMultipartFeature[] = [];
         for (const result of input) {
@@ -136,28 +112,6 @@ export class ConvertCucumberFeaturesCommand extends Command<
             }
         }
         return tests;
-    }
-
-    private getSkippedTests(
-        cypressResults: CypressRunResultType,
-        cucumberResults: CucumberMultipartFeature[],
-        gherkinDocuments: GherkinDocument[]
-    ): CucumberMultipartFeature[] {
-        const skippedTests: TestResultType[] = [];
-        for (const run of cypressResults.runs) {
-            if (run.spec.absolute.endsWith(this.parameters.cucumber.featureFileExtension)) {
-                for (const test of run.tests) {
-                    if (
-                        cucumberResults.every(
-                            (element) => element.name !== test.title[test.title.length - 1]
-                        )
-                    ) {
-                        skippedTests.push(test);
-                    }
-                }
-            }
-        }
-        return [];
     }
 }
 

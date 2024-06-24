@@ -1,4 +1,3 @@
-import { GherkinDocument } from "@cucumber/messages";
 import fs from "fs";
 import path from "path";
 import { EvidenceCollection } from "../../context";
@@ -9,7 +8,6 @@ import { CucumberMultipartFeature } from "../../types/xray/requests/import-execu
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Level, Logger } from "../../util/logging";
 import { Command, Computable, ComputableState } from "../command";
-import { ParseFeatureFileCommand } from "../preprocessor/commands/parse-feature-file-command";
 import { ConstantCommand } from "../util/commands/constant-command";
 import { FallbackCommand } from "../util/commands/fallback-command";
 import { AttachFilesCommand } from "../util/commands/jira/attach-files-command";
@@ -153,33 +151,6 @@ export function addUploadCommands(
     );
 }
 
-function addParseFeatureFileCommands(
-    runResult: CypressRunResultType,
-    options: InternalCypressXrayPluginOptions,
-    graph: ExecutableGraph<Command>,
-    logger: Logger
-): Computable<GherkinDocument>[] {
-    const featureFiles: Computable<GherkinDocument>[] = [];
-    if (options.cucumber?.featureFileExtension) {
-        for (const run of runResult.runs) {
-            if (run.spec.absolute.endsWith(options.cucumber.featureFileExtension)) {
-                const parseFeatureFileCommand = graph.findOrDefault(
-                    ParseFeatureFileCommand,
-                    () =>
-                        graph.place(
-                            new ParseFeatureFileCommand({ filePath: run.spec.absolute }, logger)
-                        ),
-                    (vertex) => {
-                        return vertex.getParameters().filePath === run.spec.absolute;
-                    }
-                );
-                featureFiles.push(parseFeatureFileCommand);
-            }
-        }
-    }
-    return featureFiles;
-}
-
 function getImportExecutionCypressCommand(
     cypressResultsCommand: Command<CypressRunResultType>,
     options: InternalCypressXrayPluginOptions,
@@ -292,7 +263,6 @@ function getImportExecutionCucumberCommand(
     );
     graph.connect(extractExecutionIssueTypeCommand, convertCucumberInfoCommand);
     graph.connect(cypressResultsCommand, convertCucumberInfoCommand);
-    const parseCommands = addParseFeatureFileCommands(runResult, options, graph, logger);
     const convertCucumberFeaturesCommand = graph.place(
         new ConvertCucumberFeaturesCommand(
             {
@@ -317,7 +287,6 @@ function getImportExecutionCucumberCommand(
             },
             logger,
             cucumberResultsCommand,
-            parseCommands,
             testExecutionIssueKeyCommand
         )
     );

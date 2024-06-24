@@ -44,8 +44,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             it("uses FAILED as default status name for failed tests", () => {
                 expect(getXrayStatus(Status.FAILED, true)).to.eq("FAILED");
             });
-            it("uses TODO as default status name for pending tests", () => {
-                expect(getXrayStatus(Status.PENDING, true)).to.eq("TODO");
+            it("uses TO DO as default status name for pending tests", () => {
+                expect(getXrayStatus(Status.PENDING, true)).to.eq("TO DO");
             });
             it("uses FAILED as default status name for skipped tests", () => {
                 expect(getXrayStatus(Status.SKIPPED, true)).to.eq("FAILED");
