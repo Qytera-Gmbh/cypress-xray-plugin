@@ -5,7 +5,7 @@ import {
 } from "../../../../../../types/cypress/12.0.0/api";
 import { CypressStatus } from "../../../../../../types/cypress/status";
 import { StringMap } from "../../../../../../types/util";
-import { getNativeTestIssueKey } from "../../../../util";
+import { getTestIssueKeys } from "../../../../util";
 import { toCypressStatus } from "./status";
 
 /**
@@ -198,8 +198,8 @@ function screenshotNameMatchesTestTitle(
     testTitle: string[]
 ): boolean {
     try {
-        const testTitleKey = getNativeTestIssueKey(testTitle[testTitle.length - 1], projectKey);
-        if (testTitleKey && screenshot.path.includes(testTitleKey)) {
+        const testTitleKeys = getTestIssueKeys(testTitle[testTitle.length - 1], projectKey);
+        if (testTitleKeys.some((key) => screenshot.path.includes(key))) {
             return true;
         }
     } catch (error: unknown) {

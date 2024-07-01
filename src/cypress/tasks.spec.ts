@@ -113,6 +113,40 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
         });
 
+        it("handles single outgoing requests for tests with multiple issue keys", () => {
+            const evidenceCollection = new SimpleEvidenceCollection();
+            const logger = getMockedLogger();
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
+            listener[tasks.PluginTask.OUTGOING_REQUEST]({
+                filename: "outgoingRequest.json",
+                request: {
+                    url: "https://example.org",
+                },
+                test: "This is a test CYP-123 CYP-124 CYP-125",
+            });
+            expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+                {
+                    contentType: "application/json",
+                    data: "ewogICJ1cmwiOiAiaHR0cHM6Ly9leGFtcGxlLm9yZyIKfQ==",
+                    filename: "outgoingRequest.json",
+                },
+            ]);
+            expect(evidenceCollection.getEvidence("CYP-124")).to.deep.eq([
+                {
+                    contentType: "application/json",
+                    data: "ewogICJ1cmwiOiAiaHR0cHM6Ly9leGFtcGxlLm9yZyIKfQ==",
+                    filename: "outgoingRequest.json",
+                },
+            ]);
+            expect(evidenceCollection.getEvidence("CYP-125")).to.deep.eq([
+                {
+                    contentType: "application/json",
+                    data: "ewogICJ1cmwiOiAiaHR0cHM6Ly9leGFtcGxlLm9yZyIKfQ==",
+                    filename: "outgoingRequest.json",
+                },
+            ]);
+        });
+
         it("handles multiple outgoing requests for tests with the same issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
             const logger = getMockedLogger();
@@ -279,6 +313,49 @@ describe(path.relative(process.cwd(), __filename), () => {
                 status: 200,
                 statusText: "Ok",
             });
+        });
+
+        it("handles single incoming responses for tests with multiple issue keys", () => {
+            const evidenceCollection = new SimpleEvidenceCollection();
+            const logger = getMockedLogger();
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
+            listener[tasks.PluginTask.INCOMING_RESPONSE]({
+                filename: "incomingResponse.json",
+                response: {
+                    allRequestResponses: [],
+                    body: "This is example text",
+                    duration: 12345,
+                    headers: {
+                        ["Content-Type"]: "text/plain",
+                    },
+                    isOkStatusCode: true,
+                    requestHeaders: { ["Accept"]: "text/plain" },
+                    status: 200,
+                    statusText: "Ok",
+                },
+                test: "This is a test CYP-123 CYP-124 CYP-125",
+            });
+            expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+                {
+                    contentType: "application/json",
+                    data: "ewogICJhbGxSZXF1ZXN0UmVzcG9uc2VzIjogW10sCiAgImJvZHkiOiAiVGhpcyBpcyBleGFtcGxlIHRleHQiLAogICJkdXJhdGlvbiI6IDEyMzQ1LAogICJoZWFkZXJzIjogewogICAgIkNvbnRlbnQtVHlwZSI6ICJ0ZXh0L3BsYWluIgogIH0sCiAgImlzT2tTdGF0dXNDb2RlIjogdHJ1ZSwKICAicmVxdWVzdEhlYWRlcnMiOiB7CiAgICAiQWNjZXB0IjogInRleHQvcGxhaW4iCiAgfSwKICAic3RhdHVzIjogMjAwLAogICJzdGF0dXNUZXh0IjogIk9rIgp9",
+                    filename: "incomingResponse.json",
+                },
+            ]);
+            expect(evidenceCollection.getEvidence("CYP-124")).to.deep.eq([
+                {
+                    contentType: "application/json",
+                    data: "ewogICJhbGxSZXF1ZXN0UmVzcG9uc2VzIjogW10sCiAgImJvZHkiOiAiVGhpcyBpcyBleGFtcGxlIHRleHQiLAogICJkdXJhdGlvbiI6IDEyMzQ1LAogICJoZWFkZXJzIjogewogICAgIkNvbnRlbnQtVHlwZSI6ICJ0ZXh0L3BsYWluIgogIH0sCiAgImlzT2tTdGF0dXNDb2RlIjogdHJ1ZSwKICAicmVxdWVzdEhlYWRlcnMiOiB7CiAgICAiQWNjZXB0IjogInRleHQvcGxhaW4iCiAgfSwKICAic3RhdHVzIjogMjAwLAogICJzdGF0dXNUZXh0IjogIk9rIgp9",
+                    filename: "incomingResponse.json",
+                },
+            ]);
+            expect(evidenceCollection.getEvidence("CYP-125")).to.deep.eq([
+                {
+                    contentType: "application/json",
+                    data: "ewogICJhbGxSZXF1ZXN0UmVzcG9uc2VzIjogW10sCiAgImJvZHkiOiAiVGhpcyBpcyBleGFtcGxlIHRleHQiLAogICJkdXJhdGlvbiI6IDEyMzQ1LAogICJoZWFkZXJzIjogewogICAgIkNvbnRlbnQtVHlwZSI6ICJ0ZXh0L3BsYWluIgogIH0sCiAgImlzT2tTdGF0dXNDb2RlIjogdHJ1ZSwKICAicmVxdWVzdEhlYWRlcnMiOiB7CiAgICAiQWNjZXB0IjogInRleHQvcGxhaW4iCiAgfSwKICAic3RhdHVzIjogMjAwLAogICJzdGF0dXNUZXh0IjogIk9rIgp9",
+                    filename: "incomingResponse.json",
+                },
+            ]);
         });
 
         it("handles multiple incoming responses for tests with the same issue key", () => {

@@ -49,18 +49,26 @@
             ],
             "tests": [
                 {
-                    "title": ["cypress xray plugin", "CYP-123 should throw an error CYP-456"],
+                    "title": ["cypress xray plugin", "CYP-123 CYP-124 CYP-125 example test"],
                     "state": "passed",
-                    "body": "function () {\r\n        cy.get(\"p\").should(\"exist\");\r\n    }",
+                    "body": "function () {\r\n        cy.get(\"a\").should(\"exist\");\r\n    }",
                     "displayError": null,
                     "attempts": [
                         {
                             "state": "passed",
                             "error": null,
-                            "videoTimestamp": 7910,
-                            "duration": 244,
-                            "startedAt": "2022-11-28T17:41:15.091Z",
-                            "screenshots": []
+                            "videoTimestamp": 8157,
+                            "duration": 185,
+                            "startedAt": "2022-11-28T17:41:15.338Z",
+                            "screenshots": [
+                                {
+                                    "name": null,
+                                    "takenAt": "2022-11-28T17:41:19.702Z",
+                                    "path": "./test/resources/small.png",
+                                    "height": 8,
+                                    "width": 8
+                                }
+                            ]
                         }
                     ]
                 }

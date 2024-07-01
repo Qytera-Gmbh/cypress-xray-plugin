@@ -119,8 +119,8 @@
                                     "name": null,
                                     "takenAt": "2022-11-28T17:41:19.702Z",
                                     "path": "./test/resources/small.png",
-                                    "height": 720,
-                                    "width": 1280
+                                    "height": 8,
+                                    "width": 8
                                 }
                             ]
                         }

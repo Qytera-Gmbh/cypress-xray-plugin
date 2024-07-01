@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { CypressRunResultType } from "../../types/cypress/cypress";
 import { dedent } from "../../util/dedent";
-import { containsCucumberTest, containsCypressTest, getNativeTestIssueKey } from "./util";
+import { containsCucumberTest, containsCypressTest, getTestIssueKeys } from "./util";
 
 describe(path.relative(process.cwd(), __filename), () => {
     describe(containsCypressTest.name, () => {
@@ -71,13 +71,21 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
     });
 
-    describe(getNativeTestIssueKey.name, () => {
+    describe(getTestIssueKeys.name, () => {
         it("extracts single test issue keys", () => {
-            expect(getNativeTestIssueKey("this is CYP-123 a test", "CYP")).to.eq("CYP-123");
+            expect(getTestIssueKeys("this is CYP-123 a test", "CYP")).to.deep.eq(["CYP-123"]);
+        });
+
+        it("extracts multiple test issue keys", () => {
+            expect(getTestIssueKeys("CYP-123 this is a CYP-456 test CYP-789", "CYP")).to.deep.eq([
+                "CYP-123",
+                "CYP-456",
+                "CYP-789",
+            ]);
         });
 
         it("logs warnings for missing test issue keys", () => {
-            expect(() => getNativeTestIssueKey("this is a test", "CYP")).to.throw(
+            expect(() => getTestIssueKeys("this is a test", "CYP")).to.throw(
                 dedent(`
                     Test: this is a test
 
@@ -86,26 +94,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                       You can target existing test issues by adding a corresponding issue key:
 
                         it("CYP-123 this is a test", () => {
-                          // ...
-                        });
-
-                      For more information, visit:
-                      - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                `)
-            );
-        });
-
-        it("logs warnings for multiple test issue keys", () => {
-            expect(() =>
-                getNativeTestIssueKey("CYP-123 this is a CYP-456 test CYP-789", "CYP")
-            ).to.throw(
-                dedent(`
-                    Test: CYP-123 this is a CYP-456 test CYP-789
-
-                      Multiple test keys found in title, the plugin cannot decide for you which one to use:
-
-                        it("CYP-123 this is a CYP-456 test CYP-789", () => {
-                            ^^^^^^^           ^^^^^^^      ^^^^^^^
                           // ...
                         });
 

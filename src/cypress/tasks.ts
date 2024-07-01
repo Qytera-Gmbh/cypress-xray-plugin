@@ -1,5 +1,5 @@
 import { EvidenceCollection } from "../context";
-import { getNativeTestIssueKey } from "../hooks/after/util";
+import { getTestIssueKeys } from "../hooks/after/util";
 import { encode } from "../util/base64";
 import { dedent } from "../util/dedent";
 import { errorMessage } from "../util/errors";
@@ -148,12 +148,14 @@ export class PluginTaskListener implements TaskListener {
         args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
     ) {
         try {
-            const issueKey = getNativeTestIssueKey(args.test, this.projectKey);
-            this.evidenceCollection.addEvidence(issueKey, {
-                contentType: "application/json",
-                data: encode(JSON.stringify(args.request, null, 2)),
-                filename: args.filename,
-            });
+            const issueKeys = getTestIssueKeys(args.test, this.projectKey);
+            for (const issueKey of issueKeys) {
+                this.evidenceCollection.addEvidence(issueKey, {
+                    contentType: "application/json",
+                    data: encode(JSON.stringify(args.request, null, 2)),
+                    filename: args.filename,
+                });
+            }
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {
                 this.logger.message(
@@ -176,12 +178,14 @@ export class PluginTaskListener implements TaskListener {
         args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
     ) {
         try {
-            const issueKey = getNativeTestIssueKey(args.test, this.projectKey);
-            this.evidenceCollection.addEvidence(issueKey, {
-                contentType: "application/json",
-                data: encode(JSON.stringify(args.response, null, 2)),
-                filename: args.filename,
-            });
+            const issueKeys = getTestIssueKeys(args.test, this.projectKey);
+            for (const issueKey of issueKeys) {
+                this.evidenceCollection.addEvidence(issueKey, {
+                    contentType: "application/json",
+                    data: encode(JSON.stringify(args.response, null, 2)),
+                    filename: args.filename,
+                });
+            }
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {
                 this.logger.message(
