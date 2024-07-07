@@ -11,6 +11,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("returns all affected issues", async () => {
             const logger = getMockedLogger();
             const command = new GetUpdatedIssuesCommand(
+                { filePath: "~/home/test/some.feature" },
                 logger,
                 new ConstantCommand(logger, ["CYP-123", "CYP-456", "CYP-789", "CYP-001"]),
                 new ConstantCommand(logger, {
@@ -27,9 +28,10 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
     });
 
-    it("warns about issues not updated by Jira", async () => {
+    it("warns about issues not updated by xray", async () => {
         const logger = getMockedLogger();
         const command = new GetUpdatedIssuesCommand(
+            { filePath: "~/home/test/some.feature" },
             logger,
             new ConstantCommand(logger, ["CYP-123", "CYP-756"]),
             new ConstantCommand(logger, {
@@ -41,27 +43,30 @@ describe(path.relative(process.cwd(), __filename), () => {
         expect(logger.message).to.have.been.calledWithExactly(
             Level.WARNING,
             dedent(`
-                Mismatch between feature file issue tags and updated Jira issues detected.
+                ~/home/test/some.feature
 
-                  Issues contained in feature file tags that have not been updated by Jira and may not exist:
+                  Mismatch between feature file issue tags and updated Jira issues detected.
 
-                    CYP-123
-                    CYP-756
+                    Issues contained in feature file tags that have not been updated by Xray and may not exist:
 
-                Make sure that:
-                - All issues present in feature file tags belong to existing issues.
-                - Your plugin tag prefix settings match those defined in Xray.
+                      CYP-123
+                      CYP-756
 
-                More information:
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                  Make sure that:
+                  - All issues present in feature file tags belong to existing issues.
+                  - Your plugin tag prefix settings match those defined in Xray.
+
+                  More information:
+                  - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                  - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
             `)
         );
     });
 
-    it("warns about unknown issues updated by Jira", async () => {
+    it("warns about unknown issues updated by xray", async () => {
         const logger = getMockedLogger();
         const command = new GetUpdatedIssuesCommand(
+            { filePath: "~/home/test/some.feature" },
             logger,
             new ConstantCommand(logger, []),
             new ConstantCommand(logger, {
@@ -73,20 +78,22 @@ describe(path.relative(process.cwd(), __filename), () => {
         expect(logger.message).to.have.been.calledWithExactly(
             Level.WARNING,
             dedent(`
-                Mismatch between feature file issue tags and updated Jira issues detected.
+                ~/home/test/some.feature
 
-                  Issues updated by Jira that do not exist in feature file tags and may have been created:
+                  Mismatch between feature file issue tags and updated Jira issues detected.
 
-                    CYP-123
-                    CYP-756
+                    Issues updated by Xray that do not exist in feature file tags and may have been created:
 
-                Make sure that:
-                - All issues present in feature file tags belong to existing issues.
-                - Your plugin tag prefix settings match those defined in Xray.
+                      CYP-123
+                      CYP-756
 
-                More information:
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                  Make sure that:
+                  - All issues present in feature file tags belong to existing issues.
+                  - Your plugin tag prefix settings match those defined in Xray.
+
+                  More information:
+                  - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                  - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
             `)
         );
     });
@@ -94,6 +101,7 @@ describe(path.relative(process.cwd(), __filename), () => {
     it("warns about issue key mismatches", async () => {
         const logger = getMockedLogger();
         const command = new GetUpdatedIssuesCommand(
+            { filePath: "~/home/test/some.feature" },
             logger,
             new ConstantCommand(logger, ["CYP-123", "CYP-756", "CYP-42"]),
             new ConstantCommand(logger, {
@@ -105,25 +113,27 @@ describe(path.relative(process.cwd(), __filename), () => {
         expect(logger.message).to.have.been.calledWithExactly(
             Level.WARNING,
             dedent(`
-                Mismatch between feature file issue tags and updated Jira issues detected.
+                ~/home/test/some.feature
 
-                  Issues contained in feature file tags that have not been updated by Jira and may not exist:
+                  Mismatch between feature file issue tags and updated Jira issues detected.
 
-                    CYP-123
-                    CYP-42
+                    Issues contained in feature file tags that have not been updated by Xray and may not exist:
 
-                  Issues updated by Jira that do not exist in feature file tags and may have been created:
+                      CYP-123
+                      CYP-42
 
-                    CYP-536
-                    CYP-552
+                    Issues updated by Xray that do not exist in feature file tags and may have been created:
 
-                Make sure that:
-                - All issues present in feature file tags belong to existing issues.
-                - Your plugin tag prefix settings match those defined in Xray.
+                      CYP-536
+                      CYP-552
 
-                More information:
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
+                  Make sure that:
+                  - All issues present in feature file tags belong to existing issues.
+                  - Your plugin tag prefix settings match those defined in Xray.
+
+                  More information:
+                  - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
+                  - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
             `)
         );
     });

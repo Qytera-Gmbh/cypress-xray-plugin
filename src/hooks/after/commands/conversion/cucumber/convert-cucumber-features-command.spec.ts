@@ -531,7 +531,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(features).to.have.length(0);
         });
 
-        it("skips scenarios with multiple tags", async () => {
+        it("includes scenarios with multiple tags", async () => {
             const logger = getMockedLogger();
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
@@ -539,28 +539,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            logger.message
-                .withArgs(
-                    Level.WARNING,
-                    dedent(`
-                        Skipping result upload for scenario: Doing stuff
-
-                        Multiple test issue keys found in tags of scenario: Doing stuff
-                        The plugin cannot decide for you which one to use:
-
-                        @TestName:CYP-123 @TestName:CYP-456
-                        ^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^
-                        Scenario: Doing stuff
-                        When I prepare something
-                        ...
-
-                        For more information, visit:
-                        - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                        - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
-                )
-                .onFirstCall()
-                .returns();
             const command = new ConvertCucumberFeaturesCommand(
                 {
                     cucumber: { prefixes: { test: "TestName:" } },
@@ -575,7 +553,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                 new ConstantCommand(logger, cucumberReport)
             );
             const features = await command.compute();
-            expect(features).to.have.length(0);
+            expect(features).to.have.length(1);
+            expect(features[0].elements[0].tags).to.deep.eq([
+                {
+                    line: 4,
+                    name: "@TestName:CYP-123",
+                },
+                {
+                    line: 4,
+                    name: "@TestName:CYP-456",
+                },
+            ]);
         });
     });
 });

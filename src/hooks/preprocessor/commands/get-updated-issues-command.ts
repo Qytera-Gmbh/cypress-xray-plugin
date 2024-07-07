@@ -5,16 +5,21 @@ import { Level, Logger } from "../../../util/logging";
 import { computeOverlap } from "../../../util/set";
 import { Command, Computable } from "../../command";
 
-export class GetUpdatedIssuesCommand extends Command<string[], null> {
+interface Parameters {
+    filePath: string;
+}
+
+export class GetUpdatedIssuesCommand extends Command<string[], Parameters> {
     private readonly expectedAffectedIssues: Computable<string[]>;
     private readonly importResponse: Computable<ImportFeatureResponse>;
 
     constructor(
+        parameters: Parameters,
         logger: Logger,
         expectedAffectedIssues: Computable<string[]>,
         importResponse: Computable<ImportFeatureResponse>
     ) {
-        super(null, logger);
+        super(parameters, logger);
         this.expectedAffectedIssues = expectedAffectedIssues;
         this.importResponse = importResponse;
     }
@@ -31,7 +36,7 @@ export class GetUpdatedIssuesCommand extends Command<string[], null> {
             const mismatchLinesJira: string[] = [];
             if (setOverlap.leftOnly.length > 0) {
                 mismatchLinesFeatures.push(
-                    "Issues contained in feature file tags that have not been updated by Jira and may not exist:"
+                    "Issues contained in feature file tags that have not been updated by Xray and may not exist:"
                 );
                 mismatchLinesFeatures.push("");
                 mismatchLinesFeatures.push(
@@ -40,7 +45,7 @@ export class GetUpdatedIssuesCommand extends Command<string[], null> {
             }
             if (setOverlap.rightOnly.length > 0) {
                 mismatchLinesJira.push(
-                    "Issues updated by Jira that do not exist in feature file tags and may have been created:"
+                    "Issues updated by Xray that do not exist in feature file tags and may have been created:"
                 );
                 mismatchLinesJira.push("");
                 mismatchLinesJira.push(...setOverlap.rightOnly.map((issueKey) => `  ${issueKey}`));
@@ -60,17 +65,19 @@ export class GetUpdatedIssuesCommand extends Command<string[], null> {
             this.logger.message(
                 Level.WARNING,
                 dedent(`
-                    Mismatch between feature file issue tags and updated Jira issues detected.
+                    ${this.parameters.filePath}
 
-                      ${mismatchLines}
+                      Mismatch between feature file issue tags and updated Jira issues detected.
 
-                    Make sure that:
-                    - All issues present in feature file tags belong to existing issues.
-                    - Your plugin tag prefix settings match those defined in Xray.
+                        ${mismatchLines}
 
-                    More information:
-                    - ${HELP.plugin.guides.targetingExistingIssues}
-                    - ${HELP.plugin.configuration.cucumber.prefixes}
+                      Make sure that:
+                      - All issues present in feature file tags belong to existing issues.
+                      - Your plugin tag prefix settings match those defined in Xray.
+
+                      More information:
+                      - ${HELP.plugin.guides.targetingExistingIssues}
+                      - ${HELP.plugin.configuration.cucumber.prefixes}
                 `)
             );
         }

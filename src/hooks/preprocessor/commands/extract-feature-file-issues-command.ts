@@ -2,11 +2,7 @@ import { Background, Comment, GherkinDocument, Scenario } from "@cucumber/messag
 import { FeatureFileIssueData } from "../../../types/cucumber/cucumber";
 import { CucumberOptions } from "../../../types/plugin";
 import { dedent } from "../../../util/dedent";
-import {
-    errorMessage,
-    missingTestKeyInCucumberScenarioError,
-    multipleTestKeysInCucumberScenarioError,
-} from "../../../util/errors";
+import { errorMessage, missingTestKeyInCucumberScenarioError } from "../../../util/errors";
 import { HELP } from "../../../util/help";
 import { Logger } from "../../../util/logging";
 import { Command, Computable } from "../../command";
@@ -168,7 +164,7 @@ export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueDat
 
                           Background: ${background.name.length > 0 ? background.name : "<no name>"}
 
-                            Multiple precondition issue keys found in comments, the plugin cannot decide for you which one to use:
+                            Multiple precondition issue keys found in the background's comments. Xray will only take one into account, you have to decide which one to use:
 
                               ${reconstructMultipleTagsBackground(
                                   background,
@@ -200,16 +196,16 @@ export class ExtractFeatureFileIssuesCommand extends Command<FeatureFileIssueDat
             if (issueKeys.length === 0) {
                 throw new Error(
                     dedent(`
-                    ${this.parameters.filePath}
+                        ${this.parameters.filePath}
 
-                      ${errorMessage(
-                          missingTestKeyInCucumberScenarioError(
-                              scenario,
-                              this.parameters.projectKey,
-                              this.parameters.displayCloudHelp
-                          )
-                      )}
-                `)
+                          ${errorMessage(
+                              missingTestKeyInCucumberScenarioError(
+                                  scenario,
+                                  this.parameters.projectKey,
+                                  this.parameters.displayCloudHelp
+                              )
+                          )}
+                    `)
                 );
             } else if (issueKeys.length > 1) {
                 throw new Error(
@@ -257,4 +253,49 @@ function reconstructMultipleTagsBackground(
     example.push(`  ${background.steps[0].keyword.trim()} ${background.steps[0].text}`);
     example.push("  ...");
     return example.join("\n");
+}
+
+function multipleTestKeysInCucumberScenarioError(
+    scenario: {
+        keyword: string;
+        name: string;
+        steps: readonly { keyword: string; text: string }[];
+    },
+    tags: readonly { name: string }[],
+    issueKeys: string[],
+    isCloudClient: boolean
+): Error {
+    const firstStepLine =
+        scenario.steps.length > 0
+            ? `${scenario.steps[0].keyword.trim()} ${scenario.steps[0].text}`
+            : "Given A step";
+    return new Error(
+        dedent(`
+            Scenario: ${scenario.name.length > 0 ? scenario.name : "<no name>"}
+
+              Multiple test issue keys found in the background's comments. Xray will only take one into account, you have to decide which one to use:
+
+                ${tags.map((tag) => tag.name).join(" ")}
+                ${tags
+                    .map((tag) => {
+                        if (issueKeys.some((key) => tag.name.endsWith(key))) {
+                            return "^".repeat(tag.name.length);
+                        }
+                        return " ".repeat(tag.name.length);
+                    })
+                    .join(" ")
+                    .trimEnd()}
+                ${scenario.keyword}: ${scenario.name}
+                  ${firstStepLine}
+                  ...
+
+              For more information, visit:
+              - ${
+                  isCloudClient
+                      ? HELP.xray.importCucumberTests.cloud
+                      : HELP.xray.importCucumberTests.server
+              }
+              - ${HELP.plugin.guides.targetingExistingIssues}
+        `)
+    );
 }

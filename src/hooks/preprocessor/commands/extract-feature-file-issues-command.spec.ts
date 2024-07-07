@@ -626,7 +626,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                           Scenario: <no name>
 
-                            Multiple test issue keys found in tags, the plugin cannot decide for you which one to use:
+                            Multiple test issue keys found in the background's comments. Xray will only take one into account, you have to decide which one to use:
 
                               @CYP-123 @Some @Other @CYP-456 @Tags
                               ^^^^^^^^              ^^^^^^^^
@@ -663,7 +663,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                           Background: A background
 
-                            Multiple precondition issue keys found in comments, the plugin cannot decide for you which one to use:
+                            Multiple precondition issue keys found in the background's comments. Xray will only take one into account, you have to decide which one to use:
 
                               Background: A background
                                 #@CYP-244
@@ -706,7 +706,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                           Background: <no name>
 
-                            Multiple precondition issue keys found in comments, the plugin cannot decide for you which one to use:
+                            Multiple precondition issue keys found in the background's comments. Xray will only take one into account, you have to decide which one to use:
 
                               Background:
                                 #@CYP-244
@@ -747,7 +747,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                           Scenario: A scenario
 
-                            Multiple test issue keys found in tags, the plugin cannot decide for you which one to use:
+                            Multiple test issue keys found in the background's comments. Xray will only take one into account, you have to decide which one to use:
 
                               @TestName:CYP-123 @Some @Other @TestName:CYP-456 @Tags
                               ^^^^^^^^^^^^^^^^^              ^^^^^^^^^^^^^^^^^
@@ -784,7 +784,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                           Background: A background
 
-                            Multiple precondition issue keys found in comments, the plugin cannot decide for you which one to use:
+                            Multiple precondition issue keys found in the background's comments. Xray will only take one into account, you have to decide which one to use:
 
                               Background: A background
                                 #@Precondition:CYP-244

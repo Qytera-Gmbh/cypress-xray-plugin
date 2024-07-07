@@ -94,7 +94,12 @@ export function addSynchronizationCommands(
     graph.connect(getCurrentLabelsCommand, importFeatureCommand);
     // Check which issues will need to have their backups restored.
     const getUpdatedIssuesCommand = graph.place(
-        new GetUpdatedIssuesCommand(logger, extractIssueKeysCommand, importFeatureCommand)
+        new GetUpdatedIssuesCommand(
+            { filePath: file.filePath },
+            logger,
+            extractIssueKeysCommand,
+            importFeatureCommand
+        )
     );
     graph.connect(extractIssueKeysCommand, getUpdatedIssuesCommand);
     graph.connect(importFeatureCommand, getUpdatedIssuesCommand);
