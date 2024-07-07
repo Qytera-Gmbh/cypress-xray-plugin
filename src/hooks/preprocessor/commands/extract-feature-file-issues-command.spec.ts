@@ -626,7 +626,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                           Scenario: <no name>
 
-                            Multiple test issue keys found in the background's comments. Xray will only take one into account, you have to decide which one to use:
+                            Multiple test issue keys found in the scenario's tags. Xray will only take one into account, you have to decide which one to use:
 
                               @CYP-123 @Some @Other @CYP-456 @Tags
                               ^^^^^^^^              ^^^^^^^^
@@ -747,7 +747,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                           Scenario: A scenario
 
-                            Multiple test issue keys found in the background's comments. Xray will only take one into account, you have to decide which one to use:
+                            Multiple test issue keys found in the scenario's tags. Xray will only take one into account, you have to decide which one to use:
 
                               @TestName:CYP-123 @Some @Other @TestName:CYP-456 @Tags
                               ^^^^^^^^^^^^^^^^^              ^^^^^^^^^^^^^^^^^
