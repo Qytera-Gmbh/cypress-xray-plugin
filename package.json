@@ -58,7 +58,7 @@
         "cypress": ">=10.0.0 < 14"
     },
     "optionalDependencies": {
-        "@badeball/cypress-cucumber-preprocessor": "^20.1.0"
+        "@badeball/cypress-cucumber-preprocessor": "^20.1.1"
     },
     "devDependencies": {
         "@bahmutov/cypress-esbuild-preprocessor": "^2.2.1",
