@@ -28,6 +28,51 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         describe("import execution", () => {
+            it("calls the correct endpoint", async () => {
+                getMockedLogger();
+                restClient.post.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        id: "12345",
+                        key: "CYP-123",
+                        self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await client.importExecution({
+                    info: {
+                        description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
+                        finishDate: "2022-11-28T17:41:19Z",
+                        project: "CYP",
+                        startDate: "2022-11-28T17:41:12Z",
+                        summary: "Test Execution Here",
+                    },
+                    testExecutionKey: "CYP-42",
+                    tests: [
+                        {
+                            finish: "2022-11-28T17:41:15Z",
+                            start: "2022-11-28T17:41:15Z",
+                            status: "PASSED",
+                        },
+                        {
+                            finish: "2022-11-28T17:41:15Z",
+                            start: "2022-11-28T17:41:15Z",
+                            status: "PASSED",
+                        },
+                        {
+                            finish: "2022-11-28T17:41:19Z",
+                            start: "2022-11-28T17:41:15Z",
+                            status: "FAILED",
+                        },
+                    ],
+                });
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://xray.cloud.getxray.app/api/v2/import/execution"
+                );
+            });
+
             it("should handle successful responses", async () => {
                 getMockedLogger();
                 restClient.post.onFirstCall().resolves({
@@ -69,9 +114,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     ],
                 });
                 expect(response).to.eq("CYP-123");
-                expect(restClient.post).to.have.been.calledOnceWith(
-                    "https://xray.cloud.getxray.app/api/v2/import/execution"
-                );
             });
 
             it("handles bad responses", async () => {
@@ -123,6 +165,38 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         describe("import execution cucumber multipart", () => {
+            it("calls the correct endpoint", async () => {
+                getMockedLogger();
+                restClient.post.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        id: "12345",
+                        key: "CYP-123",
+                        self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await client.importExecutionCucumberMultipart(
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
+                            "utf-8"
+                        )
+                    ) as CucumberMultipartFeature[],
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
+                            "utf-8"
+                        )
+                    ) as CucumberMultipartInfo
+                );
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://xray.cloud.getxray.app/api/v2/import/execution/cucumber/multipart"
+                );
+            });
+
             it("should handle successful responses", async () => {
                 getMockedLogger();
                 restClient.post.onFirstCall().resolves({
@@ -199,6 +273,44 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         describe("import feature", () => {
+            it("calls the correct endpoint", async () => {
+                restClient.post.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        errors: [],
+                        updatedOrCreatedPreconditions: [
+                            {
+                                id: "12345",
+                                key: "CYP-222",
+                                self: "https://devxray3.atlassian.net/rest/api/2/issue/12345",
+                            },
+                        ],
+                        updatedOrCreatedTests: [
+                            {
+                                id: "32495",
+                                key: "CYP-333",
+                                self: "https://devxray3.atlassian.net/rest/api/2/issue/32495",
+                            },
+                            {
+                                id: "32493",
+                                key: "CYP-555",
+                                self: "https://devxray3.atlassian.net/rest/api/2/issue/32493",
+                            },
+                        ],
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await client.importFeature(
+                    "./test/resources/features/taggedPrefixCorrect.feature",
+                    { projectKey: "CYP" }
+                );
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://xray.cloud.getxray.app/api/v2/import/feature?projectKey=CYP"
+                );
+            });
+
             it("handles successful responses", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -236,10 +348,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     errors: [],
                     updatedOrCreatedIssues: ["CYP-333", "CYP-555", "CYP-222"],
                 });
-
-                expect(restClient.post).to.have.been.calledOnceWith(
-                    "https://xray.cloud.getxray.app/api/v2/import/feature?projectKey=CYP"
-                );
             });
 
             it("handles responses with errors", async () => {
@@ -394,6 +502,46 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         describe("get test types", () => {
+            it("calls the correct endpoint", async () => {
+                restClient.post.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/responses/getTestsTypes.json",
+                            "utf-8"
+                        )
+                    ),
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await client.getTestTypes("CYP", "CYP-330", "CYP-331", "CYP-332", "CYP-337");
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://xray.cloud.getxray.app/api/v2/graphql",
+                    {
+                        query: dedent(`
+                                query($jql: String, $start: Int!, $limit: Int!) {
+                                    getTests(jql: $jql, start: $start, limit: $limit) {
+                                        total
+                                        start
+                                        results {
+                                            testType {
+                                                name
+                                                kind
+                                            }
+                                            jira(fields: ["key"])
+                                        }
+                                    }
+                                }`),
+                        variables: {
+                            jql: "project = 'CYP' AND issue in (CYP-330,CYP-331,CYP-332,CYP-337)",
+                            limit: 100,
+                            start: 0,
+                        },
+                    }
+                );
+            });
+
             it("should handle successful responses", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },

@@ -1,5 +1,7 @@
 import { AxiosResponse } from "axios";
 import FormData from "form-data";
+import { IssueUpdate } from "../../types/jira/responses/issue-update";
+import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
 import { GetTestExecutionResponseServer } from "../../types/xray/responses/graphql/get-test-execution";
@@ -13,7 +15,8 @@ import { XrayLicenseStatus } from "../../types/xray/responses/license";
 import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
 import { LOG, Level } from "../../util/logging";
-import { RequestConfigPost } from "../https/requests";
+import { HttpCredentials } from "../authentication/credentials";
+import { AxiosRestClient } from "../https/requests";
 import { AbstractXrayClient, XrayClient } from "./xray-client";
 
 export interface XrayClientServer extends XrayClient {
@@ -50,7 +53,21 @@ export interface XrayClientServer extends XrayClient {
     getXrayLicense(): Promise<XrayLicenseStatus>;
 }
 
-export class ServerClient extends AbstractXrayClient implements XrayClientServer {
+export class ServerClient
+    extends AbstractXrayClient<ImportFeatureResponseServer, ImportExecutionResponseServer>
+    implements XrayClientServer
+{
+    /**
+     * Construct a new client using the provided credentials.
+     *
+     * @param apiBaseUrl - the base URL for all HTTP requests
+     * @param credentials - the credentials to use during authentication
+     * @param httpClient - the HTTP client to use for dispatching requests
+     */
+    constructor(apiBaseUrl: string, credentials: HttpCredentials, httpClient: AxiosRestClient) {
+        super(`${apiBaseUrl}/rest/raven/latest`, credentials, httpClient);
+    }
+
     public async getTestExecution(
         testExecutionIssueKey: string,
         query?: Parameters<XrayClientServer["getTestExecution"]>[1]
@@ -66,7 +83,7 @@ export class ServerClient extends AbstractXrayClient implements XrayClientServer
                 try {
                     const testsResponse: AxiosResponse<GetTestExecutionResponseServer> =
                         await this.httpClient.get(
-                            `${this.apiBaseUrl}/rest/raven/latest/api/testexec/${testExecutionIssueKey}/test`,
+                            `${this.apiBaseUrl}/api/testexec/${testExecutionIssueKey}/test`,
                             {
                                 headers: {
                                     ...authorizationHeader,
@@ -103,7 +120,7 @@ export class ServerClient extends AbstractXrayClient implements XrayClientServer
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const licenseResponse: AxiosResponse<XrayLicenseStatus> = await this.httpClient.get(
-                    `${this.apiBaseUrl}/rest/raven/latest/api/xraylicense`,
+                    `${this.apiBaseUrl}/api/xraylicense`,
                     {
                         headers: {
                             ...authorizationHeader,
@@ -124,104 +141,143 @@ export class ServerClient extends AbstractXrayClient implements XrayClientServer
         }
     }
 
-    public getUrlImportExecution(): string {
-        return `${this.apiBaseUrl}/rest/raven/latest/import/execution`;
-    }
-
-    public getUrlImportFeature(projectKey: string): string {
-        return `${this.apiBaseUrl}/rest/raven/latest/import/feature?projectKey=${projectKey}`;
-    }
-
-    protected handleResponseImportExecution(response: ImportExecutionResponseServer): string {
-        return response.testExecIssue.key;
-    }
-
-    protected handleResponseImportFeature(
-        serverResponse: ImportFeatureResponseServer
-    ): ImportFeatureResponse {
-        const response: ImportFeatureResponse = {
-            errors: [],
-            updatedOrCreatedIssues: [],
-        };
-        if (Array.isArray(serverResponse)) {
-            const issueKeys = serverResponse.map((test: IssueDetails) => test.key);
-            response.updatedOrCreatedIssues.push(...issueKeys);
-            LOG.message(
-                Level.DEBUG,
-                dedent(`
-                    Successfully updated or created issues:
-
-                      ${issueKeys.join(", ")}
-                `)
-            );
-            return response;
-        }
-        // Occurs when scenarios cause errors in Xray, e.g. typos in keywords ('Scenariot').
-        if (serverResponse.message) {
-            response.errors.push(serverResponse.message);
-            LOG.message(
-                Level.DEBUG,
-                `Encountered an error during feature file import: ${serverResponse.message}`
-            );
-        }
-        if (serverResponse.testIssues && serverResponse.testIssues.length > 0) {
-            const testKeys = serverResponse.testIssues.map((test: IssueDetails) => test.key);
-            response.updatedOrCreatedIssues.push(...testKeys);
-            LOG.message(
-                Level.DEBUG,
-                dedent(`
-                    Successfully updated or created test issues:
-
-                      ${testKeys.join(", ")}
-                `)
-            );
-        }
-        if (serverResponse.preconditionIssues && serverResponse.preconditionIssues.length > 0) {
-            const preconditionKeys = serverResponse.preconditionIssues.map(
-                (test: IssueDetails) => test.key
-            );
-            response.updatedOrCreatedIssues.push(...preconditionKeys);
-            LOG.message(
-                Level.DEBUG,
-                dedent(`
-                    Successfully updated or created precondition issues:
-
-                      ${preconditionKeys.join(", ")}
-                `)
-            );
-        }
-        return response;
-    }
-
-    protected async prepareRequestImportExecutionCucumberMultipart(
+    protected onRequest(
+        event: "import-execution-cucumber-multipart",
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: CucumberMultipartInfo
-    ): Promise<RequestConfigPost<FormData>> {
-        const formData = new FormData();
-        const resultString = JSON.stringify(cucumberJson);
-        const infoString = JSON.stringify(cucumberInfo);
-        formData.append("result", resultString, {
-            filename: "results.json",
-        });
-        formData.append("info", infoString, {
-            filename: "info.json",
-        });
-        const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        return {
-            config: {
-                headers: {
-                    ...authorizationHeader,
-                    ...formData.getHeaders(),
-                },
-            },
-            data: formData,
-            url: `${this.apiBaseUrl}/rest/raven/latest/import/execution/cucumber/multipart`,
-        };
+    ): FormData;
+    protected onRequest(
+        event: "import-execution-multipart",
+        executionResults: XrayTestExecutionResults,
+        info: IssueUpdate
+    ): FormData;
+    protected onRequest(
+        event: "import-execution-cucumber-multipart" | "import-execution-multipart",
+        ...args: unknown[]
+    ) {
+        switch (event) {
+            case "import-execution-cucumber-multipart": {
+                // Cast valid because of overload.
+                const [cucumberJson, cucumberInfo] = args as [
+                    CucumberMultipartFeature[],
+                    CucumberMultipartInfo
+                ];
+                const formData = new FormData();
+                const resultString = JSON.stringify(cucumberJson);
+                const infoString = JSON.stringify(cucumberInfo);
+                formData.append("result", resultString, {
+                    filename: "results.json",
+                });
+                formData.append("info", infoString, {
+                    filename: "info.json",
+                });
+                return formData;
+            }
+            case "import-execution-multipart": {
+                // Cast valid because of overload.
+                const [executionResults, info] = args as [XrayTestExecutionResults[], IssueUpdate];
+                const formData = new FormData();
+                const resultString = JSON.stringify(executionResults);
+                const infoString = JSON.stringify(info);
+                formData.append("result", resultString, {
+                    filename: "results.json",
+                });
+                formData.append("info", infoString, {
+                    filename: "info.json",
+                });
+                return formData;
+            }
+        }
     }
 
-    protected handleResponseImportExecutionCucumberMultipart(
+    protected onResponse(
+        event: "import-feature",
+        response: ImportFeatureResponseServer
+    ): ImportFeatureResponse;
+    protected onResponse(
+        event:
+            | "import-execution-cucumber-multipart"
+            | "import-execution-multipart"
+            | "import-execution",
         response: ImportExecutionResponseServer
-    ): string {
-        return response.testExecIssue.key;
+    ): string;
+    protected onResponse(
+        event:
+            | "import-execution-cucumber-multipart"
+            | "import-execution-multipart"
+            | "import-execution"
+            | "import-feature",
+        ...args: unknown[]
+    ) {
+        switch (event) {
+            case "import-feature": {
+                // Cast valid because of overload.
+                const [serverResponse] = args as [ImportFeatureResponseServer];
+                const response: ImportFeatureResponse = {
+                    errors: [],
+                    updatedOrCreatedIssues: [],
+                };
+                if (Array.isArray(serverResponse)) {
+                    const issueKeys = serverResponse.map((test: IssueDetails) => test.key);
+                    response.updatedOrCreatedIssues.push(...issueKeys);
+                    LOG.message(
+                        Level.DEBUG,
+                        dedent(`
+                            Successfully updated or created issues:
+
+                              ${issueKeys.join(", ")}
+                        `)
+                    );
+                    return response;
+                }
+                // Occurs when scenarios cause errors in Xray, e.g. typos in keywords ('Scenariot').
+                if (serverResponse.message) {
+                    response.errors.push(serverResponse.message);
+                    LOG.message(
+                        Level.DEBUG,
+                        `Encountered an error during feature file import: ${serverResponse.message}`
+                    );
+                }
+                if (serverResponse.testIssues && serverResponse.testIssues.length > 0) {
+                    const testKeys = serverResponse.testIssues.map(
+                        (test: IssueDetails) => test.key
+                    );
+                    response.updatedOrCreatedIssues.push(...testKeys);
+                    LOG.message(
+                        Level.DEBUG,
+                        dedent(`
+                            Successfully updated or created test issues:
+
+                              ${testKeys.join(", ")}
+                        `)
+                    );
+                }
+                if (
+                    serverResponse.preconditionIssues &&
+                    serverResponse.preconditionIssues.length > 0
+                ) {
+                    const preconditionKeys = serverResponse.preconditionIssues.map(
+                        (test: IssueDetails) => test.key
+                    );
+                    response.updatedOrCreatedIssues.push(...preconditionKeys);
+                    LOG.message(
+                        Level.DEBUG,
+                        dedent(`
+                            Successfully updated or created precondition issues:
+
+                              ${preconditionKeys.join(", ")}
+                        `)
+                    );
+                }
+                return response;
+            }
+            case "import-execution-cucumber-multipart":
+            case "import-execution-multipart":
+            case "import-execution": {
+                // Cast valid because of overload.
+                const [serverResponse] = args as [ImportExecutionResponseServer];
+                return serverResponse.testExecIssue.key;
+            }
+        }
     }
 }

@@ -105,6 +105,12 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             ) {
                 throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
             },
+            importExecutionMultipart: function (
+                executionResults: XrayTestExecutionResults,
+                info: IssueUpdate
+            ) {
+                throw mockCalledUnexpectedlyError(executionResults, info);
+            },
             importFeature: function (
                 file: string,
                 query: {
@@ -138,6 +144,12 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             cucumberInfo: CucumberMultipartInfo
         ) {
             throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
+        },
+        importExecutionMultipart: function (
+            executionResults: XrayTestExecutionResults,
+            info: IssueUpdate
+        ) {
+            throw mockCalledUnexpectedlyError(executionResults, info);
         },
         importFeature: function (
             file: string,
