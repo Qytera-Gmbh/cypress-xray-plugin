@@ -11,6 +11,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    endedTestsAt: "2023-09-28 17:53:36",
                     startedTestsAt: "2023-09-28T15:51:36.000Z",
                 },
                 {
@@ -49,6 +50,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    endedTestsAt: "2023-09-28 17:53:36",
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
@@ -68,6 +70,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    endedTestsAt: "2023-09-28 17:53:36",
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
@@ -87,6 +90,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    endedTestsAt: "2023-09-28 17:53:36",
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
@@ -110,6 +114,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    endedTestsAt: "2023-09-28 17:53:36",
                     startedTestsAt: "2023-09-28T15:51:36.000Z",
                 },
                 {
@@ -142,6 +147,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    endedTestsAt: "2023-09-28 17:53:36",
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
@@ -161,6 +167,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    endedTestsAt: "2023-09-28 17:53:36",
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
@@ -180,6 +187,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    endedTestsAt: "2023-09-28 17:53:36",
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
@@ -202,6 +210,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Chromium",
                     browserVersion: "1.2.3",
                     cypressVersion: "13.2.0",
+                    endedTestsAt: "2023-09-28 17:53:36",
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {

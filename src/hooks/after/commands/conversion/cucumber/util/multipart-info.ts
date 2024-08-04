@@ -11,7 +11,7 @@ import { dedent } from "../../../../../../util/dedent";
  */
 export type RunData = Pick<
     CypressRunResultType,
-    "browserName" | "browserVersion" | "cypressVersion" | "startedTestsAt"
+    "browserName" | "browserVersion" | "cypressVersion" | "endedTestsAt" | "startedTestsAt"
 >;
 
 /**
