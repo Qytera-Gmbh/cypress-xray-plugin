@@ -213,15 +213,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.INFO, "Importing Cypress execution...");
-            const formData = new FormData();
-            const resultString = JSON.stringify(executionResults);
-            const infoString = JSON.stringify(info);
-            formData.append("results", resultString, {
-                filename: "results.json",
-            });
-            formData.append("info", infoString, {
-                filename: "info.json",
-            });
+            const formData = this.onRequest("import-execution-multipart", executionResults, info);
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
                 const response: AxiosResponse<ImportExecutionResponseType> =
