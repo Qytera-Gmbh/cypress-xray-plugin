@@ -730,6 +730,79 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         describe("get test results", () => {
+            it("calls the correct endpoint", async () => {
+                restClient.post.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        data: {
+                            getTestExecution: {
+                                tests: {
+                                    limit: 10,
+                                    results: [
+                                        {
+                                            issueId: "12345",
+                                            jira: {
+                                                key: "CYP-123",
+                                                summary: "included cucumber test",
+                                            },
+                                            status: {
+                                                color: "#95C160",
+                                                description: "The test run has passed",
+                                                final: true,
+                                                name: "PASSED",
+                                            },
+                                        },
+                                        {
+                                            issueId: "98765",
+                                            jira: {
+                                                key: "CYP-456",
+                                                summary: "skipped cucumber test",
+                                            },
+                                            status: {
+                                                color: "#afa30b",
+                                                description:
+                                                    "A custom skipped status for development purposes",
+                                                final: true,
+                                                name: "SKIPPED",
+                                            },
+                                        },
+                                    ],
+                                    start: 0,
+                                    total: 2,
+                                },
+                            },
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await client.getTestResults("13436");
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://xray.cloud.getxray.app/api/v2/graphql",
+                    {
+                        query: dedent(`
+                            query($issueId: String, $start: Int!, $limit: Int!) {
+                                getTestExecution(issueId: $issueId) {
+                                    tests(start: $start, limit: $limit) {
+                                        total
+                                        start
+                                        limit
+                                        results {
+                                            issueId
+                                            status {
+                                                name
+                                            }
+                                            jira(fields: ["key", "summary"])
+                                        }
+                                    }
+                                }
+                            }`),
+                        variables: { issueId: "13436", limit: 100, start: 0 },
+                    }
+                );
+            });
+
             it("handles successful responses", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
