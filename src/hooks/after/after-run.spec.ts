@@ -36,7 +36,7 @@ import { ConvertCucumberFeaturesCommand } from "./commands/conversion/cucumber/c
 import {
     ConvertCucumberInfoCloudCommand,
     ConvertCucumberInfoServerCommand,
-} from "./commands/conversion/cucumber/convert-cucumber-info-command";
+} from "./commands/conversion/cucumber/convert-info-command";
 import { AssertCypressConversionValidCommand } from "./commands/conversion/cypress/assert-cypress-conversion-valid-command";
 import { CombineCypressJsonCommand } from "./commands/conversion/cypress/combine-cypress-xray-command";
 import { ConvertCypressInfoCommand } from "./commands/conversion/cypress/convert-cypress-info-command";

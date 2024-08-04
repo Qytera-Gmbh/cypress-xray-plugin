@@ -5,7 +5,7 @@ import { ConstantCommand } from "../../../../util/commands/constant-command";
 import {
     ConvertCucumberInfoCloudCommand,
     ConvertCucumberInfoServerCommand,
-} from "./convert-cucumber-info-command";
+} from "./convert-info-command";
 
 describe(path.relative(process.cwd(), __filename), () => {
     describe(ConvertCucumberInfoServerCommand.name, () => {

@@ -4,7 +4,7 @@ import {
     InternalJiraOptions,
     InternalXrayOptions,
 } from "../../../../../types/plugin";
-import { CucumberMultipartInfo } from "../../../../../types/xray/requests/import-execution-cucumber-multipart-info";
+import { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
 import { Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 import {
@@ -28,10 +28,7 @@ interface Parameters {
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 
-export abstract class ConvertCucumberInfoCommand extends Command<
-    CucumberMultipartInfo,
-    Parameters
-> {
+export abstract class ConvertCucumberInfoCommand extends Command<MultipartInfo, Parameters> {
     private readonly testExecutionIssueType: Computable<IssueTypeDetails>;
     private readonly runInformation: Computable<RunData>;
     constructor(
@@ -45,7 +42,7 @@ export abstract class ConvertCucumberInfoCommand extends Command<
         this.runInformation = runInformation;
     }
 
-    protected async computeResult(): Promise<CucumberMultipartInfo> {
+    protected async computeResult(): Promise<MultipartInfo> {
         const testExecutionIssueType = await this.testExecutionIssueType.compute();
         const runInformation = await this.runInformation.compute();
         return await this.buildInfo(testExecutionIssueType, runInformation);
@@ -54,7 +51,7 @@ export abstract class ConvertCucumberInfoCommand extends Command<
     protected abstract buildInfo(
         testExecutionIssueType: IssueTypeDetails,
         runInformation: RunData
-    ): CucumberMultipartInfo | Promise<CucumberMultipartInfo>;
+    ): MultipartInfo | Promise<MultipartInfo>;
 }
 
 export class ConvertCucumberInfoServerCommand extends ConvertCucumberInfoCommand {
@@ -88,7 +85,7 @@ export class ConvertCucumberInfoServerCommand extends ConvertCucumberInfoCommand
     protected async buildInfo(
         testExecutionIssueType: IssueTypeDetails,
         runInformation: RunData
-    ): Promise<CucumberMultipartInfo> {
+    ): Promise<MultipartInfo> {
         const testExecutionIssueData: TestExecutionIssueDataServer = {
             description: this.parameters.jira.testExecutionIssueDescription,
             issuetype: testExecutionIssueType,
@@ -117,7 +114,7 @@ export class ConvertCucumberInfoCloudCommand extends ConvertCucumberInfoCommand 
     protected buildInfo(
         testExecutionIssueType: IssueTypeDetails,
         runInformation: RunData
-    ): CucumberMultipartInfo {
+    ): MultipartInfo {
         const testExecutionIssueData: TestExecutionIssueData = {
             description: this.parameters.jira.testExecutionIssueDescription,
             issuetype: testExecutionIssueType,
