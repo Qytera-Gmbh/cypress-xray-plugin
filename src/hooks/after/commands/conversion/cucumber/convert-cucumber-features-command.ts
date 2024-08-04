@@ -11,11 +11,7 @@ import {
     CucumberMultipartTag,
 } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
 import { dedent } from "../../../../../util/dedent";
-import {
-    errorMessage,
-    missingTestKeyInCucumberScenarioError,
-    multipleTestKeysInCucumberScenarioError,
-} from "../../../../../util/errors";
+import { errorMessage, missingTestKeyInCucumberScenarioError } from "../../../../../util/errors";
 import { Level, Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 import { getScenarioTagRegex } from "../../../../preprocessor/commands/parsing/scenario";
@@ -140,20 +136,6 @@ export class ConvertCucumberFeaturesCommand extends Command<
                 }
                 // We know the regex: the match will contain the value in the first group.
                 issueKeys.push(matches[1]);
-            }
-            if (issueKeys.length > 1) {
-                throw multipleTestKeysInCucumberScenarioError(
-                    {
-                        keyword: element.keyword,
-                        name: element.name,
-                        steps: element.steps.map((step: CucumberMultipartStep) => {
-                            return { keyword: step.keyword, text: step.name };
-                        }),
-                    },
-                    element.tags,
-                    issueKeys,
-                    this.parameters.useCloudTags === true
-                );
             }
         }
         if (issueKeys.length === 0) {

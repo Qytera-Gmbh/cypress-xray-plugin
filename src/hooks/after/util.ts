@@ -27,15 +27,15 @@ export function containsCucumberTest(
 }
 
 /**
- * Extracts a Jira issue key from a native Cypress test title, based on the provided project key.
+ * Extracts Jira issue keys from a Cypress test title, based on the provided project key.
  *
  * @param title - the test title
  * @param projectKey - the Jira projectk key
- * @returns the Jira issue key
- * @throws if the title contains zero or more than one issue key
+ * @returns the Jira issue keys
+ * @throws if the title contains zero issue keys
  */
 
-export function getNativeTestIssueKey(title: string, projectKey: string): string {
+export function getTestIssueKeys(title: string, projectKey: string): [string, ...string[]] {
     const regex = new RegExp(`(${projectKey}-\\d+)`, "g");
     const matches = title.match(regex);
     if (!matches) {
@@ -55,30 +55,7 @@ export function getNativeTestIssueKey(title: string, projectKey: string): string
                   - ${HELP.plugin.guides.targetingExistingIssues}
             `)
         );
-    } else if (matches.length === 1) {
-        return matches[0];
-    } else {
-        // Remove any circumflexes currently present in the title.
-        let indicatorLine = title.replaceAll("^", " ");
-        matches.forEach((issueKey: string) => {
-            indicatorLine = indicatorLine.replaceAll(issueKey, "^".repeat(issueKey.length));
-        });
-        // Replace everything but circumflexes with space.
-        indicatorLine = indicatorLine.replaceAll(/[^^]/g, " ");
-        throw new Error(
-            dedent(`
-                Test: ${title}
-
-                  Multiple test keys found in title, the plugin cannot decide for you which one to use:
-
-                    it("${title}", () => {
-                        ${indicatorLine}
-                      // ...
-                    });
-
-                  For more information, visit:
-                  - ${HELP.plugin.guides.targetingExistingIssues}
-            `)
-        );
     }
+    const [key, ...keys] = matches;
+    return [key, ...keys];
 }

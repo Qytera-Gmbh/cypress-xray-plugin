@@ -4,26 +4,16 @@
  * Generated using: https://transform.tools/graphql-to-typescript
  * Some type parameters have been added manually.
  */
-/** All built-in and custom scalars, mapped to their actual values */
-export interface Scalars {
-    Boolean: { input: boolean; output: boolean };
-    Float: { input: number; output: number };
-    ID: { input: string; output: string };
-    Int: { input: number; output: number };
-    JSON: { input: unknown; output: unknown };
-    String: { input: string; output: string };
-}
-
 export interface Test<JiraDataType> {
     __typename?: "Test";
     folder?: Folder;
-    gherkin?: Scalars["String"]["output"];
-    issueId?: Scalars["String"]["output"];
+    gherkin?: string;
+    issueId?: string;
     jira: JiraDataType;
-    lastModified?: Scalars["String"]["output"];
+    lastModified?: string;
     preconditions?: PreconditionResults<JiraDataType>;
-    projectId?: Scalars["String"]["output"];
-    scenarioType?: Scalars["String"]["output"];
+    projectId?: string;
+    scenarioType?: string;
     status?: TestStatusType;
     steps?: Step[];
     testExecutions?: TestExecutionResults<JiraDataType>;
@@ -31,452 +21,452 @@ export interface Test<JiraDataType> {
     testRuns?: TestRunResults<JiraDataType>;
     testSets?: TestSetResults<JiraDataType>;
     testType?: TestType;
-    unstructured?: Scalars["String"]["output"];
+    unstructured?: string;
 }
 
 export interface TestPreconditionsArgs {
-    issueIds?: Scalars["String"]["input"][];
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    issueIds?: string[];
+    limit: number;
+    start?: number;
 }
 
 export interface TestTestSetsArgs {
-    issueIds?: Scalars["String"]["input"][];
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    issueIds?: string[];
+    limit: number;
+    start?: number;
 }
 
 export interface TestTestPlansArgs {
-    issueIds?: Scalars["String"]["input"][];
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    issueIds?: string[];
+    limit: number;
+    start?: number;
 }
 
 export interface TestTestExecutionsArgs {
-    issueIds?: Scalars["String"]["input"][];
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    issueIds?: string[];
+    limit: number;
+    start?: number;
 }
 
 export interface TestTestRunsArgs {
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    limit: number;
+    start?: number;
 }
 
 export interface TestJiraArgs {
-    fields?: Scalars["String"]["input"][];
+    fields?: string[];
 }
 
 export interface TestStatusArgs {
-    environment?: Scalars["String"]["input"];
-    isFinal?: Scalars["Boolean"]["input"];
-    testPlan?: Scalars["String"]["input"];
-    version?: Scalars["String"]["input"];
+    environment?: string;
+    isFinal?: boolean;
+    testPlan?: string;
+    version?: string;
 }
 
 export interface TestType {
     __typename?: "TestType";
-    id?: Scalars["String"]["output"];
-    kind?: Scalars["String"]["output"];
-    name?: Scalars["String"]["output"];
+    id?: string;
+    kind?: string;
+    name?: string;
 }
 
 export interface Step {
     __typename?: "Step";
-    action?: Scalars["String"]["output"];
+    action?: string;
     attachments?: Attachment[];
-    callTestIssueId?: Scalars["String"]["output"];
+    callTestIssueId?: string;
     customFields?: CustomStepField[];
-    data?: Scalars["String"]["output"];
-    id?: Scalars["String"]["output"];
-    result?: Scalars["String"]["output"];
+    data?: string;
+    id?: string;
+    result?: string;
 }
 
 export interface Folder {
     __typename?: "Folder";
-    name?: Scalars["String"]["output"];
-    path?: Scalars["String"]["output"];
+    name?: string;
+    path?: string;
 }
 
 export interface PreconditionResults<JiraDataType> {
     __typename?: "PreconditionResults";
-    limit?: Scalars["Int"]["output"];
+    limit?: number;
     results?: Precondition<JiraDataType>[];
-    start?: Scalars["Int"]["output"];
-    total?: Scalars["Int"]["output"];
+    start?: number;
+    total?: number;
 }
 
 export interface TestSetResults<JiraDataType> {
     __typename?: "TestSetResults";
-    limit?: Scalars["Int"]["output"];
+    limit?: number;
     results?: TestSet<JiraDataType>[];
-    start?: Scalars["Int"]["output"];
-    total?: Scalars["Int"]["output"];
+    start?: number;
+    total?: number;
 }
 
 export interface TestPlanResults<JiraDataType> {
     __typename?: "TestPlanResults";
-    limit?: Scalars["Int"]["output"];
+    limit?: number;
     results?: TestPlan<JiraDataType>[];
-    start?: Scalars["Int"]["output"];
-    total?: Scalars["Int"]["output"];
+    start?: number;
+    total?: number;
 }
 
 export interface TestExecutionResults<JiraDataType> {
     __typename?: "TestExecutionResults";
-    limit?: Scalars["Int"]["output"];
+    limit?: number;
     results?: TestExecution<JiraDataType>[];
-    start?: Scalars["Int"]["output"];
-    total?: Scalars["Int"]["output"];
+    start?: number;
+    total?: number;
 }
 
 export interface TestRunResults<JiraDataType> {
     __typename?: "TestRunResults";
-    limit?: Scalars["Int"]["output"];
+    limit?: number;
     results?: TestRun<JiraDataType>[];
-    start?: Scalars["Int"]["output"];
-    total?: Scalars["Int"]["output"];
+    start?: number;
+    total?: number;
 }
 
 export interface TestStatusType {
     __typename?: "TestStatusType";
-    color?: Scalars["String"]["output"];
-    description?: Scalars["String"]["output"];
-    final?: Scalars["Boolean"]["output"];
-    name?: Scalars["String"]["output"];
+    color?: string;
+    description?: string;
+    final?: boolean;
+    name?: string;
 }
 
 export interface Attachment {
     __typename?: "Attachment";
-    downloadLink?: Scalars["String"]["output"];
-    filename?: Scalars["String"]["output"];
-    id?: Scalars["String"]["output"];
-    storedInJira?: Scalars["Boolean"]["output"];
+    downloadLink?: string;
+    filename?: string;
+    id?: string;
+    storedInJira?: boolean;
 }
 
 export interface CustomStepField {
     __typename?: "CustomStepField";
-    id?: Scalars["String"]["output"];
-    name?: Scalars["String"]["output"];
-    value?: Scalars["JSON"]["output"];
+    id?: string;
+    name?: string;
+    value?: unknown;
 }
 
 export interface Precondition<JiraDataType> {
     __typename?: "Precondition";
-    definition?: Scalars["String"]["output"];
+    definition?: string;
     folder?: Folder;
-    issueId?: Scalars["String"]["output"];
+    issueId?: string;
     jira?: JiraDataType;
-    lastModified?: Scalars["String"]["output"];
+    lastModified?: string;
     preconditionType?: TestType;
-    projectId?: Scalars["String"]["output"];
+    projectId?: string;
     tests?: TestResults<JiraDataType>;
 }
 
 export interface PreconditionTestsArgs {
-    issueIds?: Scalars["String"]["input"][];
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    issueIds?: string[];
+    limit: number;
+    start?: number;
 }
 
 export interface PreconditionJiraArgs {
-    fields?: Scalars["String"]["input"][];
+    fields?: string[];
 }
 
 export interface TestSet<JiraDataType> {
     __typename?: "TestSet";
-    issueId?: Scalars["String"]["output"];
+    issueId?: string;
     jira?: JiraDataType;
-    lastModified?: Scalars["String"]["output"];
-    projectId?: Scalars["String"]["output"];
+    lastModified?: string;
+    projectId?: string;
     tests?: TestResults<JiraDataType>;
 }
 
 export interface TestSetTestsArgs {
-    issueIds?: Scalars["String"]["input"][];
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    issueIds?: string[];
+    limit: number;
+    start?: number;
 }
 
 export interface TestSetJiraArgs {
-    fields?: Scalars["String"]["input"][];
+    fields?: string[];
 }
 
 export interface TestPlan<JiraDataType> {
     __typename?: "TestPlan";
     folders?: FolderResults;
-    issueId?: Scalars["String"]["output"];
+    issueId?: string;
     jira?: JiraDataType;
-    lastModified?: Scalars["String"]["output"];
-    projectId?: Scalars["String"]["output"];
+    lastModified?: string;
+    projectId?: string;
     testExecutions?: TestExecutionResults<JiraDataType>;
     tests?: TestResults<JiraDataType>;
 }
 
 export interface TestPlanTestsArgs {
-    issueIds?: Scalars["String"]["input"][];
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    issueIds?: string[];
+    limit: number;
+    start?: number;
 }
 
 export interface TestPlanTestExecutionsArgs {
-    issueIds?: Scalars["String"]["input"][];
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    issueIds?: string[];
+    limit: number;
+    start?: number;
 }
 
 export interface TestPlanJiraArgs {
-    fields?: Scalars["String"]["input"][];
+    fields?: string[];
 }
 
 export interface TestExecution<JiraDataType> {
     __typename?: "TestExecution";
-    issueId?: Scalars["String"]["output"];
+    issueId?: string;
     jira?: JiraDataType;
-    lastModified?: Scalars["String"]["output"];
-    projectId?: Scalars["String"]["output"];
-    testEnvironments?: Scalars["String"]["output"][];
+    lastModified?: string;
+    projectId?: string;
+    testEnvironments?: string[];
     testPlans?: TestPlanResults<JiraDataType>;
     testRuns?: TestRunResults<JiraDataType>;
     tests?: TestResults<JiraDataType>;
 }
 
 export interface TestExecutionTestsArgs {
-    issueIds?: Scalars["String"]["input"][];
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    issueIds?: string[];
+    limit: number;
+    start?: number;
 }
 
 export interface TestExecutionTestPlansArgs {
-    issueIds?: Scalars["String"]["input"][];
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    issueIds?: string[];
+    limit: number;
+    start?: number;
 }
 
 export interface TestExecutionTestRunsArgs {
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    limit: number;
+    start?: number;
 }
 
 export interface TestExecutionJiraArgs {
-    fields?: Scalars["String"]["input"][];
+    fields?: string[];
 }
 
 export interface TestRun<JiraDataType> {
     __typename?: "TestRun";
-    assigneeId?: Scalars["String"]["output"];
-    comment?: Scalars["String"]["output"];
+    assigneeId?: string;
+    comment?: string;
     customFields?: TestRunCustomFieldValue[];
-    defects?: Scalars["String"]["output"][];
+    defects?: string[];
     evidence?: Evidence[];
     examples?: Example[];
-    executedById?: Scalars["String"]["output"];
-    finishedOn?: Scalars["String"]["output"];
-    gherkin?: Scalars["String"]["output"];
-    id?: Scalars["String"]["output"];
+    executedById?: string;
+    finishedOn?: string;
+    gherkin?: string;
+    id?: string;
     iterations?: TestRunIterationResults;
-    lastModified?: Scalars["String"]["output"];
+    lastModified?: string;
     parameters?: TestRunParameter[];
     preconditions?: TestRunPreconditionResults<JiraDataType>;
     results?: Result[];
-    scenarioType?: Scalars["String"]["output"];
-    startedOn?: Scalars["String"]["output"];
+    scenarioType?: string;
+    startedOn?: string;
     status?: Status;
     steps?: TestRunStep[];
     test?: Test<JiraDataType>;
     testExecution?: TestExecution<JiraDataType>;
     testType?: TestType;
-    unstructured?: Scalars["String"]["output"];
+    unstructured?: string;
 }
 
 export interface TestRunPreconditionsArgs {
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    limit: number;
+    start?: number;
 }
 
 export interface TestRunIterationsArgs {
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    limit: number;
+    start?: number;
 }
 
 export interface TestResults<JiraDataType> {
     __typename?: "TestResults";
-    limit?: Scalars["Int"]["output"];
+    limit?: number;
     results?: Test<JiraDataType>[];
-    start?: Scalars["Int"]["output"];
-    total?: Scalars["Int"]["output"];
+    start?: number;
+    total?: number;
 }
 
 export interface FolderResults {
     __typename?: "FolderResults";
-    folders?: Scalars["JSON"]["output"];
-    issuesCount?: Scalars["Int"]["output"];
-    name?: Scalars["String"]["output"];
-    path?: Scalars["String"]["output"];
-    preconditionsCount?: Scalars["Int"]["output"];
-    testsCount?: Scalars["Int"]["output"];
+    folders?: unknown;
+    issuesCount?: number;
+    name?: string;
+    path?: string;
+    preconditionsCount?: number;
+    testsCount?: number;
 }
 
 export interface Status {
     __typename?: "Status";
-    color?: Scalars["String"]["output"];
-    coverageStatus?: Scalars["String"]["output"];
-    description?: Scalars["String"]["output"];
-    final?: Scalars["Boolean"]["output"];
-    name?: Scalars["String"]["output"];
+    color?: string;
+    coverageStatus?: string;
+    description?: string;
+    final?: boolean;
+    name?: string;
 }
 
 export interface Evidence {
     __typename?: "Evidence";
-    createdOn?: Scalars["String"]["output"];
-    downloadLink?: Scalars["String"]["output"];
-    filename?: Scalars["String"]["output"];
-    id?: Scalars["String"]["output"];
-    size?: Scalars["Int"]["output"];
-    storedInJira?: Scalars["Boolean"]["output"];
+    createdOn?: string;
+    downloadLink?: string;
+    filename?: string;
+    id?: string;
+    size?: number;
+    storedInJira?: boolean;
 }
 
 export interface TestRunStep {
     __typename?: "TestRunStep";
-    action?: Scalars["String"]["output"];
-    actualResult?: Scalars["String"]["output"];
+    action?: string;
+    actualResult?: string;
     attachments?: Attachment[];
-    comment?: Scalars["String"]["output"];
+    comment?: string;
     customFields?: TestRunCustomStepField[];
-    data?: Scalars["String"]["output"];
-    defects?: Scalars["String"]["output"][];
+    data?: string;
+    defects?: string[];
     evidence?: Evidence[];
-    id?: Scalars["String"]["output"];
-    result?: Scalars["String"]["output"];
+    id?: string;
+    result?: string;
     status?: StepStatus;
 }
 
 export interface Example {
     __typename?: "Example";
-    duration?: Scalars["Float"]["output"];
-    id?: Scalars["String"]["output"];
+    duration?: number;
+    id?: string;
     status?: StepStatus;
 }
 
 export interface Result {
     __typename?: "Result";
     backgrounds?: ResultsStep[];
-    duration?: Scalars["Float"]["output"];
+    duration?: number;
     examples?: ResultsExample[];
     hooks?: ResultsStep[];
-    log?: Scalars["String"]["output"];
-    name?: Scalars["String"]["output"];
+    log?: string;
+    name?: string;
     status?: StepStatus;
     steps?: ResultsStep[];
-    wasImported?: Scalars["String"]["output"];
+    wasImported?: string;
 }
 
 export interface TestRunPreconditionResults<JiraDataType> {
     __typename?: "TestRunPreconditionResults";
-    limit?: Scalars["Int"]["output"];
+    limit?: number;
     results?: TestRunPrecondition<JiraDataType>[];
-    start?: Scalars["Int"]["output"];
-    total?: Scalars["Int"]["output"];
+    start?: number;
+    total?: number;
 }
 
 export interface TestRunCustomFieldValue {
     __typename?: "TestRunCustomFieldValue";
-    id?: Scalars["String"]["output"];
-    name?: Scalars["String"]["output"];
-    values?: Scalars["JSON"]["output"];
+    id?: string;
+    name?: string;
+    values?: unknown;
 }
 
 export interface TestRunParameter {
     __typename?: "TestRunParameter";
-    name?: Scalars["String"]["output"];
-    value?: Scalars["String"]["output"];
+    name?: string;
+    value?: string;
 }
 
 export interface TestRunIterationResults {
     __typename?: "TestRunIterationResults";
-    limit?: Scalars["Int"]["output"];
+    limit?: number;
     results?: TestRunIteration[];
-    start?: Scalars["Int"]["output"];
-    total?: Scalars["Int"]["output"];
+    start?: number;
+    total?: number;
 }
 
 export interface StepStatus {
     __typename?: "StepStatus";
-    color?: Scalars["String"]["output"];
-    description?: Scalars["String"]["output"];
-    name?: Scalars["String"]["output"];
+    color?: string;
+    description?: string;
+    name?: string;
     testStatus?: Status;
 }
 
 export interface TestRunCustomStepField {
     __typename?: "TestRunCustomStepField";
-    id?: Scalars["String"]["output"];
-    name?: Scalars["String"]["output"];
-    value?: Scalars["JSON"]["output"];
+    id?: string;
+    name?: string;
+    value?: unknown;
 }
 
 export interface ResultsExample {
     __typename?: "ResultsExample";
     backgrounds?: ResultsStep[];
-    duration?: Scalars["Float"]["output"];
+    duration?: number;
     hooks?: ResultsStep[];
     status?: StepStatus;
     steps?: ResultsStep[];
-    wasImported?: Scalars["String"]["output"];
+    wasImported?: string;
 }
 
 export interface ResultsStep {
     __typename?: "ResultsStep";
-    duration?: Scalars["Float"]["output"];
+    duration?: number;
     embeddings?: ResultsEmbedding[];
-    error?: Scalars["String"]["output"];
-    keyword?: Scalars["String"]["output"];
-    log?: Scalars["String"]["output"];
-    name?: Scalars["String"]["output"];
+    error?: string;
+    keyword?: string;
+    log?: string;
+    name?: string;
     status?: StepStatus;
 }
 
 export interface TestRunPrecondition<JiraDataType> {
     __typename?: "TestRunPrecondition";
-    definition?: Scalars["String"]["output"];
+    definition?: string;
     preconditionRef?: Precondition<JiraDataType>;
 }
 
 export interface TestRunIteration {
     __typename?: "TestRunIteration";
     parameters?: TestRunParameter[];
-    rank?: Scalars["String"]["output"];
+    rank?: string;
     status?: StepStatus;
     stepResults?: TestRunIterationStepResults;
 }
 
 export interface TestRunIterationStepResultsArgs {
-    limit: Scalars["Int"]["input"];
-    start?: Scalars["Int"]["input"];
+    limit: number;
+    start?: number;
 }
 
 export interface ResultsEmbedding {
     __typename?: "ResultsEmbedding";
-    data?: Scalars["String"]["output"];
-    downloadLink?: Scalars["String"]["output"];
-    filename?: Scalars["String"]["output"];
-    mimeType?: Scalars["String"]["output"];
+    data?: string;
+    downloadLink?: string;
+    filename?: string;
+    mimeType?: string;
 }
 
 export interface TestRunIterationStepResults {
     __typename?: "TestRunIterationStepResults";
-    limit?: Scalars["Int"]["output"];
+    limit?: number;
     results?: TestRunIterationStepResult[];
-    start?: Scalars["Int"]["output"];
-    total?: Scalars["Int"]["output"];
+    start?: number;
+    total?: number;
 }
 
 export interface TestRunIterationStepResult {
     __typename?: "TestRunIterationStepResult";
-    actualResult?: Scalars["String"]["output"];
-    comment?: Scalars["String"]["output"];
-    defects?: Scalars["String"]["output"][];
+    actualResult?: string;
+    comment?: string;
+    defects?: string[];
     evidence?: Evidence[];
-    id?: Scalars["String"]["output"];
+    id?: string;
     status?: StepStatus;
 }

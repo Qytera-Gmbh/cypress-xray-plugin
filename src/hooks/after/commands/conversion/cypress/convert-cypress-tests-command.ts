@@ -1,5 +1,5 @@
 import path from "node:path";
-import { gte, lt } from "semver";
+import { lt } from "semver";
 import { EvidenceCollection } from "../../../../../context";
 import { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
 import { CypressRunResultType } from "../../../../../types/cypress/cypress";
@@ -20,7 +20,7 @@ import { normalizedFilename } from "../../../../../util/files";
 import { Level, Logger } from "../../../../../util/logging";
 import { truncateIsoTime } from "../../../../../util/time";
 import { Command, Computable } from "../../../../command";
-import { getNativeTestIssueKey } from "../../../util";
+import { getTestIssueKeys } from "../../../util";
 import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./util/run";
 import { getXrayStatus } from "./util/status";
 
@@ -42,20 +42,20 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
 
     protected async computeResult(): Promise<[XrayTest, ...XrayTest[]]> {
         const results = await this.results.compute();
-        const testRunData = await this.getTestRunData(results);
+        const version = lt(results.cypressVersion, "13.0.0") ? "<13" : ">=13";
+        const testRunData = await this.getTestRunData(results, version);
         const xrayTests: XrayTest[] = [];
         testRunData.forEach((testData: TestRunData) => {
             try {
-                const issueKey = getNativeTestIssueKey(
-                    testData.title,
-                    this.parameters.jira.projectKey
-                );
-                const test: XrayTest = this.getTest(
-                    testData,
-                    issueKey,
-                    this.getXrayEvidence(issueKey, testData)
-                );
-                xrayTests.push(test);
+                const issueKeys = getTestIssueKeys(testData.title, this.parameters.jira.projectKey);
+                for (const issueKey of issueKeys) {
+                    const test: XrayTest = this.getTest(
+                        testData,
+                        issueKey,
+                        this.getXrayEvidence(issueKey, testData, version)
+                    );
+                    xrayTests.push(test);
+                }
             } catch (error: unknown) {
                 this.logger.message(
                     Level.WARNING,
@@ -79,7 +79,10 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         return [xrayTests[0], ...xrayTests.slice(1)];
     }
 
-    private async getTestRunData(runResults: CypressRunResultType): Promise<TestRunData[]> {
+    private async getTestRunData(
+        runResults: CypressRunResultType,
+        version: "<13" | ">=13"
+    ): Promise<TestRunData[]> {
         const testRunData: TestRunData[] = [];
         const conversionPromises: [string, Promise<TestRunData>][] = [];
         const cypressRuns = runResults.runs.filter((run) => {
@@ -91,7 +94,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         if (cypressRuns.length === 0) {
             throw new Error("Failed to extract test run data: Only Cucumber tests were executed");
         }
-        if (lt(runResults.cypressVersion, "13.0.0")) {
+        if (version === "<13") {
             for (const run of cypressRuns as RunResult_V12[]) {
                 getTestRunData_V12(run).forEach((promise, index) =>
                     conversionPromises.push([run.tests[index].title.join(" "), promise])
@@ -123,7 +126,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 );
             }
         });
-        if (this.parameters.xray.uploadScreenshots && gte(runResults.cypressVersion, "13.0.0")) {
+        if (this.parameters.xray.uploadScreenshots && version === ">=13") {
             for (const run of runResults.runs as CypressCommandLine.RunResult[]) {
                 if (
                     this.parameters.cucumber?.featureFileExtension &&
@@ -173,11 +176,18 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         return xrayTest;
     }
 
-    private getXrayEvidence(issueKey: string, testRunData: TestRunData): XrayEvidenceItem[] {
+    private getXrayEvidence(
+        issueKey: string,
+        testRunData: TestRunData,
+        version: "<13" | ">=13"
+    ): XrayEvidenceItem[] {
         const evidence: XrayEvidenceItem[] = [];
         if (this.parameters.xray.uploadScreenshots) {
             for (const screenshot of testRunData.screenshots) {
                 let filename = path.basename(screenshot.filepath);
+                if (version === ">=13" && !filename.includes(issueKey)) {
+                    continue;
+                }
                 if (this.parameters.plugin.normalizeScreenshotNames) {
                     filename = normalizedFilename(filename);
                 }

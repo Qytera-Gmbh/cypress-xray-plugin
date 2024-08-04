@@ -9,27 +9,27 @@ import { LOCAL_SERVER } from "./server";
 import { getCreatedTestExecutionIssueKey } from "./util";
 
 // ============================================================================================== //
-// https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/282
+// https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/328
 // ============================================================================================== //
 
 describe(path.relative(process.cwd(), __filename), () => {
     for (const test of [
         {
             cucumberTestPrefix: "TestName:",
+            cucumberTests: ["CYP-969", "CYP-970"],
+            manualTests: ["CYP-967", "CYP-968"],
             projectKey: "CYP",
-            scenarioIssueKey: "CYP-756",
             service: "cloud",
-            testIssueKey: "CYP-757",
-            title: "results upload works for mixed cypress and cucumber projects (cloud)",
+            title: "results upload works for tests with multiple issue keys (cloud)",
             xrayPassedStatus: "PASSED",
         },
         {
             cucumberTestPrefix: "TEST_",
+            cucumberTests: ["CYPLUG-342", "CYPLUG-343"],
+            manualTests: ["CYPLUG-340", "CYPLUG-341"],
             projectKey: "CYPLUG",
-            scenarioIssueKey: "CYPLUG-165",
             service: "server",
-            testIssueKey: "CYPLUG-166",
-            title: "results upload works for mixed cypress and cucumber projects (server)",
+            title: "results upload works for tests with multiple issue keys (server)",
             xrayPassedStatus: "EXECUTING", // Must be a non-final status (I don't have permission)
         },
     ] as const) {
@@ -101,7 +101,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             content: dedent(`
                                 import { Given } from "@badeball/cypress-cucumber-preprocessor";
 
-                                Given("Something", () => {
+                                Given("a step", () => {
                                     expect(true).to.be.true;
                                 });
                             `),
@@ -112,7 +112,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 testFiles: [
                     {
                         content: dedent(`
-                            describe("${test.testIssueKey} template spec", () => {
+                            describe("${test.manualTests.join(" ")} template spec", () => {
                                 it("passes", () => {
                                     cy.visit("${LOCAL_SERVER.url}");
                                 });
@@ -124,9 +124,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                         content: dedent(`
                             Feature: Testing a single scenario
 
-                                @${test.cucumberTestPrefix}${test.scenarioIssueKey}
+                                ${test.cucumberTests
+                                    .map((key) => `@${test.cucumberTestPrefix}${key}`)
+                                    .join(" ")}
                                 Scenario: Single scenario test
-                                    Given Something
+                                    Given a step
                         `),
                         fileName: "cucumber.feature",
                     },
@@ -135,7 +137,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             const output = runCypress(project.projectDirectory, {
                 env: {
-                    ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 282",
+                    ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 328",
                 },
                 includeDefaultEnv: test.service,
             });
@@ -156,8 +158,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     searchResult[0].id
                 );
                 expect(testResults.map((result) => result.jira.key)).to.deep.eq([
-                    test.testIssueKey,
-                    test.scenarioIssueKey,
+                    test.manualTests[0],
+                    test.manualTests[1],
+                    test.cucumberTests[0],
+                    test.cucumberTests[1],
                 ]);
             }
 
@@ -167,8 +171,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     test.service
                 ).getTestExecution(testExecutionIssueKey);
                 expect(testResults.map((result) => result.key)).to.deep.eq([
-                    test.testIssueKey,
-                    test.scenarioIssueKey,
+                    test.manualTests[0],
+                    test.manualTests[1],
+                    test.cucumberTests[0],
+                    test.cucumberTests[1],
                 ]);
             }
         });
