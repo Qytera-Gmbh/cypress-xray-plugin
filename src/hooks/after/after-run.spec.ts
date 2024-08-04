@@ -31,8 +31,8 @@ import { ImportExecutionCypressCommand } from "../util/commands/xray/import-exec
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
 import { addUploadCommands } from "./after-run";
 import {
-    ConvertCucumberInfoCloudCommand,
-    ConvertCucumberInfoServerCommand,
+    ConvertInfoCloudCommand,
+    ConvertInfoServerCommand,
 } from "./commands/conversion/convert-info-command";
 import { AssertCucumberConversionValidCommand } from "./commands/conversion/cucumber/assert-cucumber-conversion-valid-command";
 import { CombineCucumberMultipartCommand } from "./commands/conversion/cucumber/combine-cucumber-multipart-command";
@@ -338,10 +338,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         extractExecutionIssueTypeCommand,
                         ExtractExecutionIssueTypeCommand
                     );
-                    assertIsInstanceOf(
-                        convertCucumberInfoCommand,
-                        ConvertCucumberInfoServerCommand
-                    );
+                    assertIsInstanceOf(convertCucumberInfoCommand, ConvertInfoServerCommand);
                     assertIsInstanceOf(
                         convertCucumberFeaturesCommand,
                         ConvertCucumberFeaturesCommand
@@ -681,7 +678,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectKey: "CYP",
                         testExecutionIssueType: "Test Execution",
                     });
-                    assertIsInstanceOf(convertCucumberInfoCommand, ConvertCucumberInfoCloudCommand);
+                    assertIsInstanceOf(convertCucumberInfoCommand, ConvertInfoCloudCommand);
                     expect(convertCucumberInfoCommand.getParameters()).to.deep.eq({
                         cucumber: options.cucumber,
                         jira: options.jira,
@@ -759,7 +756,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         extractExecutionIssueTypeCommand,
                         ExtractExecutionIssueTypeCommand
                     );
-                    assertIsInstanceOf(convertCucumberInfoCommand, ConvertCucumberInfoCloudCommand);
+                    assertIsInstanceOf(convertCucumberInfoCommand, ConvertInfoCloudCommand);
                     assertIsInstanceOf(
                         convertCucumberFeaturesCommand,
                         ConvertCucumberFeaturesCommand
@@ -1059,7 +1056,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     extractExecutionIssueTypeCommand,
                     ExtractExecutionIssueTypeCommand
                 );
-                assertIsInstanceOf(convertCucumberInfoCommand, ConvertCucumberInfoServerCommand);
+                assertIsInstanceOf(convertCucumberInfoCommand, ConvertInfoServerCommand);
                 assertIsInstanceOf(convertCucumberFeaturesCommand, ConvertCucumberFeaturesCommand);
                 assertIsInstanceOf(
                     combineCucumberMultipartCommand,

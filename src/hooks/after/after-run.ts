@@ -18,9 +18,9 @@ import { ImportExecutionCypressCommand } from "../util/commands/xray/import-exec
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
 import { createExtractFieldIdCommand } from "../util/util";
 import {
-    ConvertCucumberInfoCloudCommand,
-    ConvertCucumberInfoCommand,
-    ConvertCucumberInfoServerCommand,
+    ConvertInfoCloudCommand,
+    ConvertInfoCommand,
+    ConvertInfoServerCommand,
 } from "./commands/conversion/convert-info-command";
 import { AssertCucumberConversionValidCommand } from "./commands/conversion/cucumber/assert-cucumber-conversion-valid-command";
 import { CombineCucumberMultipartCommand } from "./commands/conversion/cucumber/combine-cucumber-multipart-command";
@@ -342,10 +342,10 @@ function getConvertCucumberInfoCommand(
     logger: Logger,
     executionIssueType: Computable<IssueTypeDetails>,
     cypressResults: Computable<CypressRunResultType>
-): ConvertCucumberInfoCommand {
+): ConvertInfoCommand {
     if (clients.kind === "cloud") {
         return graph.place(
-            new ConvertCucumberInfoCloudCommand(
+            new ConvertInfoCloudCommand(
                 { cucumber: options.cucumber, jira: options.jira, xray: options.xray },
                 logger,
                 executionIssueType,
@@ -381,7 +381,7 @@ function getConvertCucumberInfoCommand(
         }
     }
     const convertCucumberInfoCommand = graph.place(
-        new ConvertCucumberInfoServerCommand(
+        new ConvertInfoServerCommand(
             { cucumber: options.cucumber, jira: options.jira, xray: options.xray },
             logger,
             executionIssueType,

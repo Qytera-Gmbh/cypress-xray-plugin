@@ -28,7 +28,7 @@ interface Parameters {
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 
-export abstract class ConvertCucumberInfoCommand extends Command<MultipartInfo, Parameters> {
+export abstract class ConvertInfoCommand extends Command<MultipartInfo, Parameters> {
     private readonly testExecutionIssueType: Computable<IssueTypeDetails>;
     private readonly runInformation: Computable<RunData>;
     constructor(
@@ -54,7 +54,7 @@ export abstract class ConvertCucumberInfoCommand extends Command<MultipartInfo, 
     ): MultipartInfo | Promise<MultipartInfo>;
 }
 
-export class ConvertCucumberInfoServerCommand extends ConvertCucumberInfoCommand {
+export class ConvertInfoServerCommand extends ConvertInfoCommand {
     private readonly testPlanId?: Computable<string>;
     private readonly testEnvironmentsId?: Computable<string>;
     constructor(
@@ -110,7 +110,7 @@ export class ConvertCucumberInfoServerCommand extends ConvertCucumberInfoCommand
     }
 }
 
-export class ConvertCucumberInfoCloudCommand extends ConvertCucumberInfoCommand {
+export class ConvertInfoCloudCommand extends ConvertInfoCommand {
     protected buildInfo(
         testExecutionIssueType: IssueTypeDetails,
         runInformation: RunData
