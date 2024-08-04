@@ -17,14 +17,14 @@ import { ImportExecutionCucumberCommand } from "../util/commands/xray/import-exe
 import { ImportExecutionCypressCommand } from "../util/commands/xray/import-execution-cypress-command";
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
 import { createExtractFieldIdCommand } from "../util/util";
-import { AssertCucumberConversionValidCommand } from "./commands/conversion/cucumber/assert-cucumber-conversion-valid-command";
-import { CombineCucumberMultipartCommand } from "./commands/conversion/cucumber/combine-cucumber-multipart-command";
-import { ConvertCucumberFeaturesCommand } from "./commands/conversion/cucumber/convert-cucumber-features-command";
 import {
     ConvertCucumberInfoCloudCommand,
     ConvertCucumberInfoCommand,
     ConvertCucumberInfoServerCommand,
-} from "./commands/conversion/cucumber/convert-info-command";
+} from "./commands/conversion/convert-info-command";
+import { AssertCucumberConversionValidCommand } from "./commands/conversion/cucumber/assert-cucumber-conversion-valid-command";
+import { CombineCucumberMultipartCommand } from "./commands/conversion/cucumber/combine-cucumber-multipart-command";
+import { ConvertCucumberFeaturesCommand } from "./commands/conversion/cucumber/convert-cucumber-features-command";
 import { AssertCypressConversionValidCommand } from "./commands/conversion/cypress/assert-cypress-conversion-valid-command";
 import { CombineCypressJsonCommand } from "./commands/conversion/cypress/combine-cypress-xray-command";
 import { ConvertCypressInfoCommand } from "./commands/conversion/cypress/convert-cypress-info-command";
