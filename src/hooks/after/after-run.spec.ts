@@ -39,7 +39,6 @@ import { CombineCucumberMultipartCommand } from "./commands/conversion/cucumber/
 import { ConvertCucumberFeaturesCommand } from "./commands/conversion/cucumber/convert-cucumber-features-command";
 import { AssertCypressConversionValidCommand } from "./commands/conversion/cypress/assert-cypress-conversion-valid-command";
 import { CombineCypressJsonCommand } from "./commands/conversion/cypress/combine-cypress-xray-command";
-import { ConvertCypressInfoCommand } from "./commands/conversion/cypress/convert-cypress-info-command";
 import { ConvertCypressTestsCommand } from "./commands/conversion/cypress/convert-cypress-tests-command";
 import { ExtractExecutionIssueTypeCommand } from "./commands/extract-execution-issue-type-command";
 import { ExtractVideoFilesCommand } from "./commands/extract-video-files-command";
@@ -122,7 +121,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ] = [...graph.getVertices()];
                 assertIsInstanceOf(resultsCommand, ConstantCommand);
                 assertIsInstanceOf(convertCypressTestsCommand, ConvertCypressTestsCommand);
-                assertIsInstanceOf(convertCypressInfoCommand, ConvertCypressInfoCommand);
+                assertIsInstanceOf(convertCypressInfoCommand, ConvertInfoServerCommand);
                 assertIsInstanceOf(combineCypressJsonCommand, CombineCypressJsonCommand);
                 assertIsInstanceOf(
                     assertCypressConversionValidCommand,
@@ -1042,7 +1041,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ] = [...graph.getVertices()];
                 assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
                 assertIsInstanceOf(convertCypressTestsCommand, ConvertCypressTestsCommand);
-                assertIsInstanceOf(convertCypressInfoCommand, ConvertCypressInfoCommand);
+                assertIsInstanceOf(convertCypressInfoCommand, ConvertInfoServerCommand);
                 assertIsInstanceOf(combineCypressJsonCommand, CombineCypressJsonCommand);
                 assertIsInstanceOf(
                     assertCypressConversionValidCommand,
