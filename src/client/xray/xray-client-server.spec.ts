@@ -4,10 +4,9 @@ import fs from "fs";
 import path from "node:path";
 import { SinonStubbedInstance } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
-import { IssueUpdate } from "../../types/jira/responses/issue-update";
 import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
+import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
 import { BasicAuthCredentials } from "../authentication/credentials";
@@ -150,7 +149,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoServer.json",
                             "utf-8"
                         )
-                    ) as IssueUpdate
+                    ) as MultipartInfo
                 );
                 expect(restClient.post).to.have.been.calledOnceWith(
                     "https://example.org/rest/raven/latest/import/execution/multipart"
@@ -201,7 +200,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoServer.json",
                             "utf-8"
                         )
-                    ) as IssueUpdate
+                    ) as MultipartInfo
                 );
                 expect(response).to.eq("CYPLUG-123");
             });
@@ -235,7 +234,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
                             "utf-8"
                         )
-                    ) as CucumberMultipartInfo
+                    ) as MultipartInfo
                 );
                 expect(restClient.post).to.have.been.calledOnceWith(
                     "https://example.org/rest/raven/latest/import/execution/cucumber/multipart"
@@ -269,7 +268,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
                             "utf-8"
                         )
-                    ) as CucumberMultipartInfo
+                    ) as MultipartInfo
                 );
                 expect(response).to.eq("CYP-123");
             });

@@ -1,25 +1,24 @@
 import { XrayClient } from "../../../../client/xray/xray-client";
-import { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results";
 import { Logger } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 
-interface Parameters {
+interface CommandParameters {
     xrayClient: XrayClient;
 }
 
-export class ImportExecutionCypressCommand extends Command<string, Parameters> {
-    private readonly results: Computable<XrayTestExecutionResults>;
+export class ImportExecutionCypressCommand extends Command<string, CommandParameters> {
+    private readonly execution: Computable<Parameters<XrayClient["importExecutionMultipart"]>>;
     constructor(
-        parameters: Parameters,
+        parameters: CommandParameters,
         logger: Logger,
-        results: Computable<XrayTestExecutionResults>
+        execution: Computable<Parameters<XrayClient["importExecutionMultipart"]>>
     ) {
         super(parameters, logger);
-        this.results = results;
+        this.execution = execution;
     }
 
     protected async computeResult(): Promise<string> {
-        const results = await this.results.compute();
-        return await this.parameters.xrayClient.importExecution(results);
+        const [results, info] = await this.execution.compute();
+        return await this.parameters.xrayClient.importExecutionMultipart(results, info);
     }
 }

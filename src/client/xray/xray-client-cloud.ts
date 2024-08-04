@@ -1,10 +1,9 @@
 import { AxiosResponse } from "axios";
 import FormData from "form-data";
-import { IssueUpdate } from "../../types/jira/responses/issue-update";
 import { StringMap } from "../../types/util";
 import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
+import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import { GetTestExecutionResponseCloud } from "../../types/xray/responses/graphql/get-test-execution";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
 import { Test } from "../../types/xray/responses/graphql/xray";
@@ -220,12 +219,12 @@ export class XrayClientCloud
     protected onRequest(
         event: "import-execution-cucumber-multipart",
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfo
+        cucumberInfo: MultipartInfo
     ): FormData;
     protected onRequest(
         event: "import-execution-multipart",
         executionResults: XrayTestExecutionResults,
-        info: IssueUpdate
+        info: MultipartInfo
     ): FormData;
     protected onRequest(
         event: "import-execution-cucumber-multipart" | "import-execution-multipart",
@@ -236,7 +235,7 @@ export class XrayClientCloud
                 // Cast valid because of overload.
                 const [cucumberJson, cucumberInfo] = args as [
                     CucumberMultipartFeature[],
-                    CucumberMultipartInfo
+                    MultipartInfo
                 ];
                 const formData = new FormData();
                 const resultString = JSON.stringify(cucumberJson);
@@ -251,7 +250,10 @@ export class XrayClientCloud
             }
             case "import-execution-multipart": {
                 // Cast valid because of overload.
-                const [executionResults, info] = args as [XrayTestExecutionResults[], IssueUpdate];
+                const [executionResults, info] = args as [
+                    XrayTestExecutionResults[],
+                    MultipartInfo
+                ];
                 const formData = new FormData();
                 const resultString = JSON.stringify(executionResults);
                 const infoString = JSON.stringify(info);

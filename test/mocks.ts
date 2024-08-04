@@ -16,7 +16,7 @@ import { IssueUpdate } from "../src/types/jira/responses/issue-update";
 import { User } from "../src/types/jira/responses/user";
 import { XrayTestExecutionResults } from "../src/types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../src/types/xray/requests/import-execution-cucumber-multipart";
-import { CucumberMultipartInfo } from "../src/types/xray/requests/import-execution-cucumber-multipart-info";
+import { MultipartInfo } from "../src/types/xray/requests/import-execution-multipart-info";
 import { dedent } from "../src/util/dedent";
 import * as logging from "../src/util/logging";
 import { Logger } from "../src/util/logging";
@@ -101,13 +101,13 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             },
             importExecutionCucumberMultipart: function (
                 cucumberJson: CucumberMultipartFeature[],
-                cucumberInfo: CucumberMultipartInfo
+                cucumberInfo: MultipartInfo
             ) {
                 throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
             },
             importExecutionMultipart: function (
                 executionResults: XrayTestExecutionResults,
-                info: IssueUpdate
+                info: MultipartInfo
             ) {
                 throw mockCalledUnexpectedlyError(executionResults, info);
             },
@@ -141,13 +141,13 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
         },
         importExecutionCucumberMultipart: function (
             cucumberJson: CucumberMultipartFeature[],
-            cucumberInfo: CucumberMultipartInfo
+            cucumberInfo: MultipartInfo
         ) {
             throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
         },
         importExecutionMultipart: function (
             executionResults: XrayTestExecutionResults,
-            info: IssueUpdate
+            info: MultipartInfo
         ) {
             throw mockCalledUnexpectedlyError(executionResults, info);
         },

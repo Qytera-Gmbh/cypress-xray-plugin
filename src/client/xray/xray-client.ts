@@ -1,10 +1,9 @@
 import { AxiosResponse, HttpStatusCode, isAxiosError } from "axios";
 import FormData from "form-data";
 import fs from "fs";
-import { IssueUpdate } from "../../types/jira/responses/issue-update";
 import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
+import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import { ImportFeatureResponse } from "../../types/xray/responses/import-feature";
 import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
@@ -32,7 +31,7 @@ export interface XrayClient {
      */
     importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfo
+        cucumberInfo: MultipartInfo
     ): Promise<string>;
     /**
      * Uploads test results to the Xray instance while also allowing modification of arbitrary Jira
@@ -46,7 +45,7 @@ export interface XrayClient {
      */
     importExecutionMultipart(
         executionResults: XrayTestExecutionResults,
-        info: IssueUpdate
+        info: MultipartInfo
     ): Promise<string>;
     /**
      * Uploads (zipped) feature file(s) to corresponding Xray issues.
@@ -167,7 +166,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
 
     public async importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfo
+        cucumberInfo: MultipartInfo
     ): Promise<string> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
@@ -208,7 +207,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
 
     public async importExecutionMultipart(
         executionResults: XrayTestExecutionResults,
-        info: IssueUpdate
+        info: MultipartInfo
     ): Promise<string> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
@@ -273,7 +272,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
     protected abstract onRequest(
         event: "import-execution-cucumber-multipart",
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfo
+        cucumberInfo: MultipartInfo
     ): FormData;
 
     /**
@@ -287,7 +286,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
     protected abstract onRequest(
         event: "import-execution-multipart",
         executionResults: XrayTestExecutionResults,
-        info: IssueUpdate
+        info: MultipartInfo
     ): FormData;
 
     /**

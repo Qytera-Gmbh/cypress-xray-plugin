@@ -64,9 +64,17 @@ export interface CypressXrayPluginOptions {
 
 export interface JiraFieldIds {
     /**
+     * The Xray test execution begin date field ID.
+     */
+    beginDate?: string;
+    /**
      * The Jira issue description field ID.
      */
     description?: string;
+    /**
+     * The Xray test execution end date field ID.
+     */
+    endDate?: string;
     /**
      * The Jira issue labels field ID.
      */

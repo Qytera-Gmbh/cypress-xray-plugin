@@ -46,7 +46,9 @@ export const ENV_NAMES: Remap<Omit<CypressXrayPluginOptions, "http"> & Authentic
     jira: {
         attachVideos: "JIRA_ATTACH_VIDEOS",
         fields: {
+            beginDate: "JIRA_FIELDS_BEGIN_DATE",
             description: "JIRA_FIELDS_DESCRIPTION",
+            endDate: "JIRA_FIELDS_END_DATE",
             labels: "JIRA_FIELDS_LABELS",
             summary: "JIRA_FIELDS_SUMMARY",
             testEnvironments: "JIRA_FIELDS_TEST_ENVIRONMENTS",

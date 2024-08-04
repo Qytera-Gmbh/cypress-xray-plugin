@@ -5,10 +5,12 @@ import fs from "fs";
 import path from "node:path";
 import { SinonStubbedInstance } from "sinon";
 import { getMockedJwtCredentials, getMockedLogger, getMockedRestClient } from "../../../test/mocks";
-import { IssueUpdate } from "../../types/jira/responses/issue-update";
 import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
+import {
+    MultipartInfo,
+    MultipartInfoCloud,
+} from "../../types/xray/requests/import-execution-multipart-info";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
 import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
@@ -192,7 +194,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoCloud.json",
                             "utf-8"
                         )
-                    ) as IssueUpdate
+                    ) as MultipartInfoCloud
                 );
                 expect(restClient.post).to.have.been.calledOnceWith(
                     "https://xray.cloud.getxray.app/api/v2/import/execution/multipart"
@@ -224,7 +226,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoCloud.json",
                             "utf-8"
                         )
-                    ) as IssueUpdate
+                    ) as MultipartInfoCloud
                 );
                 expect(response).to.eq("CYP-123");
             });
@@ -260,7 +262,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoCloud.json",
                                 "utf-8"
                             )
-                        ) as IssueUpdate
+                        ) as MultipartInfoCloud
                     )
                 ).to.eventually.be.rejectedWith("Failed to import Cypress execution results");
                 expect(logger.message).to.have.been.calledWithExactly(
@@ -300,7 +302,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
                             "utf-8"
                         )
-                    ) as CucumberMultipartInfo
+                    ) as MultipartInfo
                 );
                 expect(restClient.post).to.have.been.calledOnceWith(
                     "https://xray.cloud.getxray.app/api/v2/import/execution/cucumber/multipart"
@@ -332,7 +334,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
                             "utf-8"
                         )
-                    ) as CucumberMultipartInfo
+                    ) as MultipartInfo
                 );
                 expect(response).to.eq("CYP-123");
             });
@@ -368,7 +370,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
                                 "utf-8"
                             )
-                        ) as CucumberMultipartInfo
+                        ) as MultipartInfo
                     )
                 ).to.eventually.be.rejectedWith("Failed to import Cucumber execution results");
                 expect(logger.message).to.have.been.calledWithExactly(

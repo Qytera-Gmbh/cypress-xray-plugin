@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { getMockedLogger } from "../../../../../../test/mocks";
 import { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { CucumberMultipartInfo } from "../../../../../types/xray/requests/import-execution-cucumber-multipart-info";
+import { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
 import { ConstantCommand } from "../../../../util/commands/constant-command";
 import { CombineCucumberMultipartCommand } from "./combine-cucumber-multipart-command";
 
@@ -17,12 +17,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            const cucumberInfo: CucumberMultipartInfo = JSON.parse(
+            const cucumberInfo: MultipartInfo = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
                     "utf-8"
                 )
-            ) as CucumberMultipartInfo;
+            ) as MultipartInfo;
             const command = new CombineCucumberMultipartCommand(
                 logger,
                 new ConstantCommand(logger, cucumberInfo),

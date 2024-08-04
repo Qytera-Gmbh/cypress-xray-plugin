@@ -1,10 +1,8 @@
 import { expect } from "chai";
 import path from "path";
 import { getMockedLogger } from "../../../../../../test/mocks";
-import {
-    XrayTest,
-    XrayTestExecutionInfo,
-} from "../../../../../types/xray/import-test-execution-results";
+import { XrayTest } from "../../../../../types/xray/import-test-execution-results";
+import { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
 import { ConstantCommand } from "../../../../util/commands/constant-command";
 import { CombineCypressJsonCommand } from "./combine-cypress-xray-command";
 
@@ -12,9 +10,11 @@ describe(path.relative(process.cwd(), __filename), () => {
     describe(CombineCypressJsonCommand.name, () => {
         it("combines cucumber multipart data", async () => {
             const logger = getMockedLogger();
-            const xrayInfo: XrayTestExecutionInfo = {
-                description: "Run using Cypress",
-                summary: "A test execution",
+            const xrayInfo: MultipartInfo = {
+                fields: {
+                    description: "Run using Cypress",
+                    summary: "A test execution",
+                },
             };
             const xrayTests: [XrayTest, ...XrayTest[]] = [{ status: "PASS" }, { status: "FAIL" }];
             const command = new CombineCypressJsonCommand(

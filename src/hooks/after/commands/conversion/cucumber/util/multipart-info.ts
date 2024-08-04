@@ -1,9 +1,9 @@
 import { CypressRunResultType } from "../../../../../../types/cypress/cypress";
 import { IssueTypeDetails } from "../../../../../../types/jira/responses/issue-type-details";
 import {
-    CucumberMultipartInfo,
-    CucumberMultipartInfoCloud,
-} from "../../../../../../types/xray/requests/import-execution-cucumber-multipart-info";
+    MultipartInfo,
+    MultipartInfoCloud,
+} from "../../../../../../types/xray/requests/import-execution-multipart-info";
 import { dedent } from "../../../../../../util/dedent";
 
 /**
@@ -56,8 +56,8 @@ export interface TestExecutionIssueDataServer extends TestExecutionIssueData {
 export function buildMultipartInfoServer(
     runData: RunData,
     testExecutionIssueData: TestExecutionIssueDataServer
-): CucumberMultipartInfo {
-    const multipartInfo: CucumberMultipartInfo = {
+): MultipartInfo {
+    const multipartInfo: MultipartInfo = {
         fields: {
             description:
                 testExecutionIssueData.description ??
@@ -97,7 +97,7 @@ export function buildMultipartInfoServer(
 export function buildMultipartInfoCloud(
     runData: RunData,
     testExecutionIssueData: TestExecutionIssueData
-): CucumberMultipartInfoCloud {
+): MultipartInfoCloud {
     return {
         fields: {
             description:

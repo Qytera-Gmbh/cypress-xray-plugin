@@ -2,6 +2,7 @@ import { expect } from "chai";
 import path from "path";
 import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks";
 import { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results";
+import { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
 import { ConstantCommand } from "../constant-command";
 import { ImportExecutionCypressCommand } from "./import-execution-cypress-command";
 
@@ -10,7 +11,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("imports cypress xray json", async () => {
             const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient();
-            const json: XrayTestExecutionResults = {
+            const results: XrayTestExecutionResults = {
                 info: { description: "Hello", summary: "Test Execution Summary" },
                 testExecutionKey: "CYP-123",
                 tests: [
@@ -20,14 +21,27 @@ describe(path.relative(process.cwd(), __filename), () => {
                     { status: "FAILED" },
                 ],
             };
+            const info: MultipartInfo = {
+                fields: {
+                    issuetype: {
+                        id: "10008",
+                        subtask: false,
+                    },
+                    labels: ["a", "b"],
+                    project: {
+                        key: "CYP",
+                    },
+                    summary: "Brand new Test execution",
+                },
+            };
             const command = new ImportExecutionCypressCommand(
                 {
                     xrayClient: xrayClient,
                 },
                 logger,
-                new ConstantCommand(logger, json)
+                new ConstantCommand(logger, [results, info])
             );
-            xrayClient.importExecution.withArgs(json).resolves("CYP-123");
+            xrayClient.importExecutionMultipart.withArgs(results, info).resolves("CYP-123");
             expect(await command.compute()).to.eq("CYP-123");
             expect(logger.message).to.not.have.been.called;
         });

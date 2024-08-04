@@ -7,6 +7,7 @@
         "issuetype": {
             "id": "9"
         },
-        "labels": ["a", "b"]
+        "labels": ["a", "b"],
+        "customfield_11807": ["CYPLUG-372"]
     }
 }
