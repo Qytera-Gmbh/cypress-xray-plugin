@@ -5,6 +5,8 @@ import fs from "fs";
 import path from "node:path";
 import { SinonStubbedInstance } from "sinon";
 import { getMockedJwtCredentials, getMockedLogger, getMockedRestClient } from "../../../test/mocks";
+import { IssueUpdate } from "../../types/jira/responses/issue-update";
+import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
 import { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
@@ -160,6 +162,114 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                     error,
                     "importExecutionError"
+                );
+            });
+        });
+
+        describe("import execution multipart", () => {
+            it("calls the correct endpoint", async () => {
+                getMockedLogger();
+                restClient.post.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        id: "12345",
+                        key: "CYP-123",
+                        self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await client.importExecutionMultipart(
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionMultipartResultsCloud.json",
+                            "utf-8"
+                        )
+                    ) as XrayTestExecutionResults,
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoCloud.json",
+                            "utf-8"
+                        )
+                    ) as IssueUpdate
+                );
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://xray.cloud.getxray.app/api/v2/import/execution/multipart"
+                );
+            });
+
+            it("handles successful responses", async () => {
+                getMockedLogger();
+                restClient.post.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        id: "12345",
+                        key: "CYP-123",
+                        self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                const response = await client.importExecutionMultipart(
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionMultipartResultsCloud.json",
+                            "utf-8"
+                        )
+                    ) as XrayTestExecutionResults,
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoCloud.json",
+                            "utf-8"
+                        )
+                    ) as IssueUpdate
+                );
+                expect(response).to.eq("CYP-123");
+            });
+
+            it("handles bad responses", async () => {
+                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+                const error = new AxiosError(
+                    "Request failed with status code 400",
+                    "400",
+                    { headers: new AxiosHeaders() },
+                    null,
+                    {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            error: "Error assembling issue data: project is required",
+                        },
+                        headers: {},
+                        status: 400,
+                        statusText: "Bad Request",
+                    }
+                );
+                restClient.post.onFirstCall().rejects(error);
+                await expect(
+                    client.importExecutionMultipart(
+                        JSON.parse(
+                            fs.readFileSync(
+                                "./test/resources/fixtures/xray/requests/importExecutionMultipartResultsCloud.json",
+                                "utf-8"
+                            )
+                        ) as XrayTestExecutionResults,
+                        JSON.parse(
+                            fs.readFileSync(
+                                "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoCloud.json",
+                                "utf-8"
+                            )
+                        ) as IssueUpdate
+                    )
+                ).to.eventually.be.rejectedWith("Failed to import Cypress execution results");
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.ERROR,
+                    "Failed to import execution: Request failed with status code 400"
+                );
+                expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                    error,
+                    "importExecutionMultipartError"
                 );
             });
         });

@@ -1,0 +1,12 @@
+{
+    "fields": {
+        "project": {
+            "key": "CYPLUG"
+        },
+        "summary": "Brand new Test execution",
+        "issuetype": {
+            "id": "9"
+        },
+        "labels": ["a", "b"]
+    }
+}

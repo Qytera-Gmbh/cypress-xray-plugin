@@ -4,6 +4,8 @@ import fs from "fs";
 import path from "node:path";
 import { SinonStubbedInstance } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
+import { IssueUpdate } from "../../types/jira/responses/issue-update";
+import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
 import { dedent } from "../../util/dedent";
@@ -117,6 +119,91 @@ describe(path.relative(process.cwd(), __filename), () => {
                     ],
                 });
                 expect(response).to.eq("CYP-123");
+            });
+        });
+
+        describe("import execution multipart", () => {
+            it("calls the correct endpoint", async () => {
+                getMockedLogger();
+                restClient.post.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        testExecIssue: {
+                            id: "12345",
+                            key: "CYP-123",
+                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await client.importExecutionMultipart(
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionMultipartResultsServer.json",
+                            "utf-8"
+                        )
+                    ) as XrayTestExecutionResults,
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoServer.json",
+                            "utf-8"
+                        )
+                    ) as IssueUpdate
+                );
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://example.org/rest/raven/latest/import/execution/multipart"
+                );
+            });
+
+            it("handles successful responses", async () => {
+                getMockedLogger();
+                restClient.post.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        infoMessages: [],
+                        testExecIssue: {
+                            id: "24556",
+                            key: "CYPLUG-123",
+                            self: "https://example.org/rest/api/2/issue/24556",
+                        },
+                        testIssues: {
+                            success: [
+                                {
+                                    id: "22979",
+                                    key: "CYPLUG-43",
+                                    self: "https://example.org/rest/api/2/issue/22979",
+                                    testVersionId: 430,
+                                },
+                                {
+                                    id: "22946",
+                                    key: "CYPLUG-10",
+                                    self: "https://example.org/rest/api/2/issue/22946",
+                                    testVersionId: 425,
+                                },
+                            ],
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                const response = await client.importExecutionMultipart(
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionMultipartResultsServer.json",
+                            "utf-8"
+                        )
+                    ) as XrayTestExecutionResults,
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoServer.json",
+                            "utf-8"
+                        )
+                    ) as IssueUpdate
+                );
+                expect(response).to.eq("CYPLUG-123");
             });
         });
 
