@@ -118,43 +118,43 @@ export interface DirectedGraph<V> {
 /**
  * Models a directed edge between two vertices.
  */
-export interface DirectedEdge<V> {
+export interface DirectedEdge<S, D = S> {
     /**
      * Returns the edge's destination vertex.
      *
      * @returns the destination vertex
      */
-    getDestination(): V;
+    getDestination(): D;
     /**
      * Returns the edge's source vertex.
      *
      * @returns the source vertex
      */
-    getSource(): V;
+    getSource(): S;
 }
 
 /**
  * A basic implementation of a directed edge.
  */
-export class SimpleDirectedEdge<V> implements DirectedEdge<V> {
-    private readonly source: V;
-    private readonly destination: V;
+export class SimpleDirectedEdge<S, D> implements DirectedEdge<S, D> {
+    private readonly source: S;
+    private readonly destination: D;
     /**
      * Constructs a new directed edge.
      *
      * @param source - the source vertex
      * @param destination - the destination vertex
      */
-    constructor(source: V, destination: V) {
+    constructor(source: S, destination: D) {
         this.source = source;
         this.destination = destination;
     }
 
-    public getSource(): V {
+    public getSource(): S {
         return this.source;
     }
 
-    public getDestination(): V {
+    public getDestination(): D {
         return this.destination;
     }
 }
@@ -183,7 +183,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V> {
         return vertex;
     }
 
-    public connect(source: V, destination: V): SimpleDirectedEdge<V> {
+    public connect<S extends V, D extends V>(source: S, destination: D): SimpleDirectedEdge<S, D> {
         if (!this.outgoingEdges.has(source)) {
             throw new Error("Failed to connect vertices: the source vertex does not exist");
         }
