@@ -99,45 +99,11 @@ export class AxiosRestClient {
             if (this.options?.debug) {
                 this.axios.interceptors.request.use(
                     (request: InternalAxiosRequestConfig<unknown>) => {
-                        const method = request.method?.toUpperCase();
-                        const url = request.url;
-                        let prefix = Date.now().toString();
-                        if (method) {
-                            prefix = `${prefix}_${method}`;
-                        }
-                        if (url) {
-                            prefix = `${prefix}_${url}`;
-                        }
-                        const filename = normalizedFilename(`${prefix}_request.json`);
-                        const data: LoggedRequest = {
-                            body: request.data,
-                            headers: request.headers,
-                            params: request.params,
-                            url: url,
-                        };
-                        const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
-                        LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
+                        this.logRequest(request);
                         return request;
                     },
                     (error: unknown) => {
-                        let data: unknown;
-                        let prefix = Date.now().toString();
-                        if (isAxiosError(error)) {
-                            const method = error.config?.method?.toUpperCase();
-                            const url = error.config?.url;
-                            if (method) {
-                                prefix = `${prefix}_${method}`;
-                            }
-                            if (url) {
-                                prefix = `${prefix}_${url}`;
-                            }
-                            data = error.toJSON();
-                        } else {
-                            data = error;
-                        }
-                        const filename = normalizedFilename(`${prefix}_request.json`);
-                        const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
-                        LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
+                        this.logError("outbound", error);
                         return Promise.reject(
                             error instanceof Error ? error : new Error(unknownToString(error))
                         );
@@ -145,49 +111,30 @@ export class AxiosRestClient {
                 );
                 this.axios.interceptors.response.use(
                     (response: AxiosResponse<unknown>) => {
-                        const request = response.request as AxiosRequestConfig<unknown>;
-                        const method = request.method?.toUpperCase();
-                        const url = response.config.url;
-                        const timestamp = Date.now();
-                        let prefix = timestamp.toString();
-                        if (method) {
-                            prefix = `${prefix}_${method}`;
-                        }
-                        if (url) {
-                            prefix = `${prefix}_${url}`;
-                        }
-                        const filename = normalizedFilename(`${prefix}_response.json`);
-                        const resolvedFilename = LOG.logToFile(
-                            JSON.stringify({
-                                data: response.data,
-                                headers: response.headers,
-                                status: response.status,
-                                statusText: response.statusText,
-                            }),
-                            filename
-                        );
-                        LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
+                        this.logResponse(response);
                         return response;
                     },
                     (error: unknown) => {
-                        let data: unknown;
-                        let prefix = Date.now().toString();
-                        if (isAxiosError(error)) {
-                            const method = error.config?.method?.toUpperCase();
-                            const url = error.config?.url;
-                            if (method) {
-                                prefix = `${prefix}_${method}`;
-                            }
-                            if (url) {
-                                prefix = `${prefix}_${url}`;
-                            }
-                            data = error.toJSON();
-                        } else {
-                            data = error;
-                        }
-                        const filename = normalizedFilename(`${prefix}_response.json`);
-                        const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
-                        LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
+                        this.logError("inbound", error);
+                        return Promise.reject(
+                            error instanceof Error ? error : new Error(unknownToString(error))
+                        );
+                    }
+                );
+            } else {
+                this.axios.interceptors.request.use(
+                    (request: InternalAxiosRequestConfig<unknown>) => request,
+                    (error: unknown) => {
+                        this.logError("outbound", error);
+                        return Promise.reject(
+                            error instanceof Error ? error : new Error(unknownToString(error))
+                        );
+                    }
+                );
+                this.axios.interceptors.response.use(
+                    (response: AxiosResponse<unknown>) => response,
+                    (error: unknown) => {
+                        this.logError("inbound", error);
                         return Promise.reject(
                             error instanceof Error ? error : new Error(unknownToString(error))
                         );
@@ -196,5 +143,77 @@ export class AxiosRestClient {
             }
         }
         return this.axios;
+    }
+
+    private logRequest(request: InternalAxiosRequestConfig<unknown>): void {
+        const method = request.method?.toUpperCase();
+        const url = request.url;
+        let prefix = Date.now().toString();
+        if (method) {
+            prefix = `${prefix}_${method}`;
+        }
+        if (url) {
+            prefix = `${prefix}_${url}`;
+        }
+        const filename = normalizedFilename(`${prefix}_request.json`);
+        const data: LoggedRequest = {
+            body: request.data,
+            headers: request.headers,
+            params: request.params,
+            url: url,
+        };
+        const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
+        LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
+    }
+
+    private logResponse(response: AxiosResponse<unknown>): void {
+        const request = response.request as AxiosRequestConfig<unknown>;
+        const method = request.method?.toUpperCase();
+        const url = response.config.url;
+        const timestamp = Date.now();
+        let prefix = timestamp.toString();
+        if (method) {
+            prefix = `${prefix}_${method}`;
+        }
+        if (url) {
+            prefix = `${prefix}_${url}`;
+        }
+        const filename = normalizedFilename(`${prefix}_response.json`);
+        const resolvedFilename = LOG.logToFile(
+            JSON.stringify({
+                data: response.data,
+                headers: response.headers,
+                status: response.status,
+                statusText: response.statusText,
+            }),
+            filename
+        );
+        LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
+    }
+
+    private logError(direction: "inbound" | "outbound", error: unknown): void {
+        let data: unknown;
+        let prefix = Date.now().toString();
+        if (isAxiosError(error)) {
+            const method = error.config?.method?.toUpperCase();
+            const url = error.config?.url;
+            if (method) {
+                prefix = `${prefix}_${method}`;
+            }
+            if (url) {
+                prefix = `${prefix}_${url}`;
+            }
+            data = error.toJSON();
+        } else {
+            data = error;
+        }
+        const filename = normalizedFilename(
+            `${prefix}_${direction === "inbound" ? "response" : "request"}.json`
+        );
+        const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
+        LOG.message(
+            Level.DEBUG,
+            `${direction === "inbound" ? "Response" : "Request"}: ${resolvedFilename}`
+        );
     }
 }

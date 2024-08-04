@@ -65,12 +65,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
-        it("does not write to a file on encountering axios errors if debug is disabled", async () => {
+        it("writes to a file on encountering axios errors if debug is disabled", async () => {
             const logger = getMockedLogger();
             const client = new AxiosRestClient();
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
-            expect(logger.message).to.not.have.been.called;
-            expect(logger.logToFile).to.not.have.been.called;
+            expect(logger.message).to.have.been.calledOnce;
+            expect(logger.message).to.have.been.calledOnce;
         });
     });
 
@@ -136,12 +136,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
-        it("does not write to a file on encountering axios errors if debug is disabled", async () => {
+        it("writes to a file on encountering axios errors if debug is disabled", async () => {
             const logger = getMockedLogger();
             const client = new AxiosRestClient();
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
-            expect(logger.message).to.not.have.been.called;
-            expect(logger.logToFile).to.not.have.been.called;
+            expect(logger.message).to.have.been.calledOnce;
+            expect(logger.logToFile).to.have.been.calledOnce;
         });
     });
 
@@ -207,12 +207,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
         });
 
-        it("does not write to a file on encountering axios errors if debug is disabled", async () => {
+        it("writes to a file on encountering axios errors if debug is disabled", async () => {
             const logger = getMockedLogger();
             const client = new AxiosRestClient();
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
-            expect(logger.message).to.not.have.been.called;
-            expect(logger.logToFile).to.not.have.been.called;
+            expect(logger.message).to.have.been.calledOnce;
+            expect(logger.logToFile).to.have.been.calledOnce;
         });
     });
 });
