@@ -96,14 +96,14 @@ export class ConvertInfoServerCommand extends ConvertInfoCommand {
             const testPlandId = await this.testPlanId.compute();
             testExecutionIssueData.testPlan = {
                 fieldId: testPlandId,
-                issueKey: this.parameters.jira.testPlanIssueKey,
+                value: this.parameters.jira.testPlanIssueKey,
             };
         }
         if (this.parameters.xray.testEnvironments && this.testEnvironmentsId) {
             const testEnvironmentsId = await this.testEnvironmentsId.compute();
             testExecutionIssueData.testEnvironments = {
-                environments: this.parameters.xray.testEnvironments,
                 fieldId: testEnvironmentsId,
+                value: this.parameters.xray.testEnvironments,
             };
         }
         return buildMultipartInfoServer(runInformation, testExecutionIssueData);
@@ -123,12 +123,12 @@ export class ConvertInfoCloudCommand extends ConvertInfoCommand {
         };
         if (this.parameters.jira.testPlanIssueKey) {
             testExecutionIssueData.testPlan = {
-                issueKey: this.parameters.jira.testPlanIssueKey,
+                value: this.parameters.jira.testPlanIssueKey,
             };
         }
         if (this.parameters.xray.testEnvironments) {
             testExecutionIssueData.testEnvironments = {
-                environments: this.parameters.xray.testEnvironments,
+                value: this.parameters.xray.testEnvironments,
             };
         }
         return buildMultipartInfoCloud(runInformation, testExecutionIssueData);

@@ -18,16 +18,24 @@ export type RunData = Pick<
  * Additional information used by test execution issues when uploading Cucumber results.
  */
 export interface TestExecutionIssueData {
+    beginDate?: {
+        fieldId: string;
+        value: string;
+    };
     description?: string;
+    endDate?: {
+        fieldId: string;
+        value: string;
+    };
     issuetype: IssueTypeDetails;
     labels?: string[];
     projectKey: string;
     summary?: string;
     testEnvironments?: {
-        environments: [string, ...string[]];
+        value: [string, ...string[]];
     };
     testPlan?: {
-        issueKey: string;
+        value: string;
     };
 }
 
@@ -36,12 +44,12 @@ export interface TestExecutionIssueData {
  */
 export interface TestExecutionIssueDataServer extends TestExecutionIssueData {
     testEnvironments?: {
-        environments: [string, ...string[]];
         fieldId: string;
+        value: [string, ...string[]];
     };
     testPlan?: {
         fieldId: string;
-        issueKey: string;
+        value: string;
     };
 }
 
@@ -77,11 +85,19 @@ export function buildMultipartInfoServer(
     };
     if (testExecutionIssueData.testPlan) {
         multipartInfo.fields[testExecutionIssueData.testPlan.fieldId] =
-            testExecutionIssueData.testPlan.issueKey;
+            testExecutionIssueData.testPlan.value;
     }
     if (testExecutionIssueData.testEnvironments) {
         multipartInfo.fields[testExecutionIssueData.testEnvironments.fieldId] =
-            testExecutionIssueData.testEnvironments.environments;
+            testExecutionIssueData.testEnvironments.value;
+    }
+    if (testExecutionIssueData.beginDate) {
+        multipartInfo.fields[testExecutionIssueData.beginDate.fieldId] =
+            testExecutionIssueData.beginDate.value;
+    }
+    if (testExecutionIssueData.endDate) {
+        multipartInfo.fields[testExecutionIssueData.endDate.fieldId] =
+            testExecutionIssueData.endDate.value;
     }
     return multipartInfo;
 }
@@ -98,7 +114,7 @@ export function buildMultipartInfoCloud(
     runData: RunData,
     testExecutionIssueData: TestExecutionIssueData
 ): MultipartInfoCloud {
-    return {
+    const multipartInfo: MultipartInfoCloud = {
         fields: {
             description:
                 testExecutionIssueData.description ??
@@ -116,10 +132,19 @@ export function buildMultipartInfoCloud(
                 defaultSummary(new Date(runData.startedTestsAt).getTime()),
         },
         xrayFields: {
-            environments: testExecutionIssueData.testEnvironments?.environments,
-            testPlanKey: testExecutionIssueData.testPlan?.issueKey,
+            environments: testExecutionIssueData.testEnvironments?.value,
+            testPlanKey: testExecutionIssueData.testPlan?.value,
         },
     };
+    if (testExecutionIssueData.beginDate) {
+        multipartInfo.fields[testExecutionIssueData.beginDate.fieldId] =
+            testExecutionIssueData.beginDate.value;
+    }
+    if (testExecutionIssueData.endDate) {
+        multipartInfo.fields[testExecutionIssueData.endDate.fieldId] =
+            testExecutionIssueData.endDate.value;
+    }
+    return multipartInfo;
 }
 
 function defaultSummary(timestamp: number): string {

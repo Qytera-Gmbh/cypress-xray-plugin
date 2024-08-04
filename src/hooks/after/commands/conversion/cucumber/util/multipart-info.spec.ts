@@ -95,7 +95,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     projectKey: "CYP",
                     testPlan: {
-                        issueKey: "CYP-123",
+                        value: "CYP-123",
                     },
                 }
             );
@@ -189,7 +189,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectKey: "CYP",
                     testPlan: {
                         fieldId: "customField_12345",
-                        issueKey: "CYP-123",
+                        value: "CYP-123",
                     },
                 }
             );
@@ -210,8 +210,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     projectKey: "CYP",
                     testEnvironments: {
-                        environments: ["DEV"],
                         fieldId: "customField_12345",
+                        value: ["DEV"],
                     },
                 }
             );
