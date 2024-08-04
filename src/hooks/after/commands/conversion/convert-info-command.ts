@@ -19,11 +19,7 @@ interface Parameters {
     cucumber?: Pick<InternalCucumberOptions, "prefixes">;
     jira: Pick<
         InternalJiraOptions,
-        | "projectKey"
-        | "testExecutionIssueDescription"
-        | "testExecutionIssueKey"
-        | "testExecutionIssueSummary"
-        | "testPlanIssueKey"
+        "projectKey" | "testExecutionIssueDescription" | "testPlanIssueKey"
     >;
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
@@ -33,11 +29,14 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
     private readonly endDateId?: Computable<string>;
     private readonly testExecutionIssueType: Computable<IssueTypeDetails>;
     private readonly runInformation: Computable<RunData>;
+    private readonly summary: Computable<string>;
+
     constructor(
         parameters: Parameters,
         logger: Logger,
         testExecutionIssueType: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>,
+        summary: Computable<string>,
         fieldIds?: {
             beginDateId?: Computable<string>;
             endDateId?: Computable<string>;
@@ -50,16 +49,18 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
         this.endDateId = fieldIds?.endDateId;
         this.testExecutionIssueType = testExecutionIssueType;
         this.runInformation = runInformation;
+        this.summary = summary;
     }
 
     protected async computeResult(): Promise<MultipartInfo> {
         const testExecutionIssueType = await this.testExecutionIssueType.compute();
         const runInformation = await this.runInformation.compute();
+        const summary = await this.summary.compute();
         const testExecutionIssueData: TestExecutionIssueDataServer = {
             description: this.parameters.jira.testExecutionIssueDescription,
             issuetype: testExecutionIssueType,
             projectKey: this.parameters.jira.projectKey,
-            summary: this.parameters.jira.testExecutionIssueSummary,
+            summary: summary,
         };
         if (this.beginDateId) {
             testExecutionIssueData.beginDate = {
@@ -90,6 +91,7 @@ export class ConvertInfoServerCommand extends ConvertInfoCommand {
         logger: Logger,
         testExecutionIssueType: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>,
+        summary: Computable<string>,
         fieldIds?: {
             beginDateId?: Computable<string>;
             endDateId?: Computable<string>;
@@ -97,7 +99,7 @@ export class ConvertInfoServerCommand extends ConvertInfoCommand {
             testPlanId?: Computable<string>;
         }
     ) {
-        super(options, logger, testExecutionIssueType, runInformation);
+        super(options, logger, testExecutionIssueType, runInformation, summary);
         if (this.parameters.jira.testPlanIssueKey && !fieldIds?.testPlanId) {
             throw new Error(
                 "A test plan issue key was supplied without the test plan Jira field ID"

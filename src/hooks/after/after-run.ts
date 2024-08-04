@@ -8,10 +8,12 @@ import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Level, Logger } from "../../util/logging";
 import { Command, Computable, ComputableState } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";
+import { DestructureCommand } from "../util/commands/destructure-command";
 import { FallbackCommand } from "../util/commands/fallback-command";
 import { AttachFilesCommand } from "../util/commands/jira/attach-files-command";
 import { JiraField } from "../util/commands/jira/extract-field-id-command";
 import { FetchIssueTypesCommand } from "../util/commands/jira/fetch-issue-types-command";
+import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command";
 import { ImportExecutionCucumberCommand } from "../util/commands/xray/import-execution-cucumber-command";
 import { ImportExecutionCypressCommand } from "../util/commands/xray/import-execution-cypress-command";
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
@@ -320,21 +322,70 @@ function getExtractExecutionIssueTypeCommand(
     const fetchIssueTypesCommand = graph.findOrDefault(FetchIssueTypesCommand, () =>
         graph.place(new FetchIssueTypesCommand({ jiraClient: clients.jiraClient }, logger))
     );
-    return graph.findOrDefault(ExtractExecutionIssueTypeCommand, () =>
-        graph
-            .connect(
-                fetchIssueTypesCommand,
-                new ExtractExecutionIssueTypeCommand(
-                    {
-                        displayCloudHelp: clients.kind === "cloud",
-                        projectKey: options.jira.projectKey,
-                        testExecutionIssueType: options.jira.testExecutionIssueType,
-                    },
-                    logger,
-                    fetchIssueTypesCommand
-                )
+    return graph.findOrDefault(ExtractExecutionIssueTypeCommand, () => {
+        const command = graph.place(
+            new ExtractExecutionIssueTypeCommand(
+                {
+                    displayCloudHelp: clients.kind === "cloud",
+                    projectKey: options.jira.projectKey,
+                    testExecutionIssueType: options.jira.testExecutionIssueType,
+                },
+                logger,
+                fetchIssueTypesCommand
             )
-            .getDestination()
+        );
+        return graph.connect(fetchIssueTypesCommand, command).getDestination();
+    });
+}
+
+function getExecutionIssueSummaryCommand(
+    options: InternalCypressXrayPluginOptions,
+    clients: ClientCombination,
+    graph: ExecutableGraph<Command>,
+    logger: Logger
+): Command<string> {
+    if (options.jira.testExecutionIssueSummary) {
+        return getOrCreateConstantCommand(graph, logger, options.jira.testExecutionIssueSummary);
+    }
+    if (options.jira.testExecutionIssueKey) {
+        const getSummaryFieldIdCommand = options.jira.fields.summary
+            ? getOrCreateConstantCommand(graph, logger, options.jira.fields.summary)
+            : getOrCreateExtractFieldIdCommand(
+                  JiraField.SUMMARY,
+                  clients.jiraClient,
+                  graph,
+                  logger
+              );
+        const issueKeysCommand = getOrCreateConstantCommand(graph, logger, [
+            options.jira.testExecutionIssueKey,
+        ]);
+        const getSummaryValuesCommand = graph.findOrDefault(GetSummaryValuesCommand, () => {
+            const command = graph.place(
+                new GetSummaryValuesCommand(
+                    { jiraClient: clients.jiraClient },
+                    logger,
+                    getSummaryFieldIdCommand,
+                    issueKeysCommand
+                )
+            );
+            graph.connect(getSummaryFieldIdCommand, command);
+            graph.connect(issueKeysCommand, command);
+            return command;
+        });
+        const destructureCommand = graph.place(
+            new DestructureCommand(
+                logger,
+                getSummaryValuesCommand,
+                options.jira.testExecutionIssueKey
+            )
+        );
+        graph.connect(getSummaryValuesCommand, destructureCommand);
+        return destructureCommand;
+    }
+    return getOrCreateConstantCommand(
+        graph,
+        logger,
+        `Execution Results [${new Date().toLocaleString()}]`
     );
 }
 
@@ -378,6 +429,12 @@ function createConvertMultipartInfoCommand(
         graph,
         logger
     );
+    const executionIssueSummaryCommand = getExecutionIssueSummaryCommand(
+        options,
+        clients,
+        graph,
+        logger
+    );
     if (clients.kind === "cloud") {
         convertCommand = graph.place(
             new ConvertInfoCloudCommand(
@@ -385,6 +442,7 @@ function createConvertMultipartInfoCommand(
                 logger,
                 extractExecutionIssueTypeCommand,
                 cypressResults,
+                executionIssueSummaryCommand,
                 {
                     beginDateId: beginDateIdCommand,
                     endDateId: endDateIdCommand,
@@ -420,6 +478,7 @@ function createConvertMultipartInfoCommand(
                 logger,
                 extractExecutionIssueTypeCommand,
                 cypressResults,
+                executionIssueSummaryCommand,
                 {
                     beginDateId: beginDateIdCommand,
                     endDateId: endDateIdCommand,
@@ -441,7 +500,9 @@ function createConvertMultipartInfoCommand(
     if (endDateIdCommand) {
         graph.connect(endDateIdCommand, convertCommand);
     }
-    return graph.connect(extractExecutionIssueTypeCommand, convertCommand).getDestination();
+    graph.connect(extractExecutionIssueTypeCommand, convertCommand);
+    graph.connect(executionIssueSummaryCommand, convertCommand);
+    return convertCommand;
 }
 
 function addPostUploadCommands(

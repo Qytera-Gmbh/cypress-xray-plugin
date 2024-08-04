@@ -84,8 +84,9 @@ export function buildMultipartInfoServer(
         },
     };
     if (testExecutionIssueData.testPlan) {
-        multipartInfo.fields[testExecutionIssueData.testPlan.fieldId] =
-            testExecutionIssueData.testPlan.value;
+        multipartInfo.fields[testExecutionIssueData.testPlan.fieldId] = [
+            testExecutionIssueData.testPlan.value,
+        ];
     }
     if (testExecutionIssueData.testEnvironments) {
         multipartInfo.fields[testExecutionIssueData.testEnvironments.fieldId] =
