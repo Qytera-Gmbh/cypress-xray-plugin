@@ -1,5 +1,4 @@
 import { AxiosResponse } from "axios";
-import FormData from "form-data";
 import { StringMap } from "../../types/util";
 import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
@@ -237,15 +236,11 @@ export class XrayClientCloud
                     CucumberMultipartFeature[],
                     MultipartInfo
                 ];
-                const formData = new FormData();
                 const resultString = JSON.stringify(cucumberJson);
                 const infoString = JSON.stringify(cucumberInfo);
-                formData.append("results", resultString, {
-                    filename: "results.json",
-                });
-                formData.append("info", infoString, {
-                    filename: "info.json",
-                });
+                const formData = new FormData();
+                formData.append("info", new Blob([infoString]));
+                formData.append("results", new Blob([resultString]));
                 return formData;
             }
             case "import-execution-multipart": {
@@ -254,15 +249,11 @@ export class XrayClientCloud
                     XrayTestExecutionResults[],
                     MultipartInfo
                 ];
-                const formData = new FormData();
                 const resultString = JSON.stringify(executionResults);
                 const infoString = JSON.stringify(info);
-                formData.append("results", resultString, {
-                    filename: "results.json",
-                });
-                formData.append("info", infoString, {
-                    filename: "info.json",
-                });
+                const formData = new FormData();
+                formData.append("info", new Blob([infoString]));
+                formData.append("results", new Blob([resultString]));
                 return formData;
             }
         }

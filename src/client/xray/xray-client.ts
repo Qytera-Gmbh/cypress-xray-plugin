@@ -1,6 +1,5 @@
 import { AxiosResponse, HttpStatusCode, isAxiosError } from "axios";
-import FormData from "form-data";
-import fs from "fs";
+import { fileFromPath } from "formdata-node/file-from-path";
 import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
@@ -121,9 +120,8 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
             LOG.message(Level.DEBUG, "Importing Cucumber features...");
             const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             try {
-                const fileContent = fs.createReadStream(file);
                 const formData = new FormData();
-                formData.append("file", fileContent);
+                formData.append("file", await fileFromPath(file));
 
                 const response: AxiosResponse<ImportFeatureResponseType> =
                     await this.httpClient.post(
@@ -132,7 +130,6 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
                         {
                             headers: {
                                 ...authorizationHeader,
-                                ...formData.getHeaders(),
                             },
                         }
                     );
@@ -185,7 +182,6 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
                         {
                             headers: {
                                 ...authorizationHeader,
-                                ...formData.getHeaders(),
                             },
                         }
                     );
@@ -219,7 +215,6 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
                     await this.httpClient.post(this.getUrlImportExecutionMultipart(), formData, {
                         headers: {
                             ...authorizationHeader,
-                            ...formData.getHeaders(),
                         },
                     });
                 const key = this.onResponse("import-execution-multipart", response.data);

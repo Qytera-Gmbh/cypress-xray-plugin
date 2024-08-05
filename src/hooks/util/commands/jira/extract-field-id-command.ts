@@ -7,9 +7,7 @@ import { prettyPadObjects, prettyPadValues } from "../../../../util/pretty";
 import { Command, Computable } from "../../../command";
 
 export enum JiraField {
-    BEGIN_DATE = "begin date",
     DESCRIPTION = "description",
-    END_DATE = "end date",
     LABELS = "labels",
     SUMMARY = "summary",
     TEST_ENVIRONMENTS = "test environments",
@@ -125,9 +123,5 @@ function getOptionName(fieldName: JiraField): keyof JiraFieldIds {
             return "testPlan";
         case JiraField.TEST_TYPE:
             return "testType";
-        case JiraField.BEGIN_DATE:
-            return "beginDate";
-        case JiraField.END_DATE:
-            return "endDate";
     }
 }

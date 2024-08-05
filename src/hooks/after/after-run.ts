@@ -177,8 +177,7 @@ function getImportExecutionCypressCommand(
         clients,
         graph,
         logger,
-        cypressResultsCommand,
-        { beginDate: true, endDate: true }
+        cypressResultsCommand
     );
 
     const combineResultsJsonCommand = graph.place(
@@ -359,19 +358,23 @@ function getExecutionIssueSummaryCommand(
         const issueKeysCommand = getOrCreateConstantCommand(graph, logger, [
             options.jira.testExecutionIssueKey,
         ]);
-        const getSummaryValuesCommand = graph.findOrDefault(GetSummaryValuesCommand, () => {
-            const command = graph.place(
-                new GetSummaryValuesCommand(
-                    { jiraClient: clients.jiraClient },
-                    logger,
-                    getSummaryFieldIdCommand,
-                    issueKeysCommand
-                )
-            );
-            graph.connect(getSummaryFieldIdCommand, command);
-            graph.connect(issueKeysCommand, command);
-            return command;
-        });
+        const getSummaryValuesCommand = graph.findOrDefault(
+            GetSummaryValuesCommand,
+            () => {
+                const command = graph.place(
+                    new GetSummaryValuesCommand(
+                        { jiraClient: clients.jiraClient },
+                        logger,
+                        getSummaryFieldIdCommand,
+                        issueKeysCommand
+                    )
+                );
+                graph.connect(getSummaryFieldIdCommand, command);
+                graph.connect(issueKeysCommand, command);
+                return command;
+            },
+            (vertex) => [...graph.getPredecessors(vertex)].includes(issueKeysCommand)
+        );
         const destructureCommand = graph.place(
             new DestructureCommand(
                 logger,
@@ -394,34 +397,16 @@ function createConvertMultipartInfoCommand(
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
     logger: Logger,
-    cypressResults: Computable<CypressRunResultType>,
-    includeFields?: {
-        beginDate?: boolean;
-        endDate?: boolean;
-    }
+    cypressResults: Computable<CypressRunResultType>
 ): ConvertInfoCommand {
-    let beginDateIdCommand: Command<string> | undefined = undefined;
-    let endDateIdCommand: Command<string> | undefined = undefined;
+    let additionalFieldsCommand: Command<Record<string, unknown>> | undefined = undefined;
     let convertCommand: ConvertInfoCommand;
-    if (includeFields?.beginDate) {
-        beginDateIdCommand = options.jira.fields.beginDate
-            ? getOrCreateConstantCommand(graph, logger, options.jira.fields.beginDate)
-            : getOrCreateExtractFieldIdCommand(
-                  JiraField.BEGIN_DATE,
-                  clients.jiraClient,
-                  graph,
-                  logger
-              );
-    }
-    if (includeFields?.endDate) {
-        endDateIdCommand = options.jira.fields.endDate
-            ? getOrCreateConstantCommand(graph, logger, options.jira.fields.endDate)
-            : getOrCreateExtractFieldIdCommand(
-                  JiraField.END_DATE,
-                  clients.jiraClient,
-                  graph,
-                  logger
-              );
+    if (options.jira.testExecutionIssueFields) {
+        additionalFieldsCommand = getOrCreateConstantCommand(
+            graph,
+            logger,
+            options.jira.testExecutionIssueFields
+        );
     }
     const extractExecutionIssueTypeCommand = getExtractExecutionIssueTypeCommand(
         options,
@@ -443,10 +428,7 @@ function createConvertMultipartInfoCommand(
                 extractExecutionIssueTypeCommand,
                 cypressResults,
                 executionIssueSummaryCommand,
-                {
-                    beginDateId: beginDateIdCommand,
-                    endDateId: endDateIdCommand,
-                }
+                { custom: additionalFieldsCommand }
             )
         );
     } else {
@@ -480,8 +462,7 @@ function createConvertMultipartInfoCommand(
                 cypressResults,
                 executionIssueSummaryCommand,
                 {
-                    beginDateId: beginDateIdCommand,
-                    endDateId: endDateIdCommand,
+                    custom: additionalFieldsCommand,
                     testEnvironmentsId: testEnvironmentsIdCommand,
                     testPlanId: testPlanIdCommand,
                 }
@@ -494,11 +475,8 @@ function createConvertMultipartInfoCommand(
             graph.connect(testEnvironmentsIdCommand, convertCommand);
         }
     }
-    if (beginDateIdCommand) {
-        graph.connect(beginDateIdCommand, convertCommand);
-    }
-    if (endDateIdCommand) {
-        graph.connect(endDateIdCommand, convertCommand);
+    if (additionalFieldsCommand) {
+        graph.connect(additionalFieldsCommand, convertCommand);
     }
     graph.connect(extractExecutionIssueTypeCommand, convertCommand);
     graph.connect(executionIssueSummaryCommand, convertCommand);

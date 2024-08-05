@@ -18,15 +18,8 @@ export type RunData = Pick<
  * Additional information used by test execution issues when uploading Cucumber results.
  */
 export interface TestExecutionIssueData {
-    beginDate?: {
-        fieldId: string;
-        value: string;
-    };
+    custom?: Record<string, unknown>;
     description?: string;
-    endDate?: {
-        fieldId: string;
-        value: string;
-    };
     issuetype: IssueTypeDetails;
     labels?: string[];
     projectKey: string;
@@ -92,13 +85,10 @@ export function buildMultipartInfoServer(
         multipartInfo.fields[testExecutionIssueData.testEnvironments.fieldId] =
             testExecutionIssueData.testEnvironments.value;
     }
-    if (testExecutionIssueData.beginDate) {
-        multipartInfo.fields[testExecutionIssueData.beginDate.fieldId] =
-            testExecutionIssueData.beginDate.value;
-    }
-    if (testExecutionIssueData.endDate) {
-        multipartInfo.fields[testExecutionIssueData.endDate.fieldId] =
-            testExecutionIssueData.endDate.value;
+    if (testExecutionIssueData.custom) {
+        for (const [key, value] of Object.entries(testExecutionIssueData.custom)) {
+            multipartInfo.fields[key] = value;
+        }
     }
     return multipartInfo;
 }
@@ -137,13 +127,10 @@ export function buildMultipartInfoCloud(
             testPlanKey: testExecutionIssueData.testPlan?.value,
         },
     };
-    if (testExecutionIssueData.beginDate) {
-        multipartInfo.fields[testExecutionIssueData.beginDate.fieldId] =
-            testExecutionIssueData.beginDate.value;
-    }
-    if (testExecutionIssueData.endDate) {
-        multipartInfo.fields[testExecutionIssueData.endDate.fieldId] =
-            testExecutionIssueData.endDate.value;
+    if (testExecutionIssueData.custom) {
+        for (const [key, value] of Object.entries(testExecutionIssueData.custom)) {
+            multipartInfo.fields[key] = value;
+        }
     }
     return multipartInfo;
 }

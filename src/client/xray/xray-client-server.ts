@@ -1,5 +1,4 @@
 import { AxiosResponse } from "axios";
-import FormData from "form-data";
 import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
@@ -161,15 +160,11 @@ export class ServerClient
                     CucumberMultipartFeature[],
                     MultipartInfo
                 ];
-                const formData = new FormData();
                 const resultString = JSON.stringify(cucumberJson);
                 const infoString = JSON.stringify(cucumberInfo);
-                formData.append("result", resultString, {
-                    filename: "results.json",
-                });
-                formData.append("info", infoString, {
-                    filename: "info.json",
-                });
+                const formData = new FormData();
+                formData.append("info", new Blob([infoString]));
+                formData.append("result", new Blob([resultString]));
                 return formData;
             }
             case "import-execution-multipart": {
@@ -178,15 +173,11 @@ export class ServerClient
                     XrayTestExecutionResults[],
                     MultipartInfo
                 ];
-                const formData = new FormData();
                 const resultString = JSON.stringify(executionResults);
                 const infoString = JSON.stringify(info);
-                formData.append("result", resultString, {
-                    filename: "results.json",
-                });
-                formData.append("info", infoString, {
-                    filename: "info.json",
-                });
+                const formData = new FormData();
+                formData.append("info", new Blob([infoString]));
+                formData.append("result", new Blob([resultString]));
                 return formData;
             }
         }

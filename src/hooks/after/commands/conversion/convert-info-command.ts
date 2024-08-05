@@ -25,11 +25,14 @@ interface Parameters {
 }
 
 export abstract class ConvertInfoCommand extends Command<MultipartInfo, Parameters> {
-    private readonly beginDateId?: Computable<string>;
-    private readonly endDateId?: Computable<string>;
     private readonly testExecutionIssueType: Computable<IssueTypeDetails>;
     private readonly runInformation: Computable<RunData>;
     private readonly summary: Computable<string>;
+    private readonly fields?: {
+        custom?: Computable<Record<string, unknown>>;
+        testEnvironmentsId?: Computable<string>;
+        testPlanId?: Computable<string>;
+    };
 
     constructor(
         parameters: Parameters,
@@ -38,15 +41,13 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
         runInformation: Computable<RunData>,
         summary: Computable<string>,
         fieldIds?: {
-            beginDateId?: Computable<string>;
-            endDateId?: Computable<string>;
+            custom?: Computable<Record<string, unknown>>;
             testEnvironmentsId?: Computable<string>;
             testPlanId?: Computable<string>;
         }
     ) {
         super(parameters, logger);
-        this.beginDateId = fieldIds?.beginDateId;
-        this.endDateId = fieldIds?.endDateId;
+        this.fields = fieldIds;
         this.testExecutionIssueType = testExecutionIssueType;
         this.runInformation = runInformation;
         this.summary = summary;
@@ -56,23 +57,15 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
         const testExecutionIssueType = await this.testExecutionIssueType.compute();
         const runInformation = await this.runInformation.compute();
         const summary = await this.summary.compute();
+
         const testExecutionIssueData: TestExecutionIssueDataServer = {
             description: this.parameters.jira.testExecutionIssueDescription,
             issuetype: testExecutionIssueType,
             projectKey: this.parameters.jira.projectKey,
             summary: summary,
         };
-        if (this.beginDateId) {
-            testExecutionIssueData.beginDate = {
-                fieldId: await this.beginDateId.compute(),
-                value: runInformation.startedTestsAt,
-            };
-        }
-        if (this.endDateId) {
-            testExecutionIssueData.beginDate = {
-                fieldId: await this.endDateId.compute(),
-                value: runInformation.endedTestsAt,
-            };
+        if (this.fields?.custom) {
+            testExecutionIssueData.custom = await this.fields.custom.compute();
         }
         return await this.buildInfo(runInformation, testExecutionIssueData);
     }
@@ -87,17 +80,14 @@ export class ConvertInfoServerCommand extends ConvertInfoCommand {
     private readonly testEnvironmentsId?: Computable<string>;
     private readonly testPlanId?: Computable<string>;
     constructor(
-        options: Parameters,
-        logger: Logger,
-        testExecutionIssueType: Computable<IssueTypeDetails>,
-        runInformation: Computable<RunData>,
-        summary: Computable<string>,
-        fieldIds?: {
-            beginDateId?: Computable<string>;
-            endDateId?: Computable<string>;
-            testEnvironmentsId?: Computable<string>;
-            testPlanId?: Computable<string>;
-        }
+        ...[
+            options,
+            logger,
+            testExecutionIssueType,
+            runInformation,
+            summary,
+            fieldIds,
+        ]: ConstructorParameters<typeof ConvertInfoCommand>
     ) {
         super(options, logger, testExecutionIssueType, runInformation, summary);
         if (this.parameters.jira.testPlanIssueKey && !fieldIds?.testPlanId) {
