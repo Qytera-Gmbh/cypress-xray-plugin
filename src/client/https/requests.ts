@@ -10,6 +10,7 @@ import FormData from "form-data";
 import { normalizedFilename } from "../../util/files";
 import { LOG, Level } from "../../util/logging";
 import { unknownToString } from "../../util/string";
+import { startInterval } from "../../util/time";
 
 export interface RequestConfigPost<D = unknown> {
     config?: AxiosRequestConfig<D>;
@@ -66,10 +67,15 @@ export class AxiosRestClient {
         url: string,
         config?: AxiosRequestConfig<unknown>
     ): Promise<AxiosResponse<R>> {
-        return await this.getAxios().get(url, {
-            ...this.options?.http,
-            ...config,
-        });
+        const progressInterval = this.startResponseInterval(url);
+        try {
+            return await this.getAxios().get(url, {
+                ...this.options?.http,
+                ...config,
+            });
+        } finally {
+            clearInterval(progressInterval);
+        }
     }
 
     public async post<R, D = unknown>(
@@ -77,10 +83,15 @@ export class AxiosRestClient {
         data?: D,
         config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse<R>> {
-        return this.getAxios().post(url, data, {
-            ...this.options?.http,
-            ...config,
-        });
+        const progressInterval = this.startResponseInterval(url);
+        try {
+            return await this.getAxios().post(url, data, {
+                ...this.options?.http,
+                ...config,
+            });
+        } finally {
+            clearInterval(progressInterval);
+        }
     }
 
     public async put<R, D = unknown>(
@@ -88,10 +99,15 @@ export class AxiosRestClient {
         data?: D,
         config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse<R>> {
-        return this.getAxios().put(url, data, {
-            ...this.options?.http,
-            ...config,
-        });
+        const progressInterval = this.startResponseInterval(url);
+        try {
+            return await this.getAxios().put(url, data, {
+                ...this.options?.http,
+                ...config,
+            });
+        } finally {
+            clearInterval(progressInterval);
+        }
     }
 
     private getAxios(): AxiosInstance {
@@ -227,5 +243,14 @@ export class AxiosRestClient {
             Level.DEBUG,
             `${direction === "inbound" ? "Response" : "Request"}: ${resolvedFilename}`
         );
+    }
+
+    private startResponseInterval(url: string): ReturnType<typeof setInterval> {
+        return startInterval((totalTime: number) => {
+            LOG.message(
+                Level.INFO,
+                `Waiting for ${url} to respond... (${(totalTime / 1000).toString()} seconds)`
+            );
+        });
     }
 }

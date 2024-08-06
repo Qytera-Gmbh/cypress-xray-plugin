@@ -87,20 +87,18 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.INFO, "Importing Cypress execution...");
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const response: AxiosResponse<ImportExecutionResponseType> =
-                    await this.httpClient.post(this.getUrlImportExecution(), execution, {
-                        headers: {
-                            ...authorizationHeader,
-                        },
-                    });
-                const key = this.onResponse("import-execution", response.data);
-                LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
-                return key;
-            } finally {
-                clearInterval(progressInterval);
-            }
+            const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
+                this.getUrlImportExecution(),
+                execution,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                    },
+                }
+            );
+            const key = this.onResponse("import-execution", response.data);
+            LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
+            return key;
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to import execution: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "importExecutionError");
@@ -119,26 +117,20 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Importing Cucumber features...");
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const formData = new FormData();
-                formData.append("file", fs.createReadStream(file));
+            const formData = new FormData();
+            formData.append("file", fs.createReadStream(file));
 
-                const response: AxiosResponse<ImportFeatureResponseType> =
-                    await this.httpClient.post(
-                        this.getUrlImportFeature(query.projectKey, query.projectId, query.source),
-                        formData,
-                        {
-                            headers: {
-                                ...authorizationHeader,
-                                ...formData.getHeaders(),
-                            },
-                        }
-                    );
-                return this.onResponse("import-feature", response.data);
-            } finally {
-                clearInterval(progressInterval);
-            }
+            const response: AxiosResponse<ImportFeatureResponseType> = await this.httpClient.post(
+                this.getUrlImportFeature(query.projectKey, query.projectId, query.source),
+                formData,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                        ...formData.getHeaders(),
+                    },
+                }
+            );
+            return this.onResponse("import-feature", response.data);
         } catch (error: unknown) {
             LOG.logErrorToFile(error, "importFeatureError");
             if (isAxiosError(error) && error.response?.status === HttpStatusCode.BadRequest) {
@@ -175,28 +167,22 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
                 cucumberJson,
                 cucumberInfo
             );
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const response: AxiosResponse<ImportExecutionResponseType> =
-                    await this.httpClient.post(
-                        this.getUrlImportExecutionCucumberMultipart(),
-                        formData,
-                        {
-                            headers: {
-                                ...authorizationHeader,
-                                ...formData.getHeaders(),
-                            },
-                        }
-                    );
-                const key = this.onResponse("import-execution-cucumber-multipart", response.data);
-                LOG.message(
-                    Level.DEBUG,
-                    `Successfully uploaded Cucumber test execution results to ${key}.`
-                );
-                return key;
-            } finally {
-                clearInterval(progressInterval);
-            }
+            const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
+                this.getUrlImportExecutionCucumberMultipart(),
+                formData,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                        ...formData.getHeaders(),
+                    },
+                }
+            );
+            const key = this.onResponse("import-execution-cucumber-multipart", response.data);
+            LOG.message(
+                Level.DEBUG,
+                `Successfully uploaded Cucumber test execution results to ${key}.`
+            );
+            return key;
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to import Cucumber execution: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "importExecutionCucumberMultipartError");
@@ -212,21 +198,19 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.INFO, "Importing Cypress execution...");
             const formData = this.onRequest("import-execution-multipart", executionResults, info);
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const response: AxiosResponse<ImportExecutionResponseType> =
-                    await this.httpClient.post(this.getUrlImportExecutionMultipart(), formData, {
-                        headers: {
-                            ...authorizationHeader,
-                            ...formData.getHeaders(),
-                        },
-                    });
-                const key = this.onResponse("import-execution-multipart", response.data);
-                LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
-                return key;
-            } finally {
-                clearInterval(progressInterval);
-            }
+            const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
+                this.getUrlImportExecutionMultipart(),
+                formData,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                        ...formData.getHeaders(),
+                    },
+                }
+            );
+            const key = this.onResponse("import-execution-multipart", response.data);
+            LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
+            return key;
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to import execution: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "importExecutionMultipartError");

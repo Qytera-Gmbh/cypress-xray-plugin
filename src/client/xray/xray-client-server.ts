@@ -74,32 +74,27 @@ export class ServerClient
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Getting test execution results...");
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
             let currentPage = query?.page ?? 1;
             let pagedTests: GetTestExecutionResponseServer = [];
             const allTests: GetTestExecutionResponseServer = [];
             do {
-                try {
-                    const testsResponse: AxiosResponse<GetTestExecutionResponseServer> =
-                        await this.httpClient.get(
-                            `${this.apiBaseUrl}/api/testexec/${testExecutionIssueKey}/test`,
-                            {
-                                headers: {
-                                    ...authorizationHeader,
-                                },
-                                params: {
-                                    detailed: query?.detailed,
-                                    limit: query?.limit,
-                                    page: currentPage,
-                                },
-                            }
-                        );
-                    allTests.push(...testsResponse.data);
-                    pagedTests = testsResponse.data;
-                    currentPage++;
-                } finally {
-                    clearInterval(progressInterval);
-                }
+                const testsResponse: AxiosResponse<GetTestExecutionResponseServer> =
+                    await this.httpClient.get(
+                        `${this.apiBaseUrl}/api/testexec/${testExecutionIssueKey}/test`,
+                        {
+                            headers: {
+                                ...authorizationHeader,
+                            },
+                            params: {
+                                detailed: query?.detailed,
+                                limit: query?.limit,
+                                page: currentPage,
+                            },
+                        }
+                    );
+                allTests.push(...testsResponse.data);
+                pagedTests = testsResponse.data;
+                currentPage++;
             } while (pagedTests.length > 0);
             return allTests;
         } catch (error: unknown) {
@@ -116,20 +111,15 @@ export class ServerClient
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Getting Xray license status...");
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const licenseResponse: AxiosResponse<XrayLicenseStatus> = await this.httpClient.get(
-                    `${this.apiBaseUrl}/api/xraylicense`,
-                    {
-                        headers: {
-                            ...authorizationHeader,
-                        },
-                    }
-                );
-                return licenseResponse.data;
-            } finally {
-                clearInterval(progressInterval);
-            }
+            const licenseResponse: AxiosResponse<XrayLicenseStatus> = await this.httpClient.get(
+                `${this.apiBaseUrl}/api/xraylicense`,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                    },
+                }
+            );
+            return licenseResponse.data;
         } catch (error: unknown) {
             LOG.message(
                 Level.ERROR,
