@@ -6,6 +6,7 @@ import axios, {
     InternalAxiosRequestConfig,
     isAxiosError,
 } from "axios";
+import FormData from "form-data";
 import { normalizedFilename } from "../../util/files";
 import { LOG, Level } from "../../util/logging";
 import { unknownToString } from "../../util/string";
@@ -141,14 +142,36 @@ export class AxiosRestClient {
             prefix = `${prefix}_${url}`;
         }
         const filename = normalizedFilename(`${prefix}_request.json`);
-        const data: LoggedRequest = {
-            body: request.data,
-            headers: request.headers,
-            params: request.params,
-            url: url,
-        };
-        const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
-        LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
+        if (request.data instanceof FormData) {
+            const formData = request.data;
+            const chunks: string[] = [];
+            formData.on("data", (chunk) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                chunks.push(Buffer.from(chunk).toString("utf-8"));
+            });
+            formData.on("end", () => {
+                const data: LoggedRequest = {
+                    body: chunks.join(""),
+                    headers: request.headers,
+                    params: request.params,
+                    url: url,
+                };
+                const resolvedFilename = LOG.logToFile(JSON.stringify(data, null, 2), filename);
+                LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
+            });
+            formData.on("error", (error) => {
+                throw error;
+            });
+        } else {
+            const data: LoggedRequest = {
+                body: request.data,
+                headers: request.headers,
+                params: request.params,
+                url: url,
+            };
+            const resolvedFilename = LOG.logToFile(JSON.stringify(data, null, 2), filename);
+            LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
+        }
     }
 
     private logResponse(response: AxiosResponse<unknown>): void {
@@ -165,12 +188,16 @@ export class AxiosRestClient {
         }
         const filename = normalizedFilename(`${prefix}_response.json`);
         const resolvedFilename = LOG.logToFile(
-            JSON.stringify({
-                data: response.data,
-                headers: response.headers,
-                status: response.status,
-                statusText: response.statusText,
-            }),
+            JSON.stringify(
+                {
+                    data: response.data,
+                    headers: response.headers,
+                    status: response.status,
+                    statusText: response.statusText,
+                },
+                null,
+                2
+            ),
             filename
         );
         LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);

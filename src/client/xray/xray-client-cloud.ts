@@ -1,4 +1,5 @@
 import { AxiosResponse } from "axios";
+import FormData from "form-data";
 import { StringMap } from "../../types/util";
 import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
@@ -239,8 +240,12 @@ export class XrayClientCloud
                 const resultString = JSON.stringify(cucumberJson);
                 const infoString = JSON.stringify(cucumberInfo);
                 const formData = new FormData();
-                formData.append("info", new Blob([infoString]));
-                formData.append("results", new Blob([resultString]));
+                formData.append("results", resultString, {
+                    filename: "results.json",
+                });
+                formData.append("info", infoString, {
+                    filename: "info.json",
+                });
                 return formData;
             }
             case "import-execution-multipart": {
@@ -252,8 +257,12 @@ export class XrayClientCloud
                 const resultString = JSON.stringify(executionResults);
                 const infoString = JSON.stringify(info);
                 const formData = new FormData();
-                formData.append("info", new Blob([infoString]));
-                formData.append("results", new Blob([resultString]));
+                formData.append("results", resultString, {
+                    filename: "results.json",
+                });
+                formData.append("info", infoString, {
+                    filename: "info.json",
+                });
                 return formData;
             }
         }
