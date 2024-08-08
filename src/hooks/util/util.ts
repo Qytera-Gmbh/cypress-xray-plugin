@@ -2,10 +2,27 @@ import { JiraClient } from "../../client/jira/jira-client";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Logger } from "../../util/logging";
 import { Command } from "../command";
+import { ConstantCommand } from "./commands/constant-command";
 import { ExtractFieldIdCommand, JiraField } from "./commands/jira/extract-field-id-command";
 import { FetchAllFieldsCommand } from "./commands/jira/fetch-all-fields-command";
 
-export function createExtractFieldIdCommand(
+export function getOrCreateConstantCommand<T>(
+    graph: ExecutableGraph<Command>,
+    logger: Logger,
+    value: T
+): ConstantCommand<T> {
+    for (const command of graph.getVertices()) {
+        if (command instanceof ConstantCommand) {
+            if (command.getValue() === value && command.getLogger() === logger) {
+                // Cast valid because of value equality.
+                return command as ConstantCommand<T>;
+            }
+        }
+    }
+    return graph.place(new ConstantCommand(logger, value));
+}
+
+export function getOrCreateExtractFieldIdCommand(
     field: JiraField,
     jiraClient: JiraClient,
     graph: ExecutableGraph<Command>,

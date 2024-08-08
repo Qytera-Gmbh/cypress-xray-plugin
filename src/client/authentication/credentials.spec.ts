@@ -2,7 +2,6 @@ import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "node:path";
-import { useFakeTimers } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
@@ -106,35 +105,6 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                           Caused by: Request failed with status code 404
                     `)
-                );
-            });
-
-            it("logs progress", async () => {
-                const clock = useFakeTimers();
-                const logger = getMockedLogger();
-                restClient.post.onFirstCall().returns(
-                    new Promise((resolve) => {
-                        setTimeout(() => {
-                            resolve({
-                                config: { headers: new AxiosHeaders() },
-                                data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                                headers: {},
-                                status: HttpStatusCode.Found,
-                                statusText: HttpStatusCode[HttpStatusCode.Found],
-                            });
-                        }, 23000);
-                    })
-                );
-                const promise = credentials.getAuthorizationHeader();
-                await clock.tickAsync(27000);
-                await promise;
-                expect(logger.message).to.have.been.calledWithExactly(
-                    Level.INFO,
-                    "Waiting for https://example.org to respond... (10 seconds)"
-                );
-                expect(logger.message).to.have.been.calledWithExactly(
-                    Level.INFO,
-                    "Waiting for https://example.org to respond... (20 seconds)"
                 );
             });
         });

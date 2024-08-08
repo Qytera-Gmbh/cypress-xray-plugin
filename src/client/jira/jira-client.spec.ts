@@ -3,10 +3,9 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import path from "path";
-import { SinonStubbedInstance, useFakeTimers } from "sinon";
+import { SinonStubbedInstance } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { expectToExist } from "../../../test/util";
-import { FieldDetail } from "../../types/jira/responses/field-detail";
 import { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
 import { SearchResults } from "../../types/jira/responses/search-results";
 import { User } from "../../types/jira/responses/user";
@@ -609,40 +608,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "editIssue"
                 );
             });
-        });
-
-        it("logs progress", async () => {
-            const clock = useFakeTimers();
-            const mockedData = JSON.parse(
-                fs.readFileSync("./test/resources/fixtures/jira/responses/getFields.json", "utf-8")
-            ) as FieldDetail[];
-            const logger = getMockedLogger();
-            restClient.get.onFirstCall().returns(
-                new Promise((resolve) => {
-                    setTimeout(() => {
-                        resolve({
-                            config: {
-                                headers: new AxiosHeaders(),
-                            },
-                            data: mockedData.slice(0, 2),
-                            headers: {},
-                            status: HttpStatusCode.Ok,
-                            statusText: HttpStatusCode[HttpStatusCode.Ok],
-                        });
-                    }, 23000);
-                })
-            );
-            const responsePromise = client.getFields();
-            await clock.tickAsync(27000);
-            await responsePromise;
-            expect(logger.message).to.have.been.calledWithExactly(
-                Level.INFO,
-                "Waiting for https://example.org to respond... (10 seconds)"
-            );
-            expect(logger.message).to.have.been.calledWithExactly(
-                Level.INFO,
-                "Waiting for https://example.org to respond... (20 seconds)"
-            );
         });
     });
 });

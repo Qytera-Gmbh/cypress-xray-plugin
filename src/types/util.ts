@@ -39,6 +39,8 @@ export type Remap<T extends object, V> = {
     [K in keyof Required<T>]: Required<T>[K] extends object
         ? Required<T>[K] extends unknown[]
             ? V
+            : string extends keyof Required<T>[K] // excludes indexed types
+            ? V
             : Remap<Required<T>[K], V>
         : V;
 };

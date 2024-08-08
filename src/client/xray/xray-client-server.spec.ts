@@ -4,8 +4,9 @@ import fs from "fs";
 import path from "node:path";
 import { SinonStubbedInstance } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
+import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
+import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
 import { BasicAuthCredentials } from "../authentication/credentials";
@@ -27,23 +28,68 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
 
         describe("import execution", () => {
+            it("calls the correct endpoint", async () => {
+                getMockedLogger();
+                restClient.post.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        testExecIssue: {
+                            id: "12345",
+                            key: "CYP-123",
+                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await client.importExecution({
+                    info: {
+                        description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
+                        finishDate: "2022-11-28T17:41:19Z",
+                        project: "CYP",
+                        startDate: "2022-11-28T17:41:12Z",
+                        summary: "Test Execution Here",
+                    },
+                    testExecutionKey: "CYP-42",
+                    tests: [
+                        {
+                            finish: "2022-11-28T17:41:15Z",
+                            start: "2022-11-28T17:41:15Z",
+                            status: "PASSED",
+                        },
+                        {
+                            finish: "2022-11-28T17:41:15Z",
+                            start: "2022-11-28T17:41:15Z",
+                            status: "PASSED",
+                        },
+                        {
+                            finish: "2022-11-28T17:41:19Z",
+                            start: "2022-11-28T17:41:15Z",
+                            status: "FAILED",
+                        },
+                    ],
+                });
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://example.org/rest/raven/latest/import/execution"
+                );
+            });
+
             it("should handle successful responses", async () => {
                 getMockedLogger();
-                restClient.post
-                    .withArgs("https://example.org/rest/raven/latest/import/execution")
-                    .resolves({
-                        config: { headers: new AxiosHeaders() },
-                        data: {
-                            testExecIssue: {
-                                id: "12345",
-                                key: "CYP-123",
-                                self: "http://www.example.org/jira/rest/api/2/issue/12345",
-                            },
+                restClient.post.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        testExecIssue: {
+                            id: "12345",
+                            key: "CYP-123",
+                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
                         },
-                        headers: {},
-                        status: HttpStatusCode.Ok,
-                        statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    });
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
                 const response = await client.importExecution({
                     info: {
                         description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
@@ -75,7 +121,126 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
         });
 
+        describe("import execution multipart", () => {
+            it("calls the correct endpoint", async () => {
+                getMockedLogger();
+                restClient.post.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        testExecIssue: {
+                            id: "12345",
+                            key: "CYP-123",
+                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await client.importExecutionMultipart(
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionMultipartResultsServer.json",
+                            "utf-8"
+                        )
+                    ) as XrayTestExecutionResults,
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoServer.json",
+                            "utf-8"
+                        )
+                    ) as MultipartInfo
+                );
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://example.org/rest/raven/latest/import/execution/multipart"
+                );
+            });
+
+            it("handles successful responses", async () => {
+                getMockedLogger();
+                restClient.post.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        infoMessages: [],
+                        testExecIssue: {
+                            id: "24556",
+                            key: "CYPLUG-123",
+                            self: "https://example.org/rest/api/2/issue/24556",
+                        },
+                        testIssues: {
+                            success: [
+                                {
+                                    id: "22979",
+                                    key: "CYPLUG-43",
+                                    self: "https://example.org/rest/api/2/issue/22979",
+                                    testVersionId: 430,
+                                },
+                                {
+                                    id: "22946",
+                                    key: "CYPLUG-10",
+                                    self: "https://example.org/rest/api/2/issue/22946",
+                                    testVersionId: 425,
+                                },
+                            ],
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                const response = await client.importExecutionMultipart(
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionMultipartResultsServer.json",
+                            "utf-8"
+                        )
+                    ) as XrayTestExecutionResults,
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoServer.json",
+                            "utf-8"
+                        )
+                    ) as MultipartInfo
+                );
+                expect(response).to.eq("CYPLUG-123");
+            });
+        });
+
         describe("import execution cucumber multipart", () => {
+            it("calls the correct endpoint", async () => {
+                getMockedLogger();
+                restClient.post.resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: {
+                        testExecIssue: {
+                            id: "12345",
+                            key: "CYP-123",
+                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                        },
+                    },
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await client.importExecutionCucumberMultipart(
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
+                            "utf-8"
+                        )
+                    ) as CucumberMultipartFeature[],
+                    JSON.parse(
+                        fs.readFileSync(
+                            "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
+                            "utf-8"
+                        )
+                    ) as MultipartInfo
+                );
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://example.org/rest/raven/latest/import/execution/cucumber/multipart"
+                );
+            });
+
             it("should handle successful responses", async () => {
                 getMockedLogger();
                 restClient.post.resolves({
@@ -103,52 +268,94 @@ describe(path.relative(process.cwd(), __filename), () => {
                             "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
                             "utf-8"
                         )
-                    ) as CucumberMultipartInfo
+                    ) as MultipartInfo
                 );
                 expect(response).to.eq("CYP-123");
             });
         });
 
         describe("import feature", () => {
+            it("calls the correct endpoint", async () => {
+                restClient.post.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: [
+                        {
+                            id: "14400",
+                            issueType: {
+                                id: "10100",
+                                name: "Test",
+                            },
+                            key: "CYP-333",
+                            self: "http://localhost:8727/rest/api/2/issue/14400",
+                        },
+                        {
+                            id: "14401",
+                            issueType: {
+                                id: "10103",
+                                name: "Test",
+                            },
+                            key: "CYP-555",
+                            self: "http://localhost:8727/rest/api/2/issue/14401",
+                        },
+                        {
+                            id: "14401",
+                            issueType: {
+                                id: "10103",
+                                name: "Pre-Condition",
+                            },
+                            key: "CYP-222",
+                            self: "http://localhost:8727/rest/api/2/issue/14401",
+                        },
+                    ],
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
+                await client.importFeature(
+                    "./test/resources/features/taggedPrefixCorrect.feature",
+                    { projectKey: "CYP" }
+                );
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://example.org/rest/raven/latest/import/feature?projectKey=CYP"
+                );
+            });
+
             it("handles successful responses", async () => {
-                restClient.post
-                    .withArgs("https://example.org/rest/raven/latest/import/feature?projectKey=CYP")
-                    .onFirstCall()
-                    .resolves({
-                        config: { headers: new AxiosHeaders() },
-                        data: [
-                            {
-                                id: "14400",
-                                issueType: {
-                                    id: "10100",
-                                    name: "Test",
-                                },
-                                key: "CYP-333",
-                                self: "http://localhost:8727/rest/api/2/issue/14400",
+                restClient.post.onFirstCall().resolves({
+                    config: { headers: new AxiosHeaders() },
+                    data: [
+                        {
+                            id: "14400",
+                            issueType: {
+                                id: "10100",
+                                name: "Test",
                             },
-                            {
-                                id: "14401",
-                                issueType: {
-                                    id: "10103",
-                                    name: "Test",
-                                },
-                                key: "CYP-555",
-                                self: "http://localhost:8727/rest/api/2/issue/14401",
+                            key: "CYP-333",
+                            self: "http://localhost:8727/rest/api/2/issue/14400",
+                        },
+                        {
+                            id: "14401",
+                            issueType: {
+                                id: "10103",
+                                name: "Test",
                             },
-                            {
-                                id: "14401",
-                                issueType: {
-                                    id: "10103",
-                                    name: "Pre-Condition",
-                                },
-                                key: "CYP-222",
-                                self: "http://localhost:8727/rest/api/2/issue/14401",
+                            key: "CYP-555",
+                            self: "http://localhost:8727/rest/api/2/issue/14401",
+                        },
+                        {
+                            id: "14401",
+                            issueType: {
+                                id: "10103",
+                                name: "Pre-Condition",
                             },
-                        ],
-                        headers: {},
-                        status: HttpStatusCode.Ok,
-                        statusText: HttpStatusCode[HttpStatusCode.Ok],
-                    });
+                            key: "CYP-222",
+                            self: "http://localhost:8727/rest/api/2/issue/14401",
+                        },
+                    ],
+                    headers: {},
+                    status: HttpStatusCode.Ok,
+                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                });
                 const response = await client.importFeature(
                     "./test/resources/features/taggedPrefixCorrect.feature",
                     { projectKey: "CYP" }

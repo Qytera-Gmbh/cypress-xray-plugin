@@ -1,9 +1,9 @@
 import { CypressRunResultType } from "../../../../../../types/cypress/cypress";
 import { IssueTypeDetails } from "../../../../../../types/jira/responses/issue-type-details";
 import {
-    CucumberMultipartInfo,
-    CucumberMultipartInfoCloud,
-} from "../../../../../../types/xray/requests/import-execution-cucumber-multipart-info";
+    MultipartInfo,
+    MultipartInfoCloud,
+} from "../../../../../../types/xray/requests/import-execution-multipart-info";
 import { dedent } from "../../../../../../util/dedent";
 
 /**
@@ -11,23 +11,24 @@ import { dedent } from "../../../../../../util/dedent";
  */
 export type RunData = Pick<
     CypressRunResultType,
-    "browserName" | "browserVersion" | "cypressVersion" | "startedTestsAt"
+    "browserName" | "browserVersion" | "cypressVersion" | "endedTestsAt" | "startedTestsAt"
 >;
 
 /**
  * Additional information used by test execution issues when uploading Cucumber results.
  */
 export interface TestExecutionIssueData {
+    custom?: Record<string, unknown>;
     description?: string;
     issuetype: IssueTypeDetails;
     labels?: string[];
     projectKey: string;
     summary?: string;
     testEnvironments?: {
-        environments: [string, ...string[]];
+        value: [string, ...string[]];
     };
     testPlan?: {
-        issueKey: string;
+        value: string;
     };
 }
 
@@ -36,12 +37,12 @@ export interface TestExecutionIssueData {
  */
 export interface TestExecutionIssueDataServer extends TestExecutionIssueData {
     testEnvironments?: {
-        environments: [string, ...string[]];
         fieldId: string;
+        value: [string, ...string[]];
     };
     testPlan?: {
         fieldId: string;
-        issueKey: string;
+        value: string;
     };
 }
 
@@ -56,8 +57,8 @@ export interface TestExecutionIssueDataServer extends TestExecutionIssueData {
 export function buildMultipartInfoServer(
     runData: RunData,
     testExecutionIssueData: TestExecutionIssueDataServer
-): CucumberMultipartInfo {
-    const multipartInfo: CucumberMultipartInfo = {
+): MultipartInfo {
+    const multipartInfo: MultipartInfo = {
         fields: {
             description:
                 testExecutionIssueData.description ??
@@ -76,12 +77,18 @@ export function buildMultipartInfoServer(
         },
     };
     if (testExecutionIssueData.testPlan) {
-        multipartInfo.fields[testExecutionIssueData.testPlan.fieldId] =
-            testExecutionIssueData.testPlan.issueKey;
+        multipartInfo.fields[testExecutionIssueData.testPlan.fieldId] = [
+            testExecutionIssueData.testPlan.value,
+        ];
     }
     if (testExecutionIssueData.testEnvironments) {
         multipartInfo.fields[testExecutionIssueData.testEnvironments.fieldId] =
-            testExecutionIssueData.testEnvironments.environments;
+            testExecutionIssueData.testEnvironments.value;
+    }
+    if (testExecutionIssueData.custom) {
+        for (const [key, value] of Object.entries(testExecutionIssueData.custom)) {
+            multipartInfo.fields[key] = value;
+        }
     }
     return multipartInfo;
 }
@@ -97,8 +104,8 @@ export function buildMultipartInfoServer(
 export function buildMultipartInfoCloud(
     runData: RunData,
     testExecutionIssueData: TestExecutionIssueData
-): CucumberMultipartInfoCloud {
-    return {
+): MultipartInfoCloud {
+    const multipartInfo: MultipartInfoCloud = {
         fields: {
             description:
                 testExecutionIssueData.description ??
@@ -116,10 +123,16 @@ export function buildMultipartInfoCloud(
                 defaultSummary(new Date(runData.startedTestsAt).getTime()),
         },
         xrayFields: {
-            environments: testExecutionIssueData.testEnvironments?.environments,
-            testPlanKey: testExecutionIssueData.testPlan?.issueKey,
+            environments: testExecutionIssueData.testEnvironments?.value,
+            testPlanKey: testExecutionIssueData.testPlan?.value,
         },
     };
+    if (testExecutionIssueData.custom) {
+        for (const [key, value] of Object.entries(testExecutionIssueData.custom)) {
+            multipartInfo.fields[key] = value;
+        }
+    }
+    return multipartInfo;
 }
 
 function defaultSummary(timestamp: number): string {

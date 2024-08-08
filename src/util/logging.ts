@@ -140,7 +140,7 @@ export class PluginLogger implements Logger {
             errorFileName = `${filename}.log`;
             errorData = error;
         }
-        const filepath = this.logToFile(JSON.stringify(errorData), errorFileName);
+        const filepath = this.logToFile(JSON.stringify(errorData, null, 2), errorFileName);
         this.message(Level.ERROR, `Complete error logs have been written to: ${filepath}`);
     }
 

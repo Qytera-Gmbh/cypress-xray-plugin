@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks";
 import { CucumberMultipartFeature } from "../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { CucumberMultipartInfo } from "../../../../types/xray/requests/import-execution-cucumber-multipart-info";
+import { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
 import { ConstantCommand } from "../constant-command";
 import { ImportExecutionCucumberCommand } from "./import-execution-cucumber-command";
 
@@ -24,7 +24,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoCloud.json",
                         "utf-8"
                     )
-                ) as CucumberMultipartInfo,
+                ) as MultipartInfo,
             };
             const command = new ImportExecutionCucumberCommand(
                 {

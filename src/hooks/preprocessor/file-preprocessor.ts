@@ -10,8 +10,7 @@ import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Logger } from "../../util/logging";
-import { ConstantCommand } from "../util/commands/constant-command";
-import { createExtractFieldIdCommand } from "../util/util";
+import { getOrCreateConstantCommand, getOrCreateExtractFieldIdCommand } from "../util/util";
 import { ExtractIssueKeysCommand } from "./commands/extract-issue-keys-command";
 import { GetLabelsToResetCommand } from "./commands/get-labels-to-reset-command";
 import { GetSummariesToResetCommand } from "./commands/get-summaries-to-reset-command";
@@ -49,11 +48,11 @@ export function addSynchronizationCommands(
     );
     graph.connect(extractIssueDataCommand, extractIssueKeysCommand);
     const getSummaryFieldIdCommand = options.jira.fields.summary
-        ? graph.place(new ConstantCommand(logger, options.jira.fields.summary))
-        : createExtractFieldIdCommand(JiraField.SUMMARY, clients.jiraClient, graph, logger);
+        ? getOrCreateConstantCommand(graph, logger, options.jira.fields.summary)
+        : getOrCreateExtractFieldIdCommand(JiraField.SUMMARY, clients.jiraClient, graph, logger);
     const getLabelsFieldIdCommand = options.jira.fields.labels
-        ? graph.place(new ConstantCommand(logger, options.jira.fields.labels))
-        : createExtractFieldIdCommand(JiraField.LABELS, clients.jiraClient, graph, logger);
+        ? getOrCreateConstantCommand(graph, logger, options.jira.fields.labels)
+        : getOrCreateExtractFieldIdCommand(JiraField.LABELS, clients.jiraClient, graph, logger);
     // Xray currently (almost) always overwrites issue data when importing feature files to
     // existing issues. Therefore, we manually need to backup and reset the data once the
     // import is done.

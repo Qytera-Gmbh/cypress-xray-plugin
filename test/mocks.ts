@@ -16,7 +16,7 @@ import { IssueUpdate } from "../src/types/jira/responses/issue-update";
 import { User } from "../src/types/jira/responses/user";
 import { XrayTestExecutionResults } from "../src/types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../src/types/xray/requests/import-execution-cucumber-multipart";
-import { CucumberMultipartInfo } from "../src/types/xray/requests/import-execution-cucumber-multipart-info";
+import { MultipartInfo } from "../src/types/xray/requests/import-execution-multipart-info";
 import { dedent } from "../src/util/dedent";
 import * as logging from "../src/util/logging";
 import { Logger } from "../src/util/logging";
@@ -33,16 +33,16 @@ export function getMockedLogger(
     const logger = stub(logging.LOG);
     if (!stubbingOptions.allowUnstubbedCalls) {
         logger.configure.callsFake((options: logging.LoggingOptions) => {
-            throw mockCalledUnexpectedlyError(options);
+            throw mockCalledUnexpectedlyError("configure", options);
         });
         logger.logErrorToFile.callsFake((error: unknown, filename: string) => {
-            throw mockCalledUnexpectedlyError(error, filename);
+            throw mockCalledUnexpectedlyError("logErrorToFile", error, filename);
         });
         logger.logToFile.callsFake((data: unknown, filename: string) => {
-            throw mockCalledUnexpectedlyError(data, filename);
+            throw mockCalledUnexpectedlyError("logToFile", data, filename);
         });
         logger.message.callsFake((level: logging.Level, ...text: string[]) => {
-            throw mockCalledUnexpectedlyError(level, text);
+            throw mockCalledUnexpectedlyError("message", level, text);
         });
     }
     return logger;
@@ -51,13 +51,13 @@ export function getMockedLogger(
 export function getMockedRestClient(): SinonStubbedInstance<AxiosRestClient> {
     const client = stub(new AxiosRestClient({}));
     client.get.callsFake((url: string, config?: AxiosRequestConfig<unknown>) => {
-        throw mockCalledUnexpectedlyError(url, config);
+        throw mockCalledUnexpectedlyError("get", url, config);
     });
     client.post.callsFake((url: string, data?: unknown, config?: AxiosRequestConfig<unknown>) => {
-        throw mockCalledUnexpectedlyError(url, data, config);
+        throw mockCalledUnexpectedlyError("post", url, data, config);
     });
     client.put.callsFake((url: string, data?: unknown, config?: AxiosRequestConfig<unknown>) => {
-        throw mockCalledUnexpectedlyError(url, data, config);
+        throw mockCalledUnexpectedlyError("put", url, data, config);
     });
     return client;
 }
@@ -65,22 +65,22 @@ export function getMockedRestClient(): SinonStubbedInstance<AxiosRestClient> {
 export function getMockedJiraClient(): SinonStubbedInstance<JiraClient> {
     const client: JiraClient = {
         addAttachment: function (issueIdOrKey: string, ...files: string[]) {
-            throw mockCalledUnexpectedlyError(issueIdOrKey, files);
+            throw mockCalledUnexpectedlyError("addAttachment", issueIdOrKey, files);
         },
         editIssue: function (issueIdOrKey: string, issueUpdateData: IssueUpdate) {
-            throw mockCalledUnexpectedlyError(issueIdOrKey, issueUpdateData);
+            throw mockCalledUnexpectedlyError("editIssue", issueIdOrKey, issueUpdateData);
         },
         getFields: function () {
-            throw mockCalledUnexpectedlyError();
+            throw mockCalledUnexpectedlyError("getFields");
         },
         getIssueTypes: function () {
-            throw mockCalledUnexpectedlyError();
+            throw mockCalledUnexpectedlyError("getIssueTypes");
         },
         getMyself: function (): Promise<User> {
-            throw mockCalledUnexpectedlyError();
+            throw mockCalledUnexpectedlyError("getMyself");
         },
         search: function (request: SearchRequest) {
-            throw mockCalledUnexpectedlyError(request);
+            throw mockCalledUnexpectedlyError("search", request);
         },
     };
     return makeTransparent(stub(client));
@@ -97,13 +97,27 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
     if (kind !== "cloud") {
         const client: XrayClient = {
             importExecution: function (execution: XrayTestExecutionResults) {
-                throw mockCalledUnexpectedlyError(execution);
+                throw mockCalledUnexpectedlyError("importExecution", execution);
             },
             importExecutionCucumberMultipart: function (
                 cucumberJson: CucumberMultipartFeature[],
-                cucumberInfo: CucumberMultipartInfo
+                cucumberInfo: MultipartInfo
             ) {
-                throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
+                throw mockCalledUnexpectedlyError(
+                    "importExecutionCucumberMultipart",
+                    cucumberJson,
+                    cucumberInfo
+                );
+            },
+            importExecutionMultipart: function (
+                executionResults: XrayTestExecutionResults,
+                info: MultipartInfo
+            ) {
+                throw mockCalledUnexpectedlyError(
+                    "importExecutionMultipart",
+                    executionResults,
+                    info
+                );
             },
             importFeature: function (
                 file: string,
@@ -114,6 +128,7 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
                 }
             ) {
                 throw mockCalledUnexpectedlyError(
+                    "importFeature",
                     file,
                     query.projectKey,
                     query.projectId,
@@ -125,19 +140,29 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
     }
     const client: XrayClient & HasTestTypes & HasTestResults = {
         getTestResults(issueId: string) {
-            throw mockCalledUnexpectedlyError(issueId);
+            throw mockCalledUnexpectedlyError("getTestResults", issueId);
         },
         getTestTypes: function (projectKey: string, ...issueKeys: string[]) {
-            throw mockCalledUnexpectedlyError(projectKey, issueKeys);
+            throw mockCalledUnexpectedlyError("getTestTypes", projectKey, issueKeys);
         },
         importExecution: function (execution: XrayTestExecutionResults) {
-            throw mockCalledUnexpectedlyError(execution);
+            throw mockCalledUnexpectedlyError("importExecution", execution);
         },
         importExecutionCucumberMultipart: function (
             cucumberJson: CucumberMultipartFeature[],
-            cucumberInfo: CucumberMultipartInfo
+            cucumberInfo: MultipartInfo
         ) {
-            throw mockCalledUnexpectedlyError(cucumberJson, cucumberInfo);
+            throw mockCalledUnexpectedlyError(
+                "importExecutionCucumberMultipart",
+                cucumberJson,
+                cucumberInfo
+            );
+        },
+        importExecutionMultipart: function (
+            executionResults: XrayTestExecutionResults,
+            info: MultipartInfo
+        ) {
+            throw mockCalledUnexpectedlyError("importExecutionMultipart", executionResults, info);
         },
         importFeature: function (
             file: string,
@@ -148,6 +173,7 @@ export function getMockedXrayClient<T extends keyof XrayClientMap>(
             }
         ) {
             throw mockCalledUnexpectedlyError(
+                "importFeature",
                 file,
                 query.projectKey,
                 query.projectId,
@@ -180,18 +206,18 @@ export function getMockedCypress(): {
     return { cy: global.cy, cypress: global.Cypress };
 }
 
-function mockCalledUnexpectedlyError(...args: unknown[]): Error {
+function mockCalledUnexpectedlyError(functionName: string, ...args: unknown[]): Error {
     if (args.length > 0) {
         return new Error(
             dedent(`
-                Mock called unexpectedly with args:
+                Mocked ${functionName} called unexpectedly with args:
                   ${args
                       .map((arg, index) => `arg ${index.toString()}: ${JSON.stringify(arg)}`)
                       .join("\n")};
             `)
         );
     }
-    return new Error("Mock called unexpectedly");
+    return new Error(`Mocked ${functionName} called unexpectedly`);
 }
 
 /**

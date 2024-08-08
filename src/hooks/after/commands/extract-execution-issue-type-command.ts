@@ -32,7 +32,7 @@ export class ExtractExecutionIssueTypeCommand extends Command<IssueTypeDetails, 
         if (executionIssueDetails.length === 0) {
             throw new Error(
                 dedent(`
-                    Failed to retrieve Jira issue type information of test execution issue type: ${
+                    Failed to retrieve Jira issue type information of test execution issue type called: ${
                         this.parameters.testExecutionIssueType
                     }
 
@@ -60,7 +60,7 @@ export class ExtractExecutionIssueTypeCommand extends Command<IssueTypeDetails, 
         } else if (executionIssueDetails.length > 1) {
             throw new Error(
                 dedent(`
-                    Failed to retrieve Jira issue type information of test execution issue type: ${
+                    Failed to retrieve Jira issue type information of test execution issue type called: ${
                         this.parameters.testExecutionIssueType
                     }
 

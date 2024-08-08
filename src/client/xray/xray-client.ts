@@ -1,30 +1,21 @@
 import { AxiosResponse, HttpStatusCode, isAxiosError } from "axios";
 import FormData from "form-data";
-import fs from "fs";
+import fs from "node:fs";
 import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { CucumberMultipartInfo } from "../../types/xray/requests/import-execution-cucumber-multipart-info";
-import {
-    ImportExecutionResponseCloud,
-    ImportExecutionResponseServer,
-} from "../../types/xray/responses/import-execution";
-import {
-    ImportFeatureResponse,
-    ImportFeatureResponseCloud,
-    ImportFeatureResponseServer,
-} from "../../types/xray/responses/import-feature";
+import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
+import { ImportFeatureResponse } from "../../types/xray/responses/import-feature";
 import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
 import { HELP } from "../../util/help";
 import { LOG, Level } from "../../util/logging";
 import { Client } from "../client";
-import { RequestConfigPost } from "../https/requests";
 
 export interface XrayClient {
     /**
      * Uploads test results to the Xray instance.
      *
-     * @param results - the test results as provided by Cypress
+     * @param execution - the test results as provided by Cypress
      * @returns the key of the test execution issue
      * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2
      */
@@ -40,7 +31,21 @@ export interface XrayClient {
      */
     importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfo
+        cucumberInfo: MultipartInfo
+    ): Promise<string>;
+    /**
+     * Uploads test results to the Xray instance while also allowing modification of arbitrary Jira
+     * fields.
+     *
+     * @param executionResults - the test results as provided by Cypress
+     * @param info - the Jira test execution issue information
+     * @returns the key of the test execution issue
+     * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results+-+REST#ImportExecutionResultsREST-XrayJSONresultsMultipart
+     * @see https://docs.getxray.app/display/XRAYCLOUD/Import+Execution+Results+-+REST+v2#ImportExecutionResultsRESTv2-XrayJSONresultsMultipart
+     */
+    importExecutionMultipart(
+        executionResults: XrayTestExecutionResults,
+        info: MultipartInfo
     ): Promise<string>;
     /**
      * Uploads (zipped) feature file(s) to corresponding Xray issues.
@@ -74,26 +79,26 @@ export interface XrayClient {
 /**
  * An abstract Xray client class for communicating with Xray instances.
  */
-export abstract class AbstractXrayClient extends Client implements XrayClient {
+export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecutionResponseType>
+    extends Client
+    implements XrayClient
+{
     public async importExecution(execution: XrayTestExecutionResults): Promise<string> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.INFO, "Importing Cypress execution...");
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const response: AxiosResponse<
-                    ImportExecutionResponseCloud | ImportExecutionResponseServer
-                > = await this.httpClient.post(this.getUrlImportExecution(), execution, {
+            const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
+                this.getUrlImportExecution(),
+                execution,
+                {
                     headers: {
                         ...authorizationHeader,
                     },
-                });
-                const key = this.handleResponseImportExecution(response.data);
-                LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
-                return key;
-            } finally {
-                clearInterval(progressInterval);
-            }
+                }
+            );
+            const key = this.onResponse("import-execution", response.data);
+            LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
+            return key;
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to import execution: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "importExecutionError");
@@ -112,28 +117,20 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Importing Cucumber features...");
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const fileContent = fs.createReadStream(file);
-                const form = new FormData();
-                form.append("file", fileContent);
+            const formData = new FormData();
+            formData.append("file", fs.createReadStream(file));
 
-                const response: AxiosResponse<
-                    ImportFeatureResponseCloud | ImportFeatureResponseServer
-                > = await this.httpClient.post(
-                    this.getUrlImportFeature(query.projectKey, query.projectId, query.source),
-                    form,
-                    {
-                        headers: {
-                            ...authorizationHeader,
-                            ...form.getHeaders(),
-                        },
-                    }
-                );
-                return this.handleResponseImportFeature(response.data);
-            } finally {
-                clearInterval(progressInterval);
-            }
+            const response: AxiosResponse<ImportFeatureResponseType> = await this.httpClient.post(
+                this.getUrlImportFeature(query.projectKey, query.projectId, query.source),
+                formData,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                        ...formData.getHeaders(),
+                    },
+                }
+            );
+            return this.onResponse("import-feature", response.data);
         } catch (error: unknown) {
             LOG.logErrorToFile(error, "importFeatureError");
             if (isAxiosError(error) && error.response?.status === HttpStatusCode.BadRequest) {
@@ -160,28 +157,32 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
 
     public async importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfo
+        cucumberInfo: MultipartInfo
     ): Promise<string> {
         try {
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.INFO, "Importing Cucumber execution...");
-            const request = await this.prepareRequestImportExecutionCucumberMultipart(
+            const formData = this.onRequest(
+                "import-execution-cucumber-multipart",
                 cucumberJson,
                 cucumberInfo
             );
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const response: AxiosResponse<
-                    ImportExecutionResponseCloud | ImportExecutionResponseServer
-                > = await this.httpClient.post(request.url, request.data, request.config);
-                const key = this.handleResponseImportExecutionCucumberMultipart(response.data);
-                LOG.message(
-                    Level.DEBUG,
-                    `Successfully uploaded Cucumber test execution results to ${key}.`
-                );
-                return key;
-            } finally {
-                clearInterval(progressInterval);
-            }
+            const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
+                this.getUrlImportExecutionCucumberMultipart(),
+                formData,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                        ...formData.getHeaders(),
+                    },
+                }
+            );
+            const key = this.onResponse("import-execution-cucumber-multipart", response.data);
+            LOG.message(
+                Level.DEBUG,
+                `Successfully uploaded Cucumber test execution results to ${key}.`
+            );
+            return key;
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to import Cucumber execution: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "importExecutionCucumberMultipartError");
@@ -189,65 +190,112 @@ export abstract class AbstractXrayClient extends Client implements XrayClient {
         }
     }
 
-    /**
-     * Returns the endpoint to use for importing Cucumber feature files.
-     *
-     * @param projectKey - key of the project where the tests and pre-conditions are located
-     * @param projectId - id of the project where the tests and pre-conditions are located
-     * @param source - a name designating the source of the features being imported (e.g. the source project name)
-     * @returns the URL
-     */
-    protected abstract getUrlImportFeature(
-        projectKey?: string,
-        projectId?: string,
-        source?: string
-    ): string;
+    public async importExecutionMultipart(
+        executionResults: XrayTestExecutionResults,
+        info: MultipartInfo
+    ): Promise<string> {
+        try {
+            const authorizationHeader = await this.credentials.getAuthorizationHeader();
+            LOG.message(Level.INFO, "Importing Cypress execution...");
+            const formData = this.onRequest("import-execution-multipart", executionResults, info);
+            const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
+                this.getUrlImportExecutionMultipart(),
+                formData,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                        ...formData.getHeaders(),
+                    },
+                }
+            );
+            const key = this.onResponse("import-execution-multipart", response.data);
+            LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
+            return key;
+        } catch (error: unknown) {
+            LOG.message(Level.ERROR, `Failed to import execution: ${errorMessage(error)}`);
+            LOG.logErrorToFile(error, "importExecutionMultipartError");
+            throw new LoggedError("Failed to import Cypress execution results");
+        }
+    }
+
+    private getUrlImportFeature(projectKey?: string, projectId?: string, source?: string): string {
+        const query: string[] = [];
+        if (projectKey) {
+            query.push(`projectKey=${projectKey}`);
+        }
+        if (projectId) {
+            query.push(`projectId=${projectId}`);
+        }
+        if (source) {
+            query.push(`source=${source}`);
+        }
+        return `${this.apiBaseUrl}/import/feature?${query.join("&")}`;
+    }
+
+    private getUrlImportExecution(): string {
+        return `${this.apiBaseUrl}/import/execution`;
+    }
+
+    private getUrlImportExecutionCucumberMultipart(): string {
+        return `${this.apiBaseUrl}/import/execution/cucumber/multipart`;
+    }
+
+    private getUrlImportExecutionMultipart(): string {
+        return `${this.apiBaseUrl}/import/execution/multipart`;
+    }
 
     /**
-     * Returns the endpoint to use for importing test execution results.
+     * Prepares the Cucumber multipart import execution form data.
      *
-     * @returns the URL
+     * @param event - the event
+     * @param cucumberJson - the test results as provided by the `cypress-cucumber-preprocessor`
+     * @param cucumberInfo - the test execution information
+     * @returns the form data
      */
-    protected abstract getUrlImportExecution(): string;
+    protected abstract onRequest(
+        event: "import-execution-cucumber-multipart",
+        cucumberJson: CucumberMultipartFeature[],
+        cucumberInfo: MultipartInfo
+    ): FormData;
 
     /**
-     * This method is called when a feature file was successfully imported to Xray.
+     * Prepares the import execution multipart form data.
      *
-     * @param response - the import feature response or `undefined` in case of errors
+     * @param event - the event
+     * @param executionResults - the test results as provided by Cypress
+     * @param info - the Jira test execution issue information
+     * @returns the form data
      */
-    protected abstract handleResponseImportFeature(
-        response: ImportFeatureResponseCloud | ImportFeatureResponseServer
+    protected abstract onRequest(
+        event: "import-execution-multipart",
+        executionResults: XrayTestExecutionResults,
+        info: MultipartInfo
+    ): FormData;
+
+    /**
+     * Handles the import feature response and transforms it into a consolidated object.
+     *
+     * @param event - the event
+     * @param response - the response depending on the concrete Xray version
+     * @returns the consolidated response
+     */
+    protected abstract onResponse(
+        event: "import-feature",
+        response: ImportFeatureResponseType
     ): ImportFeatureResponse;
 
     /**
-     * Returns the test execution key from the import execution response.
+     * Handles the import execution results response and transforms it into a consolidated object.
      *
-     * @param response - the import execution response
+     * @param event - the event
+     * @param response - the response depending on the concrete Xray version
      * @returns the test execution issue key
      */
-    protected abstract handleResponseImportExecution(
-        response: ImportExecutionResponseCloud | ImportExecutionResponseServer
-    ): string;
-
-    /**
-     * Prepares the Cucumber multipart import execution request.
-     *
-     * @param cucumberJson - the test results as provided by the `cypress-cucumber-preprocessor`
-     * @param cucumberInfo - the test execution information
-     * @returns the import execution request
-     */
-    protected abstract prepareRequestImportExecutionCucumberMultipart(
-        cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: CucumberMultipartInfo
-    ): Promise<RequestConfigPost<FormData>>;
-
-    /**
-     * Returns the test execution key from the Cucumber multipart import execution response.
-     *
-     * @param response - the import execution response
-     * @returns the test execution issue key
-     */
-    protected abstract handleResponseImportExecutionCucumberMultipart(
-        response: ImportExecutionResponseCloud | ImportExecutionResponseServer
+    protected abstract onResponse(
+        event:
+            | "import-execution-cucumber-multipart"
+            | "import-execution-multipart"
+            | "import-execution",
+        response: ImportExecutionResponseType
     ): string;
 }

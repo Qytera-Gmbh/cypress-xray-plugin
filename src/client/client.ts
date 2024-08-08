@@ -1,5 +1,3 @@
-import { LOG, Level } from "../util/logging";
-import { startInterval } from "../util/time";
 import { HttpCredentials } from "./authentication/credentials";
 import { AxiosRestClient } from "./https/requests";
 
@@ -40,21 +38,5 @@ export abstract class Client {
      */
     public getCredentials(): HttpCredentials {
         return this.credentials;
-    }
-
-    /**
-     * Starts an informative timer which tells the user for how long they have
-     * been waiting for a response already.
-     *
-     * @param url - the request URL
-     * @returns the timer's handler
-     */
-    protected startResponseInterval(url: string): ReturnType<typeof setInterval> {
-        return startInterval((totalTime: number) => {
-            LOG.message(
-                Level.INFO,
-                `Waiting for ${url} to respond... (${(totalTime / 1000).toString()} seconds)`
-            );
-        });
     }
 }

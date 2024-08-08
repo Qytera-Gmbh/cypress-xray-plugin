@@ -55,6 +55,7 @@ export const ENV_NAMES: Remap<Omit<CypressXrayPluginOptions, "http"> & Authentic
         },
         projectKey: "JIRA_PROJECT_KEY",
         testExecutionIssueDescription: "JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION",
+        testExecutionIssueFields: "JIRA_TEST_EXECUTION_ISSUE_FIELDS",
         testExecutionIssueKey: "JIRA_TEST_EXECUTION_ISSUE_KEY",
         testExecutionIssueSummary: "JIRA_TEST_EXECUTION_ISSUE_SUMMARY",
         testExecutionIssueType: "JIRA_TEST_EXECUTION_ISSUE_TYPE",

@@ -6,9 +6,11 @@ import axios, {
     InternalAxiosRequestConfig,
     isAxiosError,
 } from "axios";
+import FormData from "form-data";
 import { normalizedFilename } from "../../util/files";
 import { LOG, Level } from "../../util/logging";
 import { unknownToString } from "../../util/string";
+import { startInterval } from "../../util/time";
 
 export interface RequestConfigPost<D = unknown> {
     config?: AxiosRequestConfig<D>;
@@ -56,19 +58,26 @@ export class AxiosRestClient {
     private readonly options: RequestsOptions | undefined;
 
     private axios: AxiosInstance | undefined = undefined;
+    private readonly createdLogFiles: Map<string, number>;
 
     constructor(options?: RequestsOptions) {
         this.options = options;
+        this.createdLogFiles = new Map();
     }
 
     public async get<R>(
         url: string,
         config?: AxiosRequestConfig<unknown>
     ): Promise<AxiosResponse<R>> {
-        return await this.getAxios().get(url, {
-            ...this.options?.http,
-            ...config,
-        });
+        const progressInterval = this.startResponseInterval(url);
+        try {
+            return await this.getAxios().get(url, {
+                ...this.options?.http,
+                ...config,
+            });
+        } finally {
+            clearInterval(progressInterval);
+        }
     }
 
     public async post<R, D = unknown>(
@@ -76,10 +85,15 @@ export class AxiosRestClient {
         data?: D,
         config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse<R>> {
-        return this.getAxios().post(url, data, {
-            ...this.options?.http,
-            ...config,
-        });
+        const progressInterval = this.startResponseInterval(url);
+        try {
+            return await this.getAxios().post(url, data, {
+                ...this.options?.http,
+                ...config,
+            });
+        } finally {
+            clearInterval(progressInterval);
+        }
     }
 
     public async put<R, D = unknown>(
@@ -87,10 +101,15 @@ export class AxiosRestClient {
         data?: D,
         config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse<R>> {
-        return this.getAxios().put(url, data, {
-            ...this.options?.http,
-            ...config,
-        });
+        const progressInterval = this.startResponseInterval(url);
+        try {
+            return await this.getAxios().put(url, data, {
+                ...this.options?.http,
+                ...config,
+            });
+        } finally {
+            clearInterval(progressInterval);
+        }
     }
 
     private getAxios(): AxiosInstance {
@@ -133,44 +152,87 @@ export class AxiosRestClient {
     private logRequest(request: InternalAxiosRequestConfig<unknown>): void {
         const method = request.method?.toUpperCase();
         const url = request.url;
-        let prefix = Date.now().toString();
+        let prefix = new Date().toLocaleTimeString();
         if (method) {
             prefix = `${prefix}_${method}`;
         }
         if (url) {
             prefix = `${prefix}_${url}`;
         }
-        const filename = normalizedFilename(`${prefix}_request.json`);
-        const data: LoggedRequest = {
-            body: request.data,
-            headers: request.headers,
-            params: request.params,
-            url: url,
-        };
-        const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
-        LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
+        const filename = `${this.appendSuffix(normalizedFilename(`${prefix}_request`))}.json`;
+        if (request.data instanceof FormData) {
+            const formData = request.data;
+            const chunks: string[] = [];
+            formData.on("data", (chunk) => {
+                // Each chunk is 64 KiB by default. To not exceed (arbitrary) 50 MiB file size,
+                // make sure to truncate here.
+                if (chunks.length > Math.floor(50000 / 64)) {
+                    chunks.push("[... omitted due to file size]");
+                    return;
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                chunks.push(Buffer.from(chunk).toString("utf-8"));
+            });
+            formData.on("end", () => {
+                const resolvedFilename = LOG.logToFile(
+                    JSON.stringify(
+                        {
+                            body: chunks.join(""),
+                            headers: request.headers,
+                            params: request.params,
+                            url: url,
+                        } as LoggedRequest,
+                        null,
+                        2
+                    ),
+                    filename
+                );
+                LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
+            });
+            formData.on("error", (error) => {
+                throw error;
+            });
+        } else {
+            const resolvedFilename = LOG.logToFile(
+                JSON.stringify(
+                    {
+                        body: request.data,
+                        headers: request.headers,
+                        params: request.params,
+                        url: url,
+                    } as LoggedRequest,
+                    null,
+                    2
+                ),
+                filename
+            );
+            LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
+        }
     }
 
     private logResponse(response: AxiosResponse<unknown>): void {
         const request = response.request as AxiosRequestConfig<unknown>;
         const method = request.method?.toUpperCase();
         const url = response.config.url;
-        const timestamp = Date.now();
-        let prefix = timestamp.toString();
+        let prefix = new Date().toLocaleTimeString();
         if (method) {
             prefix = `${prefix}_${method}`;
         }
         if (url) {
             prefix = `${prefix}_${url}`;
         }
-        const filename = normalizedFilename(`${prefix}_response.json`);
+        const filename = `${this.appendSuffix(normalizedFilename(`${prefix}_response`))}.json`;
         const resolvedFilename = LOG.logToFile(
-            JSON.stringify({
-                data: response.data,
-                headers: response.headers,
-                status: response.status,
-                statusText: response.statusText,
-            }),
+            JSON.stringify(
+                {
+                    data: response.data,
+                    headers: response.headers,
+                    status: response.status,
+                    statusText: response.statusText,
+                },
+                null,
+                2
+            ),
             filename
         );
         LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
@@ -178,7 +240,7 @@ export class AxiosRestClient {
 
     private logError(direction: "inbound" | "outbound", error: unknown): void {
         let data: unknown;
-        let prefix = Date.now().toString();
+        let prefix = new Date().toLocaleTimeString();
         if (isAxiosError(error)) {
             const method = error.config?.method?.toUpperCase();
             const url = error.config?.url;
@@ -192,13 +254,33 @@ export class AxiosRestClient {
         } else {
             data = error;
         }
-        const filename = normalizedFilename(
-            `${prefix}_${direction === "inbound" ? "response" : "request"}.json`
-        );
-        const resolvedFilename = LOG.logToFile(JSON.stringify(data), filename);
+        const filename = `${this.appendSuffix(
+            normalizedFilename(`${prefix}_${direction === "inbound" ? "response" : "request"}`)
+        )}.json`;
+        const resolvedFilename = LOG.logToFile(JSON.stringify(data, null, 2), filename);
         LOG.message(
             Level.DEBUG,
             `${direction === "inbound" ? "Response" : "Request"}: ${resolvedFilename}`
         );
+    }
+
+    private startResponseInterval(url: string): ReturnType<typeof setInterval> {
+        return startInterval((totalTime: number) => {
+            LOG.message(
+                Level.INFO,
+                `Waiting for ${url} to respond... (${(totalTime / 1000).toString()} seconds)`
+            );
+        });
+    }
+
+    private appendSuffix(filename: string): string {
+        const filenameCount = this.createdLogFiles.get(filename);
+        if (filenameCount) {
+            this.createdLogFiles.set(filename, filenameCount + 1);
+            return `${filename}_${filenameCount.toString()}`;
+        } else {
+            this.createdLogFiles.set(filename, 1);
+            return filename;
+        }
     }
 }

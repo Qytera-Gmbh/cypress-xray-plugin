@@ -151,6 +151,7 @@ export interface JiraOptions {
      * ```
      */
     testExecutionIssueDescription?: string;
+    testExecutionIssueFields?: Record<string, unknown>;
     /**
      * An execution issue key to attach run results to. If omitted, Jira will always create a new
      * test execution issue with each upload.

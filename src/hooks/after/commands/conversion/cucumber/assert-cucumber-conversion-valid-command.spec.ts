@@ -7,7 +7,7 @@ import {
     CucumberMultipart,
     CucumberMultipartFeature,
 } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { CucumberMultipartInfo } from "../../../../../types/xray/requests/import-execution-cucumber-multipart-info";
+import { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
 import { ConstantCommand } from "../../../../util/commands/constant-command";
 import { AssertCucumberConversionValidCommand } from "./assert-cucumber-conversion-valid-command";
 
@@ -23,12 +23,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            const cucumberInfo: CucumberMultipartInfo = JSON.parse(
+            const cucumberInfo: MultipartInfo = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
                     "utf-8"
                 )
-            ) as CucumberMultipartInfo;
+            ) as MultipartInfo;
             const cucumberMultipart: CucumberMultipart = {
                 features: cucumberFeatures,
                 info: cucumberInfo,
@@ -42,12 +42,12 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("throws for empty feature arrays", async () => {
             const logger = getMockedLogger();
-            const cucumberInfo: CucumberMultipartInfo = JSON.parse(
+            const cucumberInfo: MultipartInfo = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
                     "utf-8"
                 )
-            ) as CucumberMultipartInfo;
+            ) as MultipartInfo;
             const cucumberMultipart: CucumberMultipart = {
                 features: [],
                 info: cucumberInfo,

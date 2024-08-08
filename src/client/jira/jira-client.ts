@@ -117,31 +117,26 @@ export class BaseJiraClient extends Client implements JiraClient {
         try {
             const header = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Attaching files:", ...files);
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const response: AxiosResponse<Attachment[]> = await this.httpClient.post(
-                    `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/attachments`,
-                    form,
-                    {
-                        headers: {
-                            ...header,
-                            ...form.getHeaders(),
-                            ["X-Atlassian-Token"]: "no-check",
-                        },
-                    }
-                );
-                LOG.message(
-                    Level.DEBUG,
-                    dedent(`
-                        Successfully attached the following files to issue ${issueIdOrKey}:
+            const response: AxiosResponse<Attachment[]> = await this.httpClient.post(
+                `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/attachments`,
+                form,
+                {
+                    headers: {
+                        ...header,
+                        ...form.getHeaders(),
+                        ["X-Atlassian-Token"]: "no-check",
+                    },
+                }
+            );
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Successfully attached the following files to issue ${issueIdOrKey}:
 
-                          ${response.data.map((attachment) => attachment.filename).join("\n")}
-                    `)
-                );
-                return response.data;
-            } finally {
-                clearInterval(progressInterval);
-            }
+                      ${response.data.map((attachment) => attachment.filename).join("\n")}
+                `)
+            );
+            return response.data;
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to attach files: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "addAttachmentError");
@@ -150,47 +145,42 @@ export class BaseJiraClient extends Client implements JiraClient {
     }
 
     public async getIssueTypes(): Promise<IssueTypeDetails[]> {
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Getting issue types...");
         try {
-            const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Getting issue types...");
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const response: AxiosResponse<IssueTypeDetails[]> = await this.httpClient.get(
-                    `${this.apiBaseUrl}/rest/api/latest/issuetype`,
-                    {
-                        headers: {
-                            ...authorizationHeader,
-                        },
-                    }
-                );
-                LOG.message(
-                    Level.DEBUG,
-                    `Successfully retrieved data for ${response.data.length.toString()} issue types.`
-                );
-                LOG.message(
-                    Level.DEBUG,
-                    dedent(`
-                        Received data for issue types:
+            const response: AxiosResponse<IssueTypeDetails[]> = await this.httpClient.get(
+                `${this.apiBaseUrl}/rest/api/latest/issuetype`,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                    },
+                }
+            );
+            LOG.message(
+                Level.DEBUG,
+                `Successfully retrieved data for ${response.data.length.toString()} issue types.`
+            );
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Received data for issue types:
 
-                          ${response.data
-                              .map((issueType) => {
-                                  if (issueType.name) {
-                                      if (issueType.id) {
-                                          return `${issueType.name} (id: ${issueType.id})`;
-                                      }
-                                      return `${issueType.name} (id: undefined)`;
-                                  } else if (issueType.id) {
-                                      return `undefined (id: ${issueType.id})`;
+                      ${response.data
+                          .map((issueType) => {
+                              if (issueType.name) {
+                                  if (issueType.id) {
+                                      return `${issueType.name} (id: ${issueType.id})`;
                                   }
-                                  return "undefined (id: undefined)";
-                              })
-                              .join("\n")}
+                                  return `${issueType.name} (id: undefined)`;
+                              } else if (issueType.id) {
+                                  return `undefined (id: ${issueType.id})`;
+                              }
+                              return "undefined (id: undefined)";
+                          })
+                          .join("\n")}
                     `)
-                );
-                return response.data;
-            } finally {
-                clearInterval(progressInterval);
-            }
+            );
+            return response.data;
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to get issue types: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "getIssueTypesError");
@@ -202,34 +192,27 @@ export class BaseJiraClient extends Client implements JiraClient {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Getting fields...");
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const response: AxiosResponse<FieldDetail[]> = await this.httpClient.get(
-                    `${this.apiBaseUrl}/rest/api/latest/field`,
-                    {
-                        headers: {
-                            ...authorizationHeader,
-                        },
-                    }
-                );
-                LOG.message(
-                    Level.DEBUG,
-                    `Successfully retrieved data for ${response.data.length.toString()} fields.`
-                );
-                LOG.message(
-                    Level.DEBUG,
-                    dedent(`
-                        Received data for fields:
+            const response: AxiosResponse<FieldDetail[]> = await this.httpClient.get(
+                `${this.apiBaseUrl}/rest/api/latest/field`,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                    },
+                }
+            );
+            LOG.message(
+                Level.DEBUG,
+                `Successfully retrieved data for ${response.data.length.toString()} fields.`
+            );
+            LOG.message(
+                Level.DEBUG,
+                dedent(`
+                    Received data for fields:
 
-                          ${response.data
-                              .map((field) => `${field.name} (id: ${field.id})`)
-                              .join("\n")}
-                    `)
-                );
-                return response.data;
-            } finally {
-                clearInterval(progressInterval);
-            }
+                      ${response.data.map((field) => `${field.name} (id: ${field.id})`).join("\n")}
+                `)
+            );
+            return response.data;
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to get fields: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "getFieldsError");
@@ -241,21 +224,16 @@ export class BaseJiraClient extends Client implements JiraClient {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Getting user details...");
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                const response: AxiosResponse<User> = await this.httpClient.get(
-                    `${this.apiBaseUrl}/rest/api/latest/myself`,
-                    {
-                        headers: {
-                            ...authorizationHeader,
-                        },
-                    }
-                );
-                LOG.message(Level.DEBUG, "Successfully retrieved user details.");
-                return response.data;
-            } finally {
-                clearInterval(progressInterval);
-            }
+            const response: AxiosResponse<User> = await this.httpClient.get(
+                `${this.apiBaseUrl}/rest/api/latest/myself`,
+                {
+                    headers: {
+                        ...authorizationHeader,
+                    },
+                }
+            );
+            LOG.message(Level.DEBUG, "Successfully retrieved user details.");
+            return response.data;
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to get user details: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "getMyselfError");
@@ -267,43 +245,38 @@ export class BaseJiraClient extends Client implements JiraClient {
         try {
             const header = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Searching issues...");
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                let total = 0;
-                let startAt = request.startAt ?? 0;
-                const results: StringMap<Issue> = {};
-                do {
-                    const paginatedRequest = {
-                        ...request,
-                        startAt: startAt,
-                    };
-                    const response: AxiosResponse<SearchResults> = await this.httpClient.post(
-                        `${this.apiBaseUrl}/rest/api/latest/search`,
-                        paginatedRequest,
-                        {
-                            headers: {
-                                ...header,
-                            },
-                        }
-                    );
-                    total = response.data.total ?? total;
-                    if (response.data.issues) {
-                        for (const issue of response.data.issues) {
-                            if (issue.key) {
-                                results[issue.key] = issue;
-                            }
-                        }
-                        // Explicit check because it could also be 0.
-                        if (typeof response.data.startAt === "number") {
-                            startAt = response.data.startAt + response.data.issues.length;
+            let total = 0;
+            let startAt = request.startAt ?? 0;
+            const results: StringMap<Issue> = {};
+            do {
+                const paginatedRequest = {
+                    ...request,
+                    startAt: startAt,
+                };
+                const response: AxiosResponse<SearchResults> = await this.httpClient.post(
+                    `${this.apiBaseUrl}/rest/api/latest/search`,
+                    paginatedRequest,
+                    {
+                        headers: {
+                            ...header,
+                        },
+                    }
+                );
+                total = response.data.total ?? total;
+                if (response.data.issues) {
+                    for (const issue of response.data.issues) {
+                        if (issue.key) {
+                            results[issue.key] = issue;
                         }
                     }
-                } while (startAt && startAt < total);
-                LOG.message(Level.DEBUG, `Found ${total.toString()} issues`);
-                return Object.values(results);
-            } finally {
-                clearInterval(progressInterval);
-            }
+                    // Explicit check because it could also be 0.
+                    if (typeof response.data.startAt === "number") {
+                        startAt = response.data.startAt + response.data.issues.length;
+                    }
+                }
+            } while (startAt && startAt < total);
+            LOG.message(Level.DEBUG, `Found ${total.toString()} issues`);
+            return Object.values(results);
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to search issues: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "searchError");
@@ -315,21 +288,17 @@ export class BaseJiraClient extends Client implements JiraClient {
         try {
             const header = await this.credentials.getAuthorizationHeader();
             LOG.message(Level.DEBUG, "Editing issue...");
-            const progressInterval = this.startResponseInterval(this.apiBaseUrl);
-            try {
-                await this.httpClient.put(
-                    `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}`,
-                    issueUpdateData,
-                    {
-                        headers: {
-                            ...header,
-                        },
-                    }
-                );
-                LOG.message(Level.DEBUG, `Successfully edited issue: ${issueIdOrKey}`);
-            } finally {
-                clearInterval(progressInterval);
-            }
+            await this.httpClient.put(
+                `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}`,
+                issueUpdateData,
+                {
+                    headers: {
+                        ...header,
+                    },
+                }
+            );
+            LOG.message(Level.DEBUG, `Successfully edited issue: ${issueIdOrKey}`);
+
             return issueIdOrKey;
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to edit issue: ${errorMessage(error)}`);

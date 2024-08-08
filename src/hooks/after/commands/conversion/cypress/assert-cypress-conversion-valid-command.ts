@@ -1,19 +1,24 @@
-import { XrayTestExecutionResults } from "../../../../../types/xray/import-test-execution-results";
+import { XrayClient } from "../../../../../client/xray/xray-client";
 import { SkippedError } from "../../../../../util/errors";
 import { Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 
 export class AssertCypressConversionValidCommand extends Command<void, null> {
-    private readonly xrayTestExecutionResults: Computable<XrayTestExecutionResults>;
+    private readonly xrayTestExecutionResults: Computable<
+        Parameters<XrayClient["importExecutionMultipart"]>
+    >;
 
-    constructor(logger: Logger, xrayTestExecutionResults: Computable<XrayTestExecutionResults>) {
+    constructor(
+        logger: Logger,
+        xrayTestExecutionResults: Computable<Parameters<XrayClient["importExecutionMultipart"]>>
+    ) {
         super(null, logger);
         this.xrayTestExecutionResults = xrayTestExecutionResults;
     }
 
     protected async computeResult(): Promise<void> {
-        const xrayTestExecutionResults = await this.xrayTestExecutionResults.compute();
-        if (!xrayTestExecutionResults.tests || xrayTestExecutionResults.tests.length === 0) {
+        const [results] = await this.xrayTestExecutionResults.compute();
+        if (!results.tests || results.tests.length === 0) {
             throw new SkippedError(
                 "Skipping Cypress results upload: No native Cypress tests were executed"
             );

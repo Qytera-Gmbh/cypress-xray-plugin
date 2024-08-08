@@ -1,4 +1,4 @@
-import { CucumberMultipartInfo } from "./import-execution-cucumber-multipart-info";
+import { MultipartInfo } from "./import-execution-multipart-info";
 
 /*
  * There unfortunately is no official Cucumber JSON report scheme available anywhere, as stated
@@ -12,7 +12,7 @@ import { CucumberMultipartInfo } from "./import-execution-cucumber-multipart-inf
 
 export interface CucumberMultipart {
     features: CucumberMultipartFeature[];
-    info: CucumberMultipartInfo;
+    info: MultipartInfo;
 }
 export interface CucumberMultipartFeature {
     description: string;
