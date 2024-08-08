@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { readFileSync } from "fs";
 import path from "path";
+import { useFakeTimers } from "sinon";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks";
 import { assertIsInstanceOf } from "../../../test/util";
 import {
@@ -16,7 +17,10 @@ import {
     InternalCucumberOptions,
     InternalCypressXrayPluginOptions,
 } from "../../types/plugin";
-import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
+import {
+    CucumberMultipart,
+    CucumberMultipartFeature,
+} from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Level } from "../../util/logging";
 import { Command, ComputableState } from "../command";
@@ -366,6 +370,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             describe("server", () => {
                 it("adds commands necessary for cucumber results upload", () => {
+                    useFakeTimers(new Date(12345));
                     const graph = new ExecutableGraph<Command>();
                     addUploadCommands(
                         cypressResult,
@@ -429,6 +434,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectKey: "CYP",
                         testExecutionIssueType: "Test Execution",
                     });
+                    expect(executionIssueSummaryCommand.getValue()).to.deep.eq(
+                        "Execution Results [01/01/1970, 01:00:12]"
+                    );
                     expect(convertMultipartInfoCommand.getParameters()).to.deep.eq({
                         jira: options.jira,
                         xray: options.xray,
@@ -1091,11 +1099,18 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         describe("mixed", () => {
             let cypressResult: CypressRunResultType;
+            let cucumberResult: CucumberMultipart;
 
             beforeEach(() => {
                 cypressResult = JSON.parse(
                     readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
                 ) as CypressRunResultType;
+                cucumberResult = JSON.parse(
+                    readFileSync(
+                        "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
+                        "utf-8"
+                    )
+                ) as CucumberMultipart;
                 options.cucumber = {
                     downloadFeatures: false,
                     featureFileExtension: ".feature",
@@ -1111,6 +1126,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             it("adds commands necessary for mixed results upload", () => {
+                useFakeTimers(new Date(12345));
                 const graph = new ExecutableGraph<Command>();
                 addUploadCommands(
                     cypressResult,
@@ -1125,15 +1141,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const [
                     cypressResultsCommand,
                     convertCypressTestsCommand,
-                    convertCypressInfoCommand,
+                    fetchIssueTypesCommand,
+                    extractExecutionIssueTypeCommand,
+                    executionIssueSummaryCommand,
+                    convertCommand,
                     combineCypressJsonCommand,
                     assertCypressConversionValidCommand,
                     importExecutionCypressCommand,
                     cucumberResultsCommand,
                     fallbackCypressUploadCommand,
-                    fetchIssueTypesCommand,
-                    extractExecutionIssueTypeCommand,
-                    convertCommand,
                     convertCucumberFeaturesCommand,
                     combineCucumberMultipartCommand,
                     assertCucumberConversionValidCommand,
@@ -1143,21 +1159,21 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ] = [...graph.getVertices()];
                 assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
                 assertIsInstanceOf(convertCypressTestsCommand, ConvertCypressTestsCommand);
-                assertIsInstanceOf(convertCypressInfoCommand, ConvertInfoServerCommand);
+                assertIsInstanceOf(fetchIssueTypesCommand, FetchIssueTypesCommand);
+                assertIsInstanceOf(
+                    extractExecutionIssueTypeCommand,
+                    ExtractExecutionIssueTypeCommand
+                );
+                assertIsInstanceOf(executionIssueSummaryCommand, ConstantCommand);
+                assertIsInstanceOf(convertCommand, ConvertInfoServerCommand);
                 assertIsInstanceOf(combineCypressJsonCommand, CombineCypressJsonCommand);
                 assertIsInstanceOf(
                     assertCypressConversionValidCommand,
                     AssertCypressConversionValidCommand
                 );
                 assertIsInstanceOf(importExecutionCypressCommand, ImportExecutionCypressCommand);
-                assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
                 assertIsInstanceOf(cucumberResultsCommand, ConstantCommand);
-                assertIsInstanceOf(fetchIssueTypesCommand, FetchIssueTypesCommand);
-                assertIsInstanceOf(
-                    extractExecutionIssueTypeCommand,
-                    ExtractExecutionIssueTypeCommand
-                );
-                assertIsInstanceOf(convertCommand, ConvertInfoServerCommand);
+                assertIsInstanceOf(fallbackCypressUploadCommand, FallbackCommand);
                 assertIsInstanceOf(convertCucumberFeaturesCommand, ConvertCucumberFeaturesCommand);
                 assertIsInstanceOf(
                     combineCucumberMultipartCommand,
@@ -1169,7 +1185,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 assertIsInstanceOf(importCucumberExecutionCommand, ImportExecutionCucumberCommand);
                 assertIsInstanceOf(fallbackCucumberUploadCommand, FallbackCommand);
-                assertIsInstanceOf(fallbackCypressUploadCommand, FallbackCommand);
                 assertIsInstanceOf(verifyResultsUploadCommand, VerifyResultsUploadCommand);
                 // Vertex data.
                 expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
@@ -1181,7 +1196,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudStatusFallback: false,
                     xray: options.xray,
                 });
-                expect(convertCypressInfoCommand.getParameters()).to.deep.eq({
+                expect(fetchIssueTypesCommand.getParameters()).to.deep.eq({
+                    jiraClient: clients.jiraClient,
+                });
+                expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
+                    displayCloudHelp: false,
+                    projectKey: "CYP",
+                    testExecutionIssueType: "Test Execution",
+                });
+                expect(executionIssueSummaryCommand.getValue()).to.deep.eq(
+                    "Execution Results [01/01/1970, 01:00:12]"
+                );
+                expect(convertCommand.getParameters()).to.deep.eq({
                     jira: options.jira,
                     xray: options.xray,
                 });
@@ -1191,9 +1217,45 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(importExecutionCypressCommand.getParameters()).to.deep.eq({
                     xrayClient: clients.xrayClient,
                 });
+                expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
                 expect(fallbackCypressUploadCommand.getParameters()).to.deep.eq({
                     fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
                     fallbackValue: undefined,
+                });
+                expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
+                    cucumber: {
+                        prefixes: {
+                            precondition: undefined,
+                            test: undefined,
+                        },
+                    },
+                    jira: {
+                        projectKey: "CYP",
+                        testExecutionIssueDescription: undefined,
+                        testExecutionIssueSummary: undefined,
+                        testPlanIssueKey: undefined,
+                    },
+                    projectRoot: ".",
+                    useCloudTags: false,
+                    xray: {
+                        status: {
+                            failed: undefined,
+                            passed: undefined,
+                            pending: undefined,
+                            skipped: undefined,
+                            step: {
+                                failed: undefined,
+                                passed: undefined,
+                                pending: undefined,
+                                skipped: undefined,
+                            },
+                        },
+                        testEnvironments: undefined,
+                        uploadScreenshots: true,
+                    },
+                });
+                expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
+                    xrayClient: clients.xrayClient,
                 });
                 expect(fallbackCucumberUploadCommand.getParameters()).to.deep.eq({
                     fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
@@ -1206,14 +1268,23 @@ describe(path.relative(process.cwd(), __filename), () => {
                 // Cypress.
                 expect([...graph.getSuccessors(cypressResultsCommand)]).to.deep.eq([
                     convertCypressTestsCommand,
-                    convertCypressInfoCommand,
                     convertCommand,
                 ]);
                 expect([...graph.getSuccessors(convertCypressTestsCommand)]).to.deep.eq([
                     combineCypressJsonCommand,
                 ]);
-                expect([...graph.getSuccessors(convertCypressInfoCommand)]).to.deep.eq([
+                expect([...graph.getSuccessors(fetchIssueTypesCommand)]).to.deep.eq([
+                    extractExecutionIssueTypeCommand,
+                ]);
+                expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
+                    convertCommand,
+                ]);
+                expect([...graph.getSuccessors(executionIssueSummaryCommand)]).to.deep.eq([
+                    convertCommand,
+                ]);
+                expect([...graph.getSuccessors(convertCommand)]).to.deep.eq([
                     combineCypressJsonCommand,
+                    combineCucumberMultipartCommand,
                 ]);
                 expect([...graph.getSuccessors(combineCypressJsonCommand)]).to.deep.eq([
                     assertCypressConversionValidCommand,
@@ -1225,22 +1296,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect([...graph.getSuccessors(importExecutionCypressCommand)]).to.deep.eq([
                     fallbackCypressUploadCommand,
                 ]);
-                expect([...graph.getSuccessors(fallbackCypressUploadCommand)]).to.deep.eq([
-                    convertCucumberFeaturesCommand,
-                    verifyResultsUploadCommand,
-                ]);
                 // Cucumber.
                 expect([...graph.getSuccessors(cucumberResultsCommand)]).to.deep.eq([
                     convertCucumberFeaturesCommand,
                 ]);
-                expect([...graph.getSuccessors(fetchIssueTypesCommand)]).to.deep.eq([
-                    extractExecutionIssueTypeCommand,
-                ]);
-                expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
-                    convertCommand,
-                ]);
-                expect([...graph.getSuccessors(convertCommand)]).to.deep.eq([
-                    combineCucumberMultipartCommand,
+                expect([...graph.getSuccessors(fallbackCypressUploadCommand)]).to.deep.eq([
+                    convertCucumberFeaturesCommand,
+                    verifyResultsUploadCommand,
                 ]);
                 expect([...graph.getSuccessors(convertCucumberFeaturesCommand)]).to.deep.eq([
                     combineCucumberMultipartCommand,

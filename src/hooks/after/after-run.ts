@@ -172,7 +172,7 @@ function getImportExecutionCypressCommand(
         )
     );
     graph.connect(cypressResultsCommand, convertCypressTestsCommand);
-    const convertMultipartInfoCommand = createConvertMultipartInfoCommand(
+    const convertMultipartInfoCommand = getConvertMultipartInfoCommand(
         options,
         clients,
         graph,
@@ -232,7 +232,7 @@ function getImportExecutionCucumberCommand(
     testExecutionIssueKeyCommand?: Command<string | undefined>
 ): ImportExecutionCucumberCommand {
     const cypressResultsCommand = getOrCreateConstantCommand(graph, logger, runResult);
-    const convertMultipartInfoCommand = createConvertMultipartInfoCommand(
+    const convertMultipartInfoCommand = getConvertMultipartInfoCommand(
         options,
         clients,
         graph,
@@ -392,15 +392,31 @@ function getExecutionIssueSummaryCommand(
     );
 }
 
-function createConvertMultipartInfoCommand(
+function getConvertMultipartInfoCommand(
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
     logger: Logger,
     cypressResultsCommand: Command<CypressRunResultType>
 ): ConvertInfoCommand {
+    let convertCommand: ConvertInfoCommand | undefined;
+    if (clients.kind === "cloud") {
+        convertCommand = graph.find(
+            (command): command is ConvertInfoCloudCommand =>
+                command instanceof ConvertInfoCloudCommand &&
+                [...graph.getPredecessors(command)].includes(cypressResultsCommand)
+        );
+    } else {
+        convertCommand = graph.find(
+            (command): command is ConvertInfoServerCommand =>
+                command instanceof ConvertInfoServerCommand &&
+                [...graph.getPredecessors(command)].includes(cypressResultsCommand)
+        );
+    }
+    if (convertCommand) {
+        return convertCommand;
+    }
     let additionalFieldsCommand: Command<Record<string, unknown>> | undefined = undefined;
-    let convertCommand: ConvertInfoCommand;
     if (options.jira.testExecutionIssueFields) {
         additionalFieldsCommand = getOrCreateConstantCommand(
             graph,
@@ -515,8 +531,7 @@ function addPostUploadCommands(
             (command) => {
                 const predecessors = [...graph.getPredecessors(command)];
                 return (
-                    predecessors.length === 1 &&
-                    predecessors.includes(importCypressExecutionCommand)
+                    predecessors.length === 1 && predecessors[0] === importCypressExecutionCommand
                 );
             }
         );
@@ -541,8 +556,7 @@ function addPostUploadCommands(
             (command) => {
                 const predecessors = [...graph.getPredecessors(command)];
                 return (
-                    predecessors.length === 1 &&
-                    predecessors.includes(importCucumberExecutionCommand)
+                    predecessors.length === 1 && predecessors[0] === importCucumberExecutionCommand
                 );
             }
         );
