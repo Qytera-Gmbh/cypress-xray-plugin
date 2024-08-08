@@ -177,7 +177,6 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             const command = new ConvertInfoCloudCommand(
                 {
-                    cucumber: { prefixes: { test: "TestName:" } },
                     jira: {
                         projectKey: "CYP",
                     },
@@ -215,7 +214,6 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             const command = new ConvertInfoCloudCommand(
                 {
-                    cucumber: { prefixes: { test: "TestName:" } },
                     jira: {
                         projectKey: "CYP",
                         testPlanIssueKey: "CYP-123",
@@ -244,7 +242,6 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             const command = new ConvertInfoCloudCommand(
                 {
-                    cucumber: { prefixes: { test: "TestName:" } },
                     jira: {
                         projectKey: "CYP",
                     },

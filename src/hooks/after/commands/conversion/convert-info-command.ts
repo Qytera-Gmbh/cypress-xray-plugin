@@ -1,9 +1,5 @@
 import { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
-import {
-    InternalCucumberOptions,
-    InternalJiraOptions,
-    InternalXrayOptions,
-} from "../../../../types/plugin";
+import { InternalJiraOptions, InternalXrayOptions } from "../../../../types/plugin";
 import { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
 import { Logger } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
@@ -16,7 +12,6 @@ import {
 } from "./cucumber/util/multipart-info";
 
 interface Parameters {
-    cucumber?: Pick<InternalCucumberOptions, "prefixes">;
     jira: Pick<
         InternalJiraOptions,
         "projectKey" | "testExecutionIssueDescription" | "testPlanIssueKey"
