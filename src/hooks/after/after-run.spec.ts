@@ -656,10 +656,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const fetchAllFieldsCommand = commands[4];
-                    const testPlanIdCommand = commands[5];
-                    const testEnvironmentsIdCommand = commands[6];
-                    const convertCommand = commands[7];
+                    const fetchAllFieldsCommand = commands[5];
+                    const testPlanIdCommand = commands[6];
+                    const testEnvironmentsIdCommand = commands[7];
+                    const convertCommand = commands[8];
                     assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
                     assertIsInstanceOf(testPlanIdCommand, ExtractFieldIdCommand);
                     assertIsInstanceOf(testEnvironmentsIdCommand, ExtractFieldIdCommand);
@@ -674,8 +674,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
                         convertCommand,
                     ]);
-                    expect(graph.size("vertices")).to.eq(14);
-                    expect(graph.size("edges")).to.eq(15);
+                    expect(graph.size("vertices")).to.eq(15);
+                    expect(graph.size("edges")).to.eq(16);
                 });
 
                 it("uses configured test plan and environment data with hardcoded ids", () => {
