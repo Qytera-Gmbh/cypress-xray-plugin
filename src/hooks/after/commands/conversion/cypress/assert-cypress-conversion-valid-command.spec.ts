@@ -21,6 +21,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     fields: {
                         description: "Run using Cypress",
+                        issuetype: { name: "Test Execution", subtask: false },
+                        project: {
+                            key: "CYP",
+                        },
                         summary: "A test execution",
                     },
                 },
@@ -39,6 +43,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     fields: {
                         description: "Run using Cypress",
+                        issuetype: { name: "Test Execution", subtask: false },
+                        project: {
+                            key: "CYP",
+                        },
                         summary: "A test execution",
                     },
                 },
@@ -62,6 +70,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     fields: {
                         description: "Run using Cypress",
+                        issuetype: { name: "Test Execution", subtask: false },
+                        project: {
+                            key: "CYP",
+                        },
                         summary: "A test execution",
                     },
                 },

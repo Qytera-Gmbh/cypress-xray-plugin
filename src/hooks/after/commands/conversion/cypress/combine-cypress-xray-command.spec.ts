@@ -13,6 +13,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             const xrayInfo: MultipartInfo = {
                 fields: {
                     description: "Run using Cypress",
+                    issuetype: { name: "Test Execution", subtask: false },
+                    project: {
+                        key: "CYP",
+                    },
                     summary: "A test execution",
                 },
             };

@@ -21,8 +21,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:36.177Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
-                })
+                }),
+                new ConstantCommand(logger, "Execution Results [1694257168829]")
             );
             const info = await command.compute();
             expect(info).to.deep.eq({
@@ -53,8 +55,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
+                new ConstantCommand(logger, "my summary"),
                 { testPlanId: new ConstantCommand(logger, "customfield_12345") }
             );
             const info = await command.compute();
@@ -76,8 +80,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
+                new ConstantCommand(logger, "my summary"),
                 { testEnvironmentsId: new ConstantCommand(logger, "customfield_45678") }
             );
             const info = await command.compute();
@@ -102,8 +108,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                             browserName: "Firefox",
                             browserVersion: "123.11.6",
                             cypressVersion: "42.4.9",
+                            endedTestsAt: "2023-09-09T10:59:31.416Z",
                             startedTestsAt: "2023-09-09T10:59:28.829Z",
-                        })
+                        }),
+                        new ConstantCommand(logger, "my summary")
                     )
             ).to.throw("A test plan issue key was supplied without the test plan Jira field ID");
         });
@@ -125,8 +133,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                             browserName: "Firefox",
                             browserVersion: "123.11.6",
                             cypressVersion: "42.4.9",
+                            endedTestsAt: "2023-09-09T10:59:31.416Z",
                             startedTestsAt: "2023-09-09T10:59:28.829Z",
-                        })
+                        }),
+                        new ConstantCommand(logger, "my summary")
                     )
             ).to.throw(
                 "Test environments were supplied without the test environments Jira field ID"
@@ -148,8 +158,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
-                })
+                }),
+                new ConstantCommand(logger, "my summary")
             );
             expect(command.getParameters()).to.deep.eq({
                 jira: {
@@ -177,8 +189,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
-                })
+                }),
+                new ConstantCommand(logger, "my summary")
             );
             const info = await command.compute();
             expect(info).to.deep.eq({
@@ -214,8 +228,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
-                })
+                }),
+                new ConstantCommand(logger, "my summary")
             );
             const info = await command.compute();
             expect(info).to.have.deep.property("xrayFields", {
@@ -240,8 +256,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
-                })
+                }),
+                new ConstantCommand(logger, "my summary")
             );
             const info = await command.compute();
             expect(info).to.have.deep.property("xrayFields", {
