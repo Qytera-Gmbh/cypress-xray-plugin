@@ -524,11 +524,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                         getMockedLogger()
                     );
                     // Vertices.
-                    expect(graph.size("vertices")).to.eq(13);
                     const commands = [...graph.getVertices()];
-                    const fetchAllFieldsCommand = commands[4];
-                    const testPlanIdCommand = commands[5];
-                    const convertCucumberInfoCommand = commands[6];
+                    const fetchAllFieldsCommand = commands[5];
+                    const testPlanIdCommand = commands[6];
+                    const convertCommand = commands[7];
                     assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
                     assertIsInstanceOf(testPlanIdCommand, ExtractFieldIdCommand);
                     // Vertex data.
@@ -539,13 +538,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                         field: JiraField.TEST_PLAN,
                     });
                     // Edges.
-                    expect(graph.size("edges")).to.eq(13);
                     expect([...graph.getSuccessors(fetchAllFieldsCommand)]).to.deep.eq([
                         testPlanIdCommand,
                     ]);
                     expect([...graph.getSuccessors(testPlanIdCommand)]).to.deep.eq([
-                        convertCucumberInfoCommand,
+                        convertCommand,
                     ]);
+                    expect(graph.size("vertices")).to.eq(14);
+                    expect(graph.size("edges")).to.eq(14);
                 });
 
                 it("uses configured test plan data with hardcoded test plan ids", () => {
@@ -562,18 +562,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                         getMockedLogger()
                     );
                     // Vertices.
-                    expect(graph.size("vertices")).to.eq(12);
                     const commands = [...graph.getVertices()];
-                    const testPlanIdCommand = commands[4];
-                    const convertCucumberInfoCommand = commands[5];
+                    const testPlanIdCommand = commands[5];
+                    const convertCommand = commands[6];
                     assertIsInstanceOf(testPlanIdCommand, ConstantCommand);
                     // Vertex data.
                     expect(testPlanIdCommand.getValue()).to.eq("customfield_12345");
                     // Edges.
-                    expect(graph.size("edges")).to.eq(12);
                     expect([...graph.getSuccessors(testPlanIdCommand)]).to.deep.eq([
-                        convertCucumberInfoCommand,
+                        convertCommand,
                     ]);
+                    expect(graph.size("vertices")).to.eq(13);
+                    expect(graph.size("edges")).to.eq(13);
                 });
 
                 it("uses configured test environment data", () => {
