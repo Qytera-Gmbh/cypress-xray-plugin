@@ -1071,14 +1071,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     logger
                 );
                 // Vertices.
-                expect(graph.size("vertices")).to.eq(14);
                 const commands = [...graph.getVertices()];
                 const importFeatureCommand1 = commands[0];
                 const importFeatureCommand2 = commands[1];
                 const importFeatureCommand3 = commands[2];
-                const importCucumberExecutionCommand = commands[11];
+                const importCucumberExecutionCommand = commands[12];
                 // Edges.
-                expect(graph.size("edges")).to.eq(13);
                 expect([...graph.getSuccessors(importFeatureCommand1)]).to.contain(
                     importCucumberExecutionCommand
                 );
@@ -1086,6 +1084,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     importCucumberExecutionCommand,
                 ]);
                 expect([...graph.getSuccessors(importFeatureCommand3)]).to.be.empty;
+                expect(graph.size("vertices")).to.eq(15);
+                expect(graph.size("edges")).to.eq(14);
             });
         });
 
