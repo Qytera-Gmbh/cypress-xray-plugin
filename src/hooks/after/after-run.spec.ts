@@ -266,13 +266,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     graph,
                     getMockedLogger()
                 );
-                expect(graph.size("vertices")).to.eq(10);
                 // Vertices.
                 const commands = [...graph.getVertices()];
                 const resultsCommand = commands[0];
-                const verifyResultsUploadCommand = commands[7];
-                const extractVideoFilesCommand = commands[8];
-                const attachVideosCommand = commands[9];
+                const verifyResultsUploadCommand = commands[10];
+                const extractVideoFilesCommand = commands[11];
+                const attachVideosCommand = commands[12];
                 assertIsInstanceOf(extractVideoFilesCommand, ExtractVideoFilesCommand);
                 assertIsInstanceOf(attachVideosCommand, AttachFilesCommand);
                 // Vertex data.
@@ -280,7 +279,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     jiraClient: clients.jiraClient,
                 });
                 // Edges.
-                expect(graph.size("edges")).to.eq(12);
                 expect([...graph.getSuccessors(resultsCommand)]).to.contain(
                     extractVideoFilesCommand
                 );
@@ -290,6 +288,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect([...graph.getSuccessors(verifyResultsUploadCommand)]).to.contain(
                     attachVideosCommand
                 );
+                expect(graph.size("vertices")).to.eq(13);
+                expect(graph.size("edges")).to.eq(15);
             });
         });
 
