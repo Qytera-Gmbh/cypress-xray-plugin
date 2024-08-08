@@ -239,7 +239,6 @@ function getImportExecutionCucumberCommand(
         logger,
         cypressResultsCommand
     );
-    graph.connect(cypressResultsCommand, convertMultipartInfoCommand);
     const convertCucumberFeaturesCommand = graph.place(
         new ConvertCucumberFeaturesCommand(
             {

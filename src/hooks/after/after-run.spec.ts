@@ -334,13 +334,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                         getMockedLogger()
                     );
                     // Vertices.
-                    expect(graph.size("vertices")).to.eq(11);
                     const [
                         cypressResultsCommand,
                         cucumberResultsCommand,
                         fetchIssueTypesCommand,
                         extractExecutionIssueTypeCommand,
-                        convertCucumberInfoCommand,
+                        executionIssueSummaryCommand,
+                        convertMultipartInfoCommand,
                         convertCucumberFeaturesCommand,
                         combineCucumberMultipartCommand,
                         assertConversionValidCommand,
@@ -355,7 +355,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         extractExecutionIssueTypeCommand,
                         ExtractExecutionIssueTypeCommand
                     );
-                    assertIsInstanceOf(convertCucumberInfoCommand, ConvertInfoServerCommand);
+                    assertIsInstanceOf(executionIssueSummaryCommand, ConstantCommand);
+                    assertIsInstanceOf(convertMultipartInfoCommand, ConvertInfoServerCommand);
                     assertIsInstanceOf(
                         convertCucumberFeaturesCommand,
                         ConvertCucumberFeaturesCommand
@@ -385,8 +386,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectKey: "CYP",
                         testExecutionIssueType: "Test Execution",
                     });
-                    expect(convertCucumberInfoCommand.getParameters()).to.deep.eq({
-                        cucumber: options.cucumber,
+                    expect(convertMultipartInfoCommand.getParameters()).to.deep.eq({
                         jira: options.jira,
                         xray: options.xray,
                     });
@@ -430,9 +430,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         fallbackValue: undefined,
                     });
                     // Edges.
-                    expect(graph.size("edges")).to.eq(11);
                     expect([...graph.getSuccessors(cypressResultsCommand)]).to.contain(
-                        convertCucumberInfoCommand
+                        convertMultipartInfoCommand
                     );
                     expect([...graph.getSuccessors(cucumberResultsCommand)]).to.deep.eq([
                         convertCucumberFeaturesCommand,
@@ -441,9 +440,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                         extractExecutionIssueTypeCommand,
                     ]);
                     expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
-                        convertCucumberInfoCommand,
+                        convertMultipartInfoCommand,
                     ]);
-                    expect([...graph.getSuccessors(convertCucumberInfoCommand)]).to.deep.eq([
+                    expect([...graph.getSuccessors(executionIssueSummaryCommand)]).to.deep.eq([
+                        convertMultipartInfoCommand,
+                    ]);
+                    expect([...graph.getSuccessors(convertMultipartInfoCommand)]).to.deep.eq([
                         combineCucumberMultipartCommand,
                     ]);
                     expect([...graph.getSuccessors(convertCucumberFeaturesCommand)]).to.deep.eq([
@@ -462,6 +464,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(fallbackCucumberUploadCommand)]).to.deep.eq([
                         verifyResultsUploadCommand,
                     ]);
+                    expect(graph.size("vertices")).to.eq(12);
+                    expect(graph.size("edges")).to.eq(12);
                 });
 
                 it("uses configured test plan data", () => {
