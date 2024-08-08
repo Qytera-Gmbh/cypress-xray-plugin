@@ -695,9 +695,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const testPlanIdCommand = commands[4];
-                    const testEnvironmentsIdCommand = commands[5];
-                    const convertCommand = commands[6];
+                    const testPlanIdCommand = commands[5];
+                    const testEnvironmentsIdCommand = commands[6];
+                    const convertCommand = commands[7];
                     assertIsInstanceOf(testPlanIdCommand, ConstantCommand);
                     assertIsInstanceOf(testEnvironmentsIdCommand, ConstantCommand);
                     // Vertex data.
@@ -710,8 +710,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
                         convertCommand,
                     ]);
-                    expect(graph.size("vertices")).to.eq(13);
-                    expect(graph.size("edges")).to.eq(13);
+                    expect(graph.size("vertices")).to.eq(14);
+                    expect(graph.size("edges")).to.eq(14);
                 });
             });
 
