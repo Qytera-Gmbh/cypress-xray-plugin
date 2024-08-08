@@ -108,11 +108,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     getMockedLogger()
                 );
                 // Vertices.
-                expect(graph.size("vertices")).to.eq(8);
                 const [
                     resultsCommand,
                     convertCypressTestsCommand,
-                    convertCypressInfoCommand,
+                    fetchIssueTypesCommand,
+                    extractExecutionIssueTypeCommand,
+                    executionIssueSummaryCommand,
+                    convertCommand,
                     combineCypressJsonCommand,
                     assertCypressConversionValidCommand,
                     importExecutionCypressCommand,
@@ -121,7 +123,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ] = [...graph.getVertices()];
                 assertIsInstanceOf(resultsCommand, ConstantCommand);
                 assertIsInstanceOf(convertCypressTestsCommand, ConvertCypressTestsCommand);
-                assertIsInstanceOf(convertCypressInfoCommand, ConvertInfoServerCommand);
+                assertIsInstanceOf(fetchIssueTypesCommand, FetchIssueTypesCommand);
+                assertIsInstanceOf(
+                    extractExecutionIssueTypeCommand,
+                    ExtractExecutionIssueTypeCommand
+                );
+                assertIsInstanceOf(executionIssueSummaryCommand, ConstantCommand);
+                assertIsInstanceOf(convertCommand, ConvertInfoServerCommand);
                 assertIsInstanceOf(combineCypressJsonCommand, CombineCypressJsonCommand);
                 assertIsInstanceOf(
                     assertCypressConversionValidCommand,
@@ -140,7 +148,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudStatusFallback: false,
                     xray: options.xray,
                 });
-                expect(convertCypressInfoCommand.getParameters()).to.deep.eq({
+                expect(convertCommand.getParameters()).to.deep.eq({
                     jira: options.jira,
                     xray: options.xray,
                 });
@@ -158,15 +166,23 @@ describe(path.relative(process.cwd(), __filename), () => {
                     url: "https://example.org",
                 });
                 // Edges.
-                expect(graph.size("edges")).to.eq(9);
                 expect([...graph.getSuccessors(resultsCommand)]).to.deep.eq([
                     convertCypressTestsCommand,
-                    convertCypressInfoCommand,
+                    convertCommand,
                 ]);
                 expect([...graph.getSuccessors(convertCypressTestsCommand)]).to.deep.eq([
                     combineCypressJsonCommand,
                 ]);
-                expect([...graph.getSuccessors(convertCypressInfoCommand)]).to.deep.eq([
+                expect([...graph.getSuccessors(fetchIssueTypesCommand)]).to.deep.eq([
+                    extractExecutionIssueTypeCommand,
+                ]);
+                expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
+                    convertCommand,
+                ]);
+                expect([...graph.getSuccessors(executionIssueSummaryCommand)]).to.deep.eq([
+                    convertCommand,
+                ]);
+                expect([...graph.getSuccessors(convertCommand)]).to.deep.eq([
                     combineCypressJsonCommand,
                 ]);
                 expect([...graph.getSuccessors(combineCypressJsonCommand)]).to.deep.eq([
@@ -182,6 +198,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect([...graph.getSuccessors(fallbackCypressUploadCommand)]).to.deep.eq([
                     verifyResultsUploadCommand,
                 ]);
+                expect(graph.size("vertices")).to.eq(11);
+                expect(graph.size("edges")).to.eq(12);
             });
 
             it("reuses existing commands", () => {

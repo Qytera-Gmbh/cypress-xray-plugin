@@ -6,7 +6,7 @@ import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Level, Logger } from "../../util/logging";
-import { Command, Computable, ComputableState } from "../command";
+import { Command, ComputableState } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";
 import { DestructureCommand } from "../util/commands/destructure-command";
 import { FallbackCommand } from "../util/commands/fallback-command";
@@ -322,7 +322,7 @@ function getExtractExecutionIssueTypeCommand(
         graph.place(new FetchIssueTypesCommand({ jiraClient: clients.jiraClient }, logger))
     );
     return graph.findOrDefault(ExtractExecutionIssueTypeCommand, () => {
-        const command = graph.place(
+        const extractExecutionIssueTypeCommand = graph.place(
             new ExtractExecutionIssueTypeCommand(
                 {
                     displayCloudHelp: clients.kind === "cloud",
@@ -333,7 +333,8 @@ function getExtractExecutionIssueTypeCommand(
                 fetchIssueTypesCommand
             )
         );
-        return graph.connect(fetchIssueTypesCommand, command).getDestination();
+        graph.connect(fetchIssueTypesCommand, extractExecutionIssueTypeCommand);
+        return extractExecutionIssueTypeCommand;
     });
 }
 
@@ -397,7 +398,7 @@ function createConvertMultipartInfoCommand(
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
     logger: Logger,
-    cypressResults: Computable<CypressRunResultType>
+    cypressResultsCommand: Command<CypressRunResultType>
 ): ConvertInfoCommand {
     let additionalFieldsCommand: Command<Record<string, unknown>> | undefined = undefined;
     let convertCommand: ConvertInfoCommand;
@@ -423,10 +424,10 @@ function createConvertMultipartInfoCommand(
     if (clients.kind === "cloud") {
         convertCommand = graph.place(
             new ConvertInfoCloudCommand(
-                { cucumber: options.cucumber, jira: options.jira, xray: options.xray },
+                { jira: options.jira, xray: options.xray },
                 logger,
                 extractExecutionIssueTypeCommand,
-                cypressResults,
+                cypressResultsCommand,
                 executionIssueSummaryCommand,
                 { custom: additionalFieldsCommand }
             )
@@ -456,10 +457,10 @@ function createConvertMultipartInfoCommand(
         }
         convertCommand = graph.place(
             new ConvertInfoServerCommand(
-                { cucumber: options.cucumber, jira: options.jira, xray: options.xray },
+                { jira: options.jira, xray: options.xray },
                 logger,
                 extractExecutionIssueTypeCommand,
-                cypressResults,
+                cypressResultsCommand,
                 executionIssueSummaryCommand,
                 {
                     custom: additionalFieldsCommand,
@@ -479,6 +480,7 @@ function createConvertMultipartInfoCommand(
         graph.connect(additionalFieldsCommand, convertCommand);
     }
     graph.connect(extractExecutionIssueTypeCommand, convertCommand);
+    graph.connect(cypressResultsCommand, convertCommand);
     graph.connect(executionIssueSummaryCommand, convertCommand);
     return convertCommand;
 }
