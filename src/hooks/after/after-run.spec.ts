@@ -628,8 +628,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const testEnvironmentsIdCommand = commands[4];
-                    const convertCommand = commands[5];
+                    const testEnvironmentsIdCommand = commands[5];
+                    const convertCommand = commands[6];
                     assertIsInstanceOf(testEnvironmentsIdCommand, ConstantCommand);
                     // Vertex data.
                     expect(testEnvironmentsIdCommand.getValue()).to.eq("customfield_67890");
@@ -637,8 +637,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
                         convertCommand,
                     ]);
-                    expect(graph.size("vertices")).to.eq(12);
-                    expect(graph.size("edges")).to.eq(12);
+                    expect(graph.size("vertices")).to.eq(13);
+                    expect(graph.size("edges")).to.eq(13);
                 });
 
                 it("uses configured test plan and environment data", () => {
