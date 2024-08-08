@@ -732,19 +732,21 @@ describe(path.relative(process.cwd(), __filename), () => {
                         getMockedLogger()
                     );
                     // Vertices.
-                    expect(graph.size("vertices")).to.eq(11);
                     const commands = [...graph.getVertices()];
                     const extractExecutionIssueTypeCommand = commands[3];
-                    const convertCommand = commands[4];
-                    const convertCucumberFeaturesCommand = commands[5];
+                    const convertCommand = commands[5];
+                    const convertCucumberFeaturesCommand = commands[6];
+                    assertIsInstanceOf(
+                        extractExecutionIssueTypeCommand,
+                        ExtractExecutionIssueTypeCommand
+                    );
+                    assertIsInstanceOf(convertCommand, ConvertInfoCloudCommand);
                     expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
                         displayCloudHelp: true,
                         projectKey: "CYP",
                         testExecutionIssueType: "Test Execution",
                     });
-                    assertIsInstanceOf(convertCommand, ConvertInfoCloudCommand);
                     expect(convertCommand.getParameters()).to.deep.eq({
-                        cucumber: options.cucumber,
                         jira: options.jira,
                         xray: options.xray,
                     });
@@ -780,6 +782,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             uploadScreenshots: true,
                         },
                     });
+                    expect(graph.size("vertices")).to.eq(12);
                 });
 
                 it("uses configured test execution issue data", () => {
