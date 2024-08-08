@@ -1122,7 +1122,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     getMockedLogger()
                 );
                 // Vertices.
-                expect(graph.size("vertices")).to.eq(17);
                 const [
                     cypressResultsCommand,
                     convertCypressTestsCommand,
@@ -1204,7 +1203,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     url: "https://example.org",
                 });
                 // Edges.
-                expect(graph.size("edges")).to.eq(21);
                 // Cypress.
                 expect([...graph.getSuccessors(cypressResultsCommand)]).to.deep.eq([
                     convertCypressTestsCommand,
@@ -1260,6 +1258,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect([...graph.getSuccessors(fallbackCucumberUploadCommand)]).to.deep.eq([
                     verifyResultsUploadCommand,
                 ]);
+                expect(graph.size("vertices")).to.eq(17);
+                expect(graph.size("edges")).to.eq(21);
             });
         });
     });
