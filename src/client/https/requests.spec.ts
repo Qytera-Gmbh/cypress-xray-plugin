@@ -53,7 +53,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(requestBody).to.not.have.property("params");
             expect(requestBody).to.not.have.property("body");
             expect(logger.logToFile.getCall(0).args[1]).to.eq(
-                "12345_GET_https_localhost_1234_request.json"
+                "01_00_12_GET_https_localhost_1234_request.json"
             );
 
             const error = JSON.parse(logger.logToFile.getCall(1).args[0]) as BaseAxios.AxiosError;
@@ -61,7 +61,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(error.config?.url).to.eq("https://localhost:1234");
             expect(error.config?.method).to.eq("get");
             expect(logger.logToFile.getCall(1).args[1]).to.eq(
-                "12345_GET_https_localhost_1234_response.json"
+                "01_00_12_GET_https_localhost_1234_response.json"
             );
         });
 
@@ -71,6 +71,38 @@ describe(path.relative(process.cwd(), __filename), () => {
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
             expect(logger.message).to.have.been.calledOnce;
             expect(logger.message).to.have.been.calledOnce;
+        });
+
+        it("logs progress", async () => {
+            const clock = useFakeTimers();
+            const logger = getMockedLogger();
+            const stubbedAxios = stub(BaseAxios.default.create());
+            stub(BaseAxios.default, "create").returns(stubbedAxios);
+            const restClient = new AxiosRestClient();
+            stubbedAxios.get.onFirstCall().returns(
+                new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve({
+                            config: { headers: {} },
+                            data: "<html>ok</html>",
+                            headers: {},
+                            status: BaseAxios.HttpStatusCode.Ok,
+                            statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Found],
+                        });
+                    }, 23000);
+                })
+            );
+            const promise = restClient.get("https://example.org");
+            await clock.tickAsync(27000);
+            await promise;
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Waiting for https://example.org to respond... (10 seconds)"
+            );
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Waiting for https://example.org to respond... (20 seconds)"
+            );
         });
     });
 
@@ -124,7 +156,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 there: "!",
             });
             expect(logger.logToFile.getCall(0).args[1]).to.eq(
-                "12345_POST_https_localhost_1234_request.json"
+                "01_00_12_POST_https_localhost_1234_request.json"
             );
 
             const error = JSON.parse(logger.logToFile.getCall(1).args[0]) as BaseAxios.AxiosError;
@@ -132,7 +164,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(error.config?.url).to.eq("https://localhost:1234");
             expect(error.config?.method).to.eq("post");
             expect(logger.logToFile.getCall(1).args[1]).to.eq(
-                "12345_POST_https_localhost_1234_response.json"
+                "01_00_12_POST_https_localhost_1234_response.json"
             );
         });
 
@@ -142,6 +174,38 @@ describe(path.relative(process.cwd(), __filename), () => {
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
             expect(logger.message).to.have.been.calledOnce;
             expect(logger.logToFile).to.have.been.calledOnce;
+        });
+
+        it("logs progress", async () => {
+            const clock = useFakeTimers();
+            const logger = getMockedLogger();
+            const stubbedAxios = stub(BaseAxios.default.create());
+            stub(BaseAxios.default, "create").returns(stubbedAxios);
+            const restClient = new AxiosRestClient();
+            stubbedAxios.post.onFirstCall().returns(
+                new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve({
+                            config: { headers: {} },
+                            data: "<html>ok</html>",
+                            headers: {},
+                            status: BaseAxios.HttpStatusCode.Ok,
+                            statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Found],
+                        });
+                    }, 23000);
+                })
+            );
+            const promise = restClient.post("https://example.org");
+            await clock.tickAsync(27000);
+            await promise;
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Waiting for https://example.org to respond... (10 seconds)"
+            );
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Waiting for https://example.org to respond... (20 seconds)"
+            );
         });
     });
 
@@ -195,7 +259,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 there: "!",
             });
             expect(logger.logToFile.getCall(0).args[1]).to.eq(
-                "12345_PUT_https_localhost_1234_request.json"
+                "01_00_12_PUT_https_localhost_1234_request.json"
             );
 
             const error = JSON.parse(logger.logToFile.getCall(1).args[0]) as BaseAxios.AxiosError;
@@ -203,7 +267,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(error.config?.url).to.eq("https://localhost:1234");
             expect(error.config?.method).to.eq("put");
             expect(logger.logToFile.getCall(1).args[1]).to.eq(
-                "12345_PUT_https_localhost_1234_response.json"
+                "01_00_12_PUT_https_localhost_1234_response.json"
             );
         });
 
@@ -213,6 +277,38 @@ describe(path.relative(process.cwd(), __filename), () => {
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
             expect(logger.message).to.have.been.calledOnce;
             expect(logger.logToFile).to.have.been.calledOnce;
+        });
+
+        it("logs progress", async () => {
+            const clock = useFakeTimers();
+            const logger = getMockedLogger();
+            const stubbedAxios = stub(BaseAxios.default.create());
+            stub(BaseAxios.default, "create").returns(stubbedAxios);
+            const restClient = new AxiosRestClient();
+            stubbedAxios.put.onFirstCall().returns(
+                new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve({
+                            config: { headers: {} },
+                            data: "<html>ok</html>",
+                            headers: {},
+                            status: BaseAxios.HttpStatusCode.Ok,
+                            statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Found],
+                        });
+                    }, 23000);
+                })
+            );
+            const promise = restClient.put("https://example.org");
+            await clock.tickAsync(27000);
+            await promise;
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Waiting for https://example.org to respond... (10 seconds)"
+            );
+            expect(logger.message).to.have.been.calledWithExactly(
+                Level.INFO,
+                "Waiting for https://example.org to respond... (20 seconds)"
+            );
         });
     });
 });

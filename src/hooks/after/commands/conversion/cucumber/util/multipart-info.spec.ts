@@ -201,7 +201,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 }
             );
-            expect(info.fields.customField_12345).to.eq("CYP-123");
+            expect(info.fields.customField_12345).to.deep.eq(["CYP-123"]);
         });
 
         it("uses provided test environments", () => {

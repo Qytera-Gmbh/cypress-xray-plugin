@@ -5,6 +5,7 @@ import Sinon, { stub } from "sinon";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
 import { AxiosRestClient } from "./client/https/requests";
+import { JiraClient } from "./client/jira/jira-client";
 import * as context from "./context";
 import * as afterRunHook from "./hooks/after/after-run";
 import * as synchronizeFeatureFileHook from "./hooks/preprocessor/file-preprocessor";
@@ -16,6 +17,7 @@ import { ExecutableGraph } from "./util/graph/executable-graph";
 import { CapturingLogger, Level } from "./util/logging";
 
 describe(path.relative(process.cwd(), __filename), () => {
+    let jiraClient: Sinon.SinonStubbedInstance<JiraClient>;
     let config: Cypress.PluginConfigOptions;
     let pluginContext: context.PluginContext;
 
@@ -23,7 +25,7 @@ describe(path.relative(process.cwd(), __filename), () => {
         config = JSON.parse(
             fs.readFileSync("./test/resources/cypress.config.json", "utf-8")
         ) as Cypress.PluginConfigOptions;
-        const jiraClient = getMockedJiraClient();
+        jiraClient = getMockedJiraClient();
         const xrayClient = getMockedXrayClient();
         const jiraOptions = context.initJiraOptions(
             {},
@@ -429,6 +431,9 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("displays a warning if there are failed vertices", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
+            jiraClient.getIssueTypes
+                .onFirstCall()
+                .resolves([{ name: "Test Execution", subtask: false }]);
             const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;
@@ -536,7 +541,6 @@ describe(path.relative(process.cwd(), __filename), () => {
     it("displays warning and errors after other log messages", async () => {
         const logger = getMockedLogger();
         const xrayClient = getMockedXrayClient();
-        const jiraClient = getMockedJiraClient();
         stub(context, "initClients").onFirstCall().resolves({
             jiraClient: jiraClient,
             kind: "cloud",
@@ -584,7 +588,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             },
         ]);
         jiraClient.getIssueTypes.resolves([{ name: "Test Execution", subtask: false }]);
-        xrayClient.importExecution.onFirstCall().resolves("CYP-123");
+        xrayClient.importExecutionMultipart.onFirstCall().resolves("CYP-123");
         xrayClient.importExecutionCucumberMultipart.onFirstCall().resolves("CYP-123");
         xrayClient.importFeature
             .onFirstCall()

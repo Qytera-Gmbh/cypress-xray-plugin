@@ -62,7 +62,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 { testPlanId: new ConstantCommand(logger, "customfield_12345") }
             );
             const info = await command.compute();
-            expect(info.fields).to.have.property("customfield_12345", "CYP-123");
+            expect(info.fields).to.have.deep.property("customfield_12345", ["CYP-123"]);
         });
 
         it("includes configured test environments", async () => {
@@ -192,7 +192,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
-                new ConstantCommand(logger, "my summary")
+                new ConstantCommand(logger, "Execution Results [1694257168829]")
             );
             const info = await command.compute();
             expect(info).to.deep.eq({
