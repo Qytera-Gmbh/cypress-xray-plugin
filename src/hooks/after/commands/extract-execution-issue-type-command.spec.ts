@@ -181,7 +181,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    Failed to retrieve Jira issue type information of test execution issue type: Task
+                    Failed to retrieve Jira issue type information of test execution issue type called: Task
 
                     There are multiple issue types with this name, make sure to only make a single one available in project CYP:
 
