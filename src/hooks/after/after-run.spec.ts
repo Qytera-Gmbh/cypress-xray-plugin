@@ -21,11 +21,13 @@ import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Level } from "../../util/logging";
 import { Command, ComputableState } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";
+import { DestructureCommand } from "../util/commands/destructure-command";
 import { FallbackCommand } from "../util/commands/fallback-command";
 import { AttachFilesCommand } from "../util/commands/jira/attach-files-command";
 import { ExtractFieldIdCommand, JiraField } from "../util/commands/jira/extract-field-id-command";
 import { FetchAllFieldsCommand } from "../util/commands/jira/fetch-all-fields-command";
 import { FetchIssueTypesCommand } from "../util/commands/jira/fetch-issue-types-command";
+import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command";
 import { ImportExecutionCucumberCommand } from "../util/commands/xray/import-execution-cucumber-command";
 import { ImportExecutionCypressCommand } from "../util/commands/xray/import-execution-cypress-command";
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
@@ -215,8 +217,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     graph,
                     logger
                 );
-                expect(graph.size("vertices")).to.eq(8);
-                expect(graph.size("edges")).to.eq(9);
+                expect(graph.size("vertices")).to.eq(11);
+                expect(graph.size("edges")).to.eq(12);
             });
 
             it("uses configured test execution issue data", () => {
@@ -232,14 +234,41 @@ describe(path.relative(process.cwd(), __filename), () => {
                     graph,
                     getMockedLogger()
                 );
-                expect(graph.size("vertices")).to.eq(9);
                 // Vertices.
                 const commands = [...graph.getVertices()];
-                const importExecutionCypressCommand = commands[5];
-                const verifyExecutionIssueKeyCommand = commands[6];
-                const fallbackCypressUploadCommand = commands[7];
+                const fetchAllFieldsCommand = commands[4];
+                const getSummaryFieldIdCommand = commands[5];
+                const issueKeysCommand = commands[6];
+                const getSummaryValuesCommand = commands[7];
+                const destructureCommand = commands[8];
+                const convertCommand = commands[9];
+                const importCypressExecutionCommand = commands[12];
+                const verifyExecutionIssueKeyCommand = commands[13];
+                const fallbackCypressUploadCommand = commands[14];
+                assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
+                assertIsInstanceOf(getSummaryFieldIdCommand, ExtractFieldIdCommand);
+                assertIsInstanceOf(issueKeysCommand, ConstantCommand);
+                assertIsInstanceOf(getSummaryValuesCommand, GetSummaryValuesCommand);
+                assertIsInstanceOf(destructureCommand, DestructureCommand);
+                assertIsInstanceOf(importCypressExecutionCommand, ImportExecutionCypressCommand);
                 assertIsInstanceOf(verifyExecutionIssueKeyCommand, VerifyExecutionIssueKeyCommand);
+                assertIsInstanceOf(fallbackCypressUploadCommand, FallbackCommand);
                 // Vertex data.
+                expect(fetchAllFieldsCommand.getParameters()).to.deep.eq({
+                    jiraClient: clients.jiraClient,
+                });
+                expect(getSummaryFieldIdCommand.getParameters()).to.deep.eq({
+                    field: JiraField.SUMMARY,
+                });
+                expect(issueKeysCommand.getValue()).to.deep.eq([
+                    options.jira.testExecutionIssueKey,
+                ]);
+                expect(getSummaryValuesCommand.getParameters()).to.deep.eq({
+                    jiraClient: clients.jiraClient,
+                });
+                expect(destructureCommand.getParameters()).to.deep.eq({
+                    accessor: options.jira.testExecutionIssueKey,
+                });
                 expect(verifyExecutionIssueKeyCommand.getParameters()).to.deep.eq({
                     displayCloudHelp: false,
                     importType: "cypress",
@@ -247,11 +276,25 @@ describe(path.relative(process.cwd(), __filename), () => {
                     testExecutionIssueType: "Test Run",
                 });
                 // Edges.
-                expect(graph.size("edges")).to.eq(10);
-                expect([...graph.getSuccessors(importExecutionCypressCommand)]).to.deep.eq([
+                expect([...graph.getSuccessors(fetchAllFieldsCommand)]).to.deep.eq([
+                    getSummaryFieldIdCommand,
+                ]);
+                expect([...graph.getSuccessors(getSummaryFieldIdCommand)]).to.deep.eq([
+                    getSummaryValuesCommand,
+                ]);
+                expect([...graph.getSuccessors(issueKeysCommand)]).to.deep.eq([
+                    getSummaryValuesCommand,
+                ]);
+                expect([...graph.getSuccessors(getSummaryValuesCommand)]).to.deep.eq([
+                    destructureCommand,
+                ]);
+                expect([...graph.getSuccessors(destructureCommand)]).to.deep.eq([convertCommand]);
+                expect([...graph.getSuccessors(importCypressExecutionCommand)]).to.deep.eq([
                     verifyExecutionIssueKeyCommand,
                     fallbackCypressUploadCommand,
                 ]);
+                expect(graph.size("vertices")).to.eq(16);
+                expect(graph.size("edges")).to.eq(17);
             });
 
             it("attaches videos", () => {

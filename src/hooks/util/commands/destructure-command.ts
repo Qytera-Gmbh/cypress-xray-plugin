@@ -1,25 +1,29 @@
 import { Logger } from "../../../util/logging";
 import { Command, Computable } from "../../command";
 
-export class DestructureCommand<R> extends Command<R, null> {
+interface CommandParameters {
+    accessor: number | string | symbol;
+}
+
+export class DestructureCommand<R> extends Command<R, CommandParameters> {
     private readonly input: Computable<Record<number | string | symbol, R>>;
-    private readonly accessor: number | string | symbol;
     constructor(
         logger: Logger,
         input: Computable<Record<number | string | symbol, R>>,
         accessor: number | string | symbol
     ) {
-        super(null, logger);
+        super({ accessor: accessor }, logger);
         this.input = input;
-        this.accessor = accessor;
     }
 
     protected async computeResult(): Promise<R> {
         const input = await this.input.compute();
-        const value = input[this.accessor];
+        const value = input[this.parameters.accessor];
         if (!value) {
             throw new Error(
-                `Failed to access element ${this.accessor.toString()} in : ${JSON.stringify(input)}`
+                `Failed to access element ${this.parameters.accessor.toString()} in : ${JSON.stringify(
+                    input
+                )}`
             );
         }
         return value;
