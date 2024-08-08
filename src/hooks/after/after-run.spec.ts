@@ -799,13 +799,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                         getMockedLogger()
                     );
                     // Vertices.
-                    expect(graph.size("vertices")).to.eq(13);
                     const [
                         cypressResultsCommand,
                         cucumberResultsCommand,
                         testExecutionIssueKeyCommand,
                         fetchIssueTypesCommand,
                         extractExecutionIssueTypeCommand,
+                        fetchAllFieldsCommand,
+                        extractFieldIdCommand,
+                        issueKeysCommand,
+                        getSummaryValuesCommand,
+                        destructureCommand,
                         convertCommand,
                         convertCucumberFeaturesCommand,
                         combineCucumberMultipartCommand,
@@ -823,6 +827,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                         extractExecutionIssueTypeCommand,
                         ExtractExecutionIssueTypeCommand
                     );
+                    assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
+                    assertIsInstanceOf(extractFieldIdCommand, ExtractFieldIdCommand);
+                    assertIsInstanceOf(issueKeysCommand, ConstantCommand);
+                    assertIsInstanceOf(getSummaryValuesCommand, GetSummaryValuesCommand);
+                    assertIsInstanceOf(destructureCommand, DestructureCommand);
                     assertIsInstanceOf(convertCommand, ConvertInfoCloudCommand);
                     assertIsInstanceOf(
                         convertCucumberFeaturesCommand,
@@ -858,8 +867,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                         projectKey: "CYP",
                         testExecutionIssueType: "Test Run",
                     });
+                    expect(fetchAllFieldsCommand.getParameters()).to.deep.eq({
+                        jiraClient: clients.jiraClient,
+                    });
+                    expect(extractFieldIdCommand.getParameters()).to.deep.eq({
+                        field: JiraField.SUMMARY,
+                    });
+                    expect(issueKeysCommand.getValue()).to.deep.eq(["CYP-42"]);
+                    expect(getSummaryValuesCommand.getParameters()).to.deep.eq({
+                        jiraClient: clients.jiraClient,
+                    });
+                    expect(destructureCommand.getParameters()).to.deep.eq({ accessor: "CYP-42" });
                     expect(convertCommand.getParameters()).to.deep.eq({
-                        cucumber: options.cucumber,
                         jira: options.jira,
                         xray: options.xray,
                     });
@@ -905,7 +924,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         testExecutionIssueType: "Test Run",
                     });
                     // Edges.
-                    expect(graph.size("edges")).to.eq(13);
                     expect([...graph.getSuccessors(cypressResultsCommand)]).to.contain(
                         convertCommand
                     );
@@ -919,6 +937,21 @@ describe(path.relative(process.cwd(), __filename), () => {
                         extractExecutionIssueTypeCommand,
                     ]);
                     expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
+                        convertCommand,
+                    ]);
+                    expect([...graph.getSuccessors(fetchAllFieldsCommand)]).to.deep.eq([
+                        extractFieldIdCommand,
+                    ]);
+                    expect([...graph.getSuccessors(extractFieldIdCommand)]).to.deep.eq([
+                        getSummaryValuesCommand,
+                    ]);
+                    expect([...graph.getSuccessors(issueKeysCommand)]).to.deep.eq([
+                        getSummaryValuesCommand,
+                    ]);
+                    expect([...graph.getSuccessors(getSummaryValuesCommand)]).to.deep.eq([
+                        destructureCommand,
+                    ]);
+                    expect([...graph.getSuccessors(destructureCommand)]).to.deep.eq([
                         convertCommand,
                     ]);
                     expect([...graph.getSuccessors(convertCommand)]).to.deep.eq([
@@ -941,6 +974,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(fallbackCucumberUploadCommand)]).to.deep.eq([
                         verifyResultsUploadCommand,
                     ]);
+                    expect(graph.size("vertices")).to.eq(18);
+                    expect(graph.size("edges")).to.eq(18);
                 });
             });
 
