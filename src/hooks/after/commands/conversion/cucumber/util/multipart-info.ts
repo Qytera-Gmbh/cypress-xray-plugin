@@ -1,5 +1,6 @@
 import { CypressRunResultType } from "../../../../../../types/cypress/cypress";
 import { IssueTypeDetails } from "../../../../../../types/jira/responses/issue-type-details";
+import { IssueUpdate } from "../../../../../../types/jira/responses/issue-update";
 import {
     MultipartInfo,
     MultipartInfoCloud,
@@ -18,7 +19,7 @@ export type RunData = Pick<
  * Additional information used by test execution issues when uploading Cucumber results.
  */
 export interface TestExecutionIssueData {
-    custom?: Record<string, unknown>;
+    custom?: IssueUpdate;
     description?: string;
     issuetype: IssueTypeDetails;
     labels?: string[];

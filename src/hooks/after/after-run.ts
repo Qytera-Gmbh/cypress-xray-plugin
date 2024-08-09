@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { EvidenceCollection } from "../../context";
 import { CypressRunResultType } from "../../types/cypress/cypress";
+import { IssueUpdate } from "../../types/jira/responses/issue-update";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
@@ -416,12 +417,12 @@ function getConvertMultipartInfoCommand(
     if (convertCommand) {
         return convertCommand;
     }
-    let additionalFieldsCommand: Command<Record<string, unknown>> | undefined = undefined;
-    if (options.jira.testExecutionIssueFields) {
+    let additionalFieldsCommand: Command<IssueUpdate> | undefined;
+    if (options.jira.testExecutionIssueData) {
         additionalFieldsCommand = getOrCreateConstantCommand(
             graph,
             logger,
-            options.jira.testExecutionIssueFields
+            options.jira.testExecutionIssueData
         );
     }
     const extractExecutionIssueTypeCommand = getExtractExecutionIssueTypeCommand(

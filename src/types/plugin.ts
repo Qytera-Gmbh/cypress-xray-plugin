@@ -3,6 +3,7 @@ import { AxiosRequestConfig } from "axios";
 import { AxiosRestClient } from "../client/https/requests";
 import { JiraClient } from "../client/jira/jira-client";
 import { XrayClient } from "../client/xray/xray-client";
+import { IssueUpdate } from "./jira/responses/issue-update";
 
 /**
  * Models all options for configuring the behaviour of the plugin.
@@ -140,6 +141,7 @@ export interface JiraOptions {
      * @example "CYP"
      */
     projectKey: string;
+    testExecutionIssueData?: IssueUpdate;
     /**
      * The description of the test execution issue, which will be used both for new test execution
      * issues as well as for updating existing issues (if provided through
@@ -151,7 +153,6 @@ export interface JiraOptions {
      * ```
      */
     testExecutionIssueDescription?: string;
-    testExecutionIssueFields?: Record<string, unknown>;
     /**
      * An execution issue key to attach run results to. If omitted, Jira will always create a new
      * test execution issue with each upload.

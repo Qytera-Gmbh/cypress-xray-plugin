@@ -1,4 +1,5 @@
 import { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
+import { IssueUpdate } from "../../../../types/jira/responses/issue-update";
 import { InternalJiraOptions, InternalXrayOptions } from "../../../../types/plugin";
 import { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
 import { Logger } from "../../../../util/logging";
@@ -24,7 +25,7 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
     private readonly runInformation: Computable<RunData>;
     private readonly summary: Computable<string>;
     private readonly fields?: {
-        custom?: Computable<Record<string, unknown>>;
+        custom?: Computable<IssueUpdate>;
         testEnvironmentsId?: Computable<string>;
         testPlanId?: Computable<string>;
     };
@@ -36,7 +37,7 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
         runInformation: Computable<RunData>,
         summary: Computable<string>,
         fieldIds?: {
-            custom?: Computable<Record<string, unknown>>;
+            custom?: Computable<IssueUpdate>;
             testEnvironmentsId?: Computable<string>;
             testPlanId?: Computable<string>;
         }
