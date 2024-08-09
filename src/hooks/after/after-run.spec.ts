@@ -301,6 +301,75 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(graph.size("edges")).to.eq(17);
             });
 
+            it("uses configured test execution issue data with known fields", () => {
+                const graph = new ExecutableGraph<Command>();
+                options.jira.testExecutionIssueKey = "CYP-415";
+                options.jira.testExecutionIssueType = "Test Run";
+                options.jira.fields.summary = "xyz";
+                addUploadCommands(
+                    result,
+                    ".",
+                    options,
+                    clients,
+                    new SimpleEvidenceCollection(),
+                    graph,
+                    getMockedLogger()
+                );
+                // Vertices.
+                const commands = [...graph.getVertices()];
+                const getSummaryFieldIdCommand = commands[4];
+                const issueKeysCommand = commands[5];
+                const getSummaryValuesCommand = commands[6];
+                assertIsInstanceOf(getSummaryFieldIdCommand, ConstantCommand);
+                assertIsInstanceOf(issueKeysCommand, ConstantCommand);
+                assertIsInstanceOf(getSummaryValuesCommand, GetSummaryValuesCommand);
+                // Vertex data.
+                expect(getSummaryFieldIdCommand.getValue()).to.deep.eq("xyz");
+                expect(issueKeysCommand.getValue()).to.deep.eq([
+                    options.jira.testExecutionIssueKey,
+                ]);
+                expect(getSummaryValuesCommand.getParameters()).to.deep.eq({
+                    jiraClient: clients.jiraClient,
+                });
+                // Edges.
+                expect([...graph.getSuccessors(getSummaryFieldIdCommand)]).to.deep.eq([
+                    getSummaryValuesCommand,
+                ]);
+                expect([...graph.getSuccessors(issueKeysCommand)]).to.deep.eq([
+                    getSummaryValuesCommand,
+                ]);
+                expect(graph.size("vertices")).to.eq(15);
+                expect(graph.size("edges")).to.eq(16);
+            });
+
+            it("uses configured summaries", () => {
+                const graph = new ExecutableGraph<Command>();
+                options.jira.testExecutionIssueSummary = "My summary";
+                addUploadCommands(
+                    result,
+                    ".",
+                    options,
+                    clients,
+                    new SimpleEvidenceCollection(),
+                    graph,
+                    getMockedLogger()
+                );
+                // Vertices.
+                const commands = [...graph.getVertices()];
+                const executionIssueSummaryCommand = commands[4];
+                const convertCommand = commands[5];
+                assertIsInstanceOf(executionIssueSummaryCommand, ConstantCommand);
+                assertIsInstanceOf(convertCommand, ConvertInfoServerCommand);
+                // Vertex data.
+                expect(executionIssueSummaryCommand.getValue()).to.deep.eq("My summary");
+                // Edges.
+                expect([...graph.getSuccessors(executionIssueSummaryCommand)]).to.deep.eq([
+                    convertCommand,
+                ]);
+                expect(graph.size("vertices")).to.eq(11);
+                expect(graph.size("edges")).to.eq(12);
+            });
+
             it("attaches videos", () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.attachVideos = true;
