@@ -74,6 +74,9 @@ export interface JiraFieldIds {
     labels?: string;
     /**
      * The Jira issue summary field ID (i.e. the title of the issues).
+     *
+     * @deprecated Will be removed in version `8.0.0`: the summary is a system field and will always have
+     * ID `summary`.
      */
     summary?: string;
     /**

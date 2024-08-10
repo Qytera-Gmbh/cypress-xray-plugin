@@ -24,7 +24,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     endedTestsAt: "2023-09-09T10:59:36.177Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
-                new ConstantCommand(logger, "Execution Results [1694257168829]")
+                {
+                    summary: new ConstantCommand(logger, "Execution Results [1694257168829]"),
+                }
             );
             const info = await command.compute();
             expect(info).to.deep.eq({
@@ -58,8 +60,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
-                new ConstantCommand(logger, "my summary"),
-                { testPlanId: new ConstantCommand(logger, "customfield_12345") }
+                {
+                    fieldIds: {
+                        testPlanId: new ConstantCommand(logger, "customfield_12345"),
+                    },
+                    summary: new ConstantCommand(logger, "my summary"),
+                }
             );
             const info = await command.compute();
             expect(info.fields).to.have.deep.property("customfield_12345", ["CYP-123"]);
@@ -83,8 +89,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
-                new ConstantCommand(logger, "my summary"),
-                { testEnvironmentsId: new ConstantCommand(logger, "customfield_45678") }
+                {
+                    fieldIds: {
+                        testEnvironmentsId: new ConstantCommand(logger, "customfield_45678"),
+                    },
+                    summary: new ConstantCommand(logger, "my summary"),
+                }
             );
             const info = await command.compute();
             expect(info.fields).to.have.deep.property("customfield_45678", ["DEV", "PROD"]);
@@ -111,7 +121,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                             endedTestsAt: "2023-09-09T10:59:31.416Z",
                             startedTestsAt: "2023-09-09T10:59:28.829Z",
                         }),
-                        new ConstantCommand(logger, "my summary")
+                        {
+                            summary: new ConstantCommand(logger, "my summary"),
+                        }
                     )
             ).to.throw("A test plan issue key was supplied without the test plan Jira field ID");
         });
@@ -136,7 +148,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                             endedTestsAt: "2023-09-09T10:59:31.416Z",
                             startedTestsAt: "2023-09-09T10:59:28.829Z",
                         }),
-                        new ConstantCommand(logger, "my summary")
+                        {
+                            summary: new ConstantCommand(logger, "my summary"),
+                        }
                     )
             ).to.throw(
                 "Test environments were supplied without the test environments Jira field ID"
@@ -161,7 +175,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
-                new ConstantCommand(logger, "my summary")
+                {
+                    summary: new ConstantCommand(logger, "my summary"),
+                }
             );
             expect(command.getParameters()).to.deep.eq({
                 jira: {
@@ -191,7 +207,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
-                new ConstantCommand(logger, "Execution Results [1694257168829]")
+                {
+                    summary: new ConstantCommand(logger, "Execution Results [1694257168829]"),
+                }
             );
             const info = await command.compute();
             expect(info).to.deep.eq({
@@ -229,7 +247,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
-                new ConstantCommand(logger, "my summary")
+                {
+                    summary: new ConstantCommand(logger, "my summary"),
+                }
             );
             const info = await command.compute();
             expect(info).to.have.deep.property("xrayFields", {
@@ -256,7 +276,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
-                new ConstantCommand(logger, "my summary")
+                {
+                    summary: new ConstantCommand(logger, "my summary"),
+                }
             );
             const info = await command.compute();
             expect(info).to.have.deep.property("xrayFields", {

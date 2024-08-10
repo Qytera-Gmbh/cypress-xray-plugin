@@ -343,19 +343,11 @@ function getExecutionIssueSummaryCommand(
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
     logger: Logger
-): Command<string> {
+): Command<string> | undefined {
     if (options.jira.testExecutionIssueSummary) {
         return getOrCreateConstantCommand(graph, logger, options.jira.testExecutionIssueSummary);
     }
     if (options.jira.testExecutionIssueKey) {
-        const getSummaryFieldIdCommand = options.jira.fields.summary
-            ? getOrCreateConstantCommand(graph, logger, options.jira.fields.summary)
-            : getOrCreateExtractFieldIdCommand(
-                  JiraField.SUMMARY,
-                  clients.jiraClient,
-                  graph,
-                  logger
-              );
         const issueKeysCommand = getOrCreateConstantCommand(graph, logger, [
             options.jira.testExecutionIssueKey,
         ]);
@@ -366,11 +358,9 @@ function getExecutionIssueSummaryCommand(
                     new GetSummaryValuesCommand(
                         { jiraClient: clients.jiraClient },
                         logger,
-                        getSummaryFieldIdCommand,
                         issueKeysCommand
                     )
                 );
-                graph.connect(getSummaryFieldIdCommand, command);
                 graph.connect(issueKeysCommand, command);
                 return command;
             },
@@ -386,11 +376,6 @@ function getExecutionIssueSummaryCommand(
         graph.connect(getSummaryValuesCommand, destructureCommand);
         return destructureCommand;
     }
-    return getOrCreateConstantCommand(
-        graph,
-        logger,
-        `Execution Results [${new Date().toLocaleString()}]`
-    );
 }
 
 function getConvertMultipartInfoCommand(
@@ -417,21 +402,21 @@ function getConvertMultipartInfoCommand(
     if (convertCommand) {
         return convertCommand;
     }
-    let additionalFieldsCommand: Command<IssueUpdate> | undefined;
+    let textExecutionIssueDataCommand: Command<IssueUpdate> | undefined;
     if (options.jira.testExecutionIssueData) {
-        additionalFieldsCommand = getOrCreateConstantCommand(
+        textExecutionIssueDataCommand = getOrCreateConstantCommand(
             graph,
             logger,
             options.jira.testExecutionIssueData
         );
     }
-    const extractExecutionIssueTypeCommand = getExtractExecutionIssueTypeCommand(
+    const executionIssueSummaryCommand = getExecutionIssueSummaryCommand(
         options,
         clients,
         graph,
         logger
     );
-    const executionIssueSummaryCommand = getExecutionIssueSummaryCommand(
+    const extractExecutionIssueTypeCommand = getExtractExecutionIssueTypeCommand(
         options,
         clients,
         graph,
@@ -444,8 +429,10 @@ function getConvertMultipartInfoCommand(
                 logger,
                 extractExecutionIssueTypeCommand,
                 cypressResultsCommand,
-                executionIssueSummaryCommand,
-                { custom: additionalFieldsCommand }
+                {
+                    custom: textExecutionIssueDataCommand,
+                    summary: executionIssueSummaryCommand,
+                }
             )
         );
     } else {
@@ -477,11 +464,13 @@ function getConvertMultipartInfoCommand(
                 logger,
                 extractExecutionIssueTypeCommand,
                 cypressResultsCommand,
-                executionIssueSummaryCommand,
                 {
-                    custom: additionalFieldsCommand,
-                    testEnvironmentsId: testEnvironmentsIdCommand,
-                    testPlanId: testPlanIdCommand,
+                    custom: textExecutionIssueDataCommand,
+                    fieldIds: {
+                        testEnvironmentsId: testEnvironmentsIdCommand,
+                        testPlanId: testPlanIdCommand,
+                    },
+                    summary: executionIssueSummaryCommand,
                 }
             )
         );
@@ -492,12 +481,14 @@ function getConvertMultipartInfoCommand(
             graph.connect(testEnvironmentsIdCommand, convertCommand);
         }
     }
-    if (additionalFieldsCommand) {
-        graph.connect(additionalFieldsCommand, convertCommand);
+    if (textExecutionIssueDataCommand) {
+        graph.connect(textExecutionIssueDataCommand, convertCommand);
     }
     graph.connect(extractExecutionIssueTypeCommand, convertCommand);
     graph.connect(cypressResultsCommand, convertCommand);
-    graph.connect(executionIssueSummaryCommand, convertCommand);
+    if (executionIssueSummaryCommand) {
+        graph.connect(executionIssueSummaryCommand, convertCommand);
+    }
     return convertCommand;
 }
 

@@ -3,6 +3,12 @@ import { FieldUpdateOperation } from "./field-update-operation";
 import { HistoryMetadata } from "./history-metadata";
 import { IssueTransition } from "./issue-transition";
 
+/**
+ * Payload when creating or updating Jira issues.
+ *
+ * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-post
+ * @see https://developer.atlassian.com/server/jira/platform/rest/v10000/api-group-issue/#api-api-2-issue-post
+ */
 export interface IssueUpdate {
     /**
      * List of issue screen fields to update, specifying the sub-field to update and its value for

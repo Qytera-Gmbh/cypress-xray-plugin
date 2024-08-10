@@ -23,11 +23,13 @@ interface Parameters {
 export abstract class ConvertInfoCommand extends Command<MultipartInfo, Parameters> {
     private readonly testExecutionIssueType: Computable<IssueTypeDetails>;
     private readonly runInformation: Computable<RunData>;
-    private readonly summary: Computable<string>;
-    private readonly fields?: {
+    private readonly info?: {
         custom?: Computable<IssueUpdate>;
-        testEnvironmentsId?: Computable<string>;
-        testPlanId?: Computable<string>;
+        fieldIds?: {
+            testEnvironmentsId?: Computable<string>;
+            testPlanId?: Computable<string>;
+        };
+        summary?: Computable<string>;
     };
 
     constructor(
@@ -35,34 +37,33 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
         logger: Logger,
         testExecutionIssueType: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>,
-        summary: Computable<string>,
-        fieldIds?: {
+        info?: {
             custom?: Computable<IssueUpdate>;
-            testEnvironmentsId?: Computable<string>;
-            testPlanId?: Computable<string>;
+            fieldIds?: {
+                testEnvironmentsId?: Computable<string>;
+                testPlanId?: Computable<string>;
+            };
+            summary?: Computable<string>;
         }
     ) {
         super(parameters, logger);
-        this.fields = fieldIds;
+        this.info = info;
         this.testExecutionIssueType = testExecutionIssueType;
         this.runInformation = runInformation;
-        this.summary = summary;
     }
 
     protected async computeResult(): Promise<MultipartInfo> {
         const testExecutionIssueType = await this.testExecutionIssueType.compute();
         const runInformation = await this.runInformation.compute();
-        const summary = await this.summary.compute();
-
+        const custom = await this.info?.custom?.compute();
+        const summary = await this.info?.summary?.compute();
         const testExecutionIssueData: TestExecutionIssueDataServer = {
+            custom: custom,
             description: this.parameters.jira.testExecutionIssueDescription,
             issuetype: testExecutionIssueType,
             projectKey: this.parameters.jira.projectKey,
             summary: summary,
         };
-        if (this.fields?.custom) {
-            testExecutionIssueData.custom = await this.fields.custom.compute();
-        }
         return await this.buildInfo(runInformation, testExecutionIssueData);
     }
 
@@ -76,28 +77,23 @@ export class ConvertInfoServerCommand extends ConvertInfoCommand {
     private readonly testEnvironmentsId?: Computable<string>;
     private readonly testPlanId?: Computable<string>;
     constructor(
-        ...[
-            options,
-            logger,
-            testExecutionIssueType,
-            runInformation,
-            summary,
-            fieldIds,
-        ]: ConstructorParameters<typeof ConvertInfoCommand>
+        ...[options, logger, testExecutionIssueType, runInformation, info]: ConstructorParameters<
+            typeof ConvertInfoCommand
+        >
     ) {
-        super(options, logger, testExecutionIssueType, runInformation, summary);
-        if (this.parameters.jira.testPlanIssueKey && !fieldIds?.testPlanId) {
+        super(options, logger, testExecutionIssueType, runInformation, info);
+        if (this.parameters.jira.testPlanIssueKey && !info?.fieldIds?.testPlanId) {
             throw new Error(
                 "A test plan issue key was supplied without the test plan Jira field ID"
             );
         }
-        if (this.parameters.xray.testEnvironments && !fieldIds?.testEnvironmentsId) {
+        if (this.parameters.xray.testEnvironments && !info?.fieldIds?.testEnvironmentsId) {
             throw new Error(
                 "Test environments were supplied without the test environments Jira field ID"
             );
         }
-        this.testEnvironmentsId = fieldIds?.testEnvironmentsId;
-        this.testPlanId = fieldIds?.testPlanId;
+        this.testEnvironmentsId = info?.fieldIds?.testEnvironmentsId;
+        this.testPlanId = info?.fieldIds?.testPlanId;
     }
 
     protected async buildInfo(

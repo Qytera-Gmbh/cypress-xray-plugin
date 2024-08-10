@@ -10,6 +10,7 @@ import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Logger } from "../../util/logging";
+import { ConstantCommand } from "../util/commands/constant-command";
 import { getOrCreateConstantCommand, getOrCreateExtractFieldIdCommand } from "../util/util";
 import { ExtractIssueKeysCommand } from "./commands/extract-issue-keys-command";
 import { GetLabelsToResetCommand } from "./commands/get-labels-to-reset-command";
@@ -47,9 +48,6 @@ export function addSynchronizationCommands(
         new ExtractIssueKeysCommand(logger, extractIssueDataCommand)
     );
     graph.connect(extractIssueDataCommand, extractIssueKeysCommand);
-    const getSummaryFieldIdCommand = options.jira.fields.summary
-        ? getOrCreateConstantCommand(graph, logger, options.jira.fields.summary)
-        : getOrCreateExtractFieldIdCommand(JiraField.SUMMARY, clients.jiraClient, graph, logger);
     const getLabelsFieldIdCommand = options.jira.fields.labels
         ? getOrCreateConstantCommand(graph, logger, options.jira.fields.labels)
         : getOrCreateExtractFieldIdCommand(JiraField.LABELS, clients.jiraClient, graph, logger);
@@ -62,11 +60,9 @@ export function addSynchronizationCommands(
         new GetSummaryValuesCommand(
             { jiraClient: clients.jiraClient },
             logger,
-            getSummaryFieldIdCommand,
             extractIssueKeysCommand
         )
     );
-    graph.connect(getSummaryFieldIdCommand, getCurrentSummariesCommand);
     graph.connect(extractIssueKeysCommand, getCurrentSummariesCommand);
     const getCurrentLabelsCommand = graph.place(
         new GetLabelValuesCommand(
@@ -106,11 +102,9 @@ export function addSynchronizationCommands(
         new GetSummaryValuesCommand(
             { jiraClient: clients.jiraClient },
             logger,
-            getSummaryFieldIdCommand,
             extractIssueKeysCommand
         )
     );
-    graph.connect(getSummaryFieldIdCommand, getNewSummariesCommand);
     graph.connect(extractIssueKeysCommand, getNewSummariesCommand);
     graph.connect(getUpdatedIssuesCommand, getNewSummariesCommand);
     const getNewLabelsCommand = graph.place(
@@ -138,11 +132,10 @@ export function addSynchronizationCommands(
         new EditIssueFieldCommand(
             { field: JiraField.SUMMARY, jiraClient: clients.jiraClient },
             logger,
-            getSummaryFieldIdCommand,
+            new ConstantCommand(logger, "summary"),
             getSummariesToResetCommand
         )
     );
-    graph.connect(getSummaryFieldIdCommand, editSummariesCommand);
     graph.connect(getSummariesToResetCommand, editSummariesCommand);
     const editLabelsCommand = graph.place(
         new EditIssueFieldCommand(
