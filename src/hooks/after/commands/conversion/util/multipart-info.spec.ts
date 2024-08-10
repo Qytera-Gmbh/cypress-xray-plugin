@@ -3,7 +3,7 @@ import path from "path";
 import { dedent } from "../../../../../util/dedent";
 import { buildMultipartInfoCloud, buildMultipartInfoServer } from "./multipart-info";
 
-describe.only(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), __filename), () => {
     describe(buildMultipartInfoCloud.name, () => {
         it("adds default information", () => {
             const info = buildMultipartInfoCloud(
