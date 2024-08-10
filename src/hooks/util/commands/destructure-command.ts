@@ -21,7 +21,7 @@ export class DestructureCommand<R> extends Command<R, CommandParameters> {
         const value = input[this.parameters.accessor];
         if (!value) {
             throw new Error(
-                `Failed to access element ${this.parameters.accessor.toString()} in : ${JSON.stringify(
+                `Failed to access element ${this.parameters.accessor.toString()} in: ${JSON.stringify(
                     input
                 )}`
             );

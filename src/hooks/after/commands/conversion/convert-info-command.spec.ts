@@ -38,6 +38,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     summary: "Execution Results [1694257168829]",
                 },
+                historyMetadata: undefined,
+                properties: undefined,
+                transition: undefined,
+                update: undefined,
             });
         });
 
@@ -221,6 +225,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     summary: "Execution Results [1694257168829]",
                 },
+                historyMetadata: undefined,
+                properties: undefined,
+                transition: undefined,
+                update: undefined,
                 xrayFields: {
                     environments: undefined,
                     testPlanKey: undefined,
