@@ -32,7 +32,7 @@ import { errorMessage } from "./util/errors";
 import { ExecutableGraph } from "./util/graph/executable-graph";
 import { HELP } from "./util/help";
 import { LOG, Level, Logger } from "./util/logging";
-import { asArrayOfStrings, asBoolean, asString, parse } from "./util/parsing";
+import { asArrayOfStrings, asBoolean, asObject, asString, parse } from "./util/parsing";
 
 export interface EvidenceCollection {
     addEvidence(issueKey: string, evidence: XrayEvidenceItem): void;
@@ -167,6 +167,8 @@ export function initJiraOptions(
                 parse(env, ENV_NAMES.jira.fields.testType, asString) ?? options.fields?.testType,
         },
         projectKey: projectKey,
+        testExecutionIssue:
+            parse(env, ENV_NAMES.jira.testExecutionIssue, asObject) ?? options.testExecutionIssue,
         testExecutionIssueDescription:
             parse(env, ENV_NAMES.jira.testExecutionIssueDescription, asString) ??
             options.testExecutionIssueDescription,

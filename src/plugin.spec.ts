@@ -119,6 +119,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                         testType: "!",
                     },
                     projectKey: "ABC",
+                    testExecutionIssue: {
+                        fields: { summary: "my summary" },
+                        key: "ABC-456",
+                    },
                     testExecutionIssueDescription: "description",
                     testExecutionIssueKey: "ABC-2",
                     testExecutionIssueSummary: "summary",
@@ -159,6 +163,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     testType: "!",
                 },
                 projectKey: "ABC",
+                testExecutionIssue: {
+                    fields: { summary: "my summary" },
+                    key: "ABC-456",
+                },
                 testExecutionIssueDescription: "description",
                 testExecutionIssueKey: "ABC-2",
                 testExecutionIssueSummary: "summary",
