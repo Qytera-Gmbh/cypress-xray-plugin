@@ -1,11 +1,11 @@
-import { CypressRunResultType } from "../../../../../../types/cypress/cypress";
-import { IssueTypeDetails } from "../../../../../../types/jira/responses/issue-type-details";
-import { IssueUpdate } from "../../../../../../types/jira/responses/issue-update";
+import { CypressRunResultType } from "../../../../../types/cypress/cypress";
+import { IssueTypeDetails } from "../../../../../types/jira/responses/issue-type-details";
+import { IssueUpdate } from "../../../../../types/jira/responses/issue-update";
 import {
     MultipartInfo,
     MultipartInfoCloud,
-} from "../../../../../../types/xray/requests/import-execution-multipart-info";
-import { dedent } from "../../../../../../util/dedent";
+} from "../../../../../types/xray/requests/import-execution-multipart-info";
+import { dedent } from "../../../../../util/dedent";
 
 /**
  * Interface containing general/minimal Cypress run data.

@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import path from "path";
-import { dedent } from "../../../../../../util/dedent";
+import { dedent } from "../../../../../util/dedent";
 import { buildMultipartInfoCloud, buildMultipartInfoServer } from "./multipart-info";
 
 describe(path.relative(process.cwd(), __filename), () => {

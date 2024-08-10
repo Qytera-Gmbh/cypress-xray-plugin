@@ -10,7 +10,7 @@ import {
     TestExecutionIssueDataServer,
     buildMultipartInfoCloud,
     buildMultipartInfoServer,
-} from "./cucumber/util/multipart-info";
+} from "./util/multipart-info";
 
 interface Parameters {
     jira: Pick<
