@@ -6,9 +6,9 @@ import process from "process";
 import { LoggedRequest } from "../../src/client/https/requests";
 import { XrayTestExecutionResults } from "../../src/types/xray/import-test-execution-results";
 import { dedent } from "../../src/util/dedent";
+import { LOCAL_SERVER } from "../server";
 import { runCypress, setupCypressProject } from "../sh";
 import { expectToExist } from "../util";
-import { LOCAL_SERVER } from "./server";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/314

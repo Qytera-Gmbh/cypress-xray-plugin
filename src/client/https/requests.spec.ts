@@ -1,9 +1,12 @@
 import * as BaseAxios from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import FormData from "form-data";
+import { Readable } from "node:stream";
 import path from "path";
 import { stub, useFakeTimers } from "sinon";
 import { getMockedLogger } from "../../../test/mocks";
+import { LOCAL_SERVER } from "../../../test/server";
 import { Level } from "../../util/logging";
 import { AxiosRestClient } from "./requests";
 
@@ -310,5 +313,44 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "Waiting for https://example.org to respond... (20 seconds)"
             );
         });
+    });
+
+    it("logs form data", async () => {
+        const logger = getMockedLogger();
+        const restClient = new AxiosRestClient({ debug: true });
+        const formdata = new FormData();
+        formdata.append("hello.json", JSON.stringify({ hello: "bonjour" }));
+        await restClient.post(`http://${LOCAL_SERVER.url}`, formdata, {
+            headers: { ...formdata.getHeaders() },
+        });
+        expect(logger.logToFile.firstCall.args[0]).to.contain('{\\"hello\\":\\"bonjour\\"}');
+    });
+
+    it("logs requests happening at the same time", async () => {
+        useFakeTimers(new Date(12345));
+        const logger = getMockedLogger();
+        const restClient = new AxiosRestClient({ debug: true });
+        await Promise.all([
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+        ]);
+        expect(logger.logToFile.firstCall.args[1]).to.eq(
+            "01_00_12_GET_http_localhost_8080_request.json"
+        );
+        expect(logger.logToFile.secondCall.args[1]).to.eq(
+            "01_00_12_GET_http_localhost_8080_request_1.json"
+        );
+    });
+
+    it("logs formdata only up to a certain length", async () => {
+        const logger = getMockedLogger();
+        const restClient = new AxiosRestClient({ debug: true });
+        const buffer = Buffer.alloc(1024 * 1024 * 64, ".");
+        const formdata = new FormData();
+        formdata.append("long.txt", Readable.from(buffer));
+        await restClient.post(`http://${LOCAL_SERVER.url}`, formdata, {
+            headers: { ...formdata.getHeaders() },
+        });
+        expect(logger.logToFile.firstCall.args[0]).to.contain("[... omitted due to file size]");
     });
 });

@@ -3,8 +3,8 @@ import fs from "fs";
 import path from "path";
 import process from "process";
 import { dedent } from "../../src/util/dedent";
+import { LOCAL_SERVER } from "../server";
 import { runCypress, setupCypressProject } from "../sh";
-import { LOCAL_SERVER } from "./server";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/339

@@ -152,7 +152,7 @@ export class AxiosRestClient {
     private logRequest(request: InternalAxiosRequestConfig<unknown>): void {
         const method = request.method?.toUpperCase();
         const url = request.url;
-        let prefix = new Date().toLocaleTimeString();
+        let prefix = dateToTimestamp(new Date());
         if (method) {
             prefix = `${prefix}_${method}`;
         }
@@ -162,22 +162,24 @@ export class AxiosRestClient {
         const filename = `${this.appendSuffix(normalizedFilename(`${prefix}_request`))}.json`;
         if (request.data instanceof FormData) {
             const formData = request.data;
-            const chunks: string[] = [];
-            formData.on("data", (chunk) => {
-                // Each chunk is 64 KiB by default. To not exceed (arbitrary) 50 MiB file size,
-                // make sure to truncate here.
-                if (chunks.length > Math.floor(50000 / 64)) {
+            const chunks: (Buffer | string)[] = [];
+            let bytesRead = 0;
+            const listener = (chunk: Buffer | string) => {
+                bytesRead += chunk.length;
+                // To not exceed (arbitrary) 50 MiB file size, make sure to truncate here.
+                if (bytesRead > Math.floor(1024 * 1024 * 50)) {
                     chunks.push("[... omitted due to file size]");
+                    formData.off("data", listener);
                     return;
                 }
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                chunks.push(Buffer.from(chunk).toString("utf-8"));
-            });
+                chunks.push(chunk);
+            };
+            formData.on("data", listener);
             formData.on("end", () => {
                 const resolvedFilename = LOG.logToFile(
                     JSON.stringify(
                         {
-                            body: chunks.join(""),
+                            body: chunks.map((chunk) => chunk.toString("utf-8")).join(""),
                             headers: request.headers,
                             params: request.params,
                             url: url,
@@ -214,7 +216,7 @@ export class AxiosRestClient {
         const request = response.request as AxiosRequestConfig<unknown>;
         const method = request.method?.toUpperCase();
         const url = response.config.url;
-        let prefix = new Date().toLocaleTimeString();
+        let prefix = dateToTimestamp(new Date());
         if (method) {
             prefix = `${prefix}_${method}`;
         }
@@ -240,7 +242,7 @@ export class AxiosRestClient {
 
     private logError(direction: "inbound" | "outbound", error: unknown): void {
         let data: unknown;
-        let prefix = new Date().toLocaleTimeString();
+        let prefix = dateToTimestamp(new Date());
         if (isAxiosError(error)) {
             const method = error.config?.method?.toUpperCase();
             const url = error.config?.url;
@@ -283,4 +285,11 @@ export class AxiosRestClient {
             return filename;
         }
     }
+}
+
+function dateToTimestamp(date: Date): string {
+    return `${date.getHours().toString().padStart(2, "0")}_${date
+        .getMinutes()
+        .toString()
+        .padStart(2, "0")}_${date.getSeconds().toString().padStart(2, "0")}`;
 }
