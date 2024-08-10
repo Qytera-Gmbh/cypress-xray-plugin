@@ -55,16 +55,19 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(requestBody).to.have.property("url", "https://localhost:1234");
             expect(requestBody).to.not.have.property("params");
             expect(requestBody).to.not.have.property("body");
+            // Complicated assertion to handle different timezones on local and CI.
+            const date = new Date();
             expect(logger.logToFile.getCall(0).args[1]).to.eq(
-                "01_00_12_GET_https_localhost_1234_request.json"
+                `0${date.getHours().toString()}_00_12_GET_https_localhost_1234_request.json`
             );
 
             const error = JSON.parse(logger.logToFile.getCall(1).args[0]) as BaseAxios.AxiosError;
             expect(error.code).to.eq("ECONNREFUSED");
             expect(error.config?.url).to.eq("https://localhost:1234");
             expect(error.config?.method).to.eq("get");
+            // Complicated assertion to handle different timezones on local and CI.
             expect(logger.logToFile.getCall(1).args[1]).to.eq(
-                "01_00_12_GET_https_localhost_1234_response.json"
+                `0${date.getHours().toString()}_00_12_GET_https_localhost_1234_response.json`
             );
         });
 
@@ -158,8 +161,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 seven: [1, 2, 3],
                 there: "!",
             });
+            // Complicated assertion to handle different timezones on local and CI.
+            const date = new Date();
             expect(logger.logToFile.getCall(0).args[1]).to.eq(
-                "01_00_12_POST_https_localhost_1234_request.json"
+                `0${date.getHours().toString()}_00_12_POST_https_localhost_1234_request.json`
             );
 
             const error = JSON.parse(logger.logToFile.getCall(1).args[0]) as BaseAxios.AxiosError;
@@ -167,7 +172,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(error.config?.url).to.eq("https://localhost:1234");
             expect(error.config?.method).to.eq("post");
             expect(logger.logToFile.getCall(1).args[1]).to.eq(
-                "01_00_12_POST_https_localhost_1234_response.json"
+                `0${date.getHours().toString()}_00_12_POST_https_localhost_1234_response.json`
             );
         });
 
@@ -261,16 +266,19 @@ describe(path.relative(process.cwd(), __filename), () => {
                 seven: [1, 2, 3],
                 there: "!",
             });
+            // Complicated assertion to handle different timezones on local and CI.
+            const date = new Date();
             expect(logger.logToFile.getCall(0).args[1]).to.eq(
-                "01_00_12_PUT_https_localhost_1234_request.json"
+                `0${date.getHours().toString()}_00_12_PUT_https_localhost_1234_request.json`
             );
 
             const error = JSON.parse(logger.logToFile.getCall(1).args[0]) as BaseAxios.AxiosError;
             expect(error.code).to.eq("ECONNREFUSED");
             expect(error.config?.url).to.eq("https://localhost:1234");
             expect(error.config?.method).to.eq("put");
+
             expect(logger.logToFile.getCall(1).args[1]).to.eq(
-                "01_00_12_PUT_https_localhost_1234_response.json"
+                `0${date.getHours().toString()}_00_12_PUT_https_localhost_1234_response.json`
             );
         });
 
@@ -334,11 +342,13 @@ describe(path.relative(process.cwd(), __filename), () => {
             restClient.get(`http://${LOCAL_SERVER.url}`),
             restClient.get(`http://${LOCAL_SERVER.url}`),
         ]);
+        // Complicated assertion to handle different timezones on local and CI.
+        const date = new Date();
         expect(logger.logToFile.firstCall.args[1]).to.eq(
-            "01_00_12_GET_http_localhost_8080_request.json"
+            `0${date.getHours().toString()}_00_12_GET_http_localhost_8080_request.json`
         );
         expect(logger.logToFile.secondCall.args[1]).to.eq(
-            "01_00_12_GET_http_localhost_8080_request_1.json"
+            `0${date.getHours().toString()}_00_12_GET_http_localhost_8080_request_1.json`
         );
     });
 
