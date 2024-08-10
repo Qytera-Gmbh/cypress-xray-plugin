@@ -334,6 +334,18 @@ describe(path.relative(process.cwd(), __filename), () => {
         expect(logger.logToFile.firstCall.args[0]).to.contain('{\\"hello\\":\\"bonjour\\"}');
     });
 
+    it("logs formdata only up to a certain length", async () => {
+        const logger = getMockedLogger();
+        const restClient = new AxiosRestClient({ debug: true, fileSizeLimit: 1 });
+        const buffer = Buffer.alloc(1024 * 1024 * 1, ".");
+        const formdata = new FormData();
+        formdata.append("long.txt", Readable.from(buffer));
+        await restClient.post(`http://${LOCAL_SERVER.url}`, formdata, {
+            headers: { ...formdata.getHeaders() },
+        });
+        expect(logger.logToFile.firstCall.args[0]).to.contain("[... omitted due to file size]");
+    });
+
     it("logs requests happening at the same time", async () => {
         useFakeTimers(new Date(12345));
         const logger = getMockedLogger();
@@ -350,17 +362,5 @@ describe(path.relative(process.cwd(), __filename), () => {
         expect(logger.logToFile.secondCall.args[1]).to.eq(
             `0${date.getHours().toString()}_00_12_GET_http_localhost_8080_request_1.json`
         );
-    });
-
-    it("logs formdata only up to a certain length", async () => {
-        const logger = getMockedLogger();
-        const restClient = new AxiosRestClient({ debug: true });
-        const buffer = Buffer.alloc(1024 * 1024 * 64, ".");
-        const formdata = new FormData();
-        formdata.append("long.txt", Readable.from(buffer));
-        await restClient.post(`http://${LOCAL_SERVER.url}`, formdata, {
-            headers: { ...formdata.getHeaders() },
-        });
-        expect(logger.logToFile.firstCall.args[0]).to.contain("[... omitted due to file size]");
     });
 });

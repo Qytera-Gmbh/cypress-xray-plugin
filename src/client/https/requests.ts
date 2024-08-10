@@ -27,6 +27,12 @@ export interface RequestsOptions {
      */
     debug?: boolean;
     /**
+     * The maximum allowed file size in MiB to write when logging requests and responses.
+     *
+     * @defaultValue 50
+     */
+    fileSizeLimit?: number;
+    /**
      * Additional options for controlling HTTP behaviour.
      */
     http?: AxiosRequestConfig;
@@ -166,8 +172,7 @@ export class AxiosRestClient {
             let bytesRead = 0;
             const listener = (chunk: Buffer | string) => {
                 bytesRead += chunk.length;
-                // To not exceed (arbitrary) 50 MiB file size, make sure to truncate here.
-                if (bytesRead > Math.floor(1024 * 1024 * 50)) {
+                if (bytesRead > Math.floor(1024 * 1024 * (this.options?.fileSizeLimit ?? 50))) {
                     chunks.push("[... omitted due to file size]");
                     formData.off("data", listener);
                     return;
