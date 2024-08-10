@@ -25,7 +25,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 fields: {
                     issuetype: {
                         id: "10008",
-                        subtask: false,
                     },
                     labels: ["a", "b"],
                     project: {

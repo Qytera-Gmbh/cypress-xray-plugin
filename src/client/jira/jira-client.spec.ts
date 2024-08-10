@@ -242,9 +242,9 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it("handles issues without name or id", async () => {
                 const issueTypes: IssueTypeDetails[] = [
-                    { id: "12345", subtask: false },
-                    { name: "Custom issue", subtask: false },
-                    { description: "A legacy subtask", subtask: true },
+                    { id: "12345" },
+                    { name: "Custom issue" },
+                    { description: "A legacy subtask" },
                 ];
                 restClient.get.onFirstCall().resolves({
                     config: {

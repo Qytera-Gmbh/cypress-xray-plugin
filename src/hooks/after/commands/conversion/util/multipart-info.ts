@@ -59,33 +59,7 @@ export function buildMultipartInfoServer(
     runData: RunData,
     testExecutionIssueData: TestExecutionIssueDataServer
 ): MultipartInfo {
-    const multipartInfo: MultipartInfo = {
-        fields: {
-            description:
-                testExecutionIssueData.description ??
-                testExecutionIssueData.custom?.fields?.description ??
-                defaultDescription(
-                    runData.cypressVersion,
-                    runData.browserName,
-                    runData.browserVersion
-                ),
-            issuetype: testExecutionIssueData.issuetype ??
-                testExecutionIssueData.custom?.fields?.issueType ?? {
-                    name: "Test Execution",
-                },
-            project: {
-                key: testExecutionIssueData.projectKey,
-            },
-            summary:
-                testExecutionIssueData.summary ??
-                testExecutionIssueData.custom?.fields?.summary ??
-                defaultSummary(new Date(runData.startedTestsAt).getTime()),
-        },
-        historyMetadata: testExecutionIssueData.custom?.historyMetadata,
-        properties: testExecutionIssueData.custom?.properties,
-        transition: testExecutionIssueData.custom?.transition,
-        update: testExecutionIssueData.custom?.update,
-    };
+    const multipartInfo = getBaseInfo(runData, testExecutionIssueData);
     if (testExecutionIssueData.testPlan) {
         multipartInfo.fields[testExecutionIssueData.testPlan.fieldId] = [
             testExecutionIssueData.testPlan.value,
@@ -116,6 +90,25 @@ export function buildMultipartInfoCloud(
     testExecutionIssueData: TestExecutionIssueData
 ): MultipartInfoCloud {
     const multipartInfo: MultipartInfoCloud = {
+        ...getBaseInfo(runData, testExecutionIssueData),
+        xrayFields: {
+            environments: testExecutionIssueData.testEnvironments?.value,
+            testPlanKey: testExecutionIssueData.testPlan?.value,
+        },
+    };
+    if (testExecutionIssueData.custom?.fields) {
+        for (const [key, value] of Object.entries(testExecutionIssueData.custom.fields)) {
+            multipartInfo.fields[key] = value;
+        }
+    }
+    return multipartInfo;
+}
+
+function getBaseInfo(
+    runData: RunData,
+    testExecutionIssueData: TestExecutionIssueData
+): MultipartInfo {
+    return {
         fields: {
             description:
                 testExecutionIssueData.description ??
@@ -124,7 +117,9 @@ export function buildMultipartInfoCloud(
                     runData.browserName,
                     runData.browserVersion
                 ),
-            issuetype: testExecutionIssueData.issuetype,
+            issuetype: testExecutionIssueData.issuetype ?? {
+                name: "Test Execution",
+            },
             project: {
                 key: testExecutionIssueData.projectKey,
             },
@@ -132,17 +127,11 @@ export function buildMultipartInfoCloud(
                 testExecutionIssueData.summary ??
                 defaultSummary(new Date(runData.startedTestsAt).getTime()),
         },
-        xrayFields: {
-            environments: testExecutionIssueData.testEnvironments?.value,
-            testPlanKey: testExecutionIssueData.testPlan?.value,
-        },
+        historyMetadata: testExecutionIssueData.custom?.historyMetadata,
+        properties: testExecutionIssueData.custom?.properties,
+        transition: testExecutionIssueData.custom?.transition,
+        update: testExecutionIssueData.custom?.update,
     };
-    if (testExecutionIssueData.custom) {
-        for (const [key, value] of Object.entries(testExecutionIssueData.custom)) {
-            multipartInfo.fields[key] = value;
-        }
-    }
-    return multipartInfo;
 }
 
 function defaultSummary(timestamp: number): string {

@@ -22,7 +22,7 @@ export interface IssueUpdate {
      */
     historyMetadata?: HistoryMetadata;
     /**
-     * Details of issue properties to be add or update.
+     * Details of issue properties to add or update.
      */
     properties?: EntityProperty[];
     /**

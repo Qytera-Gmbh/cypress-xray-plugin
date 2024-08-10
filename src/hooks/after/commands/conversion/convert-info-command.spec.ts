@@ -16,7 +16,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { id: "issue_1578", subtask: false }),
+                new ConstantCommand(logger, { id: "issue_1578" }),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -32,7 +32,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(info).to.deep.eq({
                 fields: {
                     description: "Cypress version: 42.4.9\nBrowser: Firefox (123.11.6)",
-                    issuetype: { id: "issue_1578", subtask: false },
+                    issuetype: { id: "issue_1578" },
                     project: {
                         key: "CYP",
                     },
@@ -52,7 +52,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { subtask: false }),
+                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -81,7 +81,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { subtask: false }),
+                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -113,7 +113,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             xray: { uploadScreenshots: false },
                         },
                         logger,
-                        new ConstantCommand(logger, { subtask: false }),
+                        new ConstantCommand(logger, {}),
                         new ConstantCommand(logger, {
                             browserName: "Firefox",
                             browserVersion: "123.11.6",
@@ -140,7 +140,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                         },
                         logger,
-                        new ConstantCommand(logger, { subtask: false }),
+                        new ConstantCommand(logger, {}),
                         new ConstantCommand(logger, {
                             browserName: "Firefox",
                             browserVersion: "123.11.6",
@@ -167,7 +167,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { subtask: false }),
+                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -199,7 +199,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { id: "issue_1578", subtask: false }),
+                new ConstantCommand(logger, { id: "issue_1578" }),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -215,7 +215,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(info).to.deep.eq({
                 fields: {
                     description: "Cypress version: 42.4.9\nBrowser: Firefox (123.11.6)",
-                    issuetype: { id: "issue_1578", subtask: false },
+                    issuetype: { id: "issue_1578" },
                     project: {
                         key: "CYP",
                     },
@@ -239,7 +239,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { subtask: false }),
+                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -268,7 +268,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { subtask: false }),
+                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",

@@ -431,9 +431,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("displays a warning if there are failed vertices", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
-            jiraClient.getIssueTypes
-                .onFirstCall()
-                .resolves([{ name: "Test Execution", subtask: false }]);
+            jiraClient.getIssueTypes.onFirstCall().resolves([{ name: "Test Execution" }]);
             const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;
@@ -587,7 +585,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 searchable: false,
             },
         ]);
-        jiraClient.getIssueTypes.resolves([{ name: "Test Execution", subtask: false }]);
+        jiraClient.getIssueTypes.resolves([{ name: "Test Execution" }]);
         xrayClient.importExecutionMultipart.onFirstCall().resolves("CYP-123");
         xrayClient.importExecutionCucumberMultipart.onFirstCall().resolves("CYP-123");
         xrayClient.importFeature
