@@ -66,17 +66,23 @@ export interface CypressXrayPluginOptions {
 export interface JiraFieldIds {
     /**
      * The Jira issue description field ID.
+     *
+     * @deprecated Will be removed in version `8.0.0`: description is a system field and will
+     * always have ID `description`.
      */
     description?: string;
     /**
      * The Jira issue labels field ID.
+     *
+     * @deprecated Will be removed in version `8.0.0`: labels is a system field and will
+     * always have ID `labels`.
      */
     labels?: string;
     /**
      * The Jira issue summary field ID (i.e. the title of the issues).
      *
-     * @deprecated Will be removed in version `8.0.0`: the summary is a system field and will always have
-     * ID `summary`.
+     * @deprecated Will be removed in version `8.0.0`: summary is a system field and will always
+     * have ID `summary`.
      */
     summary?: string;
     /**

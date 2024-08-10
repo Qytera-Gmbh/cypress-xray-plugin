@@ -267,7 +267,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.testExecutionIssueKey = "CYP-415";
                 options.jira.testExecutionIssueType = "Test Run";
-                options.jira.fields.summary = "xyz";
                 addUploadCommands(
                     result,
                     ".",

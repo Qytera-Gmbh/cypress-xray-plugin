@@ -11,7 +11,6 @@ import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Logger } from "../../util/logging";
 import { ConstantCommand } from "../util/commands/constant-command";
-import { getOrCreateConstantCommand, getOrCreateExtractFieldIdCommand } from "../util/util";
 import { ExtractIssueKeysCommand } from "./commands/extract-issue-keys-command";
 import { GetLabelsToResetCommand } from "./commands/get-labels-to-reset-command";
 import { GetSummariesToResetCommand } from "./commands/get-summaries-to-reset-command";
@@ -48,9 +47,6 @@ export function addSynchronizationCommands(
         new ExtractIssueKeysCommand(logger, extractIssueDataCommand)
     );
     graph.connect(extractIssueDataCommand, extractIssueKeysCommand);
-    const getLabelsFieldIdCommand = options.jira.fields.labels
-        ? getOrCreateConstantCommand(graph, logger, options.jira.fields.labels)
-        : getOrCreateExtractFieldIdCommand(JiraField.LABELS, clients.jiraClient, graph, logger);
     // Xray currently (almost) always overwrites issue data when importing feature files to
     // existing issues. Therefore, we manually need to backup and reset the data once the
     // import is done.
@@ -68,11 +64,10 @@ export function addSynchronizationCommands(
         new GetLabelValuesCommand(
             { jiraClient: clients.jiraClient },
             logger,
-            getLabelsFieldIdCommand,
+            new ConstantCommand(logger, "labels"),
             extractIssueKeysCommand
         )
     );
-    graph.connect(getLabelsFieldIdCommand, getCurrentLabelsCommand);
     graph.connect(extractIssueKeysCommand, getCurrentLabelsCommand);
     // Only import the feature once the backups have been created.
     const importFeatureCommand = graph.place(
@@ -111,11 +106,10 @@ export function addSynchronizationCommands(
         new GetLabelValuesCommand(
             { jiraClient: clients.jiraClient },
             logger,
-            getLabelsFieldIdCommand,
+            new ConstantCommand(logger, "labels"),
             extractIssueKeysCommand
         )
     );
-    graph.connect(getLabelsFieldIdCommand, getNewLabelsCommand);
     graph.connect(extractIssueKeysCommand, getNewLabelsCommand);
     graph.connect(getUpdatedIssuesCommand, getNewLabelsCommand);
     const getSummariesToResetCommand = graph.place(
@@ -141,10 +135,9 @@ export function addSynchronizationCommands(
         new EditIssueFieldCommand(
             { field: JiraField.LABELS, jiraClient: clients.jiraClient },
             logger,
-            getLabelsFieldIdCommand,
+            new ConstantCommand(logger, "labels"),
             getLabelsToResetCommand
         )
     );
-    graph.connect(getLabelsFieldIdCommand, editLabelsCommand);
     graph.connect(getLabelsToResetCommand, editLabelsCommand);
 }
