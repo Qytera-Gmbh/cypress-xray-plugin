@@ -327,7 +327,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it("uses configured custom issue data", () => {
                 const graph = new ExecutableGraph<Command>();
-                options.jira.testExecutionIssueData = {
+                options.jira.testExecutionIssue = {
                     fields: {
                         assignee: "someone else",
                         ["customfield_12345"]: "bonjour",

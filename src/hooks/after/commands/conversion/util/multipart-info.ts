@@ -21,7 +21,7 @@ export type RunData = Pick<
 export interface TestExecutionIssueData {
     custom?: IssueUpdate;
     description?: string;
-    issuetype: IssueTypeDetails;
+    issuetype?: IssueTypeDetails;
     labels?: string[];
     projectKey: string;
     summary?: string;
@@ -63,19 +63,28 @@ export function buildMultipartInfoServer(
         fields: {
             description:
                 testExecutionIssueData.description ??
+                testExecutionIssueData.custom?.fields?.description ??
                 defaultDescription(
                     runData.cypressVersion,
                     runData.browserName,
                     runData.browserVersion
                 ),
-            issuetype: testExecutionIssueData.issuetype,
+            issuetype: testExecutionIssueData.issuetype ??
+                testExecutionIssueData.custom?.fields?.issueType ?? {
+                    name: "Test Execution",
+                },
             project: {
                 key: testExecutionIssueData.projectKey,
             },
             summary:
                 testExecutionIssueData.summary ??
+                testExecutionIssueData.custom?.fields?.summary ??
                 defaultSummary(new Date(runData.startedTestsAt).getTime()),
         },
+        historyMetadata: testExecutionIssueData.custom?.historyMetadata,
+        properties: testExecutionIssueData.custom?.properties,
+        transition: testExecutionIssueData.custom?.transition,
+        update: testExecutionIssueData.custom?.update,
     };
     if (testExecutionIssueData.testPlan) {
         multipartInfo.fields[testExecutionIssueData.testPlan.fieldId] = [
@@ -86,8 +95,8 @@ export function buildMultipartInfoServer(
         multipartInfo.fields[testExecutionIssueData.testEnvironments.fieldId] =
             testExecutionIssueData.testEnvironments.value;
     }
-    if (testExecutionIssueData.custom) {
-        for (const [key, value] of Object.entries(testExecutionIssueData.custom)) {
+    if (testExecutionIssueData.custom?.fields) {
+        for (const [key, value] of Object.entries(testExecutionIssueData.custom.fields)) {
             multipartInfo.fields[key] = value;
         }
     }

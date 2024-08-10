@@ -403,11 +403,11 @@ function getConvertMultipartInfoCommand(
         return convertCommand;
     }
     let textExecutionIssueDataCommand: Command<IssueUpdate> | undefined;
-    if (options.jira.testExecutionIssueData) {
+    if (options.jira.testExecutionIssue) {
         textExecutionIssueDataCommand = getOrCreateConstantCommand(
             graph,
             logger,
-            options.jira.testExecutionIssueData
+            options.jira.testExecutionIssue
         );
     }
     const executionIssueSummaryCommand = getExecutionIssueSummaryCommand(

@@ -74,8 +74,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                             expect(jiraOptions.fields.testType).to.eq(undefined);
                         });
                     });
-                    it("testExecutionIssueData", () => {
-                        expect(jiraOptions.testExecutionIssueData).to.not.eq(undefined);
+                    it("testExecutionIssue", () => {
+                        expect(jiraOptions.testExecutionIssue).to.not.eq(undefined);
                     });
                     it("testExecutionIssueDescription", () => {
                         expect(jiraOptions.testExecutionIssueDescription).to.eq(undefined);

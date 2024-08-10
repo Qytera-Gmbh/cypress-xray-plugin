@@ -67,21 +67,21 @@ export interface JiraFieldIds {
     /**
      * The Jira issue description field ID.
      *
-     * @deprecated Will be removed in version `8.0.0`: description is a system field and will
+     * @deprecated Will be removed in version `8.0.0`. `description` is a system field and will
      * always have ID `description`.
      */
     description?: string;
     /**
      * The Jira issue labels field ID.
      *
-     * @deprecated Will be removed in version `8.0.0`: labels is a system field and will
+     * @deprecated Will be removed in version `8.0.0`. `labels` is a system field and will
      * always have ID `labels`.
      */
     labels?: string;
     /**
      * The Jira issue summary field ID (i.e. the title of the issues).
      *
-     * @deprecated Will be removed in version `8.0.0`: summary is a system field and will always
+     * @deprecated Will be removed in version `8.0.0`. `summary` is a system field and will always
      * have ID `summary`.
      */
     summary?: string;
@@ -150,7 +150,17 @@ export interface JiraOptions {
      * @example "CYP"
      */
     projectKey: string;
-    testExecutionIssueData?: IssueUpdate;
+    testExecutionIssue?: IssueUpdate & {
+        /**
+         * An execution issue key to attach run results to. If omitted, Jira will always create a new
+         * test execution issue with each upload.
+         *
+         * *Note: it must be prefixed with the project key.*
+         *
+         * @example "CYP-123"
+         */
+        key?: string;
+    };
     /**
      * The description of the test execution issue, which will be used both for new test execution
      * issues as well as for updating existing issues (if provided through
@@ -159,6 +169,21 @@ export interface JiraOptions {
      * If omitted, test execution issues will have the following description:
      * ```ts
      * `Cypress version: ${cypressVersion} Browser: ${browserName} (${browserVersion})`
+     * ```
+     *
+     * @deprecated Will be removed in version `8.0.0`. Please use the following instead:
+     *
+     * @example
+     *
+     * ```ts
+     * configureXrayPlugin(on, config, {
+     *   // ...
+     *   testExecutionIssue: {
+     *     fields: {
+     *       description: "my description"
+     *     }
+     *   }
+     * });
      * ```
      */
     testExecutionIssueDescription?: string;
@@ -169,6 +194,19 @@ export interface JiraOptions {
      * *Note: it must be prefixed with the project key.*
      *
      * @example "CYP-123"
+     *
+     * @deprecated Will be removed in version `8.0.0`. Please use the following instead:
+     *
+     * @example
+     *
+     * ```ts
+     * configureXrayPlugin(on, config, {
+     *   // ...
+     *   testExecutionIssue: {
+     *     key: "CYP-123"
+     *   }
+     * });
+     * ```
      */
     testExecutionIssueKey?: string;
     /**
@@ -181,11 +219,45 @@ export interface JiraOptions {
      * `Execution Results [${t}]`,
      * ```
      * where `t` is the timestamp when Cypress started testing.
+     *
+     * @deprecated Will be removed in version `8.0.0`. Please use the following instead:
+     *
+     * @example
+     *
+     * ```ts
+     * configureXrayPlugin(on, config, {
+     *   // ...
+     *   testExecutionIssue: {
+     *     fields {
+     *       summary: "my summary"
+     *     }
+     *   }
+     * });
+     * ```
      */
     testExecutionIssueSummary?: string;
     /**
      * The issue type name of test executions. By default, Xray calls them `Test Execution`, but
      * it's possible that they have been renamed or translated in your Jira instance.
+     *
+     * @deprecated Will be removed in version `8.0.0`. Please use the following instead:
+     *
+     * @example
+     *
+     * ```ts
+     * configureXrayPlugin(on, config, {
+     *   // ...
+     *   testExecutionIssue: {
+     *     fields: {
+     *       issuetype: {
+     *         id: "12345",
+     *         name: "Test Execution"
+     *         // whatever is necessary to uniquely identify the issue type
+     *       }
+     *     }
+     *   }
+     * });
+     * ```
      */
     testExecutionIssueType?: string;
     /**

@@ -138,6 +138,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     summary: "Execution Results [1695916296000]",
                 },
+                historyMetadata: undefined,
+                properties: undefined,
+                transition: undefined,
+                update: undefined,
             });
         });
 
