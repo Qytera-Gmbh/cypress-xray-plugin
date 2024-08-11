@@ -92,7 +92,7 @@ export class AxiosRestClient {
         this.options = options;
         this.createdLogFiles = new Map();
         this.axios = undefined;
-        this.lastRequestTime = Date.now();
+        this.lastRequestTime = 0;
     }
 
     public async get<R>(

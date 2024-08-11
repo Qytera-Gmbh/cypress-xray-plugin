@@ -1335,7 +1335,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     })
                 );
             });
-            it("creates a different xray client if a xray config is passed", () => {
+            it("creates a different xray client if an xray config is passed", () => {
                 const httpOptions: InternalHttpOptions = {
                     xray: {
                         proxy: {
