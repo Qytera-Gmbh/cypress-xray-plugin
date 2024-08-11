@@ -150,17 +150,6 @@ export interface JiraOptions {
      * @example "CYP"
      */
     projectKey: string;
-    testExecutionIssue?: IssueUpdate & {
-        /**
-         * An execution issue key to attach run results to. If omitted, Jira will always create a new
-         * test execution issue with each upload.
-         *
-         * *Note: it must be prefixed with the project key.*
-         *
-         * @example "CYP-123"
-         */
-        key?: string;
-    };
     /**
      * This option can be used to configure the test execution issue that the plugin will either
      * create or modify with the run results. The value must match the format of Jira's issue
