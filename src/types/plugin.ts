@@ -150,6 +150,30 @@ export interface JiraOptions {
      * @example "CYP"
      */
     projectKey: string;
+    /**
+     * This option can be used to configure the test execution issue that the plugin will either
+     * create or modify with the run results. The value must match the format of Jira's issue
+     * create/update payloads.
+     *
+     * @example
+     *
+     * ```ts
+     * testExecutionIssue: {
+     *   key: "PRJ-16",
+     *   fields: {
+     *     summary: "My execution issue summary",
+     *     description: "My execution issue description",
+     *     assignee: {
+     *       name: "cool.turtle@company.com"
+     *     },
+     *     customfield_12345: "Sprint 17"
+     *   }
+     * }
+     * ```
+     *
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-post
+     * @see https://developer.atlassian.com/server/jira/platform/rest/v10000/api-group-issue/#api-api-2-issue-post
+     */
     testExecutionIssue?: IssueUpdate & {
         /**
          * An execution issue key to attach run results to. If omitted, Jira will always create a new
