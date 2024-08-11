@@ -5,7 +5,7 @@ import path from "path";
 import process from "process";
 import { LoggedRequest } from "../../src/client/https/requests";
 import { dedent } from "../../src/util/dedent";
-import { LOCAL_SERVER } from "../server";
+import { LOCAL_SERVER } from "../server-config";
 import { runCypress, setupCypressProject } from "../sh";
 
 // ============================================================================================== //

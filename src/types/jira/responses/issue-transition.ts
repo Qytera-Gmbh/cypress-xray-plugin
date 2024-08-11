@@ -1,6 +1,9 @@
 import { FieldMeta } from "./field-meta";
 import { StatusDetails } from "./status-details";
 
+/**
+ * Models the payload when transitioning an issue from one status to another.
+ */
 export interface IssueTransition {
     /**
      * Details of the fields associated with the issue transition screen. Use this information to

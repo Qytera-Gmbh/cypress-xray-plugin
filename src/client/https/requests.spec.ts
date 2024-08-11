@@ -6,7 +6,7 @@ import { Readable } from "node:stream";
 import path from "path";
 import { stub, useFakeTimers } from "sinon";
 import { getMockedLogger } from "../../../test/mocks";
-import { LOCAL_SERVER } from "../../../test/server";
+import { LOCAL_SERVER } from "../../../test/server-config";
 import { Level } from "../../util/logging";
 import { AxiosRestClient } from "./requests";
 
@@ -363,4 +363,63 @@ describe(path.relative(process.cwd(), __filename), () => {
             `0${date.getHours().toString()}_00_12_GET_http_localhost_8080_request_1.json`
         );
     });
+
+    it("does not rate limit requests by default", async () => {
+        const restClient = new AxiosRestClient({ debug: false });
+        const responses = await Promise.all([
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+        ]);
+        /* eslint-disable @typescript-eslint/no-unsafe-argument */
+        const dateHeader0 = new Date(Number.parseInt(responses[0].headers["x-response-time"]));
+        const dateHeader1 = new Date(Number.parseInt(responses[1].headers["x-response-time"]));
+        const dateHeader2 = new Date(Number.parseInt(responses[2].headers["x-response-time"]));
+        const dateHeader3 = new Date(Number.parseInt(responses[3].headers["x-response-time"]));
+        const dateHeader4 = new Date(Number.parseInt(responses[4].headers["x-response-time"]));
+        const dateHeader5 = new Date(Number.parseInt(responses[5].headers["x-response-time"]));
+        const dateHeader6 = new Date(Number.parseInt(responses[6].headers["x-response-time"]));
+        const dateHeader7 = new Date(Number.parseInt(responses[7].headers["x-response-time"]));
+        const dateHeader8 = new Date(Number.parseInt(responses[8].headers["x-response-time"]));
+        const dateHeader9 = new Date(Number.parseInt(responses[9].headers["x-response-time"]));
+        /* eslint-enable @typescript-eslint/no-unsafe-argument */
+        expect(dateHeader1.getTime() - dateHeader0.getTime()).to.be.approximately(0, 20);
+        expect(dateHeader2.getTime() - dateHeader1.getTime()).to.be.approximately(0, 20);
+        expect(dateHeader3.getTime() - dateHeader2.getTime()).to.be.approximately(0, 20);
+        expect(dateHeader4.getTime() - dateHeader3.getTime()).to.be.approximately(0, 20);
+        expect(dateHeader5.getTime() - dateHeader4.getTime()).to.be.approximately(0, 20);
+        expect(dateHeader6.getTime() - dateHeader5.getTime()).to.be.approximately(0, 20);
+        expect(dateHeader7.getTime() - dateHeader6.getTime()).to.be.approximately(0, 20);
+        expect(dateHeader8.getTime() - dateHeader7.getTime()).to.be.approximately(0, 20);
+        expect(dateHeader9.getTime() - dateHeader8.getTime()).to.be.approximately(0, 20);
+    }).timeout(3000);
+
+    it("rate limits requests", async () => {
+        const restClient = new AxiosRestClient({ maxRequestsPerSecond: 2 });
+        const responses = await Promise.all([
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+        ]);
+        /* eslint-disable @typescript-eslint/no-unsafe-argument */
+        const dateHeader0 = new Date(Number.parseInt(responses[0].headers["x-response-time"]));
+        const dateHeader1 = new Date(Number.parseInt(responses[1].headers["x-response-time"]));
+        const dateHeader2 = new Date(Number.parseInt(responses[2].headers["x-response-time"]));
+        const dateHeader3 = new Date(Number.parseInt(responses[3].headers["x-response-time"]));
+        const dateHeader4 = new Date(Number.parseInt(responses[4].headers["x-response-time"]));
+        /* eslint-enable @typescript-eslint/no-unsafe-argument */
+        expect(dateHeader1.getTime() - dateHeader0.getTime()).to.be.approximately(500, 20);
+        expect(dateHeader2.getTime() - dateHeader1.getTime()).to.be.approximately(500, 20);
+        expect(dateHeader3.getTime() - dateHeader2.getTime()).to.be.approximately(500, 20);
+        expect(dateHeader4.getTime() - dateHeader3.getTime()).to.be.approximately(500, 20);
+    }).timeout(3000);
 });

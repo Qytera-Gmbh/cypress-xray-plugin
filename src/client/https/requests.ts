@@ -36,6 +36,28 @@ export interface RequestsOptions {
      * Additional options for controlling HTTP behaviour.
      */
     http?: AxiosRequestConfig;
+    /**
+     * Request rate limiting options for this client. If configured, each of the client's requests
+     * will be delayed if sending it would exceed the specified requests per second.
+     *
+     * @example
+     *
+     *
+     * ```ts
+     * {
+     *   // Will send requests at most every 500 milliseconds.
+     *   maxRequestsPerSecond: 2
+     * }
+     * ```
+     *
+     * ```ts
+     * {
+     *   // Will send requests at most every 5 seconds.
+     *   maxRequestsPerSecond: 0.2
+     * }
+     * ```
+     */
+    maxRequestsPerSecond?: number;
 }
 
 /**
@@ -62,19 +84,22 @@ export interface LoggedRequest {
 
 export class AxiosRestClient {
     private readonly options: RequestsOptions | undefined;
-
-    private axios: AxiosInstance | undefined = undefined;
     private readonly createdLogFiles: Map<string, number>;
+    private axios: AxiosInstance | undefined;
+    private lastRequestTime: number | undefined;
 
     constructor(options?: RequestsOptions) {
         this.options = options;
         this.createdLogFiles = new Map();
+        this.axios = undefined;
+        this.lastRequestTime = undefined;
     }
 
     public async get<R>(
         url: string,
         config?: AxiosRequestConfig<unknown>
     ): Promise<AxiosResponse<R>> {
+        await this.delayIfNeeded();
         const progressInterval = this.startResponseInterval(url);
         try {
             return await this.getAxios().get(url, {
@@ -91,6 +116,7 @@ export class AxiosRestClient {
         data?: D,
         config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse<R>> {
+        await this.delayIfNeeded();
         const progressInterval = this.startResponseInterval(url);
         try {
             return await this.getAxios().post(url, data, {
@@ -107,6 +133,7 @@ export class AxiosRestClient {
         data?: D,
         config?: AxiosRequestConfig<D>
     ): Promise<AxiosResponse<R>> {
+        await this.delayIfNeeded();
         const progressInterval = this.startResponseInterval(url);
         try {
             return await this.getAxios().put(url, data, {
@@ -288,6 +315,27 @@ export class AxiosRestClient {
         } else {
             this.createdLogFiles.set(filename, 1);
             return filename;
+        }
+    }
+
+    private async delayIfNeeded(): Promise<void> {
+        // We specifically do not use axios interceptors here because we would need to handle
+        // connection timeouts, ECONNRESET etc. otherwise.
+        if (this.options?.maxRequestsPerSecond) {
+            const interval = 1000 / this.options.maxRequestsPerSecond;
+            let nextRequestTime;
+            if (this.lastRequestTime) {
+                nextRequestTime = this.lastRequestTime + interval;
+            } else {
+                nextRequestTime = Date.now();
+            }
+            this.lastRequestTime = nextRequestTime;
+            const now = Date.now();
+            if (nextRequestTime > now) {
+                await new Promise((resolve) => {
+                    setTimeout(resolve, nextRequestTime - now);
+                });
+            }
         }
     }
 }
