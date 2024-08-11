@@ -223,9 +223,6 @@ export class AxiosRestClient {
                 );
                 LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
             });
-            formData.on("error", (error) => {
-                throw error;
-            });
         } else {
             const resolvedFilename = LOG.logToFile(
                 JSON.stringify(

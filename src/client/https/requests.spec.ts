@@ -2,7 +2,7 @@ import * as BaseAxios from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import FormData from "form-data";
-import { Readable } from "node:stream";
+import { createReadStream } from "node:fs";
 import path from "path";
 import { stub, useFakeTimers } from "sinon";
 import { getMockedLogger } from "../../../test/mocks";
@@ -336,14 +336,15 @@ describe(path.relative(process.cwd(), __filename), () => {
 
     it("logs formdata only up to a certain length", async () => {
         const logger = getMockedLogger();
-        const restClient = new AxiosRestClient({ debug: true, fileSizeLimit: 1 });
-        const buffer = Buffer.alloc(1024 * 1024 * 1, ".");
+        const restClient = new AxiosRestClient({ debug: true, fileSizeLimit: 0.5 });
         const formdata = new FormData();
-        formdata.append("long.txt", Readable.from(buffer));
+        formdata.append("long.txt", createReadStream("./test/resources/big.txt"));
         await restClient.post(`http://${LOCAL_SERVER.url}`, formdata, {
             headers: { ...formdata.getHeaders() },
         });
-        expect(logger.logToFile.firstCall.args[0]).to.contain("[... omitted due to file size]");
+        // The 'end' event is emitted after the response has arrived.
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        expect(logger.logToFile.secondCall.args[0]).to.contain("[... omitted due to file size]");
     });
 
     it("logs requests happening at the same time", async () => {
