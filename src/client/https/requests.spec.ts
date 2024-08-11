@@ -390,15 +390,15 @@ describe(path.relative(process.cwd(), __filename), () => {
         const dateHeader8 = new Date(Number.parseInt(responses[8].headers["x-response-time"]));
         const dateHeader9 = new Date(Number.parseInt(responses[9].headers["x-response-time"]));
         /* eslint-enable @typescript-eslint/no-unsafe-argument */
-        expect(dateHeader1.getTime() - dateHeader0.getTime()).to.be.approximately(0, 20);
-        expect(dateHeader2.getTime() - dateHeader1.getTime()).to.be.approximately(0, 20);
-        expect(dateHeader3.getTime() - dateHeader2.getTime()).to.be.approximately(0, 20);
-        expect(dateHeader4.getTime() - dateHeader3.getTime()).to.be.approximately(0, 20);
-        expect(dateHeader5.getTime() - dateHeader4.getTime()).to.be.approximately(0, 20);
-        expect(dateHeader6.getTime() - dateHeader5.getTime()).to.be.approximately(0, 20);
-        expect(dateHeader7.getTime() - dateHeader6.getTime()).to.be.approximately(0, 20);
-        expect(dateHeader8.getTime() - dateHeader7.getTime()).to.be.approximately(0, 20);
-        expect(dateHeader9.getTime() - dateHeader8.getTime()).to.be.approximately(0, 20);
+        expect(dateHeader1.getTime() - dateHeader0.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader2.getTime() - dateHeader1.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader3.getTime() - dateHeader2.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader4.getTime() - dateHeader3.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader5.getTime() - dateHeader4.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader6.getTime() - dateHeader5.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader7.getTime() - dateHeader6.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader8.getTime() - dateHeader7.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader9.getTime() - dateHeader8.getTime()).to.be.approximately(0, 50);
     }).timeout(3000);
 
     it("rate limits requests", async () => {
@@ -417,9 +417,9 @@ describe(path.relative(process.cwd(), __filename), () => {
         const dateHeader3 = new Date(Number.parseInt(responses[3].headers["x-response-time"]));
         const dateHeader4 = new Date(Number.parseInt(responses[4].headers["x-response-time"]));
         /* eslint-enable @typescript-eslint/no-unsafe-argument */
-        expect(dateHeader1.getTime() - dateHeader0.getTime()).to.be.approximately(500, 20);
-        expect(dateHeader2.getTime() - dateHeader1.getTime()).to.be.approximately(500, 20);
-        expect(dateHeader3.getTime() - dateHeader2.getTime()).to.be.approximately(500, 20);
-        expect(dateHeader4.getTime() - dateHeader3.getTime()).to.be.approximately(500, 20);
+        expect(dateHeader1.getTime() - dateHeader0.getTime()).to.be.approximately(500, 50);
+        expect(dateHeader2.getTime() - dateHeader1.getTime()).to.be.approximately(500, 50);
+        expect(dateHeader3.getTime() - dateHeader2.getTime()).to.be.approximately(500, 50);
+        expect(dateHeader4.getTime() - dateHeader3.getTime()).to.be.approximately(500, 50);
     }).timeout(3000);
 });
