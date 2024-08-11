@@ -1,6 +1,6 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import { AxiosRequestConfig } from "axios";
-import { AxiosRestClient } from "../client/https/requests";
+import { AxiosRestClient, RequestsOptions } from "../client/https/requests";
 import { JiraClient } from "../client/jira/jira-client";
 import { XrayClient } from "../client/xray/xray-client";
 import { IssueUpdate } from "./jira/responses/issue-update";
@@ -520,50 +520,51 @@ export interface InternalCucumberOptions extends Required<CucumberOptions> {
  * [common options](https://axios-http.com/docs/req_config) to use for all requests or choose to
  * define specific ones for Jira or Xray.
  */
-export interface HttpOptions extends AxiosRequestConfig {
-    /**
-     * The HTTP configuration for requests to Jira. HTTP options defined for both clients will be
-     * overridden in the Jira client by those defined here.
-     *
-     * *Note: In a Jira/Xray server environment, the Jira and Xray endpoints will reside on the same
-     * host. To avoid duplicating your HTTP configuration, it is recommended that you define a
-     * single one instead, e.g.:*
-     *
-     * ```ts
-     * {
-     *   // ...other plugin options
-     *   http: {
-     *     proxy: {
-     *       host: "http://1.2.3.4",
-     *       port: 12345
-     *     }
-     *   }
-     * }
-     * ```
-     */
-    jira?: AxiosRequestConfig;
-    /**
-     * The HTTP configuration for requests to Xray. HTTP options defined for both clients will be
-     * overridden in the Jira client by those defined here.
-     *
-     * *Note: In a Jira/Xray server environment, the Jira and Xray endpoints will reside on the same
-     * host. To avoid duplicating your HTTP configuration, it is recommended that you define a
-     * single one instead, e.g.:*
-     *
-     * ```ts
-     * {
-     *   // ...other plugin options
-     *   http: {
-     *     proxy: {
-     *       host: "http://1.2.3.4",
-     *       port: 12345
-     *     }
-     *   }
-     * }
-     * ```
-     */
-    xray?: AxiosRequestConfig;
-}
+export type HttpOptions = AxiosRequestConfig &
+    Pick<RequestsOptions, "maxRequestsPerSecond"> & {
+        /**
+         * The HTTP configuration for requests to Jira. HTTP options defined for both clients will be
+         * overridden in the Jira client by those defined here.
+         *
+         * *Note: In a Jira/Xray server environment, the Jira and Xray endpoints will reside on the same
+         * host. To avoid duplicating your HTTP configuration, it is recommended that you define a
+         * single one instead, e.g.:*
+         *
+         * ```ts
+         * {
+         *   // ...other plugin options
+         *   http: {
+         *     proxy: {
+         *       host: "http://1.2.3.4",
+         *       port: 12345
+         *     }
+         *   }
+         * }
+         * ```
+         */
+        jira?: AxiosRequestConfig & Pick<RequestsOptions, "maxRequestsPerSecond">;
+        /**
+         * The HTTP configuration for requests to Xray. HTTP options defined for both clients will be
+         * overridden in the Jira client by those defined here.
+         *
+         * *Note: In a Jira/Xray server environment, the Jira and Xray endpoints will reside on the same
+         * host. To avoid duplicating your HTTP configuration, it is recommended that you define a
+         * single one instead, e.g.:*
+         *
+         * ```ts
+         * {
+         *   // ...other plugin options
+         *   http: {
+         *     proxy: {
+         *       host: "http://1.2.3.4",
+         *       port: 12345
+         *     }
+         *   }
+         * }
+         * ```
+         */
+        xray?: AxiosRequestConfig & Pick<RequestsOptions, "maxRequestsPerSecond">;
+    };
 
 export type InternalHttpOptions = HttpOptions;
 

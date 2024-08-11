@@ -250,6 +250,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             port: 1234,
                         },
                     },
+                    maxRequestsPerSecond: undefined,
                 }),
                 xray: new AxiosRestClient({
                     debug: false,
@@ -259,6 +260,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             port: 5678,
                         },
                     },
+                    maxRequestsPerSecond: undefined,
                 }),
             });
         });
