@@ -521,7 +521,7 @@ export interface InternalCucumberOptions extends Required<CucumberOptions> {
  * define specific ones for Jira or Xray.
  */
 export type HttpOptions = AxiosRequestConfig &
-    Pick<RequestsOptions, "maxRequestsPerSecond"> & {
+    Pick<RequestsOptions, "rateLimiting"> & {
         /**
          * The HTTP configuration for requests to Jira. HTTP options defined for both clients will be
          * overridden in the Jira client by those defined here.
@@ -542,7 +542,7 @@ export type HttpOptions = AxiosRequestConfig &
          * }
          * ```
          */
-        jira?: AxiosRequestConfig & Pick<RequestsOptions, "maxRequestsPerSecond">;
+        jira?: AxiosRequestConfig & Pick<RequestsOptions, "rateLimiting">;
         /**
          * The HTTP configuration for requests to Xray. HTTP options defined for both clients will be
          * overridden in the Jira client by those defined here.
@@ -563,7 +563,7 @@ export type HttpOptions = AxiosRequestConfig &
          * }
          * ```
          */
-        xray?: AxiosRequestConfig & Pick<RequestsOptions, "maxRequestsPerSecond">;
+        xray?: AxiosRequestConfig & Pick<RequestsOptions, "rateLimiting">;
     };
 
 export type InternalHttpOptions = HttpOptions;

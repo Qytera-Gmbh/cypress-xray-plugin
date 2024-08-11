@@ -38,26 +38,36 @@ export interface RequestsOptions {
     http?: AxiosRequestConfig;
     /**
      * Request rate limiting options for this client. If configured, each of the client's requests
-     * will be delayed if sending it would exceed the specified requests per second.
-     *
-     * @example
-     *
-     *
-     * ```ts
-     * // Will send a request at most every 500 milliseconds.
-     * {
-     *   maxRequestsPerSecond: 2
-     * }
-     * ```
-     *
-     * ```ts
-     * // Will send a request at most every 5 seconds.
-     * {
-     *   maxRequestsPerSecond: 0.2
-     * }
-     * ```
+     * can be delayed by a certain amount of time depending on the configured rate limiting scheme.
      */
-    maxRequestsPerSecond?: number;
+    rateLimiting?: {
+        /**
+         * Avoids rate limits by delaying requests if sending them would exceed the specified
+         * requests per second.
+         *
+         * @example
+         *
+         *
+         * ```ts
+         * // Will send a request at most every 500 milliseconds.
+         * {
+         *   rateLimiting: {
+         *     requestsPerSecond: 2
+         *   }
+         * }
+         * ```
+         *
+         * ```ts
+         * // Will send a request at most every 5 seconds.
+         * {
+         *   rateLimiting: {
+         *     requestsPerSecond: 0.2
+         *   }
+         * }
+         * ```
+         */
+        requestsPerSecond?: number;
+    };
 }
 
 /**
@@ -318,8 +328,8 @@ export class AxiosRestClient {
     private async delayIfNeeded(): Promise<void> {
         // We specifically do not use axios interceptors here because we would need to handle
         // connection timeouts, ECONNRESET etc. otherwise (I think).
-        if (this.options?.maxRequestsPerSecond) {
-            const interval = 1000 / this.options.maxRequestsPerSecond;
+        if (this.options?.rateLimiting?.requestsPerSecond) {
+            const interval = 1000 / this.options.rateLimiting.requestsPerSecond;
             const now = Date.now();
             const nextRequestTime = this.lastRequestTime ? this.lastRequestTime + interval : now;
             this.lastRequestTime = nextRequestTime;

@@ -362,39 +362,34 @@ export function initHttpClients(
     let jiraClient: AxiosRestClient | undefined = undefined;
     let xrayClient: AxiosRestClient | undefined = undefined;
     if (httpOptions) {
-        const {
-            jira,
-            maxRequestsPerSecond: maxRequestsPerSecondCommon,
-            xray,
-            ...httpConfigCommon
-        } = httpOptions;
+        const { jira, rateLimiting: rateLimitingCommon, xray, ...httpConfigCommon } = httpOptions;
         if (jira) {
-            const { maxRequestsPerSecond, ...httpConfig } = jira;
+            const { rateLimiting, ...httpConfig } = jira;
             jiraClient = new AxiosRestClient({
                 debug: pluginOptions?.debug,
                 http: {
                     ...httpConfigCommon,
                     ...httpConfig,
                 },
-                maxRequestsPerSecond: maxRequestsPerSecond ?? maxRequestsPerSecondCommon,
+                rateLimiting: rateLimiting ?? rateLimitingCommon,
             });
         }
         if (xray) {
-            const { maxRequestsPerSecond, ...httpConfig } = xray;
+            const { rateLimiting, ...httpConfig } = xray;
             xrayClient = new AxiosRestClient({
                 debug: pluginOptions?.debug,
                 http: {
                     ...httpConfigCommon,
                     ...httpConfig,
                 },
-                maxRequestsPerSecond: maxRequestsPerSecond ?? maxRequestsPerSecondCommon,
+                rateLimiting: rateLimiting ?? rateLimitingCommon,
             });
         }
         if (!jiraClient || !xrayClient) {
             const httpClient = new AxiosRestClient({
                 debug: pluginOptions?.debug,
                 http: httpConfigCommon,
-                maxRequestsPerSecond: maxRequestsPerSecondCommon,
+                rateLimiting: rateLimitingCommon,
             });
             if (!jiraClient) {
                 jiraClient = httpClient;

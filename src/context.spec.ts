@@ -1278,7 +1278,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     new AxiosRestClient({
                         debug: undefined,
                         http: {},
-                        maxRequestsPerSecond: undefined,
+                        rateLimiting: undefined,
                     })
                 );
             });
@@ -1300,7 +1300,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 port: 12345,
                             },
                         },
-                        maxRequestsPerSecond: undefined,
+                        rateLimiting: undefined,
                     })
                 );
             });
@@ -1324,14 +1324,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 port: 12345,
                             },
                         },
-                        maxRequestsPerSecond: undefined,
+                        rateLimiting: undefined,
                     })
                 );
                 expect(httpClients.xray).to.deep.eq(
                     new AxiosRestClient({
                         debug: undefined,
                         http: {},
-                        maxRequestsPerSecond: undefined,
+                        rateLimiting: undefined,
                     })
                 );
             });
@@ -1350,7 +1350,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     new AxiosRestClient({
                         debug: undefined,
                         http: {},
-                        maxRequestsPerSecond: undefined,
+                        rateLimiting: undefined,
                     })
                 );
                 expect(httpClients.xray).to.deep.eq(
@@ -1362,7 +1362,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 port: 12345,
                             },
                         },
-                        maxRequestsPerSecond: undefined,
+                        rateLimiting: undefined,
                     })
                 );
             });
@@ -1392,7 +1392,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 port: 98765,
                             },
                         },
-                        maxRequestsPerSecond: undefined,
+                        rateLimiting: undefined,
                     })
                 );
                 expect(httpClients.xray).to.deep.eq(
@@ -1404,7 +1404,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 port: 12345,
                             },
                         },
-                        maxRequestsPerSecond: undefined,
+                        rateLimiting: undefined,
                     })
                 );
             });
@@ -1416,7 +1416,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             port: 98765,
                         },
                     },
-                    maxRequestsPerSecond: 5,
+                    rateLimiting: { requestsPerSecond: 5 },
                     timeout: 42,
                     xray: {
                         proxy: {
@@ -1437,7 +1437,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             },
                             timeout: 42,
                         },
-                        maxRequestsPerSecond: 5,
+                        rateLimiting: { requestsPerSecond: 5 },
                     })
                 );
                 expect(httpClients.xray).to.deep.eq(
@@ -1450,32 +1450,32 @@ describe(path.relative(process.cwd(), __filename), () => {
                             },
                             timeout: 42,
                         },
-                        maxRequestsPerSecond: 5,
+                        rateLimiting: { requestsPerSecond: 5 },
                     })
                 );
             });
             it("prefers individual http options to common ones", () => {
                 const httpOptions: InternalHttpOptions = {
                     jira: {
-                        maxRequestsPerSecond: 20,
                         proxy: {
                             host: "http://localhost1",
                             port: 9999,
                         },
+                        rateLimiting: { requestsPerSecond: 20 },
                         timeout: 500,
                     },
-                    maxRequestsPerSecond: 10,
                     proxy: {
                         host: "http://localhost2",
                         port: 5555,
                     },
+                    rateLimiting: { requestsPerSecond: 10 },
                     timeout: 42,
                     xray: {
-                        maxRequestsPerSecond: 1,
                         proxy: {
                             host: "http://localhost3",
                             port: 1111,
                         },
+                        rateLimiting: { requestsPerSecond: 1 },
                         timeout: 10000,
                     },
                 };
@@ -1490,7 +1490,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             },
                             timeout: 500,
                         },
-                        maxRequestsPerSecond: 20,
+                        rateLimiting: { requestsPerSecond: 20 },
                     })
                 );
                 expect(httpClients.xray).to.deep.eq(
@@ -1503,7 +1503,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             },
                             timeout: 10000,
                         },
-                        maxRequestsPerSecond: 1,
+                        rateLimiting: { requestsPerSecond: 1 },
                     })
                 );
             });

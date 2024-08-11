@@ -403,7 +403,7 @@ describe(path.relative(process.cwd(), __filename), () => {
     }).timeout(3000);
 
     it("rate limits requests", async () => {
-        const restClient = new AxiosRestClient({ maxRequestsPerSecond: 2 });
+        const restClient = new AxiosRestClient({ rateLimiting: { requestsPerSecond: 2 } });
         const responses = await Promise.all([
             restClient.get(`http://${LOCAL_SERVER.url}`),
             restClient.get(`http://${LOCAL_SERVER.url}`),
