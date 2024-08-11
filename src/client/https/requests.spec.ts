@@ -2,11 +2,11 @@ import * as BaseAxios from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import FormData from "form-data";
-import { Readable } from "node:stream";
+import { createReadStream } from "node:fs";
 import path from "path";
 import { stub, useFakeTimers } from "sinon";
 import { getMockedLogger } from "../../../test/mocks";
-import { LOCAL_SERVER } from "../../../test/server";
+import { LOCAL_SERVER } from "../../../test/server-config";
 import { Level } from "../../util/logging";
 import { AxiosRestClient } from "./requests";
 
@@ -336,14 +336,15 @@ describe(path.relative(process.cwd(), __filename), () => {
 
     it("logs formdata only up to a certain length", async () => {
         const logger = getMockedLogger();
-        const restClient = new AxiosRestClient({ debug: true, fileSizeLimit: 1 });
-        const buffer = Buffer.alloc(1024 * 1024 * 1, ".");
+        const restClient = new AxiosRestClient({ debug: true, fileSizeLimit: 0.5 });
         const formdata = new FormData();
-        formdata.append("long.txt", Readable.from(buffer));
+        formdata.append("long.txt", createReadStream("./test/resources/big.txt"));
         await restClient.post(`http://${LOCAL_SERVER.url}`, formdata, {
             headers: { ...formdata.getHeaders() },
         });
-        expect(logger.logToFile.firstCall.args[0]).to.contain("[... omitted due to file size]");
+        // The 'end' event is emitted after the response has arrived.
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        expect(logger.logToFile.secondCall.args[0]).to.contain("[... omitted due to file size]");
     });
 
     it("logs requests happening at the same time", async () => {
@@ -363,4 +364,63 @@ describe(path.relative(process.cwd(), __filename), () => {
             `0${date.getHours().toString()}_00_12_GET_http_localhost_8080_request_1.json`
         );
     });
+
+    it("does not rate limit requests by default", async () => {
+        const restClient = new AxiosRestClient();
+        const responses = await Promise.all([
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+        ]);
+        /* eslint-disable @typescript-eslint/no-unsafe-argument */
+        const dateHeader0 = new Date(Number.parseInt(responses[0].headers["x-response-time"]));
+        const dateHeader1 = new Date(Number.parseInt(responses[1].headers["x-response-time"]));
+        const dateHeader2 = new Date(Number.parseInt(responses[2].headers["x-response-time"]));
+        const dateHeader3 = new Date(Number.parseInt(responses[3].headers["x-response-time"]));
+        const dateHeader4 = new Date(Number.parseInt(responses[4].headers["x-response-time"]));
+        const dateHeader5 = new Date(Number.parseInt(responses[5].headers["x-response-time"]));
+        const dateHeader6 = new Date(Number.parseInt(responses[6].headers["x-response-time"]));
+        const dateHeader7 = new Date(Number.parseInt(responses[7].headers["x-response-time"]));
+        const dateHeader8 = new Date(Number.parseInt(responses[8].headers["x-response-time"]));
+        const dateHeader9 = new Date(Number.parseInt(responses[9].headers["x-response-time"]));
+        /* eslint-enable @typescript-eslint/no-unsafe-argument */
+        expect(dateHeader1.getTime() - dateHeader0.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader2.getTime() - dateHeader1.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader3.getTime() - dateHeader2.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader4.getTime() - dateHeader3.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader5.getTime() - dateHeader4.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader6.getTime() - dateHeader5.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader7.getTime() - dateHeader6.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader8.getTime() - dateHeader7.getTime()).to.be.approximately(0, 50);
+        expect(dateHeader9.getTime() - dateHeader8.getTime()).to.be.approximately(0, 50);
+    }).timeout(3000);
+
+    it("rate limits requests", async () => {
+        const restClient = new AxiosRestClient({ rateLimiting: { requestsPerSecond: 2 } });
+        const responses = await Promise.all([
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+            restClient.get(`http://${LOCAL_SERVER.url}`),
+        ]);
+        /* eslint-disable @typescript-eslint/no-unsafe-argument */
+        const dateHeader0 = new Date(Number.parseInt(responses[0].headers["x-response-time"]));
+        const dateHeader1 = new Date(Number.parseInt(responses[1].headers["x-response-time"]));
+        const dateHeader2 = new Date(Number.parseInt(responses[2].headers["x-response-time"]));
+        const dateHeader3 = new Date(Number.parseInt(responses[3].headers["x-response-time"]));
+        const dateHeader4 = new Date(Number.parseInt(responses[4].headers["x-response-time"]));
+        /* eslint-enable @typescript-eslint/no-unsafe-argument */
+        expect(dateHeader1.getTime() - dateHeader0.getTime()).to.be.approximately(500, 50);
+        expect(dateHeader2.getTime() - dateHeader1.getTime()).to.be.approximately(500, 50);
+        expect(dateHeader3.getTime() - dateHeader2.getTime()).to.be.approximately(500, 50);
+        expect(dateHeader4.getTime() - dateHeader3.getTime()).to.be.approximately(500, 50);
+    }).timeout(3000);
 });

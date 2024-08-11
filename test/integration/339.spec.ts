@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import process from "process";
 import { dedent } from "../../src/util/dedent";
-import { LOCAL_SERVER } from "../server";
+import { LOCAL_SERVER } from "../server-config";
 import { runCypress, setupCypressProject } from "../sh";
 
 // ============================================================================================== //

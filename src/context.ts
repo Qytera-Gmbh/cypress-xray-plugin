@@ -359,41 +359,55 @@ export function initHttpClients(
     pluginOptions?: Pick<InternalPluginOptions, "debug">,
     httpOptions?: InternalHttpOptions
 ): HttpClientCombination {
+    let jiraClient: AxiosRestClient | undefined = undefined;
+    let xrayClient: AxiosRestClient | undefined = undefined;
     if (httpOptions) {
-        const { jira, xray, ...httpConfig } = httpOptions;
-        if (jira ?? xray) {
-            return {
-                jira: new AxiosRestClient({
-                    debug: pluginOptions?.debug,
-                    http: {
-                        ...httpConfig,
-                        ...jira,
-                    },
-                }),
-                xray: new AxiosRestClient({
-                    debug: pluginOptions?.debug,
-                    http: {
-                        ...httpConfig,
-                        ...xray,
-                    },
-                }),
-            };
+        const { jira, rateLimiting: rateLimitingCommon, xray, ...httpConfigCommon } = httpOptions;
+        if (jira) {
+            const { rateLimiting, ...httpConfig } = jira;
+            jiraClient = new AxiosRestClient({
+                debug: pluginOptions?.debug,
+                http: {
+                    ...httpConfigCommon,
+                    ...httpConfig,
+                },
+                rateLimiting: rateLimiting ?? rateLimitingCommon,
+            });
         }
+        if (xray) {
+            const { rateLimiting, ...httpConfig } = xray;
+            xrayClient = new AxiosRestClient({
+                debug: pluginOptions?.debug,
+                http: {
+                    ...httpConfigCommon,
+                    ...httpConfig,
+                },
+                rateLimiting: rateLimiting ?? rateLimitingCommon,
+            });
+        }
+        if (!jiraClient || !xrayClient) {
+            const httpClient = new AxiosRestClient({
+                debug: pluginOptions?.debug,
+                http: httpConfigCommon,
+                rateLimiting: rateLimitingCommon,
+            });
+            if (!jiraClient) {
+                jiraClient = httpClient;
+            }
+            if (!xrayClient) {
+                xrayClient = httpClient;
+            }
+        }
+    } else {
         const httpClient = new AxiosRestClient({
             debug: pluginOptions?.debug,
-            http: httpOptions,
         });
-        return {
-            jira: httpClient,
-            xray: httpClient,
-        };
+        jiraClient = httpClient;
+        xrayClient = httpClient;
     }
-    const httpClient = new AxiosRestClient({
-        debug: pluginOptions?.debug,
-    });
     return {
-        jira: httpClient,
-        xray: httpClient,
+        jira: jiraClient,
+        xray: xrayClient,
     };
 }
 

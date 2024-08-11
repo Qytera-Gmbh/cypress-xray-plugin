@@ -1275,7 +1275,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const httpClients = initHttpClients(undefined, {});
                 expect(httpClients.jira).to.eq(httpClients.xray);
                 expect(httpClients.jira).to.deep.eq(
-                    new AxiosRestClient({ debug: undefined, http: {} })
+                    new AxiosRestClient({
+                        debug: undefined,
+                        http: {},
+                        rateLimiting: undefined,
+                    })
                 );
             });
             it("creates a single client using a single config", () => {
@@ -1296,6 +1300,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 port: 12345,
                             },
                         },
+                        rateLimiting: undefined,
                     })
                 );
             });
@@ -1319,16 +1324,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 port: 12345,
                             },
                         },
+                        rateLimiting: undefined,
                     })
                 );
                 expect(httpClients.xray).to.deep.eq(
                     new AxiosRestClient({
                         debug: undefined,
                         http: {},
+                        rateLimiting: undefined,
                     })
                 );
             });
-            it("creates a different xray client if a xray config is passed", () => {
+            it("creates a different xray client if an xray config is passed", () => {
                 const httpOptions: InternalHttpOptions = {
                     xray: {
                         proxy: {
@@ -1343,6 +1350,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     new AxiosRestClient({
                         debug: undefined,
                         http: {},
+                        rateLimiting: undefined,
                     })
                 );
                 expect(httpClients.xray).to.deep.eq(
@@ -1354,10 +1362,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 port: 12345,
                             },
                         },
+                        rateLimiting: undefined,
                     })
                 );
             });
-            it("creates different client if individual configs are passed", () => {
+            it("creates different clients if individual configs are passed", () => {
                 const httpOptions: InternalHttpOptions = {
                     jira: {
                         proxy: {
@@ -1383,6 +1392,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 port: 98765,
                             },
                         },
+                        rateLimiting: undefined,
                     })
                 );
                 expect(httpClients.xray).to.deep.eq(
@@ -1394,6 +1404,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 port: 12345,
                             },
                         },
+                        rateLimiting: undefined,
                     })
                 );
             });
@@ -1405,6 +1416,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             port: 98765,
                         },
                     },
+                    rateLimiting: { requestsPerSecond: 5 },
                     timeout: 42,
                     xray: {
                         proxy: {
@@ -1425,6 +1437,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             },
                             timeout: 42,
                         },
+                        rateLimiting: { requestsPerSecond: 5 },
                     })
                 );
                 expect(httpClients.xray).to.deep.eq(
@@ -1437,6 +1450,60 @@ describe(path.relative(process.cwd(), __filename), () => {
                             },
                             timeout: 42,
                         },
+                        rateLimiting: { requestsPerSecond: 5 },
+                    })
+                );
+            });
+            it("prefers individual http options to common ones", () => {
+                const httpOptions: InternalHttpOptions = {
+                    jira: {
+                        proxy: {
+                            host: "http://localhost1",
+                            port: 9999,
+                        },
+                        rateLimiting: { requestsPerSecond: 20 },
+                        timeout: 500,
+                    },
+                    proxy: {
+                        host: "http://localhost2",
+                        port: 5555,
+                    },
+                    rateLimiting: { requestsPerSecond: 10 },
+                    timeout: 42,
+                    xray: {
+                        proxy: {
+                            host: "http://localhost3",
+                            port: 1111,
+                        },
+                        rateLimiting: { requestsPerSecond: 1 },
+                        timeout: 10000,
+                    },
+                };
+                const httpClients = initHttpClients(undefined, httpOptions);
+                expect(httpClients.jira).to.deep.eq(
+                    new AxiosRestClient({
+                        debug: undefined,
+                        http: {
+                            proxy: {
+                                host: "http://localhost1",
+                                port: 9999,
+                            },
+                            timeout: 500,
+                        },
+                        rateLimiting: { requestsPerSecond: 20 },
+                    })
+                );
+                expect(httpClients.xray).to.deep.eq(
+                    new AxiosRestClient({
+                        debug: undefined,
+                        http: {
+                            proxy: {
+                                host: "http://localhost3",
+                                port: 1111,
+                            },
+                            timeout: 10000,
+                        },
+                        rateLimiting: { requestsPerSecond: 1 },
                     })
                 );
             });
