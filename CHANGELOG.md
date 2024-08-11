@@ -1,10 +1,30 @@
 # Changelog
 
+# `7.2.0`
+
+## Notable changes
+
+-   Added `jira.testExecutionIssue` option ([#372](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/372))
+
+-   Deprecated `jira.testExecutionIssueDescription` option
+
+-   Deprecated `jira.testExecutionIssueKey` option
+
+-   Deprecated `jira.testExecutionIssueSummary` option
+
+-   Deprecated `jira.testExecutionIssueType` option
+
+-   Added `http.rateLimiting` options ([#373](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/373))
+
+## Dependency updates
+
+-   Bump @badeball/cypress-cucumber-preprocessor from 20.0.3 to 20.1.0
+
 # `7.1.0`
 
 > [!NOTE]
 > This version includes a complete rewrite of the plugin for maintainability reasons.
-> From a user perspective, it should now be slightly faster overall due to parallelization of feature file or result uploads.
+> From a user perspective, it should now be slightly faster overall due to concurrency of feature file or result uploads.
 > Its output has also been cleaned up and it will now only jump into action at the end of a Cypress run once all tests have concluded.
 > If any bugs have slipped through the extensive unit and integration tests, [please file a bug](https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues).
 
