@@ -18,7 +18,13 @@
 
 ## Dependency updates
 
--   Bump @badeball/cypress-cucumber-preprocessor from 20.0.3 to 20.1.0
+-   Bump @bahmutov/cypress-esbuild-preprocessor from 2.2.1 to 2.2.2
+
+-   Bump @badeball/cypress-cucumber-preprocessor from 20.1.0 to 20.1.1
+
+-   Bump semver from 7.6.2 to 7.6.3
+
+-   Bump cypress from 13.10.0 to 13.13.2
 
 # `7.1.0`
 
