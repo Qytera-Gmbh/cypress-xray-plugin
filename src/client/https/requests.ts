@@ -86,13 +86,13 @@ export class AxiosRestClient {
     private readonly options: RequestsOptions | undefined;
     private readonly createdLogFiles: Map<string, number>;
     private axios: AxiosInstance | undefined;
-    private lastRequestTime: number | undefined;
+    private lastRequestTime: number;
 
     constructor(options?: RequestsOptions) {
         this.options = options;
         this.createdLogFiles = new Map();
         this.axios = undefined;
-        this.lastRequestTime = undefined;
+        this.lastRequestTime = Date.now();
     }
 
     public async get<R>(
@@ -323,12 +323,7 @@ export class AxiosRestClient {
         // connection timeouts, ECONNRESET etc. otherwise (I think).
         if (this.options?.maxRequestsPerSecond) {
             const interval = 1000 / this.options.maxRequestsPerSecond;
-            let nextRequestTime;
-            if (this.lastRequestTime) {
-                nextRequestTime = this.lastRequestTime + interval;
-            } else {
-                nextRequestTime = Date.now();
-            }
+            const nextRequestTime = this.lastRequestTime + interval;
             this.lastRequestTime = nextRequestTime;
             const now = Date.now();
             if (nextRequestTime > now) {

@@ -365,7 +365,7 @@ describe(path.relative(process.cwd(), __filename), () => {
     });
 
     it("does not rate limit requests by default", async () => {
-        const restClient = new AxiosRestClient({ debug: false });
+        const restClient = new AxiosRestClient();
         const responses = await Promise.all([
             restClient.get(`http://${LOCAL_SERVER.url}`),
             restClient.get(`http://${LOCAL_SERVER.url}`),
