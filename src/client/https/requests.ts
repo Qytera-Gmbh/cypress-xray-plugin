@@ -44,15 +44,15 @@ export interface RequestsOptions {
      *
      *
      * ```ts
+     * // Will send a request at most every 500 milliseconds.
      * {
-     *   // Will send requests at most every 500 milliseconds.
      *   maxRequestsPerSecond: 2
      * }
      * ```
      *
      * ```ts
+     * // Will send a request at most every 5 seconds.
      * {
-     *   // Will send requests at most every 5 seconds.
      *   maxRequestsPerSecond: 0.2
      * }
      * ```
