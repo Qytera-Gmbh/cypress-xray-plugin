@@ -320,7 +320,7 @@ export class AxiosRestClient {
 
     private async delayIfNeeded(): Promise<void> {
         // We specifically do not use axios interceptors here because we would need to handle
-        // connection timeouts, ECONNRESET etc. otherwise.
+        // connection timeouts, ECONNRESET etc. otherwise (I think).
         if (this.options?.maxRequestsPerSecond) {
             const interval = 1000 / this.options.maxRequestsPerSecond;
             let nextRequestTime;
