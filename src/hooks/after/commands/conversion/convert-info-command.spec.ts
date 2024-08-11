@@ -1,17 +1,14 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedLogger } from "../../../../../../test/mocks";
-import { ConstantCommand } from "../../../../util/commands/constant-command";
-import {
-    ConvertCucumberInfoCloudCommand,
-    ConvertCucumberInfoServerCommand,
-} from "./convert-cucumber-info-command";
+import { getMockedLogger } from "../../../../../test/mocks";
+import { ConstantCommand } from "../../../util/commands/constant-command";
+import { ConvertInfoCloudCommand, ConvertInfoServerCommand } from "./convert-info-command";
 
 describe(path.relative(process.cwd(), __filename), () => {
-    describe(ConvertCucumberInfoServerCommand.name, () => {
+    describe(ConvertInfoServerCommand.name, () => {
         it("converts cucumber results into server cucumber info data", async () => {
             const logger = getMockedLogger();
-            const command = new ConvertCucumberInfoServerCommand(
+            const command = new ConvertInfoServerCommand(
                 {
                     jira: {
                         projectKey: "CYP",
@@ -19,30 +16,38 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { id: "issue_1578", subtask: false }),
+                new ConstantCommand(logger, { id: "issue_1578" }),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:36.177Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
-                })
+                }),
+                {
+                    summary: new ConstantCommand(logger, "Execution Results [1694257168829]"),
+                }
             );
             const info = await command.compute();
             expect(info).to.deep.eq({
                 fields: {
                     description: "Cypress version: 42.4.9\nBrowser: Firefox (123.11.6)",
-                    issuetype: { id: "issue_1578", subtask: false },
+                    issuetype: { id: "issue_1578" },
                     project: {
                         key: "CYP",
                     },
                     summary: "Execution Results [1694257168829]",
                 },
+                historyMetadata: undefined,
+                properties: undefined,
+                transition: undefined,
+                update: undefined,
             });
         });
 
         it("includes configured test plan issue keys", async () => {
             const logger = getMockedLogger();
-            const command = new ConvertCucumberInfoServerCommand(
+            const command = new ConvertInfoServerCommand(
                 {
                     jira: {
                         projectKey: "CYP",
@@ -51,22 +56,28 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { subtask: false }),
+                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
-                { testPlanId: new ConstantCommand(logger, "customfield_12345") }
+                {
+                    fieldIds: {
+                        testPlanId: new ConstantCommand(logger, "customfield_12345"),
+                    },
+                    summary: new ConstantCommand(logger, "my summary"),
+                }
             );
             const info = await command.compute();
-            expect(info.fields).to.have.property("customfield_12345", "CYP-123");
+            expect(info.fields).to.have.deep.property("customfield_12345", ["CYP-123"]);
         });
 
         it("includes configured test environments", async () => {
             const logger = getMockedLogger();
-            const command = new ConvertCucumberInfoServerCommand(
+            const command = new ConvertInfoServerCommand(
                 {
                     jira: {
                         projectKey: "CYP",
@@ -74,14 +85,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { subtask: false }),
+                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
-                { testEnvironmentsId: new ConstantCommand(logger, "customfield_45678") }
+                {
+                    fieldIds: {
+                        testEnvironmentsId: new ConstantCommand(logger, "customfield_45678"),
+                    },
+                    summary: new ConstantCommand(logger, "my summary"),
+                }
             );
             const info = await command.compute();
             expect(info.fields).to.have.deep.property("customfield_45678", ["DEV", "PROD"]);
@@ -91,7 +108,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             expect(
                 () =>
-                    new ConvertCucumberInfoServerCommand(
+                    new ConvertInfoServerCommand(
                         {
                             jira: {
                                 projectKey: "CYP",
@@ -100,13 +117,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                             xray: { uploadScreenshots: false },
                         },
                         logger,
-                        new ConstantCommand(logger, { subtask: false }),
+                        new ConstantCommand(logger, {}),
                         new ConstantCommand(logger, {
                             browserName: "Firefox",
                             browserVersion: "123.11.6",
                             cypressVersion: "42.4.9",
+                            endedTestsAt: "2023-09-09T10:59:31.416Z",
                             startedTestsAt: "2023-09-09T10:59:28.829Z",
-                        })
+                        }),
+                        {
+                            summary: new ConstantCommand(logger, "my summary"),
+                        }
                     )
             ).to.throw("A test plan issue key was supplied without the test plan Jira field ID");
         });
@@ -115,7 +136,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = getMockedLogger();
             expect(
                 () =>
-                    new ConvertCucumberInfoServerCommand(
+                    new ConvertInfoServerCommand(
                         {
                             jira: {
                                 projectKey: "CYP",
@@ -123,13 +144,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                             xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                         },
                         logger,
-                        new ConstantCommand(logger, { subtask: false }),
+                        new ConstantCommand(logger, {}),
                         new ConstantCommand(logger, {
                             browserName: "Firefox",
                             browserVersion: "123.11.6",
                             cypressVersion: "42.4.9",
+                            endedTestsAt: "2023-09-09T10:59:31.416Z",
                             startedTestsAt: "2023-09-09T10:59:28.829Z",
-                        })
+                        }),
+                        {
+                            summary: new ConstantCommand(logger, "my summary"),
+                        }
                     )
             ).to.throw(
                 "Test environments were supplied without the test environments Jira field ID"
@@ -138,7 +163,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("returns parameters", () => {
             const logger = getMockedLogger();
-            const command = new ConvertCucumberInfoServerCommand(
+            const command = new ConvertInfoServerCommand(
                 {
                     jira: {
                         projectKey: "CYP",
@@ -146,13 +171,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { subtask: false }),
+                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
-                })
+                }),
+                {
+                    summary: new ConstantCommand(logger, "my summary"),
+                }
             );
             expect(command.getParameters()).to.deep.eq({
                 jira: {
@@ -163,36 +192,43 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
     });
 
-    describe(ConvertCucumberInfoCloudCommand.name, () => {
+    describe(ConvertInfoCloudCommand.name, () => {
         it("converts cucumber results into cucumber info data", async () => {
             const logger = getMockedLogger();
-            const command = new ConvertCucumberInfoCloudCommand(
+            const command = new ConvertInfoCloudCommand(
                 {
-                    cucumber: { prefixes: { test: "TestName:" } },
                     jira: {
                         projectKey: "CYP",
                     },
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { id: "issue_1578", subtask: false }),
+                new ConstantCommand(logger, { id: "issue_1578" }),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
-                })
+                }),
+                {
+                    summary: new ConstantCommand(logger, "Execution Results [1694257168829]"),
+                }
             );
             const info = await command.compute();
             expect(info).to.deep.eq({
                 fields: {
                     description: "Cypress version: 42.4.9\nBrowser: Firefox (123.11.6)",
-                    issuetype: { id: "issue_1578", subtask: false },
+                    issuetype: { id: "issue_1578" },
                     project: {
                         key: "CYP",
                     },
                     summary: "Execution Results [1694257168829]",
                 },
+                historyMetadata: undefined,
+                properties: undefined,
+                transition: undefined,
+                update: undefined,
                 xrayFields: {
                     environments: undefined,
                     testPlanKey: undefined,
@@ -202,9 +238,8 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("includes configured test plan issue keys", async () => {
             const logger = getMockedLogger();
-            const command = new ConvertCucumberInfoCloudCommand(
+            const command = new ConvertInfoCloudCommand(
                 {
-                    cucumber: { prefixes: { test: "TestName:" } },
                     jira: {
                         projectKey: "CYP",
                         testPlanIssueKey: "CYP-123",
@@ -212,13 +247,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { subtask: false }),
+                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
-                })
+                }),
+                {
+                    summary: new ConstantCommand(logger, "my summary"),
+                }
             );
             const info = await command.compute();
             expect(info).to.have.deep.property("xrayFields", {
@@ -229,22 +268,25 @@ describe(path.relative(process.cwd(), __filename), () => {
 
         it("includes configured test environments", async () => {
             const logger = getMockedLogger();
-            const command = new ConvertCucumberInfoCloudCommand(
+            const command = new ConvertInfoCloudCommand(
                 {
-                    cucumber: { prefixes: { test: "TestName:" } },
                     jira: {
                         projectKey: "CYP",
                     },
                     xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { subtask: false }),
+                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
                     cypressVersion: "42.4.9",
+                    endedTestsAt: "2023-09-09T10:59:31.416Z",
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
-                })
+                }),
+                {
+                    summary: new ConstantCommand(logger, "my summary"),
+                }
             );
             const info = await command.compute();
             expect(info).to.have.deep.property("xrayFields", {

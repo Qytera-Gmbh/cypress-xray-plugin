@@ -15,7 +15,7 @@ import { errorMessage, missingTestKeyInCucumberScenarioError } from "../../../..
 import { Level, Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 import { getScenarioTagRegex } from "../../../../preprocessor/commands/parsing/scenario";
-import { getXrayStatus } from "./util/status";
+import { getXrayStatus } from "../util/status";
 
 interface Parameters {
     cucumber: Pick<InternalCucumberOptions, "prefixes">;

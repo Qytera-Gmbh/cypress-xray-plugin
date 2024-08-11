@@ -35,11 +35,12 @@
         "lib": "src"
     },
     "scripts": {
-        "test": "mocha --ignore 'test/integration/**/*'",
+        "test": "npm-run-all --parallel --race start:mock-server start:unit-tests",
         "test:coverage": "nyc npm run test",
-        "test:integration": "npm-run-all --parallel --race start:integration-server start:integration",
-        "start:integration-server": "serve -p 8080 --no-request-logging",
-        "start:integration": "mocha -- --timeout 180000 --ignore 'src/**/*' --ignore index.spec.ts test/integration",
+        "test:integration": "npm-run-all --parallel --race start:mock-server start:integration-tests",
+        "start:mock-server": "serve -p 8080 --no-request-logging",
+        "start:unit-tests": "mocha --ignore 'test/integration/**/*'",
+        "start:integration-tests": "mocha -- --timeout 180000 --ignore 'src/**/*' --ignore index.spec.ts test/integration",
         "build": "tsc --project tsconfigBuild.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
         "eslint": "eslint src/**/*.ts test/**/*.ts index.ts index.spec.ts"
     },

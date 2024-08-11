@@ -177,7 +177,7 @@ describe(path.relative(process.cwd(), __filename), () => {
     });
 
     describe("edge", () => {
-        const edge: SimpleDirectedEdge<string> = new SimpleDirectedEdge<string>("abc", "def");
+        const edge = new SimpleDirectedEdge("abc", "def");
 
         describe(edge.getSource.name, () => {
             it("returns the source vertex", () => {

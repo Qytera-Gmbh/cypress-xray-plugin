@@ -35,10 +35,14 @@ export type StringMap<T> = Record<string, T>;
  * }
  * ```
  */
-export type Remap<T extends object, V> = {
-    [K in keyof Required<T>]: Required<T>[K] extends object
-        ? Required<T>[K] extends unknown[]
+export type Remap<T extends object, V, E extends number | string | symbol = never> = {
+    [K in keyof Required<T>]: Required<T>[K] extends object // shortcuts simple types
+        ? K extends E // shortcuts excluded properties
             ? V
-            : Remap<Required<T>[K], V>
+            : Required<T>[K] extends unknown[] // shortcuts array types
+            ? V
+            : string extends keyof Required<T>[K] // shortcuts indexed types
+            ? V
+            : Remap<Required<T>[K], V, E>
         : V;
 };

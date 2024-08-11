@@ -3,7 +3,6 @@ import { encode } from "../../util/base64";
 import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
 import { LOG, Level } from "../../util/logging";
-import { startInterval } from "../../util/time";
 import { AxiosRestClient } from "../https/requests";
 
 /**
@@ -128,14 +127,6 @@ export class JwtCredentials implements HttpCredentials {
     }
 
     private async fetchToken(): Promise<string> {
-        const progressInterval = startInterval((totalTime: number) => {
-            LOG.message(
-                Level.INFO,
-                `Waiting for ${this.authenticationUrl} to respond... (${(
-                    totalTime / 1000
-                ).toString()} seconds)`
-            );
-        });
         try {
             LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
             const response = await this.httpClient.post<string>(this.authenticationUrl, {
@@ -161,8 +152,6 @@ export class JwtCredentials implements HttpCredentials {
             );
             LOG.logErrorToFile(error, "authentication");
             throw new LoggedError("Authentication failed");
-        } finally {
-            clearInterval(progressInterval);
         }
     }
 }

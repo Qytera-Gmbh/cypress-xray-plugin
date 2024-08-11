@@ -2,10 +2,10 @@ import { expect } from "chai";
 import path from "path";
 import process from "process";
 import { dedent } from "../../src/util/dedent";
+import { LOCAL_SERVER } from "../server";
 import { runCypress, setupCypressProject } from "../sh";
 import { expectToExist } from "../util";
 import { getIntegrationClient } from "./clients";
-import { LOCAL_SERVER } from "./server";
 import { getCreatedTestExecutionIssueKey } from "./util";
 
 // ============================================================================================== //

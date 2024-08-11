@@ -56,7 +56,11 @@ export class ExecutableGraph<
      * @returns the new edge
      * @throws if the connection would introduce a duplicate edge or a cycle
      */
-    public connect(source: V, destination: V, optional = false): SimpleDirectedEdge<V> {
+    public connect<S extends V, D extends V>(
+        source: S,
+        destination: D,
+        optional = false
+    ): SimpleDirectedEdge<S, D> {
         const edge = super.connect(source, destination);
         if (optional) {
             this.optionalEdges.add(edge);

@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import path from "path";
 import { dedent } from "./dedent";
-import { asArrayOfStrings, asBoolean, asFloat, asInt } from "./parsing";
+import { asArrayOfStrings, asBoolean, asFloat, asInt, asObject } from "./parsing";
 
 describe(path.relative(process.cwd(), __filename), () => {
     describe(asBoolean.name, () => {
@@ -101,6 +101,38 @@ describe(path.relative(process.cwd(), __filename), () => {
                     Expected a primitive element at index 2, but got: [3,"4"]
                 `)
             );
+        });
+    });
+    describe(asObject.name, () => {
+        it("parses objects", () => {
+            expect(asObject({ hello: 5, something: { nested: "hi" } })).to.deep.eq({
+                hello: 5,
+                something: { nested: "hi" },
+            });
+        });
+
+        it("throws for array arguments", () => {
+            expect(() => asObject([5, false, 6, "hi"])).to.throw(
+                'Failed to parse as object: [5,false,6,"hi"]'
+            );
+        });
+
+        describe("throws for primitive arguments", () => {
+            for (const value of ["hi", false, 15, Symbol("good"), BigInt(12345)]) {
+                it(`type: ${typeof value}`, () => {
+                    expect(() => asObject(value)).to.throw(
+                        `Failed to parse as object: ${value.toString()}`
+                    );
+                });
+            }
+        });
+
+        it("throws for null elements", () => {
+            expect(() => asObject(null)).to.throw("Failed to parse as object: null");
+        });
+
+        it("throws for undefined elements", () => {
+            expect(() => asObject(undefined)).to.throw("Failed to parse as object: undefined");
         });
     });
 });

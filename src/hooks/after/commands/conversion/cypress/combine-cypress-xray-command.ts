@@ -1,36 +1,39 @@
+import { XrayClient } from "../../../../../client/xray/xray-client";
 import { InternalJiraOptions } from "../../../../../types/plugin";
-import {
-    XrayTest,
-    XrayTestExecutionInfo,
-    XrayTestExecutionResults,
-} from "../../../../../types/xray/import-test-execution-results";
+import { XrayTest } from "../../../../../types/xray/import-test-execution-results";
+import { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
 import { Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 
-type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey">;
+type CommandParameters = Pick<InternalJiraOptions, "testExecutionIssueKey">;
 
-export class CombineCypressJsonCommand extends Command<XrayTestExecutionResults, Parameters> {
+export class CombineCypressJsonCommand extends Command<
+    Parameters<XrayClient["importExecutionMultipart"]>,
+    CommandParameters
+> {
     private readonly cypressTestsJson: Computable<[XrayTest, ...XrayTest[]]>;
-    private readonly cypressTestsInfo: Computable<XrayTestExecutionInfo>;
+    private readonly info: Computable<MultipartInfo>;
 
     constructor(
-        parameters: Parameters,
+        parameters: CommandParameters,
         logger: Logger,
         cypressTestsJson: Computable<[XrayTest, ...XrayTest[]]>,
-        cypressTestsInfo: Computable<XrayTestExecutionInfo>
+        info: Computable<MultipartInfo>
     ) {
         super(parameters, logger);
         this.cypressTestsJson = cypressTestsJson;
-        this.cypressTestsInfo = cypressTestsInfo;
+        this.info = info;
     }
 
-    protected async computeResult(): Promise<XrayTestExecutionResults> {
-        const cypressTestsJson = await this.cypressTestsJson.compute();
-        const cypressTestsInfo = await this.cypressTestsInfo.compute();
-        return {
-            info: cypressTestsInfo,
-            testExecutionKey: this.parameters.testExecutionIssueKey,
-            tests: cypressTestsJson,
-        };
+    protected async computeResult(): Promise<Parameters<XrayClient["importExecutionMultipart"]>> {
+        const results = await this.cypressTestsJson.compute();
+        const info = await this.info.compute();
+        return [
+            {
+                testExecutionKey: this.parameters.testExecutionIssueKey,
+                tests: results,
+            },
+            info,
+        ];
     }
 }

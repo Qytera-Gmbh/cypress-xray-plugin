@@ -4,11 +4,9 @@ import fs from "fs";
 import path from "path";
 import process from "process";
 import { LoggedRequest } from "../../src/client/https/requests";
-import { XrayTestExecutionResults } from "../../src/types/xray/import-test-execution-results";
 import { dedent } from "../../src/util/dedent";
+import { LOCAL_SERVER } from "../server";
 import { runCypress, setupCypressProject } from "../sh";
-import { expectToExist } from "../util";
-import { LOCAL_SERVER } from "./server";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/314
@@ -98,17 +96,16 @@ describe(path.relative(process.cwd(), __filename), () => {
             for (const entry of fs.readdirSync(project.logDirectory, {
                 withFileTypes: true,
             })) {
-                // 12345_POST_https_xray.cloud.getxray.app_api_v2_import_execution_request.json
-                if (!entry.name.match(/.+_POST_.+_import_execution_request.json/)) {
+                // 14_15_52_POST_https_xray.cloud.getxray.app_api_v2_import_execution_multipart_request.json
+                if (!entry.name.match(/.+_POST_.+_import_execution_multipart_request.json/)) {
                     continue;
                 }
                 const fileContent = JSON.parse(
                     fs.readFileSync(path.join(entry.path, entry.name), "utf8")
                 ) as LoggedRequest;
-                expectToExist(fileContent.body);
-                const content = fileContent.body as XrayTestExecutionResults;
-                expectToExist(content.tests);
-                expectToExist(content.tests[0].evidence);
+                expect(fileContent.body).to.contain(
+                    '"evidence":[{"contentType":"application/json","data":"ImxvY2FsaG9zdDo4MDgwIg=="'
+                );
                 return;
             }
             expect.fail(

@@ -7,6 +7,7 @@ import { ImportExecutionCypressCommand } from "../../../hooks/util/commands/xray
 import { ImportFeatureCommand } from "../../../hooks/util/commands/xray/import-feature-command";
 import { XrayTestExecutionResults } from "../../../types/xray/import-test-execution-results";
 import { CucumberMultipart } from "../../../types/xray/requests/import-execution-cucumber-multipart";
+import { MultipartInfo } from "../../../types/xray/requests/import-execution-multipart-info";
 import { dedent } from "../../dedent";
 import { SkippedError } from "../../errors";
 import { CapturingLogger, Level } from "../../logging";
@@ -278,7 +279,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             const logger = new CapturingLogger();
             const graph = new SimpleDirectedGraph<Command>();
             const a = graph.place(
-                new FailingCommand<XrayTestExecutionResults>({ message: "generic failure" }, logger)
+                new FailingCommand<[XrayTestExecutionResults, MultipartInfo]>(
+                    { message: "generic failure" },
+                    logger
+                )
             );
             const b = graph.place(
                 new ImportExecutionCypressCommand({ xrayClient: getMockedXrayClient() }, logger, a)

@@ -22,7 +22,11 @@ interface Authentication {
 /**
  * Contains a mapping of all available options to their respective environment variable names.
  */
-export const ENV_NAMES: Remap<Omit<CypressXrayPluginOptions, "http"> & Authentication, string> = {
+export const ENV_NAMES: Remap<
+    Omit<CypressXrayPluginOptions, "http"> & Authentication,
+    string,
+    "testExecutionIssue"
+> = {
     authentication: {
         jira: {
             apiToken: "JIRA_API_TOKEN",
@@ -54,6 +58,7 @@ export const ENV_NAMES: Remap<Omit<CypressXrayPluginOptions, "http"> & Authentic
             testType: "JIRA_FIELDS_TEST_TYPE",
         },
         projectKey: "JIRA_PROJECT_KEY",
+        testExecutionIssue: "JIRA_TEST_EXECUTION_ISSUE",
         testExecutionIssueDescription: "JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION",
         testExecutionIssueKey: "JIRA_TEST_EXECUTION_ISSUE_KEY",
         testExecutionIssueSummary: "JIRA_TEST_EXECUTION_ISSUE_SUMMARY",

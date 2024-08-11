@@ -46,6 +46,9 @@ export function assertIsInstanceOf<T, V extends unknown[]>(
     className: new (...args: V) => T
 ): asserts value is T {
     if (!(value instanceof className)) {
+        if (typeof value === "object" && value) {
+            throw new Error(`${value.constructor.name} is not an instance of ${className.name}`);
+        }
         throw new Error(`Value is not an instance of ${className.name}: ${unknownToString(value)}`);
     }
 }

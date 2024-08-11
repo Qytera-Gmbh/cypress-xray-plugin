@@ -96,6 +96,35 @@ export function asArrayOfStrings(value: unknown): [string, ...string[]] {
 }
 
 /**
+ * Parses and returns an object from an unknown value. If the value is not an object, corresponding
+ * errors will be thrown.
+ *
+ * @param value - a string that can be interpreted as an object
+ * @returns the corresponding object
+ */
+export function asObject(value: unknown): object {
+    if (Array.isArray(value)) {
+        throw new Error(`Failed to parse as object: ${JSON.stringify(value)}`);
+    }
+    if (value === null) {
+        throw new Error("Failed to parse as object: null");
+    }
+    if (value === undefined) {
+        throw new Error("Failed to parse as object: undefined");
+    }
+    if (
+        typeof value === "string" ||
+        typeof value === "boolean" ||
+        typeof value === "number" ||
+        typeof value === "symbol" ||
+        typeof value === "bigint"
+    ) {
+        throw new Error(`Failed to parse as object: ${value.toString()}`);
+    }
+    return value;
+}
+
+/**
  * Parses an environment variable to arbitrary data types.
  *
  * @param env - the object holding all environment variables as key-value pairs

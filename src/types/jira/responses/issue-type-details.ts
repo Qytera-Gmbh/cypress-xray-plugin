@@ -31,8 +31,9 @@ export interface IssueTypeDetails {
     /**
      * Whether this issue type is used to create subtasks.
      */
-    subtask: boolean;
+    subtask?: boolean;
 }
+
 export interface IssueTypeDetailsCloud extends IssueTypeDetails {
     /**
      * Unique ID for next-gen projects.

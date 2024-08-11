@@ -11,7 +11,6 @@ import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Logger } from "../../util/logging";
 import { ConstantCommand } from "../util/commands/constant-command";
-import { createExtractFieldIdCommand } from "../util/util";
 import { ExtractIssueKeysCommand } from "./commands/extract-issue-keys-command";
 import { GetLabelsToResetCommand } from "./commands/get-labels-to-reset-command";
 import { GetSummariesToResetCommand } from "./commands/get-summaries-to-reset-command";
@@ -48,12 +47,6 @@ export function addSynchronizationCommands(
         new ExtractIssueKeysCommand(logger, extractIssueDataCommand)
     );
     graph.connect(extractIssueDataCommand, extractIssueKeysCommand);
-    const getSummaryFieldIdCommand = options.jira.fields.summary
-        ? graph.place(new ConstantCommand(logger, options.jira.fields.summary))
-        : createExtractFieldIdCommand(JiraField.SUMMARY, clients.jiraClient, graph, logger);
-    const getLabelsFieldIdCommand = options.jira.fields.labels
-        ? graph.place(new ConstantCommand(logger, options.jira.fields.labels))
-        : createExtractFieldIdCommand(JiraField.LABELS, clients.jiraClient, graph, logger);
     // Xray currently (almost) always overwrites issue data when importing feature files to
     // existing issues. Therefore, we manually need to backup and reset the data once the
     // import is done.
@@ -63,21 +56,18 @@ export function addSynchronizationCommands(
         new GetSummaryValuesCommand(
             { jiraClient: clients.jiraClient },
             logger,
-            getSummaryFieldIdCommand,
             extractIssueKeysCommand
         )
     );
-    graph.connect(getSummaryFieldIdCommand, getCurrentSummariesCommand);
     graph.connect(extractIssueKeysCommand, getCurrentSummariesCommand);
     const getCurrentLabelsCommand = graph.place(
         new GetLabelValuesCommand(
             { jiraClient: clients.jiraClient },
             logger,
-            getLabelsFieldIdCommand,
+            new ConstantCommand(logger, "labels"),
             extractIssueKeysCommand
         )
     );
-    graph.connect(getLabelsFieldIdCommand, getCurrentLabelsCommand);
     graph.connect(extractIssueKeysCommand, getCurrentLabelsCommand);
     // Only import the feature once the backups have been created.
     const importFeatureCommand = graph.place(
@@ -107,22 +97,19 @@ export function addSynchronizationCommands(
         new GetSummaryValuesCommand(
             { jiraClient: clients.jiraClient },
             logger,
-            getSummaryFieldIdCommand,
             extractIssueKeysCommand
         )
     );
-    graph.connect(getSummaryFieldIdCommand, getNewSummariesCommand);
     graph.connect(extractIssueKeysCommand, getNewSummariesCommand);
     graph.connect(getUpdatedIssuesCommand, getNewSummariesCommand);
     const getNewLabelsCommand = graph.place(
         new GetLabelValuesCommand(
             { jiraClient: clients.jiraClient },
             logger,
-            getLabelsFieldIdCommand,
+            new ConstantCommand(logger, "labels"),
             extractIssueKeysCommand
         )
     );
-    graph.connect(getLabelsFieldIdCommand, getNewLabelsCommand);
     graph.connect(extractIssueKeysCommand, getNewLabelsCommand);
     graph.connect(getUpdatedIssuesCommand, getNewLabelsCommand);
     const getSummariesToResetCommand = graph.place(
@@ -139,20 +126,18 @@ export function addSynchronizationCommands(
         new EditIssueFieldCommand(
             { field: JiraField.SUMMARY, jiraClient: clients.jiraClient },
             logger,
-            getSummaryFieldIdCommand,
+            new ConstantCommand(logger, "summary"),
             getSummariesToResetCommand
         )
     );
-    graph.connect(getSummaryFieldIdCommand, editSummariesCommand);
     graph.connect(getSummariesToResetCommand, editSummariesCommand);
     const editLabelsCommand = graph.place(
         new EditIssueFieldCommand(
             { field: JiraField.LABELS, jiraClient: clients.jiraClient },
             logger,
-            getLabelsFieldIdCommand,
+            new ConstantCommand(logger, "labels"),
             getLabelsToResetCommand
         )
     );
-    graph.connect(getLabelsFieldIdCommand, editLabelsCommand);
     graph.connect(getLabelsToResetCommand, editLabelsCommand);
 }
