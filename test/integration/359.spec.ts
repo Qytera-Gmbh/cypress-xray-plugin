@@ -115,7 +115,7 @@ describe.only(path.relative(process.cwd(), __filename), () => {
                                         }
                                     },
                                     plugin: {
-                                        debug: true,
+                                        debug: false,
                                     },
                                 });
                                 fixedOn("task", {
