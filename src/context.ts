@@ -144,11 +144,6 @@ export function initJiraOptions(
     }
     const testPlanIssueKey =
         parse(env, ENV_NAMES.jira.testPlanIssueKey, asString) ?? options.testPlanIssueKey;
-    if (testPlanIssueKey && !testPlanIssueKey.startsWith(projectKey)) {
-        throw new Error(
-            `Plugin misconfiguration: test plan issue key ${testPlanIssueKey} does not belong to project ${projectKey}`
-        );
-    }
     return {
         attachVideos:
             parse(env, ENV_NAMES.jira.attachVideos, asBoolean) ?? options.attachVideos ?? false,

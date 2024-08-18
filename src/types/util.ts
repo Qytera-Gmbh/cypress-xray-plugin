@@ -46,3 +46,8 @@ export type Remap<T extends object, V, E extends number | string | symbol = neve
             : Remap<Required<T>[K], V, E>
         : V;
 };
+
+/**
+ * Represents a value that may be wrapped in a callback.
+ */
+export type MaybeFunction<T> = (() => Promise<T> | T) | T;
