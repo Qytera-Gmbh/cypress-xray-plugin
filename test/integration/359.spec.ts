@@ -31,7 +31,7 @@ describe.only(path.relative(process.cwd(), __filename), () => {
             xrayPassedStatus: "PASSED",
         },
         {
-            labels: ["x", "y"],
+            expectedLabels: ["x", "y"],
             manualTest: "CYP-1139",
             projectKey: "CYP",
             service: "cloud",
@@ -50,7 +50,7 @@ describe.only(path.relative(process.cwd(), __filename), () => {
             xrayPassedStatus: "PASSED",
         },
         {
-            labels: [],
+            expectedLabels: [],
             manualTest: "CYPLUG-461",
             projectKey: "CYPLUG",
             service: "server",
@@ -67,7 +67,7 @@ describe.only(path.relative(process.cwd(), __filename), () => {
             xrayPassedStatus: "PASS",
         },
         {
-            labels: ["x", "y"],
+            expectedLabels: ["x", "y"],
             manualTest: "CYPLUG-461",
             projectKey: "CYPLUG",
             service: "server",
