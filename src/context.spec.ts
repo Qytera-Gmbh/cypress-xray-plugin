@@ -1164,20 +1164,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         "Plugin misconfiguration: test execution issue key ABC-123 does not belong to project CYP"
                     );
                 });
-                it("detects mismatched test plan issue keys", () => {
-                    expect(() =>
-                        initJiraOptions(
-                            {},
-                            {
-                                projectKey: "CYP",
-                                testPlanIssueKey: "ABC-456",
-                                url: "https://example.org",
-                            }
-                        )
-                    ).to.throw(
-                        "Plugin misconfiguration: test plan issue key ABC-456 does not belong to project CYP"
-                    );
-                });
                 it("throws if the cucumber preprocessor is not installed", async () => {
                     stub(dependencies, "IMPORT").rejects(new Error("Failed to import package"));
                     await expect(

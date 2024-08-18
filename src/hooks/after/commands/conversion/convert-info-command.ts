@@ -1,7 +1,9 @@
 import { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
 import { IssueUpdate } from "../../../../types/jira/responses/issue-update";
 import { InternalJiraOptions, InternalXrayOptions } from "../../../../types/plugin";
+import { MaybeFunction } from "../../../../types/util";
 import { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
+import { getOrCall } from "../../../../util/functions";
 import { Logger } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 import {
@@ -24,7 +26,7 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
     private readonly testExecutionIssueType: Computable<IssueTypeDetails>;
     private readonly runInformation: Computable<RunData>;
     private readonly info?: {
-        custom?: Computable<IssueUpdate>;
+        custom?: Computable<MaybeFunction<IssueUpdate>>;
         fieldIds?: {
             testEnvironmentsId?: Computable<string>;
             testPlanId?: Computable<string>;
@@ -38,7 +40,7 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
         testExecutionIssueType: Computable<IssueTypeDetails>,
         runInformation: Computable<RunData>,
         info?: {
-            custom?: Computable<IssueUpdate>;
+            custom?: Computable<MaybeFunction<IssueUpdate>>;
             fieldIds?: {
                 testEnvironmentsId?: Computable<string>;
                 testPlanId?: Computable<string>;
@@ -58,7 +60,7 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
         const custom = await this.info?.custom?.compute();
         const summary = await this.info?.summary?.compute();
         const testExecutionIssueData: TestExecutionIssueDataServer = {
-            custom: custom,
+            custom: await getOrCall(custom),
             description: this.parameters.jira.testExecutionIssueDescription,
             issuetype: testExecutionIssueType,
             projectKey: this.parameters.jira.projectKey,
@@ -104,7 +106,7 @@ export class ConvertInfoServerCommand extends ConvertInfoCommand {
             const testPlandId = await this.testPlanId.compute();
             testExecutionIssueData.testPlan = {
                 fieldId: testPlandId,
-                value: this.parameters.jira.testPlanIssueKey,
+                value: await getOrCall(this.parameters.jira.testPlanIssueKey),
             };
         }
         if (this.parameters.xray.testEnvironments && this.testEnvironmentsId) {
@@ -119,13 +121,13 @@ export class ConvertInfoServerCommand extends ConvertInfoCommand {
 }
 
 export class ConvertInfoCloudCommand extends ConvertInfoCommand {
-    protected buildInfo(
+    protected async buildInfo(
         runInformation: RunData,
         testExecutionIssueData: TestExecutionIssueData
-    ): MultipartInfo {
+    ): Promise<MultipartInfo> {
         if (this.parameters.jira.testPlanIssueKey) {
             testExecutionIssueData.testPlan = {
-                value: this.parameters.jira.testPlanIssueKey,
+                value: await getOrCall(this.parameters.jira.testPlanIssueKey),
             };
         }
         if (this.parameters.xray.testEnvironments) {

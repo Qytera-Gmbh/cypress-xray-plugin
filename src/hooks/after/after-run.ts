@@ -4,6 +4,7 @@ import { EvidenceCollection } from "../../context";
 import { CypressRunResultType } from "../../types/cypress/cypress";
 import { IssueUpdate } from "../../types/jira/responses/issue-update";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
+import { MaybeFunction } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Level, Logger } from "../../util/logging";
@@ -402,7 +403,7 @@ function getConvertMultipartInfoCommand(
     if (convertCommand) {
         return convertCommand;
     }
-    let textExecutionIssueDataCommand: Command<IssueUpdate> | undefined;
+    let textExecutionIssueDataCommand: Command<MaybeFunction<IssueUpdate>> | undefined;
     if (options.jira.testExecutionIssue) {
         textExecutionIssueDataCommand = getOrCreateConstantCommand(
             graph,

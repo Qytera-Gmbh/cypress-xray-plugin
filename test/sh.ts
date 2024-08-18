@@ -160,6 +160,17 @@ export function runCypress(
         ...mergedEnv,
         ...options?.env,
     };
+    fs.writeFileSync(
+        path.join(cwd, "cypress.env.json"),
+        JSON.stringify(
+            mergedEnv,
+            (...args) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                return args[1] ? args[1] : undefined;
+            },
+            2
+        ).replaceAll("CYPRESS_", "")
+    );
     const result = childProcess.spawnSync(CYPRESS_EXECUTABLE, ["run"], {
         cwd: cwd,
         env: mergedEnv,
