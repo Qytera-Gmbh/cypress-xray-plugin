@@ -32,10 +32,10 @@ describe.only(path.relative(process.cwd(), __filename), () => {
         },
         {
             expectedLabels: ["x", "y"],
+            expectedSummary: "Integration test 359 (wrapped)",
             manualTest: "CYP-1139",
             projectKey: "CYP",
             service: "cloud",
-            summary: "Integration test 359 (wrapped)",
             testExecutionIssueData: dedent(`
                 () => {
                     return {
@@ -51,10 +51,10 @@ describe.only(path.relative(process.cwd(), __filename), () => {
         },
         {
             expectedLabels: [],
+            expectedSummary: "Integration test 359 (hardcoded)",
             manualTest: "CYPLUG-461",
             projectKey: "CYPLUG",
             service: "server",
-            summary: "Integration test 359 (hardcoded)",
             testExecutionIssueData: dedent(`
                 {
                     fields: {
@@ -68,10 +68,10 @@ describe.only(path.relative(process.cwd(), __filename), () => {
         },
         {
             expectedLabels: ["x", "y"],
+            expectedSummary: "Integration test 359 (wrapped)",
             manualTest: "CYPLUG-461",
             projectKey: "CYPLUG",
             service: "server",
-            summary: "Integration test 359 (wrapped)",
             testExecutionIssueData: dedent(`
                 () => {
                     return {
