@@ -1,5 +1,13 @@
 # Changelog
 
+# `7.3.0`
+
+## Notable changes
+
+-   Added dynamic test execution data configuration ([#374](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/374))
+
+-   Fixed rate limiting issue ([#375](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/375))
+
 # `7.2.0`
 
 ## Notable changes
