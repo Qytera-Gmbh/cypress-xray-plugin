@@ -125,12 +125,15 @@ export function addUploadCommands(
         if (options.cucumber.uploadFeatures) {
             for (const importFeatureCommand of graph.getVertices()) {
                 if (importFeatureCommand instanceof ImportFeatureCommand) {
+                    const filePath = path.relative(
+                        projectRoot,
+                        importFeatureCommand.getParameters().filePath
+                    );
                     if (
-                        runResult.runs.some(
-                            (run) =>
-                                path.relative(projectRoot, run.spec.relative) ===
-                                importFeatureCommand.getParameters().filePath
-                        )
+                        runResult.runs.some((run) => {
+                            const specPath = path.relative(projectRoot, run.spec.relative);
+                            return specPath === filePath;
+                        })
                     ) {
                         // We can still upload results even if the feature file import fails. It's
                         // better to upload mismatched results than none at all.
