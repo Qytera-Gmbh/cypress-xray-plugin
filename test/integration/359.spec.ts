@@ -11,7 +11,7 @@ import { getCreatedTestExecutionIssueKey } from "./util";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/359
 // ============================================================================================== //
 
-describe.only(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), __filename), () => {
     for (const test of [
         {
             expectedLabels: [],
