@@ -331,7 +331,12 @@ export class AxiosRestClient {
         if (this.options?.rateLimiting?.requestsPerSecond) {
             const interval = 1000 / this.options.rateLimiting.requestsPerSecond;
             const now = Date.now();
-            const nextRequestTime = this.lastRequestTime ? this.lastRequestTime + interval : now;
+            let nextRequestTime: number;
+            if (this.lastRequestTime) {
+                nextRequestTime = Math.max(this.lastRequestTime + interval, now);
+            } else {
+                nextRequestTime = now;
+            }
             this.lastRequestTime = nextRequestTime;
             const delay = nextRequestTime - now;
             if (delay > 0) {

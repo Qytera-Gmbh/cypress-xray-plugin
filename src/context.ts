@@ -359,25 +359,25 @@ export function initHttpClients(
     if (httpOptions) {
         const { jira, rateLimiting: rateLimitingCommon, xray, ...httpConfigCommon } = httpOptions;
         if (jira) {
-            const { rateLimiting, ...httpConfig } = jira;
+            const { rateLimiting: rateLimitingJira, ...httpConfig } = jira;
             jiraClient = new AxiosRestClient({
                 debug: pluginOptions?.debug,
                 http: {
                     ...httpConfigCommon,
                     ...httpConfig,
                 },
-                rateLimiting: rateLimiting ?? rateLimitingCommon,
+                rateLimiting: rateLimitingJira ?? rateLimitingCommon,
             });
         }
         if (xray) {
-            const { rateLimiting, ...httpConfig } = xray;
+            const { rateLimiting: rateLimitingXray, ...httpConfig } = xray;
             xrayClient = new AxiosRestClient({
                 debug: pluginOptions?.debug,
                 http: {
                     ...httpConfigCommon,
                     ...httpConfig,
                 },
-                rateLimiting: rateLimiting ?? rateLimitingCommon,
+                rateLimiting: rateLimitingXray ?? rateLimitingCommon,
             });
         }
         if (!jiraClient || !xrayClient) {
