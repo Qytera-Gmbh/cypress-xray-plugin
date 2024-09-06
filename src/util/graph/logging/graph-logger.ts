@@ -7,7 +7,7 @@ import { isSkippedError } from "../../errors";
 import { Level, Logger } from "../../logging";
 import { Queue } from "../../queue/queue";
 import { traverse } from "../algorithms/sort";
-import { DirectedGraph } from "../graph";
+import { DirectedEdge, DirectedGraph, SimpleDirectedEdge } from "../graph";
 
 interface IndentedLogMessage<V extends Failable> {
     indent: number;
@@ -20,7 +20,7 @@ type UnfinishedLogMessage<V extends Failable> = Pick<IndentedLogMessage<V>, "lev
     includePredecessors: boolean;
 };
 
-export class ChainingGraphLogger<V extends Failable> {
+export class ChainingGraphLogger<V extends Failable, E extends DirectedEdge<V>> {
     private readonly logger: Logger;
     private readonly hasPriority: (vertex: V) => boolean;
 
@@ -29,7 +29,7 @@ export class ChainingGraphLogger<V extends Failable> {
         this.hasPriority = hasPriority;
     }
 
-    public logGraph(graph: DirectedGraph<V>): void {
+    public logGraph(graph: DirectedGraph<V, E>): void {
         const loggedVertices = new Set<V>();
         const prioritizedVertices: V[] = [];
         for (const vertex of graph.getVertices()) {
@@ -66,7 +66,7 @@ export class ChainingGraphLogger<V extends Failable> {
         }
     }
 
-    private computeLogMessageChain(vertex: V, graph: DirectedGraph<V>): IndentedLogMessage<V>[] {
+    private computeLogMessageChain(vertex: V, graph: DirectedGraph<V, E>): IndentedLogMessage<V>[] {
         const chain: IndentedLogMessage<V>[] = [];
         const queue = new Queue<[V, number, boolean]>();
         queue.enqueue([vertex, 0, false]);
@@ -137,7 +137,10 @@ export class ChainingGraphLogger<V extends Failable> {
     }
 }
 
-export class ChainingCommandGraphLogger extends ChainingGraphLogger<Command> {
+export class ChainingCommandGraphLogger extends ChainingGraphLogger<
+    Command,
+    SimpleDirectedEdge<Command>
+> {
     constructor(logger: Logger) {
         super(logger, (command) => {
             return (

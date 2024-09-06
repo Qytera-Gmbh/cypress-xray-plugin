@@ -13,6 +13,8 @@ import {
 } from "./context";
 import { PluginTask, PluginTaskListener, PluginTaskParameterType } from "./cypress/tasks";
 import { addUploadCommands } from "./hooks/after/after-run";
+import { Command } from "./hooks/command";
+import { JiraSearchOptimisation } from "./hooks/optimisations/jira-search-optimisation";
 import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
 import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
 import {
@@ -23,6 +25,7 @@ import {
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable-graph";
 import { ChainingCommandGraphLogger } from "./util/graph/logging/graph-logger";
+import { commandToDot, graphToDot } from "./util/graph/visualisation/dot";
 import { HELP } from "./util/help";
 import { CapturingLogger, LOG, Level } from "./util/logging";
 
@@ -151,8 +154,12 @@ export async function configureXrayPlugin(
                 "Skipping results upload: Plugin is configured to not upload test results."
             );
         }
+        const optimisations = [new JiraSearchOptimisation(context.getGraph())];
         try {
-            await context.getGraph().execute();
+            await exportGraph(context.getGraph(), Level.INFO, "before_opt_");
+            await Promise.all(optimisations.map((optimisation) => optimisation.optimise()));
+            await exportGraph(context.getGraph(), Level.INFO, "after_opt_");
+            // await context.getGraph().execute();
         } finally {
             new ChainingCommandGraphLogger(logger).logGraph(context.getGraph());
             const messages = logger.getMessages();
@@ -180,6 +187,7 @@ export async function configureXrayPlugin(
             logger.getFileLogMessages().forEach(([data, filename]) => {
                 LOG.logToFile(data, filename);
             });
+            await exportGraph(context.getGraph(), Level.INFO, "result_");
         }
     });
 }
@@ -246,4 +254,30 @@ function registerDefaultTasks(on: Cypress.PluginEvents) {
             args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
         ) => args.request,
     });
+}
+async function exportGraph<V extends Command>(
+    graph: ExecutableGraph<V>,
+    level: Level,
+    prefix?: string
+): Promise<void> {
+    const executionGraphFile = LOG.logToFile(
+        await graphToDot(graph, commandToDot, (edge) =>
+            graph.isOptional(edge) ? "dashed" : "bold"
+        ),
+        `${prefix ?? ""}execution-graph.vz`
+    );
+    LOG.message(
+        level,
+        dedent(`
+            Plugin execution graph saved to: ${prefix ?? ""}${executionGraphFile}
+
+            You can view it using Graphviz (https://graphviz.org/):
+
+              dot -o ${prefix ?? ""}execution-graph.pdf -Tpdf ${prefix ?? ""}${executionGraphFile}
+
+            Alternatively, you can view it online under any of the following websites:
+            - https://dreampuf.github.io/GraphvizOnline
+            - https://edotor.net/
+        `)
+    );
 }

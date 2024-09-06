@@ -1,5 +1,5 @@
 import { Queue } from "../../queue/queue";
-import { DirectedGraph } from "../graph";
+import { DirectedEdge, DirectedGraph } from "../graph";
 
 /**
  * Computes a topological order for all vertices contained in a directed graph.
@@ -10,7 +10,9 @@ import { DirectedGraph } from "../graph";
  * @param graph - the graph
  * @returns a mapping of vertices to their index in the computed order
  */
-export function computeTopologicalOrder<V>(graph: DirectedGraph<V>): Map<V, number> {
+export function computeTopologicalOrder<V, E extends DirectedEdge<V>>(
+    graph: DirectedGraph<V, E>
+): Map<V, number> {
     const distances = new Map<V, number>();
     const queue = new Queue<V>();
     for (const vertex of graph.getVertices()) {
@@ -38,17 +40,23 @@ export function computeTopologicalOrder<V>(graph: DirectedGraph<V>): Map<V, numb
     }
     return distances;
 }
-export function* traverse<V>(
-    graph: DirectedGraph<V>,
-    direction: "bottom-up" | "top-down"
+
+export function* traverse<V, E extends DirectedEdge<V>>(
+    graph: DirectedGraph<V, E>,
+    direction: "bottom-up" | "top-down",
+    startVertex?: V
 ): Generator<V> {
     const queue = new Queue<V>();
-    for (const vertex of graph.getVertices()) {
-        if (
-            (direction === "top-down" && !graph.hasIncoming(vertex)) ||
-            (direction === "bottom-up" && !graph.hasOutgoing(vertex))
-        ) {
-            queue.enqueue(vertex);
+    if (startVertex) {
+        queue.enqueue(startVertex);
+    } else {
+        for (const vertex of graph.getVertices()) {
+            if (
+                (direction === "top-down" && !graph.hasIncoming(vertex)) ||
+                (direction === "bottom-up" && !graph.hasOutgoing(vertex))
+            ) {
+                queue.enqueue(vertex);
+            }
         }
     }
     while (!queue.isEmpty()) {

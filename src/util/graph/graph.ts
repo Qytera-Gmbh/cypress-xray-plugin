@@ -4,7 +4,7 @@ import { dfs } from "./algorithms/search";
 /**
  * Models a directed acyclic graph containing arbitrary vertices.
  */
-export interface DirectedGraph<V> {
+export interface DirectedGraph<V, E extends DirectedEdge<V>> {
     /**
      * Connects two vertices in the graph with an edge. The vertices must exist in the graph already
      * to connect them (using {@link place | `place`}).
@@ -15,7 +15,7 @@ export interface DirectedGraph<V> {
      * @throws if the graph does not contain one of the vertices or if the connection would
      * introduce a duplicate edge or a cycle
      */
-    connect(source: V, destination: V): DirectedEdge<V>;
+    connect(source: V, destination: V): E;
     /**
      * Searches for a specific vertex in the graph. Every vertex will be visited exactly once.
      *
@@ -42,21 +42,21 @@ export interface DirectedGraph<V> {
      *
      * @returns the generator
      */
-    getEdges(): Generator<DirectedEdge<V>>;
+    getEdges(): Generator<E>;
     /**
      * Returns a generator which iterates through all incoming edges of a vertex.
      *
      * @param vertex - the destination vertex
      * @returns the generator
      */
-    getIncoming(vertex: V): Generator<DirectedEdge<V>>;
+    getIncoming(vertex: V): Generator<E>;
     /**
      * Returns a generator which iterates through all outgoing edges of a vertex.
      *
      * @param vertex - the source vertex
      * @returns the generator
      */
-    getOutgoing(vertex: V): Generator<DirectedEdge<V>>;
+    getOutgoing(vertex: V): Generator<E>;
     /**
      * Returns a generator which iterates through all predecessors of a vertex, i.e. the source
      * vertices of all incoming edges.
@@ -102,6 +102,14 @@ export interface DirectedGraph<V> {
      */
     place(vertex: V): V;
     /**
+     * Removes a vertex or an edge from the graph. If a vertex is removed, all its incoming and
+     * outgoing edges will be removed as well.
+     *
+     * @param vertexOrEdge - the vertex or edge to remove
+     * @throws if the graph does not contain the vertex or edge
+     */
+    remove(vertexOrEdge: E | V): void;
+    /**
      * Returns the size of the graph. The size can either denote the number of vertices or the
      * number of edges (the cardinality of either set).
      *
@@ -136,7 +144,7 @@ export interface DirectedEdge<S, D = S> {
 /**
  * A basic implementation of a directed edge.
  */
-export class SimpleDirectedEdge<S, D> implements DirectedEdge<S, D> {
+export class SimpleDirectedEdge<S, D = S> implements DirectedEdge<S, D> {
     private readonly source: S;
     private readonly destination: D;
     /**
@@ -162,9 +170,9 @@ export class SimpleDirectedEdge<S, D> implements DirectedEdge<S, D> {
 /**
  * A basic implementation of a directed acyclic graph.
  */
-export class SimpleDirectedGraph<V> implements DirectedGraph<V> {
-    private readonly outgoingEdges: Map<V, Set<DirectedEdge<V>>>;
-    private readonly incomingEdges: Map<V, Set<DirectedEdge<V>>>;
+export class SimpleDirectedGraph<V> implements DirectedGraph<V, SimpleDirectedEdge<V>> {
+    private readonly outgoingEdges: Map<V, Set<SimpleDirectedEdge<V>>>;
+    private readonly incomingEdges: Map<V, Set<SimpleDirectedEdge<V>>>;
 
     /**
      * Constructs an empty acyclic directed graph containing no vertices or edges.
@@ -178,9 +186,27 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V> {
         if (this.outgoingEdges.has(vertex)) {
             throw new Error(`Duplicate vertex detected: ${unknownToString(vertex)}`);
         }
-        this.outgoingEdges.set(vertex, new Set<DirectedEdge<V>>());
-        this.incomingEdges.set(vertex, new Set<DirectedEdge<V>>());
+        this.outgoingEdges.set(vertex, new Set<SimpleDirectedEdge<V>>());
+        this.incomingEdges.set(vertex, new Set<SimpleDirectedEdge<V>>());
         return vertex;
+    }
+
+    public remove(vertexOrEdge: SimpleDirectedEdge<V> | V): void {
+        if (vertexOrEdge instanceof SimpleDirectedEdge) {
+            if (
+                !this.outgoingEdges.get(vertexOrEdge.getSource())?.delete(vertexOrEdge) &&
+                !this.incomingEdges.get(vertexOrEdge.getDestination())?.delete(vertexOrEdge)
+            ) {
+                throw new Error("Failed to remove edge: the edge does not exist");
+            }
+        } else {
+            if (
+                !this.outgoingEdges.delete(vertexOrEdge) &&
+                !this.incomingEdges.delete(vertexOrEdge)
+            ) {
+                throw new Error("Failed to remove vertex: the vertex does not exist");
+            }
+        }
     }
 
     public connect<S extends V, D extends V>(source: S, destination: D): SimpleDirectedEdge<S, D> {
@@ -243,7 +269,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V> {
         }
     }
 
-    public *getEdges(): Generator<DirectedEdge<V>> {
+    public *getEdges(): Generator<SimpleDirectedEdge<V>> {
         for (const outgoing of this.outgoingEdges.values()) {
             for (const edge of outgoing) {
                 yield edge;
@@ -262,7 +288,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V> {
         return count;
     }
 
-    public *getOutgoing(vertex: V): Generator<DirectedEdge<V>> {
+    public *getOutgoing(vertex: V): Generator<SimpleDirectedEdge<V>> {
         const outgoing = this.outgoingEdges.get(vertex);
         if (outgoing === undefined) {
             throw new Error(`Unknown vertex: ${unknownToString(vertex)}`);
@@ -272,7 +298,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V> {
         }
     }
 
-    public *getIncoming(vertex: V): Generator<DirectedEdge<V>> {
+    public *getIncoming(vertex: V): Generator<SimpleDirectedEdge<V>> {
         const incoming = this.incomingEdges.get(vertex);
         if (incoming == undefined) {
             throw new Error(`Unknown vertex: ${unknownToString(vertex)}`);
