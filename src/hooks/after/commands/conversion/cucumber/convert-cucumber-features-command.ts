@@ -19,13 +19,7 @@ import { getXrayStatus } from "../util/status";
 
 interface Parameters {
     cucumber: Pick<InternalCucumberOptions, "prefixes">;
-    jira: Pick<
-        InternalJiraOptions,
-        | "projectKey"
-        | "testExecutionIssueDescription"
-        | "testExecutionIssueSummary"
-        | "testPlanIssueKey"
-    >;
+    jira: Pick<InternalJiraOptions, "projectKey">;
     projectRoot: string;
     useCloudTags?: boolean;
     xray: Pick<InternalXrayOptions, "status" | "testEnvironments" | "uploadScreenshots">;

@@ -24,7 +24,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     displayCloudHelp: true,
                     projectKey: "CYP",
-                    testExecutionIssueType: "Test Execution",
+                    testExecutionIssueType: { name: "Test Execution" },
                 },
                 logger,
                 new ConstantCommand(logger, issueTypes)
@@ -56,14 +56,16 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     displayCloudHelp: true,
                     projectKey: "CYP",
-                    testExecutionIssueType: "Nonexistent Execution",
+                    testExecutionIssueType: { name: "Nonexistent Execution" },
                 },
                 logger,
                 new ConstantCommand(logger, issueTypes)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    Failed to retrieve Jira issue type information of test execution issue type called: Nonexistent Execution
+                    Failed to retrieve Jira issue type information of test execution issue type: {
+                      "name": "Nonexistent Execution"
+                    }
 
                     Make sure Xray's issue types have been added to project CYP or that you've configured any custom execution issue type accordingly
 
@@ -71,12 +73,19 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                         {
                           jira: {
-                            testExecutionIssueType: "My Custom Issue Type"
+                            testExecutionIssue: {
+                              fields: {
+                                issuetype: {
+                                  name: "My Custom Issue Type"
+                                  // ...
+                                }
+                              }
+                            }
                           }
                         }
 
                     For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#testExecutionIssueType
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#issuetype
                     - https://docs.getxray.app/display/XRAYCLOUD/Project+Settings%3A+Issue+Types+Mapping
                 `)
             );
@@ -94,14 +103,16 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     displayCloudHelp: false,
                     projectKey: "CYP",
-                    testExecutionIssueType: "Nonexistent Execution",
+                    testExecutionIssueType: { name: "Nonexistent Execution" },
                 },
                 logger,
                 new ConstantCommand(logger, issueTypes)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    Failed to retrieve Jira issue type information of test execution issue type called: Nonexistent Execution
+                    Failed to retrieve Jira issue type information of test execution issue type: {
+                      "name": "Nonexistent Execution"
+                    }
 
                     Make sure Xray's issue types have been added to project CYP or that you've configured any custom execution issue type accordingly
 
@@ -109,12 +120,19 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                         {
                           jira: {
-                            testExecutionIssueType: "My Custom Issue Type"
+                            testExecutionIssue: {
+                              fields: {
+                                issuetype: {
+                                  name: "My Custom Issue Type"
+                                  // ...
+                                }
+                              }
+                            }
                           }
                         }
 
                     For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#testExecutionIssueType
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#issuetype
                     - https://docs.getxray.app/display/XRAY/Configuring+a+Jira+project+to+be+used+as+an+Xray+Test+Project
                 `)
             );
@@ -132,31 +150,84 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     displayCloudHelp: true,
                     projectKey: "CYP",
-                    testExecutionIssueType: "Task",
+                    testExecutionIssueType: { name: "Task" },
                 },
                 logger,
                 new ConstantCommand(logger, issueTypes)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    Failed to retrieve Jira issue type information of test execution issue type called: Task
+                    Failed to retrieve Jira issue type information of test execution issue type: {
+                      "name": "Task"
+                    }
 
                     There are multiple issue types with this name, make sure to only make a single one available in project CYP:
 
-                      Task: {"self":"https://example.org/rest/api/2/issuetype/10002","id":"10002","description":"Ein kleine, bestimmte Aufgabe.","iconUrl":"https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium","name":"Task","untranslatedName":"Task","subtask":false,"avatarId":10318,"hierarchyLevel":0}
-                      Task: {"self":"https://example.org/rest/api/2/issuetype/10014","id":"10014","description":"Ein kleine, bestimmte Aufgabe.","iconUrl":"https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium","name":"Task","untranslatedName":"Task","subtask":false,"avatarId":10318,"hierarchyLevel":0,"scope":{"type":"PROJECT","project":{"id":"10008"}}}
-                      Task: {"self":"https://example.org/rest/api/2/issuetype/10018","id":"10018","description":"Ein kleine, bestimmte Aufgabe.","iconUrl":"https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium","name":"Task","untranslatedName":"Task","subtask":false,"avatarId":10318,"hierarchyLevel":0,"scope":{"type":"PROJECT","project":{"id":"10009"}}}
+                      {
+                        "self": "https://example.org/rest/api/2/issuetype/10002",
+                        "id": "10002",
+                        "description": "Ein kleine, bestimmte Aufgabe.",
+                        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium",
+                        "name": "Task",
+                        "untranslatedName": "Task",
+                        "subtask": false,
+                        "avatarId": 10318,
+                        "hierarchyLevel": 0
+                      }
+
+                      {
+                        "self": "https://example.org/rest/api/2/issuetype/10014",
+                        "id": "10014",
+                        "description": "Ein kleine, bestimmte Aufgabe.",
+                        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium",
+                        "name": "Task",
+                        "untranslatedName": "Task",
+                        "subtask": false,
+                        "avatarId": 10318,
+                        "hierarchyLevel": 0,
+                        "scope": {
+                          "type": "PROJECT",
+                          "project": {
+                            "id": "10008"
+                          }
+                        }
+                      }
+
+                      {
+                        "self": "https://example.org/rest/api/2/issuetype/10018",
+                        "id": "10018",
+                        "description": "Ein kleine, bestimmte Aufgabe.",
+                        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium",
+                        "name": "Task",
+                        "untranslatedName": "Task",
+                        "subtask": false,
+                        "avatarId": 10318,
+                        "hierarchyLevel": 0,
+                        "scope": {
+                          "type": "PROJECT",
+                          "project": {
+                            "id": "10009"
+                          }
+                        }
+                      }
 
                     If none of them is the test execution issue type you're using in project CYP, please specify the correct text execution issue type in the plugin configuration:
 
                       {
                         jira: {
-                          testExecutionIssueType: "My Custom Issue Type"
+                          testExecutionIssue: {
+                            fields: {
+                              issuetype: {
+                                name: "My Custom Issue Type"
+                                // ...
+                              }
+                            }
+                          }
                         }
                       }
 
                     For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#testExecutionIssueType
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#issuetype
                     - https://docs.getxray.app/display/XRAYCLOUD/Project+Settings%3A+Issue+Types+Mapping
                 `)
             );
@@ -174,31 +245,84 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     displayCloudHelp: false,
                     projectKey: "CYP",
-                    testExecutionIssueType: "Task",
+                    testExecutionIssueType: { name: "Task" },
                 },
                 logger,
                 new ConstantCommand(logger, issueTypes)
             );
             await expect(command.compute()).to.eventually.be.rejectedWith(
                 dedent(`
-                    Failed to retrieve Jira issue type information of test execution issue type called: Task
+                    Failed to retrieve Jira issue type information of test execution issue type: {
+                      "name": "Task"
+                    }
 
                     There are multiple issue types with this name, make sure to only make a single one available in project CYP:
 
-                      Task: {"self":"https://example.org/rest/api/2/issuetype/10002","id":"10002","description":"Ein kleine, bestimmte Aufgabe.","iconUrl":"https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium","name":"Task","untranslatedName":"Task","subtask":false,"avatarId":10318,"hierarchyLevel":0}
-                      Task: {"self":"https://example.org/rest/api/2/issuetype/10014","id":"10014","description":"Ein kleine, bestimmte Aufgabe.","iconUrl":"https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium","name":"Task","untranslatedName":"Task","subtask":false,"avatarId":10318,"hierarchyLevel":0,"scope":{"type":"PROJECT","project":{"id":"10008"}}}
-                      Task: {"self":"https://example.org/rest/api/2/issuetype/10018","id":"10018","description":"Ein kleine, bestimmte Aufgabe.","iconUrl":"https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium","name":"Task","untranslatedName":"Task","subtask":false,"avatarId":10318,"hierarchyLevel":0,"scope":{"type":"PROJECT","project":{"id":"10009"}}}
+                      {
+                        "self": "https://example.org/rest/api/2/issuetype/10002",
+                        "id": "10002",
+                        "description": "Ein kleine, bestimmte Aufgabe.",
+                        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium",
+                        "name": "Task",
+                        "untranslatedName": "Task",
+                        "subtask": false,
+                        "avatarId": 10318,
+                        "hierarchyLevel": 0
+                      }
+
+                      {
+                        "self": "https://example.org/rest/api/2/issuetype/10014",
+                        "id": "10014",
+                        "description": "Ein kleine, bestimmte Aufgabe.",
+                        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium",
+                        "name": "Task",
+                        "untranslatedName": "Task",
+                        "subtask": false,
+                        "avatarId": 10318,
+                        "hierarchyLevel": 0,
+                        "scope": {
+                          "type": "PROJECT",
+                          "project": {
+                            "id": "10008"
+                          }
+                        }
+                      }
+
+                      {
+                        "self": "https://example.org/rest/api/2/issuetype/10018",
+                        "id": "10018",
+                        "description": "Ein kleine, bestimmte Aufgabe.",
+                        "iconUrl": "https://example.org/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium",
+                        "name": "Task",
+                        "untranslatedName": "Task",
+                        "subtask": false,
+                        "avatarId": 10318,
+                        "hierarchyLevel": 0,
+                        "scope": {
+                          "type": "PROJECT",
+                          "project": {
+                            "id": "10009"
+                          }
+                        }
+                      }
 
                     If none of them is the test execution issue type you're using in project CYP, please specify the correct text execution issue type in the plugin configuration:
 
                       {
                         jira: {
-                          testExecutionIssueType: "My Custom Issue Type"
+                          testExecutionIssue: {
+                            fields: {
+                              issuetype: {
+                                name: "My Custom Issue Type"
+                                // ...
+                              }
+                            }
+                          }
                         }
                       }
 
                     For more information, visit:
-                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#testExecutionIssueType
+                    - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#issuetype
                     - https://docs.getxray.app/display/XRAY/Configuring+a+Jira+project+to+be+used+as+an+Xray+Test+Project
                 `)
             );

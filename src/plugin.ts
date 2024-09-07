@@ -135,7 +135,7 @@ export async function configureXrayPlugin(
                     `)
                 );
             } else {
-                addUploadCommands(
+                await addUploadCommands(
                     results,
                     context.getCypressOptions().projectRoot,
                     context.getOptions(),

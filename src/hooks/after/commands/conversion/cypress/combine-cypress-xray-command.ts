@@ -1,11 +1,12 @@
 import { XrayClient } from "../../../../../client/xray/xray-client";
-import { InternalJiraOptions } from "../../../../../types/plugin";
 import { XrayTest } from "../../../../../types/xray/import-test-execution-results";
 import { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
 import { Logger } from "../../../../../util/logging";
 import { Command, Computable } from "../../../../command";
 
-type CommandParameters = Pick<InternalJiraOptions, "testExecutionIssueKey">;
+interface CommandParameters {
+    testExecutionIssueKey?: string;
+}
 
 export class CombineCypressJsonCommand extends Command<
     Parameters<XrayClient["importExecutionMultipart"]>,

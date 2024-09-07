@@ -10,7 +10,6 @@ import { JiraField } from "./extract-field-id-command";
 export interface FieldValueMap {
     [JiraField.LABELS]: string[];
     [JiraField.SUMMARY]: string;
-    [JiraField.TEST_TYPE]: string;
 }
 
 interface Parameters {

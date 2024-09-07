@@ -2,6 +2,7 @@ import { EntityProperty } from "./entity-property";
 import { FieldUpdateOperation } from "./field-update-operation";
 import { HistoryMetadata } from "./history-metadata";
 import { IssueTransition } from "./issue-transition";
+import { IssueTypeDetails } from "./issue-type-details";
 
 /**
  * Payload when creating or updating Jira issues.
@@ -16,7 +17,21 @@ export interface IssueUpdate {
      * multiple sub-fields or other operations are required, use {@link update}. Fields included in
      * here cannot be included in {@link update}.
      */
-    fields?: Record<string, unknown>;
+    fields?: {
+        [id: string]: unknown;
+        /**
+         * The issue description.
+         */
+        description?: string;
+        /**
+         * The issue type.
+         */
+        issuetype?: IssueTypeDetails;
+        /**
+         * The issue summary.
+         */
+        summary?: string;
+    };
     /**
      * Additional issue history details.
      */
