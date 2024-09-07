@@ -19,13 +19,11 @@ export function contains(actual: unknown, expected: unknown): boolean {
         typeof actual === "undefined"
     ) {
         return actual === expected;
-    }
-    if (Array.isArray(expected)) {
+    } else if (Array.isArray(expected)) {
         if (Array.isArray(actual)) {
             return containsArray(actual, expected);
         }
-    }
-    if (typeof actual === "object") {
+    } else if (typeof actual === "object") {
         if (typeof expected === "object") {
             if (actual === null || expected === null) {
                 return actual === expected;
@@ -38,10 +36,15 @@ export function contains(actual: unknown, expected: unknown): boolean {
 
 function containsArray(actual: unknown[], expected: unknown[]): boolean {
     for (const elementExpected of expected) {
+        let containsElement = false;
         for (const elementActual of actual) {
-            if (!contains(elementActual, elementExpected)) {
-                return false;
+            if (contains(elementActual, elementExpected)) {
+                containsElement = true;
+                break;
             }
+        }
+        if (!containsElement) {
+            return false;
         }
     }
     return true;
