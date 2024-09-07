@@ -214,7 +214,7 @@ export interface JiraOptions {
     /**
      * The description of the test execution issue, which will be used both for new test execution
      * issues as well as for updating existing issues (if provided through
-     * {@link JiraOptions.testExecutionIssueKey}).
+     * {@link JiraOptions.testExecutionIssue}).
      *
      * If omitted, test execution issues will have the following description:
      * ```ts
@@ -241,8 +241,6 @@ export interface JiraOptions {
      * An execution issue key to attach run results to. If omitted, Jira will always create a new
      * test execution issue with each upload.
      *
-     * *Note: it must be prefixed with the project key.*
-     *
      * @example "CYP-123"
      *
      * @deprecated Will be removed in version `8.0.0`. Please use the following instead:
@@ -262,7 +260,7 @@ export interface JiraOptions {
     /**
      * The summary of the test execution issue, which will be used both for new test execution
      * issues as well as for updating existing issues (if provided through
-     * {@link JiraOptions.testExecutionIssueKey}).
+     * {@link JiraOptions.testExecutionIssue}).
      *
      * If omitted, test execution issues will be named as follows:
      * ```ts
@@ -319,6 +317,8 @@ export interface JiraOptions {
     /**
      * The issue type name of test plans. By default, Xray calls them `Test Plan`, but it's possible
      * that they have been renamed or translated in your Jira instance.
+     *
+     * @deprecated Unused, will be removed in version `8.0.0`.
      */
     testPlanIssueType?: string;
     /**

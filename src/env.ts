@@ -25,7 +25,7 @@ interface Authentication {
 export const ENV_NAMES: Remap<
     Omit<CypressXrayPluginOptions, "http"> & Authentication,
     string,
-    "testExecutionIssue"
+    ["testExecutionIssue"]
 > = {
     authentication: {
         jira: {

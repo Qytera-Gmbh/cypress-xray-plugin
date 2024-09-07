@@ -52,9 +52,6 @@ import { ExtractVideoFilesCommand } from "./commands/extract-video-files-command
 import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issue-key-command";
 import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-command";
 
-// REMOVE IN VERSION 8.0.0
-/* eslint-disable @typescript-eslint/no-deprecated */
-
 chai.use(chaiAsPromised);
 
 describe(path.relative(process.cwd(), __filename), () => {
