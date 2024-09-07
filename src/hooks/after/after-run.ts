@@ -38,9 +38,6 @@ import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issu
 import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-command";
 import { containsCucumberTest, containsCypressTest } from "./util";
 
-// REMOVE IN VERSION 8.0.0
-/* eslint-disable @typescript-eslint/no-deprecated */
-
 export async function addUploadCommands(
     runResult: CypressRunResultType,
     projectRoot: string,

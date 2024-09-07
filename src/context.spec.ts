@@ -1123,20 +1123,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         )
                     ).to.throw("Plugin misconfiguration: Jira project key was not set");
                 });
-                it("detect mismatched test execution issue keys", () => {
-                    expect(() =>
-                        initJiraOptions(
-                            {},
-                            {
-                                projectKey: "CYP",
-                                testExecutionIssueKey: "ABC-123",
-                                url: "https://example.org",
-                            }
-                        )
-                    ).to.throw(
-                        "Plugin misconfiguration: test execution issue key ABC-123 does not belong to project CYP"
-                    );
-                });
                 it("throws if the cucumber preprocessor is not installed", async () => {
                     stub(dependencies, "IMPORT").rejects(new Error("Failed to import package"));
                     await expect(

@@ -138,15 +138,7 @@ export function initJiraOptions(
     if (!projectKey) {
         throw new Error("Plugin misconfiguration: Jira project key was not set");
     }
-    const testExecutionIssueKey =
-        parse(env, ENV_NAMES.jira.testExecutionIssueKey, asString) ?? options.testExecutionIssueKey;
-    if (testExecutionIssueKey && !testExecutionIssueKey.startsWith(projectKey)) {
-        throw new Error(
-            `Plugin misconfiguration: test execution issue key ${testExecutionIssueKey} does not belong to project ${projectKey}`
-        );
-    }
-    const testPlanIssueKey =
-        parse(env, ENV_NAMES.jira.testPlanIssueKey, asString) ?? options.testPlanIssueKey;
+
     return {
         attachVideos:
             parse(env, ENV_NAMES.jira.attachVideos, asBoolean) ?? options.attachVideos ?? false,
@@ -164,11 +156,17 @@ export function initJiraOptions(
         },
         projectKey: projectKey,
         testExecutionIssue:
-            parse(env, ENV_NAMES.jira.testExecutionIssue, asObject) ?? options.testExecutionIssue,
+            parse(
+                env,
+                ENV_NAMES.jira.testExecutionIssue,
+                asObject<typeof options.testExecutionIssue>
+            ) ?? options.testExecutionIssue,
         testExecutionIssueDescription:
             parse(env, ENV_NAMES.jira.testExecutionIssueDescription, asString) ??
             options.testExecutionIssueDescription,
-        testExecutionIssueKey: testExecutionIssueKey,
+        testExecutionIssueKey:
+            parse(env, ENV_NAMES.jira.testExecutionIssueKey, asString) ??
+            options.testExecutionIssueKey,
         testExecutionIssueSummary:
             parse(env, ENV_NAMES.jira.testExecutionIssueSummary, asString) ??
             options.testExecutionIssueSummary,
@@ -176,7 +174,8 @@ export function initJiraOptions(
             parse(env, ENV_NAMES.jira.testExecutionIssueType, asString) ??
             options.testExecutionIssueType ??
             "Test Execution",
-        testPlanIssueKey: testPlanIssueKey,
+        testPlanIssueKey:
+            parse(env, ENV_NAMES.jira.testPlanIssueKey, asString) ?? options.testPlanIssueKey,
         testPlanIssueType:
             parse(env, ENV_NAMES.jira.testPlanIssueType, asString) ??
             options.testPlanIssueType ??

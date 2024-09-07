@@ -24,8 +24,6 @@ export const HELP = {
                         issuetype: `${BASE_URL}/section/configuration/jira/#issuetype`,
                     },
                 },
-                testExecutionIssueType: `${BASE_URL}/section/configuration/jira/#testExecutionIssueType`,
-                testPlanIssueType: `${BASE_URL}/section/configuration/jira/#testPlanIssueType`,
                 url: `${BASE_URL}/section/configuration/jira/#url`,
             },
             plugin: {

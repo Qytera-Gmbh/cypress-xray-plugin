@@ -35,9 +35,9 @@ export type StringMap<T> = Record<string, T>;
  * }
  * ```
  */
-export type Remap<T extends object, V, E extends number | string | symbol = never> = {
+export type Remap<T extends object, V, E extends (number | string | symbol)[] = never> = {
     [K in keyof Required<T>]: Required<T>[K] extends object // shortcuts simple types
-        ? K extends E // shortcuts excluded properties
+        ? K extends ArrayElementType<E> // shortcuts excluded properties
             ? V
             : Required<T>[K] extends unknown[] // shortcuts array types
             ? V
@@ -51,3 +51,7 @@ export type Remap<T extends object, V, E extends number | string | symbol = neve
  * Represents a value that may be wrapped in a callback.
  */
 export type MaybeFunction<T> = (() => Promise<T> | T) | T;
+
+// See: https://stackoverflow.com/a/51399781
+type ArrayElementType<ArrayType extends readonly unknown[]> =
+    ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
