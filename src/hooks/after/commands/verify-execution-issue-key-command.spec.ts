@@ -14,8 +14,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     displayCloudHelp: false,
                     importType: "cypress",
-                    testExecutionIssueKey: "CYP-123",
-                    testExecutionIssueType: { name: "Test Execution" },
+                    testExecutionIssue: {
+                        fields: { issuetype: { name: "Test Execution" } },
+                        key: "CYP-123",
+                    },
                 },
                 logger,
                 new ConstantCommand(logger, "CYP-123")
@@ -30,8 +32,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     displayCloudHelp: true,
                     importType: "cypress",
-                    testExecutionIssueKey: "CYP-123",
-                    testExecutionIssueType: { name: "Test Execution" },
+                    testExecutionIssue: {
+                        fields: { issuetype: { name: "Test Execution" } },
+                        key: "CYP-123",
+                    },
                 },
                 logger,
                 new ConstantCommand(logger, "CYP-456")
@@ -59,8 +63,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 {
                     displayCloudHelp: false,
                     importType: "cucumber",
-                    testExecutionIssueKey: "CYP-123",
-                    testExecutionIssueType: { name: "Test Execution" },
+                    testExecutionIssue: {
+                        fields: { issuetype: { name: "Test Execution" } },
+                        key: "CYP-123",
+                    },
                 },
                 logger,
                 new ConstantCommand(logger, "CYP-456")

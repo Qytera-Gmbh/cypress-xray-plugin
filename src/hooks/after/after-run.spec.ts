@@ -208,8 +208,9 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it("uses configured test execution issue keys", async () => {
                 const graph = new ExecutableGraph<Command>();
-                options.jira.testExecutionIssueKey = "CYP-415";
-                options.jira.testExecutionIssueType = "Test Run";
+                options.jira.testExecutionIssue = {
+                    key: "CYP-415",
+                };
                 await addUploadCommands(
                     result,
                     ".",
@@ -236,19 +237,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                 assertIsInstanceOf(fallbackCypressUploadCommand, FallbackCommand);
                 // Vertex data.
                 expect(issueKeysCommand.getValue()).to.deep.eq([
-                    options.jira.testExecutionIssueKey,
+                    options.jira.testExecutionIssue.key,
                 ]);
                 expect(getSummaryValuesCommand.getParameters()).to.deep.eq({
                     jiraClient: clients.jiraClient,
                 });
                 expect(destructureCommand.getParameters()).to.deep.eq({
-                    accessor: options.jira.testExecutionIssueKey,
+                    accessor: options.jira.testExecutionIssue.key,
                 });
                 expect(verifyExecutionIssueKeyCommand.getParameters()).to.deep.eq({
                     displayCloudHelp: false,
                     importType: "cypress",
-                    testExecutionIssueKey: "CYP-415",
-                    testExecutionIssueType: { name: "Test Run" },
+                    testExecutionIssue: {
+                        key: "CYP-415",
+                    },
                 });
                 // Edges.
                 expect([...graph.getSuccessors(issueKeysCommand)]).to.deep.eq([
@@ -268,8 +270,10 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             it("uses configured test execution issue data with known fields", async () => {
                 const graph = new ExecutableGraph<Command>();
-                options.jira.testExecutionIssueKey = "CYP-415";
-                options.jira.testExecutionIssueType = "Test Run";
+                options.jira.testExecutionIssue = {
+                    fields: { issuetype: { name: "Test Run" } },
+                    key: "CYP-415",
+                };
                 await addUploadCommands(
                     result,
                     ".",
@@ -287,7 +291,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 assertIsInstanceOf(getSummaryValuesCommand, GetSummaryValuesCommand);
                 // Vertex data.
                 expect(issueKeysCommand.getValue()).to.deep.eq([
-                    options.jira.testExecutionIssueKey,
+                    options.jira.testExecutionIssue.key,
                 ]);
                 expect(getSummaryValuesCommand.getParameters()).to.deep.eq({
                     jiraClient: clients.jiraClient,
@@ -296,13 +300,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect([...graph.getSuccessors(issueKeysCommand)]).to.deep.eq([
                     getSummaryValuesCommand,
                 ]);
-                expect(graph.size("vertices")).to.eq(14);
-                expect(graph.size("edges")).to.eq(15);
+                expect(graph.size("vertices")).to.eq(13);
+                expect(graph.size("edges")).to.eq(14);
             });
 
             it("uses configured summaries", async () => {
                 const graph = new ExecutableGraph<Command>();
-                options.jira.testExecutionIssueSummary = "My summary";
+                options.jira.testExecutionIssue = { fields: { summary: "My summary" } };
                 await addUploadCommands(
                     result,
                     ".",
@@ -347,23 +351,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 // Vertices.
                 const commands = [...graph.getVertices()];
-                const textExecutionIssueDataCommand = commands[2];
-                const convertCommand = commands[5];
-                assertIsInstanceOf(textExecutionIssueDataCommand, ConstantCommand);
+                const convertCommand = commands[4];
                 assertIsInstanceOf(convertCommand, ConvertInfoServerCommand);
                 // Vertex data.
-                expect(textExecutionIssueDataCommand.getValue()).to.deep.eq({
+                expect(convertCommand.getParameters().jira.testExecutionIssue).to.deep.eq({
                     fields: {
                         assignee: "someone else",
                         ["customfield_12345"]: "bonjour",
                     },
                 });
-                // Edges.
-                expect([...graph.getSuccessors(textExecutionIssueDataCommand)]).to.deep.eq([
-                    convertCommand,
-                ]);
-                expect(graph.size("vertices")).to.eq(11);
-                expect(graph.size("edges")).to.eq(12);
+                expect(graph.size("vertices")).to.eq(10);
+                expect(graph.size("edges")).to.eq(11);
             });
 
             it("attaches videos", async () => {
@@ -846,8 +844,10 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                 it("uses configured test execution issue data", async () => {
                     const graph = new ExecutableGraph<Command>();
-                    options.jira.testExecutionIssueKey = "CYP-42";
-                    options.jira.testExecutionIssueType = "Test Run";
+                    options.jira.testExecutionIssue = {
+                        fields: { issuetype: { name: "Test Run" } },
+                        key: "CYP-42",
+                    };
                     await addUploadCommands(
                         cypressResult,
                         ".",
@@ -865,7 +865,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         issueKeysCommand,
                         getSummaryValuesCommand,
                         destructureCommand,
-                        fetchIssueTypesCommand,
                         extractExecutionIssueTypeCommand,
                         convertCommand,
                         convertCucumberFeaturesCommand,
@@ -882,11 +881,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     assertIsInstanceOf(issueKeysCommand, ConstantCommand);
                     assertIsInstanceOf(getSummaryValuesCommand, GetSummaryValuesCommand);
                     assertIsInstanceOf(destructureCommand, DestructureCommand);
-                    assertIsInstanceOf(fetchIssueTypesCommand, FetchIssueTypesCommand);
-                    assertIsInstanceOf(
-                        extractExecutionIssueTypeCommand,
-                        ExtractExecutionIssueTypeCommand
-                    );
+                    assertIsInstanceOf(extractExecutionIssueTypeCommand, ConstantCommand);
                     assertIsInstanceOf(convertCommand, ConvertInfoCloudCommand);
                     assertIsInstanceOf(
                         convertCucumberFeaturesCommand,
@@ -914,13 +909,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
                     expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
                     expect(testExecutionIssueKeyCommand.getValue()).to.deep.eq("CYP-42");
-                    expect(fetchIssueTypesCommand.getParameters()).to.deep.eq({
-                        jiraClient: clients.jiraClient,
-                    });
-                    expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
-                        displayCloudHelp: true,
-                        projectKey: "CYP",
-                        testExecutionIssueType: { name: "Test Run" },
+                    expect(extractExecutionIssueTypeCommand.getValue()).to.deep.eq({
+                        name: "Test Run",
                     });
                     expect(issueKeysCommand.getValue()).to.deep.eq(["CYP-42"]);
                     expect(getSummaryValuesCommand.getParameters()).to.deep.eq({
@@ -966,8 +956,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(verifyExecutionIssueKeyCommand.getParameters()).to.deep.eq({
                         displayCloudHelp: true,
                         importType: "cucumber",
-                        testExecutionIssueKey: "CYP-42",
-                        testExecutionIssueType: { name: "Test Run" },
+                        testExecutionIssue: {
+                            fields: { issuetype: { name: "Test Run" } },
+                            key: "CYP-42",
+                        },
                     });
                     // Edges.
                     expect([...graph.getSuccessors(cypressResultsCommand)]).to.contain(
@@ -978,9 +970,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     ]);
                     expect([...graph.getSuccessors(testExecutionIssueKeyCommand)]).to.deep.eq([
                         convertCucumberFeaturesCommand,
-                    ]);
-                    expect([...graph.getSuccessors(fetchIssueTypesCommand)]).to.deep.eq([
-                        extractExecutionIssueTypeCommand,
                     ]);
                     expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
                         convertCommand,
@@ -1014,8 +1003,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(fallbackCucumberUploadCommand)]).to.deep.eq([
                         verifyResultsUploadCommand,
                     ]);
-                    expect(graph.size("vertices")).to.eq(16);
-                    expect(graph.size("edges")).to.eq(16);
+                    expect(graph.size("vertices")).to.eq(15);
+                    expect(graph.size("edges")).to.eq(15);
                 });
             });
 

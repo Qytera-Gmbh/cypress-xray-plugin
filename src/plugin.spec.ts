@@ -111,23 +111,19 @@ describe(path.relative(process.cwd(), __filename), () => {
                 jira: {
                     attachVideos: true,
                     fields: {
-                        description: "somewhere",
-                        labels: "out",
-                        summary: "bonjour",
                         testEnvironments: "field_123",
                         testPlan: "there",
                     },
                     projectKey: "ABC",
                     testExecutionIssue: {
-                        fields: { summary: "my summary" },
-                        key: "ABC-456",
+                        fields: {
+                            description: "description",
+                            issuetype: { name: "QA-1" },
+                            summary: "summary",
+                        },
+                        key: "ABC-2",
                     },
-                    testExecutionIssueDescription: "description",
-                    testExecutionIssueKey: "ABC-2",
-                    testExecutionIssueSummary: "summary",
-                    testExecutionIssueType: "QA-1",
                     testPlanIssueKey: "ABC-3",
-                    testPlanIssueType: "QA-2",
                     url: "https://example.org",
                 },
                 plugin: {
@@ -154,23 +150,19 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(stubbedContext.firstCall.args[0]?.getOptions().jira).to.deep.eq({
                 attachVideos: true,
                 fields: {
-                    description: "somewhere",
-                    labels: "out",
-                    summary: "bonjour",
                     testEnvironments: "field_123",
                     testPlan: "there",
                 },
                 projectKey: "ABC",
                 testExecutionIssue: {
-                    fields: { summary: "my summary" },
-                    key: "ABC-456",
+                    fields: {
+                        description: "description",
+                        issuetype: { name: "QA-1" },
+                        summary: "summary",
+                    },
+                    key: "ABC-2",
                 },
-                testExecutionIssueDescription: "description",
-                testExecutionIssueKey: "ABC-2",
-                testExecutionIssueSummary: "summary",
-                testExecutionIssueType: "QA-1",
                 testPlanIssueKey: "ABC-3",
-                testPlanIssueType: "QA-2",
                 url: "https://example.org",
             });
             expect(stubbedContext.firstCall.args[0]?.getOptions().plugin).to.deep.eq({

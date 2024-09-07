@@ -15,9 +15,7 @@ import {
 } from "./util/multipart-info";
 
 interface Parameters {
-    jira: Pick<InternalJiraOptions, "projectKey" | "testPlanIssueKey"> & {
-        testExecutionIssueDescription?: string;
-    };
+    jira: Pick<InternalJiraOptions, "projectKey" | "testExecutionIssue" | "testPlanIssueKey">;
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 
@@ -25,7 +23,6 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
     private readonly testExecutionIssueType: Computable<IssueTypeDetails>;
     private readonly runInformation: Computable<RunData>;
     private readonly info?: {
-        custom?: Computable<MaybeFunction<IssueUpdate>>;
         fieldIds?: {
             testEnvironmentsId?: Computable<string>;
             testPlanId?: Computable<string>;
@@ -56,11 +53,10 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
     protected async computeResult(): Promise<MultipartInfo> {
         const testExecutionIssueType = await this.testExecutionIssueType.compute();
         const runInformation = await this.runInformation.compute();
-        const custom = await this.info?.custom?.compute();
+        const issueData = await getOrCall(this.parameters.jira.testExecutionIssue);
         const summary = await this.info?.summary?.compute();
         const testExecutionIssueData: TestExecutionIssueDataServer = {
-            custom: await getOrCall(custom),
-            description: this.parameters.jira.testExecutionIssueDescription,
+            custom: issueData,
             issuetype: testExecutionIssueType,
             projectKey: this.parameters.jira.projectKey,
             summary: summary,
