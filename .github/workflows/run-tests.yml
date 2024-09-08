@@ -23,6 +23,7 @@ jobs:
           cache: npm
       - run: npm install
       - run: ls -l node_modules
+      - run: ls -l node_modules/@badeball
       - run: npm run build
       - run: npm run eslint
       - run: npm run test:coverage
