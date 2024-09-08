@@ -22,6 +22,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
           cache: npm
       - run: npm install
+      - run: ls -l node_modules
       - run: npm run build
       - run: npm run eslint
       - run: npm run test:coverage
