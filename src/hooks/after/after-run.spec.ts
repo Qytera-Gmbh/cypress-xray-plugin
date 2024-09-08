@@ -120,6 +120,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const [
                     resultsCommand,
                     convertCypressTestsCommand,
+                    executionIssueSummaryCommand,
                     fetchIssueTypesCommand,
                     extractExecutionIssueTypeCommand,
                     convertCommand,
@@ -131,6 +132,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ] = [...graph.getVertices()];
                 assertIsInstanceOf(resultsCommand, ConstantCommand);
                 assertIsInstanceOf(convertCypressTestsCommand, ConvertCypressTestsCommand);
+                assertIsInstanceOf(executionIssueSummaryCommand, ConstantCommand);
                 assertIsInstanceOf(fetchIssueTypesCommand, FetchIssueTypesCommand);
                 assertIsInstanceOf(
                     extractExecutionIssueTypeCommand,
@@ -159,6 +161,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     jira: options.jira,
                     xray: options.xray,
                 });
+                expect(executionIssueSummaryCommand.getValue()).to.deep.eq(
+                    "Execution Results [2022-11-28T17:41:12.234Z]"
+                );
                 expect(combineCypressJsonCommand.getParameters()).to.deep.eq({
                     testExecutionIssueKey: undefined,
                 });
@@ -179,6 +184,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ]);
                 expect([...graph.getSuccessors(convertCypressTestsCommand)]).to.deep.eq([
                     combineCypressJsonCommand,
+                ]);
+                expect([...graph.getSuccessors(executionIssueSummaryCommand)]).to.deep.eq([
+                    convertCommand,
                 ]);
                 expect([...graph.getSuccessors(fetchIssueTypesCommand)]).to.deep.eq([
                     extractExecutionIssueTypeCommand,
@@ -202,8 +210,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect([...graph.getSuccessors(fallbackCypressUploadCommand)]).to.deep.eq([
                     verifyResultsUploadCommand,
                 ]);
-                expect(graph.size("vertices")).to.eq(10);
-                expect(graph.size("edges")).to.eq(11);
+                expect(graph.size("vertices")).to.eq(11);
+                expect(graph.size("edges")).to.eq(12);
             });
 
             it("uses configured test execution issue keys", async () => {
@@ -351,7 +359,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 // Vertices.
                 const commands = [...graph.getVertices()];
-                const convertCommand = commands[4];
+                const convertCommand = commands[5];
                 assertIsInstanceOf(convertCommand, ConvertInfoServerCommand);
                 // Vertex data.
                 expect(convertCommand.getParameters().jira.testExecutionIssue).to.deep.eq({
@@ -360,8 +368,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         ["customfield_12345"]: "bonjour",
                     },
                 });
-                expect(graph.size("vertices")).to.eq(10);
-                expect(graph.size("edges")).to.eq(11);
+                expect(graph.size("vertices")).to.eq(11);
+                expect(graph.size("edges")).to.eq(12);
             });
 
             it("attaches videos", async () => {
@@ -379,9 +387,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 // Vertices.
                 const commands = [...graph.getVertices()];
                 const resultsCommand = commands[0];
-                const verifyResultsUploadCommand = commands[9];
-                const extractVideoFilesCommand = commands[10];
-                const attachVideosCommand = commands[11];
+                const verifyResultsUploadCommand = commands[10];
+                const extractVideoFilesCommand = commands[11];
+                const attachVideosCommand = commands[12];
                 assertIsInstanceOf(extractVideoFilesCommand, ExtractVideoFilesCommand);
                 assertIsInstanceOf(attachVideosCommand, AttachFilesCommand);
                 // Vertex data.
@@ -398,8 +406,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect([...graph.getSuccessors(verifyResultsUploadCommand)]).to.contain(
                     attachVideosCommand
                 );
-                expect(graph.size("vertices")).to.eq(12);
-                expect(graph.size("edges")).to.eq(14);
+                expect(graph.size("vertices")).to.eq(13);
+                expect(graph.size("edges")).to.eq(15);
             });
         });
 
@@ -448,6 +456,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     const [
                         cypressResultsCommand,
                         cucumberResultsCommand,
+                        executionIssueSummaryCommand,
                         fetchIssueTypesCommand,
                         extractExecutionIssueTypeCommand,
                         convertMultipartInfoCommand,
@@ -460,6 +469,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     ] = [...graph.getVertices()];
                     assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
                     assertIsInstanceOf(cucumberResultsCommand, ConstantCommand);
+                    assertIsInstanceOf(executionIssueSummaryCommand, ConstantCommand);
                     assertIsInstanceOf(fetchIssueTypesCommand, FetchIssueTypesCommand);
                     assertIsInstanceOf(
                         extractExecutionIssueTypeCommand,
@@ -487,6 +497,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     // Vertex data.
                     expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
                     expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
+                    expect(executionIssueSummaryCommand.getValue()).to.deep.eq(
+                        "Execution Results [2023-07-23T21:26:15.539Z]"
+                    );
                     expect(fetchIssueTypesCommand.getParameters()).to.deep.eq({
                         jiraClient: clients.jiraClient,
                     });
@@ -542,6 +555,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(cucumberResultsCommand)]).to.deep.eq([
                         convertCucumberFeaturesCommand,
                     ]);
+                    expect([...graph.getSuccessors(executionIssueSummaryCommand)]).to.deep.eq([
+                        convertMultipartInfoCommand,
+                    ]);
                     expect([...graph.getSuccessors(fetchIssueTypesCommand)]).to.deep.eq([
                         extractExecutionIssueTypeCommand,
                     ]);
@@ -567,8 +583,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(fallbackCucumberUploadCommand)]).to.deep.eq([
                         verifyResultsUploadCommand,
                     ]);
-                    expect(graph.size("vertices")).to.eq(11);
-                    expect(graph.size("edges")).to.eq(11);
+                    expect(graph.size("vertices")).to.eq(12);
+                    expect(graph.size("edges")).to.eq(12);
                 });
 
                 it("uses configured test plan data", async () => {
@@ -585,9 +601,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const fetchAllFieldsCommand = commands[4];
-                    const testPlanIdCommand = commands[5];
-                    const convertCommand = commands[6];
+                    const fetchAllFieldsCommand = commands[5];
+                    const testPlanIdCommand = commands[6];
+                    const convertCommand = commands[7];
                     assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
                     assertIsInstanceOf(testPlanIdCommand, ExtractFieldIdCommand);
                     // Vertex data.
@@ -604,8 +620,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(testPlanIdCommand)]).to.deep.eq([
                         convertCommand,
                     ]);
-                    expect(graph.size("vertices")).to.eq(13);
-                    expect(graph.size("edges")).to.eq(13);
+                    expect(graph.size("vertices")).to.eq(14);
+                    expect(graph.size("edges")).to.eq(14);
                 });
 
                 it("uses configured test plan data with hardcoded test plan ids", async () => {
@@ -623,8 +639,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const testPlanIdCommand = commands[4];
-                    const convertCommand = commands[5];
+                    const testPlanIdCommand = commands[5];
+                    const convertCommand = commands[6];
                     assertIsInstanceOf(testPlanIdCommand, ConstantCommand);
                     // Vertex data.
                     expect(testPlanIdCommand.getValue()).to.eq("customfield_12345");
@@ -632,8 +648,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(testPlanIdCommand)]).to.deep.eq([
                         convertCommand,
                     ]);
-                    expect(graph.size("vertices")).to.eq(12);
-                    expect(graph.size("edges")).to.eq(12);
+                    expect(graph.size("vertices")).to.eq(13);
+                    expect(graph.size("edges")).to.eq(13);
                 });
 
                 it("uses configured test environment data", async () => {
@@ -650,9 +666,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const fetchAllFieldsCommand = commands[4];
-                    const testEnvironmentsIdCommand = commands[5];
-                    const convertCommand = commands[6];
+                    const fetchAllFieldsCommand = commands[5];
+                    const testEnvironmentsIdCommand = commands[6];
+                    const convertCommand = commands[7];
                     assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
                     assertIsInstanceOf(testEnvironmentsIdCommand, ExtractFieldIdCommand);
                     // Vertex data.
@@ -669,8 +685,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
                         convertCommand,
                     ]);
-                    expect(graph.size("vertices")).to.eq(13);
-                    expect(graph.size("edges")).to.eq(13);
+                    expect(graph.size("vertices")).to.eq(14);
+                    expect(graph.size("edges")).to.eq(14);
                 });
 
                 it("uses configured test environment data with hardcoded test environment ids", async () => {
@@ -688,8 +704,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const testEnvironmentsIdCommand = commands[4];
-                    const convertCommand = commands[5];
+                    const testEnvironmentsIdCommand = commands[5];
+                    const convertCommand = commands[6];
                     assertIsInstanceOf(testEnvironmentsIdCommand, ConstantCommand);
                     // Vertex data.
                     expect(testEnvironmentsIdCommand.getValue()).to.eq("customfield_67890");
@@ -697,8 +713,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
                         convertCommand,
                     ]);
-                    expect(graph.size("vertices")).to.eq(12);
-                    expect(graph.size("edges")).to.eq(12);
+                    expect(graph.size("vertices")).to.eq(13);
+                    expect(graph.size("edges")).to.eq(13);
                 });
 
                 it("uses configured test plan and environment data", async () => {
@@ -716,10 +732,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const fetchAllFieldsCommand = commands[4];
-                    const testPlanIdCommand = commands[5];
-                    const testEnvironmentsIdCommand = commands[6];
-                    const convertCommand = commands[7];
+                    const fetchAllFieldsCommand = commands[5];
+                    const testPlanIdCommand = commands[6];
+                    const testEnvironmentsIdCommand = commands[7];
+                    const convertCommand = commands[8];
                     assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
                     assertIsInstanceOf(testPlanIdCommand, ExtractFieldIdCommand);
                     assertIsInstanceOf(testEnvironmentsIdCommand, ExtractFieldIdCommand);
@@ -734,8 +750,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
                         convertCommand,
                     ]);
-                    expect(graph.size("vertices")).to.eq(14);
-                    expect(graph.size("edges")).to.eq(15);
+                    expect(graph.size("vertices")).to.eq(15);
+                    expect(graph.size("edges")).to.eq(16);
                 });
 
                 it("uses configured test plan and environment data with hardcoded ids", async () => {
@@ -755,9 +771,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const testPlanIdCommand = commands[4];
-                    const testEnvironmentsIdCommand = commands[5];
-                    const convertCommand = commands[6];
+                    const testPlanIdCommand = commands[5];
+                    const testEnvironmentsIdCommand = commands[6];
+                    const convertCommand = commands[7];
                     assertIsInstanceOf(testPlanIdCommand, ConstantCommand);
                     assertIsInstanceOf(testEnvironmentsIdCommand, ConstantCommand);
                     // Vertex data.
@@ -770,8 +786,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
                         convertCommand,
                     ]);
-                    expect(graph.size("vertices")).to.eq(13);
-                    expect(graph.size("edges")).to.eq(13);
+                    expect(graph.size("vertices")).to.eq(14);
+                    expect(graph.size("edges")).to.eq(14);
                 });
             });
 
@@ -793,9 +809,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const extractExecutionIssueTypeCommand = commands[3];
-                    const convertCommand = commands[4];
-                    const convertCucumberFeaturesCommand = commands[5];
+                    const extractExecutionIssueTypeCommand = commands[4];
+                    const convertCommand = commands[5];
+                    const convertCucumberFeaturesCommand = commands[6];
                     assertIsInstanceOf(
                         extractExecutionIssueTypeCommand,
                         ExtractExecutionIssueTypeCommand
@@ -839,7 +855,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                             uploadScreenshots: true,
                         },
                     });
-                    expect(graph.size("vertices")).to.eq(11);
+                    expect(graph.size("vertices")).to.eq(12);
                 });
 
                 it("uses configured test execution issue data", async () => {
@@ -1104,7 +1120,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const importFeatureCommand1 = commands[0];
                 const importFeatureCommand2 = commands[1];
                 const importFeatureCommand3 = commands[2];
-                const importCucumberExecutionCommand = commands[11];
+                const importCucumberExecutionCommand = commands[12];
                 // Edges.
                 expect([...graph.getSuccessors(importFeatureCommand1)]).to.contain(
                     importCucumberExecutionCommand
@@ -1113,8 +1129,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     importCucumberExecutionCommand,
                 ]);
                 expect([...graph.getSuccessors(importFeatureCommand3)]).to.be.empty;
-                expect(graph.size("vertices")).to.eq(14);
-                expect(graph.size("edges")).to.eq(13);
+                expect(graph.size("vertices")).to.eq(15);
+                expect(graph.size("edges")).to.eq(14);
             });
         });
 
@@ -1162,6 +1178,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const [
                     cypressResultsCommand,
                     convertCypressTestsCommand,
+                    executionIssueSummaryCommand,
                     fetchIssueTypesCommand,
                     extractExecutionIssueTypeCommand,
                     convertCommand,
@@ -1179,6 +1196,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ] = [...graph.getVertices()];
                 assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
                 assertIsInstanceOf(convertCypressTestsCommand, ConvertCypressTestsCommand);
+                assertIsInstanceOf(executionIssueSummaryCommand, ConstantCommand);
                 assertIsInstanceOf(fetchIssueTypesCommand, FetchIssueTypesCommand);
                 assertIsInstanceOf(
                     extractExecutionIssueTypeCommand,
@@ -1215,6 +1233,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudStatusFallback: false,
                     xray: options.xray,
                 });
+                expect(executionIssueSummaryCommand.getValue()).to.deep.eq(
+                    "Execution Results [2023-07-23T21:26:15.539Z]"
+                );
                 expect(fetchIssueTypesCommand.getParameters()).to.deep.eq({
                     jiraClient: clients.jiraClient,
                 });
@@ -1286,6 +1307,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect([...graph.getSuccessors(convertCypressTestsCommand)]).to.deep.eq([
                     combineCypressJsonCommand,
                 ]);
+                expect([...graph.getSuccessors(executionIssueSummaryCommand)]).to.deep.eq([
+                    convertCommand,
+                ]);
                 expect([...graph.getSuccessors(fetchIssueTypesCommand)]).to.deep.eq([
                     extractExecutionIssueTypeCommand,
                 ]);
@@ -1330,8 +1354,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect([...graph.getSuccessors(fallbackCucumberUploadCommand)]).to.deep.eq([
                     verifyResultsUploadCommand,
                 ]);
-                expect(graph.size("vertices")).to.eq(16);
-                expect(graph.size("edges")).to.eq(20);
+                expect(graph.size("vertices")).to.eq(17);
+                expect(graph.size("edges")).to.eq(21);
             });
         });
     });

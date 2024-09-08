@@ -65,7 +65,7 @@ export async function addUploadCommands(
     let importCucumberExecutionCommand: ImportExecutionCucumberCommand | null = null;
     if (containsCypressTests) {
         importCypressExecutionCommand = await getImportExecutionCypressCommand(
-            cypressResultsCommand,
+            runResult,
             options,
             clients,
             evidenceCollection,
@@ -151,13 +151,14 @@ export async function addUploadCommands(
 }
 
 async function getImportExecutionCypressCommand(
-    cypressResultsCommand: Command<CypressRunResultType>,
+    runResult: CypressRunResultType,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     evidenceCollection: EvidenceCollection,
     graph: ExecutableGraph<Command>,
     logger: Logger
 ) {
+    const cypressResultsCommand = getOrCreateConstantCommand(graph, logger, runResult);
     const convertCypressTestsCommand = graph.place(
         new ConvertCypressTestsCommand(
             {
@@ -174,6 +175,7 @@ async function getImportExecutionCypressCommand(
     );
     graph.connect(cypressResultsCommand, convertCypressTestsCommand);
     const convertMultipartInfoCommand = await getConvertMultipartInfoCommand(
+        runResult,
         options,
         clients,
         graph,
@@ -236,6 +238,7 @@ async function getImportExecutionCucumberCommand(
 ) {
     const cypressResultsCommand = getOrCreateConstantCommand(graph, logger, runResult);
     const convertMultipartInfoCommand = await getConvertMultipartInfoCommand(
+        runResult,
         options,
         clients,
         graph,
@@ -330,7 +333,9 @@ async function getExtractExecutionIssueTypeCommand(
                 {
                     displayCloudHelp: clients.kind === "cloud",
                     projectKey: options.jira.projectKey,
-                    testExecutionIssueType: { name: "Test Execution" },
+                    testExecutionIssueType: {
+                        name: "Test Execution",
+                    },
                 },
                 logger,
                 fetchIssueTypesCommand
@@ -342,6 +347,7 @@ async function getExtractExecutionIssueTypeCommand(
 }
 
 async function getExecutionIssueSummaryCommand(
+    runResult: CypressRunResultType,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
@@ -374,9 +380,15 @@ async function getExecutionIssueSummaryCommand(
         graph.connect(getSummaryValuesCommand, destructureCommand);
         return destructureCommand;
     }
+    return getOrCreateConstantCommand(
+        graph,
+        logger,
+        `Execution Results [${runResult.startedTestsAt}]`
+    );
 }
 
 async function getConvertMultipartInfoCommand(
+    runResult: CypressRunResultType,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
@@ -401,6 +413,7 @@ async function getConvertMultipartInfoCommand(
         return convertCommand;
     }
     const executionIssueSummaryCommand = await getExecutionIssueSummaryCommand(
+        runResult,
         options,
         clients,
         graph,
@@ -417,10 +430,10 @@ async function getConvertMultipartInfoCommand(
             new ConvertInfoCloudCommand(
                 { jira: options.jira, xray: options.xray },
                 logger,
-                extractExecutionIssueTypeCommand,
                 cypressResultsCommand,
                 {
                     summary: executionIssueSummaryCommand,
+                    testExecutionIssueType: extractExecutionIssueTypeCommand,
                 }
             )
         );
@@ -451,7 +464,6 @@ async function getConvertMultipartInfoCommand(
             new ConvertInfoServerCommand(
                 { jira: options.jira, xray: options.xray },
                 logger,
-                extractExecutionIssueTypeCommand,
                 cypressResultsCommand,
                 {
                     fieldIds: {
@@ -459,6 +471,7 @@ async function getConvertMultipartInfoCommand(
                         testPlanId: testPlanIdCommand,
                     },
                     summary: executionIssueSummaryCommand,
+                    testExecutionIssueType: extractExecutionIssueTypeCommand,
                 }
             )
         );
@@ -469,11 +482,9 @@ async function getConvertMultipartInfoCommand(
             graph.connect(testEnvironmentsIdCommand, convertCommand);
         }
     }
+    graph.connect(executionIssueSummaryCommand, convertCommand);
     graph.connect(extractExecutionIssueTypeCommand, convertCommand);
     graph.connect(cypressResultsCommand, convertCommand);
-    if (executionIssueSummaryCommand) {
-        graph.connect(executionIssueSummaryCommand, convertCommand);
-    }
     return convertCommand;
 }
 
