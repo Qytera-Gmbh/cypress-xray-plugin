@@ -151,11 +151,7 @@ export function initJiraOptions(
         },
         projectKey: projectKey,
         testExecutionIssue:
-            parse(
-                env,
-                ENV_NAMES.jira.testExecutionIssue,
-                asObject<typeof options.testExecutionIssue>
-            ) ?? options.testExecutionIssue,
+            parse(env, ENV_NAMES.jira.testExecutionIssue, asObject) ?? options.testExecutionIssue,
         testPlanIssueKey:
             parse(env, ENV_NAMES.jira.testPlanIssueKey, asString) ?? options.testPlanIssueKey,
         url: parse(env, ENV_NAMES.jira.url, asString) ?? options.url,
