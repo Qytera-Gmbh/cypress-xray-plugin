@@ -5,10 +5,9 @@ import { extractString } from "../../../../util/extraction";
 import { Logger } from "../../../../util/logging";
 import { Computable } from "../../../command";
 import { ConstantCommand } from "../constant-command";
-import { JiraField } from "./extract-field-id-command";
 import { GetFieldValuesCommand } from "./get-field-values-command";
 
-export class GetSummaryValuesCommand extends GetFieldValuesCommand<JiraField.SUMMARY> {
+export class GetSummaryValuesCommand extends GetFieldValuesCommand<string> {
     constructor(
         parameters: { jiraClient: JiraClient },
         logger: Logger,

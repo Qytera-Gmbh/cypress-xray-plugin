@@ -116,7 +116,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         summary: "bonjour",
                         testEnvironments: "field_123",
                         testPlan: "there",
-                        testType: "!",
                     },
                     projectKey: "ABC",
                     testExecutionIssue: {
@@ -160,7 +159,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     summary: "bonjour",
                     testEnvironments: "field_123",
                     testPlan: "there",
-                    testType: "!",
                 },
                 projectKey: "ABC",
                 testExecutionIssue: {

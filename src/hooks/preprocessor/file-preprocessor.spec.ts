@@ -12,7 +12,6 @@ import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Command } from "../command";
 import { EditIssueFieldCommand } from "../util/commands/jira/edit-issue-field-command";
-import { JiraField } from "../util/commands/jira/extract-field-id-command";
 import { GetLabelValuesCommand } from "../util/commands/jira/get-label-values-command";
 import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command";
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
@@ -107,12 +106,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             assertIsInstanceOf(commands[10], GetLabelsToResetCommand);
             assertIsInstanceOf(commands[11], EditIssueFieldCommand);
             expect(commands[11].getParameters()).to.deep.eq({
-                field: JiraField.SUMMARY,
+                fieldId: "summary",
                 jiraClient: clients.jiraClient,
             });
             assertIsInstanceOf(commands[12], EditIssueFieldCommand);
             expect(commands[12].getParameters()).to.deep.eq({
-                field: JiraField.LABELS,
+                fieldId: "labels",
                 jiraClient: clients.jiraClient,
             });
             expect(graph.size("vertices")).to.eq(13);

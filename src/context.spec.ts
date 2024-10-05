@@ -73,9 +73,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         it("testPlan", () => {
                             expect(jiraOptions.fields.testPlan).to.eq(undefined);
                         });
-                        it("testType", () => {
-                            expect(jiraOptions.fields.testType).to.eq(undefined);
-                        });
                     });
                     it("testExecutionIssue", () => {
                         expect(jiraOptions.testExecutionIssue).to.eq(undefined);
@@ -272,19 +269,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 }
                             );
                             expect(jiraOptions.fields.testPlan).to.eq("Plan de Test");
-                        });
-                        it("testType", () => {
-                            const jiraOptions = initJiraOptions(
-                                {},
-                                {
-                                    fields: {
-                                        testType: "Xray Test Type",
-                                    },
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
-                                }
-                            );
-                            expect(jiraOptions.fields.testType).to.eq("Xray Test Type");
                         });
                     });
                     it("testExecutionIssue", () => {
@@ -729,20 +713,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 url: "https://example.org",
                             });
                             expect(jiraOptions.fields.testPlan).to.eq("customfield_98765");
-                        });
-
-                        it("JIRA_FIELDS_TEST_TYPE", () => {
-                            const env = {
-                                ["JIRA_FIELDS_TEST_TYPE"]: "customfield_98765",
-                            };
-                            const jiraOptions = initJiraOptions(env, {
-                                fields: {
-                                    testType: "customfield_12345",
-                                },
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            });
-                            expect(jiraOptions.fields.testType).to.eq("customfield_98765");
                         });
                     });
 

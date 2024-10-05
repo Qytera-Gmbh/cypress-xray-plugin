@@ -1,6 +1,5 @@
 import { Command } from "../command";
 import { EditIssueFieldCommand } from "../util/commands/jira/edit-issue-field-command";
-import { JiraField } from "../util/commands/jira/extract-field-id-command";
 import { GetLabelValuesCommand } from "../util/commands/jira/get-label-values-command";
 import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command";
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
@@ -64,7 +63,6 @@ export function addSynchronizationCommands(
         new GetLabelValuesCommand(
             { jiraClient: clients.jiraClient },
             logger,
-            new ConstantCommand(logger, "labels"),
             extractIssueKeysCommand
         )
     );
@@ -106,7 +104,6 @@ export function addSynchronizationCommands(
         new GetLabelValuesCommand(
             { jiraClient: clients.jiraClient },
             logger,
-            new ConstantCommand(logger, "labels"),
             extractIssueKeysCommand
         )
     );
@@ -124,7 +121,7 @@ export function addSynchronizationCommands(
     graph.connect(getNewLabelsCommand, getLabelsToResetCommand);
     const editSummariesCommand = graph.place(
         new EditIssueFieldCommand(
-            { field: JiraField.SUMMARY, jiraClient: clients.jiraClient },
+            { fieldId: "summary", jiraClient: clients.jiraClient },
             logger,
             new ConstantCommand(logger, "summary"),
             getSummariesToResetCommand
@@ -133,7 +130,7 @@ export function addSynchronizationCommands(
     graph.connect(getSummariesToResetCommand, editSummariesCommand);
     const editLabelsCommand = graph.place(
         new EditIssueFieldCommand(
-            { field: JiraField.LABELS, jiraClient: clients.jiraClient },
+            { fieldId: "labels", jiraClient: clients.jiraClient },
             logger,
             new ConstantCommand(logger, "labels"),
             getLabelsToResetCommand

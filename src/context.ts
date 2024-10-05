@@ -161,8 +161,6 @@ export function initJiraOptions(
                 options.fields?.testEnvironments,
             testPlan:
                 parse(env, ENV_NAMES.jira.fields.testPlan, asString) ?? options.fields?.testPlan,
-            testType:
-                parse(env, ENV_NAMES.jira.fields.testType, asString) ?? options.fields?.testType,
         },
         projectKey: projectKey,
         testExecutionIssue:
