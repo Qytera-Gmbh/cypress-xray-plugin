@@ -1,4 +1,5 @@
-import { expect } from "chai";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import path from "path";
 import { useFakeTimers } from "sinon";
@@ -51,6 +52,11 @@ import { ExtractVideoFilesCommand } from "./commands/extract-video-files-command
 import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issue-key-command";
 import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-command";
 
+// REMOVE IN VERSION 8.0.0
+/* eslint-disable @typescript-eslint/no-deprecated */
+
+chai.use(chaiAsPromised);
+
 describe(path.relative(process.cwd(), __filename), () => {
     let clients: ClientCombination;
     let options: InternalCypressXrayPluginOptions;
@@ -102,9 +108,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ) as CypressRunResultType;
             });
 
-            it("adds commands necessary for cypress results upload", () => {
+            it("adds commands necessary for cypress results upload", async () => {
                 const graph = new ExecutableGraph<Command>();
-                addUploadCommands(
+                await addUploadCommands(
                     result,
                     ".",
                     options,
@@ -203,11 +209,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(graph.size("edges")).to.eq(11);
             });
 
-            it("uses configured test execution issue keys", () => {
+            it("uses configured test execution issue keys", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.testExecutionIssueKey = "CYP-415";
                 options.jira.testExecutionIssueType = "Test Run";
-                addUploadCommands(
+                await addUploadCommands(
                     result,
                     ".",
                     options,
@@ -245,7 +251,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     displayCloudHelp: false,
                     importType: "cypress",
                     testExecutionIssueKey: "CYP-415",
-                    testExecutionIssueType: "Test Run",
+                    testExecutionIssueType: { name: "Test Run" },
                 });
                 // Edges.
                 expect([...graph.getSuccessors(issueKeysCommand)]).to.deep.eq([
@@ -263,11 +269,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(graph.size("edges")).to.eq(15);
             });
 
-            it("uses configured test execution issue data with known fields", () => {
+            it("uses configured test execution issue data with known fields", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.testExecutionIssueKey = "CYP-415";
                 options.jira.testExecutionIssueType = "Test Run";
-                addUploadCommands(
+                await addUploadCommands(
                     result,
                     ".",
                     options,
@@ -297,10 +303,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(graph.size("edges")).to.eq(15);
             });
 
-            it("uses configured summaries", () => {
+            it("uses configured summaries", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.testExecutionIssueSummary = "My summary";
-                addUploadCommands(
+                await addUploadCommands(
                     result,
                     ".",
                     options,
@@ -325,7 +331,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(graph.size("edges")).to.eq(12);
             });
 
-            it("uses configured custom issue data", () => {
+            it("uses configured custom issue data", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.testExecutionIssue = {
                     fields: {
@@ -333,7 +339,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         ["customfield_12345"]: "bonjour",
                     },
                 };
-                addUploadCommands(
+                await addUploadCommands(
                     result,
                     ".",
                     options,
@@ -363,10 +369,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(graph.size("edges")).to.eq(12);
             });
 
-            it("attaches videos", () => {
+            it("attaches videos", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.attachVideos = true;
-                addUploadCommands(
+                await addUploadCommands(
                     result,
                     ".",
                     options,
@@ -431,10 +437,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
 
             describe("server", () => {
-                it("adds commands necessary for cucumber results upload", () => {
+                it("adds commands necessary for cucumber results upload", async () => {
                     useFakeTimers(new Date(12345));
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(
+                    await addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -492,7 +498,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
                         displayCloudHelp: false,
                         projectKey: "CYP",
-                        testExecutionIssueType: "Test Execution",
+                        testExecutionIssueType: { name: "Test Execution" },
                     });
                     expect(convertMultipartInfoCommand.getParameters()).to.deep.eq({
                         jira: options.jira,
@@ -507,9 +513,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         },
                         jira: {
                             projectKey: "CYP",
-                            testExecutionIssueDescription: undefined,
-                            testExecutionIssueSummary: undefined,
-                            testPlanIssueKey: undefined,
                         },
                         projectRoot: ".",
                         useCloudTags: false,
@@ -573,10 +576,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(graph.size("edges")).to.eq(11);
                 });
 
-                it("uses configured test plan data", () => {
+                it("uses configured test plan data", async () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(
+                    await addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -610,11 +613,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(graph.size("edges")).to.eq(13);
                 });
 
-                it("uses configured test plan data with hardcoded test plan ids", () => {
+                it("uses configured test plan data with hardcoded test plan ids", async () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     options.jira.fields.testPlan = "customfield_12345";
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(
+                    await addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -638,10 +641,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(graph.size("edges")).to.eq(12);
                 });
 
-                it("uses configured test environment data", () => {
+                it("uses configured test environment data", async () => {
                     options.xray.testEnvironments = ["DEV"];
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(
+                    await addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -675,11 +678,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(graph.size("edges")).to.eq(13);
                 });
 
-                it("uses configured test environment data with hardcoded test environment ids", () => {
+                it("uses configured test environment data with hardcoded test environment ids", async () => {
                     options.xray.testEnvironments = ["DEV"];
                     options.jira.fields.testEnvironments = "customfield_67890";
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(
+                    await addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -703,11 +706,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(graph.size("edges")).to.eq(12);
                 });
 
-                it("uses configured test plan and environment data", () => {
+                it("uses configured test plan and environment data", async () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     options.xray.testEnvironments = ["DEV"];
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(
+                    await addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -740,13 +743,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(graph.size("edges")).to.eq(15);
                 });
 
-                it("uses configured test plan and environment data with hardcoded ids", () => {
+                it("uses configured test plan and environment data with hardcoded ids", async () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     options.jira.fields.testPlan = "customfield_12345";
                     options.xray.testEnvironments = ["DEV"];
                     options.jira.fields.testEnvironments = "customfield_67890";
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(
+                    await addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -782,9 +785,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     clients.kind = "cloud";
                 });
 
-                it("adds commands necessary for cucumber results upload", () => {
+                it("adds commands necessary for cucumber results upload", async () => {
                     const graph = new ExecutableGraph<Command>();
-                    addUploadCommands(
+                    await addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -806,7 +809,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
                         displayCloudHelp: true,
                         projectKey: "CYP",
-                        testExecutionIssueType: "Test Execution",
+                        testExecutionIssueType: { name: "Test Execution" },
                     });
                     expect(convertCommand.getParameters()).to.deep.eq({
                         jira: options.jira,
@@ -821,9 +824,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         },
                         jira: {
                             projectKey: "CYP",
-                            testExecutionIssueDescription: undefined,
-                            testExecutionIssueSummary: undefined,
-                            testPlanIssueKey: undefined,
                         },
                         projectRoot: ".",
                         useCloudTags: true,
@@ -847,11 +847,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(graph.size("vertices")).to.eq(11);
                 });
 
-                it("uses configured test execution issue data", () => {
+                it("uses configured test execution issue data", async () => {
                     const graph = new ExecutableGraph<Command>();
                     options.jira.testExecutionIssueKey = "CYP-42";
                     options.jira.testExecutionIssueType = "Test Run";
-                    addUploadCommands(
+                    await addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -923,7 +923,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
                         displayCloudHelp: true,
                         projectKey: "CYP",
-                        testExecutionIssueType: "Test Run",
+                        testExecutionIssueType: { name: "Test Run" },
                     });
                     expect(issueKeysCommand.getValue()).to.deep.eq(["CYP-42"]);
                     expect(getSummaryValuesCommand.getParameters()).to.deep.eq({
@@ -943,9 +943,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         },
                         jira: {
                             projectKey: "CYP",
-                            testExecutionIssueDescription: undefined,
-                            testExecutionIssueSummary: undefined,
-                            testPlanIssueKey: undefined,
                         },
                         projectRoot: ".",
                         useCloudTags: true,
@@ -973,7 +970,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         displayCloudHelp: true,
                         importType: "cucumber",
                         testExecutionIssueKey: "CYP-42",
-                        testExecutionIssueType: "Test Run",
+                        testExecutionIssueType: { name: "Test Run" },
                     });
                     // Edges.
                     expect([...graph.getSuccessors(cypressResultsCommand)]).to.contain(
@@ -1025,11 +1022,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                 });
             });
 
-            it("throws if the cucumber report was not configured", () => {
+            it("throws if the cucumber report was not configured", async () => {
                 const graph = new ExecutableGraph<Command>();
                 const preprocessorOptions = options.cucumber as InternalCucumberOptions;
                 preprocessorOptions.preprocessor = undefined;
-                expect(() => {
+                await expect(
                     addUploadCommands(
                         cypressResult,
                         ".",
@@ -1038,17 +1035,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                         new SimpleEvidenceCollection(),
                         graph,
                         getMockedLogger()
-                    );
-                }).to.throw(
+                    )
+                ).to.eventually.be.rejectedWith(
                     "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured"
                 );
             });
 
-            it("does not add any commands if neither cypress nor cucumber results exist", () => {
+            it("does not add any commands if neither cypress nor cucumber results exist", async () => {
                 const logger = getMockedLogger();
                 cypressResult.runs = [];
                 const graph = new ExecutableGraph<Command>();
-                addUploadCommands(
+                await addUploadCommands(
                     cypressResult,
                     ".",
                     options,
@@ -1065,7 +1062,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
             });
 
-            it("adds connections from feature file imports to execution uploads", () => {
+            it("adds connections from feature file imports to execution uploads", async () => {
                 options.cucumber = {
                     downloadFeatures: false,
                     featureFileExtension: ".feature",
@@ -1107,7 +1104,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         logger
                     )
                 );
-                addUploadCommands(
+                await addUploadCommands(
                     cypressResult,
                     ".",
                     options,
@@ -1163,10 +1160,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 };
             });
 
-            it("adds commands necessary for mixed results upload", () => {
+            it("adds commands necessary for mixed results upload", async () => {
                 useFakeTimers(new Date(12345));
                 const graph = new ExecutableGraph<Command>();
-                addUploadCommands(
+                await addUploadCommands(
                     cypressResult,
                     ".",
                     options,
@@ -1238,7 +1235,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(extractExecutionIssueTypeCommand.getParameters()).to.deep.eq({
                     displayCloudHelp: false,
                     projectKey: "CYP",
-                    testExecutionIssueType: "Test Execution",
+                    testExecutionIssueType: { name: "Test Execution" },
                 });
                 expect(convertCommand.getParameters()).to.deep.eq({
                     jira: options.jira,
@@ -1264,9 +1261,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     jira: {
                         projectKey: "CYP",
-                        testExecutionIssueDescription: undefined,
-                        testExecutionIssueSummary: undefined,
-                        testPlanIssueKey: undefined,
                     },
                     projectRoot: ".",
                     useCloudTags: false,

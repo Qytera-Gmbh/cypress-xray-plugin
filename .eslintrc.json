@@ -109,7 +109,8 @@
             "files": ["*.spec.ts"],
             "rules": {
                 // Clashes with sinon/chai assertions like: expect(method).to.not.have.been.called
-                "@typescript-eslint/unbound-method": "off"
+                "@typescript-eslint/unbound-method": "off",
+                "@typescript-eslint/no-unused-expressions": "off"
             }
         }
     ]

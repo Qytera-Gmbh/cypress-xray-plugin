@@ -6,6 +6,7 @@ import { IssueUpdate } from "../../types/jira/responses/issue-update";
 import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { MaybeFunction } from "../../types/util";
 import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
+import { getOrCall } from "../../util/functions";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Level, Logger } from "../../util/logging";
 import { Command, ComputableState } from "../command";
@@ -37,7 +38,10 @@ import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issu
 import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-command";
 import { containsCucumberTest, containsCypressTest } from "./util";
 
-export function addUploadCommands(
+// REMOVE IN VERSION 8.0.0
+/* eslint-disable @typescript-eslint/no-deprecated */
+
+export async function addUploadCommands(
     runResult: CypressRunResultType,
     projectRoot: string,
     options: InternalCypressXrayPluginOptions,
@@ -45,7 +49,7 @@ export function addUploadCommands(
     evidenceCollection: EvidenceCollection,
     graph: ExecutableGraph<Command>,
     logger: Logger
-): void {
+) {
     const containsCypressTests = containsCypressTest(
         runResult,
         options.cucumber?.featureFileExtension
@@ -65,7 +69,7 @@ export function addUploadCommands(
     let importCypressExecutionCommand: ImportExecutionCypressCommand | null = null;
     let importCucumberExecutionCommand: ImportExecutionCucumberCommand | null = null;
     if (containsCypressTests) {
-        importCypressExecutionCommand = getImportExecutionCypressCommand(
+        importCypressExecutionCommand = await getImportExecutionCypressCommand(
             cypressResultsCommand,
             options,
             clients,
@@ -88,11 +92,12 @@ export function addUploadCommands(
         ) as CucumberMultipartFeature[];
         const cucumberResultsCommand = getOrCreateConstantCommand(graph, logger, cucumberResults);
         let testExecutionIssueKeyCommand: Command<string | undefined> | undefined = undefined;
-        if (options.jira.testExecutionIssueKey) {
+        const issueData = await getOrCall(options.jira.testExecutionIssue);
+        if (issueData?.key ?? options.jira.testExecutionIssueKey) {
             testExecutionIssueKeyCommand = getOrCreateConstantCommand(
                 graph,
                 logger,
-                options.jira.testExecutionIssueKey
+                issueData?.key ?? options.jira.testExecutionIssueKey
             );
         } else if (importCypressExecutionCommand) {
             // Use an optional command in case the Cypress import fails. We could then still upload
@@ -110,7 +115,7 @@ export function addUploadCommands(
             graph.connect(importCypressExecutionCommand, fallbackExecutionIssueKeyCommand, true);
             testExecutionIssueKeyCommand = fallbackExecutionIssueKeyCommand;
         }
-        importCucumberExecutionCommand = getImportExecutionCucumberCommand(
+        importCucumberExecutionCommand = await getImportExecutionCucumberCommand(
             runResult,
             cucumberResultsCommand,
             projectRoot,
@@ -154,14 +159,14 @@ export function addUploadCommands(
     );
 }
 
-function getImportExecutionCypressCommand(
+async function getImportExecutionCypressCommand(
     cypressResultsCommand: Command<CypressRunResultType>,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     evidenceCollection: EvidenceCollection,
     graph: ExecutableGraph<Command>,
     logger: Logger
-): ImportExecutionCypressCommand {
+) {
     const convertCypressTestsCommand = graph.place(
         new ConvertCypressTestsCommand(
             {
@@ -177,7 +182,7 @@ function getImportExecutionCypressCommand(
         )
     );
     graph.connect(cypressResultsCommand, convertCypressTestsCommand);
-    const convertMultipartInfoCommand = getConvertMultipartInfoCommand(
+    const convertMultipartInfoCommand = await getConvertMultipartInfoCommand(
         options,
         clients,
         graph,
@@ -185,9 +190,12 @@ function getImportExecutionCypressCommand(
         cypressResultsCommand
     );
 
+    const issueData = await getOrCall(options.jira.testExecutionIssue);
     const combineResultsJsonCommand = graph.place(
         new CombineCypressJsonCommand(
-            { testExecutionIssueKey: options.jira.testExecutionIssueKey },
+            {
+                testExecutionIssueKey: issueData?.key ?? options.jira.testExecutionIssueKey,
+            },
             logger,
             convertCypressTestsCommand,
             convertMultipartInfoCommand
@@ -208,14 +216,16 @@ function getImportExecutionCypressCommand(
     );
     graph.connect(assertConversionValidCommand, importCypressExecutionCommand);
     graph.connect(combineResultsJsonCommand, importCypressExecutionCommand);
-    if (options.jira.testExecutionIssueKey) {
+    if (issueData?.key ?? options.jira.testExecutionIssueKey) {
         const verifyExecutionIssueKeyCommand = graph.place(
             new VerifyExecutionIssueKeyCommand(
                 {
                     displayCloudHelp: clients.kind === "cloud",
                     importType: "cypress",
-                    testExecutionIssueKey: options.jira.testExecutionIssueKey,
-                    testExecutionIssueType: options.jira.testExecutionIssueType,
+                    testExecutionIssueKey: issueData?.key ?? options.jira.testExecutionIssueKey,
+                    testExecutionIssueType: issueData?.fields?.issuetype ?? {
+                        name: options.jira.testExecutionIssueType,
+                    },
                 },
                 logger,
                 importCypressExecutionCommand
@@ -226,7 +236,7 @@ function getImportExecutionCypressCommand(
     return importCypressExecutionCommand;
 }
 
-function getImportExecutionCucumberCommand(
+async function getImportExecutionCucumberCommand(
     runResult: CypressRunResultType,
     cucumberResultsCommand: ConstantCommand<CucumberMultipartFeature[]>,
     projectRoot: string,
@@ -235,9 +245,9 @@ function getImportExecutionCucumberCommand(
     graph: ExecutableGraph<Command>,
     logger: Logger,
     testExecutionIssueKeyCommand?: Command<string | undefined>
-): ImportExecutionCucumberCommand {
+) {
     const cypressResultsCommand = getOrCreateConstantCommand(graph, logger, runResult);
-    const convertMultipartInfoCommand = getConvertMultipartInfoCommand(
+    const convertMultipartInfoCommand = await getConvertMultipartInfoCommand(
         options,
         clients,
         graph,
@@ -255,9 +265,6 @@ function getImportExecutionCucumberCommand(
                 },
                 jira: {
                     projectKey: options.jira.projectKey,
-                    testExecutionIssueDescription: options.jira.testExecutionIssueDescription,
-                    testExecutionIssueSummary: options.jira.testExecutionIssueSummary,
-                    testPlanIssueKey: options.jira.testPlanIssueKey,
                 },
                 projectRoot: projectRoot,
                 useCloudTags: clients.kind === "cloud",
@@ -298,14 +305,17 @@ function getImportExecutionCucumberCommand(
     );
     graph.connect(assertConversionValidCommand, importCucumberExecutionCommand);
     graph.connect(combineCucumberMultipartCommand, importCucumberExecutionCommand);
-    if (options.jira.testExecutionIssueKey) {
+    const issueData = await getOrCall(options.jira.testExecutionIssue);
+    if (issueData?.key ?? options.jira.testExecutionIssueKey) {
         const verifyExecutionIssueKeyCommand = graph.place(
             new VerifyExecutionIssueKeyCommand(
                 {
                     displayCloudHelp: clients.kind === "cloud",
                     importType: "cucumber",
-                    testExecutionIssueKey: options.jira.testExecutionIssueKey,
-                    testExecutionIssueType: options.jira.testExecutionIssueType,
+                    testExecutionIssueKey: issueData?.key ?? options.jira.testExecutionIssueKey,
+                    testExecutionIssueType: issueData?.fields?.issuetype ?? {
+                        name: options.jira.testExecutionIssueType,
+                    },
                 },
                 logger,
                 importCucumberExecutionCommand
@@ -316,12 +326,16 @@ function getImportExecutionCucumberCommand(
     return importCucumberExecutionCommand;
 }
 
-function getExtractExecutionIssueTypeCommand(
+async function getExtractExecutionIssueTypeCommand(
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
     logger: Logger
-): ExtractExecutionIssueTypeCommand {
+) {
+    const issueData = await getOrCall(options.jira.testExecutionIssue);
+    if (issueData?.fields?.issuetype) {
+        return getOrCreateConstantCommand(graph, logger, issueData.fields.issuetype);
+    }
     const fetchIssueTypesCommand = graph.findOrDefault(FetchIssueTypesCommand, () =>
         graph.place(new FetchIssueTypesCommand({ jiraClient: clients.jiraClient }, logger))
     );
@@ -331,7 +345,9 @@ function getExtractExecutionIssueTypeCommand(
                 {
                     displayCloudHelp: clients.kind === "cloud",
                     projectKey: options.jira.projectKey,
-                    testExecutionIssueType: options.jira.testExecutionIssueType,
+                    testExecutionIssueType: issueData?.fields?.issuetype ?? {
+                        name: options.jira.testExecutionIssueType,
+                    },
                 },
                 logger,
                 fetchIssueTypesCommand
@@ -342,19 +358,21 @@ function getExtractExecutionIssueTypeCommand(
     });
 }
 
-function getExecutionIssueSummaryCommand(
+async function getExecutionIssueSummaryCommand(
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
     logger: Logger
-): Command<string> | undefined {
-    if (options.jira.testExecutionIssueSummary) {
-        return getOrCreateConstantCommand(graph, logger, options.jira.testExecutionIssueSummary);
+) {
+    const issueData = await getOrCall(options.jira.testExecutionIssue);
+    const testExecutionIssueSummary =
+        issueData?.fields?.summary ?? options.jira.testExecutionIssueSummary;
+    if (testExecutionIssueSummary) {
+        return getOrCreateConstantCommand(graph, logger, testExecutionIssueSummary);
     }
-    if (options.jira.testExecutionIssueKey) {
-        const issueKeysCommand = getOrCreateConstantCommand(graph, logger, [
-            options.jira.testExecutionIssueKey,
-        ]);
+    const testExecutionIssueKey = issueData?.key ?? options.jira.testExecutionIssueKey;
+    if (testExecutionIssueKey) {
+        const issueKeysCommand = getOrCreateConstantCommand(graph, logger, [testExecutionIssueKey]);
         const getSummaryValuesCommand = graph.findOrDefault(
             GetSummaryValuesCommand,
             () => {
@@ -371,24 +389,20 @@ function getExecutionIssueSummaryCommand(
             (vertex) => [...graph.getPredecessors(vertex)].includes(issueKeysCommand)
         );
         const destructureCommand = graph.place(
-            new DestructureCommand(
-                logger,
-                getSummaryValuesCommand,
-                options.jira.testExecutionIssueKey
-            )
+            new DestructureCommand(logger, getSummaryValuesCommand, testExecutionIssueKey)
         );
         graph.connect(getSummaryValuesCommand, destructureCommand);
         return destructureCommand;
     }
 }
 
-function getConvertMultipartInfoCommand(
+async function getConvertMultipartInfoCommand(
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
     logger: Logger,
     cypressResultsCommand: Command<CypressRunResultType>
-): ConvertInfoCommand {
+) {
     let convertCommand: ConvertInfoCommand | undefined;
     if (clients.kind === "cloud") {
         convertCommand = graph.find(
@@ -414,13 +428,13 @@ function getConvertMultipartInfoCommand(
             options.jira.testExecutionIssue
         );
     }
-    const executionIssueSummaryCommand = getExecutionIssueSummaryCommand(
+    const executionIssueSummaryCommand = await getExecutionIssueSummaryCommand(
         options,
         clients,
         graph,
         logger
     );
-    const extractExecutionIssueTypeCommand = getExtractExecutionIssueTypeCommand(
+    const extractExecutionIssueTypeCommand = await getExtractExecutionIssueTypeCommand(
         options,
         clients,
         graph,

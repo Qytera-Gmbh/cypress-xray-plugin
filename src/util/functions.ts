@@ -15,6 +15,6 @@ export async function getOrCall<T>(value: MaybeFunction<T>): Promise<T> {
     return value;
 }
 
-function isFunction<T extends (...args: unknown[]) => unknown>(value: unknown): value is T {
+function isFunction(value: unknown): value is (...args: unknown[]) => unknown {
     return typeof value === "function";
 }

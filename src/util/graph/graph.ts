@@ -32,6 +32,7 @@ export interface DirectedGraph<V> {
      * @param filter - an additional vertex filter
      * @returns the first matching vertex or the result of the fallback function
      */
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
     findOrDefault<T extends V, A extends unknown[]>(
         vertexClass: new (...args: A) => T,
         fallback: () => T,
@@ -221,6 +222,7 @@ export class SimpleDirectedGraph<V> implements DirectedGraph<V> {
         return undefined;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
     public findOrDefault<T extends V, A extends unknown[]>(
         vertexClass: new (...args: A) => T,
         fallback: () => T,

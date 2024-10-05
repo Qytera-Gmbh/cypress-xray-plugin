@@ -97,11 +97,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                 withFileTypes: true,
             })) {
                 // 14_15_52_POST_https_xray.cloud.getxray.app_api_v2_import_execution_multipart_request.json
-                if (!entry.name.match(/.+_POST_.+_import_execution_multipart_request.json/)) {
+                if (!/.+_POST_.+_import_execution_multipart_request.json/.exec(entry.name)) {
                     continue;
                 }
                 const fileContent = JSON.parse(
-                    fs.readFileSync(path.join(entry.path, entry.name), "utf8")
+                    fs.readFileSync(path.join(entry.parentPath, entry.name), "utf8")
                 ) as LoggedRequest;
                 expect(fileContent.body).to.contain(
                     '"evidence":[{"contentType":"application/json","data":"ImxvY2FsaG9zdDo4MDgwIg=="'

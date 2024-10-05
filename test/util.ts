@@ -41,6 +41,7 @@ export function expectToExist<T>(value: T): asserts value is NonNullable<T> {
  * @param value - the value
  * @param className - the instance type
  */
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export function assertIsInstanceOf<T, V extends unknown[]>(
     value: unknown,
     className: new (...args: V) => T

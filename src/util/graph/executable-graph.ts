@@ -83,6 +83,8 @@ export class ExecutableGraph<
         try {
             await vertex.compute();
             this.states.set(vertex, VertexState.COMPUTED);
+            // Errors are logged by the computables themselves.
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error: unknown) {
             const nextRoots = this.markForbidden(vertex);
             nextRoots.forEach((root) => successors.add(root));

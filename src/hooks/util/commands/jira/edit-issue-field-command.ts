@@ -38,6 +38,8 @@ export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Comman
                 successfullyEditedIssues.push(
                     await this.parameters.jiraClient.editIssue(issueKey, { fields: fields })
                 );
+                // Error are logged in editIssue.
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error: unknown) {
                 this.logger.message(
                     Level.WARNING,
