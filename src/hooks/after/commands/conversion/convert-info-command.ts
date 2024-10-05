@@ -15,10 +15,9 @@ import {
 } from "./util/multipart-info";
 
 interface Parameters {
-    jira: Pick<
-        InternalJiraOptions,
-        "projectKey" | "testExecutionIssueDescription" | "testPlanIssueKey"
-    >;
+    jira: Pick<InternalJiraOptions, "projectKey" | "testPlanIssueKey"> & {
+        testExecutionIssueDescription?: string;
+    };
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 

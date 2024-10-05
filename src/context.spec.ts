@@ -37,6 +37,9 @@ import * as dependencies from "./util/dependencies";
 import { ExecutableGraph } from "./util/graph/executable-graph";
 import { CapturingLogger, Level } from "./util/logging";
 
+// REMOVE IN VERSION 8.0.0
+/* eslint-disable @typescript-eslint/no-deprecated */
+
 chai.use(chaiAsPromised);
 
 describe(path.relative(process.cwd(), __filename), () => {

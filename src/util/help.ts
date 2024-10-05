@@ -19,6 +19,11 @@ export const HELP = {
             introduction: `${BASE_URL}/section/configuration/introduction/`,
             jira: {
                 projectKey: `${BASE_URL}/section/configuration/jira/#projectkey`,
+                testExecutionIssue: {
+                    fields: {
+                        issuetype: `${BASE_URL}/section/configuration/jira/#issuetype`,
+                    },
+                },
                 testExecutionIssueType: `${BASE_URL}/section/configuration/jira/#testExecutionIssueType`,
                 testPlanIssueType: `${BASE_URL}/section/configuration/jira/#testPlanIssueType`,
                 url: `${BASE_URL}/section/configuration/jira/#url`,

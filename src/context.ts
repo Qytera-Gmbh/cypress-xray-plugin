@@ -34,6 +34,9 @@ import { HELP } from "./util/help";
 import { LOG, Level, Logger } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asObject, asString, parse } from "./util/parsing";
 
+// REMOVE IN VERSION 8.0.0
+/* eslint-disable @typescript-eslint/no-deprecated */
+
 export interface EvidenceCollection {
     addEvidence(issueKey: string, evidence: XrayEvidenceItem): void;
     getEvidence(issueKey: string): XrayEvidenceItem[];

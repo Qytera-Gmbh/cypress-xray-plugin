@@ -1,13 +1,15 @@
-import { InternalJiraOptions } from "../../../types/plugin";
+import { IssueTypeDetails } from "../../../types/jira/responses/issue-type-details";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
 import { Level, Logger } from "../../../util/logging";
 import { Command, Computable } from "../../command";
 
-type Parameters = Pick<InternalJiraOptions, "testExecutionIssueKey" | "testExecutionIssueType"> & {
+interface Parameters {
     displayCloudHelp: boolean;
     importType: "cucumber" | "cypress";
-};
+    testExecutionIssueKey?: string;
+    testExecutionIssueType: IssueTypeDetails;
+}
 
 export class VerifyExecutionIssueKeyCommand extends Command<string, Parameters> {
     private readonly resolvedExecutionIssue: Computable<string>;
@@ -38,10 +40,14 @@ export class VerifyExecutionIssueKeyCommand extends Command<string, Parameters> 
 
                     Make sure issue ${
                         this.parameters.testExecutionIssueKey
-                    } actually exists and is of type: ${this.parameters.testExecutionIssueType}
+                    } actually exists and is of type: ${JSON.stringify(
+                    this.parameters.testExecutionIssueType,
+                    null,
+                    2
+                )}
 
                     More information
-                    - ${HELP.plugin.configuration.jira.testExecutionIssueType}
+                    - ${HELP.plugin.configuration.jira.testExecutionIssue.fields.issuetype}
                     - ${
                         this.parameters.displayCloudHelp
                             ? HELP.xray.issueTypeMapping.cloud

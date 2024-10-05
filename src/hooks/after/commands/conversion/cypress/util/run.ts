@@ -202,6 +202,8 @@ function screenshotNameMatchesTestTitle(
         if (testTitleKeys.some((key) => screenshot.path.includes(key))) {
             return true;
         }
+        // Errors are logged in getTestIssueKeys.
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error: unknown) {
         // Do nothing.
     }
