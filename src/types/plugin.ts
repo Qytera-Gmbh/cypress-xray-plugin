@@ -95,7 +95,7 @@ export interface JiraFieldIds {
      */
     testEnvironments?: string;
     /**
-     * The test plan field ID of Xray test (execution) issues.
+     * The Jira field ID of test plans in Xray test (execution) issues.
      *
      * *Note: This option is required for server instances only. Xray cloud provides ways to
      * retrieve test plan field information independently of Jira.*
@@ -126,8 +126,8 @@ export interface JiraOptions {
      * `Description`, ...) just fine. Still, providing the fields' IDs here might become necessary
      * in the following scenarios:
      * - Your Jira language setting is a language other than English. For example, when the plugin
-     * tries to access the `Summary` field and the Jira language is set to French, access will fail
-     * because Jira only provides access to a field called `Résumé` instead.
+     * tries to access the `Test Plan` field and the Jira language is set to French, access will
+     * fail because Jira only provides access to a field called `Plan de Test` instead.
      * - Your Jira project contains several fields with identical names.
      *
      * *Note: In case you don't know these properties or if you are unsure whether they are really
@@ -139,7 +139,6 @@ export interface JiraOptions {
      * @example
      * ```ts
      *   fields: {
-     *     description: "description",
      *     testPlan: "customfield_12643"
      *   }
      * ```
@@ -172,14 +171,47 @@ export interface JiraOptions {
      * }
      * ```
      *
+     * You can also return the issue data from a function in case you need dynamic values based on
+     * data computed during the test run.
+     *
+     * @example
+     *
+     * ```ts
+     * const executionIssueData = {
+     *   fields: {
+     *     issuetype: {
+     *       name: "Test Execution",
+     *     },
+     *     summary: "My default summary",
+     *     description: "My default description",
+     *   },
+     * };
+     * await configureXrayPlugin(on, config, {
+     *   jira: {
+     *     projectKey: "CYP",
+     *     testExecution: () => executionIssueData,
+     *     url: "https://example.org",
+     *   },
+     * });
+     * // Define a custom task to update the issue data, which can then be called from inside tests.
+     * on("task", {
+     *   'update-execution-issue': (data) => {
+     *     if (data.summary) {
+     *       executionIssueData.summary = data.summary;
+     *     }
+     *     // ...
+     *   },
+     * });
+     * ```
+     *
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-post
      * @see https://developer.atlassian.com/server/jira/platform/rest/v10000/api-group-issue/#api-api-2-issue-post
      */
     testExecutionIssue?: MaybeFunction<
         IssueUpdate & {
             /**
-             * An execution issue key to attach run results to. If omitted, Jira will always create a new
-             * test execution issue with each upload.
+             * An execution issue key to attach run results to. If omitted, Xray will always create
+             * a new test execution issue with each upload.
              *
              * @example "CYP-123"
              */
@@ -287,8 +319,6 @@ export interface JiraOptions {
     testExecutionIssueType?: string;
     /**
      * A test plan issue key to attach the execution to.
-     *
-     * *Note: it must be prefixed with the project key.*
      *
      * @example "CYP-567"
      */
