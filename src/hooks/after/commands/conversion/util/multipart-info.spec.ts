@@ -16,6 +16,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
                 {
                     projectKey: "CYP",
+                    testExecutionIssue: {},
                 }
             );
             expect(info.fields.project).to.deep.eq({
@@ -27,8 +28,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     Browser: Chromium (1.2.3)
                 `)
             );
-            expect(info.fields.summary).to.eq("Execution Results [1695916296000]");
-            expect(info.fields.issuetype).to.deep.eq({ name: "Test Execution" });
+            expect(info.fields.issuetype).to.be.undefined;
         });
 
         it("uses provided summaries", () => {
@@ -41,9 +41,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    issuetype: {},
                     projectKey: "CYP",
-                    summary: "Hello",
+                    testExecutionIssue: { fields: { summary: "Hello" } },
                 }
             );
             expect(info.fields.summary).to.eq("Hello");
@@ -59,9 +58,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    description: "Hello There",
-                    issuetype: {},
                     projectKey: "CYP",
+                    testExecutionIssue: { fields: { description: "Hello There" } },
                 }
             );
             expect(info.fields.description).to.eq("Hello There");
@@ -77,10 +75,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    issuetype: {
-                        name: "Test Execution (QA)",
-                    },
                     projectKey: "CYP",
+                    testExecutionIssue: {
+                        fields: {
+                            issuetype: {
+                                name: "Test Execution (QA)",
+                            },
+                            projectKey: "CYP",
+                        },
+                    },
                 }
             );
             expect(info.fields.issuetype).to.deep.eq({
@@ -98,8 +101,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    issuetype: {},
                     projectKey: "CYP",
+                    testExecutionIssue: {},
                     testPlan: {
                         value: "CYP-123",
                     },
@@ -118,11 +121,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    issuetype: {},
                     projectKey: "CYP",
                     testEnvironments: {
                         value: ["DEV", "TEST"],
                     },
+                    testExecutionIssue: {},
                 }
             );
             expect(info.xrayFields).to.deep.eq({
@@ -141,14 +144,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28T15:51:36.000Z",
                 },
                 {
-                    custom: {
+                    projectKey: "CYP",
+                    testExecutionIssue: {
                         fields: { ["customfield_12345"]: [1, 2, 3, 4, 5] },
                         historyMetadata: { actor: { displayName: "Jeff" } },
                         properties: [{ key: "???", value: "???" }],
                         transition: { id: "15" },
                         update: { assignee: [{ edit: "Jeff" }] },
                     },
-                    projectKey: "CYP",
                 }
             );
             expect(info).to.deep.eq({
@@ -158,13 +161,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                         Cypress version: 13.2.0
                         Browser: Chromium (1.2.3)
                     `),
-                    issuetype: {
-                        name: "Test Execution",
-                    },
+                    issuetype: undefined,
                     project: {
                         key: "CYP",
                     },
-                    summary: "Execution Results [1695916296000]",
+                    summary: undefined,
                 },
                 historyMetadata: { actor: { displayName: "Jeff" } },
                 properties: [{ key: "???", value: "???" }],
@@ -187,7 +188,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    custom: {
+                    projectKey: "CYP",
+                    testExecutionIssue: {
                         fields: {
                             description: "My description",
                             issuetype: { name: "Different Issue Type" },
@@ -195,7 +197,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             summary: "My summary",
                         },
                     },
-                    projectKey: "CYP",
                 }
             );
             expect(info.fields).to.deep.eq({
@@ -219,6 +220,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
                 {
                     projectKey: "CYPLUG",
+                    testExecutionIssue: {},
                 }
             );
             expect(info.fields.project).to.deep.eq({
@@ -230,8 +232,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                         Browser: Chromium (1.2.3)
                     `)
             );
-            expect(info.fields.summary).to.eq("Execution Results [1695916296000]");
-            expect(info.fields.issuetype).to.deep.eq({ name: "Test Execution" });
+            expect(info.fields.summary).to.be.undefined;
+            expect(info.fields.issuetype).to.be.undefined;
         });
 
         it("uses provided summaries", () => {
@@ -244,9 +246,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    issuetype: {},
                     projectKey: "CYP",
-                    summary: "Hello",
+                    testExecutionIssue: { fields: { summary: "Hello" } },
                 }
             );
             expect(info.fields.summary).to.eq("Hello");
@@ -262,9 +263,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    description: "Hello There",
-                    issuetype: {},
                     projectKey: "CYP",
+                    testExecutionIssue: { fields: { description: "Hello There" } },
                 }
             );
             expect(info.fields.description).to.eq("Hello There");
@@ -280,10 +280,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    issuetype: {
-                        name: "Test Execution (QA)",
-                    },
                     projectKey: "CYP",
+                    testExecutionIssue: {
+                        fields: {
+                            issuetype: {
+                                name: "Test Execution (QA)",
+                            },
+                        },
+                    },
                 }
             );
             expect(info.fields.issuetype).to.deep.eq({
@@ -301,8 +305,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    issuetype: {},
                     projectKey: "CYP",
+                    testExecutionIssue: {},
                     testPlan: {
                         fieldId: "customField_12345",
                         value: "CYP-123",
@@ -322,12 +326,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    issuetype: {},
                     projectKey: "CYP",
                     testEnvironments: {
                         fieldId: "customField_12345",
                         value: ["DEV"],
                     },
+                    testExecutionIssue: {},
                 }
             );
             expect(info.fields.customField_12345).to.deep.eq(["DEV"]);
@@ -343,14 +347,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28T15:51:36.000Z",
                 },
                 {
-                    custom: {
+                    projectKey: "CYP",
+                    testExecutionIssue: {
                         fields: { ["customfield_12345"]: [1, 2, 3, 4, 5] },
                         historyMetadata: { actor: { displayName: "Jeff" } },
                         properties: [{ key: "???", value: "???" }],
                         transition: { id: "15" },
                         update: { assignee: [{ edit: "Jeff" }] },
                     },
-                    projectKey: "CYP",
                 }
             );
             expect(info).to.deep.eq({
@@ -360,13 +364,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                         Cypress version: 13.2.0
                         Browser: Chromium (1.2.3)
                     `),
-                    issuetype: {
-                        name: "Test Execution",
-                    },
+                    issuetype: undefined,
                     project: {
                         key: "CYP",
                     },
-                    summary: "Execution Results [1695916296000]",
+                    summary: undefined,
                 },
                 historyMetadata: { actor: { displayName: "Jeff" } },
                 properties: [{ key: "???", value: "???" }],
@@ -385,7 +387,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-28 17:51:36",
                 },
                 {
-                    custom: {
+                    projectKey: "CYP",
+                    testEnvironments: { fieldId: "customfield_678", value: ["DEV", "TEST"] },
+                    testExecutionIssue: {
                         fields: {
                             ["customfield_678"]: ["PROD"],
                             ["customfield_999"]: "CYP-111",
@@ -395,8 +399,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             summary: "My summary",
                         },
                     },
-                    projectKey: "CYP",
-                    testEnvironments: { fieldId: "customfield_678", value: ["DEV", "TEST"] },
                     testPlan: { fieldId: "customfield_999", value: "CYP-456" },
                 }
             );

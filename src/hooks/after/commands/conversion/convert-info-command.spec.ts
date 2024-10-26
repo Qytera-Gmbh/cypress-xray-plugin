@@ -16,7 +16,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { id: "issue_1578" }),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -26,6 +25,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 }),
                 {
                     summary: new ConstantCommand(logger, "Execution Results [1694257168829]"),
+                    testExecutionIssueType: new ConstantCommand(logger, { id: "issue_1578" }),
                 }
             );
             const info = await command.compute();
@@ -56,7 +56,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -69,6 +68,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         testPlanId: new ConstantCommand(logger, "customfield_12345"),
                     },
                     summary: new ConstantCommand(logger, "my summary"),
+                    testExecutionIssueType: new ConstantCommand(logger, {}),
                 }
             );
             const info = await command.compute();
@@ -85,7 +85,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -98,6 +97,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         testEnvironmentsId: new ConstantCommand(logger, "customfield_45678"),
                     },
                     summary: new ConstantCommand(logger, "my summary"),
+                    testExecutionIssueType: new ConstantCommand(logger, {}),
                 }
             );
             const info = await command.compute();
@@ -117,7 +117,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             xray: { uploadScreenshots: false },
                         },
                         logger,
-                        new ConstantCommand(logger, {}),
                         new ConstantCommand(logger, {
                             browserName: "Firefox",
                             browserVersion: "123.11.6",
@@ -127,6 +126,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         }),
                         {
                             summary: new ConstantCommand(logger, "my summary"),
+                            testExecutionIssueType: new ConstantCommand(logger, {}),
                         }
                     )
             ).to.throw("A test plan issue key was supplied without the test plan Jira field ID");
@@ -144,7 +144,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                         },
                         logger,
-                        new ConstantCommand(logger, {}),
                         new ConstantCommand(logger, {
                             browserName: "Firefox",
                             browserVersion: "123.11.6",
@@ -154,6 +153,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         }),
                         {
                             summary: new ConstantCommand(logger, "my summary"),
+                            testExecutionIssueType: new ConstantCommand(logger, {}),
                         }
                     )
             ).to.throw(
@@ -171,7 +171,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -181,6 +180,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 }),
                 {
                     summary: new ConstantCommand(logger, "my summary"),
+                    testExecutionIssueType: new ConstantCommand(logger, {}),
                 }
             );
             expect(command.getParameters()).to.deep.eq({
@@ -203,7 +203,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { id: "issue_1578" }),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -213,6 +212,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 }),
                 {
                     summary: new ConstantCommand(logger, "Execution Results [1694257168829]"),
+                    testExecutionIssueType: new ConstantCommand(logger, { id: "issue_1578" }),
                 }
             );
             const info = await command.compute();
@@ -247,7 +247,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -257,6 +256,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 }),
                 {
                     summary: new ConstantCommand(logger, "my summary"),
+                    testExecutionIssueType: new ConstantCommand(logger, {}),
                 }
             );
             const info = await command.compute();
@@ -276,7 +276,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, {}),
                 new ConstantCommand(logger, {
                     browserName: "Firefox",
                     browserVersion: "123.11.6",
@@ -286,6 +285,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 }),
                 {
                     summary: new ConstantCommand(logger, "my summary"),
+                    testExecutionIssueType: new ConstantCommand(logger, {}),
                 }
             );
             const info = await command.compute();
