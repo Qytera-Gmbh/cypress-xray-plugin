@@ -1,3 +1,4 @@
+import { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
 import { IssueUpdate } from "../../../../types/jira/responses/issue-update";
 import { InternalJiraOptions, InternalXrayOptions } from "../../../../types/plugin";
 import { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
@@ -17,27 +18,52 @@ interface Parameters {
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 
+export type ComputedIssueUpdate = IssueUpdate & {
+    computedFields: {
+        issuetype: Computable<IssueTypeDetails>;
+        summary: Computable<string>;
+    };
+};
+
 export abstract class ConvertInfoCommand extends Command<MultipartInfo, Parameters> {
-    private readonly runInformation: Computable<RunData>;
-    private readonly info: Computable<IssueUpdate>;
+    private readonly results: Computable<RunData>;
+    private readonly summary: Computable<string>;
+    private readonly issuetype: Computable<IssueTypeDetails>;
+    private readonly issueUpdate?: Computable<IssueUpdate>;
 
     constructor(
         parameters: Parameters,
         logger: Logger,
-        runInformation: Computable<RunData>,
-        info: Computable<IssueUpdate>
+        input: {
+            issuetype: Computable<IssueTypeDetails>;
+            issueUpdate?: Computable<IssueUpdate>;
+            results: Computable<RunData>;
+            summary: Computable<string>;
+        }
     ) {
         super(parameters, logger);
-        this.runInformation = runInformation;
-        this.info = info;
+        this.results = input.results;
+        this.issueUpdate = input.issueUpdate;
+        this.summary = input.summary;
+        this.issuetype = input.issuetype;
     }
 
     protected async computeResult(): Promise<MultipartInfo> {
-        const runInformation = await this.runInformation.compute();
-        const issueData = await this.info.compute();
+        const runInformation = await this.results.compute();
+        const issueUpdate = await this.issueUpdate?.compute();
         const testExecutionIssueData: TestExecutionIssueDataServer = {
             projectKey: this.parameters.jira.projectKey,
-            testExecutionIssue: issueData,
+            testExecutionIssue: {
+                fields: {
+                    ...issueUpdate?.fields,
+                    issuetype: await this.issuetype.compute(),
+                    summary: await this.summary.compute(),
+                },
+                historyMetadata: issueUpdate?.historyMetadata,
+                properties: issueUpdate?.properties,
+                transition: issueUpdate?.transition,
+                update: issueUpdate?.update,
+            },
         };
         return await this.buildInfo(runInformation, testExecutionIssueData);
     }
@@ -54,26 +80,30 @@ export class ConvertInfoServerCommand extends ConvertInfoCommand {
     constructor(
         parameters: Parameters,
         logger: Logger,
-        runInformation: Computable<RunData>,
-        info: Computable<IssueUpdate>,
-        fieldIds?: {
-            testEnvironmentsId?: Computable<string>;
-            testPlanId?: Computable<string>;
+        input: {
+            fieldIds?: {
+                testEnvironmentsId?: Computable<string>;
+                testPlanId?: Computable<string>;
+            };
+            issuetype: Computable<IssueTypeDetails>;
+            issueUpdate?: Computable<IssueUpdate>;
+            results: Computable<RunData>;
+            summary: Computable<string>;
         }
     ) {
-        super(parameters, logger, runInformation, info);
-        if (this.parameters.jira.testPlanIssueKey && !fieldIds?.testPlanId) {
+        super(parameters, logger, input);
+        if (this.parameters.jira.testPlanIssueKey && !input.fieldIds?.testPlanId) {
             throw new Error(
                 "A test plan issue key was supplied without the test plan Jira field ID"
             );
         }
-        if (this.parameters.xray.testEnvironments && !fieldIds?.testEnvironmentsId) {
+        if (this.parameters.xray.testEnvironments && !input.fieldIds?.testEnvironmentsId) {
             throw new Error(
                 "Test environments were supplied without the test environments Jira field ID"
             );
         }
-        this.testEnvironmentsId = fieldIds?.testEnvironmentsId;
-        this.testPlanId = fieldIds?.testPlanId;
+        this.testEnvironmentsId = input.fieldIds?.testEnvironmentsId;
+        this.testPlanId = input.fieldIds?.testPlanId;
     }
 
     protected async buildInfo(

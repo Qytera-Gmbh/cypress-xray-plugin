@@ -264,8 +264,6 @@ function addConvertMultipartInfoCommand(
     if (convertCommand) {
         return convertCommand;
     }
-    const executionIssueSummaryCommand = builder.addExecutionIssueSummaryCommand();
-    const extractExecutionIssueTypeCommand = builder.addExtractExecutionIssueTypeCommand();
     if (clients.kind === "cloud") {
         convertCommand = builder.addConvertInfoCloudCommand();
     } else {
@@ -278,8 +276,6 @@ function addConvertMultipartInfoCommand(
             testEnvironmentsIdCommand = builder.addExtractFieldIdCommand("test-environments");
         }
         convertCommand = builder.addConvertInfoServerCommand({
-            executionIssueSummary: executionIssueSummaryCommand,
-            executionIssueType: extractExecutionIssueTypeCommand,
             fieldIds: {
                 testEnvironment: testEnvironmentsIdCommand,
                 testPlan: testPlanIdCommand,
@@ -298,7 +294,11 @@ class AfterRunBuilder {
     private readonly clients: ClientCombination;
     private readonly logger: Logger;
     private readonly constants: {
-        issueData?: ConstantCommand<PluginIssueUpdate>;
+        executionIssue?: {
+            issuetype?: Command<IssueTypeDetails>;
+            issueUpdate?: Command<PluginIssueUpdate | undefined>;
+            summary?: Command<string>;
+        };
         results?: ConstantCommand<CypressRunResultType>;
     };
 
@@ -319,54 +319,6 @@ class AfterRunBuilder {
         this.clients = args.clients;
         this.logger = args.logger;
         this.constants = {};
-    }
-
-    public getResultsCommand() {
-        if (!this.constants.results) {
-            this.constants.results = getOrCreateConstantCommand(
-                this.graph,
-                this.logger,
-                this.results
-            );
-        }
-        return this.constants.results;
-    }
-
-    public getIssueDataCommand() {
-        if (!this.constants.issueData) {
-            const issueData = { ...this.issueData };
-            const summary =
-                issueData.fields?.summary ?? this.options.jira.testExecutionIssueSummary;
-            if (!summary) {
-                issueData.fields = {
-                    ...issueData.fields,
-                    summary: `Execution Results [${this.results.startedTestsAt}]`,
-                };
-            }
-            if (!issueData.fields?.issuetype) {
-                if (this.options.jira.testExecutionIssueType) {
-                    issueData.fields = {
-                        ...issueData.fields,
-                        issuetype: {
-                            name: this.options.jira.testExecutionIssueType,
-                        },
-                    };
-                } else {
-                    issueData.fields = {
-                        ...issueData.fields,
-                        issuetype: {
-                            name: "Test Execution",
-                        },
-                    };
-                }
-            }
-            this.constants.issueData = getOrCreateConstantCommand(
-                this.graph,
-                this.logger,
-                issueData
-            );
-        }
-        return this.constants.issueData;
     }
 
     public getCucumberResultsCommand(parameters: {
@@ -438,53 +390,15 @@ class AfterRunBuilder {
     public addImportExecutionCypressCommand(parameters: {
         execution: Command<Parameters<XrayClient["importExecutionMultipart"]>>;
     }) {
-        const command = new ImportExecutionCypressCommand(
-            { xrayClient: this.clients.xrayClient },
-            this.logger,
-            parameters.execution
+        const command = this.graph.place(
+            new ImportExecutionCypressCommand(
+                { xrayClient: this.clients.xrayClient },
+                this.logger,
+                parameters.execution
+            )
         );
         this.graph.connect(parameters.execution, command);
         return command;
-    }
-
-    public addExecutionIssueSummaryCommand() {
-        const testExecutionIssueSummary =
-            this.issueData?.fields?.summary ?? this.options.jira.testExecutionIssueSummary;
-        if (testExecutionIssueSummary) {
-            return getOrCreateConstantCommand(this.graph, this.logger, testExecutionIssueSummary);
-        }
-        const testExecutionIssueKey =
-            this.issueData?.key ?? this.options.jira.testExecutionIssueKey;
-        if (testExecutionIssueKey) {
-            const issueKeysCommand = getOrCreateConstantCommand(this.graph, this.logger, [
-                testExecutionIssueKey,
-            ]);
-            const getSummaryValuesCommand = this.graph.findOrDefault(
-                GetSummaryValuesCommand,
-                () => {
-                    const command = this.graph.place(
-                        new GetSummaryValuesCommand(
-                            { jiraClient: this.clients.jiraClient },
-                            this.logger,
-                            issueKeysCommand
-                        )
-                    );
-                    this.graph.connect(issueKeysCommand, command);
-                    return command;
-                },
-                (vertex) => [...this.graph.getPredecessors(vertex)].includes(issueKeysCommand)
-            );
-            const destructureCommand = this.graph.place(
-                new DestructureCommand(this.logger, getSummaryValuesCommand, testExecutionIssueKey)
-            );
-            this.graph.connect(getSummaryValuesCommand, destructureCommand);
-            return destructureCommand;
-        }
-        return getOrCreateConstantCommand(
-            this.graph,
-            this.logger,
-            `Execution Results [${this.results.startedTestsAt}]`
-        );
     }
 
     public addExtractExecutionIssueTypeCommand() {
@@ -533,44 +447,56 @@ class AfterRunBuilder {
 
     public addConvertInfoCloudCommand() {
         const resultsCommand = this.getResultsCommand();
-        const issueDataCommand = this.getIssueDataCommand();
+        const issueDataCommand = this.getIssueData();
         const command = new ConvertInfoCloudCommand(
             { jira: this.options.jira, xray: this.options.xray },
             this.logger,
-            resultsCommand,
-            issueDataCommand
+            {
+                issuetype: issueDataCommand.issuetype,
+                issueUpdate: issueDataCommand.issueUpdate,
+                results: resultsCommand,
+                summary: issueDataCommand.summary,
+            }
         );
         this.graph.place(command);
         this.graph.connect(resultsCommand, command);
-        this.graph.connect(issueDataCommand, command);
+        this.graph.connect(issueDataCommand.summary, command);
+        this.graph.connect(issueDataCommand.issuetype, command);
+        if (issueDataCommand.issueUpdate) {
+            this.graph.connect(issueDataCommand.issueUpdate, command);
+        }
         return command;
     }
 
     public addConvertInfoServerCommand(parameters: {
-        executionIssueSummary: Command<string>;
-        executionIssueType: Command<IssueTypeDetails>;
         fieldIds: {
             testEnvironment?: Command<string>;
             testPlan?: Command<string>;
         };
     }) {
         const resultsCommand = this.getResultsCommand();
-        const issueDataCommand = this.getIssueDataCommand();
+        const issueDataCommand = this.getIssueData();
         const command = new ConvertInfoServerCommand(
             { jira: this.options.jira, xray: this.options.xray },
             this.logger,
-            resultsCommand,
-            issueDataCommand,
             {
-                testEnvironmentsId: parameters.fieldIds.testEnvironment,
-                testPlanId: parameters.fieldIds.testPlan,
+                fieldIds: {
+                    testEnvironmentsId: parameters.fieldIds.testEnvironment,
+                    testPlanId: parameters.fieldIds.testPlan,
+                },
+                issuetype: issueDataCommand.issuetype,
+                issueUpdate: issueDataCommand.issueUpdate,
+                results: resultsCommand,
+                summary: issueDataCommand.summary,
             }
         );
         this.graph.place(command);
         this.graph.connect(resultsCommand, command);
-        this.graph.connect(issueDataCommand, command);
-        this.graph.connect(parameters.executionIssueSummary, command);
-        this.graph.connect(parameters.executionIssueType, command);
+        this.graph.connect(issueDataCommand.summary, command);
+        this.graph.connect(issueDataCommand.issuetype, command);
+        if (issueDataCommand.issueUpdate) {
+            this.graph.connect(issueDataCommand.issueUpdate, command);
+        }
         if (parameters.fieldIds.testEnvironment) {
             this.graph.connect(parameters.fieldIds.testEnvironment, command);
         }
@@ -761,5 +687,104 @@ class AfterRunBuilder {
         );
         this.graph.connect(parameters.issueKey, command);
         return command;
+    }
+
+    private getIssueData() {
+        let issueUpdateCommand;
+        let summaryCommand = this.constants.executionIssue?.summary;
+        let issuetypeCommand = this.constants.executionIssue?.issuetype;
+        if (!this.constants.executionIssue?.issueUpdate && this.issueData) {
+            issueUpdateCommand = getOrCreateConstantCommand(
+                this.graph,
+                this.logger,
+                this.issueData
+            );
+            this.constants.executionIssue = {
+                ...this.constants.executionIssue,
+                issueUpdate: issueUpdateCommand,
+            };
+        }
+        if (!summaryCommand) {
+            const summary =
+                this.issueData?.fields?.summary ?? this.options.jira.testExecutionIssueSummary;
+            if (summary) {
+                summaryCommand = getOrCreateConstantCommand(this.graph, this.logger, summary);
+            } else {
+                const testExecutionIssueKey =
+                    this.issueData?.key ?? this.options.jira.testExecutionIssueKey;
+                if (testExecutionIssueKey) {
+                    const issueKeysCommand = getOrCreateConstantCommand(this.graph, this.logger, [
+                        testExecutionIssueKey,
+                    ]);
+                    const getSummaryValuesCommand = this.graph.findOrDefault(
+                        GetSummaryValuesCommand,
+                        () => {
+                            const command = this.graph.place(
+                                new GetSummaryValuesCommand(
+                                    { jiraClient: this.clients.jiraClient },
+                                    this.logger,
+                                    issueKeysCommand
+                                )
+                            );
+                            this.graph.connect(issueKeysCommand, command);
+                            return command;
+                        },
+                        (vertex) =>
+                            [...this.graph.getPredecessors(vertex)].includes(issueKeysCommand)
+                    );
+                    summaryCommand = this.graph.place(
+                        new DestructureCommand(
+                            this.logger,
+                            getSummaryValuesCommand,
+                            testExecutionIssueKey
+                        )
+                    );
+                    this.graph.connect(getSummaryValuesCommand, summaryCommand);
+                } else {
+                    summaryCommand = getOrCreateConstantCommand(
+                        this.graph,
+                        this.logger,
+                        `Execution Results [${this.results.startedTestsAt}]`
+                    );
+                }
+            }
+            this.constants.executionIssue = {
+                ...this.constants.executionIssue,
+                summary: summaryCommand,
+            };
+        }
+        if (!issuetypeCommand) {
+            if (this.issueData?.fields?.issuetype) {
+                issuetypeCommand = getOrCreateConstantCommand(
+                    this.graph,
+                    this.logger,
+                    this.issueData.fields.issuetype
+                );
+            } else {
+                issuetypeCommand = getOrCreateConstantCommand(this.graph, this.logger, {
+                    name: "Test Execution",
+                });
+            }
+            this.constants.executionIssue = {
+                ...this.constants.executionIssue,
+                issuetype: issuetypeCommand,
+            };
+        }
+        return {
+            issuetype: issuetypeCommand,
+            issueUpdate: issueUpdateCommand,
+            summary: summaryCommand,
+        };
+    }
+
+    private getResultsCommand() {
+        if (!this.constants.results) {
+            this.constants.results = getOrCreateConstantCommand(
+                this.graph,
+                this.logger,
+                this.results
+            );
+        }
+        return this.constants.results;
     }
 }

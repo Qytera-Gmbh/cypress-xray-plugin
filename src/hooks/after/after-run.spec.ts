@@ -144,12 +144,24 @@ describe(path.relative(process.cwd(), __filename), () => {
                 // Vertex data.
                 expect(resultsCommand.getValue()).to.deep.eq(result);
                 expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
-                    cucumber: options.cucumber,
                     evidenceCollection: new SimpleEvidenceCollection(),
-                    jira: options.jira,
-                    plugin: options.plugin,
+                    featureFileExtension: ".feature",
+                    normalizeScreenshotNames: false,
+                    projectKey: "CYP",
+                    uploadScreenshots: true,
                     useCloudStatusFallback: false,
-                    xray: options.xray,
+                    xrayStatus: {
+                        failed: undefined,
+                        passed: undefined,
+                        pending: undefined,
+                        skipped: undefined,
+                        step: {
+                            failed: undefined,
+                            passed: undefined,
+                            pending: undefined,
+                            skipped: undefined,
+                        },
+                    },
                 });
                 expect(convertCommand.getParameters()).to.deep.eq({
                     jira: options.jira,
@@ -344,13 +356,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 // Vertices.
                 const commands = [...graph.getVertices()];
                 const textExecutionIssueDataCommand = commands[3];
+                const convertInfoServerCommand = commands[4];
                 assertIsInstanceOf(textExecutionIssueDataCommand, ConstantCommand);
+                assertIsInstanceOf(convertInfoServerCommand, ConvertInfoServerCommand);
                 // Vertex data.
                 expect(textExecutionIssueDataCommand.getValue()).to.deep.eq({
-                    fields: {
-                        assignee: "someone else",
-                        ["customfield_12345"]: "bonjour",
-                    },
+                    name: "Test Execution",
                 });
                 expect(graph.size("vertices")).to.eq(10);
                 expect(graph.size("edges")).to.eq(11);
