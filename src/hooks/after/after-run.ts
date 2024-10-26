@@ -267,10 +267,7 @@ function addConvertMultipartInfoCommand(
     const executionIssueSummaryCommand = builder.addExecutionIssueSummaryCommand();
     const extractExecutionIssueTypeCommand = builder.addExtractExecutionIssueTypeCommand();
     if (clients.kind === "cloud") {
-        convertCommand = builder.addConvertInfoCloudCommand({
-            executionIssueSummary: executionIssueSummaryCommand,
-            executionIssueType: extractExecutionIssueTypeCommand,
-        });
+        convertCommand = builder.addConvertInfoCloudCommand();
     } else {
         let testPlanIdCommand: Command<string> | undefined = undefined;
         let testEnvironmentsIdCommand: Command<string> | undefined = undefined;
@@ -534,27 +531,18 @@ class AfterRunBuilder {
         }
     }
 
-    public addConvertInfoCloudCommand(parameters: {
-        executionIssueSummary: Command<string>;
-        executionIssueType: Command<IssueTypeDetails>;
-    }) {
+    public addConvertInfoCloudCommand() {
         const resultsCommand = this.getResultsCommand();
         const issueDataCommand = this.getIssueDataCommand();
         const command = new ConvertInfoCloudCommand(
             { jira: this.options.jira, xray: this.options.xray },
             this.logger,
             resultsCommand,
-            {
-                issueData: issueDataCommand,
-                summary: parameters.executionIssueSummary,
-                testExecutionIssueType: parameters.executionIssueType,
-            }
+            issueDataCommand
         );
         this.graph.place(command);
         this.graph.connect(resultsCommand, command);
         this.graph.connect(issueDataCommand, command);
-        this.graph.connect(parameters.executionIssueSummary, command);
-        this.graph.connect(parameters.executionIssueType, command);
         return command;
     }
 
@@ -572,14 +560,10 @@ class AfterRunBuilder {
             { jira: this.options.jira, xray: this.options.xray },
             this.logger,
             resultsCommand,
+            issueDataCommand,
             {
-                fieldIds: {
-                    testEnvironmentsId: parameters.fieldIds.testEnvironment,
-                    testPlanId: parameters.fieldIds.testPlan,
-                },
-                issueData: issueDataCommand,
-                summary: parameters.executionIssueSummary,
-                testExecutionIssueType: parameters.executionIssueType,
+                testEnvironmentsId: parameters.fieldIds.testEnvironment,
+                testPlanId: parameters.fieldIds.testPlan,
             }
         );
         this.graph.place(command);

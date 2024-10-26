@@ -1,4 +1,3 @@
-import { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
 import { IssueUpdate } from "../../../../types/jira/responses/issue-update";
 import { InternalJiraOptions, InternalXrayOptions } from "../../../../types/plugin";
 import { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
@@ -20,21 +19,13 @@ interface Parameters {
 
 export abstract class ConvertInfoCommand extends Command<MultipartInfo, Parameters> {
     private readonly runInformation: Computable<RunData>;
-    private readonly info: {
-        issueData: Computable<IssueUpdate | undefined>;
-        summary: Computable<string>;
-        testExecutionIssueType: Computable<IssueTypeDetails>;
-    };
+    private readonly info: Computable<IssueUpdate>;
 
     constructor(
         parameters: Parameters,
         logger: Logger,
         runInformation: Computable<RunData>,
-        info: {
-            issueData: Computable<IssueUpdate | undefined>;
-            summary: Computable<string>;
-            testExecutionIssueType: Computable<IssueTypeDetails>;
-        }
+        info: Computable<IssueUpdate>
     ) {
         super(parameters, logger);
         this.runInformation = runInformation;
@@ -43,17 +34,10 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
 
     protected async computeResult(): Promise<MultipartInfo> {
         const runInformation = await this.runInformation.compute();
-        const issueData = await this.info.issueData.compute();
+        const issueData = await this.info.compute();
         const testExecutionIssueData: TestExecutionIssueDataServer = {
             projectKey: this.parameters.jira.projectKey,
-            testExecutionIssue: {
-                ...issueData,
-                fields: {
-                    ...issueData?.fields,
-                    issuetype: await this.info.testExecutionIssueType.compute(),
-                    summary: await this.info.summary.compute(),
-                },
-            },
+            testExecutionIssue: issueData,
         };
         return await this.buildInfo(runInformation, testExecutionIssueData);
     }
@@ -71,29 +55,25 @@ export class ConvertInfoServerCommand extends ConvertInfoCommand {
         parameters: Parameters,
         logger: Logger,
         runInformation: Computable<RunData>,
-        info: {
-            fieldIds?: {
-                testEnvironmentsId?: Computable<string>;
-                testPlanId?: Computable<string>;
-            };
-            issueData: Computable<IssueUpdate | undefined>;
-            summary: Computable<string>;
-            testExecutionIssueType: Computable<IssueTypeDetails>;
+        info: Computable<IssueUpdate>,
+        fieldIds?: {
+            testEnvironmentsId?: Computable<string>;
+            testPlanId?: Computable<string>;
         }
     ) {
         super(parameters, logger, runInformation, info);
-        if (this.parameters.jira.testPlanIssueKey && !info.fieldIds?.testPlanId) {
+        if (this.parameters.jira.testPlanIssueKey && !fieldIds?.testPlanId) {
             throw new Error(
                 "A test plan issue key was supplied without the test plan Jira field ID"
             );
         }
-        if (this.parameters.xray.testEnvironments && !info.fieldIds?.testEnvironmentsId) {
+        if (this.parameters.xray.testEnvironments && !fieldIds?.testEnvironmentsId) {
             throw new Error(
                 "Test environments were supplied without the test environments Jira field ID"
             );
         }
-        this.testEnvironmentsId = info.fieldIds?.testEnvironmentsId;
-        this.testPlanId = info.fieldIds?.testPlanId;
+        this.testEnvironmentsId = fieldIds?.testEnvironmentsId;
+        this.testPlanId = fieldIds?.testPlanId;
     }
 
     protected async buildInfo(

@@ -51,7 +51,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
                 ) as CypressRunResult_V12;
                 const command = new ConvertCypressTestsCommand(
-                    { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                    {
+                        evidenceCollection: new SimpleEvidenceCollection(),
+                        featureFileExtension: options.cucumber?.featureFileExtension,
+                        normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                        projectKey: options.jira.projectKey,
+                        uploadScreenshots: options.xray.uploadScreenshots,
+                        xrayStatus: options.xray.status,
+                    },
                     logger,
                     new ConstantCommand(logger, result)
                 );
@@ -93,7 +100,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     )
                 ) as CypressRunResult_V12;
                 const command = new ConvertCypressTestsCommand(
-                    { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                    {
+                        evidenceCollection: new SimpleEvidenceCollection(),
+                        featureFileExtension: options.cucumber?.featureFileExtension,
+                        normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                        projectKey: options.jira.projectKey,
+                        uploadScreenshots: options.xray.uploadScreenshots,
+                        xrayStatus: options.xray.status,
+                    },
                     logger,
                     new ConstantCommand(logger, result)
                 );
@@ -146,7 +160,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
                 ) as CypressCommandLine.CypressRunResult;
                 const command = new ConvertCypressTestsCommand(
-                    { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                    {
+                        evidenceCollection: new SimpleEvidenceCollection(),
+                        featureFileExtension: options.cucumber?.featureFileExtension,
+                        normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                        projectKey: options.jira.projectKey,
+                        uploadScreenshots: options.xray.uploadScreenshots,
+                        xrayStatus: options.xray.status,
+                    },
                     logger,
                     new ConstantCommand(logger, result)
                 );
@@ -200,7 +221,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     )
                 ) as CypressCommandLine.CypressRunResult;
                 const command = new ConvertCypressTestsCommand(
-                    { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                    {
+                        evidenceCollection: new SimpleEvidenceCollection(),
+                        featureFileExtension: options.cucumber?.featureFileExtension,
+                        normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                        projectKey: options.jira.projectKey,
+                        uploadScreenshots: options.xray.uploadScreenshots,
+                        xrayStatus: options.xray.status,
+                    },
                     logger,
                     new ConstantCommand(logger, result)
                 );
@@ -252,7 +280,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 ) as CypressCommandLine.CypressRunResult;
                 result.runs[0].screenshots[0].path = "./test/resources/small.png";
                 const command = new ConvertCypressTestsCommand(
-                    { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                    {
+                        evidenceCollection: new SimpleEvidenceCollection(),
+                        featureFileExtension: options.cucumber?.featureFileExtension,
+                        normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                        projectKey: options.jira.projectKey,
+                        uploadScreenshots: options.xray.uploadScreenshots,
+                        xrayStatus: options.xray.status,
+                    },
                     logger,
                     new ConstantCommand(logger, result)
                 );
@@ -310,7 +345,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
             ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -345,7 +387,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -367,20 +416,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             mockedFs.readFileSync.onFirstCall().returns(Buffer.from("abcdef"));
             const command = new ConvertCypressTestsCommand(
                 {
-                    cucumber: {
-                        featureFileExtension: ".feature",
-                    },
                     evidenceCollection: new SimpleEvidenceCollection(),
-                    jira: {
-                        projectKey: "CYP",
-                    },
-                    plugin: {
-                        normalizeScreenshotNames: false,
-                    },
-                    xray: {
-                        status: {},
-                        uploadScreenshots: true,
-                    },
+                    featureFileExtension: ".feature",
+                    normalizeScreenshotNames: false,
+                    projectKey: "CYP",
+                    uploadScreenshots: true,
+                    xrayStatus: {},
                 },
                 logger,
                 new ConstantCommand(logger, result)
@@ -401,7 +442,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CypressRunResultType;
             options.xray.uploadScreenshots = false;
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -420,7 +468,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CypressRunResultType;
             options.plugin.normalizeScreenshotNames = true;
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -436,7 +491,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
             ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -463,7 +525,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 filename: "goodbye.txt",
             });
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: evidenceCollection },
+                {
+                    evidenceCollection: evidenceCollection,
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -527,7 +596,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CypressRunResultType;
             options.xray.status = { passed: "it worked" };
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -543,7 +619,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CypressRunResultType;
             options.xray.status = { failed: "it did not work" };
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -558,7 +641,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CypressRunResultType;
             options.xray.status = { pending: "still pending" };
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -576,7 +666,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CypressRunResultType;
             options.xray.status = { skipped: "omit" };
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -590,7 +687,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -606,7 +710,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -622,7 +733,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
             ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(
-                { ...options, evidenceCollection: new SimpleEvidenceCollection() },
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
+                },
                 logger,
                 new ConstantCommand(logger, result)
             );
@@ -639,9 +757,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(
                 {
-                    ...options,
                     evidenceCollection: new SimpleEvidenceCollection(),
-                    useCloudStatusFallback: true,
+                    featureFileExtension: options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
                 },
                 logger,
                 new ConstantCommand(logger, result)
@@ -659,10 +780,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CypressRunResultType;
             const command = new ConvertCypressTestsCommand(
                 {
-                    ...options,
-                    cucumber: { featureFileExtension: ".ts" },
                     evidenceCollection: new SimpleEvidenceCollection(),
-                    useCloudStatusFallback: true,
+                    featureFileExtension: ".ts",
+                    normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
+                    projectKey: options.jira.projectKey,
+                    uploadScreenshots: options.xray.uploadScreenshots,
+                    xrayStatus: options.xray.status,
                 },
                 logger,
                 new ConstantCommand(logger, result)
@@ -680,20 +803,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             const command = new ConvertCypressTestsCommand(
                 {
                     evidenceCollection: new SimpleEvidenceCollection(),
-                    jira: {
-                        projectKey: "CYP",
-                    },
-                    plugin: {
-                        normalizeScreenshotNames: true,
-                    },
-                    xray: {
-                        status: {
-                            failed: "FAILED",
-                            passed: "PASSED",
-                            pending: "TODO",
-                            skipped: "TODO",
-                        },
-                        uploadScreenshots: false,
+                    normalizeScreenshotNames: true,
+                    projectKey: "CYP",
+                    uploadScreenshots: false,
+                    xrayStatus: {
+                        failed: "FAILED",
+                        passed: "PASSED",
+                        pending: "TODO",
+                        skipped: "TODO",
                     },
                 },
                 logger,
