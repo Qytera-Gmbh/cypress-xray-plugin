@@ -1,4 +1,5 @@
 import { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
+import { IssueUpdate } from "../../../../types/jira/responses/issue-update";
 import { InternalJiraOptions, InternalXrayOptions } from "../../../../types/plugin";
 import { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
 import { getOrCall } from "../../../../util/functions";
@@ -13,13 +14,14 @@ import {
 } from "./util/multipart-info";
 
 interface Parameters {
-    jira: Pick<InternalJiraOptions, "projectKey" | "testExecutionIssue" | "testPlanIssueKey">;
+    jira: Pick<InternalJiraOptions, "projectKey" | "testPlanIssueKey">;
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 
 export abstract class ConvertInfoCommand extends Command<MultipartInfo, Parameters> {
     private readonly runInformation: Computable<RunData>;
     private readonly info: {
+        issueData: Computable<IssueUpdate | undefined>;
         summary: Computable<string>;
         testExecutionIssueType: Computable<IssueTypeDetails>;
     };
@@ -29,6 +31,7 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
         logger: Logger,
         runInformation: Computable<RunData>,
         info: {
+            issueData: Computable<IssueUpdate | undefined>;
             summary: Computable<string>;
             testExecutionIssueType: Computable<IssueTypeDetails>;
         }
@@ -40,7 +43,7 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
 
     protected async computeResult(): Promise<MultipartInfo> {
         const runInformation = await this.runInformation.compute();
-        const issueData = await getOrCall(this.parameters.jira.testExecutionIssue);
+        const issueData = await this.info.issueData.compute();
         const testExecutionIssueData: TestExecutionIssueDataServer = {
             projectKey: this.parameters.jira.projectKey,
             testExecutionIssue: {
@@ -73,6 +76,7 @@ export class ConvertInfoServerCommand extends ConvertInfoCommand {
                 testEnvironmentsId?: Computable<string>;
                 testPlanId?: Computable<string>;
             };
+            issueData: Computable<IssueUpdate | undefined>;
             summary: Computable<string>;
             testExecutionIssueType: Computable<IssueTypeDetails>;
         }

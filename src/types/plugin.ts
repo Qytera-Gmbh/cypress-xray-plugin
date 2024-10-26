@@ -3,8 +3,8 @@ import { AxiosRequestConfig } from "axios";
 import { AxiosRestClient, RequestsOptions } from "../client/https/requests";
 import { JiraClient } from "../client/jira/jira-client";
 import { XrayClient } from "../client/xray/xray-client";
+import { CypressRunResultType } from "./cypress/cypress";
 import { IssueUpdate } from "./jira/responses/issue-update";
-import { MaybeFunction } from "./util";
 
 /**
  * Models all options for configuring the behaviour of the plugin.
@@ -104,6 +104,19 @@ export interface JiraFieldIds {
 }
 
 /**
+ * Wrapper type around Jira's issue update type with some additional properties.
+ */
+export type PluginIssueUpdate = IssueUpdate & {
+    /**
+     * An execution issue key to attach run results to. If omitted, Xray will always create
+     * a new test execution issue with each upload.
+     *
+     * @example "CYP-123"
+     */
+    key?: string;
+};
+
+/**
  * Jira-specific options that control how the plugin interacts with Jira.
  */
 export interface JiraOptions {
@@ -148,8 +161,6 @@ export interface JiraOptions {
      * create or modify with the run results. The value must match the format of Jira's issue
      * create/update payloads.
      *
-     * @example
-     *
      * ```ts
      * testExecutionIssue: {
      *   key: "PRJ-16",
@@ -167,8 +178,6 @@ export interface JiraOptions {
      * You can also return the issue data from a function in case you need dynamic values based on
      * data computed during the test run.
      *
-     * @example
-     *
      * ```ts
      * const executionIssueData = {
      *   fields: {
@@ -182,17 +191,13 @@ export interface JiraOptions {
      * await configureXrayPlugin(on, config, {
      *   jira: {
      *     projectKey: "CYP",
-     *     testExecution: () => executionIssueData,
+     *     testExecution: ({ results }) => {
+     *       if (results.totalFailed > 0) {
+     *         executionIssueData.fields.summary = "Failed test execution";
+     *       }
+     *       return executionIssueData;
+     *     },
      *     url: "https://example.org",
-     *   },
-     * });
-     * // Define a custom task to update the issue data, which can then be called from inside tests.
-     * on("task", {
-     *   'update-execution-issue': (data) => {
-     *     if (data.summary) {
-     *       executionIssueData.summary = data.summary;
-     *     }
-     *     // ...
      *   },
      * });
      * ```
@@ -200,17 +205,15 @@ export interface JiraOptions {
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-post
      * @see https://developer.atlassian.com/server/jira/platform/rest/v10000/api-group-issue/#api-api-2-issue-post
      */
-    testExecutionIssue?: MaybeFunction<
-        IssueUpdate & {
-            /**
-             * An execution issue key to attach run results to. If omitted, Xray will always create
-             * a new test execution issue with each upload.
-             *
-             * @example "CYP-123"
-             */
-            key?: string;
-        }
-    >;
+    testExecutionIssue?:
+        | (() => PluginIssueUpdate | Promise<PluginIssueUpdate>)
+        | ((args: {
+              /**
+               * The Cypress run results.
+               */
+              results: CypressRunResultType;
+          }) => PluginIssueUpdate | Promise<PluginIssueUpdate>)
+        | PluginIssueUpdate;
     /**
      * The description of the test execution issue, which will be used both for new test execution
      * issues as well as for updating existing issues (if provided through
@@ -313,7 +316,7 @@ export interface JiraOptions {
      *
      * @example "CYP-567"
      */
-    testPlanIssueKey?: MaybeFunction<string>;
+    testPlanIssueKey?: (() => Promise<string> | string) | string;
     /**
      * The issue type name of test plans. By default, Xray calls them `Test Plan`, but it's possible
      * that they have been renamed or translated in your Jira instance.

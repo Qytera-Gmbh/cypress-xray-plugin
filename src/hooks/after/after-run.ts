@@ -21,7 +21,6 @@ import { ImportFeatureCommand } from "../util/commands/xray/import-feature-comma
 import { getOrCreateConstantCommand, getOrCreateExtractFieldIdCommand } from "../util/util";
 import {
     ConvertInfoCloudCommand,
-    ConvertInfoCommand,
     ConvertInfoServerCommand,
 } from "./commands/conversion/convert-info-command";
 import { AssertCucumberConversionValidCommand } from "./commands/conversion/cucumber/assert-cucumber-conversion-valid-command";
@@ -59,7 +58,6 @@ export async function addUploadCommands(
         );
         return;
     }
-    const cypressResultsCommand = getOrCreateConstantCommand(graph, logger, runResult);
     let importCypressExecutionCommand: ImportExecutionCypressCommand | null = null;
     let importCucumberExecutionCommand: ImportExecutionCucumberCommand | null = null;
     if (containsCypressTests) {
@@ -86,7 +84,7 @@ export async function addUploadCommands(
         ) as CucumberMultipartFeature[];
         const cucumberResultsCommand = getOrCreateConstantCommand(graph, logger, cucumberResults);
         let testExecutionIssueKeyCommand: Command<string | undefined> | undefined = undefined;
-        const issueData = await getOrCall(options.jira.testExecutionIssue);
+        const issueData = await getOrCall(options.jira.testExecutionIssue, { results: runResult });
         if (issueData?.key ?? options.jira.testExecutionIssueKey) {
             testExecutionIssueKeyCommand = getOrCreateConstantCommand(
                 graph,
@@ -143,7 +141,7 @@ export async function addUploadCommands(
         }
     }
     await addPostUploadCommands(
-        cypressResultsCommand,
+        runResult,
         options,
         clients,
         graph,
@@ -182,11 +180,10 @@ async function getImportExecutionCypressCommand(
         options,
         clients,
         graph,
-        logger,
-        cypressResultsCommand
+        logger
     );
 
-    const issueData = await getOrCall(options.jira.testExecutionIssue);
+    const issueData = await getOrCall(options.jira.testExecutionIssue, { results: runResult });
     const combineResultsJsonCommand = graph.place(
         new CombineCypressJsonCommand(
             {
@@ -242,14 +239,12 @@ async function getImportExecutionCucumberCommand(
     logger: Logger,
     testExecutionIssueKeyCommand?: Command<string | undefined>
 ) {
-    const cypressResultsCommand = getOrCreateConstantCommand(graph, logger, runResult);
     const convertMultipartInfoCommand = await getConvertMultipartInfoCommand(
         runResult,
         options,
         clients,
         graph,
-        logger,
-        cypressResultsCommand
+        logger
     );
     const convertCucumberFeaturesCommand = graph.place(
         new ConvertCucumberFeaturesCommand(
@@ -302,7 +297,7 @@ async function getImportExecutionCucumberCommand(
     );
     graph.connect(assertConversionValidCommand, importCucumberExecutionCommand);
     graph.connect(combineCucumberMultipartCommand, importCucumberExecutionCommand);
-    const issueData = await getOrCall(options.jira.testExecutionIssue);
+    const issueData = await getOrCall(options.jira.testExecutionIssue, { results: runResult });
     if (issueData?.key ?? options.jira.testExecutionIssueKey) {
         const verifyExecutionIssueKeyCommand = graph.place(
             new VerifyExecutionIssueKeyCommand(
@@ -324,11 +319,12 @@ async function getImportExecutionCucumberCommand(
 }
 
 async function getExtractExecutionIssueTypeCommand(
+    runResult: CypressRunResultType,
     options: InternalCypressXrayPluginOptions,
     graph: ExecutableGraph<Command>,
     logger: Logger
 ) {
-    const issueData = await getOrCall(options.jira.testExecutionIssue);
+    const issueData = await getOrCall(options.jira.testExecutionIssue, { results: runResult });
     if (issueData?.fields?.issuetype ?? options.jira.testExecutionIssueType) {
         return getOrCreateConstantCommand(
             graph,
@@ -348,7 +344,7 @@ async function getExecutionIssueSummaryCommand(
     graph: ExecutableGraph<Command>,
     logger: Logger
 ) {
-    const issueData = await getOrCall(options.jira.testExecutionIssue);
+    const issueData = await getOrCall(options.jira.testExecutionIssue, { results: runResult });
     const testExecutionIssueSummary =
         issueData?.fields?.summary ?? options.jira.testExecutionIssueSummary;
     if (testExecutionIssueSummary) {
@@ -390,22 +386,13 @@ async function getConvertMultipartInfoCommand(
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
-    logger: Logger,
-    cypressResultsCommand: Command<CypressRunResultType>
+    logger: Logger
 ) {
-    let convertCommand: ConvertInfoCommand | undefined;
+    let convertCommand;
     if (clients.kind === "cloud") {
-        convertCommand = graph.find(
-            (command): command is ConvertInfoCloudCommand =>
-                command instanceof ConvertInfoCloudCommand &&
-                [...graph.getPredecessors(command)].includes(cypressResultsCommand)
-        );
+        convertCommand = graph.find((command) => command instanceof ConvertInfoCloudCommand);
     } else {
-        convertCommand = graph.find(
-            (command): command is ConvertInfoServerCommand =>
-                command instanceof ConvertInfoServerCommand &&
-                [...graph.getPredecessors(command)].includes(cypressResultsCommand)
-        );
+        convertCommand = graph.find((command) => command instanceof ConvertInfoServerCommand);
     }
     if (convertCommand) {
         return convertCommand;
@@ -418,10 +405,12 @@ async function getConvertMultipartInfoCommand(
         logger
     );
     const extractExecutionIssueTypeCommand = await getExtractExecutionIssueTypeCommand(
+        runResult,
         options,
         graph,
         logger
     );
+    const cypressResultsCommand = getOrCreateConstantCommand(graph, logger, runResult);
     if (clients.kind === "cloud") {
         convertCommand = graph.place(
             new ConvertInfoCloudCommand(
@@ -486,7 +475,7 @@ async function getConvertMultipartInfoCommand(
 }
 
 async function addPostUploadCommands(
-    cypressResultsCommand: Command<CypressRunResultType>,
+    runResult: CypressRunResultType,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
     graph: ExecutableGraph<Command>,
@@ -558,6 +547,7 @@ async function addPostUploadCommands(
     if (fallbackCucumberUploadCommand) {
         graph.connect(fallbackCucumberUploadCommand, verifyResultsUploadCommand);
     }
+    const cypressResultsCommand = getOrCreateConstantCommand(graph, logger, runResult);
     if (options.jira.attachVideos) {
         const extractVideoFilesCommand = graph.place(
             new ExtractVideoFilesCommand(logger, cypressResultsCommand)
@@ -575,7 +565,7 @@ async function addPostUploadCommands(
         graph.connect(verifyResultsUploadCommand, attachVideosCommand);
     }
     // Workaround for: https://jira.atlassian.com/browse/JRASERVER-66881.
-    const issueData = await getOrCall(options.jira.testExecutionIssue);
+    const issueData = await getOrCall(options.jira.testExecutionIssue, { results: runResult });
     const testExecutionIssueKey = issueData?.key ?? options.jira.testExecutionIssueKey;
     if (issueData?.transition && !testExecutionIssueKey && clients.kind === "server") {
         const transitionIssueCommand = graph.place(

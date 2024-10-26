@@ -50,7 +50,7 @@ export type Remap<T extends object, V, E extends (number | string | symbol)[] = 
 /**
  * Represents a value that may be wrapped in a callback.
  */
-export type MaybeFunction<T> = (() => Promise<T> | T) | T;
+export type MaybeFunction<P extends unknown[], T> = ((...args: P) => Promise<T> | T) | T;
 
 // See: https://stackoverflow.com/a/51399781
 type ArrayElementType<ArrayType extends readonly unknown[]> =
