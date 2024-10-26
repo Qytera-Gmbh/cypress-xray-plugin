@@ -762,6 +762,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     normalizeScreenshotNames: options.plugin.normalizeScreenshotNames,
                     projectKey: options.jira.projectKey,
                     uploadScreenshots: options.xray.uploadScreenshots,
+                    useCloudStatusFallback: true,
                     xrayStatus: options.xray.status,
                 },
                 logger,
@@ -818,20 +819,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             );
             expect(command.getParameters()).to.deep.eq({
                 evidenceCollection: new SimpleEvidenceCollection(),
-                jira: {
-                    projectKey: "CYP",
-                },
-                plugin: {
-                    normalizeScreenshotNames: true,
-                },
-                xray: {
-                    status: {
-                        failed: "FAILED",
-                        passed: "PASSED",
-                        pending: "TODO",
-                        skipped: "TODO",
-                    },
-                    uploadScreenshots: false,
+                normalizeScreenshotNames: true,
+                projectKey: "CYP",
+                uploadScreenshots: false,
+                xrayStatus: {
+                    failed: "FAILED",
+                    passed: "PASSED",
+                    pending: "TODO",
+                    skipped: "TODO",
                 },
             });
         });

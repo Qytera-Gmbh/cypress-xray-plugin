@@ -337,20 +337,21 @@ class AfterRunBuilder {
 
     public addConvertCypressTestsCommand() {
         const resultsCommand = this.getResultsCommand();
-        const command = new ConvertCypressTestsCommand(
-            {
-                evidenceCollection: this.evidenceCollection,
-                featureFileExtension: this.options.cucumber?.featureFileExtension,
-                normalizeScreenshotNames: this.options.plugin.normalizeScreenshotNames,
-                projectKey: this.options.jira.projectKey,
-                uploadScreenshots: this.options.xray.uploadScreenshots,
-                useCloudStatusFallback: this.clients.kind === "cloud",
-                xrayStatus: this.options.xray.status,
-            },
-            this.logger,
-            resultsCommand
+        const command = this.graph.place(
+            new ConvertCypressTestsCommand(
+                {
+                    evidenceCollection: this.evidenceCollection,
+                    featureFileExtension: this.options.cucumber?.featureFileExtension,
+                    normalizeScreenshotNames: this.options.plugin.normalizeScreenshotNames,
+                    projectKey: this.options.jira.projectKey,
+                    uploadScreenshots: this.options.xray.uploadScreenshots,
+                    useCloudStatusFallback: this.clients.kind === "cloud",
+                    xrayStatus: this.options.xray.status,
+                },
+                this.logger,
+                resultsCommand
+            )
         );
-        this.graph.place(command);
         this.graph.connect(resultsCommand, command);
         return command;
     }
@@ -400,19 +401,6 @@ class AfterRunBuilder {
         );
         this.graph.connect(parameters.execution, command);
         return command;
-    }
-
-    public addExtractExecutionIssueTypeCommand() {
-        if (this.issueData?.fields?.issuetype || this.options.jira.testExecutionIssueType) {
-            return getOrCreateConstantCommand(
-                this.graph,
-                this.logger,
-                this.issueData?.fields?.issuetype ?? {
-                    name: this.options.jira.testExecutionIssueType,
-                }
-            );
-        }
-        return getOrCreateConstantCommand(this.graph, this.logger, { name: "Test Execution" });
     }
 
     public addExtractFieldIdCommand(field: "test-environments" | "test-plan") {

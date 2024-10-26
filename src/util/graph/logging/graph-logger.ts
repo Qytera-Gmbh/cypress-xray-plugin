@@ -86,7 +86,10 @@ export class ChainingGraphLogger<V extends Failable> {
                 }
             } else if (includePredecessors) {
                 for (const predecessor of graph.getPredecessors(currentVertex)) {
-                    if (!queue.find(([v]) => v === predecessor)) {
+                    if (
+                        !queue.find(([v]) => v === predecessor) &&
+                        chain.every((entry) => entry.vertex !== predecessor)
+                    ) {
                         queue.enqueue([predecessor, indent, true]);
                     }
                 }
