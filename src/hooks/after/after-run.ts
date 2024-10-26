@@ -1,9 +1,21 @@
 import fs from "fs";
 import path from "path";
+import { XrayClient } from "../../client/xray/xray-client";
 import { EvidenceCollection } from "../../context";
 import { CypressRunResultType } from "../../types/cypress/cypress";
-import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
-import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
+import { IssueTransition } from "../../types/jira/responses/issue-transition";
+import { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
+import {
+    ClientCombination,
+    InternalCypressXrayPluginOptions,
+    PluginIssueUpdate,
+} from "../../types/plugin";
+import { XrayTest } from "../../types/xray/import-test-execution-results";
+import {
+    CucumberMultipart,
+    CucumberMultipartFeature,
+} from "../../types/xray/requests/import-execution-cucumber-multipart";
+import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import { getOrCall } from "../../util/functions";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Level, Logger } from "../../util/logging";
@@ -35,7 +47,7 @@ import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-com
 import { containsCucumberTest, containsCypressTest } from "./util";
 
 export async function addUploadCommands(
-    runResult: CypressRunResultType,
+    results: CypressRunResultType,
     projectRoot: string,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
@@ -44,11 +56,11 @@ export async function addUploadCommands(
     logger: Logger
 ) {
     const containsCypressTests = containsCypressTest(
-        runResult,
+        results,
         options.cucumber?.featureFileExtension
     );
     const containsCucumberTests = containsCucumberTest(
-        runResult,
+        results,
         options.cucumber?.featureFileExtension
     );
     if (!containsCypressTests && !containsCucumberTests) {
@@ -58,68 +70,40 @@ export async function addUploadCommands(
         );
         return;
     }
-    let importCypressExecutionCommand: ImportExecutionCypressCommand | null = null;
-    let importCucumberExecutionCommand: ImportExecutionCucumberCommand | null = null;
+    const issueData = await getOrCall(options.jira.testExecutionIssue, { results });
+    const testPlanIssueKey = await getOrCall(options.jira.testPlanIssueKey);
+    const builder = new AfterRunBuilder({
+        clients: clients,
+        evidenceCollection: evidenceCollection,
+        graph: graph,
+        issueData: issueData,
+        logger: logger,
+        options: options,
+        results: results,
+    });
+    let importCypressExecutionCommand;
+    let importCucumberExecutionCommand;
     if (containsCypressTests) {
-        importCypressExecutionCommand = await getImportExecutionCypressCommand(
-            runResult,
-            options,
-            clients,
-            evidenceCollection,
-            graph,
-            logger
-        );
+        importCypressExecutionCommand = getImportExecutionCypressCommand(graph, clients, builder, {
+            reusesExecutionIssue:
+                issueData?.key !== undefined || options.jira.testExecutionIssueKey !== undefined,
+            testEnvironments: options.xray.testEnvironments,
+            testPlanIssueKey: testPlanIssueKey,
+        });
     }
     if (containsCucumberTests) {
-        if (!options.cucumber?.preprocessor?.json.output) {
-            throw new Error(
-                "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured."
-            );
-        }
-        // Cypress might change process.cwd(), so we need to query the root directory.
-        // See: https://github.com/cypress-io/cypress/issues/22689
-        const reportPath = path.resolve(projectRoot, options.cucumber.preprocessor.json.output);
-        const cucumberResults = JSON.parse(
-            fs.readFileSync(reportPath, "utf-8")
-        ) as CucumberMultipartFeature[];
-        const cucumberResultsCommand = getOrCreateConstantCommand(graph, logger, cucumberResults);
-        let testExecutionIssueKeyCommand: Command<string | undefined> | undefined = undefined;
-        const issueData = await getOrCall(options.jira.testExecutionIssue, { results: runResult });
-        if (issueData?.key ?? options.jira.testExecutionIssueKey) {
-            testExecutionIssueKeyCommand = getOrCreateConstantCommand(
-                graph,
-                logger,
-                issueData?.key ?? options.jira.testExecutionIssueKey
-            );
-        } else if (importCypressExecutionCommand) {
-            // Use an optional command in case the Cypress import fails. We could then still upload
-            // Cucumber results.
-            const fallbackExecutionIssueKeyCommand = graph.place(
-                new FallbackCommand(
-                    {
-                        fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
-                        fallbackValue: undefined,
-                    },
-                    logger,
-                    importCypressExecutionCommand
-                )
-            );
-            graph.connect(importCypressExecutionCommand, fallbackExecutionIssueKeyCommand, true);
-            testExecutionIssueKeyCommand = fallbackExecutionIssueKeyCommand;
-        }
-        importCucumberExecutionCommand = await getImportExecutionCucumberCommand(
-            runResult,
-            cucumberResultsCommand,
-            projectRoot,
-            options,
-            clients,
+        importCucumberExecutionCommand = getImportExecutionCucumberCommand(
             graph,
-            logger,
-            testExecutionIssueKeyCommand
+            clients,
+            builder,
+            {
+                cucumberReportPath: options.cucumber?.preprocessor?.json.output,
+                projectRoot: projectRoot,
+            }
         );
         // Make sure to add an edge from any feature file imports to the execution. Otherwise, the
         // execution will contain old steps (those which were there prior to feature import).
-        if (options.cucumber.uploadFeatures) {
+        if (options.cucumber?.uploadFeatures) {
             for (const importFeatureCommand of graph.getVertices()) {
                 if (importFeatureCommand instanceof ImportFeatureCommand) {
                     const filePath = path.relative(
@@ -127,7 +111,7 @@ export async function addUploadCommands(
                         importFeatureCommand.getParameters().filePath
                     );
                     if (
-                        runResult.runs.some((run) => {
+                        results.runs.some((run) => {
                             const specPath = path.relative(projectRoot, run.spec.relative);
                             return specPath === filePath;
                         })
@@ -140,253 +124,136 @@ export async function addUploadCommands(
             }
         }
     }
-    await addPostUploadCommands(
-        runResult,
-        options,
-        clients,
-        graph,
-        logger,
-        importCypressExecutionCommand,
-        importCucumberExecutionCommand
-    );
+    let fallbackCypressUploadCommand;
+    let fallbackCucumberUploadCommand;
+    if (importCypressExecutionCommand) {
+        fallbackCypressUploadCommand = builder.addFallbackCommand({
+            fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
+            fallbackValue: undefined,
+            input: importCypressExecutionCommand,
+        });
+    }
+    if (importCucumberExecutionCommand) {
+        fallbackCucumberUploadCommand = builder.addFallbackCommand({
+            fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
+            fallbackValue: undefined,
+            input: importCucumberExecutionCommand,
+        });
+    }
+    const finalExecutionIssueKey = builder.addVerifyResultUploadCommand({
+        cucumberExecutionIssueKey: fallbackCucumberUploadCommand,
+        cypressExecutionIssueKey: fallbackCypressUploadCommand,
+    });
+    if (options.jira.attachVideos) {
+        builder.addAttachVideosCommand({ resolvedExecutionIssueKey: finalExecutionIssueKey });
+    }
+    // Workaround for: https://jira.atlassian.com/browse/JRASERVER-66881.
+    if (
+        issueData?.transition &&
+        !(issueData.key ?? options.jira.testExecutionIssueKey) &&
+        clients.kind === "server"
+    ) {
+        builder.addTransitionIssueCommand({
+            issueKey: finalExecutionIssueKey,
+            transition: issueData.transition,
+        });
+    }
 }
 
-async function getImportExecutionCypressCommand(
-    runResult: CypressRunResultType,
-    options: InternalCypressXrayPluginOptions,
-    clients: ClientCombination,
-    evidenceCollection: EvidenceCollection,
+function getImportExecutionCypressCommand(
     graph: ExecutableGraph<Command>,
-    logger: Logger
+    clients: ClientCombination,
+    builder: AfterRunBuilder,
+    options: {
+        reusesExecutionIssue: boolean;
+        testEnvironments?: string[];
+        testPlanIssueKey?: string;
+    }
 ) {
-    const cypressResultsCommand = getOrCreateConstantCommand(graph, logger, runResult);
-    const convertCypressTestsCommand = graph.place(
-        new ConvertCypressTestsCommand(
-            {
-                cucumber: options.cucumber,
-                evidenceCollection: evidenceCollection,
-                jira: options.jira,
-                plugin: options.plugin,
-                useCloudStatusFallback: clients.kind === "cloud",
-                xray: options.xray,
-            },
-            logger,
-            cypressResultsCommand
-        )
-    );
-    graph.connect(cypressResultsCommand, convertCypressTestsCommand);
-    const convertMultipartInfoCommand = await getConvertMultipartInfoCommand(
-        runResult,
-        options,
-        clients,
-        graph,
-        logger
-    );
-
-    const issueData = await getOrCall(options.jira.testExecutionIssue, { results: runResult });
-    const combineResultsJsonCommand = graph.place(
-        new CombineCypressJsonCommand(
-            {
-                testExecutionIssueKey: issueData?.key ?? options.jira.testExecutionIssueKey,
-            },
-            logger,
-            convertCypressTestsCommand,
-            convertMultipartInfoCommand
-        )
-    );
-    graph.connect(convertCypressTestsCommand, combineResultsJsonCommand);
-    graph.connect(convertMultipartInfoCommand, combineResultsJsonCommand);
-    const assertConversionValidCommand = graph.place(
-        new AssertCypressConversionValidCommand(logger, combineResultsJsonCommand)
-    );
-    graph.connect(combineResultsJsonCommand, assertConversionValidCommand);
-    const importCypressExecutionCommand = graph.place(
-        new ImportExecutionCypressCommand(
-            { xrayClient: clients.xrayClient },
-            logger,
-            combineResultsJsonCommand
-        )
-    );
+    const convertCypressTestsCommand = builder.addConvertCypressTestsCommand();
+    const convertMultipartInfoCommand = addConvertMultipartInfoCommand(graph, clients, builder, {
+        testEnvironments: options.testEnvironments,
+        testPlanIssueKey: options.testPlanIssueKey,
+    });
+    const combineResultsJsonCommand = builder.addCombineCypressJsonCommand({
+        convertCypressTestsCommand: convertCypressTestsCommand,
+        convertMultipartInfoCommand: convertMultipartInfoCommand,
+    });
+    const assertConversionValidCommand = builder.addAssertCypressConversionValidCommand({
+        xrayTestExecutionResults: combineResultsJsonCommand,
+    });
+    const importCypressExecutionCommand = builder.addImportExecutionCypressCommand({
+        execution: combineResultsJsonCommand,
+    });
     graph.connect(assertConversionValidCommand, importCypressExecutionCommand);
-    graph.connect(combineResultsJsonCommand, importCypressExecutionCommand);
-    if (issueData?.key ?? options.jira.testExecutionIssueKey) {
-        const verifyExecutionIssueKeyCommand = graph.place(
-            new VerifyExecutionIssueKeyCommand(
-                {
-                    displayCloudHelp: clients.kind === "cloud",
-                    importType: "cypress",
-                    testExecutionIssueKey: issueData?.key ?? options.jira.testExecutionIssueKey,
-                    testExecutionIssueType: issueData?.fields?.issuetype ?? {
-                        name: options.jira.testExecutionIssueType,
-                    },
-                },
-                logger,
-                importCypressExecutionCommand
-            )
-        );
-        graph.connect(importCypressExecutionCommand, verifyExecutionIssueKeyCommand);
+    if (options.reusesExecutionIssue) {
+        builder.addVerifyExecutionIssueKeyCommand({
+            importType: "cypress",
+            resolvedExecutionIssue: importCypressExecutionCommand,
+        });
     }
     return importCypressExecutionCommand;
 }
 
-async function getImportExecutionCucumberCommand(
-    runResult: CypressRunResultType,
-    cucumberResultsCommand: ConstantCommand<CucumberMultipartFeature[]>,
-    projectRoot: string,
-    options: InternalCypressXrayPluginOptions,
-    clients: ClientCombination,
+function getImportExecutionCucumberCommand(
     graph: ExecutableGraph<Command>,
-    logger: Logger,
-    testExecutionIssueKeyCommand?: Command<string | undefined>
-) {
-    const convertMultipartInfoCommand = await getConvertMultipartInfoCommand(
-        runResult,
-        options,
-        clients,
-        graph,
-        logger
-    );
-    const convertCucumberFeaturesCommand = graph.place(
-        new ConvertCucumberFeaturesCommand(
-            {
-                cucumber: {
-                    prefixes: {
-                        precondition: options.cucumber?.prefixes.precondition,
-                        test: options.cucumber?.prefixes.test,
-                    },
-                },
-                jira: {
-                    projectKey: options.jira.projectKey,
-                },
-                projectRoot: projectRoot,
-                useCloudTags: clients.kind === "cloud",
-                xray: {
-                    status: options.xray.status,
-                    testEnvironments: options.xray.testEnvironments,
-                    uploadScreenshots: options.xray.uploadScreenshots,
-                },
-            },
-            logger,
-            cucumberResultsCommand,
-            testExecutionIssueKeyCommand
-        )
-    );
-    graph.connect(cucumberResultsCommand, convertCucumberFeaturesCommand);
-    if (testExecutionIssueKeyCommand) {
-        graph.connect(testExecutionIssueKeyCommand, convertCucumberFeaturesCommand);
+    clients: ClientCombination,
+    builder: AfterRunBuilder,
+    options: {
+        cucumberReportPath?: string;
+        cypressExecutionIssueKey?: Command<string>;
+        executionIssueKey?: Command<string>;
+        projectRoot: string;
+        testEnvironments?: string[];
+        testPlanIssueKey?: string;
     }
-    const combineCucumberMultipartCommand = graph.place(
-        new CombineCucumberMultipartCommand(
-            logger,
-            convertMultipartInfoCommand,
-            convertCucumberFeaturesCommand
-        )
-    );
-    graph.connect(convertMultipartInfoCommand, combineCucumberMultipartCommand);
-    graph.connect(convertCucumberFeaturesCommand, combineCucumberMultipartCommand);
-    const assertConversionValidCommand = graph.place(
-        new AssertCucumberConversionValidCommand(logger, combineCucumberMultipartCommand)
-    );
-    graph.connect(combineCucumberMultipartCommand, assertConversionValidCommand);
-    const importCucumberExecutionCommand = graph.place(
-        new ImportExecutionCucumberCommand(
-            { xrayClient: clients.xrayClient },
-            logger,
-            combineCucumberMultipartCommand
-        )
-    );
-    graph.connect(assertConversionValidCommand, importCucumberExecutionCommand);
-    graph.connect(combineCucumberMultipartCommand, importCucumberExecutionCommand);
-    const issueData = await getOrCall(options.jira.testExecutionIssue, { results: runResult });
-    if (issueData?.key ?? options.jira.testExecutionIssueKey) {
-        const verifyExecutionIssueKeyCommand = graph.place(
-            new VerifyExecutionIssueKeyCommand(
-                {
-                    displayCloudHelp: clients.kind === "cloud",
-                    importType: "cucumber",
-                    testExecutionIssueKey: issueData?.key ?? options.jira.testExecutionIssueKey,
-                    testExecutionIssueType: issueData?.fields?.issuetype ?? {
-                        name: options.jira.testExecutionIssueType,
-                    },
-                },
-                logger,
-                importCucumberExecutionCommand
-            )
+) {
+    if (!options.cucumberReportPath) {
+        throw new Error(
+            "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured."
         );
-        graph.connect(importCucumberExecutionCommand, verifyExecutionIssueKeyCommand);
+    }
+    const convertMultipartInfoCommand = addConvertMultipartInfoCommand(graph, clients, builder, {
+        testEnvironments: options.testEnvironments,
+        testPlanIssueKey: options.testPlanIssueKey,
+    });
+    const cucumberResultsCommand = builder.getCucumberResultsCommand({
+        cucumberReportPath: options.cucumberReportPath,
+        projectRoot: options.projectRoot,
+    });
+    const convertCucumberFeaturesCommand = builder.addConvertCucumberFeaturesCommand({
+        cucumberResults: cucumberResultsCommand,
+        executionIssueKey: options.executionIssueKey,
+        projectRoot: options.projectRoot,
+    });
+    const combineCucumberMultipartCommand = builder.addCombineCucumberMultipartCommand({
+        cucumberMultipartFeatures: convertCucumberFeaturesCommand,
+        cucumberMultipartInfo: convertMultipartInfoCommand,
+    });
+    const assertConversionValidCommand = builder.addAssertCucumberConversionValidCommand({
+        cucumberMultipart: combineCucumberMultipartCommand,
+    });
+    const importCucumberExecutionCommand = builder.addImportExecutionCucumberCommand({
+        cucumberMultipart: combineCucumberMultipartCommand,
+    });
+    graph.connect(assertConversionValidCommand, importCucumberExecutionCommand);
+    if (options.executionIssueKey) {
+        builder.addVerifyExecutionIssueKeyCommand({
+            importType: "cucumber",
+            resolvedExecutionIssue: importCucumberExecutionCommand,
+        });
     }
     return importCucumberExecutionCommand;
 }
 
-async function getExtractExecutionIssueTypeCommand(
-    runResult: CypressRunResultType,
-    options: InternalCypressXrayPluginOptions,
+function addConvertMultipartInfoCommand(
     graph: ExecutableGraph<Command>,
-    logger: Logger
-) {
-    const issueData = await getOrCall(options.jira.testExecutionIssue, { results: runResult });
-    if (issueData?.fields?.issuetype ?? options.jira.testExecutionIssueType) {
-        return getOrCreateConstantCommand(
-            graph,
-            logger,
-            issueData?.fields?.issuetype ?? {
-                name: options.jira.testExecutionIssueType,
-            }
-        );
-    }
-    return getOrCreateConstantCommand(graph, logger, { name: "Test Execution" });
-}
-
-async function getExecutionIssueSummaryCommand(
-    runResult: CypressRunResultType,
-    options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
-    graph: ExecutableGraph<Command>,
-    logger: Logger
-) {
-    const issueData = await getOrCall(options.jira.testExecutionIssue, { results: runResult });
-    const testExecutionIssueSummary =
-        issueData?.fields?.summary ?? options.jira.testExecutionIssueSummary;
-    if (testExecutionIssueSummary) {
-        return getOrCreateConstantCommand(graph, logger, testExecutionIssueSummary);
+    builder: AfterRunBuilder,
+    options: {
+        testEnvironments?: string[];
+        testPlanIssueKey?: string;
     }
-    const testExecutionIssueKey = issueData?.key ?? options.jira.testExecutionIssueKey;
-    if (testExecutionIssueKey) {
-        const issueKeysCommand = getOrCreateConstantCommand(graph, logger, [testExecutionIssueKey]);
-        const getSummaryValuesCommand = graph.findOrDefault(
-            GetSummaryValuesCommand,
-            () => {
-                const command = graph.place(
-                    new GetSummaryValuesCommand(
-                        { jiraClient: clients.jiraClient },
-                        logger,
-                        issueKeysCommand
-                    )
-                );
-                graph.connect(issueKeysCommand, command);
-                return command;
-            },
-            (vertex) => [...graph.getPredecessors(vertex)].includes(issueKeysCommand)
-        );
-        const destructureCommand = graph.place(
-            new DestructureCommand(logger, getSummaryValuesCommand, testExecutionIssueKey)
-        );
-        graph.connect(getSummaryValuesCommand, destructureCommand);
-        return destructureCommand;
-    }
-    return getOrCreateConstantCommand(
-        graph,
-        logger,
-        `Execution Results [${runResult.startedTestsAt}]`
-    );
-}
-
-async function getConvertMultipartInfoCommand(
-    runResult: CypressRunResultType,
-    options: InternalCypressXrayPluginOptions,
-    clients: ClientCombination,
-    graph: ExecutableGraph<Command>,
-    logger: Logger
 ) {
     let convertCommand;
     if (clients.kind === "cloud") {
@@ -397,187 +264,518 @@ async function getConvertMultipartInfoCommand(
     if (convertCommand) {
         return convertCommand;
     }
-    const executionIssueSummaryCommand = await getExecutionIssueSummaryCommand(
-        runResult,
-        options,
-        clients,
-        graph,
-        logger
-    );
-    const extractExecutionIssueTypeCommand = await getExtractExecutionIssueTypeCommand(
-        runResult,
-        options,
-        graph,
-        logger
-    );
-    const cypressResultsCommand = getOrCreateConstantCommand(graph, logger, runResult);
+    const executionIssueSummaryCommand = builder.addExecutionIssueSummaryCommand();
+    const extractExecutionIssueTypeCommand = builder.addExtractExecutionIssueTypeCommand();
     if (clients.kind === "cloud") {
-        convertCommand = graph.place(
-            new ConvertInfoCloudCommand(
-                { jira: options.jira, xray: options.xray },
-                logger,
-                cypressResultsCommand,
-                {
-                    summary: executionIssueSummaryCommand,
-                    testExecutionIssueType: extractExecutionIssueTypeCommand,
-                }
-            )
-        );
+        convertCommand = builder.addConvertInfoCloudCommand({
+            executionIssueSummary: executionIssueSummaryCommand,
+            executionIssueType: extractExecutionIssueTypeCommand,
+        });
     } else {
         let testPlanIdCommand: Command<string> | undefined = undefined;
         let testEnvironmentsIdCommand: Command<string> | undefined = undefined;
-        if (options.jira.testPlanIssueKey) {
-            testPlanIdCommand = options.jira.fields.testPlan
-                ? getOrCreateConstantCommand(graph, logger, options.jira.fields.testPlan)
-                : getOrCreateExtractFieldIdCommand(
-                      JiraField.TEST_PLAN,
-                      clients.jiraClient,
-                      graph,
-                      logger
-                  );
+        if (options.testPlanIssueKey) {
+            testPlanIdCommand = builder.addExtractFieldIdCommand("test-plan");
         }
-        if (options.xray.testEnvironments) {
-            testEnvironmentsIdCommand = options.jira.fields.testEnvironments
-                ? getOrCreateConstantCommand(graph, logger, options.jira.fields.testEnvironments)
-                : getOrCreateExtractFieldIdCommand(
-                      JiraField.TEST_ENVIRONMENTS,
-                      clients.jiraClient,
-                      graph,
-                      logger
-                  );
+        if (options.testEnvironments) {
+            testEnvironmentsIdCommand = builder.addExtractFieldIdCommand("test-environments");
         }
-        convertCommand = graph.place(
-            new ConvertInfoServerCommand(
-                { jira: options.jira, xray: options.xray },
-                logger,
-                cypressResultsCommand,
-                {
-                    fieldIds: {
-                        testEnvironmentsId: testEnvironmentsIdCommand,
-                        testPlanId: testPlanIdCommand,
-                    },
-                    summary: executionIssueSummaryCommand,
-                    testExecutionIssueType: extractExecutionIssueTypeCommand,
-                }
-            )
-        );
-        if (testPlanIdCommand) {
-            graph.connect(testPlanIdCommand, convertCommand);
-        }
-        if (testEnvironmentsIdCommand) {
-            graph.connect(testEnvironmentsIdCommand, convertCommand);
-        }
+        convertCommand = builder.addConvertInfoServerCommand({
+            executionIssueSummary: executionIssueSummaryCommand,
+            executionIssueType: extractExecutionIssueTypeCommand,
+            fieldIds: {
+                testEnvironment: testEnvironmentsIdCommand,
+                testPlan: testPlanIdCommand,
+            },
+        });
     }
-    graph.connect(executionIssueSummaryCommand, convertCommand);
-    graph.connect(extractExecutionIssueTypeCommand, convertCommand);
-    graph.connect(cypressResultsCommand, convertCommand);
     return convertCommand;
 }
 
-async function addPostUploadCommands(
-    runResult: CypressRunResultType,
-    options: InternalCypressXrayPluginOptions,
-    clients: ClientCombination,
-    graph: ExecutableGraph<Command>,
-    logger: Logger,
-    importCypressExecutionCommand: ImportExecutionCypressCommand | null,
-    importCucumberExecutionCommand: ImportExecutionCucumberCommand | null
-) {
-    let fallbackCypressUploadCommand: Command<string | undefined> | undefined = undefined;
-    let fallbackCucumberUploadCommand: Command<string | undefined> | undefined = undefined;
-    if (importCypressExecutionCommand) {
-        fallbackCypressUploadCommand = graph.findOrDefault(
-            FallbackCommand<undefined, string>,
-            () => {
-                const fallbackCommand = graph.place(
-                    new FallbackCommand(
-                        {
-                            fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
-                            fallbackValue: undefined,
-                        },
-                        logger,
-                        importCypressExecutionCommand
-                    )
-                );
-                graph.connect(importCypressExecutionCommand, fallbackCommand, true);
-                return fallbackCommand;
-            },
-            (command) => {
-                const predecessors = [...graph.getPredecessors(command)];
-                return (
-                    predecessors.length === 1 && predecessors[0] === importCypressExecutionCommand
-                );
+class AfterRunBuilder {
+    private readonly graph: ExecutableGraph<Command>;
+    private readonly results: CypressRunResultType;
+    private readonly options: InternalCypressXrayPluginOptions;
+    private readonly issueData: PluginIssueUpdate | undefined;
+    private readonly evidenceCollection: EvidenceCollection;
+    private readonly clients: ClientCombination;
+    private readonly logger: Logger;
+    private readonly constants: {
+        issueData?: ConstantCommand<PluginIssueUpdate>;
+        results?: ConstantCommand<CypressRunResultType>;
+    };
+
+    constructor(args: {
+        clients: ClientCombination;
+        evidenceCollection: EvidenceCollection;
+        graph: ExecutableGraph<Command>;
+        issueData?: PluginIssueUpdate;
+        logger: Logger;
+        options: InternalCypressXrayPluginOptions;
+        results: CypressRunResultType;
+    }) {
+        this.graph = args.graph;
+        this.results = args.results;
+        this.options = args.options;
+        this.issueData = args.issueData;
+        this.evidenceCollection = args.evidenceCollection;
+        this.clients = args.clients;
+        this.logger = args.logger;
+        this.constants = {};
+    }
+
+    public getResultsCommand() {
+        if (!this.constants.results) {
+            this.constants.results = getOrCreateConstantCommand(
+                this.graph,
+                this.logger,
+                this.results
+            );
+        }
+        return this.constants.results;
+    }
+
+    public getIssueDataCommand() {
+        if (!this.constants.issueData) {
+            const issueData = { ...this.issueData };
+            const summary =
+                issueData.fields?.summary ?? this.options.jira.testExecutionIssueSummary;
+            if (!summary) {
+                issueData.fields = {
+                    ...issueData.fields,
+                    summary: `Execution Results [${this.results.startedTestsAt}]`,
+                };
             }
-        );
-    }
-    if (importCucumberExecutionCommand) {
-        fallbackCucumberUploadCommand = graph.findOrDefault(
-            FallbackCommand<undefined, string>,
-            () => {
-                const fallbackCommand = graph.place(
-                    new FallbackCommand(
-                        {
-                            fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
-                            fallbackValue: undefined,
+            if (!issueData.fields?.issuetype) {
+                if (this.options.jira.testExecutionIssueType) {
+                    issueData.fields = {
+                        ...issueData.fields,
+                        issuetype: {
+                            name: this.options.jira.testExecutionIssueType,
                         },
-                        logger,
-                        importCucumberExecutionCommand
-                    )
-                );
-                graph.connect(importCucumberExecutionCommand, fallbackCommand, true);
-                return fallbackCommand;
-            },
-            (command) => {
-                const predecessors = [...graph.getPredecessors(command)];
-                return (
-                    predecessors.length === 1 && predecessors[0] === importCucumberExecutionCommand
-                );
+                    };
+                } else {
+                    issueData.fields = {
+                        ...issueData.fields,
+                        issuetype: {
+                            name: "Test Execution",
+                        },
+                    };
+                }
             }
+            this.constants.issueData = getOrCreateConstantCommand(
+                this.graph,
+                this.logger,
+                issueData
+            );
+        }
+        return this.constants.issueData;
+    }
+
+    public getCucumberResultsCommand(parameters: {
+        cucumberReportPath: string;
+        projectRoot: string;
+    }) {
+        // Cypress might change process.cwd(), so we need to query the root directory.
+        // See: https://github.com/cypress-io/cypress/issues/22689
+        const reportPath = path.resolve(parameters.projectRoot, parameters.cucumberReportPath);
+        const cucumberResults = JSON.parse(
+            fs.readFileSync(reportPath, "utf-8")
+        ) as CucumberMultipartFeature[];
+        return getOrCreateConstantCommand(this.graph, this.logger, cucumberResults);
+    }
+
+    public addConvertCypressTestsCommand() {
+        const resultsCommand = this.getResultsCommand();
+        const command = new ConvertCypressTestsCommand(
+            {
+                evidenceCollection: this.evidenceCollection,
+                featureFileExtension: this.options.cucumber?.featureFileExtension,
+                normalizeScreenshotNames: this.options.plugin.normalizeScreenshotNames,
+                projectKey: this.options.jira.projectKey,
+                uploadScreenshots: this.options.xray.uploadScreenshots,
+                useCloudStatusFallback: this.clients.kind === "cloud",
+                xrayStatus: this.options.xray.status,
+            },
+            this.logger,
+            resultsCommand
         );
+        this.graph.place(command);
+        this.graph.connect(resultsCommand, command);
+        return command;
     }
-    const verifyResultsUploadCommand = graph.place(
-        new VerifyResultsUploadCommand({ url: options.jira.url }, logger, {
-            cucumberExecutionIssueKey: fallbackCucumberUploadCommand,
-            cypressExecutionIssueKey: fallbackCypressUploadCommand,
-        })
-    );
-    if (fallbackCypressUploadCommand) {
-        graph.connect(fallbackCypressUploadCommand, verifyResultsUploadCommand);
-    }
-    if (fallbackCucumberUploadCommand) {
-        graph.connect(fallbackCucumberUploadCommand, verifyResultsUploadCommand);
-    }
-    const cypressResultsCommand = getOrCreateConstantCommand(graph, logger, runResult);
-    if (options.jira.attachVideos) {
-        const extractVideoFilesCommand = graph.place(
-            new ExtractVideoFilesCommand(logger, cypressResultsCommand)
-        );
-        graph.connect(cypressResultsCommand, extractVideoFilesCommand);
-        const attachVideosCommand = graph.place(
-            new AttachFilesCommand(
-                { jiraClient: clients.jiraClient },
-                logger,
-                extractVideoFilesCommand,
-                verifyResultsUploadCommand
+
+    public addCombineCypressJsonCommand(parameters: {
+        convertCypressTestsCommand: Command<[XrayTest, ...XrayTest[]]>;
+        convertMultipartInfoCommand: Command<MultipartInfo>;
+    }) {
+        const command = this.graph.place(
+            new CombineCypressJsonCommand(
+                {
+                    testExecutionIssueKey:
+                        this.issueData?.key ?? this.options.jira.testExecutionIssueKey,
+                },
+                this.logger,
+                parameters.convertCypressTestsCommand,
+                parameters.convertMultipartInfoCommand
             )
         );
-        graph.connect(extractVideoFilesCommand, attachVideosCommand);
-        graph.connect(verifyResultsUploadCommand, attachVideosCommand);
+        this.graph.connect(parameters.convertCypressTestsCommand, command);
+        this.graph.connect(parameters.convertMultipartInfoCommand, command);
+        return command;
     }
-    // Workaround for: https://jira.atlassian.com/browse/JRASERVER-66881.
-    const issueData = await getOrCall(options.jira.testExecutionIssue, { results: runResult });
-    const testExecutionIssueKey = issueData?.key ?? options.jira.testExecutionIssueKey;
-    if (issueData?.transition && !testExecutionIssueKey && clients.kind === "server") {
-        const transitionIssueCommand = graph.place(
+
+    public addAssertCypressConversionValidCommand(parameters: {
+        xrayTestExecutionResults: Command<Parameters<XrayClient["importExecutionMultipart"]>>;
+    }) {
+        const command = this.graph.place(
+            new AssertCypressConversionValidCommand(
+                this.logger,
+                parameters.xrayTestExecutionResults
+            )
+        );
+        this.graph.connect(parameters.xrayTestExecutionResults, command);
+        return command;
+    }
+
+    public addImportExecutionCypressCommand(parameters: {
+        execution: Command<Parameters<XrayClient["importExecutionMultipart"]>>;
+    }) {
+        const command = new ImportExecutionCypressCommand(
+            { xrayClient: this.clients.xrayClient },
+            this.logger,
+            parameters.execution
+        );
+        this.graph.connect(parameters.execution, command);
+        return command;
+    }
+
+    public addExecutionIssueSummaryCommand() {
+        const testExecutionIssueSummary =
+            this.issueData?.fields?.summary ?? this.options.jira.testExecutionIssueSummary;
+        if (testExecutionIssueSummary) {
+            return getOrCreateConstantCommand(this.graph, this.logger, testExecutionIssueSummary);
+        }
+        const testExecutionIssueKey =
+            this.issueData?.key ?? this.options.jira.testExecutionIssueKey;
+        if (testExecutionIssueKey) {
+            const issueKeysCommand = getOrCreateConstantCommand(this.graph, this.logger, [
+                testExecutionIssueKey,
+            ]);
+            const getSummaryValuesCommand = this.graph.findOrDefault(
+                GetSummaryValuesCommand,
+                () => {
+                    const command = this.graph.place(
+                        new GetSummaryValuesCommand(
+                            { jiraClient: this.clients.jiraClient },
+                            this.logger,
+                            issueKeysCommand
+                        )
+                    );
+                    this.graph.connect(issueKeysCommand, command);
+                    return command;
+                },
+                (vertex) => [...this.graph.getPredecessors(vertex)].includes(issueKeysCommand)
+            );
+            const destructureCommand = this.graph.place(
+                new DestructureCommand(this.logger, getSummaryValuesCommand, testExecutionIssueKey)
+            );
+            this.graph.connect(getSummaryValuesCommand, destructureCommand);
+            return destructureCommand;
+        }
+        return getOrCreateConstantCommand(
+            this.graph,
+            this.logger,
+            `Execution Results [${this.results.startedTestsAt}]`
+        );
+    }
+
+    public addExtractExecutionIssueTypeCommand() {
+        if (this.issueData?.fields?.issuetype || this.options.jira.testExecutionIssueType) {
+            return getOrCreateConstantCommand(
+                this.graph,
+                this.logger,
+                this.issueData?.fields?.issuetype ?? {
+                    name: this.options.jira.testExecutionIssueType,
+                }
+            );
+        }
+        return getOrCreateConstantCommand(this.graph, this.logger, { name: "Test Execution" });
+    }
+
+    public addExtractFieldIdCommand(field: "test-environments" | "test-plan") {
+        switch (field) {
+            case "test-plan":
+                return this.options.jira.fields.testPlan
+                    ? getOrCreateConstantCommand(
+                          this.graph,
+                          this.logger,
+                          this.options.jira.fields.testPlan
+                      )
+                    : getOrCreateExtractFieldIdCommand(
+                          JiraField.TEST_PLAN,
+                          this.clients.jiraClient,
+                          this.graph,
+                          this.logger
+                      );
+            case "test-environments":
+                return this.options.jira.fields.testEnvironments
+                    ? getOrCreateConstantCommand(
+                          this.graph,
+                          this.logger,
+                          this.options.jira.fields.testEnvironments
+                      )
+                    : getOrCreateExtractFieldIdCommand(
+                          JiraField.TEST_ENVIRONMENTS,
+                          this.clients.jiraClient,
+                          this.graph,
+                          this.logger
+                      );
+        }
+    }
+
+    public addConvertInfoCloudCommand(parameters: {
+        executionIssueSummary: Command<string>;
+        executionIssueType: Command<IssueTypeDetails>;
+    }) {
+        const resultsCommand = this.getResultsCommand();
+        const issueDataCommand = this.getIssueDataCommand();
+        const command = new ConvertInfoCloudCommand(
+            { jira: this.options.jira, xray: this.options.xray },
+            this.logger,
+            resultsCommand,
+            {
+                issueData: issueDataCommand,
+                summary: parameters.executionIssueSummary,
+                testExecutionIssueType: parameters.executionIssueType,
+            }
+        );
+        this.graph.place(command);
+        this.graph.connect(resultsCommand, command);
+        this.graph.connect(issueDataCommand, command);
+        this.graph.connect(parameters.executionIssueSummary, command);
+        this.graph.connect(parameters.executionIssueType, command);
+        return command;
+    }
+
+    public addConvertInfoServerCommand(parameters: {
+        executionIssueSummary: Command<string>;
+        executionIssueType: Command<IssueTypeDetails>;
+        fieldIds: {
+            testEnvironment?: Command<string>;
+            testPlan?: Command<string>;
+        };
+    }) {
+        const resultsCommand = this.getResultsCommand();
+        const issueDataCommand = this.getIssueDataCommand();
+        const command = new ConvertInfoServerCommand(
+            { jira: this.options.jira, xray: this.options.xray },
+            this.logger,
+            resultsCommand,
+            {
+                fieldIds: {
+                    testEnvironmentsId: parameters.fieldIds.testEnvironment,
+                    testPlanId: parameters.fieldIds.testPlan,
+                },
+                issueData: issueDataCommand,
+                summary: parameters.executionIssueSummary,
+                testExecutionIssueType: parameters.executionIssueType,
+            }
+        );
+        this.graph.place(command);
+        this.graph.connect(resultsCommand, command);
+        this.graph.connect(issueDataCommand, command);
+        this.graph.connect(parameters.executionIssueSummary, command);
+        this.graph.connect(parameters.executionIssueType, command);
+        if (parameters.fieldIds.testEnvironment) {
+            this.graph.connect(parameters.fieldIds.testEnvironment, command);
+        }
+        if (parameters.fieldIds.testPlan) {
+            this.graph.connect(parameters.fieldIds.testPlan, command);
+        }
+        return command;
+    }
+
+    public addConvertCucumberFeaturesCommand(parameters: {
+        cucumberResults: Command<CucumberMultipartFeature[]>;
+        executionIssueKey?: Command<string | undefined>;
+        projectRoot: string;
+    }) {
+        const command = new ConvertCucumberFeaturesCommand(
+            {
+                cucumber: {
+                    prefixes: {
+                        precondition: this.options.cucumber?.prefixes.precondition,
+                        test: this.options.cucumber?.prefixes.test,
+                    },
+                },
+                jira: {
+                    projectKey: this.options.jira.projectKey,
+                },
+                projectRoot: parameters.projectRoot,
+                useCloudTags: this.clients.kind === "cloud",
+                xray: {
+                    status: this.options.xray.status,
+                    testEnvironments: this.options.xray.testEnvironments,
+                    uploadScreenshots: this.options.xray.uploadScreenshots,
+                },
+            },
+            this.logger,
+            parameters.cucumberResults,
+            parameters.executionIssueKey
+        );
+        this.graph.place(command);
+        this.graph.connect(parameters.cucumberResults, command);
+        if (parameters.executionIssueKey) {
+            this.graph.connect(parameters.executionIssueKey, command);
+        }
+        return command;
+    }
+
+    public addCombineCucumberMultipartCommand(parameters: {
+        cucumberMultipartFeatures: Command<CucumberMultipartFeature[]>;
+        cucumberMultipartInfo: Command<MultipartInfo>;
+    }) {
+        const command = this.graph.place(
+            new CombineCucumberMultipartCommand(
+                this.logger,
+                parameters.cucumberMultipartInfo,
+                parameters.cucumberMultipartFeatures
+            )
+        );
+        this.graph.connect(parameters.cucumberMultipartInfo, command);
+        this.graph.connect(parameters.cucumberMultipartFeatures, command);
+        return command;
+    }
+
+    public addAssertCucumberConversionValidCommand(parameters: {
+        cucumberMultipart: Command<CucumberMultipart>;
+    }) {
+        const command = this.graph.place(
+            new AssertCucumberConversionValidCommand(this.logger, parameters.cucumberMultipart)
+        );
+        this.graph.connect(parameters.cucumberMultipart, command);
+        return command;
+    }
+
+    public addVerifyExecutionIssueKeyCommand(parameters: {
+        importType: "cucumber" | "cypress";
+        resolvedExecutionIssue: Command<string>;
+    }) {
+        const command = this.graph.place(
+            new VerifyExecutionIssueKeyCommand(
+                {
+                    displayCloudHelp: this.clients.kind === "cloud",
+                    importType: parameters.importType,
+                    testExecutionIssueKey:
+                        this.issueData?.key ?? this.options.jira.testExecutionIssueKey,
+                    testExecutionIssueType: this.issueData?.fields?.issuetype ?? {
+                        name: this.options.jira.testExecutionIssueType,
+                    },
+                },
+                this.logger,
+                parameters.resolvedExecutionIssue
+            )
+        );
+        this.graph.connect(parameters.resolvedExecutionIssue, command);
+        return command;
+    }
+
+    public addImportExecutionCucumberCommand(parameters: {
+        cucumberMultipart: Command<CucumberMultipart>;
+    }) {
+        const command = this.graph.place(
+            new ImportExecutionCucumberCommand(
+                { xrayClient: this.clients.xrayClient },
+                this.logger,
+                parameters.cucumberMultipart
+            )
+        );
+        this.graph.connect(parameters.cucumberMultipart, command);
+        return command;
+    }
+
+    public addFallbackCommand<V, R>(parameters: {
+        fallbackOn: ComputableState[];
+        fallbackValue: V;
+        input: Command<R>;
+    }) {
+        return this.graph.findOrDefault(
+            FallbackCommand<V, R>,
+            () => {
+                const command = this.graph.place(
+                    new FallbackCommand<V, R>(
+                        {
+                            fallbackOn: parameters.fallbackOn,
+                            fallbackValue: parameters.fallbackValue,
+                        },
+                        this.logger,
+                        parameters.input
+                    )
+                );
+                this.graph.connect(parameters.input, command, true);
+                return command;
+            },
+            (command) => {
+                const predecessors = [...this.graph.getPredecessors(command)];
+                return predecessors.length === 1 && predecessors[0] === parameters.input;
+            }
+        );
+    }
+
+    public addVerifyResultUploadCommand(parameters: {
+        cucumberExecutionIssueKey?: Command<string | undefined>;
+        cypressExecutionIssueKey?: Command<string | undefined>;
+    }) {
+        const command = this.graph.place(
+            new VerifyResultsUploadCommand({ url: this.options.jira.url }, this.logger, {
+                cucumberExecutionIssueKey: parameters.cucumberExecutionIssueKey,
+                cypressExecutionIssueKey: parameters.cypressExecutionIssueKey,
+            })
+        );
+        if (parameters.cypressExecutionIssueKey) {
+            this.graph.connect(parameters.cypressExecutionIssueKey, command);
+        }
+        if (parameters.cucumberExecutionIssueKey) {
+            this.graph.connect(parameters.cucumberExecutionIssueKey, command);
+        }
+        return command;
+    }
+
+    public addAttachVideosCommand(parameters: { resolvedExecutionIssueKey: Command<string> }) {
+        const resultsCommand = this.getResultsCommand();
+        const extractVideoFilesCommand = this.graph.place(
+            new ExtractVideoFilesCommand(this.logger, resultsCommand)
+        );
+        this.graph.connect(resultsCommand, extractVideoFilesCommand);
+        const command = this.graph.place(
+            new AttachFilesCommand(
+                { jiraClient: this.clients.jiraClient },
+                this.logger,
+                extractVideoFilesCommand,
+                parameters.resolvedExecutionIssueKey
+            )
+        );
+        this.graph.connect(extractVideoFilesCommand, command);
+        this.graph.connect(parameters.resolvedExecutionIssueKey, command);
+        return command;
+    }
+
+    public addTransitionIssueCommand(parameters: {
+        issueKey: Command<string>;
+        transition: IssueTransition;
+    }) {
+        const command = this.graph.place(
             new TransitionIssueCommand(
                 {
-                    jiraClient: clients.jiraClient,
-                    transition: issueData.transition,
+                    jiraClient: this.clients.jiraClient,
+                    transition: parameters.transition,
                 },
-                logger,
-                verifyResultsUploadCommand
+                this.logger,
+                parameters.issueKey
             )
         );
-        graph.connect(verifyResultsUploadCommand, transitionIssueCommand);
+        this.graph.connect(parameters.issueKey, command);
+        return command;
     }
 }

@@ -345,10 +345,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const commands = [...graph.getVertices()];
                 const textExecutionIssueDataCommand = commands[3];
                 assertIsInstanceOf(textExecutionIssueDataCommand, ConstantCommand);
-                const convertCommand = commands[4];
-                assertIsInstanceOf(convertCommand, ConvertInfoServerCommand);
                 // Vertex data.
-                expect(convertCommand.getParameters().jira.testExecutionIssue).to.deep.eq({
+                expect(textExecutionIssueDataCommand.getValue()).to.deep.eq({
                     fields: {
                         assignee: "someone else",
                         ["customfield_12345"]: "bonjour",

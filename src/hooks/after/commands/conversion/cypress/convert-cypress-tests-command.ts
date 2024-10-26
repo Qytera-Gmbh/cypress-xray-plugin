@@ -3,12 +3,7 @@ import { lt } from "semver";
 import { EvidenceCollection } from "../../../../../context";
 import { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
 import { CypressRunResultType } from "../../../../../types/cypress/cypress";
-import {
-    InternalCucumberOptions,
-    InternalJiraOptions,
-    InternalPluginOptions,
-    InternalXrayOptions,
-} from "../../../../../types/plugin";
+import { InternalXrayOptions } from "../../../../../types/plugin";
 import {
     XrayEvidenceItem,
     XrayTest,
@@ -25,12 +20,13 @@ import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./util/run"
 import { getXrayStatus } from "./util/status";
 
 interface Parameters {
-    cucumber?: Pick<InternalCucumberOptions, "featureFileExtension">;
     evidenceCollection: EvidenceCollection;
-    jira: Pick<InternalJiraOptions, "projectKey">;
-    plugin: Pick<InternalPluginOptions, "normalizeScreenshotNames">;
+    featureFileExtension?: string;
+    normalizeScreenshotNames: boolean;
+    projectKey: string;
+    uploadScreenshots: boolean;
     useCloudStatusFallback?: boolean;
-    xray: Pick<InternalXrayOptions, "status" | "uploadScreenshots">;
+    xrayStatus: InternalXrayOptions["status"];
 }
 
 export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]], Parameters> {
@@ -47,7 +43,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         const xrayTests: XrayTest[] = [];
         testRunData.forEach((testData: TestRunData) => {
             try {
-                const issueKeys = getTestIssueKeys(testData.title, this.parameters.jira.projectKey);
+                const issueKeys = getTestIssueKeys(testData.title, this.parameters.projectKey);
                 for (const issueKey of issueKeys) {
                     const test: XrayTest = this.getTest(
                         testData,
@@ -87,8 +83,8 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         const conversionPromises: [string, Promise<TestRunData>][] = [];
         const cypressRuns = runResults.runs.filter((run) => {
             return (
-                !this.parameters.cucumber ||
-                !run.spec.relative.endsWith(this.parameters.cucumber.featureFileExtension)
+                !this.parameters.featureFileExtension ||
+                !run.spec.relative.endsWith(this.parameters.featureFileExtension)
             );
         });
         if (cypressRuns.length === 0) {
@@ -102,7 +98,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
             }
         } else {
             for (const run of cypressRuns as CypressCommandLine.RunResult[]) {
-                getTestRunData_V13(run, this.parameters.jira.projectKey).forEach((promise, index) =>
+                getTestRunData_V13(run, this.parameters.projectKey).forEach((promise, index) =>
                     conversionPromises.push([run.tests[index].title.join(" "), promise])
                 );
             }
@@ -126,11 +122,11 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 );
             }
         });
-        if (this.parameters.xray.uploadScreenshots && version === ">=13") {
+        if (this.parameters.uploadScreenshots && version === ">=13") {
             for (const run of runResults.runs as CypressCommandLine.RunResult[]) {
                 if (
-                    this.parameters.cucumber?.featureFileExtension &&
-                    run.spec.fileExtension.endsWith(this.parameters.cucumber.featureFileExtension)
+                    this.parameters.featureFileExtension &&
+                    run.spec.fileExtension.endsWith(this.parameters.featureFileExtension)
                 ) {
                     continue;
                 }
@@ -146,7 +142,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
 
                                   To upload screenshots, include test issue keys anywhere in their name:
 
-                                    cy.screenshot("${this.parameters.jira.projectKey}-123 ${screenshotName}")
+                                    cy.screenshot("${this.parameters.projectKey}-123 ${screenshotName}")
                             `)
                         );
                     }
@@ -166,7 +162,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
             status: getXrayStatus(
                 test.status,
                 this.parameters.useCloudStatusFallback === true,
-                this.parameters.xray.status
+                this.parameters.xrayStatus
             ),
             testKey: issueKey,
         };
@@ -182,13 +178,13 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         version: "<13" | ">=13"
     ): XrayEvidenceItem[] {
         const evidence: XrayEvidenceItem[] = [];
-        if (this.parameters.xray.uploadScreenshots) {
+        if (this.parameters.uploadScreenshots) {
             for (const screenshot of testRunData.screenshots) {
                 let filename = path.basename(screenshot.filepath);
                 if (version === ">=13" && !filename.includes(issueKey)) {
                     continue;
                 }
-                if (this.parameters.plugin.normalizeScreenshotNames) {
+                if (this.parameters.normalizeScreenshotNames) {
                     filename = normalizedFilename(filename);
                 }
                 evidence.push({

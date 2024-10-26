@@ -24,6 +24,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     startedTestsAt: "2023-09-09T10:59:28.829Z",
                 }),
                 {
+                    issueData: new ConstantCommand(logger, undefined),
                     summary: new ConstantCommand(logger, "Execution Results [1694257168829]"),
                     testExecutionIssueType: new ConstantCommand(logger, { id: "issue_1578" }),
                 }
