@@ -447,23 +447,23 @@ class AfterRunBuilder {
 
     public addConvertInfoCloudCommand() {
         const resultsCommand = this.getResultsCommand();
-        const issueDataCommand = this.getIssueData();
+        const issueData = this.getIssueData();
         const command = new ConvertInfoCloudCommand(
             { jira: this.options.jira, xray: this.options.xray },
             this.logger,
             {
-                issuetype: issueDataCommand.issuetype,
-                issueUpdate: issueDataCommand.issueUpdate,
+                issuetype: issueData.issuetype,
+                issueUpdate: issueData.issueUpdate,
                 results: resultsCommand,
-                summary: issueDataCommand.summary,
+                summary: issueData.summary,
             }
         );
         this.graph.place(command);
         this.graph.connect(resultsCommand, command);
-        this.graph.connect(issueDataCommand.summary, command);
-        this.graph.connect(issueDataCommand.issuetype, command);
-        if (issueDataCommand.issueUpdate) {
-            this.graph.connect(issueDataCommand.issueUpdate, command);
+        this.graph.connect(issueData.summary, command);
+        this.graph.connect(issueData.issuetype, command);
+        if (issueData.issueUpdate) {
+            this.graph.connect(issueData.issueUpdate, command);
         }
         return command;
     }
@@ -475,7 +475,7 @@ class AfterRunBuilder {
         };
     }) {
         const resultsCommand = this.getResultsCommand();
-        const issueDataCommand = this.getIssueData();
+        const issueData = this.getIssueData();
         const command = new ConvertInfoServerCommand(
             { jira: this.options.jira, xray: this.options.xray },
             this.logger,
@@ -484,18 +484,18 @@ class AfterRunBuilder {
                     testEnvironmentsId: parameters.fieldIds.testEnvironment,
                     testPlanId: parameters.fieldIds.testPlan,
                 },
-                issuetype: issueDataCommand.issuetype,
-                issueUpdate: issueDataCommand.issueUpdate,
+                issuetype: issueData.issuetype,
+                issueUpdate: issueData.issueUpdate,
                 results: resultsCommand,
-                summary: issueDataCommand.summary,
+                summary: issueData.summary,
             }
         );
         this.graph.place(command);
         this.graph.connect(resultsCommand, command);
-        this.graph.connect(issueDataCommand.summary, command);
-        this.graph.connect(issueDataCommand.issuetype, command);
-        if (issueDataCommand.issueUpdate) {
-            this.graph.connect(issueDataCommand.issueUpdate, command);
+        this.graph.connect(issueData.summary, command);
+        this.graph.connect(issueData.issuetype, command);
+        if (issueData.issueUpdate) {
+            this.graph.connect(issueData.issueUpdate, command);
         }
         if (parameters.fieldIds.testEnvironment) {
             this.graph.connect(parameters.fieldIds.testEnvironment, command);
