@@ -14,6 +14,7 @@ import { FallbackCommand } from "../util/commands/fallback-command";
 import { AttachFilesCommand } from "../util/commands/jira/attach-files-command";
 import { JiraField } from "../util/commands/jira/extract-field-id-command";
 import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command";
+import { TransitionIssueCommand } from "../util/commands/jira/transition-issue-command";
 import { ImportExecutionCucumberCommand } from "../util/commands/xray/import-execution-cucumber-command";
 import { ImportExecutionCypressCommand } from "../util/commands/xray/import-execution-cypress-command";
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
@@ -141,7 +142,7 @@ export async function addUploadCommands(
             }
         }
     }
-    addPostUploadCommands(
+    await addPostUploadCommands(
         cypressResultsCommand,
         options,
         clients,
@@ -484,7 +485,7 @@ async function getConvertMultipartInfoCommand(
     return convertCommand;
 }
 
-function addPostUploadCommands(
+async function addPostUploadCommands(
     cypressResultsCommand: Command<CypressRunResultType>,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
@@ -492,7 +493,7 @@ function addPostUploadCommands(
     logger: Logger,
     importCypressExecutionCommand: ImportExecutionCypressCommand | null,
     importCucumberExecutionCommand: ImportExecutionCucumberCommand | null
-): void {
+) {
     let fallbackCypressUploadCommand: Command<string | undefined> | undefined = undefined;
     let fallbackCucumberUploadCommand: Command<string | undefined> | undefined = undefined;
     if (importCypressExecutionCommand) {
@@ -572,5 +573,21 @@ function addPostUploadCommands(
         );
         graph.connect(extractVideoFilesCommand, attachVideosCommand);
         graph.connect(verifyResultsUploadCommand, attachVideosCommand);
+    }
+    // Workaround for: https://jira.atlassian.com/browse/JRASERVER-66881.
+    const issueData = await getOrCall(options.jira.testExecutionIssue);
+    const testExecutionIssueKey = issueData?.key ?? options.jira.testExecutionIssueKey;
+    if (issueData?.transition && !testExecutionIssueKey && clients.kind === "server") {
+        const transitionIssueCommand = graph.place(
+            new TransitionIssueCommand(
+                {
+                    jiraClient: clients.jiraClient,
+                    transition: issueData.transition,
+                },
+                logger,
+                verifyResultsUploadCommand
+            )
+        );
+        graph.connect(verifyResultsUploadCommand, transitionIssueCommand);
     }
 }

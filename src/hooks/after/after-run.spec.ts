@@ -32,6 +32,7 @@ import { AttachFilesCommand } from "../util/commands/jira/attach-files-command";
 import { ExtractFieldIdCommand, JiraField } from "../util/commands/jira/extract-field-id-command";
 import { FetchAllFieldsCommand } from "../util/commands/jira/fetch-all-fields-command";
 import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command";
+import { TransitionIssueCommand } from "../util/commands/jira/transition-issue-command";
 import { ImportExecutionCucumberCommand } from "../util/commands/xray/import-execution-cucumber-command";
 import { ImportExecutionCypressCommand } from "../util/commands/xray/import-execution-cypress-command";
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
@@ -393,6 +394,70 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 expect(graph.size("vertices")).to.eq(12);
                 expect(graph.size("edges")).to.eq(14);
+            });
+
+            it("explicitly transitions issues in server environments", async () => {
+                const graph = new ExecutableGraph<Command>();
+                options.jira.testExecutionIssue = {
+                    transition: {
+                        id: "6",
+                    },
+                };
+                clients.kind = "server";
+                await addUploadCommands(
+                    result,
+                    ".",
+                    options,
+                    clients,
+                    new SimpleEvidenceCollection(),
+                    graph,
+                    getMockedLogger()
+                );
+                // Vertices.
+                const commands = [...graph.getVertices()];
+                const verifyResultsUploadCommand = commands[9];
+                const transitionIssueCommand = commands[10];
+                assertIsInstanceOf(transitionIssueCommand, TransitionIssueCommand);
+                // Vertex data.
+                expect(transitionIssueCommand.getParameters()).to.deep.eq({
+                    jiraClient: clients.jiraClient,
+                    transition: {
+                        id: "6",
+                    },
+                });
+                // Edges.
+                expect([...graph.getSuccessors(verifyResultsUploadCommand)]).to.contain(
+                    transitionIssueCommand
+                );
+                expect(graph.size("vertices")).to.eq(11);
+                expect(graph.size("edges")).to.eq(12);
+            });
+
+            it("does not explicitly transition issues in cloud environments", async () => {
+                const graph = new ExecutableGraph<Command>();
+                options.jira.testExecutionIssue = {
+                    transition: {
+                        id: "6",
+                    },
+                };
+                clients.kind = "cloud";
+                await addUploadCommands(
+                    result,
+                    ".",
+                    options,
+                    clients,
+                    new SimpleEvidenceCollection(),
+                    graph,
+                    getMockedLogger()
+                );
+                // Vertices.
+                const commands = [...graph.getVertices()];
+                const verifyResultsUploadCommand = commands[9];
+                assertIsInstanceOf(verifyResultsUploadCommand, VerifyResultsUploadCommand);
+                // Edges.
+                expect([...graph.getSuccessors(verifyResultsUploadCommand)]).to.deep.eq([]);
+                expect(graph.size("vertices")).to.eq(10);
+                expect(graph.size("edges")).to.eq(11);
             });
         });
 
