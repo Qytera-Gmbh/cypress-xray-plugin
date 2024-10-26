@@ -102,7 +102,7 @@ export function asArrayOfStrings(value: unknown): [string, ...string[]] {
  * @param value - a string that can be interpreted as an object
  * @returns the corresponding object
  */
-export function asObject<R>(value: unknown): R {
+export function asObject(value: unknown): object {
     if (Array.isArray(value)) {
         throw new Error(`Failed to parse as object: ${JSON.stringify(value)}`);
     }
@@ -121,7 +121,7 @@ export function asObject<R>(value: unknown): R {
     ) {
         throw new Error(`Failed to parse as object: ${value.toString()}`);
     }
-    return value as R;
+    return value;
 }
 
 /**
