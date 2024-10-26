@@ -609,5 +609,79 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
             });
         });
+
+        describe("transitionIssue", () => {
+            it("transitions issues", async () => {
+                restClient.post.onFirstCall().resolves({
+                    config: {
+                        headers: new AxiosHeaders(),
+                    },
+                    data: undefined,
+                    headers: {},
+                    status: HttpStatusCode.NoContent,
+                    statusText: HttpStatusCode[HttpStatusCode.NoContent],
+                });
+                await client.transitionIssue("CYP-XYZ", {
+                    transition: {
+                        name: "resolve",
+                        to: {
+                            name: "done",
+                        },
+                    },
+                });
+                expect(restClient.post).to.have.been.calledOnceWith(
+                    "https://example.org/rest/api/latest/issue/CYP-XYZ/transitions",
+                    {
+                        transition: {
+                            name: "resolve",
+                            to: {
+                                name: "done",
+                            },
+                        },
+                    },
+                    {
+                        headers: { ["Authorization"]: "Basic dXNlcjp0b2tlbg==" },
+                    }
+                );
+            });
+
+            it("handles bad responses", async () => {
+                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+                const error = new AxiosError(
+                    "Request failed with status code 404",
+                    HttpStatusCode.NotFound.toString(),
+                    undefined,
+                    null,
+                    {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            errorMessages: ["issue CYP-XYZ does not exist"],
+                        },
+                        headers: {},
+                        status: HttpStatusCode.NotFound,
+                        statusText: HttpStatusCode[HttpStatusCode.NotFound],
+                    }
+                );
+                restClient.post.onFirstCall().rejects(error);
+                await expect(
+                    client.transitionIssue("CYP-XYZ", {
+                        transition: {
+                            name: "resolve",
+                            to: {
+                                name: "done",
+                            },
+                        },
+                    })
+                ).to.eventually.be.rejectedWith("Failed to transition issue");
+                expect(logger.message).to.have.been.calledWithExactly(
+                    Level.ERROR,
+                    "Failed to transition issue: Request failed with status code 404"
+                );
+                expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                    error,
+                    "transitionIssue"
+                );
+            });
+        });
     });
 });

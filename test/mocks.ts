@@ -82,6 +82,9 @@ export function getMockedJiraClient(): SinonStubbedInstance<JiraClient> {
         search: function (request: SearchRequest) {
             throw mockCalledUnexpectedlyError("search", request);
         },
+        transitionIssue: function (issueIdOrKey: string, issueUpdateData: IssueUpdate) {
+            throw mockCalledUnexpectedlyError("transitionIssue", issueIdOrKey, issueUpdateData);
+        },
     };
     return makeTransparent(stub(client));
 }

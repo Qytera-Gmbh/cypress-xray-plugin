@@ -83,6 +83,21 @@ export interface JiraClient {
      * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/search-searchUsingSearchRequest
      */
     search(request: SearchRequest): Promise<Issue[]>;
+    /**
+     * Performs an issue transition and, if the transition has a screen, updates the fields from the
+     * transition screen.
+     *
+     * To update the fields on the transition screen, specify the fields in the `fields` or `update`
+     * parameters in the request body. Get details about the fields using
+     * [Get transitions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get)
+     * with the `transitions.fields` expand.
+     *
+     * @param issueIdOrKey - the ID or key of the issue
+     * @param issueUpdateData - the issue update data
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-post
+     * @see https://docs.atlassian.com/software/jira/docs/api/REST/9.9.1/#api/2/issue-doTransition
+     */
+    transitionIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<void>;
 }
 
 /**
@@ -298,12 +313,35 @@ export class BaseJiraClient extends Client implements JiraClient {
                 }
             );
             LOG.message(Level.DEBUG, `Successfully edited issue: ${issueIdOrKey}`);
-
             return issueIdOrKey;
         } catch (error: unknown) {
             LOG.message(Level.ERROR, `Failed to edit issue: ${errorMessage(error)}`);
             LOG.logErrorToFile(error, "editIssue");
             throw new LoggedError("Failed to edit issue");
+        }
+    }
+
+    public async transitionIssue(
+        issueIdOrKey: string,
+        issueUpdateData: IssueUpdate
+    ): Promise<void> {
+        try {
+            const header = await this.credentials.getAuthorizationHeader();
+            LOG.message(Level.DEBUG, "Transitioning issue...");
+            await this.httpClient.post(
+                `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/transitions`,
+                issueUpdateData,
+                {
+                    headers: {
+                        ...header,
+                    },
+                }
+            );
+            LOG.message(Level.DEBUG, `Successfully transitioned issue: ${issueIdOrKey}`);
+        } catch (error: unknown) {
+            LOG.message(Level.ERROR, `Failed to transition issue: ${errorMessage(error)}`);
+            LOG.logErrorToFile(error, "transitionIssue");
+            throw new LoggedError("Failed to transition issue");
         }
     }
 }
