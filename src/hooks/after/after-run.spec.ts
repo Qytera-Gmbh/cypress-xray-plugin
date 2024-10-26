@@ -514,10 +514,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     // Vertices.
                     const [
                         cypressResultsCommand,
-                        cucumberResultsCommand,
-                        executionIssueSummaryCommand,
-                        extractExecutionIssueTypeCommand,
+                        issueSummaryCommand,
+                        issuetypeCommand,
                         convertMultipartInfoCommand,
+                        cucumberResultsCommand,
                         convertCucumberFeaturesCommand,
                         combineCucumberMultipartCommand,
                         assertConversionValidCommand,
@@ -527,8 +527,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     ] = [...graph.getVertices()];
                     assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
                     assertIsInstanceOf(cucumberResultsCommand, ConstantCommand);
-                    assertIsInstanceOf(executionIssueSummaryCommand, ConstantCommand);
-                    assertIsInstanceOf(extractExecutionIssueTypeCommand, ConstantCommand);
+                    assertIsInstanceOf(issueSummaryCommand, ConstantCommand);
+                    assertIsInstanceOf(issuetypeCommand, ConstantCommand);
                     assertIsInstanceOf(convertMultipartInfoCommand, ConvertInfoServerCommand);
                     assertIsInstanceOf(
                         convertCucumberFeaturesCommand,
@@ -551,10 +551,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     // Vertex data.
                     expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
                     expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
-                    expect(executionIssueSummaryCommand.getValue()).to.deep.eq(
+                    expect(issueSummaryCommand.getValue()).to.deep.eq(
                         "Execution Results [2023-07-23T21:26:15.539Z]"
                     );
-                    expect(extractExecutionIssueTypeCommand.getValue()).to.deep.eq({
+                    expect(issuetypeCommand.getValue()).to.deep.eq({
                         name: "Test Execution",
                     });
                     expect(convertMultipartInfoCommand.getParameters()).to.deep.eq({
@@ -604,10 +604,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(cucumberResultsCommand)]).to.deep.eq([
                         convertCucumberFeaturesCommand,
                     ]);
-                    expect([...graph.getSuccessors(executionIssueSummaryCommand)]).to.deep.eq([
+                    expect([...graph.getSuccessors(issueSummaryCommand)]).to.deep.eq([
                         convertMultipartInfoCommand,
                     ]);
-                    expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
+                    expect([...graph.getSuccessors(issuetypeCommand)]).to.deep.eq([
                         convertMultipartInfoCommand,
                     ]);
                     expect([...graph.getSuccessors(convertMultipartInfoCommand)]).to.deep.eq([
@@ -647,9 +647,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const fetchAllFieldsCommand = commands[4];
-                    const testPlanIdCommand = commands[5];
-                    const convertCommand = commands[6];
+                    const fetchAllFieldsCommand = commands[0];
+                    const testPlanIdCommand = commands[1];
+                    const convertCommand = commands[5];
                     assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
                     assertIsInstanceOf(testPlanIdCommand, ExtractFieldIdCommand);
                     // Vertex data.
@@ -685,8 +685,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const testPlanIdCommand = commands[4];
-                    const convertCommand = commands[5];
+                    const testPlanIdCommand = commands[0];
+                    const convertCommand = commands[4];
                     assertIsInstanceOf(testPlanIdCommand, ConstantCommand);
                     // Vertex data.
                     expect(testPlanIdCommand.getValue()).to.eq("customfield_12345");
@@ -712,9 +712,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const fetchAllFieldsCommand = commands[4];
-                    const testEnvironmentsIdCommand = commands[5];
-                    const convertCommand = commands[6];
+                    const fetchAllFieldsCommand = commands[0];
+                    const testEnvironmentsIdCommand = commands[1];
+                    const convertCommand = commands[5];
                     assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
                     assertIsInstanceOf(testEnvironmentsIdCommand, ExtractFieldIdCommand);
                     // Vertex data.
@@ -750,8 +750,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const testEnvironmentsIdCommand = commands[4];
-                    const convertCommand = commands[5];
+                    const testEnvironmentsIdCommand = commands[0];
+                    const convertCommand = commands[4];
                     assertIsInstanceOf(testEnvironmentsIdCommand, ConstantCommand);
                     // Vertex data.
                     expect(testEnvironmentsIdCommand.getValue()).to.eq("customfield_67890");
@@ -778,10 +778,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const fetchAllFieldsCommand = commands[4];
-                    const testPlanIdCommand = commands[5];
-                    const testEnvironmentsIdCommand = commands[6];
-                    const convertCommand = commands[7];
+                    const fetchAllFieldsCommand = commands[0];
+                    const testPlanIdCommand = commands[1];
+                    const testEnvironmentsIdCommand = commands[2];
+                    const convertCommand = commands[6];
                     assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
                     assertIsInstanceOf(testPlanIdCommand, ExtractFieldIdCommand);
                     assertIsInstanceOf(testEnvironmentsIdCommand, ExtractFieldIdCommand);
@@ -817,9 +817,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const testPlanIdCommand = commands[4];
-                    const testEnvironmentsIdCommand = commands[5];
-                    const convertCommand = commands[6];
+                    const testPlanIdCommand = commands[0];
+                    const testEnvironmentsIdCommand = commands[1];
+                    const convertCommand = commands[5];
                     assertIsInstanceOf(testPlanIdCommand, ConstantCommand);
                     assertIsInstanceOf(testEnvironmentsIdCommand, ConstantCommand);
                     // Vertex data.
@@ -855,12 +855,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
-                    const extractExecutionIssueTypeCommand = commands[3];
-                    const convertCommand = commands[4];
+                    const issuetypeCommand = commands[2];
+                    const convertCommand = commands[3];
                     const convertCucumberFeaturesCommand = commands[5];
-                    assertIsInstanceOf(extractExecutionIssueTypeCommand, ConstantCommand);
+                    assertIsInstanceOf(issuetypeCommand, ConstantCommand);
                     assertIsInstanceOf(convertCommand, ConvertInfoCloudCommand);
-                    expect(extractExecutionIssueTypeCommand.getValue()).to.deep.eq({
+                    expect(issuetypeCommand.getValue()).to.deep.eq({
                         name: "Test Execution",
                     });
                     expect(convertCommand.getParameters()).to.deep.eq({
@@ -915,13 +915,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     // Vertices.
                     const [
                         cypressResultsCommand,
-                        cucumberResultsCommand,
-                        testExecutionIssueKeyCommand,
                         issueKeysCommand,
                         getSummaryValuesCommand,
                         destructureCommand,
-                        extractExecutionIssueTypeCommand,
-                        convertCommand,
+                        issuetypeCommand,
+                        convertInfoCloudCommand,
+                        cucumberResultsCommand,
+                        testExecutionIssueKeyCommand,
                         convertCucumberFeaturesCommand,
                         combineCucumberMultipartCommand,
                         assertConversionValidCommand,
@@ -936,8 +936,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     assertIsInstanceOf(issueKeysCommand, ConstantCommand);
                     assertIsInstanceOf(getSummaryValuesCommand, GetSummaryValuesCommand);
                     assertIsInstanceOf(destructureCommand, DestructureCommand);
-                    assertIsInstanceOf(extractExecutionIssueTypeCommand, ConstantCommand);
-                    assertIsInstanceOf(convertCommand, ConvertInfoCloudCommand);
+                    assertIsInstanceOf(issuetypeCommand, ConstantCommand);
+                    assertIsInstanceOf(convertInfoCloudCommand, ConvertInfoCloudCommand);
                     assertIsInstanceOf(
                         convertCucumberFeaturesCommand,
                         ConvertCucumberFeaturesCommand
@@ -964,7 +964,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
                     expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
                     expect(testExecutionIssueKeyCommand.getValue()).to.deep.eq("CYP-42");
-                    expect(extractExecutionIssueTypeCommand.getValue()).to.deep.eq({
+                    expect(issuetypeCommand.getValue()).to.deep.eq({
                         name: "Test Run",
                     });
                     expect(issueKeysCommand.getValue()).to.deep.eq(["CYP-42"]);
@@ -972,7 +972,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                         jiraClient: clients.jiraClient,
                     });
                     expect(destructureCommand.getParameters()).to.deep.eq({ accessor: "CYP-42" });
-                    expect(convertCommand.getParameters()).to.deep.eq({
+                    expect(convertInfoCloudCommand.getParameters()).to.deep.eq({
                         jira: options.jira,
                         xray: options.xray,
                     });
@@ -1016,7 +1016,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     });
                     // Edges.
                     expect([...graph.getSuccessors(cypressResultsCommand)]).to.contain(
-                        convertCommand
+                        convertInfoCloudCommand
                     );
                     expect([...graph.getSuccessors(cucumberResultsCommand)]).to.deep.eq([
                         convertCucumberFeaturesCommand,
@@ -1024,8 +1024,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     expect([...graph.getSuccessors(testExecutionIssueKeyCommand)]).to.deep.eq([
                         convertCucumberFeaturesCommand,
                     ]);
-                    expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
-                        convertCommand,
+                    expect([...graph.getSuccessors(issuetypeCommand)]).to.deep.eq([
+                        convertInfoCloudCommand,
                     ]);
                     expect([...graph.getSuccessors(issueKeysCommand)]).to.deep.eq([
                         getSummaryValuesCommand,
@@ -1034,9 +1034,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                         destructureCommand,
                     ]);
                     expect([...graph.getSuccessors(destructureCommand)]).to.deep.eq([
-                        convertCommand,
+                        convertInfoCloudCommand,
                     ]);
-                    expect([...graph.getSuccessors(convertCommand)]).to.deep.eq([
+                    expect([...graph.getSuccessors(convertInfoCloudCommand)]).to.deep.eq([
                         combineCucumberMultipartCommand,
                     ]);
                     expect([...graph.getSuccessors(convertCucumberFeaturesCommand)]).to.deep.eq([
@@ -1215,26 +1215,26 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const [
                     cypressResultsCommand,
                     convertCypressTestsCommand,
-                    executionIssueSummaryCommand,
-                    extractExecutionIssueTypeCommand,
-                    convertCommand,
+                    issueSummaryCommand,
+                    issuetypeCommand,
+                    convertInfoServerCommand,
                     combineCypressJsonCommand,
                     assertCypressConversionValidCommand,
                     importExecutionCypressCommand,
                     cucumberResultsCommand,
-                    fallbackCypressUploadCommand,
                     convertCucumberFeaturesCommand,
                     combineCucumberMultipartCommand,
                     assertCucumberConversionValidCommand,
                     importCucumberExecutionCommand,
+                    fallbackCypressUploadCommand,
                     fallbackCucumberUploadCommand,
                     verifyResultsUploadCommand,
                 ] = [...graph.getVertices()];
                 assertIsInstanceOf(cypressResultsCommand, ConstantCommand);
                 assertIsInstanceOf(convertCypressTestsCommand, ConvertCypressTestsCommand);
-                assertIsInstanceOf(executionIssueSummaryCommand, ConstantCommand);
-                assertIsInstanceOf(extractExecutionIssueTypeCommand, ConstantCommand);
-                assertIsInstanceOf(convertCommand, ConvertInfoServerCommand);
+                assertIsInstanceOf(issueSummaryCommand, ConstantCommand);
+                assertIsInstanceOf(issuetypeCommand, ConstantCommand);
+                assertIsInstanceOf(convertInfoServerCommand, ConvertInfoServerCommand);
                 assertIsInstanceOf(combineCypressJsonCommand, CombineCypressJsonCommand);
                 assertIsInstanceOf(
                     assertCypressConversionValidCommand,
@@ -1258,20 +1258,32 @@ describe(path.relative(process.cwd(), __filename), () => {
                 // Vertex data.
                 expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
                 expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
-                    cucumber: options.cucumber,
                     evidenceCollection: new SimpleEvidenceCollection(),
-                    jira: options.jira,
-                    plugin: options.plugin,
+                    featureFileExtension: ".feature",
+                    normalizeScreenshotNames: false,
+                    projectKey: "CYP",
+                    uploadScreenshots: true,
                     useCloudStatusFallback: false,
-                    xray: options.xray,
+                    xrayStatus: {
+                        failed: undefined,
+                        passed: undefined,
+                        pending: undefined,
+                        skipped: undefined,
+                        step: {
+                            failed: undefined,
+                            passed: undefined,
+                            pending: undefined,
+                            skipped: undefined,
+                        },
+                    },
                 });
-                expect(executionIssueSummaryCommand.getValue()).to.deep.eq(
+                expect(issueSummaryCommand.getValue()).to.deep.eq(
                     "Execution Results [2023-07-23T21:26:15.539Z]"
                 );
-                expect(extractExecutionIssueTypeCommand.getValue()).to.deep.eq({
+                expect(issuetypeCommand.getValue()).to.deep.eq({
                     name: "Test Execution",
                 });
-                expect(convertCommand.getParameters()).to.deep.eq({
+                expect(convertInfoServerCommand.getParameters()).to.deep.eq({
                     jira: options.jira,
                     xray: options.xray,
                 });
@@ -1329,18 +1341,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                 // Cypress.
                 expect([...graph.getSuccessors(cypressResultsCommand)]).to.deep.eq([
                     convertCypressTestsCommand,
-                    convertCommand,
+                    convertInfoServerCommand,
                 ]);
                 expect([...graph.getSuccessors(convertCypressTestsCommand)]).to.deep.eq([
                     combineCypressJsonCommand,
                 ]);
-                expect([...graph.getSuccessors(executionIssueSummaryCommand)]).to.deep.eq([
-                    convertCommand,
+                expect([...graph.getSuccessors(issueSummaryCommand)]).to.deep.eq([
+                    convertInfoServerCommand,
                 ]);
-                expect([...graph.getSuccessors(extractExecutionIssueTypeCommand)]).to.deep.eq([
-                    convertCommand,
+                expect([...graph.getSuccessors(issuetypeCommand)]).to.deep.eq([
+                    convertInfoServerCommand,
                 ]);
-                expect([...graph.getSuccessors(convertCommand)]).to.deep.eq([
+                expect([...graph.getSuccessors(convertInfoServerCommand)]).to.deep.eq([
                     combineCypressJsonCommand,
                     combineCucumberMultipartCommand,
                 ]);
@@ -1359,7 +1371,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     convertCucumberFeaturesCommand,
                 ]);
                 expect([...graph.getSuccessors(fallbackCypressUploadCommand)]).to.deep.eq([
-                    convertCucumberFeaturesCommand,
                     verifyResultsUploadCommand,
                 ]);
                 expect([...graph.getSuccessors(convertCucumberFeaturesCommand)]).to.deep.eq([
@@ -1379,7 +1390,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     verifyResultsUploadCommand,
                 ]);
                 expect(graph.size("vertices")).to.eq(16);
-                expect(graph.size("edges")).to.eq(20);
+                expect(graph.size("edges")).to.eq(19);
             });
         });
     });

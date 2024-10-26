@@ -30,16 +30,18 @@ export class ConvertCucumberFeaturesCommand extends Command<
     Parameters
 > {
     private readonly cucumberResults: Computable<CucumberMultipartFeature[]>;
-    private readonly testExecutionIssueKey?: Computable<string | undefined>;
+    private readonly testExecutionIssueKey?: Computable<string>;
     constructor(
         parameters: Parameters,
         logger: Logger,
-        cucumberResults: Computable<CucumberMultipartFeature[]>,
-        testExecutionIssueKey?: Computable<string | undefined>
+        input: {
+            cucumberResults: Computable<CucumberMultipartFeature[]>;
+            testExecutionIssueKey?: Computable<string>;
+        }
     ) {
         super(parameters, logger);
-        this.cucumberResults = cucumberResults;
-        this.testExecutionIssueKey = testExecutionIssueKey;
+        this.cucumberResults = input.cucumberResults;
+        this.testExecutionIssueKey = input.testExecutionIssueKey;
     }
 
     protected async computeResult(): Promise<CucumberMultipartFeature[]> {

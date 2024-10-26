@@ -98,7 +98,10 @@ export async function addUploadCommands(
             builder,
             {
                 cucumberReportPath: options.cucumber?.preprocessor?.json.output,
+                executionIssueKey: issueData?.key ?? options.jira.testExecutionIssueKey,
                 projectRoot: projectRoot,
+                testEnvironments: options.xray.testEnvironments,
+                testPlanIssueKey: testPlanIssueKey,
             }
         );
         // Make sure to add an edge from any feature file imports to the execution. Otherwise, the
@@ -201,8 +204,7 @@ function getImportExecutionCucumberCommand(
     builder: AfterRunBuilder,
     options: {
         cucumberReportPath?: string;
-        cypressExecutionIssueKey?: Command<string>;
-        executionIssueKey?: Command<string>;
+        executionIssueKey?: string;
         projectRoot: string;
         testEnvironments?: string[];
         testPlanIssueKey?: string;
@@ -223,7 +225,6 @@ function getImportExecutionCucumberCommand(
     });
     const convertCucumberFeaturesCommand = builder.addConvertCucumberFeaturesCommand({
         cucumberResults: cucumberResultsCommand,
-        executionIssueKey: options.executionIssueKey,
         projectRoot: options.projectRoot,
     });
     const combineCucumberMultipartCommand = builder.addCombineCucumberMultipartCommand({
@@ -508,36 +509,47 @@ class AfterRunBuilder {
 
     public addConvertCucumberFeaturesCommand(parameters: {
         cucumberResults: Command<CucumberMultipartFeature[]>;
-        executionIssueKey?: Command<string | undefined>;
         projectRoot: string;
     }) {
-        const command = new ConvertCucumberFeaturesCommand(
-            {
-                cucumber: {
-                    prefixes: {
-                        precondition: this.options.cucumber?.prefixes.precondition,
-                        test: this.options.cucumber?.prefixes.test,
+        let testExecutionIssueKeyCommand;
+        const executionIssueKey = this.issueData?.key ?? this.options.jira.testExecutionIssueKey;
+        if (executionIssueKey) {
+            testExecutionIssueKeyCommand = getOrCreateConstantCommand(
+                this.graph,
+                this.logger,
+                executionIssueKey
+            );
+        }
+        const command = this.graph.place(
+            new ConvertCucumberFeaturesCommand(
+                {
+                    cucumber: {
+                        prefixes: {
+                            precondition: this.options.cucumber?.prefixes.precondition,
+                            test: this.options.cucumber?.prefixes.test,
+                        },
+                    },
+                    jira: {
+                        projectKey: this.options.jira.projectKey,
+                    },
+                    projectRoot: parameters.projectRoot,
+                    useCloudTags: this.clients.kind === "cloud",
+                    xray: {
+                        status: this.options.xray.status,
+                        testEnvironments: this.options.xray.testEnvironments,
+                        uploadScreenshots: this.options.xray.uploadScreenshots,
                     },
                 },
-                jira: {
-                    projectKey: this.options.jira.projectKey,
-                },
-                projectRoot: parameters.projectRoot,
-                useCloudTags: this.clients.kind === "cloud",
-                xray: {
-                    status: this.options.xray.status,
-                    testEnvironments: this.options.xray.testEnvironments,
-                    uploadScreenshots: this.options.xray.uploadScreenshots,
-                },
-            },
-            this.logger,
-            parameters.cucumberResults,
-            parameters.executionIssueKey
+                this.logger,
+                {
+                    cucumberResults: parameters.cucumberResults,
+                    testExecutionIssueKey: testExecutionIssueKeyCommand,
+                }
+            )
         );
-        this.graph.place(command);
         this.graph.connect(parameters.cucumberResults, command);
-        if (parameters.executionIssueKey) {
-            this.graph.connect(parameters.executionIssueKey, command);
+        if (testExecutionIssueKeyCommand) {
+            this.graph.connect(testExecutionIssueKeyCommand, command);
         }
         return command;
     }
@@ -754,17 +766,13 @@ class AfterRunBuilder {
             };
         }
         if (!issuetypeCommand) {
-            if (this.issueData?.fields?.issuetype) {
-                issuetypeCommand = getOrCreateConstantCommand(
-                    this.graph,
-                    this.logger,
-                    this.issueData.fields.issuetype
-                );
-            } else {
-                issuetypeCommand = getOrCreateConstantCommand(this.graph, this.logger, {
-                    name: "Test Execution",
-                });
-            }
+            issuetypeCommand = getOrCreateConstantCommand(
+                this.graph,
+                this.logger,
+                this.issueData?.fields?.issuetype ?? {
+                    name: this.options.jira.testExecutionIssueType,
+                }
+            );
             this.constants.executionIssue = {
                 ...this.constants.executionIssue,
                 issuetype: issuetypeCommand,
