@@ -37,9 +37,6 @@ import * as dependencies from "./util/dependencies";
 import { ExecutableGraph } from "./util/graph/executable-graph";
 import { CapturingLogger, Level } from "./util/logging";
 
-// REMOVE IN VERSION 8.0.0
-/* eslint-disable @typescript-eslint/no-deprecated */
-
 chai.use(chaiAsPromised);
 
 describe(path.relative(process.cwd(), __filename), () => {
@@ -58,15 +55,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         expect(jiraOptions.attachVideos).to.eq(false);
                     });
                     describe("fields", () => {
-                        it("description", () => {
-                            expect(jiraOptions.fields.description).to.eq(undefined);
-                        });
-                        it("labels", () => {
-                            expect(jiraOptions.fields.labels).to.eq(undefined);
-                        });
-                        it("summary", () => {
-                            expect(jiraOptions.fields.summary).to.eq(undefined);
-                        });
                         it("testEnvironments", () => {
                             expect(jiraOptions.fields.testEnvironments).to.eq(undefined);
                         });
@@ -77,23 +65,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     it("testExecutionIssue", () => {
                         expect(jiraOptions.testExecutionIssue).to.eq(undefined);
                     });
-                    it("testExecutionIssueDescription", () => {
-                        expect(jiraOptions.testExecutionIssueDescription).to.eq(undefined);
-                    });
-                    it("testExecutionIssueKey", () => {
-                        expect(jiraOptions.testExecutionIssueKey).to.eq(undefined);
-                    });
-                    it("testExecutionIssueSummary", () => {
-                        expect(jiraOptions.testExecutionIssueSummary).to.eq(undefined);
-                    });
-                    it("testExecutionIssueType", () => {
-                        expect(jiraOptions.testExecutionIssueType).to.eq("Test Execution");
-                    });
                     it("testPlanIssueKey", () => {
                         expect(jiraOptions.testPlanIssueKey).to.eq(undefined);
-                    });
-                    it("testPlanIssueType", () => {
-                        expect(jiraOptions.testPlanIssueType).to.eq("Test Plan");
                     });
                 });
 
@@ -205,45 +178,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         expect(jiraOptions.attachVideos).to.eq(true);
                     });
                     describe("fields", () => {
-                        it("description", () => {
-                            const jiraOptions = initJiraOptions(
-                                {},
-                                {
-                                    fields: {
-                                        description: "Beschreibung",
-                                    },
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
-                                }
-                            );
-                            expect(jiraOptions.fields.description).to.eq("Beschreibung");
-                        });
-                        it("labels", () => {
-                            const jiraOptions = initJiraOptions(
-                                {},
-                                {
-                                    fields: {
-                                        labels: "Stichworte",
-                                    },
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
-                                }
-                            );
-                            expect(jiraOptions.fields.labels).to.eq("Stichworte");
-                        });
-                        it("summary", () => {
-                            const jiraOptions = initJiraOptions(
-                                {},
-                                {
-                                    fields: {
-                                        summary: "Résumé",
-                                    },
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
-                                }
-                            );
-                            expect(jiraOptions.fields.summary).to.eq("Résumé");
-                        });
                         it("testEnvironments", () => {
                             const jiraOptions = initJiraOptions(
                                 {},
@@ -284,50 +218,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             fields: { summary: "hello" },
                         });
                     });
-                    it("testExecutionIssueDescription", () => {
-                        const jiraOptions = initJiraOptions(
-                            {},
-                            {
-                                projectKey: "PRJ",
-                                testExecutionIssueDescription: "hello",
-                                url: "https://example.org",
-                            }
-                        );
-                        expect(jiraOptions.testExecutionIssueDescription).to.eq("hello");
-                    });
-                    it("testExecutionIssueKey", () => {
-                        const jiraOptions = initJiraOptions(
-                            {},
-                            {
-                                projectKey: "PRJ",
-                                testExecutionIssueKey: "PRJ-123",
-                                url: "https://example.org",
-                            }
-                        );
-                        expect(jiraOptions.testExecutionIssueKey).to.eq("PRJ-123");
-                    });
-                    it("testExecutionIssueSummary", () => {
-                        const jiraOptions = initJiraOptions(
-                            {},
-                            {
-                                projectKey: "PRJ",
-                                testExecutionIssueSummary: "Test - Login",
-                                url: "https://example.org",
-                            }
-                        );
-                        expect(jiraOptions.testExecutionIssueSummary).to.eq("Test - Login");
-                    });
-                    it("testExecutionIssueType", () => {
-                        const jiraOptions = initJiraOptions(
-                            {},
-                            {
-                                projectKey: "PRJ",
-                                testExecutionIssueType: "Execution Ticket",
-                                url: "https://example.org",
-                            }
-                        );
-                        expect(jiraOptions.testExecutionIssueType).to.eq("Execution Ticket");
-                    });
                     it("testPlanIssueKey", () => {
                         const jiraOptions = initJiraOptions(
                             {},
@@ -338,17 +228,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             }
                         );
                         expect(jiraOptions.testPlanIssueKey).to.eq("PRJ-456");
-                    });
-                    it("testPlanIssueType", () => {
-                        const jiraOptions = initJiraOptions(
-                            {},
-                            {
-                                projectKey: "PRJ",
-                                testPlanIssueType: "Plan Ticket",
-                                url: "https://example.org",
-                            }
-                        );
-                        expect(jiraOptions.testPlanIssueType).to.eq("Plan Ticket");
                     });
                     it("url", () => {
                         const jiraOptions = initJiraOptions(
@@ -645,48 +524,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     });
 
                     describe("fields", () => {
-                        it("JIRA_FIELDS_DESCRIPTION", () => {
-                            const env = {
-                                ["JIRA_FIELDS_DESCRIPTION"]: "customfield_98765",
-                            };
-                            const jiraOptions = initJiraOptions(env, {
-                                fields: {
-                                    description: "customfield_12345",
-                                },
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            });
-                            expect(jiraOptions.fields.description).to.eq("customfield_98765");
-                        });
-
-                        it("JIRA_FIELDS_LABELS", () => {
-                            const env = {
-                                ["JIRA_FIELDS_LABELS"]: "customfield_98765",
-                            };
-                            const jiraOptions = initJiraOptions(env, {
-                                fields: {
-                                    labels: "customfield_12345",
-                                },
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            });
-                            expect(jiraOptions.fields.labels).to.eq("customfield_98765");
-                        });
-
-                        it("JIRA_FIELDS_SUMMARY", () => {
-                            const env = {
-                                ["JIRA_FIELDS_SUMMARY"]: "customfield_98765",
-                            };
-                            const jiraOptions = initJiraOptions(env, {
-                                fields: {
-                                    summary: "customfield_12345",
-                                },
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            });
-                            expect(jiraOptions.fields.summary).to.eq("customfield_98765");
-                        });
-
                         it("JIRA_FIELDS_TEST_ENVIRONMENTS", () => {
                             const env = {
                                 ["JIRA_FIELDS_TEST_ENVIRONMENTS"]: "customfield_98765",
@@ -742,54 +579,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         });
                     });
 
-                    it("JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION", () => {
-                        const env = {
-                            ["JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION"]: "Good morning",
-                        };
-                        const jiraOptions = initJiraOptions(env, {
-                            projectKey: "CYP",
-                            testExecutionIssueDescription: "Goodbye",
-                            url: "https://example.org",
-                        });
-                        expect(jiraOptions.testExecutionIssueDescription).to.eq("Good morning");
-                    });
-
-                    it("JIRA_TEST_EXECUTION_ISSUE_KEY", () => {
-                        const env = {
-                            ["JIRA_TEST_EXECUTION_ISSUE_KEY"]: "CYP-123",
-                        };
-                        const jiraOptions = initJiraOptions(env, {
-                            projectKey: "CYP",
-                            testExecutionIssueKey: "CYP-789",
-                            url: "https://example.org",
-                        });
-                        expect(jiraOptions.testExecutionIssueKey).to.eq("CYP-123");
-                    });
-
-                    it("JIRA_TEST_EXECUTION_ISSUE_SUMMARY", () => {
-                        const env = {
-                            ["JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Some test case",
-                        };
-                        const jiraOptions = initJiraOptions(env, {
-                            projectKey: "CYP",
-                            testExecutionIssueSummary: "Summarini",
-                            url: "https://example.org",
-                        });
-                        expect(jiraOptions.testExecutionIssueSummary).to.eq("Some test case");
-                    });
-
-                    it("JIRA_TEST_EXECUTION_ISSUE_TYPE", () => {
-                        const env = {
-                            ["JIRA_TEST_EXECUTION_ISSUE_TYPE"]: "Execution Issue",
-                        };
-                        const jiraOptions = initJiraOptions(env, {
-                            projectKey: "CYP",
-                            testExecutionIssueType: "Execution",
-                            url: "https://example.org",
-                        });
-                        expect(jiraOptions.testExecutionIssueType).to.eq("Execution Issue");
-                    });
-
                     it("JIRA_TEST_PLAN_ISSUE_KEY", () => {
                         const env = {
                             ["JIRA_TEST_PLAN_ISSUE_KEY"]: "CYP-456",
@@ -800,18 +589,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             url: "https://example.org",
                         });
                         expect(jiraOptions.testPlanIssueKey).to.eq("CYP-456");
-                    });
-
-                    it("JIRA_TEST_PLAN_ISSUE_TYPE", () => {
-                        const env = {
-                            ["JIRA_TEST_PLAN_ISSUE_TYPE"]: "Plan Issue",
-                        };
-                        const jiraOptions = initJiraOptions(env, {
-                            projectKey: "CYP",
-                            testExecutionIssueType: "Plan",
-                            url: "https://example.org",
-                        });
-                        expect(jiraOptions.testPlanIssueType).to.eq("Plan Issue");
                     });
 
                     it("JIRA_URL", () => {
@@ -1985,8 +1762,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         attachVideos: false,
                         fields: {},
                         projectKey: "CYP",
-                        testExecutionIssueType: "Test Execution",
-                        testPlanIssueType: "Test Plan",
                         url: "https://example.org",
                     },
                     plugin: {
