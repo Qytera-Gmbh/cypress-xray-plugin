@@ -98,9 +98,12 @@ export async function addUploadCommands(
             builder,
             {
                 cucumberReportPath: options.cucumber?.preprocessor?.json.output,
-                executionIssueKey: issueData?.key ?? options.jira.testExecutionIssueKey,
                 projectRoot: projectRoot,
+                reusesExecutionIssue:
+                    issueData?.key !== undefined ||
+                    options.jira.testExecutionIssueKey !== undefined,
                 testEnvironments: options.xray.testEnvironments,
+                testExecutionIssueKeyCommand: importCypressExecutionCommand,
                 testPlanIssueKey: testPlanIssueKey,
             }
         );
@@ -204,9 +207,10 @@ function getImportExecutionCucumberCommand(
     builder: AfterRunBuilder,
     options: {
         cucumberReportPath?: string;
-        executionIssueKey?: string;
         projectRoot: string;
+        reusesExecutionIssue: boolean;
         testEnvironments?: string[];
+        testExecutionIssueKeyCommand?: Command<string>;
         testPlanIssueKey?: string;
     }
 ) {
@@ -226,6 +230,7 @@ function getImportExecutionCucumberCommand(
     const convertCucumberFeaturesCommand = builder.addConvertCucumberFeaturesCommand({
         cucumberResults: cucumberResultsCommand,
         projectRoot: options.projectRoot,
+        testExecutionIssueKeyCommand: options.testExecutionIssueKeyCommand,
     });
     const combineCucumberMultipartCommand = builder.addCombineCucumberMultipartCommand({
         cucumberMultipartFeatures: convertCucumberFeaturesCommand,
@@ -238,7 +243,7 @@ function getImportExecutionCucumberCommand(
         cucumberMultipart: combineCucumberMultipartCommand,
     });
     graph.connect(assertConversionValidCommand, importCucumberExecutionCommand);
-    if (options.executionIssueKey) {
+    if (options.reusesExecutionIssue) {
         builder.addVerifyExecutionIssueKeyCommand({
             importType: "cucumber",
             resolvedExecutionIssue: importCucumberExecutionCommand,
@@ -498,15 +503,21 @@ class AfterRunBuilder {
     public addConvertCucumberFeaturesCommand(parameters: {
         cucumberResults: Command<CucumberMultipartFeature[]>;
         projectRoot: string;
+        testExecutionIssueKeyCommand?: Command<string>;
     }) {
-        let testExecutionIssueKeyCommand;
-        const executionIssueKey = this.issueData?.key ?? this.options.jira.testExecutionIssueKey;
-        if (executionIssueKey) {
-            testExecutionIssueKeyCommand = getOrCreateConstantCommand(
-                this.graph,
-                this.logger,
-                executionIssueKey
-            );
+        let resolvedExecutionIssueKeyCommand;
+        if (parameters.testExecutionIssueKeyCommand) {
+            resolvedExecutionIssueKeyCommand = parameters.testExecutionIssueKeyCommand;
+        } else {
+            const executionIssueKey =
+                this.issueData?.key ?? this.options.jira.testExecutionIssueKey;
+            if (executionIssueKey) {
+                resolvedExecutionIssueKeyCommand = getOrCreateConstantCommand(
+                    this.graph,
+                    this.logger,
+                    executionIssueKey
+                );
+            }
         }
         const command = this.graph.place(
             new ConvertCucumberFeaturesCommand(
@@ -531,13 +542,13 @@ class AfterRunBuilder {
                 this.logger,
                 {
                     cucumberResults: parameters.cucumberResults,
-                    testExecutionIssueKey: testExecutionIssueKeyCommand,
+                    testExecutionIssueKey: resolvedExecutionIssueKeyCommand,
                 }
             )
         );
         this.graph.connect(parameters.cucumberResults, command);
-        if (testExecutionIssueKeyCommand) {
-            this.graph.connect(testExecutionIssueKeyCommand, command);
+        if (resolvedExecutionIssueKeyCommand) {
+            this.graph.connect(resolvedExecutionIssueKeyCommand, command);
         }
         return command;
     }

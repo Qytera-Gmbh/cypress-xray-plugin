@@ -1364,6 +1364,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     importExecutionCypressCommand,
                 ]);
                 expect([...graph.getSuccessors(importExecutionCypressCommand)]).to.deep.eq([
+                    convertCucumberFeaturesCommand,
                     fallbackCypressUploadCommand,
                 ]);
                 // Cucumber.
@@ -1390,7 +1391,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     verifyResultsUploadCommand,
                 ]);
                 expect(graph.size("vertices")).to.eq(16);
-                expect(graph.size("edges")).to.eq(19);
+                expect(graph.size("edges")).to.eq(20);
             });
         });
     });
