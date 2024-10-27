@@ -1,5 +1,27 @@
 # Changelog
 
+# `7.4.0`
+
+## Notable changes
+
+-   Removed unused `jira.fields.testType`
+
+-   Projects other than the configured project key can now be used for the test execution issue key
+
+-   Added explicit issue transition call for server environments ([#389](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/389))
+
+-   Added Cypress test results parameter to test execution issue callback
+
+## Dependency updates
+
+-   Bump @bahmutov/cypress-esbuild-preprocessor from 2.2.2 to 2.2.3
+
+-   Bump axios from 1.7.5 to 1.7.7
+
+-   Bump @badeball/cypress-cucumber-preprocessor from 20.1.1 to 21.0.0
+
+-   Bump cypress from 13.13.2 to 13.14.1
+
 # `7.3.0`
 
 ## Notable changes
