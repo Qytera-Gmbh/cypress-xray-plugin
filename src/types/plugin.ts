@@ -191,7 +191,7 @@ export interface JiraOptions {
      * await configureXrayPlugin(on, config, {
      *   jira: {
      *     projectKey: "CYP",
-     *     testExecution: ({ results }) => {
+     *     testExecutionIssue: ({ results }) => {
      *       if (results.totalFailed > 0) {
      *         executionIssueData.fields.summary = "Failed test execution";
      *       }
