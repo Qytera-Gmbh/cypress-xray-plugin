@@ -73,9 +73,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         it("testPlan", () => {
                             expect(jiraOptions.fields.testPlan).to.eq(undefined);
                         });
-                        it("testType", () => {
-                            expect(jiraOptions.fields.testType).to.eq(undefined);
-                        });
                     });
                     it("testExecutionIssue", () => {
                         expect(jiraOptions.testExecutionIssue).to.eq(undefined);
@@ -272,19 +269,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 }
                             );
                             expect(jiraOptions.fields.testPlan).to.eq("Plan de Test");
-                        });
-                        it("testType", () => {
-                            const jiraOptions = initJiraOptions(
-                                {},
-                                {
-                                    fields: {
-                                        testType: "Xray Test Type",
-                                    },
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
-                                }
-                            );
-                            expect(jiraOptions.fields.testType).to.eq("Xray Test Type");
                         });
                     });
                     it("testExecutionIssue", () => {
@@ -730,20 +714,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             });
                             expect(jiraOptions.fields.testPlan).to.eq("customfield_98765");
                         });
-
-                        it("JIRA_FIELDS_TEST_TYPE", () => {
-                            const env = {
-                                ["JIRA_FIELDS_TEST_TYPE"]: "customfield_98765",
-                            };
-                            const jiraOptions = initJiraOptions(env, {
-                                fields: {
-                                    testType: "customfield_12345",
-                                },
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            });
-                            expect(jiraOptions.fields.testType).to.eq("customfield_98765");
-                        });
                     });
 
                     it("JIRA_TEST_EXECUTION_ISSUE", () => {
@@ -1152,20 +1122,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             }
                         )
                     ).to.throw("Plugin misconfiguration: Jira project key was not set");
-                });
-                it("detect mismatched test execution issue keys", () => {
-                    expect(() =>
-                        initJiraOptions(
-                            {},
-                            {
-                                projectKey: "CYP",
-                                testExecutionIssueKey: "ABC-123",
-                                url: "https://example.org",
-                            }
-                        )
-                    ).to.throw(
-                        "Plugin misconfiguration: test execution issue key ABC-123 does not belong to project CYP"
-                    );
                 });
                 it("throws if the cucumber preprocessor is not installed", async () => {
                     stub(dependencies, "IMPORT").rejects(new Error("Failed to import package"));

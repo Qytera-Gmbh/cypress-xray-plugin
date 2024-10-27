@@ -29,7 +29,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport.slice(0, 1))
+                { cucumberResults: new ConstantCommand(logger, cucumberReport.slice(0, 1)) }
             );
             const features = await command.compute();
             expect(features).to.be.an("array").with.length(1);
@@ -53,7 +53,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport.slice(0, 1))
+                { cucumberResults: new ConstantCommand(logger, cucumberReport.slice(0, 1)) }
             );
             expect(command.getParameters()).to.deep.eq({
                 cucumber: {
@@ -89,7 +89,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport.slice(0, 1))
+                { cucumberResults: new ConstantCommand(logger, cucumberReport.slice(0, 1)) }
             );
             const features = await command.compute();
             expect(features).to.be.an("array").with.length(1);
@@ -114,7 +114,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport)
+                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
             );
             const features = await command.compute();
             expect(features).to.be.an("array").with.length(2);
@@ -141,8 +141,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport),
-                new ConstantCommand(logger, "CYP-456")
+                {
+                    cucumberResults: new ConstantCommand(logger, cucumberReport),
+                    testExecutionIssueKey: new ConstantCommand(logger, "CYP-456"),
+                }
             );
             const features = await command.compute();
             expect(features[0].tags).to.deep.eq([{ name: "@CYP-456" }]);
@@ -169,8 +171,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport),
-                new ConstantCommand(logger, "CYP-456")
+                {
+                    cucumberResults: new ConstantCommand(logger, cucumberReport),
+                    testExecutionIssueKey: new ConstantCommand(logger, "CYP-456"),
+                }
             );
             const features = await command.compute();
             expect(features[0].tags).to.deep.eq([{ name: "@CYP-456" }]);
@@ -195,7 +199,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { status: {}, uploadScreenshots: true },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport)
+                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
             );
             const features = await command.compute();
             expectToExist(features[0].elements[2].steps[1].embeddings);
@@ -227,100 +231,102 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 },
                 logger,
-                new ConstantCommand(logger, [
-                    {
-                        description: "",
-                        elements: [
-                            {
-                                description: "",
-                                id: "a-tagged-feature;tc---development",
-                                keyword: "Scenario",
-                                line: 9,
-                                name: "TC - Development",
-                                steps: [
-                                    {
-                                        arguments: [],
-                                        embeddings: [],
-                                        keyword: "Given ",
-                                        line: 5,
-                                        name: "abc123",
-                                        result: {
-                                            duration: 0,
-                                            status: "undefined",
+                {
+                    cucumberResults: new ConstantCommand(logger, [
+                        {
+                            description: "",
+                            elements: [
+                                {
+                                    description: "",
+                                    id: "a-tagged-feature;tc---development",
+                                    keyword: "Scenario",
+                                    line: 9,
+                                    name: "TC - Development",
+                                    steps: [
+                                        {
+                                            arguments: [],
+                                            embeddings: [],
+                                            keyword: "Given ",
+                                            line: 5,
+                                            name: "abc123",
+                                            result: {
+                                                duration: 0,
+                                                status: "undefined",
+                                            },
                                         },
-                                    },
-                                    {
-                                        arguments: [],
-                                        keyword: "Then ",
-                                        line: 6,
-                                        name: "xyz9871",
-                                        result: {
-                                            duration: 0,
-                                            status: "skipped",
+                                        {
+                                            arguments: [],
+                                            keyword: "Then ",
+                                            line: 6,
+                                            name: "xyz9871",
+                                            result: {
+                                                duration: 0,
+                                                status: "skipped",
+                                            },
                                         },
-                                    },
-                                    {
-                                        arguments: [],
-                                        keyword: "Given ",
-                                        line: 10,
-                                        name: "an assumption",
-                                        result: {
-                                            duration: 0,
-                                            status: "passed",
+                                        {
+                                            arguments: [],
+                                            keyword: "Given ",
+                                            line: 10,
+                                            name: "an assumption",
+                                            result: {
+                                                duration: 0,
+                                                status: "passed",
+                                            },
                                         },
-                                    },
-                                    {
-                                        arguments: [],
-                                        keyword: "When ",
-                                        line: 11,
-                                        name: "a when",
-                                        result: {
-                                            duration: 0,
-                                            status: "unknown",
+                                        {
+                                            arguments: [],
+                                            keyword: "When ",
+                                            line: 11,
+                                            name: "a when",
+                                            result: {
+                                                duration: 0,
+                                                status: "unknown",
+                                            },
                                         },
-                                    },
-                                    {
-                                        arguments: [],
-                                        keyword: "And ",
-                                        line: 12,
-                                        name: "an and",
-                                        result: {
-                                            duration: 0,
-                                            status: "failed",
+                                        {
+                                            arguments: [],
+                                            keyword: "And ",
+                                            line: 12,
+                                            name: "an and",
+                                            result: {
+                                                duration: 0,
+                                                status: "failed",
+                                            },
                                         },
-                                    },
-                                    {
-                                        arguments: [],
-                                        keyword: "Then ",
-                                        line: 13,
-                                        name: "a then",
-                                        result: {
-                                            duration: 0,
-                                            status: "pending",
+                                        {
+                                            arguments: [],
+                                            keyword: "Then ",
+                                            line: 13,
+                                            name: "a then",
+                                            result: {
+                                                duration: 0,
+                                                status: "pending",
+                                            },
                                         },
-                                    },
-                                ],
-                                tags: [
-                                    {
-                                        line: 8,
-                                        name: "@ABC-63",
-                                    },
-                                    {
-                                        line: 67,
-                                        name: "@TestName:CYP-123",
-                                    },
-                                ],
-                                type: "scenario",
-                            },
-                        ],
-                        id: "a-tagged-feature",
-                        keyword: "Feature",
-                        line: 1,
-                        name: "A tagged feature",
-                        tags: [],
-                        uri: "cypress/e2e/spec.cy.feature",
-                    },
-                ])
+                                    ],
+                                    tags: [
+                                        {
+                                            line: 8,
+                                            name: "@ABC-63",
+                                        },
+                                        {
+                                            line: 67,
+                                            name: "@TestName:CYP-123",
+                                        },
+                                    ],
+                                    type: "scenario",
+                                },
+                            ],
+                            id: "a-tagged-feature",
+                            keyword: "Feature",
+                            line: 1,
+                            name: "A tagged feature",
+                            tags: [],
+                            uri: "cypress/e2e/spec.cy.feature",
+                        },
+                    ]),
+                }
             );
             const features = await command.compute();
             expect(features[0].elements[0].steps[0].result.status).to.eq("undefined");
@@ -351,7 +357,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport)
+                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
             );
             const features = await command.compute();
             expect(features[0].elements).to.have.length(2);
@@ -376,7 +382,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport)
+                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
             );
             const features = await command.compute();
             expect(features[0].elements[0].steps[0].embeddings).to.be.empty;
@@ -406,7 +412,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport)
+                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
             );
             const features = await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(
@@ -484,7 +490,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport)
+                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
             );
             const features = await command.compute();
             expect(logger.message).to.have.been.calledWithExactly(
@@ -550,7 +556,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { status: {}, uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, cucumberReport)
+                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
             );
             const features = await command.compute();
             expect(features).to.have.length(1);

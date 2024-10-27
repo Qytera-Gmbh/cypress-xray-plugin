@@ -6,7 +6,6 @@ import { dedent } from "../../../../util/dedent";
 import { Level } from "../../../../util/logging";
 import { ConstantCommand } from "../constant-command";
 import { EditIssueFieldCommand } from "./edit-issue-field-command";
-import { JiraField } from "./extract-field-id-command";
 
 chai.use(chaiAsPromised);
 
@@ -23,7 +22,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 .resolves("CYP-456");
             const command = new EditIssueFieldCommand(
                 {
-                    field: JiraField.SUMMARY,
+                    fieldId: "summary",
                     jiraClient: jiraClient,
                 },
                 logger,
@@ -48,7 +47,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 .rejects(new Error("No editing allowed"));
             const command = new EditIssueFieldCommand(
                 {
-                    field: JiraField.LABELS,
+                    fieldId: "labels",
                     jiraClient: jiraClient,
                 },
                 logger,
@@ -74,7 +73,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             const jiraClient = getMockedJiraClient();
             const command = new EditIssueFieldCommand(
                 {
-                    field: JiraField.LABELS,
+                    fieldId: "labels",
                     jiraClient: jiraClient,
                 },
                 logger,

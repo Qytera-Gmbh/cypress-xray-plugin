@@ -7,12 +7,8 @@ import { prettyPadObjects, prettyPadValues } from "../../../../util/pretty";
 import { Command, Computable } from "../../../command";
 
 export enum JiraField {
-    DESCRIPTION = "description",
-    LABELS = "labels",
-    SUMMARY = "summary",
     TEST_ENVIRONMENTS = "test environments",
     TEST_PLAN = "test plan",
-    TEST_TYPE = "test type",
 }
 
 interface Parameters {
@@ -111,17 +107,9 @@ export class ExtractFieldIdCommand extends Command<string, Parameters> {
 
 function getOptionName(fieldName: JiraField): keyof JiraFieldIds {
     switch (fieldName) {
-        case JiraField.DESCRIPTION:
-            return "description";
-        case JiraField.SUMMARY:
-            return "summary";
-        case JiraField.LABELS:
-            return "labels";
         case JiraField.TEST_ENVIRONMENTS:
             return "testEnvironments";
         case JiraField.TEST_PLAN:
             return "testPlan";
-        case JiraField.TEST_TYPE:
-            return "testType";
     }
 }

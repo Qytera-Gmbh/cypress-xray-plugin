@@ -5,20 +5,13 @@ import { dedent } from "../../../../util/dedent";
 import { errorMessage } from "../../../../util/errors";
 import { Level, Logger } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
-import { JiraField } from "./extract-field-id-command";
-
-export interface FieldValueMap {
-    [JiraField.LABELS]: string[];
-    [JiraField.SUMMARY]: string;
-    [JiraField.TEST_TYPE]: string;
-}
 
 interface Parameters {
     jiraClient: JiraClient;
 }
 
-export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> extends Command<
-    StringMap<FieldValueMap[F]>,
+export abstract class GetFieldValuesCommand<FieldValue> extends Command<
+    StringMap<FieldValue>,
     Parameters
 > {
     protected readonly fieldId: Computable<string>;
@@ -35,8 +28,8 @@ export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> exten
     }
 
     protected async extractJiraFieldValues(
-        extractor: (issue: Issue, fieldId: string) => FieldValueMap[F] | Promise<FieldValueMap[F]>
-    ): Promise<StringMap<FieldValueMap[F]>> {
+        extractor: (issue: Issue, fieldId: string) => FieldValue | Promise<FieldValue>
+    ): Promise<StringMap<FieldValue>> {
         const fieldId = await this.fieldId.compute();
         const issueKeys = await this.issueKeys.compute();
         const issues: Issue[] = await this.parameters.jiraClient.search({
@@ -55,7 +48,7 @@ export abstract class GetFieldValuesCommand<F extends keyof FieldValueMap> exten
                 `)
             );
         }
-        const results: StringMap<FieldValueMap[F]> = {};
+        const results: StringMap<FieldValue> = {};
         const issuesWithUnparseableField: string[] = [];
         for (const issue of issues) {
             if (!issue.key) {

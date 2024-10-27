@@ -3,8 +3,8 @@ import { AxiosRequestConfig } from "axios";
 import { AxiosRestClient, RequestsOptions } from "../client/https/requests";
 import { JiraClient } from "../client/jira/jira-client";
 import { XrayClient } from "../client/xray/xray-client";
+import { CypressRunResultType } from "./cypress/cypress";
 import { IssueUpdate } from "./jira/responses/issue-update";
-import { MaybeFunction } from "./util";
 
 /**
  * Models all options for configuring the behaviour of the plugin.
@@ -95,20 +95,26 @@ export interface JiraFieldIds {
      */
     testEnvironments?: string;
     /**
-     * The test plan field ID of Xray test (execution) issues.
+     * The Jira field ID of test plans in Xray test (execution) issues.
      *
      * *Note: This option is required for server instances only. Xray cloud provides ways to
      * retrieve test plan field information independently of Jira.*
      */
     testPlan?: string;
-    /**
-     * The test type field ID of Xray test issues.
-     *
-     * *Note: This option is required for server instances only. Xray cloud provides ways to
-     * retrieve test type field information independently of Jira.*
-     */
-    testType?: string;
 }
+
+/**
+ * Wrapper type around Jira's issue update type with some additional properties.
+ */
+export type PluginIssueUpdate = IssueUpdate & {
+    /**
+     * An execution issue key to attach run results to. If omitted, Xray will always create
+     * a new test execution issue with each upload.
+     *
+     * @example "CYP-123"
+     */
+    key?: string;
+};
 
 /**
  * Jira-specific options that control how the plugin interacts with Jira.
@@ -126,8 +132,8 @@ export interface JiraOptions {
      * `Description`, ...) just fine. Still, providing the fields' IDs here might become necessary
      * in the following scenarios:
      * - Your Jira language setting is a language other than English. For example, when the plugin
-     * tries to access the `Summary` field and the Jira language is set to French, access will fail
-     * because Jira only provides access to a field called `Résumé` instead.
+     * tries to access the `Test Plan` field and the Jira language is set to French, access will
+     * fail because Jira only provides access to a field called `Plan de Test` instead.
      * - Your Jira project contains several fields with identical names.
      *
      * *Note: In case you don't know these properties or if you are unsure whether they are really
@@ -139,7 +145,6 @@ export interface JiraOptions {
      * @example
      * ```ts
      *   fields: {
-     *     description: "description",
      *     testPlan: "customfield_12643"
      *   }
      * ```
@@ -156,8 +161,6 @@ export interface JiraOptions {
      * create or modify with the run results. The value must match the format of Jira's issue
      * create/update payloads.
      *
-     * @example
-     *
      * ```ts
      * testExecutionIssue: {
      *   key: "PRJ-16",
@@ -172,24 +175,48 @@ export interface JiraOptions {
      * }
      * ```
      *
+     * You can also return the issue data from a function in case you need dynamic values based on
+     * data computed during the test run.
+     *
+     * ```ts
+     * const executionIssueData = {
+     *   fields: {
+     *     issuetype: {
+     *       name: "Test Execution",
+     *     },
+     *     summary: "My default summary",
+     *     description: "My default description",
+     *   },
+     * };
+     * await configureXrayPlugin(on, config, {
+     *   jira: {
+     *     projectKey: "CYP",
+     *     testExecution: ({ results }) => {
+     *       if (results.totalFailed > 0) {
+     *         executionIssueData.fields.summary = "Failed test execution";
+     *       }
+     *       return executionIssueData;
+     *     },
+     *     url: "https://example.org",
+     *   },
+     * });
+     * ```
+     *
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-post
      * @see https://developer.atlassian.com/server/jira/platform/rest/v10000/api-group-issue/#api-api-2-issue-post
      */
-    testExecutionIssue?: MaybeFunction<
-        IssueUpdate & {
-            /**
-             * An execution issue key to attach run results to. If omitted, Jira will always create a new
-             * test execution issue with each upload.
-             *
-             * @example "CYP-123"
-             */
-            key?: string;
-        }
-    >;
+    testExecutionIssue?:
+        | ((args: {
+              /**
+               * The Cypress run results.
+               */
+              results: CypressRunResultType;
+          }) => PluginIssueUpdate | Promise<PluginIssueUpdate>)
+        | PluginIssueUpdate;
     /**
      * The description of the test execution issue, which will be used both for new test execution
      * issues as well as for updating existing issues (if provided through
-     * {@link JiraOptions.testExecutionIssueKey}).
+     * {@link JiraOptions.testExecutionIssue}).
      *
      * If omitted, test execution issues will have the following description:
      * ```ts
@@ -216,8 +243,6 @@ export interface JiraOptions {
      * An execution issue key to attach run results to. If omitted, Jira will always create a new
      * test execution issue with each upload.
      *
-     * *Note: it must be prefixed with the project key.*
-     *
      * @example "CYP-123"
      *
      * @deprecated Will be removed in version `8.0.0`. Please use the following instead:
@@ -237,7 +262,7 @@ export interface JiraOptions {
     /**
      * The summary of the test execution issue, which will be used both for new test execution
      * issues as well as for updating existing issues (if provided through
-     * {@link JiraOptions.testExecutionIssueKey}).
+     * {@link JiraOptions.testExecutionIssue}).
      *
      * If omitted, test execution issues will be named as follows:
      * ```ts
@@ -288,14 +313,21 @@ export interface JiraOptions {
     /**
      * A test plan issue key to attach the execution to.
      *
-     * *Note: it must be prefixed with the project key.*
-     *
      * @example "CYP-567"
      */
-    testPlanIssueKey?: MaybeFunction<string>;
+    testPlanIssueKey?:
+        | ((args: {
+              /**
+               * The Cypress run results.
+               */
+              results: CypressRunResultType;
+          }) => Promise<string> | string)
+        | string;
     /**
      * The issue type name of test plans. By default, Xray calls them `Test Plan`, but it's possible
      * that they have been renamed or translated in your Jira instance.
+     *
+     * @deprecated Unused, will be removed in version `8.0.0`.
      */
     testPlanIssueType?: string;
     /**

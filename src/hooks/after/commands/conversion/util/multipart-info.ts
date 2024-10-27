@@ -1,5 +1,4 @@
 import { CypressRunResultType } from "../../../../../types/cypress/cypress";
-import { IssueTypeDetails } from "../../../../../types/jira/responses/issue-type-details";
 import { IssueUpdate } from "../../../../../types/jira/responses/issue-update";
 import {
     MultipartInfo,
@@ -19,15 +18,11 @@ export type RunData = Pick<
  * Additional information used by test execution issues when uploading Cucumber results.
  */
 export interface TestExecutionIssueData {
-    custom?: IssueUpdate;
-    description?: string;
-    issuetype?: IssueTypeDetails;
-    labels?: string[];
     projectKey: string;
-    summary?: string;
     testEnvironments?: {
         value: [string, ...string[]];
     };
+    testExecutionIssue: IssueUpdate;
     testPlan?: {
         value: string;
     };
@@ -69,11 +64,10 @@ export function buildMultipartInfoServer(
         multipartInfo.fields[testExecutionIssueData.testEnvironments.fieldId] =
             testExecutionIssueData.testEnvironments.value;
     }
-    if (testExecutionIssueData.custom?.fields) {
-        for (const [key, value] of Object.entries(testExecutionIssueData.custom.fields)) {
-            multipartInfo.fields[key] = value;
-        }
-    }
+    multipartInfo.fields = {
+        ...multipartInfo.fields,
+        ...testExecutionIssueData.testExecutionIssue.fields,
+    };
     return multipartInfo;
 }
 
@@ -96,11 +90,10 @@ export function buildMultipartInfoCloud(
             testPlanKey: testExecutionIssueData.testPlan?.value,
         },
     };
-    if (testExecutionIssueData.custom?.fields) {
-        for (const [key, value] of Object.entries(testExecutionIssueData.custom.fields)) {
-            multipartInfo.fields[key] = value;
-        }
-    }
+    multipartInfo.fields = {
+        ...multipartInfo.fields,
+        ...testExecutionIssueData.testExecutionIssue.fields,
+    };
     return multipartInfo;
 }
 
@@ -111,40 +104,20 @@ function getBaseInfo(
     return {
         fields: {
             description:
-                testExecutionIssueData.description ??
-                defaultDescription(
-                    runData.cypressVersion,
-                    runData.browserName,
-                    runData.browserVersion
-                ),
-            issuetype: testExecutionIssueData.issuetype ?? {
-                name: "Test Execution",
-            },
+                testExecutionIssueData.testExecutionIssue.fields?.description ??
+                dedent(`
+                    Cypress version: ${runData.cypressVersion}
+                    Browser: ${runData.browserName} (${runData.browserVersion})
+                `),
+            issuetype: testExecutionIssueData.testExecutionIssue.fields?.issuetype,
             project: {
                 key: testExecutionIssueData.projectKey,
             },
-            summary:
-                testExecutionIssueData.summary ??
-                defaultSummary(new Date(runData.startedTestsAt).getTime()),
+            summary: testExecutionIssueData.testExecutionIssue.fields?.summary,
         },
-        historyMetadata: testExecutionIssueData.custom?.historyMetadata,
-        properties: testExecutionIssueData.custom?.properties,
-        transition: testExecutionIssueData.custom?.transition,
-        update: testExecutionIssueData.custom?.update,
+        historyMetadata: testExecutionIssueData.testExecutionIssue.historyMetadata,
+        properties: testExecutionIssueData.testExecutionIssue.properties,
+        transition: testExecutionIssueData.testExecutionIssue.transition,
+        update: testExecutionIssueData.testExecutionIssue.update,
     };
-}
-
-function defaultSummary(timestamp: number): string {
-    return `Execution Results [${timestamp.toString()}]`;
-}
-
-function defaultDescription(
-    cypressVersion: string,
-    browserName: string,
-    browserVersion: string
-): string {
-    return dedent(`
-        Cypress version: ${cypressVersion}
-        Browser: ${browserName} (${browserVersion})
-    `);
 }

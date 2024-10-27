@@ -7,14 +7,19 @@ import { MaybeFunction } from "../types/util";
  * @param value - the value
  * @returns the value or the callback result
  */
-export async function getOrCall<T>(value: MaybeFunction<T>): Promise<T> {
+export async function getOrCall<P extends unknown[], T>(
+    value: MaybeFunction<P, T>,
+    ...args: P
+): Promise<T> {
     // See https://github.com/microsoft/TypeScript/issues/37663#issuecomment-1081610403
     if (isFunction(value)) {
-        return await value();
+        return await value(...args);
     }
     return value;
 }
 
-function isFunction(value: unknown): value is (...args: unknown[]) => unknown {
+function isFunction<P extends unknown[], T>(
+    value: MaybeFunction<P, T>
+): value is (...args: P) => Promise<T> | T {
     return typeof value === "function";
 }

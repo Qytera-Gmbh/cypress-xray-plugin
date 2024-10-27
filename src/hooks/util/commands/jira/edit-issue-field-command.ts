@@ -4,24 +4,20 @@ import { dedent } from "../../../../util/dedent";
 import { Level, Logger } from "../../../../util/logging";
 import { unknownToString } from "../../../../util/string";
 import { Command, Computable } from "../../../command";
-import { FieldValueMap } from "./get-field-values-command";
 
-interface Parameters<F extends keyof FieldValueMap> {
-    field: F;
+interface Parameters {
+    fieldId: string;
     jiraClient: JiraClient;
 }
 
-export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Command<
-    string[],
-    Parameters<F>
-> {
+export class EditIssueFieldCommand<FieldValue> extends Command<string[], Parameters> {
     private readonly fieldId: Computable<string>;
-    private readonly fieldValues: Computable<StringMap<FieldValueMap[F]>>;
+    private readonly fieldValues: Computable<StringMap<FieldValue>>;
     constructor(
-        parameters: Parameters<F>,
+        parameters: Parameters,
         logger: Logger,
         fieldId: Computable<string>,
-        fieldValues: Computable<StringMap<FieldValueMap[F]>>
+        fieldValues: Computable<StringMap<FieldValue>>
     ) {
         super(parameters, logger);
         this.fieldId = fieldId;
@@ -47,7 +43,7 @@ export class EditIssueFieldCommand<F extends keyof FieldValueMap> extends Comman
                         ${issueKey}
 
                           Failed to set ${unknownToString(
-                              this.parameters.field
+                              this.parameters.fieldId
                           )} field to value: ${unknownToString(newValue)}
                     `)
                 );

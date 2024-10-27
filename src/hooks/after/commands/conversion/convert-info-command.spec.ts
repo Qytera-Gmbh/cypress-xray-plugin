@@ -16,15 +16,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { id: "issue_1578" }),
-                new ConstantCommand(logger, {
-                    browserName: "Firefox",
-                    browserVersion: "123.11.6",
-                    cypressVersion: "42.4.9",
-                    endedTestsAt: "2023-09-09T10:59:36.177Z",
-                    startedTestsAt: "2023-09-09T10:59:28.829Z",
-                }),
                 {
+                    issuetype: new ConstantCommand(logger, { id: "issue_1578" }),
+                    results: new ConstantCommand(logger, {
+                        browserName: "Firefox",
+                        browserVersion: "123.11.6",
+                        cypressVersion: "42.4.9",
+                        endedTestsAt: "2023-09-09T10:59:36.177Z",
+                        startedTestsAt: "2023-09-09T10:59:28.829Z",
+                    }),
                     summary: new ConstantCommand(logger, "Execution Results [1694257168829]"),
                 }
             );
@@ -56,18 +56,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, {}),
-                new ConstantCommand(logger, {
-                    browserName: "Firefox",
-                    browserVersion: "123.11.6",
-                    cypressVersion: "42.4.9",
-                    endedTestsAt: "2023-09-09T10:59:31.416Z",
-                    startedTestsAt: "2023-09-09T10:59:28.829Z",
-                }),
                 {
                     fieldIds: {
                         testPlanId: new ConstantCommand(logger, "customfield_12345"),
                     },
+                    issuetype: new ConstantCommand(logger, {}),
+                    results: new ConstantCommand(logger, {
+                        browserName: "Firefox",
+                        browserVersion: "123.11.6",
+                        cypressVersion: "42.4.9",
+                        endedTestsAt: "2023-09-09T10:59:31.416Z",
+                        startedTestsAt: "2023-09-09T10:59:28.829Z",
+                    }),
                     summary: new ConstantCommand(logger, "my summary"),
                 }
             );
@@ -85,18 +85,18 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, {}),
-                new ConstantCommand(logger, {
-                    browserName: "Firefox",
-                    browserVersion: "123.11.6",
-                    cypressVersion: "42.4.9",
-                    endedTestsAt: "2023-09-09T10:59:31.416Z",
-                    startedTestsAt: "2023-09-09T10:59:28.829Z",
-                }),
                 {
                     fieldIds: {
                         testEnvironmentsId: new ConstantCommand(logger, "customfield_45678"),
                     },
+                    issuetype: new ConstantCommand(logger, {}),
+                    results: new ConstantCommand(logger, {
+                        browserName: "Firefox",
+                        browserVersion: "123.11.6",
+                        cypressVersion: "42.4.9",
+                        endedTestsAt: "2023-09-09T10:59:31.416Z",
+                        startedTestsAt: "2023-09-09T10:59:28.829Z",
+                    }),
                     summary: new ConstantCommand(logger, "my summary"),
                 }
             );
@@ -117,15 +117,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                             xray: { uploadScreenshots: false },
                         },
                         logger,
-                        new ConstantCommand(logger, {}),
-                        new ConstantCommand(logger, {
-                            browserName: "Firefox",
-                            browserVersion: "123.11.6",
-                            cypressVersion: "42.4.9",
-                            endedTestsAt: "2023-09-09T10:59:31.416Z",
-                            startedTestsAt: "2023-09-09T10:59:28.829Z",
-                        }),
                         {
+                            issuetype: new ConstantCommand(logger, {}),
+                            results: new ConstantCommand(logger, {
+                                browserName: "Firefox",
+                                browserVersion: "123.11.6",
+                                cypressVersion: "42.4.9",
+                                endedTestsAt: "2023-09-09T10:59:31.416Z",
+                                startedTestsAt: "2023-09-09T10:59:28.829Z",
+                            }),
                             summary: new ConstantCommand(logger, "my summary"),
                         }
                     )
@@ -144,15 +144,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                             xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                         },
                         logger,
-                        new ConstantCommand(logger, {}),
-                        new ConstantCommand(logger, {
-                            browserName: "Firefox",
-                            browserVersion: "123.11.6",
-                            cypressVersion: "42.4.9",
-                            endedTestsAt: "2023-09-09T10:59:31.416Z",
-                            startedTestsAt: "2023-09-09T10:59:28.829Z",
-                        }),
                         {
+                            issuetype: new ConstantCommand(logger, {}),
+                            results: new ConstantCommand(logger, {
+                                browserName: "Firefox",
+                                browserVersion: "123.11.6",
+                                cypressVersion: "42.4.9",
+                                endedTestsAt: "2023-09-09T10:59:31.416Z",
+                                startedTestsAt: "2023-09-09T10:59:28.829Z",
+                            }),
                             summary: new ConstantCommand(logger, "my summary"),
                         }
                     )
@@ -171,15 +171,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, {}),
-                new ConstantCommand(logger, {
-                    browserName: "Firefox",
-                    browserVersion: "123.11.6",
-                    cypressVersion: "42.4.9",
-                    endedTestsAt: "2023-09-09T10:59:31.416Z",
-                    startedTestsAt: "2023-09-09T10:59:28.829Z",
-                }),
                 {
+                    issuetype: new ConstantCommand(logger, {}),
+                    results: new ConstantCommand(logger, {
+                        browserName: "Firefox",
+                        browserVersion: "123.11.6",
+                        cypressVersion: "42.4.9",
+                        endedTestsAt: "2023-09-09T10:59:31.416Z",
+                        startedTestsAt: "2023-09-09T10:59:28.829Z",
+                    }),
                     summary: new ConstantCommand(logger, "my summary"),
                 }
             );
@@ -203,15 +203,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, { id: "issue_1578" }),
-                new ConstantCommand(logger, {
-                    browserName: "Firefox",
-                    browserVersion: "123.11.6",
-                    cypressVersion: "42.4.9",
-                    endedTestsAt: "2023-09-09T10:59:31.416Z",
-                    startedTestsAt: "2023-09-09T10:59:28.829Z",
-                }),
                 {
+                    issuetype: new ConstantCommand(logger, { id: "issue_1578" }),
+                    results: new ConstantCommand(logger, {
+                        browserName: "Firefox",
+                        browserVersion: "123.11.6",
+                        cypressVersion: "42.4.9",
+                        endedTestsAt: "2023-09-09T10:59:31.416Z",
+                        startedTestsAt: "2023-09-09T10:59:28.829Z",
+                    }),
                     summary: new ConstantCommand(logger, "Execution Results [1694257168829]"),
                 }
             );
@@ -247,15 +247,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, {}),
-                new ConstantCommand(logger, {
-                    browserName: "Firefox",
-                    browserVersion: "123.11.6",
-                    cypressVersion: "42.4.9",
-                    endedTestsAt: "2023-09-09T10:59:31.416Z",
-                    startedTestsAt: "2023-09-09T10:59:28.829Z",
-                }),
                 {
+                    issuetype: new ConstantCommand(logger, {}),
+                    results: new ConstantCommand(logger, {
+                        browserName: "Firefox",
+                        browserVersion: "123.11.6",
+                        cypressVersion: "42.4.9",
+                        endedTestsAt: "2023-09-09T10:59:31.416Z",
+                        startedTestsAt: "2023-09-09T10:59:28.829Z",
+                    }),
                     summary: new ConstantCommand(logger, "my summary"),
                 }
             );
@@ -276,15 +276,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     xray: { testEnvironments: ["DEV", "PROD"], uploadScreenshots: false },
                 },
                 logger,
-                new ConstantCommand(logger, {}),
-                new ConstantCommand(logger, {
-                    browserName: "Firefox",
-                    browserVersion: "123.11.6",
-                    cypressVersion: "42.4.9",
-                    endedTestsAt: "2023-09-09T10:59:31.416Z",
-                    startedTestsAt: "2023-09-09T10:59:28.829Z",
-                }),
                 {
+                    issuetype: new ConstantCommand(logger, {}),
+                    results: new ConstantCommand(logger, {
+                        browserName: "Firefox",
+                        browserVersion: "123.11.6",
+                        cypressVersion: "42.4.9",
+                        endedTestsAt: "2023-09-09T10:59:31.416Z",
+                        startedTestsAt: "2023-09-09T10:59:28.829Z",
+                    }),
                     summary: new ConstantCommand(logger, "my summary"),
                 }
             );
