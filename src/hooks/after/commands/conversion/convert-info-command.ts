@@ -1,6 +1,6 @@
 import { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
 import { IssueUpdate } from "../../../../types/jira/responses/issue-update";
-import { InternalJiraOptions, InternalXrayOptions } from "../../../../types/plugin";
+import { InternalXrayOptions } from "../../../../types/plugin";
 import { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
 import { getOrCall } from "../../../../util/functions";
 import { Logger } from "../../../../util/logging";
@@ -14,7 +14,10 @@ import {
 } from "./util/multipart-info";
 
 interface Parameters {
-    jira: Pick<InternalJiraOptions, "projectKey" | "testPlanIssueKey">;
+    jira: {
+        projectKey: string;
+        testPlanIssueKey?: string;
+    };
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 

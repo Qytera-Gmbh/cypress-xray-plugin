@@ -206,7 +206,6 @@ export interface JiraOptions {
      * @see https://developer.atlassian.com/server/jira/platform/rest/v10000/api-group-issue/#api-api-2-issue-post
      */
     testExecutionIssue?:
-        | (() => PluginIssueUpdate | Promise<PluginIssueUpdate>)
         | ((args: {
               /**
                * The Cypress run results.
@@ -316,7 +315,14 @@ export interface JiraOptions {
      *
      * @example "CYP-567"
      */
-    testPlanIssueKey?: (() => Promise<string> | string) | string;
+    testPlanIssueKey?:
+        | ((args: {
+              /**
+               * The Cypress run results.
+               */
+              results: CypressRunResultType;
+          }) => Promise<string> | string)
+        | string;
     /**
      * The issue type name of test plans. By default, Xray calls them `Test Plan`, but it's possible
      * that they have been renamed or translated in your Jira instance.

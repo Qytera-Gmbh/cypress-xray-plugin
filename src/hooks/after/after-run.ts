@@ -71,7 +71,7 @@ export async function addUploadCommands(
         return;
     }
     const issueData = await getOrCall(options.jira.testExecutionIssue, { results });
-    const testPlanIssueKey = await getOrCall(options.jira.testPlanIssueKey);
+    const testPlanIssueKey = await getOrCall(options.jira.testPlanIssueKey, { results });
     const builder = new AfterRunBuilder({
         clients: clients,
         evidenceCollection: evidenceCollection,
@@ -271,7 +271,9 @@ function addConvertMultipartInfoCommand(
         return convertCommand;
     }
     if (clients.kind === "cloud") {
-        convertCommand = builder.addConvertInfoCloudCommand();
+        convertCommand = builder.addConvertInfoCloudCommand({
+            testPlanIssueKey: options.testPlanIssueKey,
+        });
     } else {
         let testPlanIdCommand: Command<string> | undefined = undefined;
         let testEnvironmentsIdCommand: Command<string> | undefined = undefined;
@@ -286,6 +288,7 @@ function addConvertMultipartInfoCommand(
                 testEnvironment: testEnvironmentsIdCommand,
                 testPlan: testPlanIdCommand,
             },
+            testPlanIssueKey: options.testPlanIssueKey,
         });
     }
     return convertCommand;
@@ -439,11 +442,17 @@ class AfterRunBuilder {
         }
     }
 
-    public addConvertInfoCloudCommand() {
+    public addConvertInfoCloudCommand(parameters: { testPlanIssueKey?: string }) {
         const resultsCommand = this.getResultsCommand();
         const issueData = this.getIssueData();
         const command = new ConvertInfoCloudCommand(
-            { jira: this.options.jira, xray: this.options.xray },
+            {
+                jira: {
+                    projectKey: this.options.jira.projectKey,
+                    testPlanIssueKey: parameters.testPlanIssueKey,
+                },
+                xray: this.options.xray,
+            },
             this.logger,
             {
                 issuetype: issueData.issuetype,
@@ -467,11 +476,18 @@ class AfterRunBuilder {
             testEnvironment?: Command<string>;
             testPlan?: Command<string>;
         };
+        testPlanIssueKey?: string;
     }) {
         const resultsCommand = this.getResultsCommand();
         const issueData = this.getIssueData();
         const command = new ConvertInfoServerCommand(
-            { jira: this.options.jira, xray: this.options.xray },
+            {
+                jira: {
+                    projectKey: this.options.jira.projectKey,
+                    testPlanIssueKey: parameters.testPlanIssueKey,
+                },
+                xray: this.options.xray,
+            },
             this.logger,
             {
                 fieldIds: {

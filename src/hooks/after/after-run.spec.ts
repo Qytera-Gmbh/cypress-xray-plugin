@@ -164,7 +164,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 });
                 expect(convertCommand.getParameters()).to.deep.eq({
-                    jira: options.jira,
+                    jira: {
+                        projectKey: options.jira.projectKey,
+                        testPlanIssueKey: undefined,
+                    },
                     xray: options.xray,
                 });
                 expect(issueSummaryCommand.getValue()).to.deep.eq(
@@ -558,7 +561,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                         name: "Test Execution",
                     });
                     expect(convertMultipartInfoCommand.getParameters()).to.deep.eq({
-                        jira: options.jira,
+                        jira: {
+                            projectKey: options.jira.projectKey,
+                            testPlanIssueKey: undefined,
+                        },
                         xray: options.xray,
                     });
                     expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
@@ -864,7 +870,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                         name: "Test Execution",
                     });
                     expect(convertCommand.getParameters()).to.deep.eq({
-                        jira: options.jira,
+                        jira: {
+                            projectKey: options.jira.projectKey,
+                            testPlanIssueKey: undefined,
+                        },
                         xray: options.xray,
                     });
                     expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
@@ -973,7 +982,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     });
                     expect(destructureCommand.getParameters()).to.deep.eq({ accessor: "CYP-42" });
                     expect(convertInfoCloudCommand.getParameters()).to.deep.eq({
-                        jira: options.jira,
+                        jira: {
+                            projectKey: options.jira.projectKey,
+                            testPlanIssueKey: undefined,
+                        },
                         xray: options.xray,
                     });
                     expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
@@ -1284,7 +1296,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                     name: "Test Execution",
                 });
                 expect(convertInfoServerCommand.getParameters()).to.deep.eq({
-                    jira: options.jira,
+                    jira: {
+                        projectKey: options.jira.projectKey,
+                        testPlanIssueKey: undefined,
+                    },
                     xray: options.xray,
                 });
                 expect(combineCypressJsonCommand.getParameters()).to.deep.eq({
