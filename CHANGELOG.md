@@ -12,6 +12,8 @@
 
 -   Added Cypress test results parameter to test execution issue callback
 
+-   Added Cypress test results parameter to test plan key callback
+
 ## Dependency updates
 
 -   Bump @bahmutov/cypress-esbuild-preprocessor from 2.2.2 to 2.2.3
