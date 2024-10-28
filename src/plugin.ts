@@ -11,9 +11,9 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
-import { PluginTaskListener } from "./cypress/tasks";
 import { addUploadCommands } from "./hooks/after/after-run";
 import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
+import { PluginTaskListener } from "./tasks/tasks";
 import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
 import {
     CypressXrayPluginOptions,
