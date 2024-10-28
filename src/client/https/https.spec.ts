@@ -8,7 +8,7 @@ import { stub, useFakeTimers } from "sinon";
 import { getMockedLogger } from "../../../test/mocks";
 import { LOCAL_SERVER } from "../../../test/server-config";
 import { Level } from "../../util/logging";
-import { AxiosRestClient } from "./requests";
+import { AxiosRestClient } from "./https";
 
 chai.use(chaiAsPromised);
 

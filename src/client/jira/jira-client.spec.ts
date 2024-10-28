@@ -11,7 +11,7 @@ import { SearchResults } from "../../types/jira/responses/search-results";
 import { User } from "../../types/jira/responses/user";
 import { Level } from "../../util/logging";
 import { BasicAuthCredentials } from "../authentication/credentials";
-import { AxiosRestClient } from "../https/requests";
+import { AxiosRestClient } from "../https/https";
 import { BaseJiraClient } from "./jira-client";
 
 chai.use(chaiAsPromised);

@@ -3,7 +3,7 @@ import chai from "chai";
 import { SinonStub, SinonStubbedInstance, restore, stub } from "sinon";
 import sinonChai from "sinon-chai";
 import { JwtCredentials } from "../src/client/authentication/credentials";
-import { AxiosRestClient } from "../src/client/https/requests";
+import { AxiosRestClient } from "../src/client/https/https";
 import { JiraClient } from "../src/client/jira/jira-client";
 import { XrayClient } from "../src/client/xray/xray-client";
 import {

@@ -1,6 +1,6 @@
 import { BasicAuthCredentials, JwtCredentials } from "../../src/client/authentication/credentials";
 import { Client } from "../../src/client/client";
-import { AxiosRestClient } from "../../src/client/https/requests";
+import { AxiosRestClient } from "../../src/client/https/https";
 import { BaseJiraClient } from "../../src/client/jira/jira-client";
 import { XrayClientCloud } from "../../src/client/xray/xray-client-cloud";
 import { ServerClient } from "../../src/client/xray/xray-client-server";

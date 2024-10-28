@@ -4,7 +4,7 @@ import path from "path";
 import Sinon, { stub } from "sinon";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
-import { AxiosRestClient } from "./client/https/requests";
+import { AxiosRestClient } from "./client/https/https";
 import { JiraClient } from "./client/jira/jira-client";
 import * as context from "./context";
 import * as afterRunHook from "./hooks/after/after-run";
@@ -111,23 +111,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                 jira: {
                     attachVideos: true,
                     fields: {
-                        description: "somewhere",
-                        labels: "out",
-                        summary: "bonjour",
                         testEnvironments: "field_123",
                         testPlan: "there",
                     },
                     projectKey: "ABC",
                     testExecutionIssue: {
-                        fields: { summary: "my summary" },
-                        key: "ABC-456",
+                        fields: {
+                            description: "somewhere",
+                            issuetype: { name: "QA-1" },
+                            labels: "out",
+                            summary: "my summary",
+                        },
+                        key: "ABC-2",
                     },
-                    testExecutionIssueDescription: "description",
-                    testExecutionIssueKey: "ABC-2",
-                    testExecutionIssueSummary: "summary",
-                    testExecutionIssueType: "QA-1",
                     testPlanIssueKey: "ABC-3",
-                    testPlanIssueType: "QA-2",
                     url: "https://example.org",
                 },
                 plugin: {
@@ -153,23 +150,20 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(stubbedContext.firstCall.args[0]?.getOptions().jira).to.deep.eq({
                 attachVideos: true,
                 fields: {
-                    description: "somewhere",
-                    labels: "out",
-                    summary: "bonjour",
                     testEnvironments: "field_123",
                     testPlan: "there",
                 },
                 projectKey: "ABC",
                 testExecutionIssue: {
-                    fields: { summary: "my summary" },
-                    key: "ABC-456",
+                    fields: {
+                        description: "somewhere",
+                        issuetype: { name: "QA-1" },
+                        labels: "out",
+                        summary: "my summary",
+                    },
+                    key: "ABC-2",
                 },
-                testExecutionIssueDescription: "description",
-                testExecutionIssueKey: "ABC-2",
-                testExecutionIssueSummary: "summary",
-                testExecutionIssueType: "QA-1",
                 testPlanIssueKey: "ABC-3",
-                testPlanIssueType: "QA-2",
                 url: "https://example.org",
             });
             expect(stubbedContext.firstCall.args[0]?.getOptions().plugin).to.deep.eq({
