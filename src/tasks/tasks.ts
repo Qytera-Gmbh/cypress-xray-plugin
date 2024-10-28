@@ -61,6 +61,18 @@ type ReceivedEvidence = Omit<Evidence, "data"> & {
  * Enqueues the plugin task for adding evidence to the test from which the task was called. The
  * evidence will be attached to the test results of the test execution.
  *
+ * ```ts
+ * const { enqueueTask } = require("cypress-xray-plugin/tasks");
+ *
+ * it("attaches evidence CYP-100", () => {
+ *   enqueueTask("cypress-xray-plugin:add-evidence", {
+ *     filename: "user.json",
+ *     data: Cypress.Buffer.from(JSON.stringify({ name: "Bob" })),
+ *     contentType: "application/json"
+ *   });
+ * });
+ * ```
+ *
  * This function is a convenient typesafe wrapper around `cy.task`, i.e. the following two code
  * snippets are identical in function:
  *
@@ -68,7 +80,7 @@ type ReceivedEvidence = Omit<Evidence, "data"> & {
  * // Plugin task wrapper:
  * it("attaches evidence CYP-100", () => {
  *   enqueueTask("cypress-xray-plugin:add-evidence", {
- *     data: Buffer.from("hello"),
+ *     data: Cypress.Buffer.from("hello"),
  *     filename: "hello.txt"
  *   });
  * });
@@ -77,7 +89,7 @@ type ReceivedEvidence = Omit<Evidence, "data"> & {
  * it("attaches evidence CYP-100", () => {
  *   cy.task("cypress-xray-plugin:add-evidence", {
  *     evidence: {
- *       data: Buffer.from("hello"),
+ *       data: Cypress.Buffer.from("hello"),
  *       filename: "hello.txt"
  *     },
  *     test: Cypress.currentTest.title
