@@ -1,6 +1,6 @@
+import ansiColors from "ansi-colors";
 import { AxiosError, AxiosHeaders, AxiosResponse } from "axios";
 import { expect } from "chai";
-import chalk from "chalk";
 import fs from "node:fs";
 import path from "node:path";
 import { stub } from "sinon";
@@ -16,7 +16,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const logger = new PluginLogger();
                 logger.message(Level.INFO, "hello");
                 expect(stdout).to.have.been.calledOnceWithExactly(
-                    `${chalk.white("│ Cypress Xray Plugin │ INFO    │")} ${chalk.gray("hello")}`
+                    `${ansiColors.white("│ Cypress Xray Plugin │ INFO    │")} ${ansiColors.gray(
+                        "hello"
+                    )}`
                 );
             });
             it("handles multi line messages", () => {
@@ -25,15 +27,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                 logger.message(Level.INFO, "hello\nbonjour");
                 expect(stdout).to.have.been.calledThrice;
                 expect(stdout.getCall(0).args).to.deep.eq([
-                    `${chalk.white("│ Cypress Xray Plugin │ INFO    │")} ${chalk.gray("hello")}`,
+                    `${ansiColors.white("│ Cypress Xray Plugin │ INFO    │")} ${ansiColors.gray(
+                        "hello"
+                    )}`,
                 ]);
                 expect(stdout.getCall(1).args).to.deep.eq([
-                    `${chalk.white("│ Cypress Xray Plugin │ INFO    │")}   ${chalk.gray(
+                    `${ansiColors.white("│ Cypress Xray Plugin │ INFO    │")}   ${ansiColors.gray(
                         "bonjour"
                     )}`,
                 ]);
                 expect(stdout.getCall(2).args).to.deep.eq([
-                    chalk.white("│ Cypress Xray Plugin │ INFO    │"),
+                    ansiColors.white("│ Cypress Xray Plugin │ INFO    │"),
                 ]);
             });
         });
@@ -84,7 +88,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(parsedError).to.have.property("error");
                 expect(parsedError).to.have.property("stacktrace");
                 expect(stderr).to.have.been.calledOnceWith(
-                    `${chalk.white("│ Cypress Xray Plugin │ ERROR   │")} ${chalk.red(
+                    `${ansiColors.white("│ Cypress Xray Plugin │ ERROR   │")} ${ansiColors.red(
                         `Complete error logs have been written to: ${expectedPath}`
                     )}`
                 );
@@ -110,7 +114,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(parsedError).to.have.property("error");
                 expect(parsedError).to.have.property("stacktrace");
                 expect(stderr).to.have.been.calledOnceWith(
-                    `${chalk.white("│ Cypress Xray Plugin │ ERROR   │")} ${chalk.red(
+                    `${ansiColors.white("│ Cypress Xray Plugin │ ERROR   │")} ${ansiColors.red(
                         `Complete error logs have been written to: ${expectedPath}`
                     )}`
                 );
@@ -134,7 +138,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(parsedError).to.have.property("error");
                 expect(parsedError).to.have.property("stacktrace");
                 expect(stderr).to.have.been.calledOnceWith(
-                    `${chalk.white("│ Cypress Xray Plugin │ ERROR   │")} ${chalk.red(
+                    `${ansiColors.white("│ Cypress Xray Plugin │ ERROR   │")} ${ansiColors.red(
                         `Complete error logs have been written to: ${expectedPath}`
                     )}`
                 );
@@ -163,7 +167,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(parsedError).to.have.property("error");
                 expect(parsedError).to.have.property("stacktrace");
                 expect(stderr).to.have.been.calledOnceWith(
-                    `${chalk.white("│ Cypress Xray Plugin │ ERROR   │")} ${chalk.red(
+                    `${ansiColors.white("│ Cypress Xray Plugin │ ERROR   │")} ${ansiColors.red(
                         `Complete error logs have been written to: ${expectedPath}`
                     )}`
                 );
@@ -203,7 +207,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "logErrorToFileAxios.json"
                 );
                 expect(stderr).to.have.been.calledOnceWith(
-                    `${chalk.white("│ Cypress Xray Plugin │ ERROR   │")} ${chalk.red(
+                    `${ansiColors.white("│ Cypress Xray Plugin │ ERROR   │")} ${ansiColors.red(
                         `Complete error logs have been written to: ${expectedPath}`
                     )}`
                 );
@@ -235,7 +239,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
                 expect(parsedError).to.deep.eq({ good: "morning" });
                 expect(stderr).to.have.been.calledOnceWith(
-                    `${chalk.white("│ Cypress Xray Plugin │ ERROR   │")} ${chalk.red(
+                    `${ansiColors.white("│ Cypress Xray Plugin │ ERROR   │")} ${ansiColors.red(
                         `Complete error logs have been written to: ${expectedPath}`
                     )}`
                 );
