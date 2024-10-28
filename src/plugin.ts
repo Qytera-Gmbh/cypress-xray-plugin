@@ -105,7 +105,7 @@ export async function configureXrayPlugin(
     setPluginContext(context);
     const listener = new PluginTaskListener(internalOptions.jira.projectKey, context, logger);
     on("task", {
-        ["cypress-xray-plugin:task:add-evidence"]: (
+        ["cypress-xray-plugin:add-evidence"]: (
             args: Parameters<PluginTaskListener["addEvidence"]>[0]
         ) => {
             return listener.addEvidence(args);
@@ -228,7 +228,7 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
 
 function registerDefaultTasks(on: Cypress.PluginEvents) {
     on("task", {
-        ["cypress-xray-plugin:task:add-evidence"]: (
+        ["cypress-xray-plugin:add-evidence"]: (
             args: Parameters<PluginTaskListener["addEvidence"]>[0]
         ) => {
             return args.evidence;

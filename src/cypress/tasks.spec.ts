@@ -16,12 +16,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             const { cy, cypress } = getMockedCypress();
             cypress.currentTest.title = "A test title";
             const stubbedTask = sinon.stub(cy, "task");
-            tasks.enqueueTask("cypress-xray-plugin:task:add-evidence", {
+            tasks.enqueueTask("cypress-xray-plugin:add-evidence", {
                 data: "https://example.org",
                 filename: "urlOnly.json",
             });
             expect(stubbedTask).to.have.been.calledOnceWithExactly(
-                "cypress-xray-plugin:task:add-evidence",
+                "cypress-xray-plugin:add-evidence",
                 {
                     evidence: {
                         data: "https://example.org",

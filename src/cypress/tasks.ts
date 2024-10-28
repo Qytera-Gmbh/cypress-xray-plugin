@@ -8,7 +8,7 @@ import { Level, Logger } from "../util/logging";
 /**
  * All tasks which are available within the plugin.
  */
-export type PluginTask = "cypress-xray-plugin:task:add-evidence";
+export type PluginTask = "cypress-xray-plugin:add-evidence";
 
 /**
  * Enqueues the plugin task for adding evidence to the test from which the task was called. The
@@ -19,12 +19,12 @@ export type PluginTask = "cypress-xray-plugin:task:add-evidence";
  * ```ts
  * // Plugin task wrapper:
  * it("attaches evidence CYP-100", () => {
- *   enqueueTask("cypress-xray-plugin:task:add-evidence", { data: "hello", filename: "hello.txt" });
+ *   enqueueTask("cypress-xray-plugin:add-evidence", { data: "hello", filename: "hello.txt" });
  * });
  *
  * // Explicit task call:
  * it("attaches evidence CYP-100", () => {
- *   cy.task("cypress-xray-plugin:task:add-evidence", {
+ *   cy.task("cypress-xray-plugin:add-evidence", {
  *     evidence: { data: "hello", filename: "hello.txt" },
  *     test: Cypress.currentTest.title
  *   });
@@ -37,7 +37,7 @@ export type PluginTask = "cypress-xray-plugin:task:add-evidence";
  *
  * ```ts
  * it("attaches evidence CYP-100", () => {
- *   cy.task("cypress-xray-plugin:task:add-evidence", {
+ *   cy.task("cypress-xray-plugin:add-evidence", {
  *     evidence: { ... },
  *     test: "CYP-42"
  *   });
@@ -50,7 +50,7 @@ export type PluginTask = "cypress-xray-plugin:task:add-evidence";
  * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/addingEvidence/
  */
 export function enqueueTask(
-    task: "cypress-xray-plugin:task:add-evidence",
+    task: "cypress-xray-plugin:add-evidence",
     evidence: XrayEvidenceItem
 ): Cypress.Chainable<XrayEvidenceItem>;
 
@@ -58,7 +58,7 @@ export function enqueueTask(
 export function enqueueTask<T>(task: PluginTask, arg: T): Cypress.Chainable<T> {
     switch (task) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        case "cypress-xray-plugin:task:add-evidence": {
+        case "cypress-xray-plugin:add-evidence": {
             return cy.task(task, {
                 evidence: arg,
                 test: Cypress.currentTest.title,
