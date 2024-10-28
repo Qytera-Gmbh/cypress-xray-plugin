@@ -15,78 +15,60 @@ import { runCypress, setupCypressProject } from "../sh";
 describe(path.relative(process.cwd(), __filename), () => {
     for (const test of [
         {
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
-            },
-            service: "cloud",
-            testIssueKey: "CYP-666",
-            title: "cy.request gets overwritten (cloud)",
-        },
-        {
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
-            },
-            service: "server",
-            testIssueKey: "CYPLUG-107",
-            title: "cy.request gets overwritten (server)",
-        },
-        {
             commandFileContent: dedent(`
                 import { enqueueTask } from "cypress-xray-plugin/tasks";
 
-                Cypress.Commands.overwrite("request", (originalFn, options) => {
-                    enqueueTask("cypress-xray-plugin:add-evidence", {
+                Cypress.Commands.overwrite("request", (originalFn, request) => {
+                    return enqueueTask("cypress-xray-plugin:add-evidence", {
                         contentType: "application/json",
-                        data: Buffer.from(JSON.stringify(options, null, 2)).toString("base64"),
+                        data: Buffer.from(JSON.stringify(request, null, 2)).toString("base64"),
                         filename: "request.json",
-                    });
-                    return originalFn(options).then((response) => {
-                        enqueueTask("cypress-xray-plugin:add-evidence", {
-                            contentType: "application/json",
-                            data: Buffer.from(JSON.stringify(response, null, 2)).toString("base64"),
-                            filename: "response.json",
+                    })
+                        .then(() => originalFn(request))
+                        .then((response) => {
+                            enqueueTask("cypress-xray-plugin:add-evidence", {
+                                contentType: "application/json",
+                                data: Buffer.from(JSON.stringify(response, null, 2)).toString("base64"),
+                                filename: "response.json",
+                            });
+                            return cy.wrap(response);
                         });
-                        return response;
-                    });
                 });
             `),
             env: {
                 ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
             },
             service: "cloud",
             testIssueKey: "CYP-692",
-            title: "cy.request gets overwritten using manual task calls (cloud)",
+            title: "cy.request gets overwritten using task calls (cloud)",
         },
         {
             commandFileContent: dedent(`
                 import { enqueueTask } from "cypress-xray-plugin/tasks";
 
-                Cypress.Commands.overwrite("request", (originalFn, options) => {
-                    enqueueTask("cypress-xray-plugin:add-evidence", {
+                Cypress.Commands.overwrite("request", (originalFn, request) => {
+                    return enqueueTask("cypress-xray-plugin:add-evidence", {
                         contentType: "application/json",
-                        data: Buffer.from(JSON.stringify(options, null, 2)).toString("base64"),
+                        data: Buffer.from(JSON.stringify(request, null, 2)).toString("base64"),
                         filename: "request.json",
-                    });
-                    return originalFn(options).then((response) => {
-                        enqueueTask("cypress-xray-plugin:add-evidence", {
-                            contentType: "application/json",
-                            data: Buffer.from(JSON.stringify(response, null, 2)).toString("base64"),
-                            filename: "response.json",
+                    })
+                        .then(() => originalFn(request))
+                        .then((response) => {
+                            enqueueTask("cypress-xray-plugin:add-evidence", {
+                                contentType: "application/json",
+                                data: Buffer.from(JSON.stringify(response, null, 2)).toString("base64"),
+                                filename: "response.json",
+                            });
+                            return cy.wrap(response);
                         });
-                        return response;
-                    });
                 });
             `),
             env: {
                 ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
             },
             service: "server",
             testIssueKey: "CYPLUG-117",
-            title: "cy.request gets overwritten using manual task calls (server)",
+            title: "cy.request gets overwritten using task calls (server)",
         },
     ] as const) {
         it(test.title, () => {

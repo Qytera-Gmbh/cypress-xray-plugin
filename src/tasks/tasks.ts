@@ -14,7 +14,8 @@ export type PluginTask = "cypress-xray-plugin:add-evidence";
  * Enqueues the plugin task for adding evidence to the test from which the task was called. The
  * evidence will be attached to the test results of the test execution.
  *
- * The following two code snippets are identical in function:
+ * This function is a convenient typesafe wrapper around `cy.task`, i.e. the following two code
+ * snippets are identical in function:
  *
  * ```ts
  * // Plugin task wrapper:
