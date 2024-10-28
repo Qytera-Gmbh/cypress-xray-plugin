@@ -12,7 +12,6 @@
     },
     "rules": {
         "no-shadow": "off",
-        "@typescript-eslint/no-deprecated": "off",
         "@typescript-eslint/parameter-properties": "error",
         "@typescript-eslint/non-nullable-type-assertion-style": "off",
         "@typescript-eslint/member-ordering": "error",

@@ -1,7 +1,6 @@
-import { StringMap } from "../../types/util";
 import { encode } from "../../util/base64";
 import { LOG, Level } from "../../util/logging";
-import { AxiosRestClient } from "../https/requests";
+import { AxiosRestClient } from "../https/https";
 import { loggedRequest } from "../util";
 
 /**
@@ -12,7 +11,9 @@ import { loggedRequest } from "../util";
  *   { "Content-Type": "application/json" }
  * ```
  */
-export type HttpHeader = StringMap<string>;
+export interface HttpHeader {
+    ["Authorization"]: string;
+}
 
 /**
  * The interface which all credential classes must implement. All credentials must be usable in an
