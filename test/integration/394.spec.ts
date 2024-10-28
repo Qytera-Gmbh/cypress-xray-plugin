@@ -3,7 +3,7 @@ import chalk from "chalk";
 import fs from "fs";
 import path from "path";
 import process from "process";
-import { LoggedRequest } from "../../src/client/https/requests";
+import { LoggedRequest } from "../../src/client/https/https";
 import { dedent } from "../../src/util/dedent";
 import { runCypress, setupCypressProject } from "../sh";
 
