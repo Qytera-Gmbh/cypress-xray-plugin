@@ -119,9 +119,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     it("testEnvironments", () => {
                         expect(xrayOptions.testEnvironments).to.eq(undefined);
                     });
-                    it("uploadRequests", () => {
-                        expect(xrayOptions.uploadRequests).to.eq(false);
-                    });
                     it("uploadResults", () => {
                         expect(xrayOptions.uploadResults).to.eq(true);
                     });
@@ -390,16 +387,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             }
                         );
                         expect(xrayOptions.testEnvironments).to.deep.eq(["Test", "Prod"]);
-                    });
-
-                    it("uploadRequests", () => {
-                        const xrayOptions = initXrayOptions(
-                            {},
-                            {
-                                uploadRequests: true,
-                            }
-                        );
-                        expect(xrayOptions.uploadResults).to.eq(true);
                     });
 
                     it("uploadResults", () => {
@@ -709,16 +696,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                             testEnvironments: ["A", "B", "C"],
                         });
                         expect(xrayOptions.testEnvironments).to.deep.eq(["false", "bonjour", "5"]);
-                    });
-
-                    it("XRAY_UPLOAD_REQUESTS", () => {
-                        const env = {
-                            ["XRAY_UPLOAD_REQUESTS"]: "true",
-                        };
-                        const xrayOptions = initXrayOptions(env, {
-                            uploadRequests: false,
-                        });
-                        expect(xrayOptions.uploadRequests).to.be.true;
                     });
 
                     it("XRAY_UPLOAD_RESULTS", () => {
@@ -1772,7 +1749,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     xray: {
                         status: {},
-                        uploadRequests: false,
                         uploadResults: false,
                         uploadScreenshots: false,
                     },

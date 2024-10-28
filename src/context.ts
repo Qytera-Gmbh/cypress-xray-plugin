@@ -219,10 +219,6 @@ export function initXrayOptions(
         testEnvironments:
             parse(env, ENV_NAMES.xray.testEnvironments, asArrayOfStrings) ??
             options?.testEnvironments,
-        uploadRequests:
-            parse(env, ENV_NAMES.xray.uploadRequests, asBoolean) ??
-            options?.uploadRequests ??
-            false,
         uploadResults:
             parse(env, ENV_NAMES.xray.uploadResults, asBoolean) ?? options?.uploadResults ?? true,
         uploadScreenshots:
