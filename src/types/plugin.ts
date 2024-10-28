@@ -1,6 +1,6 @@
 import { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import { AxiosRequestConfig } from "axios";
-import { AxiosRestClient, RequestsOptions } from "../client/https/requests";
+import { AxiosRestClient, RequestsOptions } from "../client/https/https";
 import { JiraClient } from "../client/jira/jira-client";
 import { XrayClient } from "../client/xray/xray-client";
 import { CypressRunResultType } from "./cypress/cypress";

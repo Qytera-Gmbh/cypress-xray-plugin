@@ -23,7 +23,7 @@ import {
 
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import path from "node:path";
-import { AxiosRestClient } from "./client/https/requests";
+import { AxiosRestClient } from "./client/https/https";
 import { User } from "./types/jira/responses/user";
 import {
     InternalCucumberOptions,
