@@ -65,7 +65,7 @@ export class XrayClientCloud
         super(XrayClientCloud.URL, credentials, httpClient);
     }
 
-    @loggedRequest("get test results")
+    @loggedRequest({ purpose: "get test results" })
     public async getTestResults(issueId: string): ReturnType<HasTestResults["getTestResults"]> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         LOG.message(Level.DEBUG, "Retrieving test results...");
@@ -134,7 +134,7 @@ export class XrayClientCloud
      * @param issueKeys - the keys of the test issues to retrieve test types for
      * @returns a promise which will contain the mapping of issues to test types
      */
-    @loggedRequest("get test types")
+    @loggedRequest({ purpose: "get test types" })
     public async getTestTypes(
         projectKey: string,
         ...issueKeys: string[]

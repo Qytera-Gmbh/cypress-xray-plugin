@@ -5,10 +5,17 @@ import { Level, LOG } from "../util/logging";
  * Decorates the method with an error handler which automatically logs errors and rethrows
  * afterwards.
  *
- * @param purpose - the purpose of the method
+ * @param parameters - decorator parameters
  * @returns the decorated method
  */
-export function loggedRequest(purpose: string) {
+export function loggedRequest(parameters: {
+    /**
+     * The human-readable purpose of this method. Will be used for error messages.
+     *
+     * @example "get users"
+     */
+    purpose: string;
+}) {
     return function decoratorFunction<This, P extends unknown[], R>(
         target: (this: This, ...args: P) => Promise<R> | R,
         context: ClassMethodDecoratorContext<This, (this: This, ...args: P) => Promise<R> | R>
@@ -18,9 +25,9 @@ export function loggedRequest(purpose: string) {
             try {
                 return await target.call(this, ...args);
             } catch (error: unknown) {
-                LOG.message(Level.ERROR, `Failed to ${purpose}: ${errorMessage(error)}`);
+                LOG.message(Level.ERROR, `Failed to ${parameters.purpose}: ${errorMessage(error)}`);
                 LOG.logErrorToFile(error, `${methodName}Error`);
-                throw new LoggedError(`Failed to ${purpose}`);
+                throw new LoggedError(`Failed to ${parameters.purpose}`);
             }
         };
         return decorated;

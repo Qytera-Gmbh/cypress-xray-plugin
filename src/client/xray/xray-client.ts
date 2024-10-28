@@ -84,7 +84,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
     extends Client
     implements XrayClient
 {
-    @loggedRequest("import Cypress results")
+    @loggedRequest({ purpose: "import Cypress results" })
     public async importExecution(execution: XrayTestExecutionResults): Promise<string> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         LOG.message(Level.INFO, "Importing Cypress execution...");
@@ -102,7 +102,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
         return key;
     }
 
-    @loggedRequest("import Cypress results")
+    @loggedRequest({ purpose: "import Cypress results" })
     public async importExecutionMultipart(
         executionResults: XrayTestExecutionResults,
         info: MultipartInfo
@@ -125,7 +125,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
         return key;
     }
 
-    @loggedRequest("import Cucumber results")
+    @loggedRequest({ purpose: "import Cucumber results" })
     public async importExecutionCucumberMultipart(
         cucumberJson: CucumberMultipartFeature[],
         cucumberInfo: MultipartInfo

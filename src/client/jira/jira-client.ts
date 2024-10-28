@@ -104,7 +104,7 @@ export interface JiraClient {
  * A Jira client class for communicating with Jira instances.
  */
 export class BaseJiraClient extends Client implements JiraClient {
-    @loggedRequest("attach files")
+    @loggedRequest({ purpose: "attach files" })
     public async addAttachment(issueIdOrKey: string, ...files: string[]): Promise<Attachment[]> {
         if (files.length === 0) {
             LOG.message(
@@ -154,7 +154,7 @@ export class BaseJiraClient extends Client implements JiraClient {
         return response.data;
     }
 
-    @loggedRequest("get issue types")
+    @loggedRequest({ purpose: "get issue types" })
     public async getIssueTypes(): Promise<IssueTypeDetails[]> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         LOG.message(Level.DEBUG, "Getting issue types...");
@@ -193,7 +193,7 @@ export class BaseJiraClient extends Client implements JiraClient {
         return response.data;
     }
 
-    @loggedRequest("get fields")
+    @loggedRequest({ purpose: "get fields" })
     public async getFields(): Promise<FieldDetail[]> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         LOG.message(Level.DEBUG, "Getting fields...");
@@ -220,7 +220,7 @@ export class BaseJiraClient extends Client implements JiraClient {
         return response.data;
     }
 
-    @loggedRequest("get user details")
+    @loggedRequest({ purpose: "get user details" })
     public async getMyself(): Promise<User> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         LOG.message(Level.DEBUG, "Getting user details...");
@@ -236,7 +236,7 @@ export class BaseJiraClient extends Client implements JiraClient {
         return response.data;
     }
 
-    @loggedRequest("search issues")
+    @loggedRequest({ purpose: "search issues" })
     public async search(request: SearchRequest): Promise<Issue[]> {
         const header = await this.credentials.getAuthorizationHeader();
         LOG.message(Level.DEBUG, "Searching issues...");
@@ -274,7 +274,7 @@ export class BaseJiraClient extends Client implements JiraClient {
         return Object.values(results);
     }
 
-    @loggedRequest("edit issue")
+    @loggedRequest({ purpose: "edit issue" })
     public async editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string> {
         const header = await this.credentials.getAuthorizationHeader();
         LOG.message(Level.DEBUG, "Editing issue...");
@@ -291,7 +291,7 @@ export class BaseJiraClient extends Client implements JiraClient {
         return issueIdOrKey;
     }
 
-    @loggedRequest("transition issue")
+    @loggedRequest({ purpose: "transition issue" })
     public async transitionIssue(
         issueIdOrKey: string,
         issueUpdateData: IssueUpdate

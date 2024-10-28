@@ -107,7 +107,7 @@ export class JwtCredentials implements HttpCredentials {
         this.httpClient = httpClient;
     }
 
-    @loggedRequest("authenticate")
+    @loggedRequest({ purpose: "authenticate" })
     private async fetchToken(): Promise<string> {
         LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
         const response = await this.httpClient.post<string>(this.authenticationUrl, {

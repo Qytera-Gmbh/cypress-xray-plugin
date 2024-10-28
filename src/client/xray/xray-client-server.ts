@@ -67,7 +67,7 @@ export class ServerClient
         super(`${apiBaseUrl}/rest/raven/latest`, credentials, httpClient);
     }
 
-    @loggedRequest("get test execution")
+    @loggedRequest({ purpose: "get test execution" })
     public async getTestExecution(
         testExecutionIssueKey: string,
         query?: Parameters<XrayClientServer["getTestExecution"]>[1]
@@ -99,7 +99,7 @@ export class ServerClient
         return allTests;
     }
 
-    @loggedRequest("get Xray license")
+    @loggedRequest({ purpose: "get Xray license" })
     public async getXrayLicense(): Promise<XrayLicenseStatus> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         LOG.message(Level.DEBUG, "Getting Xray license status...");
