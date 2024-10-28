@@ -144,7 +144,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                         skipped: "OMITTED",
                     },
                     testEnvironments: ["A", "B"],
-                    uploadRequests: false,
                     uploadResults: false,
                     uploadScreenshots: false,
                 },
@@ -191,7 +190,6 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 },
                 testEnvironments: ["A", "B"],
-                uploadRequests: false,
                 uploadResults: false,
                 uploadScreenshots: false,
             });
