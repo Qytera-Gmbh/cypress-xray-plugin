@@ -10,7 +10,6 @@ export function unknownToString(value: unknown, pretty?: boolean): string {
         case "string":
             return value;
         case "number":
-        case "bigint":
         case "boolean":
         case "symbol":
         case "function":

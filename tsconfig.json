@@ -11,7 +11,9 @@
         "outDir": "dist",
         "skipLibCheck": true,
         "strict": true,
-        "target": "ESNext",
+        // Make sure to use the same target as Cypress for compatibility reasons (I guess).
+        // See: https://github.com/cypress-io/cypress/blob/d5dfac5882d2495475747d402765dbcfbb119efd/packages/ts/tsconfig.json#L4
+        "target": "ES2018",
         "types": ["cypress", "node"]
     }
 }

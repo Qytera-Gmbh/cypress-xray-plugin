@@ -11,9 +11,6 @@ describe(path.relative(process.cwd(), __filename), () => {
         it("number", () => {
             expect(unknownToString(423535.568)).to.eq("423535.568");
         });
-        it("bigint", () => {
-            expect(unknownToString(4345345873487356456n)).to.eq("4345345873487356456");
-        });
         it("boolean", () => {
             expect(unknownToString(false)).to.eq("false");
         });
