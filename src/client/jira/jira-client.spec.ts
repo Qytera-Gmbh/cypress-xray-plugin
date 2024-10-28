@@ -208,7 +208,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 restClient.post.rejects(error);
                 await expect(
                     client.addAttachment("CYP-123", "./test/resources/greetings.txt")
-                ).to.eventually.be.rejectedWith("Failed to add attachments to issue");
+                ).to.eventually.be.rejectedWith("Failed to attach files");
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.ERROR,
                     "Failed to attach files: Request failed with status code 413"
@@ -277,7 +277,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 restClient.get.onFirstCall().rejects(error);
                 await expect(client.getIssueTypes()).to.eventually.be.rejectedWith(
-                    "Failed to fetch Jira issue types"
+                    "Failed to get issue types"
                 );
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.ERROR,
@@ -330,7 +330,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 restClient.get.onFirstCall().rejects(error);
                 await expect(client.getFields()).to.eventually.be.rejectedWith(
-                    "Failed to fetch Jira fields"
+                    "Failed to get fields"
                 );
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.ERROR,
@@ -388,7 +388,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 restClient.get.onFirstCall().rejects(error);
                 await expect(client.getMyself()).to.eventually.be.rejectedWith(
-                    "Failed to fetch user details"
+                    "Failed to get user details"
                 );
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.ERROR,
@@ -540,7 +540,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 restClient.post.onFirstCall().rejects(error);
                 await expect(client.search({})).to.eventually.be.rejectedWith(
-                    "Failed to search for issues"
+                    "Failed to search issues"
                 );
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.ERROR,
@@ -605,7 +605,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                     error,
-                    "editIssue"
+                    "editIssueError"
                 );
             });
         });
@@ -679,7 +679,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                     error,
-                    "transitionIssue"
+                    "transitionIssueError"
                 );
             });
         });

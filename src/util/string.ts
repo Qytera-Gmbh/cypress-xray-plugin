@@ -1,3 +1,5 @@
+import chalk from "chalk";
+
 /**
  * Converts an unknown value to a string.
  *
@@ -21,5 +23,7 @@ export function unknownToString(value: unknown, pretty?: boolean): string {
                 return JSON.stringify(value, null, 2);
             }
             return JSON.stringify(value);
+        default:
+            throw new Error(`Unknown value type: ${chalk.red(String(value))}`);
     }
 }
