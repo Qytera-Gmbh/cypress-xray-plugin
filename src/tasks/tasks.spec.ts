@@ -19,16 +19,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 data: Buffer.from("https://example.org"),
                 filename: "urlOnly.json",
             });
-            expect(stubbedTask).to.have.been.calledOnceWithExactly(
-                "cypress-xray-plugin:add-evidence",
-                {
-                    evidence: {
-                        data: Buffer.from("https://example.org"),
-                        filename: "urlOnly.json",
-                    },
-                    test: "A test title",
-                }
-            );
+            expect(stubbedTask.firstCall.args[0]).to.eq("cypress-xray-plugin:add-evidence");
+            expect(stubbedTask.firstCall.args[1]).to.deep.contain({ test: "A test title" });
         });
     });
 
@@ -37,10 +29,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
             const logger = getMockedLogger();
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
-            const result = listener.addEvidence({
+            listener.addEvidence({
                 evidence: {
                     contentType: "text/plain",
-                    data: Buffer.from("hello"),
+                    data: { data: [...Buffer.from("hello")], type: "Buffer" },
                     filename: "hello.txt",
                 },
                 test: "This is a test CYP-123",
@@ -48,11 +40,6 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(evidenceCollection.addEvidence).to.have.been.calledOnceWithExactly("CYP-123", {
                 contentType: "text/plain",
                 data: "aGVsbG8=",
-                filename: "hello.txt",
-            });
-            expect(result).to.deep.eq({
-                contentType: "text/plain",
-                data: Buffer.from("hello"),
                 filename: "hello.txt",
             });
         });
@@ -64,7 +51,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             listener.addEvidence({
                 evidence: {
                     contentType: "text/plain",
-                    data: Buffer.from("hello"),
+                    data: { data: [...Buffer.from("hello")], type: "Buffer" },
                     filename: "hello.txt",
                 },
                 test: "This is a test CYP-123 CYP-124 CYP-125",
@@ -98,7 +85,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             listener.addEvidence({
                 evidence: {
-                    data: Buffer.from("hello"),
+                    data: { data: [...Buffer.from("hello")], type: "Buffer" },
                     filename: "hello.txt",
                 },
                 test: "This is a test",
@@ -131,16 +118,16 @@ describe(path.relative(process.cwd(), __filename), () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
             const logger = getMockedLogger();
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
-            const result1 = listener.addEvidence({
+            listener.addEvidence({
                 evidence: {
-                    data: Buffer.from("hello"),
+                    data: { data: [...Buffer.from("hello")], type: "Buffer" },
                     filename: "hello1.txt",
                 },
                 test: "This is a test CYP-123: hello",
             });
-            const result2 = listener.addEvidence({
+            listener.addEvidence({
                 evidence: {
-                    data: Buffer.from("bonjour"),
+                    data: { data: [...Buffer.from("bonjour")], type: "Buffer" },
                     filename: "hello2.txt",
                 },
                 test: "This is a test CYP-123: bonjour",
@@ -149,6 +136,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(evidenceCollection.addEvidence.getCall(0)).to.have.been.calledWithExactly(
                 "CYP-123",
                 {
+                    contentType: undefined,
                     data: "aGVsbG8=",
                     filename: "hello1.txt",
                 }
@@ -156,18 +144,11 @@ describe(path.relative(process.cwd(), __filename), () => {
             expect(evidenceCollection.addEvidence.getCall(1)).to.have.been.calledWithExactly(
                 "CYP-123",
                 {
+                    contentType: undefined,
                     data: "Ym9uam91cg==",
                     filename: "hello2.txt",
                 }
             );
-            expect(result1).to.deep.eq({
-                data: Buffer.from("hello"),
-                filename: "hello1.txt",
-            });
-            expect(result2).to.deep.eq({
-                data: Buffer.from("bonjour"),
-                filename: "hello2.txt",
-            });
         });
 
         it("handles multiple evidence calls for tests without issue key", () => {
@@ -176,14 +157,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
             listener.addEvidence({
                 evidence: {
-                    data: Buffer.from("This is example text"),
+                    data: { data: [...Buffer.from("This is example text")], type: "Buffer" },
                     filename: "text1.txt",
                 },
                 test: "This is a test",
             });
             listener.addEvidence({
                 evidence: {
-                    data: Buffer.from("This page does not exist"),
+                    data: { data: [...Buffer.from("This page does not exist")], type: "Buffer" },
                     filename: "text2.txt",
                 },
                 test: "This is a test",

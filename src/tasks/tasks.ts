@@ -35,7 +35,7 @@ interface Evidence {
      * Buffer.from(JSON.stringify({ name: "Jeff" }))
      * ```
      */
-    data: Buffer;
+    data: Buffer | typeof Cypress.Buffer;
     /**
      * The name of the evidence file, including its extension
      *
@@ -43,6 +43,19 @@ interface Evidence {
      */
     filename: string;
 }
+
+/**
+ * For some reason, Cypress converts plain Buffer objects to `{ data, type }` when passed to tasks.
+ */
+type ReceivedEvidence = Omit<Evidence, "data"> & {
+    data: {
+        /**
+         * The bytes of the buffer.
+         */
+        data: number[];
+        type: "Buffer";
+    };
+};
 
 /**
  * Enqueues the plugin task for adding evidence to the test from which the task was called. The
@@ -93,10 +106,10 @@ interface Evidence {
 export function enqueueTask(
     task: "cypress-xray-plugin:add-evidence",
     evidence: Evidence
-): Cypress.Chainable<Evidence>;
+): Cypress.Chainable<void>;
 
 // Implementation.
-export function enqueueTask(task: PluginTask, ...args: unknown[]): Cypress.Chainable<Evidence> {
+export function enqueueTask(task: PluginTask, ...args: unknown[]): Cypress.Chainable<void> {
     switch (task) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         case "cypress-xray-plugin:add-evidence": {
@@ -120,14 +133,25 @@ export class PluginTaskListener {
         this.logger = logger;
     }
 
-    public addEvidence(args: { evidence: Evidence; test: string }): Evidence {
+    public addEvidence(args: {
+        /**
+         * The evidence received by the callback registered to the Cypress task.
+         */
+        evidence: ReceivedEvidence;
+        /**
+         * The target test received by the callback registered to the Cypress task.
+         */
+        test: string;
+    }) {
         try {
             const issueKeys = getTestIssueKeys(args.test, this.projectKey);
+            const encoded = {
+                contentType: args.evidence.contentType,
+                data: Buffer.from(args.evidence.data.data).toString("base64"),
+                filename: args.evidence.filename,
+            };
             for (const issueKey of issueKeys) {
-                this.evidenceCollection.addEvidence(issueKey, {
-                    ...args.evidence,
-                    data: args.evidence.data.toString("base64"),
-                });
+                this.evidenceCollection.addEvidence(issueKey, encoded);
             }
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {
@@ -144,6 +168,5 @@ export class PluginTaskListener {
                 this.ignoredTests.add(args.test);
             }
         }
-        return args.evidence;
     }
 }

@@ -106,9 +106,10 @@ export async function configureXrayPlugin(
     const listener = new PluginTaskListener(internalOptions.jira.projectKey, context, logger);
     on("task", {
         ["cypress-xray-plugin:add-evidence"]: (
-            args: Parameters<PluginTaskListener["addEvidence"]>[0]
+            ...args: Parameters<PluginTaskListener["addEvidence"]>
         ) => {
-            return listener.addEvidence(args);
+            listener.addEvidence(...args);
+            return null;
         },
     });
     on("after:run", async (results: CypressFailedRunResultType | CypressRunResultType) => {
@@ -228,10 +229,6 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
 
 function registerDefaultTasks(on: Cypress.PluginEvents) {
     on("task", {
-        ["cypress-xray-plugin:add-evidence"]: (
-            args: Parameters<PluginTaskListener["addEvidence"]>[0]
-        ) => {
-            return args.evidence;
-        },
+        ["cypress-xray-plugin:add-evidence"]: () => null,
     });
 }

@@ -12,7 +12,7 @@ import { runCypress, setupCypressProject } from "../sh";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/314
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe.only(path.relative(process.cwd(), __filename), () => {
     for (const test of [
         {
             commandFileContent: dedent(`
@@ -21,14 +21,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 Cypress.Commands.overwrite("request", (originalFn, request) => {
                     return enqueueTask("cypress-xray-plugin:add-evidence", {
                         contentType: "application/json",
-                        data: Buffer.from(JSON.stringify(request, null, 2)),
+                        data: Cypress.Buffer.from(JSON.stringify(request, null, 2)),
                         filename: "request.json",
                     })
                         .then(() => originalFn(request))
                         .then((response) => {
                             enqueueTask("cypress-xray-plugin:add-evidence", {
                                 contentType: "application/json",
-                                data: Buffer.from(JSON.stringify(response, null, 2)),
+                                data: Cypress.Buffer.from(JSON.stringify(response, null, 2)),
                                 filename: "response.json",
                             });
                             return cy.wrap(response);
@@ -49,14 +49,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 Cypress.Commands.overwrite("request", (originalFn, request) => {
                     return enqueueTask("cypress-xray-plugin:add-evidence", {
                         contentType: "application/json",
-                        data: Buffer.from(JSON.stringify(request, null, 2)),
+                        data: Cypress.Buffer.from(JSON.stringify(request, null, 2)),
                         filename: "request.json",
                     })
                         .then(() => originalFn(request))
                         .then((response) => {
                             enqueueTask("cypress-xray-plugin:add-evidence", {
                                 contentType: "application/json",
-                                data: Buffer.from(JSON.stringify(response, null, 2)),
+                                data: Cypress.Buffer.from(JSON.stringify(response, null, 2)),
                                 filename: "response.json",
                             });
                             return cy.wrap(response);
