@@ -16,7 +16,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             cypress.currentTest.title = "A test title";
             const stubbedTask = sinon.stub(cy, "task");
             tasks.enqueueTask("cypress-xray-plugin:add-evidence", {
-                data: Buffer.from("https://example.org"),
+                data: Buffer.from("https://example.org") as unknown as typeof Cypress.Buffer,
                 filename: "urlOnly.json",
             });
             expect(stubbedTask.firstCall.args[0]).to.eq("cypress-xray-plugin:add-evidence");

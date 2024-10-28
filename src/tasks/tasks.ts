@@ -27,15 +27,15 @@ interface Evidence {
     /**
      * The binary data of the file to be uploaded.
      *
-     * @example Buffer.from("hello.txt")
+     * @example Cypress.Buffer.from("hello.txt")
      *
      * @example
      *
      * ```ts
-     * Buffer.from(JSON.stringify({ name: "Jeff" }))
+     * Cypress.Buffer.from(JSON.stringify({ name: "Jeff" }))
      * ```
      */
-    data: Buffer | typeof Cypress.Buffer;
+    data: typeof Cypress.Buffer;
     /**
      * The name of the evidence file, including its extension
      *
