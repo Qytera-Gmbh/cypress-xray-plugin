@@ -34,14 +34,22 @@ describe(path.relative(process.cwd(), __filename), () => {
         },
         {
             commandFileContent: dedent(`
-                import { enqueueTask, PluginTask } from "cypress-xray-plugin/commands/tasks";
+                import { enqueueTask } from "cypress-xray-plugin/tasks";
 
                 Cypress.Commands.overwrite("request", (originalFn, options) => {
-                    return enqueueTask(PluginTask.OUTGOING_REQUEST, "request.json", options)
-                    .then(originalFn)
-                    .then((response) =>
-                        enqueueTask(PluginTask.INCOMING_RESPONSE, "response.json", response)
-                    );
+                    enqueueTask("cypress-xray-plugin:add-evidence", {
+                        contentType: "application/json",
+                        data: Buffer.from(JSON.stringify(options, null, 2)).toString("base64"),
+                        filename: "request.json",
+                    });
+                    return originalFn(options).then((response) => {
+                        enqueueTask("cypress-xray-plugin:add-evidence", {
+                            contentType: "application/json",
+                            data: Buffer.from(JSON.stringify(response, null, 2)).toString("base64"),
+                            filename: "response.json",
+                        });
+                        return response;
+                    });
                 });
             `),
             env: {
@@ -54,14 +62,22 @@ describe(path.relative(process.cwd(), __filename), () => {
         },
         {
             commandFileContent: dedent(`
-                import { enqueueTask, PluginTask } from "cypress-xray-plugin/commands/tasks";
+                import { enqueueTask } from "cypress-xray-plugin/tasks";
 
                 Cypress.Commands.overwrite("request", (originalFn, options) => {
-                    return enqueueTask(PluginTask.OUTGOING_REQUEST, "request.json", options)
-                    .then(originalFn)
-                    .then((response) =>
-                        enqueueTask(PluginTask.INCOMING_RESPONSE, "response.json", response)
-                    );
+                    enqueueTask("cypress-xray-plugin:add-evidence", {
+                        contentType: "application/json",
+                        data: Buffer.from(JSON.stringify(options, null, 2)).toString("base64"),
+                        filename: "request.json",
+                    });
+                    return originalFn(options).then((response) => {
+                        enqueueTask("cypress-xray-plugin:add-evidence", {
+                            contentType: "application/json",
+                            data: Buffer.from(JSON.stringify(response, null, 2)).toString("base64"),
+                            filename: "response.json",
+                        });
+                        return response;
+                    });
                 });
             `),
             env: {

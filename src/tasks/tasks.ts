@@ -19,13 +19,19 @@ export type PluginTask = "cypress-xray-plugin:add-evidence";
  * ```ts
  * // Plugin task wrapper:
  * it("attaches evidence CYP-100", () => {
- *   enqueueTask("cypress-xray-plugin:add-evidence", { data: "hello", filename: "hello.txt" });
+ *   enqueueTask("cypress-xray-plugin:add-evidence", {
+ *     data: Buffer.from("hello").toString("base64"),
+ *     filename: "hello.txt"
+ *   });
  * });
  *
  * // Explicit task call:
  * it("attaches evidence CYP-100", () => {
  *   cy.task("cypress-xray-plugin:add-evidence", {
- *     evidence: { data: "hello", filename: "hello.txt" },
+ *     evidence: {
+ *       data: Buffer.from("hello").toString("base64"),
+ *       filename: "hello.txt"
+ *     },
  *     test: Cypress.currentTest.title
  *   });
  * });
