@@ -13,7 +13,12 @@ import { Level, LOG } from "../util/logging";
  */
 export function loggedRequest(parameters: {
     /**
-     * The human-readable purpose of this method. Will be used for error messages.
+     * The human-readable purpose of this method. Will be used for error messages. It should form a
+     * complete sentence when read as follows:
+     *
+     * ```ts
+     * `Failed to ${purpose}`
+     * ```
      *
      * @example "get users"
      */
