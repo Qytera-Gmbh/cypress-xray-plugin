@@ -7,6 +7,9 @@ import { Level, LOG } from "../util/logging";
  *
  * @param parameters - decorator parameters
  * @returns the decorated method
+ *
+ * @see https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#writing-well-typed-decorators
+ * @see https://www.typescriptlang.org/docs/handbook/decorators.html#decorator-factories
  */
 export function loggedRequest(parameters: {
     /**
