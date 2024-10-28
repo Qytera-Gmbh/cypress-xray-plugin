@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import ansiColors from "ansi-colors";
 
 /**
  * Converts an unknown value to a string.
@@ -24,6 +24,6 @@ export function unknownToString(value: unknown, pretty?: boolean): string {
             }
             return JSON.stringify(value);
         default:
-            throw new Error(`Unknown value type: ${chalk.red(String(value))}`);
+            throw new Error(`Unknown value type: ${ansiColors.red(String(value))}`);
     }
 }
