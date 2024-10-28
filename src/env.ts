@@ -78,7 +78,6 @@ export const ENV_NAMES: Remap<
             },
         },
         testEnvironments: "XRAY_TEST_ENVIRONMENTS",
-        uploadRequests: "XRAY_UPLOAD_REQUESTS",
         uploadResults: "XRAY_UPLOAD_RESULTS",
         uploadScreenshots: "XRAY_UPLOAD_SCREENSHOTS",
     },

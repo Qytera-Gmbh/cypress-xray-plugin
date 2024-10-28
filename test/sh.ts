@@ -43,7 +43,7 @@ const E2E_FILE = dedent(`
 `);
 
 const COMMANDS_FILE = dedent(`
-    import "cypress-xray-plugin/commands";
+    // Nothing.
 `);
 
 export function setupCypressProject(project: {
