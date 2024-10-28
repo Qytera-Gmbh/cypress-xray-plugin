@@ -156,10 +156,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                             },
                         ],
                     })
-                ).to.eventually.be.rejectedWith("Failed to import Cypress execution results");
+                ).to.eventually.be.rejectedWith("Failed to import Cypress results");
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.ERROR,
-                    "Failed to import execution: Request failed with status code 400"
+                    "Failed to import Cypress results: Request failed with status code 400"
                 );
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                     error,
@@ -264,10 +264,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                             )
                         ) as MultipartInfoCloud
                     )
-                ).to.eventually.be.rejectedWith("Failed to import Cypress execution results");
+                ).to.eventually.be.rejectedWith("Failed to import Cypress results");
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.ERROR,
-                    "Failed to import execution: Request failed with status code 400"
+                    "Failed to import Cypress results: Request failed with status code 400"
                 );
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                     error,
@@ -372,10 +372,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                             )
                         ) as MultipartInfo
                     )
-                ).to.eventually.be.rejectedWith("Failed to import Cucumber execution results");
+                ).to.eventually.be.rejectedWith("Failed to import Cucumber results");
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.ERROR,
-                    "Failed to import Cucumber execution: Request failed with status code 400"
+                    "Failed to import Cucumber results: Request failed with status code 400"
                 );
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                     error,
@@ -836,7 +836,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
                     error,
-                    "getTestTypes"
+                    "getTestTypesError"
                 );
             });
         });
