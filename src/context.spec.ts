@@ -1880,7 +1880,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     dedent(`
                         Failed to establish communication with Xray: https://xray.cloud.getxray.app/api/v2/authenticate
 
-                          Authentication failed
+                          Failed to authenticate
 
                         Make sure you have correctly set up:
                         - Xray cloud authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#xray-cloud

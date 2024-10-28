@@ -1,9 +1,8 @@
 import { StringMap } from "../../types/util";
 import { encode } from "../../util/base64";
-import { dedent } from "../../util/dedent";
-import { LoggedError, errorMessage } from "../../util/errors";
 import { LOG, Level } from "../../util/logging";
 import { AxiosRestClient } from "../https/requests";
+import { loggedRequest } from "../util";
 
 /**
  * A basic HTTP header.
@@ -108,13 +107,21 @@ export class JwtCredentials implements HttpCredentials {
         this.httpClient = httpClient;
     }
 
-    /**
-     * Return the URL to authenticate to.
-     *
-     * @returns the URL
-     */
-    public getAuthenticationUrl(): string {
-        return this.authenticationUrl;
+    @loggedRequest({ purpose: "authenticate" })
+    private async fetchToken(): Promise<string> {
+        LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
+        const response = await this.httpClient.post<string>(this.authenticationUrl, {
+            ["client_id"]: this.clientId,
+            ["client_secret"]: this.clientSecret,
+        });
+        // A JWT token is expected: https://stackoverflow.com/a/74325712
+        const jwtRegex = /^[A-Za-z0-9_-]{2,}(?:\.[A-Za-z0-9_-]{2,}){2}$/;
+        if (jwtRegex.test(response.data)) {
+            LOG.message(Level.DEBUG, "Authentication successful");
+            return response.data;
+        } else {
+            throw new Error("Expected to receive a JWT token, but did not");
+        }
     }
 
     public async getAuthorizationHeader(): Promise<HttpHeader> {
@@ -126,32 +133,12 @@ export class JwtCredentials implements HttpCredentials {
         };
     }
 
-    private async fetchToken(): Promise<string> {
-        try {
-            LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
-            const response = await this.httpClient.post<string>(this.authenticationUrl, {
-                ["client_id"]: this.clientId,
-                ["client_secret"]: this.clientSecret,
-            });
-            // A JWT token is expected: https://stackoverflow.com/a/74325712
-            const jwtRegex = /^[A-Za-z0-9_-]{2,}(?:\.[A-Za-z0-9_-]{2,}){2}$/;
-            if (jwtRegex.test(response.data)) {
-                LOG.message(Level.DEBUG, "Authentication successful");
-                return response.data;
-            } else {
-                throw new Error("Expected to receive a JWT token, but did not");
-            }
-        } catch (error: unknown) {
-            LOG.message(
-                Level.ERROR,
-                dedent(`
-                    Failed to authenticate to: ${this.authenticationUrl}
-
-                      Caused by: ${errorMessage(error)}
-                `)
-            );
-            LOG.logErrorToFile(error, "authentication");
-            throw new LoggedError("Authentication failed");
-        }
+    /**
+     * Return the URL to authenticate to.
+     *
+     * @returns the URL
+     */
+    public getAuthenticationUrl(): string {
+        return this.authenticationUrl;
     }
 }

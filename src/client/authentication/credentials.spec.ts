@@ -3,7 +3,6 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "node:path";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
-import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
 import { JwtCredentials } from "./credentials";
 
@@ -72,7 +71,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     statusText: HttpStatusCode[HttpStatusCode.Found],
                 });
                 await expect(credentials.getAuthorizationHeader()).to.eventually.be.rejectedWith(
-                    "Authentication failed"
+                    "Failed to authenticate"
                 );
             });
 
@@ -96,15 +95,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     )
                 );
                 await expect(credentials.getAuthorizationHeader()).to.eventually.be.rejectedWith(
-                    "Authentication failed"
+                    "Failed to authenticate"
                 );
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.ERROR,
-                    dedent(`
-                        Failed to authenticate to: https://example.org
-
-                          Caused by: Request failed with status code 404
-                    `)
+                    "Failed to authenticate: Request failed with status code 404"
                 );
             });
         });

@@ -11,9 +11,9 @@ import { SearchResults } from "../../types/jira/responses/search-results";
 import { User } from "../../types/jira/responses/user";
 import { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
-import { LoggedError, errorMessage } from "../../util/errors";
 import { LOG, Level } from "../../util/logging";
 import { Client } from "../client";
+import { loggedRequest } from "../util";
 
 /**
  * All methods a Jira client needs to implement.
@@ -104,6 +104,7 @@ export interface JiraClient {
  * A Jira client class for communicating with Jira instances.
  */
 export class BaseJiraClient extends Client implements JiraClient {
+    @loggedRequest({ purpose: "attach files" })
     public async addAttachment(issueIdOrKey: string, ...files: string[]): Promise<Attachment[]> {
         if (files.length === 0) {
             LOG.message(
@@ -129,219 +130,183 @@ export class BaseJiraClient extends Client implements JiraClient {
             return [];
         }
 
-        try {
-            const header = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Attaching files:", ...files);
-            const response: AxiosResponse<Attachment[]> = await this.httpClient.post(
-                `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/attachments`,
-                form,
-                {
-                    headers: {
-                        ...header,
-                        ...form.getHeaders(),
-                        ["X-Atlassian-Token"]: "no-check",
-                    },
-                }
-            );
-            LOG.message(
-                Level.DEBUG,
-                dedent(`
-                    Successfully attached the following files to issue ${issueIdOrKey}:
+        const header = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Attaching files:", ...files);
+        const response: AxiosResponse<Attachment[]> = await this.httpClient.post(
+            `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/attachments`,
+            form,
+            {
+                headers: {
+                    ...header,
+                    ...form.getHeaders(),
+                    ["X-Atlassian-Token"]: "no-check",
+                },
+            }
+        );
+        LOG.message(
+            Level.DEBUG,
+            dedent(`
+                Successfully attached the following files to issue ${issueIdOrKey}:
 
-                      ${response.data.map((attachment) => attachment.filename).join("\n")}
-                `)
-            );
-            return response.data;
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to attach files: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "addAttachmentError");
-            throw new LoggedError("Failed to add attachments to issue");
-        }
+                  ${response.data.map((attachment) => attachment.filename).join("\n")}
+            `)
+        );
+        return response.data;
     }
 
+    @loggedRequest({ purpose: "get issue types" })
     public async getIssueTypes(): Promise<IssueTypeDetails[]> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
         LOG.message(Level.DEBUG, "Getting issue types...");
-        try {
-            const response: AxiosResponse<IssueTypeDetails[]> = await this.httpClient.get(
-                `${this.apiBaseUrl}/rest/api/latest/issuetype`,
-                {
-                    headers: {
-                        ...authorizationHeader,
-                    },
-                }
-            );
-            LOG.message(
-                Level.DEBUG,
-                `Successfully retrieved data for ${response.data.length.toString()} issue types.`
-            );
-            LOG.message(
-                Level.DEBUG,
-                dedent(`
-                    Received data for issue types:
+        const response: AxiosResponse<IssueTypeDetails[]> = await this.httpClient.get(
+            `${this.apiBaseUrl}/rest/api/latest/issuetype`,
+            {
+                headers: {
+                    ...authorizationHeader,
+                },
+            }
+        );
+        LOG.message(
+            Level.DEBUG,
+            `Successfully retrieved data for ${response.data.length.toString()} issue types.`
+        );
+        LOG.message(
+            Level.DEBUG,
+            dedent(`
+                Received data for issue types:
 
-                      ${response.data
-                          .map((issueType) => {
-                              if (issueType.name) {
-                                  if (issueType.id) {
-                                      return `${issueType.name} (id: ${issueType.id})`;
-                                  }
-                                  return `${issueType.name} (id: undefined)`;
-                              } else if (issueType.id) {
-                                  return `undefined (id: ${issueType.id})`;
+                  ${response.data
+                      .map((issueType) => {
+                          if (issueType.name) {
+                              if (issueType.id) {
+                                  return `${issueType.name} (id: ${issueType.id})`;
                               }
-                              return "undefined (id: undefined)";
-                          })
-                          .join("\n")}
-                    `)
-            );
-            return response.data;
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to get issue types: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "getIssueTypesError");
-            throw new LoggedError("Failed to fetch Jira issue types");
-        }
+                              return `${issueType.name} (id: undefined)`;
+                          } else if (issueType.id) {
+                              return `undefined (id: ${issueType.id})`;
+                          }
+                          return "undefined (id: undefined)";
+                      })
+                      .join("\n")}
+            `)
+        );
+        return response.data;
     }
 
+    @loggedRequest({ purpose: "get fields" })
     public async getFields(): Promise<FieldDetail[]> {
-        try {
-            const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Getting fields...");
-            const response: AxiosResponse<FieldDetail[]> = await this.httpClient.get(
-                `${this.apiBaseUrl}/rest/api/latest/field`,
-                {
-                    headers: {
-                        ...authorizationHeader,
-                    },
-                }
-            );
-            LOG.message(
-                Level.DEBUG,
-                `Successfully retrieved data for ${response.data.length.toString()} fields.`
-            );
-            LOG.message(
-                Level.DEBUG,
-                dedent(`
-                    Received data for fields:
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Getting fields...");
+        const response: AxiosResponse<FieldDetail[]> = await this.httpClient.get(
+            `${this.apiBaseUrl}/rest/api/latest/field`,
+            {
+                headers: {
+                    ...authorizationHeader,
+                },
+            }
+        );
+        LOG.message(
+            Level.DEBUG,
+            `Successfully retrieved data for ${response.data.length.toString()} fields.`
+        );
+        LOG.message(
+            Level.DEBUG,
+            dedent(`
+                Received data for fields:
 
-                      ${response.data.map((field) => `${field.name} (id: ${field.id})`).join("\n")}
-                `)
-            );
-            return response.data;
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to get fields: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "getFieldsError");
-            throw new LoggedError("Failed to fetch Jira fields");
-        }
+                  ${response.data.map((field) => `${field.name} (id: ${field.id})`).join("\n")}
+            `)
+        );
+        return response.data;
     }
 
+    @loggedRequest({ purpose: "get user details" })
     public async getMyself(): Promise<User> {
-        try {
-            const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Getting user details...");
-            const response: AxiosResponse<User> = await this.httpClient.get(
-                `${this.apiBaseUrl}/rest/api/latest/myself`,
-                {
-                    headers: {
-                        ...authorizationHeader,
-                    },
-                }
-            );
-            LOG.message(Level.DEBUG, "Successfully retrieved user details.");
-            return response.data;
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to get user details: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "getMyselfError");
-            throw new LoggedError("Failed to fetch user details");
-        }
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Getting user details...");
+        const response: AxiosResponse<User> = await this.httpClient.get(
+            `${this.apiBaseUrl}/rest/api/latest/myself`,
+            {
+                headers: {
+                    ...authorizationHeader,
+                },
+            }
+        );
+        LOG.message(Level.DEBUG, "Successfully retrieved user details.");
+        return response.data;
     }
 
+    @loggedRequest({ purpose: "search issues" })
     public async search(request: SearchRequest): Promise<Issue[]> {
-        try {
-            const header = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Searching issues...");
-            let total = 0;
-            let startAt = request.startAt ?? 0;
-            const results: StringMap<Issue> = {};
-            do {
-                const paginatedRequest = {
-                    ...request,
-                    startAt: startAt,
-                };
-                const response: AxiosResponse<SearchResults> = await this.httpClient.post(
-                    `${this.apiBaseUrl}/rest/api/latest/search`,
-                    paginatedRequest,
-                    {
-                        headers: {
-                            ...header,
-                        },
-                    }
-                );
-                total = response.data.total ?? total;
-                if (response.data.issues) {
-                    for (const issue of response.data.issues) {
-                        if (issue.key) {
-                            results[issue.key] = issue;
-                        }
-                    }
-                    // Explicit check because it could also be 0.
-                    if (typeof response.data.startAt === "number") {
-                        startAt = response.data.startAt + response.data.issues.length;
-                    }
-                }
-            } while (startAt && startAt < total);
-            LOG.message(Level.DEBUG, `Found ${total.toString()} issues`);
-            return Object.values(results);
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to search issues: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "searchError");
-            throw new LoggedError("Failed to search for issues");
-        }
-    }
-
-    public async editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string> {
-        try {
-            const header = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Editing issue...");
-            await this.httpClient.put(
-                `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}`,
-                issueUpdateData,
+        const header = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Searching issues...");
+        let total = 0;
+        let startAt = request.startAt ?? 0;
+        const results: StringMap<Issue> = {};
+        do {
+            const paginatedRequest = {
+                ...request,
+                startAt: startAt,
+            };
+            const response: AxiosResponse<SearchResults> = await this.httpClient.post(
+                `${this.apiBaseUrl}/rest/api/latest/search`,
+                paginatedRequest,
                 {
                     headers: {
                         ...header,
                     },
                 }
             );
-            LOG.message(Level.DEBUG, `Successfully edited issue: ${issueIdOrKey}`);
-            return issueIdOrKey;
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to edit issue: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "editIssue");
-            throw new LoggedError("Failed to edit issue");
-        }
+            total = response.data.total ?? total;
+            if (response.data.issues) {
+                for (const issue of response.data.issues) {
+                    if (issue.key) {
+                        results[issue.key] = issue;
+                    }
+                }
+                // Explicit check because it could also be 0.
+                if (typeof response.data.startAt === "number") {
+                    startAt = response.data.startAt + response.data.issues.length;
+                }
+            }
+        } while (startAt && startAt < total);
+        LOG.message(Level.DEBUG, `Found ${total.toString()} issues`);
+        return Object.values(results);
     }
 
+    @loggedRequest({ purpose: "edit issue" })
+    public async editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string> {
+        const header = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Editing issue...");
+        await this.httpClient.put(
+            `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}`,
+            issueUpdateData,
+            {
+                headers: {
+                    ...header,
+                },
+            }
+        );
+        LOG.message(Level.DEBUG, `Successfully edited issue: ${issueIdOrKey}`);
+        return issueIdOrKey;
+    }
+
+    @loggedRequest({ purpose: "transition issue" })
     public async transitionIssue(
         issueIdOrKey: string,
         issueUpdateData: IssueUpdate
     ): Promise<void> {
-        try {
-            const header = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Transitioning issue...");
-            await this.httpClient.post(
-                `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/transitions`,
-                issueUpdateData,
-                {
-                    headers: {
-                        ...header,
-                    },
-                }
-            );
-            LOG.message(Level.DEBUG, `Successfully transitioned issue: ${issueIdOrKey}`);
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to transition issue: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "transitionIssue");
-            throw new LoggedError("Failed to transition issue");
-        }
+        const header = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Transitioning issue...");
+        await this.httpClient.post(
+            `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/transitions`,
+            issueUpdateData,
+            {
+                headers: {
+                    ...header,
+                },
+            }
+        );
+        LOG.message(Level.DEBUG, `Successfully transitioned issue: ${issueIdOrKey}`);
     }
 }

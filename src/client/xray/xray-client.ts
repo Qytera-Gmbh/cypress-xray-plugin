@@ -10,6 +10,7 @@ import { LoggedError, errorMessage } from "../../util/errors";
 import { HELP } from "../../util/help";
 import { LOG, Level } from "../../util/logging";
 import { Client } from "../client";
+import { loggedRequest } from "../util";
 
 export interface XrayClient {
     /**
@@ -83,27 +84,75 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
     extends Client
     implements XrayClient
 {
+    @loggedRequest({ purpose: "import Cypress results" })
     public async importExecution(execution: XrayTestExecutionResults): Promise<string> {
-        try {
-            const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.INFO, "Importing Cypress execution...");
-            const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
-                this.getUrlImportExecution(),
-                execution,
-                {
-                    headers: {
-                        ...authorizationHeader,
-                    },
-                }
-            );
-            const key = this.onResponse("import-execution", response.data);
-            LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
-            return key;
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to import execution: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "importExecutionError");
-            throw new LoggedError("Failed to import Cypress execution results");
-        }
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.INFO, "Importing Cypress execution...");
+        const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
+            this.getUrlImportExecution(),
+            execution,
+            {
+                headers: {
+                    ...authorizationHeader,
+                },
+            }
+        );
+        const key = this.onResponse("import-execution", response.data);
+        LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
+        return key;
+    }
+
+    @loggedRequest({ purpose: "import Cypress results" })
+    public async importExecutionMultipart(
+        executionResults: XrayTestExecutionResults,
+        info: MultipartInfo
+    ): Promise<string> {
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.INFO, "Importing Cypress execution...");
+        const formData = this.onRequest("import-execution-multipart", executionResults, info);
+        const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
+            this.getUrlImportExecutionMultipart(),
+            formData,
+            {
+                headers: {
+                    ...authorizationHeader,
+                    ...formData.getHeaders(),
+                },
+            }
+        );
+        const key = this.onResponse("import-execution-multipart", response.data);
+        LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
+        return key;
+    }
+
+    @loggedRequest({ purpose: "import Cucumber results" })
+    public async importExecutionCucumberMultipart(
+        cucumberJson: CucumberMultipartFeature[],
+        cucumberInfo: MultipartInfo
+    ): Promise<string> {
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.INFO, "Importing Cucumber execution...");
+        const formData = this.onRequest(
+            "import-execution-cucumber-multipart",
+            cucumberJson,
+            cucumberInfo
+        );
+        const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
+            this.getUrlImportExecutionCucumberMultipart(),
+            formData,
+            {
+                headers: {
+                    ...authorizationHeader,
+                    ...formData.getHeaders(),
+                },
+            }
+        );
+        const key = this.onResponse("import-execution-cucumber-multipart", response.data);
+        LOG.message(
+            Level.DEBUG,
+            `Successfully uploaded Cucumber test execution results to ${key}.`
+        );
+        return key;
     }
 
     public async importFeature(
@@ -152,69 +201,6 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
                 );
             }
             throw new LoggedError("Feature file import failed");
-        }
-    }
-
-    public async importExecutionCucumberMultipart(
-        cucumberJson: CucumberMultipartFeature[],
-        cucumberInfo: MultipartInfo
-    ): Promise<string> {
-        try {
-            const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.INFO, "Importing Cucumber execution...");
-            const formData = this.onRequest(
-                "import-execution-cucumber-multipart",
-                cucumberJson,
-                cucumberInfo
-            );
-            const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
-                this.getUrlImportExecutionCucumberMultipart(),
-                formData,
-                {
-                    headers: {
-                        ...authorizationHeader,
-                        ...formData.getHeaders(),
-                    },
-                }
-            );
-            const key = this.onResponse("import-execution-cucumber-multipart", response.data);
-            LOG.message(
-                Level.DEBUG,
-                `Successfully uploaded Cucumber test execution results to ${key}.`
-            );
-            return key;
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to import Cucumber execution: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "importExecutionCucumberMultipartError");
-            throw new LoggedError("Failed to import Cucumber execution results");
-        }
-    }
-
-    public async importExecutionMultipart(
-        executionResults: XrayTestExecutionResults,
-        info: MultipartInfo
-    ): Promise<string> {
-        try {
-            const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.INFO, "Importing Cypress execution...");
-            const formData = this.onRequest("import-execution-multipart", executionResults, info);
-            const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
-                this.getUrlImportExecutionMultipart(),
-                formData,
-                {
-                    headers: {
-                        ...authorizationHeader,
-                        ...formData.getHeaders(),
-                    },
-                }
-            );
-            const key = this.onResponse("import-execution-multipart", response.data);
-            LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
-            return key;
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to import execution: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "importExecutionMultipartError");
-            throw new LoggedError("Failed to import Cypress execution results");
         }
     }
 

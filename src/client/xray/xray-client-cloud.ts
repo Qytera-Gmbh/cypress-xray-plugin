@@ -14,10 +14,10 @@ import {
     IssueDetails,
 } from "../../types/xray/responses/import-feature";
 import { dedent } from "../../util/dedent";
-import { LoggedError, errorMessage } from "../../util/errors";
 import { LOG, Level } from "../../util/logging";
 import { JwtCredentials } from "../authentication/credentials";
 import { AxiosRestClient } from "../https/requests";
+import { loggedRequest } from "../util";
 import { AbstractXrayClient } from "./xray-client";
 
 export interface HasTestTypes {
@@ -65,70 +65,65 @@ export class XrayClientCloud
         super(XrayClientCloud.URL, credentials, httpClient);
     }
 
+    @loggedRequest({ purpose: "get test results" })
     public async getTestResults(issueId: string): ReturnType<HasTestResults["getTestResults"]> {
-        try {
-            const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Retrieving test results...");
-            const tests: Test<{ key: string; summary: string }>[] = [];
-            let total = 0;
-            let start = 0;
-            const query = dedent(`
-                query($issueId: String, $start: Int!, $limit: Int!) {
-                    getTestExecution(issueId: $issueId) {
-                        tests(start: $start, limit: $limit) {
-                            total
-                            start
-                            limit
-                            results {
-                                issueId
-                                status {
-                                    name
-                                }
-                                jira(fields: ["key", "summary"])
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Retrieving test results...");
+        const tests: Test<{ key: string; summary: string }>[] = [];
+        let total = 0;
+        let start = 0;
+        const query = dedent(`
+            query($issueId: String, $start: Int!, $limit: Int!) {
+                getTestExecution(issueId: $issueId) {
+                    tests(start: $start, limit: $limit) {
+                        total
+                        start
+                        limit
+                        results {
+                            issueId
+                            status {
+                                name
                             }
+                            jira(fields: ["key", "summary"])
                         }
                     }
                 }
-            `);
-            do {
-                const paginatedRequest = {
-                    query: query,
-                    variables: {
-                        issueId: issueId,
-                        limit: XrayClientCloud.GRAPHQL_LIMIT,
-                        start: start,
-                    },
-                };
-                const response: AxiosResponse<
-                    GetTestExecutionResponseCloud<{ key: string; summary: string }>
-                > = await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
-                    headers: {
-                        ...authorizationHeader,
-                    },
-                });
-                const data = response.data.data.getTestExecution;
-                total = data.tests?.total ?? total;
-                if (data.tests?.results) {
-                    if (typeof data.tests.start === "number") {
-                        start = data.tests.start + data.tests.results.length;
-                    }
-                    for (const test of data.tests.results) {
-                        if (test.status?.name) {
-                            tests.push(test);
-                        }
+            }
+        `);
+        do {
+            const paginatedRequest = {
+                query: query,
+                variables: {
+                    issueId: issueId,
+                    limit: XrayClientCloud.GRAPHQL_LIMIT,
+                    start: start,
+                },
+            };
+            const response: AxiosResponse<
+                GetTestExecutionResponseCloud<{ key: string; summary: string }>
+            > = await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
+                headers: {
+                    ...authorizationHeader,
+                },
+            });
+            const data = response.data.data.getTestExecution;
+            total = data.tests?.total ?? total;
+            if (data.tests?.results) {
+                if (typeof data.tests.start === "number") {
+                    start = data.tests.start + data.tests.results.length;
+                }
+                for (const test of data.tests.results) {
+                    if (test.status?.name) {
+                        tests.push(test);
                     }
                 }
-            } while (start && start < total);
-            LOG.message(
-                Level.DEBUG,
-                `Successfully retrieved test results for test execution issue: ${issueId}`
-            );
-            return tests;
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to get test results: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "getTestResultsError");
-            throw new LoggedError("Failed to get test results");
-        }
+            }
+        } while (start && start < total);
+        LOG.message(
+            Level.DEBUG,
+            `Successfully retrieved test results for test execution issue: ${issueId}`
+        );
+        return tests;
     }
 
     /**
@@ -139,70 +134,65 @@ export class XrayClientCloud
      * @param issueKeys - the keys of the test issues to retrieve test types for
      * @returns a promise which will contain the mapping of issues to test types
      */
+    @loggedRequest({ purpose: "get test types" })
     public async getTestTypes(
         projectKey: string,
         ...issueKeys: string[]
     ): ReturnType<HasTestTypes["getTestTypes"]> {
-        try {
-            const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Retrieving test types...");
-            const types: StringMap<string> = {};
-            let total = 0;
-            let start = 0;
-            const query = dedent(`
-                query($jql: String, $start: Int!, $limit: Int!) {
-                    getTests(jql: $jql, start: $start, limit: $limit) {
-                        total
-                        start
-                        results {
-                            testType {
-                                name
-                                kind
-                            }
-                            jira(fields: ["key"])
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Retrieving test types...");
+        const types: StringMap<string> = {};
+        let total = 0;
+        let start = 0;
+        const query = dedent(`
+            query($jql: String, $start: Int!, $limit: Int!) {
+                getTests(jql: $jql, start: $start, limit: $limit) {
+                    total
+                    start
+                    results {
+                        testType {
+                            name
+                            kind
                         }
+                        jira(fields: ["key"])
                     }
                 }
-            `);
-            do {
-                const paginatedRequest = {
-                    query: query,
-                    variables: {
-                        jql: `project = '${projectKey}' AND issue in (${issueKeys.join(",")})`,
-                        limit: XrayClientCloud.GRAPHQL_LIMIT,
-                        start: start,
+            }
+        `);
+        do {
+            const paginatedRequest = {
+                query: query,
+                variables: {
+                    jql: `project = '${projectKey}' AND issue in (${issueKeys.join(",")})`,
+                    limit: XrayClientCloud.GRAPHQL_LIMIT,
+                    start: start,
+                },
+            };
+            const response: AxiosResponse<GetTestsResponse<{ key: string }>> =
+                await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
+                    headers: {
+                        ...authorizationHeader,
                     },
-                };
-                const response: AxiosResponse<GetTestsResponse<{ key: string }>> =
-                    await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
-                        headers: {
-                            ...authorizationHeader,
-                        },
-                    });
-                total = response.data.data.getTests.total ?? total;
-                if (response.data.data.getTests.results) {
-                    if (typeof response.data.data.getTests.start === "number") {
-                        start =
-                            response.data.data.getTests.start +
-                            response.data.data.getTests.results.length;
-                    }
-                    for (const test of response.data.data.getTests.results) {
-                        if (test.jira.key && test.testType?.name) {
-                            types[test.jira.key] = test.testType.name;
-                        }
+                });
+            total = response.data.data.getTests.total ?? total;
+            if (response.data.data.getTests.results) {
+                if (typeof response.data.data.getTests.start === "number") {
+                    start =
+                        response.data.data.getTests.start +
+                        response.data.data.getTests.results.length;
+                }
+                for (const test of response.data.data.getTests.results) {
+                    if (test.jira.key && test.testType?.name) {
+                        types[test.jira.key] = test.testType.name;
                     }
                 }
-            } while (start && start < total);
-            LOG.message(
-                Level.DEBUG,
-                `Successfully retrieved test types for ${issueKeys.length.toString()} issues.`
-            );
-            return types;
-        } catch (error: unknown) {
-            LOG.message(Level.ERROR, `Failed to get test types: ${errorMessage(error)}`);
-            LOG.logErrorToFile(error, "getTestTypes");
-            throw new LoggedError("Failed to get test types");
-        }
+            }
+        } while (start && start < total);
+        LOG.message(
+            Level.DEBUG,
+            `Successfully retrieved test types for ${issueKeys.length.toString()} issues.`
+        );
+        return types;
     }
 
     protected onRequest(

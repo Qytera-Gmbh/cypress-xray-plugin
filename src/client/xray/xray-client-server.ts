@@ -12,10 +12,10 @@ import {
 } from "../../types/xray/responses/import-feature";
 import { XrayLicenseStatus } from "../../types/xray/responses/license";
 import { dedent } from "../../util/dedent";
-import { LoggedError, errorMessage } from "../../util/errors";
 import { LOG, Level } from "../../util/logging";
 import { HttpCredentials } from "../authentication/credentials";
 import { AxiosRestClient } from "../https/requests";
+import { loggedRequest } from "../util";
 import { AbstractXrayClient, XrayClient } from "./xray-client";
 
 export interface XrayClientServer extends XrayClient {
@@ -67,67 +67,51 @@ export class ServerClient
         super(`${apiBaseUrl}/rest/raven/latest`, credentials, httpClient);
     }
 
+    @loggedRequest({ purpose: "get test execution" })
     public async getTestExecution(
         testExecutionIssueKey: string,
         query?: Parameters<XrayClientServer["getTestExecution"]>[1]
     ): Promise<GetTestExecutionResponseServer> {
-        try {
-            const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Getting test execution results...");
-            let currentPage = query?.page ?? 1;
-            let pagedTests: GetTestExecutionResponseServer = [];
-            const allTests: GetTestExecutionResponseServer = [];
-            do {
-                const testsResponse: AxiosResponse<GetTestExecutionResponseServer> =
-                    await this.httpClient.get(
-                        `${this.apiBaseUrl}/api/testexec/${testExecutionIssueKey}/test`,
-                        {
-                            headers: {
-                                ...authorizationHeader,
-                            },
-                            params: {
-                                detailed: query?.detailed,
-                                limit: query?.limit,
-                                page: currentPage,
-                            },
-                        }
-                    );
-                allTests.push(...testsResponse.data);
-                pagedTests = testsResponse.data;
-                currentPage++;
-            } while (pagedTests.length > 0);
-            return allTests;
-        } catch (error: unknown) {
-            LOG.message(
-                Level.ERROR,
-                `Failed to retrieve test execution information: ${errorMessage(error)}`
-            );
-            LOG.logErrorToFile(error, "getTestExecutionError");
-            throw new LoggedError("Failed to get test execution information");
-        }
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Getting test execution results...");
+        let currentPage = query?.page ?? 1;
+        let pagedTests: GetTestExecutionResponseServer = [];
+        const allTests: GetTestExecutionResponseServer = [];
+        do {
+            const testsResponse: AxiosResponse<GetTestExecutionResponseServer> =
+                await this.httpClient.get(
+                    `${this.apiBaseUrl}/api/testexec/${testExecutionIssueKey}/test`,
+                    {
+                        headers: {
+                            ...authorizationHeader,
+                        },
+                        params: {
+                            detailed: query?.detailed,
+                            limit: query?.limit,
+                            page: currentPage,
+                        },
+                    }
+                );
+            allTests.push(...testsResponse.data);
+            pagedTests = testsResponse.data;
+            currentPage++;
+        } while (pagedTests.length > 0);
+        return allTests;
     }
 
+    @loggedRequest({ purpose: "get Xray license" })
     public async getXrayLicense(): Promise<XrayLicenseStatus> {
-        try {
-            const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Getting Xray license status...");
-            const licenseResponse: AxiosResponse<XrayLicenseStatus> = await this.httpClient.get(
-                `${this.apiBaseUrl}/api/xraylicense`,
-                {
-                    headers: {
-                        ...authorizationHeader,
-                    },
-                }
-            );
-            return licenseResponse.data;
-        } catch (error: unknown) {
-            LOG.message(
-                Level.ERROR,
-                `Failed to retrieve license information: ${errorMessage(error)}`
-            );
-            LOG.logErrorToFile(error, "getXrayLicenseError");
-            throw new LoggedError("Failed to get Xray license");
-        }
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Getting Xray license status...");
+        const licenseResponse: AxiosResponse<XrayLicenseStatus> = await this.httpClient.get(
+            `${this.apiBaseUrl}/api/xraylicense`,
+            {
+                headers: {
+                    ...authorizationHeader,
+                },
+            }
+        );
+        return licenseResponse.data;
     }
 
     protected onRequest(

@@ -634,12 +634,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 );
                 restClient.get.onFirstCall().rejects(error);
                 await expect(client.getTestExecution("CYP-321")).to.eventually.be.rejectedWith(
-                    "Failed to get test execution information"
+                    "Failed to get test execution"
                 );
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.ERROR,
                     dedent(`
-                        Failed to retrieve test execution information: Request failed with status code 400
+                        Failed to get test execution: Request failed with status code 400
                     `)
                 );
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
@@ -696,7 +696,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 expect(logger.message).to.have.been.calledWithExactly(
                     Level.ERROR,
                     dedent(`
-                        Failed to retrieve license information: Request failed with status code 400
+                        Failed to get Xray license: Request failed with status code 400
                     `)
                 );
                 expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
