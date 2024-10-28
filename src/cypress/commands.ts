@@ -1,5 +1,6 @@
+import { encode } from "../util/base64";
 import { normalizedFilename } from "../util/files";
-import { PluginTask, enqueueTask } from "./tasks";
+import { enqueueTask } from "./tasks";
 
 Cypress.Commands.overwrite(
     "request",
@@ -15,10 +16,18 @@ Cypress.Commands.overwrite(
         );
         const timestamp = normalizedFilename(new Date().toLocaleTimeString());
         const basename = `${method} ${url} ${timestamp}`;
-        return enqueueTask(PluginTask.OUTGOING_REQUEST, `${basename} request.json`, request)
-            .then(originalFn)
-            .then((response) =>
-                enqueueTask(PluginTask.INCOMING_RESPONSE, `${basename} response.json`, response)
-            );
+        enqueueTask("cypress-xray-plugin:task:add-evidence", {
+            contentType: "application/json",
+            data: encode(JSON.stringify(request, null, 2)),
+            filename: `${basename} request.json`,
+        });
+        return originalFn(request).then((response) => {
+            enqueueTask("cypress-xray-plugin:task:add-evidence", {
+                contentType: "application/json",
+                data: encode(JSON.stringify(response, null, 2)),
+                filename: `${basename} response.json`,
+            });
+            return response;
+        });
     }
 );

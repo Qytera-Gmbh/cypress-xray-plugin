@@ -1,6 +1,6 @@
 import { EvidenceCollection } from "../context";
 import { getTestIssueKeys } from "../hooks/after/util";
-import { encode } from "../util/base64";
+import { XrayEvidenceItem } from "../types/xray/import-test-execution-results";
 import { dedent } from "../util/dedent";
 import { errorMessage } from "../util/errors";
 import { Level, Logger } from "../util/logging";
@@ -8,131 +8,66 @@ import { Level, Logger } from "../util/logging";
 /**
  * All tasks which are available within the plugin.
  */
-export enum PluginTask {
-    /**
-     * The task which handles incoming responses from requests dispatched through `cy.request`
-     * within a test.
-     */
-    INCOMING_RESPONSE = "cypress-xray-plugin:task:response",
-    /**
-     * The task which handles outgoing requests dispatched through `cy.request` within a test.
-     */
-    OUTGOING_REQUEST = "cypress-xray-plugin:task:request",
-}
+export type PluginTask = "cypress-xray-plugin:task:add-evidence";
 
 /**
- * Enqueues the plugin task for processing a dispatched request. The plugin internally keeps track
- * of all requests enqueued in this way and will upload them as test execution evidence if the
- * appropriate options are enabled.
+ * Enqueues the plugin task for adding evidence to the test from which the task was called. The
+ * evidence will be attached to the test results of the test execution.
+ *
+ * The following two code snippets are identical in function:
+ *
+ * ```ts
+ * // Plugin task wrapper:
+ * it("attaches evidence CYP-100", () => {
+ *   enqueueTask("cypress-xray-plugin:task:add-evidence", { data: "hello", filename: "hello.txt" });
+ * });
+ *
+ * // Explicit task call:
+ * it("attaches evidence CYP-100", () => {
+ *   cy.task("cypress-xray-plugin:task:add-evidence", {
+ *     evidence: { data: "hello", filename: "hello.txt" },
+ *     test: Cypress.currentTest.title
+ *   });
+ * });
+ * ```
+ *
+ * If you want to attach the results to a different test, you will need to call the task explicitly.
+ * For example, the following snippet appends the evidence to the results of `CYP-42` rather than
+ * to `CYP-100` in which the task was called.
+ *
+ * ```ts
+ * it("attaches evidence CYP-100", () => {
+ *   cy.task("cypress-xray-plugin:task:add-evidence", {
+ *     evidence: { ... },
+ *     test: "CYP-42"
+ *   });
+ * });
+ * ```
  *
  * @param task - the task name
- * @param filename - the name of the evidence file to save the request data to
- * @param request - the request data
+ * @param evidence - the evidence
  *
- * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadRequestData/
+ * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/addingEvidence/
  */
 export function enqueueTask(
-    task: PluginTask.OUTGOING_REQUEST,
-    filename: string,
-    request: Partial<Cypress.RequestOptions>
-): Cypress.Chainable<Partial<Cypress.RequestOptions>>;
-/**
- * Enqueues the plugin task for processing a received response. The plugin internally keeps track
- * of all responses enqueued in this way and will upload them as test execution evidence if the
- * appropriate options are enabled.
- *
- * @param task - the task name
- * @param filename - the name of the evidence file to save the response data to
- * @param response - the response data
- *
- * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadRequestData/
- */
-export function enqueueTask(
-    task: PluginTask.INCOMING_RESPONSE,
-    filename: string,
-    response: Cypress.Response<unknown>
-): Cypress.Chainable<Cypress.Response<unknown>>;
-export function enqueueTask<T>(
-    task: PluginTask,
-    filename: string,
-    arg: unknown
-): Cypress.Chainable<T> {
+    task: "cypress-xray-plugin:task:add-evidence",
+    evidence: XrayEvidenceItem
+): Cypress.Chainable<XrayEvidenceItem>;
+
+// Implementation.
+export function enqueueTask<T>(task: PluginTask, arg: T): Cypress.Chainable<T> {
     switch (task) {
-        case PluginTask.OUTGOING_REQUEST: {
-            const parameters: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST] = {
-                filename: filename,
-                request: arg as Partial<Cypress.RequestOptions>,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        case "cypress-xray-plugin:task:add-evidence": {
+            return cy.task(task, {
+                evidence: arg,
                 test: Cypress.currentTest.title,
-            };
-            return cy.task(task, parameters);
-        }
-        case PluginTask.INCOMING_RESPONSE: {
-            const parameters: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE] = {
-                filename: filename,
-                response: arg as Cypress.Response<unknown>,
-                test: Cypress.currentTest.title,
-            };
-            return cy.task(task, parameters);
+            });
         }
     }
 }
 
-/**
- * Models the parameters for the different plugin tasks.
- */
-export interface PluginTaskParameterType {
-    /**
-     * The parameters for an incoming response task.
-     */
-    [PluginTask.INCOMING_RESPONSE]: {
-        /**
-         * The filename of the file where the response data should be saved to.
-         */
-        filename: string;
-        /**
-         * The response data.
-         */
-        response: Cypress.Response<unknown>;
-        /**
-         * The test name where `cy.request` was called.
-         */
-        test: string;
-    };
-    /**
-     * The parameters for an outgoing request task.
-     */
-    [PluginTask.OUTGOING_REQUEST]: {
-        /**
-         * The filename of the file where the request data should be saved to.
-         */
-        filename: string;
-        /**
-         * The request data.
-         */
-        request: Partial<Cypress.RequestOptions>;
-        /**
-         * The test name where `cy.request` was called.
-         */
-        test: string;
-    };
-}
-
-interface PluginTaskReturnType {
-    /**
-     * The result of an incoming response task.
-     */
-    [PluginTask.INCOMING_RESPONSE]: Cypress.Response<unknown>;
-    /**
-     * The result of an outgoing request task.
-     */
-    [PluginTask.OUTGOING_REQUEST]: Partial<Cypress.RequestOptions>;
-}
-
-type TaskListener = {
-    [K in PluginTask]: (args: PluginTaskParameterType[K]) => PluginTaskReturnType[K];
-};
-
-export class PluginTaskListener implements TaskListener {
+export class PluginTaskListener {
     private readonly projectKey: string;
     private readonly evidenceCollection: EvidenceCollection;
     private readonly logger: Logger;
@@ -144,17 +79,11 @@ export class PluginTaskListener implements TaskListener {
         this.logger = logger;
     }
 
-    public [PluginTask.OUTGOING_REQUEST](
-        args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
-    ) {
+    public addEvidence(args: { evidence: XrayEvidenceItem; test: string }): XrayEvidenceItem {
         try {
             const issueKeys = getTestIssueKeys(args.test, this.projectKey);
             for (const issueKey of issueKeys) {
-                this.evidenceCollection.addEvidence(issueKey, {
-                    contentType: "application/json",
-                    data: encode(JSON.stringify(args.request, null, 2)),
-                    filename: args.filename,
-                });
+                this.evidenceCollection.addEvidence(issueKey, args.evidence);
             }
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {
@@ -163,7 +92,7 @@ export class PluginTaskListener implements TaskListener {
                     dedent(`
                         Test: ${args.test}
 
-                          Encountered a cy.request call which will not be included as evidence.
+                          Encountered an error while trying to add evidence.
 
                             Caused by: ${errorMessage(error)}
                     `)
@@ -171,36 +100,6 @@ export class PluginTaskListener implements TaskListener {
                 this.ignoredTests.add(args.test);
             }
         }
-        return args.request;
-    }
-
-    public [PluginTask.INCOMING_RESPONSE](
-        args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
-    ) {
-        try {
-            const issueKeys = getTestIssueKeys(args.test, this.projectKey);
-            for (const issueKey of issueKeys) {
-                this.evidenceCollection.addEvidence(issueKey, {
-                    contentType: "application/json",
-                    data: encode(JSON.stringify(args.response, null, 2)),
-                    filename: args.filename,
-                });
-            }
-        } catch (error: unknown) {
-            if (!this.ignoredTests.has(args.test)) {
-                this.logger.message(
-                    Level.WARNING,
-                    dedent(`
-                        Test: ${args.test}
-
-                          Encountered a cy.request call which will not be included as evidence.
-
-                            Caused by: ${errorMessage(error)}
-                    `)
-                );
-                this.ignoredTests.add(args.test);
-            }
-        }
-        return args.response;
+        return args.evidence;
     }
 }

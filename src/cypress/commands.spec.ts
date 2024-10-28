@@ -4,6 +4,7 @@ import process from "node:process";
 
 import Sinon from "sinon";
 import { getMockedCypress } from "../../test/mocks";
+import { XrayEvidenceItem } from "../types/xray/import-test-execution-results";
 import { normalizedFilename } from "../util/files";
 import * as tasks from "./tasks";
 
@@ -126,12 +127,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             const stubbedEnqueue = Sinon.stub(tasks, "enqueueTask");
             stubbedEnqueue
                 .onFirstCall()
-                .returns(firstChainable as unknown as Cypress.Chainable<Cypress.Response<unknown>>);
+                .returns(firstChainable as unknown as Cypress.Chainable<XrayEvidenceItem>);
             stubbedEnqueue
                 .onSecondCall()
-                .returns(
-                    secondChainable as unknown as Cypress.Chainable<Cypress.Response<unknown>>
-                );
+                .returns(secondChainable as unknown as Cypress.Chainable<XrayEvidenceItem>);
 
             getMockedCypress().cypress.Commands.overwrite = Sinon.spy(
                 (
@@ -152,14 +151,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             await import("./commands");
             expect(stubbedEnqueue).to.have.been.calledTwice;
             expect(stubbedEnqueue.getCall(0).args).to.deep.eq([
-                tasks.PluginTask.OUTGOING_REQUEST,
+                "cypress-xray-plugin:task:add-evidence",
                 test.expectedFilenames[0],
-                test.request,
+                JSON.stringify(test.request, null, 2),
             ]);
             expect(stubbedEnqueue.getCall(1).args).to.deep.eq([
-                tasks.PluginTask.INCOMING_RESPONSE,
+                "cypress-xray-plugin:task:add-evidence",
                 test.expectedFilenames[1],
-                test.response,
+                JSON.stringify(test.response, null, 2),
             ]);
         });
     }

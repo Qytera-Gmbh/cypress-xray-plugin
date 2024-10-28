@@ -1,1 +1,1 @@
-export { enqueueTask, PluginTask } from "./tasks";
+export { enqueueTask } from "./tasks";

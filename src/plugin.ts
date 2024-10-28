@@ -11,7 +11,7 @@ import {
     initXrayOptions,
     setPluginContext,
 } from "./context";
-import { PluginTask, PluginTaskListener, PluginTaskParameterType } from "./cypress/tasks";
+import { PluginTaskListener } from "./cypress/tasks";
 import { addUploadCommands } from "./hooks/after/after-run";
 import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
 import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
@@ -105,21 +105,10 @@ export async function configureXrayPlugin(
     setPluginContext(context);
     const listener = new PluginTaskListener(internalOptions.jira.projectKey, context, logger);
     on("task", {
-        [PluginTask.INCOMING_RESPONSE]: (
-            args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
+        ["cypress-xray-plugin:task:add-evidence"]: (
+            args: Parameters<PluginTaskListener["addEvidence"]>[0]
         ) => {
-            if (internalOptions.xray.uploadRequests) {
-                return listener[PluginTask.INCOMING_RESPONSE](args);
-            }
-            return args.response;
-        },
-        [PluginTask.OUTGOING_REQUEST]: (
-            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
-        ) => {
-            if (internalOptions.xray.uploadRequests) {
-                return listener[PluginTask.OUTGOING_REQUEST](args);
-            }
-            return args.request;
+            return listener.addEvidence(args);
         },
     });
     on("after:run", async (results: CypressFailedRunResultType | CypressRunResultType) => {
@@ -239,11 +228,10 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
 
 function registerDefaultTasks(on: Cypress.PluginEvents) {
     on("task", {
-        [PluginTask.INCOMING_RESPONSE]: (
-            args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
-        ) => args.response,
-        [PluginTask.OUTGOING_REQUEST]: (
-            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
-        ) => args.request,
+        ["cypress-xray-plugin:task:add-evidence"]: (
+            args: Parameters<PluginTaskListener["addEvidence"]>[0]
+        ) => {
+            return args.evidence;
+        },
     });
 }
