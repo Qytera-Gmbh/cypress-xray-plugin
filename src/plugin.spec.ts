@@ -4,7 +4,7 @@ import path from "path";
 import Sinon, { stub } from "sinon";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";
-import { AxiosRestClient } from "./client/https/requests";
+import { AxiosRestClient } from "./client/https/https";
 import { JiraClient } from "./client/jira/jira-client";
 import * as context from "./context";
 import * as afterRunHook from "./hooks/after/after-run";

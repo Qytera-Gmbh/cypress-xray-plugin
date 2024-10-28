@@ -10,7 +10,7 @@ import { MultipartInfo } from "../../types/xray/requests/import-execution-multip
 import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
 import { BasicAuthCredentials } from "../authentication/credentials";
-import { AxiosRestClient } from "../https/requests";
+import { AxiosRestClient } from "../https/https";
 import { ServerClient, XrayClientServer } from "./xray-client-server";
 
 describe(path.relative(process.cwd(), __filename), () => {

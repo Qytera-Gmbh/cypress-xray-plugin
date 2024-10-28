@@ -16,7 +16,7 @@ import {
 import { dedent } from "../../util/dedent";
 import { LOG, Level } from "../../util/logging";
 import { JwtCredentials } from "../authentication/credentials";
-import { AxiosRestClient } from "../https/requests";
+import { AxiosRestClient } from "../https/https";
 import { loggedRequest } from "../util";
 import { AbstractXrayClient } from "./xray-client";
 

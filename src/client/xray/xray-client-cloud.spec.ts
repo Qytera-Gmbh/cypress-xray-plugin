@@ -14,7 +14,7 @@ import {
 import { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
 import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
-import { AxiosRestClient } from "../https/requests";
+import { AxiosRestClient } from "../https/https";
 import { XrayClientCloud } from "./xray-client-cloud";
 
 chai.use(chaiAsPromised);
