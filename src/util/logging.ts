@@ -1,7 +1,7 @@
 import { isAxiosError } from "axios";
 import chalk from "chalk";
-import fs from "node:fs";
-import path from "node:path";
+import fs from "fs";
+import path from "path";
 import { isLoggedError } from "./errors";
 
 export enum Level {

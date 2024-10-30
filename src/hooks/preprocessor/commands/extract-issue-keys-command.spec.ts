@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import path from "node:path";
+import path from "path";
 import { getMockedLogger } from "../../../../test/mocks";
 import { ConstantCommand } from "../../util/commands/constant-command";
 import { ExtractIssueKeysCommand } from "./extract-issue-keys-command";

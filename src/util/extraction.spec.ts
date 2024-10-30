@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import path from "node:path";
+import path from "path";
 import { extractArrayOfStrings, extractNestedString, extractString } from "./extraction";
 
 describe(path.relative(process.cwd(), __filename), () => {

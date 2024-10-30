@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import fs, { readFileSync } from "node:fs";
-import path from "node:path";
+import fs, { readFileSync } from "fs";
+import path from "path";
 import Sinon from "sinon";
 import { getMockedLogger } from "../../../../../../test/mocks";
 import { expectToExist } from "../../../../../../test/util";

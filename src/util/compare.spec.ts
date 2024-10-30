@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import path from "node:path";
+import path from "path";
 import { contains } from "./compare";
 
 describe(path.relative(process.cwd(), __filename), () => {

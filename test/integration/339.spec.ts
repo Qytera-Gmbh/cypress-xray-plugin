@@ -1,7 +1,7 @@
 import { expect } from "chai";
-import fs from "node:fs";
-import path from "node:path";
-import process from "node:process";
+import fs from "fs";
+import path from "path";
+import process from "process";
 import { dedent } from "../../src/util/dedent";
 import { LOCAL_SERVER } from "../server-config";
 import { runCypress, setupCypressProject } from "../sh";

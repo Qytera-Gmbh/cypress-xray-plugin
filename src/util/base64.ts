@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync } from "fs";
 
 /**
  * Encodes and returns some file's content in base64.

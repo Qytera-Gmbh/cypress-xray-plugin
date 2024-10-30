@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { readFileSync } from "node:fs";
-import path from "node:path";
+import { readFileSync } from "fs";
+import path from "path";
 import { useFakeTimers } from "sinon";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks";
 import { assertIsInstanceOf } from "../../../test/util";
@@ -13,8 +13,7 @@ import {
     initXrayOptions,
 } from "../../context";
 import type { CypressRunResultType } from "../../types/cypress/cypress";
-import type {
-    ClientCombination} from "../../types/plugin";
+import type { ClientCombination } from "../../types/plugin";
 import {
     type InternalCucumberOptions,
     type InternalCypressXrayPluginOptions,
@@ -25,7 +24,7 @@ import type {
 } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Level } from "../../util/logging";
-import type { Command} from "../command";
+import type { Command } from "../command";
 import { ComputableState } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";
 import { DestructureCommand } from "../util/commands/destructure-command";

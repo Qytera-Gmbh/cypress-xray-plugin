@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import path from "node:path";
+import path from "path";
 import { dedent } from "./dedent";
 import { asArrayOfStrings, asBoolean, asFloat, asInt, asObject } from "./parsing";
 

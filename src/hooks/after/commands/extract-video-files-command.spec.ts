@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import fs from "node:fs";
-import path from "node:path";
+import fs from "fs";
+import path from "path";
 import { getMockedLogger } from "../../../../test/mocks";
 import type { CypressRunResultType } from "../../../types/cypress/cypress";
 import { ConstantCommand } from "../../util/commands/constant-command";

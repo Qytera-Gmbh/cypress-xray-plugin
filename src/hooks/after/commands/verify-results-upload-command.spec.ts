@@ -1,6 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import path from "node:path";
+import path from "path";
 import { getMockedLogger } from "../../../../test/mocks";
 import { dedent } from "../../../util/dedent";
 import { SkippedError } from "../../../util/errors";

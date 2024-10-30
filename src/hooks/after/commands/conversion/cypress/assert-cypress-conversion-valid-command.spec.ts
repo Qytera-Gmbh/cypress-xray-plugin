@@ -1,6 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import path from "node:path";
+import path from "path";
 import { getMockedLogger } from "../../../../../../test/mocks";
 import type { XrayClient } from "../../../../../client/xray/xray-client";
 import type { XrayTest } from "../../../../../types/xray/import-test-execution-results";

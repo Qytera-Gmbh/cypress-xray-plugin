@@ -1,7 +1,7 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
-import fs from "node:fs";
-import path from "node:path";
+import fs from "fs";
+import path from "path";
 import type { SinonStubbedInstance } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";

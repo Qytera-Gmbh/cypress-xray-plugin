@@ -22,7 +22,7 @@ import {
 } from "./context";
 
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
-import path from "node:path";
+import path from "path";
 import { AxiosRestClient } from "./client/https/requests";
 import type { User } from "./types/jira/responses/user";
 import type {

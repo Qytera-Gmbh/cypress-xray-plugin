@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import fs from "node:fs";
-import path from "node:path";
+import fs from "fs";
+import path from "path";
 import Sinon, { stub } from "sinon";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../test/mocks";
 import { mockedCypressEventEmitter } from "../test/util";

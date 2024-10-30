@@ -1,6 +1,6 @@
 import type { Background } from "@cucumber/messages";
 import { expect } from "chai";
-import path from "node:path";
+import path from "path";
 import { parseFeatureFile } from "./gherkin";
 import {
     getCucumberPreconditionIssueComments,

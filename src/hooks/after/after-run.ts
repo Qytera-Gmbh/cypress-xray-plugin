@@ -1,5 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
+import fs from "fs";
+import path from "path";
 import type { XrayClient } from "../../client/xray/xray-client";
 import type { EvidenceCollection } from "../../context";
 import type { CypressRunResultType } from "../../types/cypress/cypress";
@@ -20,7 +20,7 @@ import { getOrCall } from "../../util/functions";
 import type { ExecutableGraph } from "../../util/graph/executable-graph";
 import type { Logger } from "../../util/logging";
 import { Level } from "../../util/logging";
-import type { Command} from "../command";
+import type { Command } from "../command";
 import { ComputableState } from "../command";
 import type { ConstantCommand } from "../util/commands/constant-command";
 import { DestructureCommand } from "../util/commands/destructure-command";

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import path from "node:path";
+import path from "path";
 import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks";
 import { dedent } from "../../../../util/dedent";
 import { Level } from "../../../../util/logging";

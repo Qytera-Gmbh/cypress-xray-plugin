@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import path from "node:path";
+import path from "path";
 import { getMockedXrayClient } from "../../../../test/mocks";
 import type { Failable } from "../../../hooks/command";
 import { Command, ComputableState } from "../../../hooks/command";

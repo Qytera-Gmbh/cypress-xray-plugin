@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import path from "node:path";
+import path from "path";
 import type { Computable, Stateful } from "../../hooks/command";
 import { ComputableState } from "../../hooks/command";
 import { SkippedError } from "../errors";

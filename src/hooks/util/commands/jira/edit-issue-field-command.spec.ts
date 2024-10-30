@@ -1,6 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import path from "node:path";
+import path from "path";
 import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks";
 import { dedent } from "../../../../util/dedent";
 import { Level } from "../../../../util/logging";

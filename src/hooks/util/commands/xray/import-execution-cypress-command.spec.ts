@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import path from "node:path";
+import path from "path";
 import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks";
 import type { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results";
 import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";

@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from "path";
 import { lt } from "semver";
 import type { EvidenceCollection } from "../../../../../context";
 import type { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
@@ -18,7 +18,7 @@ import { truncateIsoTime } from "../../../../../util/time";
 import type { Computable } from "../../../../command";
 import { Command } from "../../../../command";
 import { getTestIssueKeys } from "../../../util";
-import type { TestRunData} from "./util/run";
+import type { TestRunData } from "./util/run";
 import { getTestRunData_V12, getTestRunData_V13 } from "./util/run";
 import { getXrayStatus } from "./util/status";
 

@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import path from "node:path";
-import process from "node:process";
+import path from "path";
+import process from "process";
 import { dedent } from "../../src/util/dedent";
 import { runCypress, setupCypressProject } from "../sh";
 import { expectToExist } from "../util";
@@ -47,7 +47,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     const { defineConfig } = require("cypress");
                     const fix = require("cypress-on-fix");
                     const { configureXrayPlugin, syncFeatureFile } = require("cypress-xray-plugin");
-                    const fs = require("node:fs");
+                    const fs = require("fs");
 
                     module.exports = defineConfig({
                         video: false,
