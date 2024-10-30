@@ -3,7 +3,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import FormData from "form-data";
 import { createReadStream } from "node:fs";
-import path from "path";
+import path from "node:path";
 import { stub, useFakeTimers } from "sinon";
 import { getMockedLogger } from "../../../test/mocks";
 import { LOCAL_SERVER } from "../../../test/server-config";

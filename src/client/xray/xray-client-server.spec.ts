@@ -1,6 +1,6 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
-import fs from "fs";
+import fs from "node:fs";
 import path from "node:path";
 import { SinonStubbedInstance } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";

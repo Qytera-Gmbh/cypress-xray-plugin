@@ -1,6 +1,6 @@
 import { AstBuilder, GherkinClassicTokenMatcher, Parser } from "@cucumber/gherkin";
 import { GherkinDocument, IdGenerator } from "@cucumber/messages";
-import fs from "fs";
+import fs from "node:fs";
 
 /**
  * Parses a Gherkin document (feature file) and returns the information contained within.

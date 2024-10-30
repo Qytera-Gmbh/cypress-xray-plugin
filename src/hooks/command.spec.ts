@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import EventEmitter from "node:events";
-import path from "path";
+import path from "node:path";
 import { getMockedLogger } from "../../test/mocks";
 import { SkippedError } from "../util/errors";
 import { Command, ComputableState } from "./command";

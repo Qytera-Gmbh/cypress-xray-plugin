@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import path from "path";
-import process from "process";
+import path from "node:path";
+import process from "node:process";
 import { dedent } from "../../src/util/dedent";
 import { runCypress, setupCypressProject } from "../sh";
 import { expectToExist } from "../util";

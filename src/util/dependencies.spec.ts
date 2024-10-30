@@ -1,6 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import path from "path";
+import path from "node:path";
 import * as dependencies from "./dependencies";
 
 // Enable promise assertions.

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import path from "path";
+import path from "node:path";
 import { SimpleDirectedEdge, SimpleDirectedGraph } from "./graph";
 
 describe(path.relative(process.cwd(), __filename), () => {

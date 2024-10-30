@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import path from "path";
+import path from "node:path";
 import { getMockedLogger } from "../../../../../../test/mocks";
 import { ConstantCommand } from "../../../../util/commands/constant-command";
 import { CombineCypressJsonCommand } from "./combine-cypress-xray-command";

@@ -1,7 +1,7 @@
 import { Background, GherkinDocument, Scenario } from "@cucumber/messages";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import path from "path";
+import path from "node:path";
 import { getMockedLogger } from "../../../../test/mocks";
 import { dedent } from "../../../util/dedent";
 import { ConstantCommand } from "../../util/commands/constant-command";

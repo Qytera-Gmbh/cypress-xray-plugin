@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 import FormData from "form-data";
-import fs from "fs";
+import fs from "node:fs";
 import { SearchRequest } from "../../types/jira/requests/search";
 import { Attachment } from "../../types/jira/responses/attachment";
 import { FieldDetail } from "../../types/jira/responses/field-detail";

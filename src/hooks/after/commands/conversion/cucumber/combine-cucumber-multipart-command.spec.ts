@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { getMockedLogger } from "../../../../../../test/mocks";
 import { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
 import { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
