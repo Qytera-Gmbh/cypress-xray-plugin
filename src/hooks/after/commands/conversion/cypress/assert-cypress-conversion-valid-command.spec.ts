@@ -2,8 +2,8 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "node:path";
 import { getMockedLogger } from "../../../../../../test/mocks";
-import { XrayClient } from "../../../../../client/xray/xray-client";
-import { XrayTest } from "../../../../../types/xray/import-test-execution-results";
+import type { XrayClient } from "../../../../../client/xray/xray-client";
+import type { XrayTest } from "../../../../../types/xray/import-test-execution-results";
 import { ConstantCommand } from "../../../../util/commands/constant-command";
 import { AssertCypressConversionValidCommand } from "./assert-cypress-conversion-valid-command";
 

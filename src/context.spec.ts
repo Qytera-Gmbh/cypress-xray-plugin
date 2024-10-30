@@ -24,8 +24,8 @@ import {
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import path from "node:path";
 import { AxiosRestClient } from "./client/https/requests";
-import { User } from "./types/jira/responses/user";
-import {
+import type { User } from "./types/jira/responses/user";
+import type {
     InternalCucumberOptions,
     InternalHttpOptions,
     InternalJiraOptions,

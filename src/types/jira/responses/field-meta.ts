@@ -1,4 +1,4 @@
-import { JsonType } from "./json-type";
+import type { JsonType } from "./json-type";
 
 export interface FieldMeta {
     /**

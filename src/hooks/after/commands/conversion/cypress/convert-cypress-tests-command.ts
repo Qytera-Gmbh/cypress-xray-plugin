@@ -1,10 +1,10 @@
 import path from "node:path";
 import { lt } from "semver";
-import { EvidenceCollection } from "../../../../../context";
-import { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
-import { CypressRunResultType } from "../../../../../types/cypress/cypress";
-import { InternalXrayOptions } from "../../../../../types/plugin";
-import {
+import type { EvidenceCollection } from "../../../../../context";
+import type { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
+import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
+import type { InternalXrayOptions } from "../../../../../types/plugin";
+import type {
     XrayEvidenceItem,
     XrayTest,
 } from "../../../../../types/xray/import-test-execution-results";
@@ -12,11 +12,14 @@ import { encodeFile } from "../../../../../util/base64";
 import { dedent } from "../../../../../util/dedent";
 import { errorMessage } from "../../../../../util/errors";
 import { normalizedFilename } from "../../../../../util/files";
-import { Level, Logger } from "../../../../../util/logging";
+import type { Logger } from "../../../../../util/logging";
+import { Level } from "../../../../../util/logging";
 import { truncateIsoTime } from "../../../../../util/time";
-import { Command, Computable } from "../../../../command";
+import type { Computable } from "../../../../command";
+import { Command } from "../../../../command";
 import { getTestIssueKeys } from "../../../util";
-import { TestRunData, getTestRunData_V12, getTestRunData_V13 } from "./util/run";
+import type { TestRunData} from "./util/run";
+import { getTestRunData_V12, getTestRunData_V13 } from "./util/run";
 import { getXrayStatus } from "./util/status";
 
 interface Parameters {

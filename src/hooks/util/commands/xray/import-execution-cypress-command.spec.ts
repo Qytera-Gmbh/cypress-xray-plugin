@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import path from "node:path";
 import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks";
-import { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results";
-import { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
+import type { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results";
+import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
 import { ConstantCommand } from "../constant-command";
 import { ImportExecutionCypressCommand } from "./import-execution-cypress-command";
 

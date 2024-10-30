@@ -3,11 +3,11 @@ import chaiAsPromised from "chai-as-promised";
 import fs from "node:fs";
 import path from "node:path";
 import { getMockedLogger } from "../../../../../../test/mocks";
-import {
+import type {
     CucumberMultipart,
     CucumberMultipartFeature,
 } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
+import type { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
 import { ConstantCommand } from "../../../../util/commands/constant-command";
 import { AssertCucumberConversionValidCommand } from "./assert-cucumber-conversion-valid-command";
 

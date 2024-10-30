@@ -1,7 +1,6 @@
 import { expect } from "chai";
 import path from "node:path";
 import process from "node:process";
-
 import Sinon from "sinon";
 import { getMockedCypress } from "../../test/mocks";
 import { normalizedFilename } from "../util/files";

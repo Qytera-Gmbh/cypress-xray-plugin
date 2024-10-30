@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import fs from "node:fs";
 import path from "node:path";
-import { CypressRunResultType } from "../../types/cypress/cypress";
+import type { CypressRunResultType } from "../../types/cypress/cypress";
 import { dedent } from "../../util/dedent";
 import { containsCucumberTest, containsCypressTest, getTestIssueKeys } from "./util";
 

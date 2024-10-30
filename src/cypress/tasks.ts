@@ -1,9 +1,10 @@
-import { EvidenceCollection } from "../context";
+import type { EvidenceCollection } from "../context";
 import { getTestIssueKeys } from "../hooks/after/util";
 import { encode } from "../util/base64";
 import { dedent } from "../util/dedent";
 import { errorMessage } from "../util/errors";
-import { Level, Logger } from "../util/logging";
+import type { Logger } from "../util/logging";
+import { Level } from "../util/logging";
 
 /**
  * All tasks which are available within the plugin.

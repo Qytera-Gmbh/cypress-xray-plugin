@@ -1,7 +1,7 @@
-import { StringMap } from "../../types/util";
+import type { StringMap } from "../../types/util";
 import { encode } from "../../util/base64";
 import { LOG, Level } from "../../util/logging";
-import { AxiosRestClient } from "../https/requests";
+import type { AxiosRestClient } from "../https/requests";
 import { loggedRequest } from "../util";
 
 /**

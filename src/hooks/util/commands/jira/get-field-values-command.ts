@@ -1,10 +1,12 @@
-import { JiraClient } from "../../../../client/jira/jira-client";
-import { Issue } from "../../../../types/jira/responses/issue";
-import { StringMap } from "../../../../types/util";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import type { Issue } from "../../../../types/jira/responses/issue";
+import type { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
 import { errorMessage } from "../../../../util/errors";
-import { Level, Logger } from "../../../../util/logging";
-import { Command, Computable } from "../../../command";
+import type { Logger } from "../../../../util/logging";
+import { Level } from "../../../../util/logging";
+import type { Computable } from "../../../command";
+import { Command } from "../../../command";
 
 interface Parameters {
     jiraClient: JiraClient;

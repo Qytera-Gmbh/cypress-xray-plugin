@@ -1,7 +1,6 @@
 import { expect } from "chai";
 import path from "node:path";
 import process from "node:process";
-
 import sinon from "sinon";
 import { getMockedCypress, getMockedLogger } from "../../test/mocks";
 import { SimpleEvidenceCollection } from "../context";

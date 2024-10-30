@@ -1,14 +1,15 @@
-import { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
-import { IssueUpdate } from "../../../../types/jira/responses/issue-update";
-import { InternalXrayOptions } from "../../../../types/plugin";
-import { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
+import type { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
+import type { IssueUpdate } from "../../../../types/jira/responses/issue-update";
+import type { InternalXrayOptions } from "../../../../types/plugin";
+import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
 import { getOrCall } from "../../../../util/functions";
-import { Logger } from "../../../../util/logging";
-import { Command, Computable } from "../../../command";
+import type { Logger } from "../../../../util/logging";
+import type { Computable } from "../../../command";
+import { Command } from "../../../command";
 import {
-    RunData,
-    TestExecutionIssueData,
-    TestExecutionIssueDataServer,
+    type RunData,
+    type TestExecutionIssueData,
+    type TestExecutionIssueDataServer,
     buildMultipartInfoCloud,
     buildMultipartInfoServer,
 } from "./util/multipart-info";
