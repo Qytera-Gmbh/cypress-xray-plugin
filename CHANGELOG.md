@@ -1,5 +1,11 @@
 # Changelog
 
+# `7.4.1`
+
+## Notable changes
+
+-   Fix explicit transition call ([#389](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/389))
+
 # `7.4.0`
 
 ## Notable changes
