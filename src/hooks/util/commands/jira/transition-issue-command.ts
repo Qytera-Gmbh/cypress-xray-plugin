@@ -1,11 +1,11 @@
 import { JiraClient } from "../../../../client/jira/jira-client";
-import { IssueUpdate } from "../../../../types/jira/responses/issue-update";
+import { IssueTransition } from "../../../../types/jira/responses/issue-transition";
 import { Level, Logger } from "../../../../util/logging";
 import { Command, Computable } from "../../../command";
 
 interface Parameters {
     jiraClient: JiraClient;
-    transition: Exclude<IssueUpdate["transition"], undefined>;
+    transition: IssueTransition;
 }
 
 export class TransitionIssueCommand extends Command<void, Parameters> {
@@ -25,9 +25,8 @@ export class TransitionIssueCommand extends Command<void, Parameters> {
             Level.INFO,
             `Transitioning test execution issue ${resolvedExecutionIssueKey}`
         );
-        await this.parameters.jiraClient.transitionIssue(
-            resolvedExecutionIssueKey,
-            this.parameters.transition
-        );
+        await this.parameters.jiraClient.transitionIssue(resolvedExecutionIssueKey, {
+            transition: this.parameters.transition,
+        });
     }
 }

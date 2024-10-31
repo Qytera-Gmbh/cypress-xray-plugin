@@ -25,7 +25,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "Transitioning test execution issue CYP-123"
             );
             expect(jiraClient.transitionIssue).to.have.been.calledOnceWithExactly("CYP-123", {
-                id: "5",
+                transition: {
+                    id: "5",
+                },
             });
         });
     });
