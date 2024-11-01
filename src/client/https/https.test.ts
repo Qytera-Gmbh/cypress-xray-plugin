@@ -1,17 +1,13 @@
 import * as BaseAxios from "axios";
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
 import FormData from "form-data";
 import { createReadStream } from "fs";
-import { describe, it } from "node:test";
+import { beforeEach, describe, it } from "node:test";
 import path from "path";
 import { stub, useFakeTimers } from "sinon";
 import { getMockedLogger } from "../../../test/mocks.js";
 import { LOCAL_SERVER } from "../../../test/server-config.js";
 import { Level } from "../../util/logging.js";
 import { AxiosRestClient } from "./https.js";
-
-chai.use(chaiAsPromised);
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
     beforeEach(() => {
