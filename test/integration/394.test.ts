@@ -12,30 +12,33 @@ import { runCypress, setupCypressProject } from "../sh.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/394
 // ============================================================================================== //
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    for (const test of [
-        {
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 394",
+await describe(
+    path.relative(process.cwd(), import.meta.filename),
+    { timeout: 180000 },
+    async () => {
+        for (const test of [
+            {
+                env: {
+                    ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 394",
+                },
+                service: "cloud",
+                testIssueKey: "CYP-1446",
+                title: "add arbitrary evidence",
             },
-            service: "cloud",
-            testIssueKey: "CYP-1446",
-            title: "add arbitrary evidence",
-        },
-        {
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 394",
+            {
+                env: {
+                    ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 394",
+                },
+                service: "server",
+                testIssueKey: "CYPLUG-709",
+                title: "add arbitrary evidence",
             },
-            service: "server",
-            testIssueKey: "CYPLUG-709",
-            title: "add arbitrary evidence",
-        },
-    ] as const) {
-        await it(test.title, () => {
-            const project = setupCypressProject({
-                testFiles: [
-                    {
-                        content: dedent(`
+        ] as const) {
+            await it(test.title, () => {
+                const project = setupCypressProject({
+                    testFiles: [
+                        {
+                            content: dedent(`
                             const { enqueueTask } = require("cypress-xray-plugin/tasks");
 
                             await describe("evidence", () => {
@@ -56,34 +59,35 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                                 });
                             });
                         `),
-                        fileName: "evidence.cy.js",
-                    },
-                ],
-            });
-            runCypress(project.projectDirectory, {
-                env: test.env,
-                includeDefaultEnv: test.service,
-            });
-            for (const entry of fs.readdirSync(project.logDirectory, {
-                withFileTypes: true,
-            })) {
-                // 14_15_52_POST_https_xray.cloud.getxray.app_api_v2_import_execution_multipart_request.json
-                if (!/.+_POST_.+_import_execution_multipart_request.json/.exec(entry.name)) {
-                    continue;
+                            fileName: "evidence.cy.js",
+                        },
+                    ],
+                });
+                runCypress(project.projectDirectory, {
+                    env: test.env,
+                    includeDefaultEnv: test.service,
+                });
+                for (const entry of fs.readdirSync(project.logDirectory, {
+                    withFileTypes: true,
+                })) {
+                    // 14_15_52_POST_https_xray.cloud.getxray.app_api_v2_import_execution_multipart_request.json
+                    if (!/.+_POST_.+_import_execution_multipart_request.json/.exec(entry.name)) {
+                        continue;
+                    }
+                    const fileContent = JSON.parse(
+                        fs.readFileSync(path.join(entry.parentPath, entry.name), "utf8")
+                    ) as LoggedRequest;
+                    expect(fileContent.body).to.contain(
+                        '"evidence":[{"contentType":"application/json","data":"eyJuYW1lIjoiQm9iIn0=","filename":"queued.json"},{"contentType":"application/json","data":"eyJuYW1lIjoiSmVmZiJ9","filename":"raw.json"}]'
+                    );
+                    return;
                 }
-                const fileContent = JSON.parse(
-                    fs.readFileSync(path.join(entry.parentPath, entry.name), "utf8")
-                ) as LoggedRequest;
-                expect(fileContent.body).to.contain(
-                    '"evidence":[{"contentType":"application/json","data":"eyJuYW1lIjoiQm9iIn0=","filename":"queued.json"},{"contentType":"application/json","data":"eyJuYW1lIjoiSmVmZiJ9","filename":"raw.json"}]'
+                expect.fail(
+                    `Expected to find a logged import execution request in log directory ${chalk.red(
+                        project.logDirectory
+                    )}, but did not find any`
                 );
-                return;
-            }
-            expect.fail(
-                `Expected to find a logged import execution request in log directory ${chalk.red(
-                    project.logDirectory
-                )}, but did not find any`
-            );
-        });
+            });
+        }
     }
-});
+);

@@ -13,10 +13,13 @@ import { runCypress, setupCypressProject } from "../sh.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/314
 // ============================================================================================== //
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    for (const test of [
-        {
-            commandFileContent: dedent(`
+await describe(
+    path.relative(process.cwd(), import.meta.filename),
+    { timeout: 180000 },
+    async () => {
+        for (const test of [
+            {
+                commandFileContent: dedent(`
                 import { enqueueTask } from "cypress-xray-plugin/tasks";
 
                 Cypress.Commands.overwrite("request", (originalFn, request) => {
@@ -36,15 +39,15 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                         });
                 });
             `),
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
+                env: {
+                    ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
+                },
+                service: "cloud",
+                testIssueKey: "CYP-692",
+                title: "cy.request gets overwritten using task calls (cloud)",
             },
-            service: "cloud",
-            testIssueKey: "CYP-692",
-            title: "cy.request gets overwritten using task calls (cloud)",
-        },
-        {
-            commandFileContent: dedent(`
+            {
+                commandFileContent: dedent(`
                 import { enqueueTask } from "cypress-xray-plugin/tasks";
 
                 Cypress.Commands.overwrite("request", (originalFn, request) => {
@@ -64,54 +67,55 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                         });
                 });
             `),
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
+                env: {
+                    ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
+                },
+                service: "server",
+                testIssueKey: "CYPLUG-117",
+                title: "cy.request gets overwritten using task calls (server)",
             },
-            service: "server",
-            testIssueKey: "CYPLUG-117",
-            title: "cy.request gets overwritten using task calls (server)",
-        },
-    ] as const) {
-        await it(test.title, () => {
-            const project = setupCypressProject({
-                commandFileContent: test.commandFileContent,
-                testFiles: [
-                    {
-                        content: dedent(`
+        ] as const) {
+            await it(test.title, () => {
+                const project = setupCypressProject({
+                    commandFileContent: test.commandFileContent,
+                    testFiles: [
+                        {
+                            content: dedent(`
                             await describe("request", () => {
                                 await it("${test.testIssueKey} does something", () => {
                                     cy.request("${LOCAL_SERVER.url}");
                                 });
                             });
                         `),
-                        fileName: "cy.request.cy.js",
-                    },
-                ],
-            });
-            runCypress(project.projectDirectory, {
-                env: test.env,
-                includeDefaultEnv: test.service,
-            });
-            for (const entry of fs.readdirSync(project.logDirectory, {
-                withFileTypes: true,
-            })) {
-                // 14_15_52_POST_https_xray.cloud.getxray.app_api_v2_import_execution_multipart_request.json
-                if (!/.+_POST_.+_import_execution_multipart_request.json/.exec(entry.name)) {
-                    continue;
+                            fileName: "cy.request.cy.js",
+                        },
+                    ],
+                });
+                runCypress(project.projectDirectory, {
+                    env: test.env,
+                    includeDefaultEnv: test.service,
+                });
+                for (const entry of fs.readdirSync(project.logDirectory, {
+                    withFileTypes: true,
+                })) {
+                    // 14_15_52_POST_https_xray.cloud.getxray.app_api_v2_import_execution_multipart_request.json
+                    if (!/.+_POST_.+_import_execution_multipart_request.json/.exec(entry.name)) {
+                        continue;
+                    }
+                    const fileContent = JSON.parse(
+                        fs.readFileSync(path.join(entry.parentPath, entry.name), "utf8")
+                    ) as LoggedRequest;
+                    expect(fileContent.body).to.contain(
+                        '"evidence":[{"contentType":"application/json","data":"ImxvY2FsaG9zdDo4MDgwIg=="'
+                    );
+                    return;
                 }
-                const fileContent = JSON.parse(
-                    fs.readFileSync(path.join(entry.parentPath, entry.name), "utf8")
-                ) as LoggedRequest;
-                expect(fileContent.body).to.contain(
-                    '"evidence":[{"contentType":"application/json","data":"ImxvY2FsaG9zdDo4MDgwIg=="'
+                expect.fail(
+                    `Expected to find a logged import execution request in log directory ${ansiColors.red(
+                        project.logDirectory
+                    )}, but did not find any`
                 );
-                return;
-            }
-            expect.fail(
-                `Expected to find a logged import execution request in log directory ${ansiColors.red(
-                    project.logDirectory
-                )}, but did not find any`
-            );
-        });
+            });
+        }
     }
-});
+);
