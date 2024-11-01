@@ -2,7 +2,7 @@ import * as BaseAxios from "axios";
 import FormData from "form-data";
 import assert from "node:assert";
 import { createReadStream } from "node:fs";
-import path from "node:path";
+import { relative } from "node:path";
 import { beforeEach, describe, it } from "node:test";
 import { stub } from "sinon";
 import { getMockedLogger } from "../../../test/mocks.js";
@@ -11,7 +11,7 @@ import type { Logger } from "../../util/logging.js";
 import { Level, LOG } from "../../util/logging.js";
 import { AxiosRestClient } from "./https.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     beforeEach(() => {
         BaseAxios.default.interceptors.request.clear();
         BaseAxios.default.interceptors.response.clear();
