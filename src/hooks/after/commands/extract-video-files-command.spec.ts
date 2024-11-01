@@ -1,12 +1,12 @@
 import { expect } from "chai";
 import fs from "fs";
 import path from "path";
-import { getMockedLogger } from "../../../../test/mocks";
-import type { CypressRunResultType } from "../../../types/cypress/cypress";
-import { ConstantCommand } from "../../util/commands/constant-command";
-import { ExtractVideoFilesCommand } from "./extract-video-files-command";
+import { getMockedLogger } from "../../../../test/mocks.js";
+import type { CypressRunResultType } from "../../../types/cypress/cypress.js";
+import { ConstantCommand } from "../../util/commands/constant-command.js";
+import { ExtractVideoFilesCommand } from "./extract-video-files-command.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ExtractVideoFilesCommand.name, () => {
         it("extracts video files", async () => {
             const logger = getMockedLogger();

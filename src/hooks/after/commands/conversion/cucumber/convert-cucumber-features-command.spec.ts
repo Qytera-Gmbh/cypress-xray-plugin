@@ -1,15 +1,15 @@
 import { expect } from "chai";
 import fs from "fs";
 import path from "path";
-import { getMockedLogger } from "../../../../../../test/mocks";
-import { expectToExist } from "../../../../../../test/util";
-import type { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { dedent } from "../../../../../util/dedent";
-import { Level } from "../../../../../util/logging";
-import { ConstantCommand } from "../../../../util/commands/constant-command";
-import { ConvertCucumberFeaturesCommand } from "./convert-cucumber-features-command";
+import { getMockedLogger } from "../../../../../../test/mocks.js";
+import { expectToExist } from "../../../../../../test/util.js";
+import type { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart.js";
+import { dedent } from "../../../../../util/dedent.js";
+import { Level } from "../../../../../util/logging.js";
+import { ConstantCommand } from "../../../../util/commands/constant-command.js";
+import { ConvertCucumberFeaturesCommand } from "./convert-cucumber-features-command.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ConvertCucumberFeaturesCommand.name, () => {
         it("converts cucumber results into cucumber features data", async () => {
             const logger = getMockedLogger();

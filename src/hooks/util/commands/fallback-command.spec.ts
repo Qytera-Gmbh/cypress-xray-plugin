@@ -1,11 +1,11 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedLogger } from "../../../../test/mocks";
-import { ComputableState } from "../../command";
-import { ConstantCommand } from "./constant-command";
-import { FallbackCommand } from "./fallback-command";
+import { getMockedLogger } from "../../../../test/mocks.js";
+import { ComputableState } from "../../command.js";
+import { ConstantCommand } from "./constant-command.js";
+import { FallbackCommand } from "./fallback-command.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(FallbackCommand.name, () => {
         it("computes the result if possible", async () => {
             const logger = getMockedLogger();

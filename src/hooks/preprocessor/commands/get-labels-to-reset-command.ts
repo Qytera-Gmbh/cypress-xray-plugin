@@ -1,10 +1,10 @@
-import type { StringMap } from "../../../types/util";
-import { dedent } from "../../../util/dedent";
-import type { Logger } from "../../../util/logging";
-import { Level } from "../../../util/logging";
-import { unknownToString } from "../../../util/string";
-import type { Computable } from "../../command";
-import { Command } from "../../command";
+import type { StringMap } from "../../../types/util.js";
+import { dedent } from "../../../util/dedent.js";
+import type { Logger } from "../../../util/logging.js";
+import { Level } from "../../../util/logging.js";
+import { unknownToString } from "../../../util/string.js";
+import type { Computable } from "../../command.js";
+import { Command } from "../../command.js";
 
 export class GetLabelsToResetCommand extends Command<StringMap<string[]>, null> {
     private readonly oldValues: Computable<StringMap<string[]>>;

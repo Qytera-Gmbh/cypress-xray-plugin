@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import path from "path";
-import { contains } from "./compare";
+import { contains } from "./compare.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(contains.name, () => {
         describe("primitive types", () => {
             it("bigint", () => {

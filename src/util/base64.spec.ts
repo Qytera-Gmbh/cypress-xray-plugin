@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import path from "path";
-import { encodeFile } from "./base64";
+import { encodeFile } from "./base64.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     it("should encode png files to base64", () => {
         const encodedString = encodeFile("./test/resources/turtle.png");
         expect(encodedString).to.have.length.greaterThan(0);

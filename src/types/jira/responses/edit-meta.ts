@@ -1,4 +1,4 @@
-import type { FieldMeta } from "./field-meta";
+import type { FieldMeta } from "./field-meta.js";
 
 export interface EditMeta {
     /**

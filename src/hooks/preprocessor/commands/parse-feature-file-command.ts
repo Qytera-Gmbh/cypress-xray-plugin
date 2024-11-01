@@ -1,9 +1,9 @@
 import type { GherkinDocument } from "@cucumber/messages";
-import { dedent } from "../../../util/dedent";
-import { errorMessage } from "../../../util/errors";
-import { Level } from "../../../util/logging";
-import { Command } from "../../command";
-import { parseFeatureFile } from "./parsing/gherkin";
+import { dedent } from "../../../util/dedent.js";
+import { errorMessage } from "../../../util/errors.js";
+import { Level } from "../../../util/logging.js";
+import { Command } from "../../command.js";
+import { parseFeatureFile } from "./parsing/gherkin.js";
 
 interface Parameters {
     filePath: string;

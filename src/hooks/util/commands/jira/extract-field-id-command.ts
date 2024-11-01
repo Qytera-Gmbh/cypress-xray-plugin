@@ -1,11 +1,11 @@
-import type { FieldDetail } from "../../../../types/jira/responses/field-detail";
-import type { JiraFieldIds } from "../../../../types/plugin";
-import type { StringMap } from "../../../../types/util";
-import { dedent } from "../../../../util/dedent";
-import type { Logger } from "../../../../util/logging";
-import { prettyPadObjects, prettyPadValues } from "../../../../util/pretty";
-import type { Computable } from "../../../command";
-import { Command } from "../../../command";
+import type { FieldDetail } from "../../../../types/jira/responses/field-detail.js";
+import type { JiraFieldIds } from "../../../../types/plugin.js";
+import type { StringMap } from "../../../../types/util.js";
+import { dedent } from "../../../../util/dedent.js";
+import type { Logger } from "../../../../util/logging.js";
+import { prettyPadObjects, prettyPadValues } from "../../../../util/pretty.js";
+import type { Computable } from "../../../command.js";
+import { Command } from "../../../command.js";
 
 export enum JiraField {
     TEST_ENVIRONMENTS = "test environments",

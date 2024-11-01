@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedLogger } from "../../../../test/mocks";
-import { ConstantCommand } from "../../util/commands/constant-command";
-import { ExtractIssueKeysCommand } from "./extract-issue-keys-command";
+import { getMockedLogger } from "../../../../test/mocks.js";
+import { ConstantCommand } from "../../util/commands/constant-command.js";
+import { ExtractIssueKeysCommand } from "./extract-issue-keys-command.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ExtractIssueKeysCommand.name, () => {
         it("merges all issue keys into one array", async () => {
             const logger = getMockedLogger();

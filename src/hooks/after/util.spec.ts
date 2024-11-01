@@ -1,11 +1,11 @@
 import { expect } from "chai";
 import fs from "fs";
 import path from "path";
-import type { CypressRunResultType } from "../../types/cypress/cypress";
-import { dedent } from "../../util/dedent";
-import { containsCucumberTest, containsCypressTest, getTestIssueKeys } from "./util";
+import type { CypressRunResultType } from "../../types/cypress/cypress.js";
+import { dedent } from "../../util/dedent.js";
+import { containsCucumberTest, containsCypressTest, getTestIssueKeys } from "./util.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(containsCypressTest.name, () => {
         let result: CypressRunResultType;
 

@@ -1,4 +1,4 @@
-import type { Group } from "./group";
+import type { Group } from "./group.js";
 
 export interface SimpleListWrapper {
     items?: Group[];

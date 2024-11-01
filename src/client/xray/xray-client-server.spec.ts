@@ -3,18 +3,18 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import type { SinonStubbedInstance } from "sinon";
-import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
-import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
-import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
-import { dedent } from "../../util/dedent";
-import { Level } from "../../util/logging";
-import { BasicAuthCredentials } from "../authentication/credentials";
-import type { AxiosRestClient } from "../https/https";
-import type { XrayClientServer } from "./xray-client-server";
-import { ServerClient } from "./xray-client-server";
+import { getMockedLogger, getMockedRestClient } from "../../../test/mocks.js";
+import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results.js";
+import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart.js";
+import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info.js";
+import { dedent } from "../../util/dedent.js";
+import { Level } from "../../util/logging.js";
+import { BasicAuthCredentials } from "../authentication/credentials.js";
+import type { AxiosRestClient } from "../https/https.js";
+import type { XrayClientServer } from "./xray-client-server.js";
+import { ServerClient } from "./xray-client-server.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ServerClient.name, () => {
         let restClient: SinonStubbedInstance<AxiosRestClient>;
         let client: XrayClientServer;

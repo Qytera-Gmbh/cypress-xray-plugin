@@ -2,13 +2,13 @@ import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
-import { Level } from "../../util/logging";
-import { JwtCredentials } from "./credentials";
+import { getMockedLogger, getMockedRestClient } from "../../../test/mocks.js";
+import { Level } from "../../util/logging.js";
+import { JwtCredentials } from "./credentials.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(JwtCredentials.name, () => {
         let restClient = getMockedRestClient();
         let credentials: JwtCredentials = new JwtCredentials(

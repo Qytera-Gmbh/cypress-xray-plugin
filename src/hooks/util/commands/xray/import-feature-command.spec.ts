@@ -1,11 +1,11 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks";
-import { dedent } from "../../../../util/dedent";
-import { Level } from "../../../../util/logging";
-import { ImportFeatureCommand } from "./import-feature-command";
+import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks.js";
+import { dedent } from "../../../../util/dedent.js";
+import { Level } from "../../../../util/logging.js";
+import { ImportFeatureCommand } from "./import-feature-command.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ImportFeatureCommand.name, () => {
         it("imports features", async () => {
             const logger = getMockedLogger();

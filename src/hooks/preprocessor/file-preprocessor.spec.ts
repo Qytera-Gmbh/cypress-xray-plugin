@@ -1,29 +1,29 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks";
-import { assertIsInstanceOf } from "../../../test/util";
+import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks.js";
+import { assertIsInstanceOf } from "../../../test/util.js";
 import {
     initCucumberOptions,
     initJiraOptions,
     initPluginOptions,
     initXrayOptions,
-} from "../../context";
-import type { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
-import { ExecutableGraph } from "../../util/graph/executable-graph";
-import type { Command } from "../command";
-import { EditIssueFieldCommand } from "../util/commands/jira/edit-issue-field-command";
-import { GetLabelValuesCommand } from "../util/commands/jira/get-label-values-command";
-import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command";
-import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
-import { ExtractFeatureFileIssuesCommand } from "./commands/extract-feature-file-issues-command";
-import { ExtractIssueKeysCommand } from "./commands/extract-issue-keys-command";
-import { GetLabelsToResetCommand } from "./commands/get-labels-to-reset-command";
-import { GetSummariesToResetCommand } from "./commands/get-summaries-to-reset-command";
-import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command";
-import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command";
-import { addSynchronizationCommands } from "./file-preprocessor";
+} from "../../context.js";
+import type { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin.js";
+import { ExecutableGraph } from "../../util/graph/executable-graph.js";
+import type { Command } from "../command.js";
+import { EditIssueFieldCommand } from "../util/commands/jira/edit-issue-field-command.js";
+import { GetLabelValuesCommand } from "../util/commands/jira/get-label-values-command.js";
+import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command.js";
+import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command.js";
+import { ExtractFeatureFileIssuesCommand } from "./commands/extract-feature-file-issues-command.js";
+import { ExtractIssueKeysCommand } from "./commands/extract-issue-keys-command.js";
+import { GetLabelsToResetCommand } from "./commands/get-labels-to-reset-command.js";
+import { GetSummariesToResetCommand } from "./commands/get-summaries-to-reset-command.js";
+import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command.js";
+import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command.js";
+import { addSynchronizationCommands } from "./file-preprocessor.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     let clients: ClientCombination;
     let options: InternalCypressXrayPluginOptions;
 

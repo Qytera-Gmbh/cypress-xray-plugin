@@ -3,15 +3,15 @@ import chalk from "chalk";
 import fs from "fs";
 import path from "path";
 import process from "process";
-import type { LoggedRequest } from "../../src/client/https/https";
-import { dedent } from "../../src/util/dedent";
-import { runCypress, setupCypressProject } from "../sh";
+import type { LoggedRequest } from "../../src/client/https/https.js";
+import { dedent } from "../../src/util/dedent.js";
+import { runCypress, setupCypressProject } from "../sh.js";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/394
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     for (const test of [
         {
             env: {

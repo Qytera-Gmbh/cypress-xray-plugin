@@ -1,8 +1,8 @@
-import type { XrayClient } from "../../../../../client/xray/xray-client";
-import { SkippedError } from "../../../../../util/errors";
-import type { Logger } from "../../../../../util/logging";
-import type { Computable } from "../../../../command";
-import { Command } from "../../../../command";
+import type { XrayClient } from "../../../../../client/xray/xray-client.js";
+import { SkippedError } from "../../../../../util/errors.js";
+import type { Logger } from "../../../../../util/logging.js";
+import type { Computable } from "../../../../command.js";
+import { Command } from "../../../../command.js";
 
 export class AssertCypressConversionValidCommand extends Command<void, null> {
     private readonly xrayTestExecutionResults: Computable<

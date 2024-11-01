@@ -1,13 +1,13 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import type { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api";
-import { CypressStatus } from "../../../../../../types/cypress/status";
-import { getTestRunData_V12, getTestRunData_V13 } from "./run";
+import type { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api.js";
+import { CypressStatus } from "../../../../../../types/cypress/status.js";
+import { getTestRunData_V12, getTestRunData_V13 } from "./run.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(getTestRunData_V12.name, () => {
         const passedResult: RunResult_V12 = {
             error: null,

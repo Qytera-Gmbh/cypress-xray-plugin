@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import path from "path";
-import { CypressStatus } from "../../../../../../types/cypress/status";
-import { getXrayStatus, toCypressStatus } from "./status";
+import { CypressStatus } from "../../../../../../types/cypress/status.js";
+import { getXrayStatus, toCypressStatus } from "./status.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(toCypressStatus.name, () => {
         it("parses passed statuses", () => {
             expect(toCypressStatus("passed")).to.eq(CypressStatus.PASSED);

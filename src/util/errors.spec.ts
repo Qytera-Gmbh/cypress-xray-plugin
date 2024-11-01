@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import path from "path";
-import { LoggedError, errorMessage, isLoggedError } from "./errors";
+import { LoggedError, errorMessage, isLoggedError } from "./errors.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(errorMessage.name, () => {
         it("returns error messages", () => {
             expect(errorMessage(new Error("Hi"))).to.eq("Hi");

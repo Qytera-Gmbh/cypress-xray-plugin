@@ -1,5 +1,5 @@
-import { dedent } from "./dedent";
-import { unknownToString } from "./string";
+import { dedent } from "./dedent.js";
+import { unknownToString } from "./string.js";
 
 /**
  * Parses and returns a boolean value from a string.

@@ -1,4 +1,4 @@
-import type { IssueUpdate } from "../../jira/responses/issue-update";
+import type { IssueUpdate } from "../../jira/responses/issue-update.js";
 
 export interface MultipartInfo extends IssueUpdate {
     fields: {

@@ -4,22 +4,26 @@ import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import path from "path";
 import type { SinonStubbedInstance } from "sinon";
-import { getMockedJwtCredentials, getMockedLogger, getMockedRestClient } from "../../../test/mocks";
-import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
-import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
+import {
+    getMockedJwtCredentials,
+    getMockedLogger,
+    getMockedRestClient,
+} from "../../../test/mocks.js";
+import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results.js";
+import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart.js";
 import type {
     MultipartInfo,
     MultipartInfoCloud,
-} from "../../types/xray/requests/import-execution-multipart-info";
-import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
-import { dedent } from "../../util/dedent";
-import { Level } from "../../util/logging";
-import type { AxiosRestClient } from "../https/https";
-import { XrayClientCloud } from "./xray-client-cloud";
+} from "../../types/xray/requests/import-execution-multipart-info.js";
+import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests.js";
+import { dedent } from "../../util/dedent.js";
+import { Level } from "../../util/logging.js";
+import type { AxiosRestClient } from "../https/https.js";
+import { XrayClientCloud } from "./xray-client-cloud.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(XrayClientCloud.name, () => {
         let client: XrayClientCloud;
         let restClient: SinonStubbedInstance<AxiosRestClient>;

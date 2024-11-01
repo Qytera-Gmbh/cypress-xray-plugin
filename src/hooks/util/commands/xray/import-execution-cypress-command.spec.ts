@@ -1,12 +1,12 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks";
-import type { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results";
-import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
-import { ConstantCommand } from "../constant-command";
-import { ImportExecutionCypressCommand } from "./import-execution-cypress-command";
+import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks.js";
+import type { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results.js";
+import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info.js";
+import { ConstantCommand } from "../constant-command.js";
+import { ImportExecutionCypressCommand } from "./import-execution-cypress-command.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ImportExecutionCypressCommand.name, () => {
         it("imports cypress xray json", async () => {
             const logger = getMockedLogger();

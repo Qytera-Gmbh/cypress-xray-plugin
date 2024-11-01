@@ -1,5 +1,5 @@
-import { errorMessage, LoggedError } from "../util/errors";
-import { Level, LOG } from "../util/logging";
+import { errorMessage, LoggedError } from "../util/errors.js";
+import { Level, LOG } from "../util/logging.js";
 
 /**
  * Decorates the method with an error handler which automatically logs errors and rethrows

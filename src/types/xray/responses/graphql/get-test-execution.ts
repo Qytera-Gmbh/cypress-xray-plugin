@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { TestExecution } from "./xray";
+import type { TestExecution } from "./xray.js";
 
 /**
  * @see https://us.xray.cloud.getxray.app/doc/graphql/gettestexecution.doc.html

@@ -3,16 +3,16 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import process from "process";
-import type { LoggedRequest } from "../../src/client/https/https";
-import { dedent } from "../../src/util/dedent";
-import { LOCAL_SERVER } from "../server-config";
-import { runCypress, setupCypressProject } from "../sh";
+import type { LoggedRequest } from "../../src/client/https/https.js";
+import { dedent } from "../../src/util/dedent.js";
+import { LOCAL_SERVER } from "../server-config.js";
+import { runCypress, setupCypressProject } from "../sh.js";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/314
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     for (const test of [
         {
             commandFileContent: dedent(`

@@ -1,9 +1,9 @@
-import type { XrayClient } from "../../../../../client/xray/xray-client";
-import type { XrayTest } from "../../../../../types/xray/import-test-execution-results";
-import type { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
-import type { Logger } from "../../../../../util/logging";
-import type { Computable } from "../../../../command";
-import { Command } from "../../../../command";
+import type { XrayClient } from "../../../../../client/xray/xray-client.js";
+import type { XrayTest } from "../../../../../types/xray/import-test-execution-results.js";
+import type { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info.js";
+import type { Logger } from "../../../../../util/logging.js";
+import type { Computable } from "../../../../command.js";
+import { Command } from "../../../../command.js";
 
 interface CommandParameters {
     testExecutionIssueKey?: string;

@@ -1,8 +1,8 @@
-import type { CucumberMultipart } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { SkippedError } from "../../../../../util/errors";
-import type { Logger } from "../../../../../util/logging";
-import type { Computable } from "../../../../command";
-import { Command } from "../../../../command";
+import type { CucumberMultipart } from "../../../../../types/xray/requests/import-execution-cucumber-multipart.js";
+import { SkippedError } from "../../../../../util/errors.js";
+import type { Logger } from "../../../../../util/logging.js";
+import type { Computable } from "../../../../command.js";
+import { Command } from "../../../../command.js";
 
 export class AssertCucumberConversionValidCommand extends Command<void, null> {
     private readonly cucumberMultipart: Computable<CucumberMultipart>;

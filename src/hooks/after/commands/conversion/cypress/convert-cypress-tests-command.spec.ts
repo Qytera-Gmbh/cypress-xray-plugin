@@ -3,25 +3,25 @@ import chaiAsPromised from "chai-as-promised";
 import fs, { readFileSync } from "fs";
 import path from "path";
 import Sinon from "sinon";
-import { getMockedLogger } from "../../../../../../test/mocks";
-import { expectToExist } from "../../../../../../test/util";
+import { getMockedLogger } from "../../../../../../test/mocks.js";
+import { expectToExist } from "../../../../../../test/util.js";
 import {
     SimpleEvidenceCollection,
     initJiraOptions,
     initPluginOptions,
     initXrayOptions,
-} from "../../../../../context";
-import type { CypressRunResult as CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
-import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
-import type { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
-import { dedent } from "../../../../../util/dedent";
-import { Level } from "../../../../../util/logging";
-import { ConstantCommand } from "../../../../util/commands/constant-command";
-import { ConvertCypressTestsCommand } from "./convert-cypress-tests-command";
+} from "../../../../../context.js";
+import type { CypressRunResult as CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api.js";
+import type { CypressRunResultType } from "../../../../../types/cypress/cypress.js";
+import type { InternalCypressXrayPluginOptions } from "../../../../../types/plugin.js";
+import { dedent } from "../../../../../util/dedent.js";
+import { Level } from "../../../../../util/logging.js";
+import { ConstantCommand } from "../../../../util/commands/constant-command.js";
+import { ConvertCypressTestsCommand } from "./convert-cypress-tests-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ConvertCypressTestsCommand.name, () => {
         let options: InternalCypressXrayPluginOptions;
         beforeEach(() => {

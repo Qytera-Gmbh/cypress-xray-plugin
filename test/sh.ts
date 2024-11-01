@@ -1,8 +1,8 @@
 import * as childProcess from "child_process";
 import fs from "fs";
 import path from "path";
-import { dedent } from "../src/util/dedent";
-import { TEST_TMP_DIR } from "./util";
+import { dedent } from "../src/util/dedent.js";
+import { TEST_TMP_DIR } from "./util.js";
 
 const ENV_BACKUP = { ...process.env };
 

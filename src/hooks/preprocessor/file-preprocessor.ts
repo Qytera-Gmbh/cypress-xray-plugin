@@ -1,18 +1,18 @@
-import type { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
-import type { ExecutableGraph } from "../../util/graph/executable-graph";
-import type { Logger } from "../../util/logging";
-import type { Command } from "../command";
-import { ConstantCommand } from "../util/commands/constant-command";
-import { EditIssueFieldCommand } from "../util/commands/jira/edit-issue-field-command";
-import { GetLabelValuesCommand } from "../util/commands/jira/get-label-values-command";
-import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command";
-import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
-import { ExtractFeatureFileIssuesCommand } from "./commands/extract-feature-file-issues-command";
-import { ExtractIssueKeysCommand } from "./commands/extract-issue-keys-command";
-import { GetLabelsToResetCommand } from "./commands/get-labels-to-reset-command";
-import { GetSummariesToResetCommand } from "./commands/get-summaries-to-reset-command";
-import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command";
-import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command";
+import type { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin.js";
+import type { ExecutableGraph } from "../../util/graph/executable-graph.js";
+import type { Logger } from "../../util/logging.js";
+import type { Command } from "../command.js";
+import { ConstantCommand } from "../util/commands/constant-command.js";
+import { EditIssueFieldCommand } from "../util/commands/jira/edit-issue-field-command.js";
+import { GetLabelValuesCommand } from "../util/commands/jira/get-label-values-command.js";
+import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command.js";
+import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command.js";
+import { ExtractFeatureFileIssuesCommand } from "./commands/extract-feature-file-issues-command.js";
+import { ExtractIssueKeysCommand } from "./commands/extract-issue-keys-command.js";
+import { GetLabelsToResetCommand } from "./commands/get-labels-to-reset-command.js";
+import { GetSummariesToResetCommand } from "./commands/get-summaries-to-reset-command.js";
+import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command.js";
+import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command.js";
 
 export function addSynchronizationCommands(
     file: Cypress.FileObject,

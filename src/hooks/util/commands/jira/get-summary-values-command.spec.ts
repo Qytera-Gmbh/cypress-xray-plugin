@@ -1,15 +1,15 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks";
-import { dedent } from "../../../../util/dedent";
-import { Level } from "../../../../util/logging";
-import { ConstantCommand } from "../constant-command";
-import { GetSummaryValuesCommand } from "./get-summary-values-command";
+import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks.js";
+import { dedent } from "../../../../util/dedent.js";
+import { Level } from "../../../../util/logging.js";
+import { ConstantCommand } from "../constant-command.js";
+import { GetSummaryValuesCommand } from "./get-summary-values-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(GetSummaryValuesCommand.name, () => {
         it("fetches summaries", async () => {
             const logger = getMockedLogger();

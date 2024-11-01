@@ -1,4 +1,4 @@
-import type { Scope } from "./scope";
+import type { Scope } from "./scope.js";
 
 /**
  * An issue type visible to the Jira user.

@@ -1,15 +1,15 @@
-import type { Command, Failable } from "../../../hooks/command";
-import { ComputableState } from "../../../hooks/command";
-import { ImportExecutionCucumberCommand } from "../../../hooks/util/commands/xray/import-execution-cucumber-command";
-import { ImportExecutionCypressCommand } from "../../../hooks/util/commands/xray/import-execution-cypress-command";
-import { ImportFeatureCommand } from "../../../hooks/util/commands/xray/import-feature-command";
-import { dedent } from "../../dedent";
-import { isSkippedError } from "../../errors";
-import type { Logger } from "../../logging";
-import { Level } from "../../logging";
-import { Queue } from "../../queue/queue";
-import { traverse } from "../algorithms/sort";
-import type { DirectedGraph } from "../graph";
+import type { Command, Failable } from "../../../hooks/command.js";
+import { ComputableState } from "../../../hooks/command.js";
+import { ImportExecutionCucumberCommand } from "../../../hooks/util/commands/xray/import-execution-cucumber-command.js";
+import { ImportExecutionCypressCommand } from "../../../hooks/util/commands/xray/import-execution-cypress-command.js";
+import { ImportFeatureCommand } from "../../../hooks/util/commands/xray/import-feature-command.js";
+import { dedent } from "../../dedent.js";
+import { isSkippedError } from "../../errors.js";
+import type { Logger } from "../../logging.js";
+import { Level } from "../../logging.js";
+import { Queue } from "../../queue/queue.js";
+import { traverse } from "../algorithms/sort.js";
+import type { DirectedGraph } from "../graph.js";
 
 interface IndentedLogMessage<V extends Failable> {
     indent: number;

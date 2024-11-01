@@ -1,12 +1,12 @@
-import type { JiraClient } from "../../../../client/jira/jira-client";
-import type { Issue } from "../../../../types/jira/responses/issue";
-import type { StringMap } from "../../../../types/util";
-import { dedent } from "../../../../util/dedent";
-import { errorMessage } from "../../../../util/errors";
-import type { Logger } from "../../../../util/logging";
-import { Level } from "../../../../util/logging";
-import type { Computable } from "../../../command";
-import { Command } from "../../../command";
+import type { JiraClient } from "../../../../client/jira/jira-client.js";
+import type { Issue } from "../../../../types/jira/responses/issue.js";
+import type { StringMap } from "../../../../types/util.js";
+import { dedent } from "../../../../util/dedent.js";
+import { errorMessage } from "../../../../util/errors.js";
+import type { Logger } from "../../../../util/logging.js";
+import { Level } from "../../../../util/logging.js";
+import type { Computable } from "../../../command.js";
+import { Command } from "../../../command.js";
 
 interface Parameters {
     jiraClient: JiraClient;

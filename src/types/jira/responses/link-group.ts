@@ -1,4 +1,4 @@
-import type { SimpleLink } from "./simple-link";
+import type { SimpleLink } from "./simple-link.js";
 
 export interface LinkGroup {
     groups?: LinkGroup[];

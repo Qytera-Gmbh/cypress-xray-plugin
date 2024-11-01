@@ -1,5 +1,5 @@
-import type { AvatarUrls } from "./avatar-urls";
-import type { UpdatedProjectCategory } from "./updated-project-category";
+import type { AvatarUrls } from "./avatar-urls.js";
+import type { UpdatedProjectCategory } from "./updated-project-category.js";
 
 /**
  * The project an item has scope in.

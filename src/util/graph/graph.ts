@@ -1,5 +1,5 @@
-import { unknownToString } from "../string";
-import { dfs } from "./algorithms/search";
+import { unknownToString } from "../string.js";
+import { dfs } from "./algorithms/search.js";
 
 /**
  * Models a directed acyclic graph containing arbitrary vertices.

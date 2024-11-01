@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import path from "path";
-import { getXrayStatus } from "./status";
+import { getXrayStatus } from "./status.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(getXrayStatus.name, () => {
         it("uses passed as default status name for passed tests", () => {
             expect(getXrayStatus("passed")).to.eq("passed");

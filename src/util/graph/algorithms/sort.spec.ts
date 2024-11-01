@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import path from "path";
-import { SimpleDirectedGraph } from "../graph";
-import { computeTopologicalOrder, traverse } from "./sort";
+import { SimpleDirectedGraph } from "../graph.js";
+import { computeTopologicalOrder, traverse } from "./sort.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(computeTopologicalOrder.name, () => {
         it("computes the order for directed graphs", () => {
             const graph = new SimpleDirectedGraph<number>();

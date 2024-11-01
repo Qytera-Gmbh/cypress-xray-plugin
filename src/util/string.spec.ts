@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import path from "path";
-import { dedent } from "./dedent";
-import { unknownToString } from "./string";
+import { dedent } from "./dedent.js";
+import { unknownToString } from "./string.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(unknownToString.name, () => {
         it("string", () => {
             expect(unknownToString("hi")).to.eq("hi");

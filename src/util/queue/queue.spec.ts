@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import path from "path";
-import { Queue } from "./queue";
+import { Queue } from "./queue.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     let queue = new Queue<number>();
 
     beforeEach(() => {

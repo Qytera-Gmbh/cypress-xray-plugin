@@ -1,9 +1,9 @@
-import type { JiraClient } from "../../../../client/jira/jira-client";
-import type { IssueTransition } from "../../../../types/jira/responses/issue-transition";
-import type { Logger } from "../../../../util/logging";
-import { Level } from "../../../../util/logging";
-import type { Computable } from "../../../command";
-import { Command } from "../../../command";
+import type { JiraClient } from "../../../../client/jira/jira-client.js";
+import type { IssueTransition } from "../../../../types/jira/responses/issue-transition.js";
+import type { Logger } from "../../../../util/logging.js";
+import { Level } from "../../../../util/logging.js";
+import type { Computable } from "../../../command.js";
+import { Command } from "../../../command.js";
 
 interface Parameters {
     jiraClient: JiraClient;

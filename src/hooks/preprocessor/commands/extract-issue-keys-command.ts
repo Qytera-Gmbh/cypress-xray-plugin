@@ -1,7 +1,7 @@
-import type { FeatureFileIssueData } from "../../../types/cucumber/cucumber";
-import type { Logger } from "../../../util/logging";
-import type { Computable } from "../../command";
-import { Command } from "../../command";
+import type { FeatureFileIssueData } from "../../../types/cucumber/cucumber.js";
+import type { Logger } from "../../../util/logging.js";
+import type { Computable } from "../../command.js";
+import { Command } from "../../command.js";
 
 export class ExtractIssueKeysCommand extends Command<string[], null> {
     private readonly issueData: Computable<FeatureFileIssueData>;

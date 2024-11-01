@@ -1,15 +1,15 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { getMockedLogger } from "../../../../../../test/mocks";
-import type { XrayClient } from "../../../../../client/xray/xray-client";
-import type { XrayTest } from "../../../../../types/xray/import-test-execution-results";
-import { ConstantCommand } from "../../../../util/commands/constant-command";
-import { AssertCypressConversionValidCommand } from "./assert-cypress-conversion-valid-command";
+import { getMockedLogger } from "../../../../../../test/mocks.js";
+import type { XrayClient } from "../../../../../client/xray/xray-client.js";
+import type { XrayTest } from "../../../../../types/xray/import-test-execution-results.js";
+import { ConstantCommand } from "../../../../util/commands/constant-command.js";
+import { AssertCypressConversionValidCommand } from "./assert-cypress-conversion-valid-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(AssertCypressConversionValidCommand.name, () => {
         it("correctly verifies xray json data", async () => {
             const logger = getMockedLogger();

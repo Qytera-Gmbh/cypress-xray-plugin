@@ -1,11 +1,11 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedLogger } from "../../../../test/mocks";
-import { dedent } from "../../../util/dedent";
-import { Level } from "../../../util/logging";
-import { ParseFeatureFileCommand } from "./parse-feature-file-command";
+import { getMockedLogger } from "../../../../test/mocks.js";
+import { dedent } from "../../../util/dedent.js";
+import { Level } from "../../../util/logging.js";
+import { ParseFeatureFileCommand } from "./parse-feature-file-command.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ParseFeatureFileCommand.name, () => {
         it("displays errors for invalid feature files", async () => {
             const logger = getMockedLogger();

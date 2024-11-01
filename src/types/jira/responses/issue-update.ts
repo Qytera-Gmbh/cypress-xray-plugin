@@ -1,8 +1,8 @@
-import type { EntityProperty } from "./entity-property";
-import type { FieldUpdateOperation } from "./field-update-operation";
-import type { HistoryMetadata } from "./history-metadata";
-import type { IssueTransition } from "./issue-transition";
-import type { IssueTypeDetails } from "./issue-type-details";
+import type { EntityProperty } from "./entity-property.js";
+import type { FieldUpdateOperation } from "./field-update-operation.js";
+import type { HistoryMetadata } from "./history-metadata.js";
+import type { IssueTransition } from "./issue-transition.js";
+import type { IssueTypeDetails } from "./issue-type-details.js";
 
 /**
  * Payload when creating or updating Jira issues.

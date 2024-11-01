@@ -2,15 +2,15 @@ import type { Background, GherkinDocument, Scenario } from "@cucumber/messages";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { getMockedLogger } from "../../../../test/mocks";
-import { dedent } from "../../../util/dedent";
-import { ConstantCommand } from "../../util/commands/constant-command";
-import { ExtractFeatureFileIssuesCommand } from "./extract-feature-file-issues-command";
-import { parseFeatureFile } from "./parsing/gherkin";
+import { getMockedLogger } from "../../../../test/mocks.js";
+import { dedent } from "../../../util/dedent.js";
+import { ConstantCommand } from "../../util/commands/constant-command.js";
+import { ExtractFeatureFileIssuesCommand } from "./extract-feature-file-issues-command.js";
+import { parseFeatureFile } from "./parsing/gherkin.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ExtractFeatureFileIssuesCommand.name, () => {
         it("extracts cucumber issue data", async () => {
             const logger = getMockedLogger();

@@ -7,10 +7,10 @@ import axios, {
     isAxiosError,
 } from "axios";
 import FormData from "form-data";
-import { normalizedFilename } from "../../util/files";
-import { LOG, Level } from "../../util/logging";
-import { unknownToString } from "../../util/string";
-import { startInterval } from "../../util/time";
+import { normalizedFilename } from "../../util/files.js";
+import { LOG, Level } from "../../util/logging.js";
+import { unknownToString } from "../../util/string.js";
+import { startInterval } from "../../util/time.js";
 
 export interface RequestConfigPost<D = unknown> {
     config?: AxiosRequestConfig<D>;
