@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs, { readFileSync } from "fs";
-import { describe, it } from "node:test";
+import { beforeEach, describe, it } from "node:test";
 import path from "path";
 import Sinon from "sinon";
 import { getMockedLogger } from "../../../../../../test/mocks.js";

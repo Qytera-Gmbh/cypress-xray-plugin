@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import fs from "fs";
-import { describe, it } from "node:test";
+import { beforeEach, describe, it } from "node:test";
 import path from "path";
 import type { CypressRunResultType } from "../../types/cypress/cypress.js";
 import { dedent } from "../../util/dedent.js";

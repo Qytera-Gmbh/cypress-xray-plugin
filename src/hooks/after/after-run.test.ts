@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
-import { describe, it } from "node:test";
+import { beforeEach, describe, it } from "node:test";
 import path from "path";
 import { useFakeTimers } from "sinon";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks.js";
