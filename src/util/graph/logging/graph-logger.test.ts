@@ -15,9 +15,9 @@ import { CapturingLogger, Level } from "../../logging.js";
 import { SimpleDirectedGraph } from "../graph.js";
 import { ChainingCommandGraphLogger, ChainingGraphLogger } from "./graph-logger.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(ChainingGraphLogger.name, () => {
-        it("logs correctly indented message chains", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(ChainingGraphLogger.name, () => {
+        await it("logs correctly indented message chains", () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({ getFailure: () => new Error("A failed") });
             const b = graph.place({ getFailure: () => undefined });
@@ -64,7 +64,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("logs correctly indented message chains in diamond form", () => {
+        await it("logs correctly indented message chains in diamond form", () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({ getFailure: () => new Error("A failed") });
             const b = graph.place({ getFailure: () => undefined });
@@ -123,7 +123,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("does not log entirely successful forests", () => {
+        await it("does not log entirely successful forests", () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({ getFailure: () => undefined });
             const b = graph.place({ getFailure: () => undefined });
@@ -151,7 +151,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(logger.getMessages()).to.deep.eq([]);
         });
 
-        it("logs correctly indented multiline chains", () => {
+        await it("logs correctly indented multiline chains", () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({
                 getFailure: () =>
@@ -202,7 +202,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("logs vertices with priority first", () => {
+        await it("logs vertices with priority first", () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({ getFailure: () => new Error("A failed") });
             const b = graph.place({ getFailure: () => new SkippedError("B skipped") });
@@ -244,14 +244,14 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(ChainingCommandGraphLogger.name, () => {
+    await describe(ChainingCommandGraphLogger.name, () => {
         class FailingCommand<R> extends Command<R, { message: string }> {
             protected computeResult(): R {
                 throw new Error(`No computing today: ${this.parameters.message}`);
             }
         }
 
-        it("adds additional information to cucumber import command failures", async () => {
+        await it("adds additional information to cucumber import command failures", async () => {
             const logger = new CapturingLogger();
             const graph = new SimpleDirectedGraph<Command>();
             const a = graph.place(
@@ -276,7 +276,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("adds additional information to cypress import command failures", async () => {
+        await it("adds additional information to cypress import command failures", async () => {
             const logger = new CapturingLogger();
             const graph = new SimpleDirectedGraph<Command>();
             const a = graph.place(
@@ -304,7 +304,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("adds additional information to feature file import command failures", async () => {
+        await it("adds additional information to feature file import command failures", async () => {
             const logger = new CapturingLogger();
             const xrayClient = getMockedXrayClient();
             xrayClient.importFeature.rejects(new Error("the feature does not exist"));

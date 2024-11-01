@@ -8,9 +8,9 @@ import { AttachFilesCommand } from "./attach-files-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(AttachFilesCommand.name, () => {
-        it("attaches files", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(AttachFilesCommand.name, () => {
+        await it("attaches files", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             jiraClient.addAttachment.withArgs("CYP-123", "image.jpg", "something.mp4").resolves([
@@ -33,7 +33,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("does not throw without files to attach", async () => {
+        await it("does not throw without files to attach", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new AttachFilesCommand(

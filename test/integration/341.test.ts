@@ -11,7 +11,7 @@ import { getCreatedTestExecutionIssueKey } from "./util.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/341
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
     for (const test of [
         {
             cucumberTestPrefix: "TestName:",
@@ -38,7 +38,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             xraySkippedStatus: "ABORTED",
         },
     ] as const) {
-        it(test.title, async () => {
+        await it(test.title, async () => {
             const project = setupCypressProject({
                 configFileContent: dedent(`
                     const preprocessor = require("@badeball/cypress-cucumber-preprocessor");

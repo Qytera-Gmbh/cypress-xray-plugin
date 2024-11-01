@@ -8,9 +8,9 @@ import { ExtractFieldIdCommand, JiraField } from "./extract-field-id-command.js"
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(ExtractFieldIdCommand.name, () => {
-        it("extracts fields case-insensitively", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(ExtractFieldIdCommand.name, () => {
+        await it("extracts fields case-insensitively", async () => {
             const logger = getMockedLogger();
             const command = new ExtractFieldIdCommand(
                 { field: JiraField.TEST_PLAN },
@@ -47,7 +47,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(await command.compute()).to.eq("customfield_12345");
         });
 
-        it("throws for missing fields", async () => {
+        await it("throws for missing fields", async () => {
             const logger = getMockedLogger();
             const command = new ExtractFieldIdCommand(
                 { field: JiraField.TEST_PLAN },
@@ -87,8 +87,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        describe("throws for missing fields and displays a hint", () => {
-            it(JiraField.TEST_ENVIRONMENTS, async () => {
+        await describe("throws for missing fields and displays a hint", () => {
+            await it(JiraField.TEST_ENVIRONMENTS, async () => {
                 const logger = getMockedLogger();
                 const command = new ExtractFieldIdCommand(
                     { field: JiraField.TEST_ENVIRONMENTS },
@@ -111,7 +111,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it(JiraField.TEST_PLAN, async () => {
+            await it(JiraField.TEST_PLAN, async () => {
                 const logger = getMockedLogger();
                 const command = new ExtractFieldIdCommand(
                     { field: JiraField.TEST_PLAN },
@@ -135,7 +135,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("throws for multiple fields", async () => {
+        await it("throws for multiple fields", async () => {
             const logger = getMockedLogger();
             const command = new ExtractFieldIdCommand(
                 { field: JiraField.TEST_PLAN },

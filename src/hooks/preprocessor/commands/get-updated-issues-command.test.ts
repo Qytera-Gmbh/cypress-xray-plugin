@@ -6,9 +6,9 @@ import { Level } from "../../../util/logging.js";
 import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { GetUpdatedIssuesCommand } from "./get-updated-issues-command.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(GetUpdatedIssuesCommand.name, () => {
-        it("returns all affected issues", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(GetUpdatedIssuesCommand.name, () => {
+        await it("returns all affected issues", async () => {
             const logger = getMockedLogger();
             const command = new GetUpdatedIssuesCommand(
                 { filePath: "~/home/test/some.feature" },
@@ -28,7 +28,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    it("warns about issues not updated by xray", async () => {
+    await it("warns about issues not updated by xray", async () => {
         const logger = getMockedLogger();
         const command = new GetUpdatedIssuesCommand(
             { filePath: "~/home/test/some.feature" },
@@ -63,7 +63,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         );
     });
 
-    it("warns about unknown issues updated by xray", async () => {
+    await it("warns about unknown issues updated by xray", async () => {
         const logger = getMockedLogger();
         const command = new GetUpdatedIssuesCommand(
             { filePath: "~/home/test/some.feature" },
@@ -98,7 +98,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         );
     });
 
-    it("warns about issue key mismatches", async () => {
+    await it("warns about issue key mismatches", async () => {
         const logger = getMockedLogger();
         const command = new GetUpdatedIssuesCommand(
             { filePath: "~/home/test/some.feature" },

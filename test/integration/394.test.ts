@@ -11,7 +11,7 @@ import { runCypress, setupCypressProject } from "../sh.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/394
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
     for (const test of [
         {
             env: {
@@ -30,15 +30,15 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             title: "add arbitrary evidence",
         },
     ] as const) {
-        it(test.title, () => {
+        await it(test.title, () => {
             const project = setupCypressProject({
                 testFiles: [
                     {
                         content: dedent(`
                             const { enqueueTask } = require("cypress-xray-plugin/tasks");
 
-                            describe("evidence", () => {
-                                it("${test.testIssueKey} adds evidence", () => {
+                            await describe("evidence", () => {
+                                await it("${test.testIssueKey} adds evidence", () => {
                                     enqueueTask("cypress-xray-plugin:add-evidence", {
                                         filename: "queued.json",
                                         data: Cypress.Buffer.from(JSON.stringify({ name: "Bob" })),

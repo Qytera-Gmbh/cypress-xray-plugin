@@ -39,11 +39,11 @@ import { CapturingLogger, Level } from "./util/logging.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe("the plugin context configuration", () => {
-        describe("the option initialization", () => {
-            describe("should have certain default values", () => {
-                describe("jira", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe("the plugin context configuration", () => {
+        await describe("the option initialization", () => {
+            await describe("should have certain default values", () => {
+                await describe("jira", () => {
                     const jiraOptions: InternalJiraOptions = initJiraOptions(
                         {},
                         {
@@ -51,83 +51,83 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                             url: "https://example.org",
                         }
                     );
-                    it("attachVideos", () => {
+                    await it("attachVideos", () => {
                         expect(jiraOptions.attachVideos).to.eq(false);
                     });
-                    describe("fields", () => {
-                        it("testEnvironments", () => {
+                    await describe("fields", () => {
+                        await it("testEnvironments", () => {
                             expect(jiraOptions.fields.testEnvironments).to.eq(undefined);
                         });
-                        it("testPlan", () => {
+                        await it("testPlan", () => {
                             expect(jiraOptions.fields.testPlan).to.eq(undefined);
                         });
                     });
-                    it("testExecutionIssue", () => {
+                    await it("testExecutionIssue", () => {
                         expect(jiraOptions.testExecutionIssue).to.eq(undefined);
                     });
-                    it("testPlanIssueKey", () => {
+                    await it("testPlanIssueKey", () => {
                         expect(jiraOptions.testPlanIssueKey).to.eq(undefined);
                     });
                 });
 
-                describe("plugin", () => {
+                await describe("plugin", () => {
                     const pluginOptions: InternalPluginOptions = initPluginOptions({}, {});
-                    it("debug", () => {
+                    await it("debug", () => {
                         expect(pluginOptions.debug).to.eq(false);
                     });
-                    it("enabled", () => {
+                    await it("enabled", () => {
                         expect(pluginOptions.enabled).to.eq(true);
                     });
-                    it("logDirectory", () => {
+                    await it("logDirectory", () => {
                         expect(pluginOptions.logDirectory).to.eq("logs");
                     });
-                    it("normalizeScreenshotNames", () => {
+                    await it("normalizeScreenshotNames", () => {
                         expect(pluginOptions.normalizeScreenshotNames).to.eq(false);
                     });
                 });
 
-                describe("xray", () => {
+                await describe("xray", () => {
                     const xrayOptions: InternalXrayOptions = initXrayOptions({}, {});
-                    describe("status", () => {
-                        it("failed", () => {
+                    await describe("status", () => {
+                        await it("failed", () => {
                             expect(xrayOptions.status.failed).to.eq(undefined);
                         });
-                        it("passed", () => {
+                        await it("passed", () => {
                             expect(xrayOptions.status.passed).to.eq(undefined);
                         });
-                        it("pending", () => {
+                        await it("pending", () => {
                             expect(xrayOptions.status.pending).to.eq(undefined);
                         });
-                        it("skipped", () => {
+                        await it("skipped", () => {
                             expect(xrayOptions.status.skipped).to.eq(undefined);
                         });
-                        describe("step", () => {
-                            it("failed", () => {
+                        await describe("step", () => {
+                            await it("failed", () => {
                                 expect(xrayOptions.status.step?.failed).to.eq(undefined);
                             });
-                            it("passed", () => {
+                            await it("passed", () => {
                                 expect(xrayOptions.status.step?.passed).to.eq(undefined);
                             });
-                            it("pending", () => {
+                            await it("pending", () => {
                                 expect(xrayOptions.status.step?.pending).to.eq(undefined);
                             });
-                            it("skipped", () => {
+                            await it("skipped", () => {
                                 expect(xrayOptions.status.step?.skipped).to.eq(undefined);
                             });
                         });
                     });
-                    it("testEnvironments", () => {
+                    await it("testEnvironments", () => {
                         expect(xrayOptions.testEnvironments).to.eq(undefined);
                     });
-                    it("uploadResults", () => {
+                    await it("uploadResults", () => {
                         expect(xrayOptions.uploadResults).to.eq(true);
                     });
-                    it("uploadScreenshots", () => {
+                    await it("uploadScreenshots", () => {
                         expect(xrayOptions.uploadScreenshots).to.eq(true);
                     });
                 });
 
-                describe("cucumber", () => {
+                await describe("cucumber", () => {
                     let cucumberOptions: InternalCucumberOptions | undefined = undefined;
                     beforeEach(async () => {
                         cucumberOptions = await initCucumberOptions(
@@ -144,26 +144,26 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                             { featureFileExtension: ".feature" }
                         );
                     });
-                    it("downloadFeatures", () => {
+                    await it("downloadFeatures", () => {
                         expect(cucumberOptions?.downloadFeatures).to.eq(false);
                     });
 
-                    describe("prefixes", () => {
-                        it("precondition", () => {
+                    await describe("prefixes", () => {
+                        await it("precondition", () => {
                             expect(cucumberOptions?.prefixes.precondition).to.eq(undefined);
                         });
-                        it("test", () => {
+                        await it("test", () => {
                             expect(cucumberOptions?.prefixes.test).to.eq(undefined);
                         });
                     });
-                    it("uploadFeatures", () => {
+                    await it("uploadFeatures", () => {
                         expect(cucumberOptions?.uploadFeatures).to.eq(false);
                     });
                 });
             });
-            describe("should prefer provided values over default ones", () => {
-                describe("jira", () => {
-                    it("attachVideos", () => {
+            await describe("should prefer provided values over default ones", () => {
+                await describe("jira", () => {
+                    await it("attachVideos", () => {
                         const jiraOptions = initJiraOptions(
                             {},
                             {
@@ -174,8 +174,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         );
                         expect(jiraOptions.attachVideos).to.eq(true);
                     });
-                    describe("fields", () => {
-                        it("testEnvironments", () => {
+                    await describe("fields", () => {
+                        await it("testEnvironments", () => {
                             const jiraOptions = initJiraOptions(
                                 {},
                                 {
@@ -188,7 +188,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                             );
                             expect(jiraOptions.fields.testEnvironments).to.eq("Testumgebungen");
                         });
-                        it("testPlan", () => {
+                        await it("testPlan", () => {
                             const jiraOptions = initJiraOptions(
                                 {},
                                 {
@@ -202,7 +202,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                             expect(jiraOptions.fields.testPlan).to.eq("Plan de Test");
                         });
                     });
-                    it("testExecutionIssue", () => {
+                    await it("testExecutionIssue", () => {
                         const jiraOptions = initJiraOptions(
                             {},
                             {
@@ -215,7 +215,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                             fields: { summary: "hello" },
                         });
                     });
-                    it("testPlanIssueKey", () => {
+                    await it("testPlanIssueKey", () => {
                         const jiraOptions = initJiraOptions(
                             {},
                             {
@@ -226,7 +226,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         );
                         expect(jiraOptions.testPlanIssueKey).to.eq("PRJ-456");
                     });
-                    it("url", () => {
+                    await it("url", () => {
                         const jiraOptions = initJiraOptions(
                             {},
                             {
@@ -238,8 +238,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
 
-                describe("plugin", () => {
-                    it("debug", () => {
+                await describe("plugin", () => {
+                    await it("debug", () => {
                         const pluginOptions = initPluginOptions(
                             {},
                             {
@@ -248,7 +248,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         );
                         expect(pluginOptions.debug).to.eq(true);
                     });
-                    it("enabled", () => {
+                    await it("enabled", () => {
                         const pluginOptions = initPluginOptions(
                             {},
                             {
@@ -257,7 +257,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         );
                         expect(pluginOptions.enabled).to.eq(false);
                     });
-                    it("logDirectory", () => {
+                    await it("logDirectory", () => {
                         const pluginOptions = initPluginOptions(
                             {},
                             {
@@ -266,7 +266,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         );
                         expect(pluginOptions.logDirectory).to.eq("./logs/");
                     });
-                    it("normalizeScreenshotNames", () => {
+                    await it("normalizeScreenshotNames", () => {
                         const pluginOptions = initPluginOptions(
                             {},
                             {
@@ -277,9 +277,9 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
 
-                describe("xray", () => {
-                    describe("status", () => {
-                        it("failed", () => {
+                await describe("xray", () => {
+                    await describe("status", () => {
+                        await it("failed", () => {
                             const xrayOptions = initXrayOptions(
                                 {},
                                 {
@@ -290,7 +290,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                             );
                             expect(xrayOptions.status.failed).to.eq("BAD");
                         });
-                        it("passed", () => {
+                        await it("passed", () => {
                             const xrayOptions = initXrayOptions(
                                 {},
                                 {
@@ -301,7 +301,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                             );
                             expect(xrayOptions.status.passed).to.eq("GOOD");
                         });
-                        it("pending", () => {
+                        await it("pending", () => {
                             const xrayOptions = initXrayOptions(
                                 {},
                                 {
@@ -312,7 +312,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                             );
                             expect(xrayOptions.status.pending).to.eq("PENDULUM");
                         });
-                        it("skipped", () => {
+                        await it("skipped", () => {
                             const xrayOptions = initXrayOptions(
                                 {},
                                 {
@@ -323,8 +323,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                             );
                             expect(xrayOptions.status.skipped).to.eq("SKIPPING STONE");
                         });
-                        describe("step", () => {
-                            it("failed", () => {
+                        await describe("step", () => {
+                            await it("failed", () => {
                                 const xrayOptions = initXrayOptions(
                                     {},
                                     {
@@ -337,7 +337,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                                 );
                                 expect(xrayOptions.status.step?.failed).to.eq("BAD");
                             });
-                            it("passed", () => {
+                            await it("passed", () => {
                                 const xrayOptions = initXrayOptions(
                                     {},
                                     {
@@ -350,7 +350,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                                 );
                                 expect(xrayOptions.status.step?.passed).to.eq("GOOD");
                             });
-                            it("pending", () => {
+                            await it("pending", () => {
                                 const xrayOptions = initXrayOptions(
                                     {},
                                     {
@@ -363,7 +363,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                                 );
                                 expect(xrayOptions.status.step?.pending).to.eq("PENDULUM");
                             });
-                            it("skipped", () => {
+                            await it("skipped", () => {
                                 const xrayOptions = initXrayOptions(
                                     {},
                                     {
@@ -379,7 +379,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         });
                     });
 
-                    it("testEnvironments", () => {
+                    await it("testEnvironments", () => {
                         const xrayOptions = initXrayOptions(
                             {},
                             {
@@ -389,7 +389,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.testEnvironments).to.deep.eq(["Test", "Prod"]);
                     });
 
-                    it("uploadResults", () => {
+                    await it("uploadResults", () => {
                         const xrayOptions = initXrayOptions(
                             {},
                             {
@@ -399,7 +399,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.uploadResults).to.eq(false);
                     });
 
-                    it("uploadScreenshots", () => {
+                    await it("uploadScreenshots", () => {
                         const xrayOptions = initXrayOptions(
                             {},
                             {
@@ -410,8 +410,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
 
-                describe("cucumber", () => {
-                    it("downloadFeatures", async () => {
+                await describe("cucumber", () => {
+                    await it("downloadFeatures", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
                                 env: { jsonEnabled: true },
@@ -428,8 +428,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         );
                         expect(cucumberOptions?.downloadFeatures).to.eq(true);
                     });
-                    describe("prefixes", () => {
-                        it("precondition", async () => {
+                    await describe("prefixes", () => {
+                        await it("precondition", async () => {
                             const cucumberOptions = await initCucumberOptions(
                                 {
                                     env: { jsonEnabled: true },
@@ -448,7 +448,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                                 "PreconditionYeah_"
                             );
                         });
-                        it("test", async () => {
+                        await it("test", async () => {
                             const cucumberOptions = await initCucumberOptions(
                                 {
                                     env: { jsonEnabled: true },
@@ -466,7 +466,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                             expect(cucumberOptions?.prefixes.test).to.eq("TestSomething_");
                         });
                     });
-                    it("uploadFeatures", async () => {
+                    await it("uploadFeatures", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
                                 env: { jsonEnabled: true },
@@ -485,9 +485,9 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
             });
-            describe("should prefer environment variables over provided values", () => {
-                describe("jira", () => {
-                    it("JIRA_PROJECT_KEY", () => {
+            await describe("should prefer environment variables over provided values", () => {
+                await describe("jira", () => {
+                    await it("JIRA_PROJECT_KEY", () => {
                         const env = {
                             ["JIRA_PROJECT_KEY"]: "ABC",
                         };
@@ -498,7 +498,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(jiraOptions.projectKey).to.eq("ABC");
                     });
 
-                    it("JIRA_ATTACH_VIDEOS", () => {
+                    await it("JIRA_ATTACH_VIDEOS", () => {
                         const env = {
                             ["JIRA_ATTACH_VIDEOS"]: "true",
                         };
@@ -510,8 +510,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(jiraOptions.attachVideos).to.be.true;
                     });
 
-                    describe("fields", () => {
-                        it("JIRA_FIELDS_TEST_ENVIRONMENTS", () => {
+                    await describe("fields", () => {
+                        await it("JIRA_FIELDS_TEST_ENVIRONMENTS", () => {
                             const env = {
                                 ["JIRA_FIELDS_TEST_ENVIRONMENTS"]: "customfield_98765",
                             };
@@ -525,7 +525,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                             expect(jiraOptions.fields.testEnvironments).to.eq("customfield_98765");
                         });
 
-                        it("JIRA_FIELDS_TEST_PLAN", () => {
+                        await it("JIRA_FIELDS_TEST_PLAN", () => {
                             const env = {
                                 ["JIRA_FIELDS_TEST_PLAN"]: "customfield_98765",
                             };
@@ -540,7 +540,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         });
                     });
 
-                    it("JIRA_TEST_EXECUTION_ISSUE", () => {
+                    await it("JIRA_TEST_EXECUTION_ISSUE", () => {
                         const env = {
                             ["JIRA_TEST_EXECUTION_ISSUE"]: {
                                 fields: {
@@ -566,7 +566,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         });
                     });
 
-                    it("JIRA_TEST_PLAN_ISSUE_KEY", () => {
+                    await it("JIRA_TEST_PLAN_ISSUE_KEY", () => {
                         const env = {
                             ["JIRA_TEST_PLAN_ISSUE_KEY"]: "CYP-456",
                         };
@@ -578,7 +578,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(jiraOptions.testPlanIssueKey).to.eq("CYP-456");
                     });
 
-                    it("JIRA_URL", () => {
+                    await it("JIRA_URL", () => {
                         const env = {
                             ["JIRA_URL"]: "https://example.org",
                         };
@@ -589,8 +589,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(jiraOptions.url).to.eq("https://example.org");
                     });
                 });
-                describe("xray", () => {
-                    it("XRAY_STATUS_FAILED", () => {
+                await describe("xray", () => {
+                    await it("XRAY_STATUS_FAILED", () => {
                         const env = {
                             ["XRAY_STATUS_FAILED"]: "no",
                         };
@@ -602,7 +602,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.status.failed).to.eq("no");
                     });
 
-                    it("XRAY_STATUS_PASSED", () => {
+                    await it("XRAY_STATUS_PASSED", () => {
                         const env = {
                             ["XRAY_STATUS_PASSED"]: "ok",
                         };
@@ -614,7 +614,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.status.passed).to.eq("ok");
                     });
 
-                    it("XRAY_STATUS_PENDING", () => {
+                    await it("XRAY_STATUS_PENDING", () => {
                         const env = {
                             ["XRAY_STATUS_PENDING"]: "pendulum",
                         };
@@ -626,7 +626,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.status.pending).to.eq("pendulum");
                     });
 
-                    it("XRAY_STATUS_SKIPPED", () => {
+                    await it("XRAY_STATUS_SKIPPED", () => {
                         const env = {
                             ["XRAY_STATUS_SKIPPED"]: "ski-ba-bop-ba-dop-bop",
                         };
@@ -638,7 +638,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.status.skipped).to.eq("ski-ba-bop-ba-dop-bop");
                     });
 
-                    it("XRAY_STATUS_STEP_FAILED", () => {
+                    await it("XRAY_STATUS_STEP_FAILED", () => {
                         const env = {
                             ["XRAY_STATUS_STEP_FAILED"]: "no",
                         };
@@ -652,7 +652,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.status.step?.failed).to.eq("no");
                     });
 
-                    it("XRAY_STATUS_STEP_PASSED", () => {
+                    await it("XRAY_STATUS_STEP_PASSED", () => {
                         const env = {
                             ["XRAY_STATUS_STEP_PASSED"]: "ok",
                         };
@@ -664,7 +664,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.status.step?.passed).to.eq("ok");
                     });
 
-                    it("XRAY_STATUS_STEP_PENDING", () => {
+                    await it("XRAY_STATUS_STEP_PENDING", () => {
                         const env = {
                             ["XRAY_STATUS_STEP_PENDING"]: "pendulum",
                         };
@@ -676,7 +676,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.status.step?.pending).to.eq("pendulum");
                     });
 
-                    it("XRAY_STATUS_STEP_SKIPPED", () => {
+                    await it("XRAY_STATUS_STEP_SKIPPED", () => {
                         const env = {
                             ["XRAY_STATUS_STEP_SKIPPED"]: "ski-ba-bop-ba-dop-bop",
                         };
@@ -688,7 +688,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.status.step?.skipped).to.eq("ski-ba-bop-ba-dop-bop");
                     });
 
-                    it("XRAY_TEST_ENVIRONMENTS", () => {
+                    await it("XRAY_TEST_ENVIRONMENTS", () => {
                         const env = {
                             ["XRAY_TEST_ENVIRONMENTS"]: [false, "bonjour", 5],
                         };
@@ -698,7 +698,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.testEnvironments).to.deep.eq(["false", "bonjour", "5"]);
                     });
 
-                    it("XRAY_UPLOAD_RESULTS", () => {
+                    await it("XRAY_UPLOAD_RESULTS", () => {
                         const env = {
                             ["XRAY_UPLOAD_RESULTS"]: "false",
                         };
@@ -708,7 +708,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.uploadResults).to.be.false;
                     });
 
-                    it("XRAY_UPLOAD_SCREENSHOTS", () => {
+                    await it("XRAY_UPLOAD_SCREENSHOTS", () => {
                         const env = {
                             ["XRAY_UPLOAD_SCREENSHOTS"]: "false",
                         };
@@ -718,8 +718,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.uploadScreenshots).to.be.false;
                     });
                 });
-                describe("cucumber", () => {
-                    it("CUCUMBER_FEATURE_FILE_EXTENSION", async () => {
+                await describe("cucumber", () => {
+                    await it("CUCUMBER_FEATURE_FILE_EXTENSION", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
                                 env: {
@@ -739,7 +739,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(cucumberOptions?.featureFileExtension).to.eq(".feature.file");
                     });
 
-                    it("CUCUMBER_DOWNLOAD_FEATURES", async () => {
+                    await it("CUCUMBER_DOWNLOAD_FEATURES", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
                                 env: {
@@ -760,7 +760,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(cucumberOptions?.downloadFeatures).to.be.true;
                     });
 
-                    it("CUCUMBER_PREFIXES_PRECONDITION", async () => {
+                    await it("CUCUMBER_PREFIXES_PRECONDITION", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
                                 env: {
@@ -781,7 +781,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(cucumberOptions?.prefixes.precondition).to.eq("BigPrecondition:");
                     });
 
-                    it("CUCUMBER_PREFIXES_TEST", async () => {
+                    await it("CUCUMBER_PREFIXES_TEST", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
                                 env: {
@@ -802,7 +802,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(cucumberOptions?.prefixes.test).to.eq("BigTest:");
                     });
 
-                    it("CUCUMBER_UPLOAD_FEATURES", async () => {
+                    await it("CUCUMBER_UPLOAD_FEATURES", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
                                 env: {
@@ -823,8 +823,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(cucumberOptions?.uploadFeatures).to.be.true;
                     });
                 });
-                describe("plugin", () => {
-                    it("PLUGIN_DEBUG", () => {
+                await describe("plugin", () => {
+                    await it("PLUGIN_DEBUG", () => {
                         const env = {
                             ["PLUGIN_DEBUG"]: "true",
                         };
@@ -834,7 +834,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(pluginOptions.debug).to.be.true;
                     });
 
-                    it("PLUGIN_ENABLED", () => {
+                    await it("PLUGIN_ENABLED", () => {
                         const env = {
                             ["PLUGIN_ENABLED"]: "false",
                         };
@@ -844,7 +844,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(pluginOptions.enabled).to.be.false;
                     });
 
-                    it("PLUGIN_LOG_DIRECTORY", () => {
+                    await it("PLUGIN_LOG_DIRECTORY", () => {
                         const env = {
                             ["PLUGIN_LOG_DIRECTORY"]: "/home/logs/cypress-xray-plugin",
                         };
@@ -854,7 +854,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(pluginOptions.logDirectory).to.eq("/home/logs/cypress-xray-plugin");
                     });
 
-                    it("PLUGIN_NORMALIZE_SCREENSHOT_NAMES", () => {
+                    await it("PLUGIN_NORMALIZE_SCREENSHOT_NAMES", () => {
                         const env = {
                             ["PLUGIN_NORMALIZE_SCREENSHOT_NAMES"]: "true",
                         };
@@ -865,8 +865,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
             });
-            describe("detects invalid configurations", () => {
-                it("detects unset project keys", () => {
+            await describe("detects invalid configurations", () => {
+                await it("detects unset project keys", () => {
                     expect(() =>
                         initJiraOptions(
                             {},
@@ -877,7 +877,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         )
                     ).to.throw("Plugin misconfiguration: Jira project key was not set");
                 });
-                it("throws if the cucumber preprocessor is not installed", async () => {
+                await it("throws if the cucumber preprocessor is not installed", async () => {
                     stub(dependencies, "IMPORT").rejects(new Error("Failed to import package"));
                     await expect(
                         initCucumberOptions(
@@ -905,7 +905,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         `)
                     );
                 });
-                it("detects if the cucumber preprocessor json report is not enabled", async () => {
+                await it("detects if the cucumber preprocessor json report is not enabled", async () => {
                     await expect(
                         initCucumberOptions(
                             {
@@ -928,7 +928,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                         `)
                     );
                 });
-                it("detects if the cucumber preprocessor json report path was not set", async () => {
+                await it("detects if the cucumber preprocessor json report path was not set", async () => {
                     await expect(
                         initCucumberOptions(
                             {
@@ -954,23 +954,23 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("the http clients instantiation", () => {
-            it("creates a single client by default", () => {
+        await describe("the http clients instantiation", () => {
+            await it("creates a single client by default", () => {
                 const httpClients = initHttpClients(undefined, undefined);
                 expect(httpClients.jira).to.eq(httpClients.xray);
                 expect(httpClients.jira).to.deep.eq(new AxiosRestClient({ debug: undefined }));
             });
-            it("sets debugging to true if enabled", () => {
+            await it("sets debugging to true if enabled", () => {
                 const httpClients = initHttpClients({ debug: true }, undefined);
                 expect(httpClients.jira).to.eq(httpClients.xray);
                 expect(httpClients.jira).to.deep.eq(new AxiosRestClient({ debug: true }));
             });
-            it("sets debugging to false if disabled", () => {
+            await it("sets debugging to false if disabled", () => {
                 const httpClients = initHttpClients({ debug: false }, undefined);
                 expect(httpClients.jira).to.eq(httpClients.xray);
                 expect(httpClients.jira).to.deep.eq(new AxiosRestClient({ debug: false }));
             });
-            it("creates a single client if empty options are passed", () => {
+            await it("creates a single client if empty options are passed", () => {
                 const httpClients = initHttpClients(undefined, {});
                 expect(httpClients.jira).to.eq(httpClients.xray);
                 expect(httpClients.jira).to.deep.eq(
@@ -981,7 +981,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     })
                 );
             });
-            it("creates a single client using a single config", () => {
+            await it("creates a single client using a single config", () => {
                 const httpOptions: InternalHttpOptions = {
                     proxy: {
                         host: "https://example.org",
@@ -1003,7 +1003,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     })
                 );
             });
-            it("creates a different jira client if a jira config is passed", () => {
+            await it("creates a different jira client if a jira config is passed", () => {
                 const httpOptions: InternalHttpOptions = {
                     jira: {
                         proxy: {
@@ -1034,7 +1034,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     })
                 );
             });
-            it("creates a different xray client if an xray config is passed", () => {
+            await it("creates a different xray client if an xray config is passed", () => {
                 const httpOptions: InternalHttpOptions = {
                     xray: {
                         proxy: {
@@ -1065,7 +1065,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     })
                 );
             });
-            it("creates different clients if individual configs are passed", () => {
+            await it("creates different clients if individual configs are passed", () => {
                 const httpOptions: InternalHttpOptions = {
                     jira: {
                         proxy: {
@@ -1107,7 +1107,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     })
                 );
             });
-            it("passes common http options to both clients", () => {
+            await it("passes common http options to both clients", () => {
                 const httpOptions: InternalHttpOptions = {
                     jira: {
                         proxy: {
@@ -1153,7 +1153,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     })
                 );
             });
-            it("prefers individual http options to common ones", () => {
+            await it("prefers individual http options to common ones", () => {
                 const httpOptions: InternalHttpOptions = {
                     jira: {
                         proxy: {
@@ -1208,7 +1208,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("the clients instantiation", () => {
+        await describe("the clients instantiation", () => {
             let jiraOptions: InternalJiraOptions;
             beforeEach(() => {
                 jiraOptions = initJiraOptions(
@@ -1220,7 +1220,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("should detect cloud credentials", async () => {
+            await it("should detect cloud credentials", async () => {
                 const env = {
                     ["JIRA_API_TOKEN"]: "1337",
                     ["JIRA_USERNAME"]: "user@somewhere.xyz",
@@ -1264,7 +1264,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("should throw for missing xray cloud credentials", async () => {
+            await it("should throw for missing xray cloud credentials", async () => {
                 const env = {
                     ["JIRA_API_TOKEN"]: "1337",
                     ["JIRA_USERNAME"]: "user@somewhere.xyz",
@@ -1293,7 +1293,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("should detect PAT credentials", async () => {
+            await it("should detect PAT credentials", async () => {
                 const env = {
                     ["JIRA_API_TOKEN"]: "1337",
                 };
@@ -1337,7 +1337,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("should detect basic auth credentials", async () => {
+            await it("should detect basic auth credentials", async () => {
                 const env = {
                     ["JIRA_PASSWORD"]: "1337",
                     ["JIRA_USERNAME"]: "user",
@@ -1382,7 +1382,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("should choose cloud credentials over server credentials", async () => {
+            await it("should choose cloud credentials over server credentials", async () => {
                 const env = {
                     ["JIRA_API_TOKEN"]: "1337",
                     ["JIRA_PASSWORD"]: "xyz",
@@ -1417,7 +1417,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("should throw an error for missing credentials", async () => {
+            await it("should throw an error for missing credentials", async () => {
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
                 await expect(
                     initClients(jiraOptions, {}, httpClients)
@@ -1430,7 +1430,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("throws if no user details are returned from jira", async () => {
+            await it("throws if no user details are returned from jira", async () => {
                 getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
                 httpClients.jira.get.resolves({
@@ -1463,7 +1463,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("throws if no usernames are returned from jira", async () => {
+            await it("throws if no usernames are returned from jira", async () => {
                 getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
                 httpClients.jira.get.resolves({
@@ -1498,7 +1498,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("throws if no license data is returned from xray server", async () => {
+            await it("throws if no license data is returned from xray server", async () => {
                 getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
                 httpClients.jira.get.resolves({
@@ -1542,7 +1542,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("throws if an inactive license is returned from xray server", async () => {
+            await it("throws if an inactive license is returned from xray server", async () => {
                 getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
                 httpClients.jira.get.resolves({
@@ -1589,7 +1589,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("throws if the xray credentials are invalid", async () => {
+            await it("throws if the xray credentials are invalid", async () => {
                 getMockedLogger();
                 const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
                 httpClients.jira.get.resolves({
@@ -1647,8 +1647,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(SimpleEvidenceCollection.name, () => {
-        it("collects evidence for single tests", () => {
+    await describe(SimpleEvidenceCollection.name, () => {
+        await it("collects evidence for single tests", () => {
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-123", {
                 contentType: "application/json",
@@ -1674,7 +1674,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("collects evidence for multiple tests", () => {
+        await it("collects evidence for multiple tests", () => {
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-123", {
                 contentType: "application/json",
@@ -1702,7 +1702,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("returns an empty array for unknown tests", () => {
+        await it("returns an empty array for unknown tests", () => {
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-123", {
                 contentType: "application/json",
@@ -1713,7 +1713,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(PluginContext.name, () => {
+    await describe(PluginContext.name, () => {
         let context: PluginContext;
 
         beforeEach(() => {
@@ -1760,7 +1760,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("collects evidence for single tests", () => {
+        await it("collects evidence for single tests", () => {
             context.addEvidence("CYP-123", {
                 contentType: "application/json",
                 data: "WyJoZWxsbyJd",
@@ -1785,7 +1785,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("collects evidence for multiple tests", () => {
+        await it("collects evidence for multiple tests", () => {
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-123", {
                 contentType: "application/json",
@@ -1813,7 +1813,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("returns an empty array for unknown tests", () => {
+        await it("returns an empty array for unknown tests", () => {
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-123", {
                 contentType: "application/json",

@@ -8,8 +8,8 @@ import { JwtCredentials } from "./credentials.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(JwtCredentials.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(JwtCredentials.name, () => {
         let restClient = getMockedRestClient();
         let credentials: JwtCredentials = new JwtCredentials(
             "id",
@@ -23,8 +23,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             credentials = new JwtCredentials("id", "secret", "https://example.org", restClient);
         });
 
-        describe(credentials.getAuthorizationHeader.name, () => {
-            it("returns authorization headers", async () => {
+        await describe(credentials.getAuthorizationHeader.name, () => {
+            await it("returns authorization headers", async () => {
                 getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -39,7 +39,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 });
             });
 
-            it("authorizes once only", async () => {
+            await it("authorizes once only", async () => {
                 getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post.resolves({
                     config: { headers: new AxiosHeaders() },
@@ -61,7 +61,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(restClient.post).to.have.been.calledOnce;
             });
 
-            it("handles unparseable tokens", async () => {
+            await it("handles unparseable tokens", async () => {
                 getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -75,7 +75,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post.onFirstCall().rejects(
                     new AxiosError(

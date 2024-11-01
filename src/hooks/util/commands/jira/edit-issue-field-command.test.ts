@@ -9,9 +9,9 @@ import { EditIssueFieldCommand } from "./edit-issue-field-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(EditIssueFieldCommand.name, () => {
-        it("edits issues", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(EditIssueFieldCommand.name, () => {
+        await it("edits issues", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             jiraClient.editIssue
@@ -36,7 +36,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(logger.message).to.not.have.been.called;
         });
 
-        it("logs errors for unsuccessful edits", async () => {
+        await it("logs errors for unsuccessful edits", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             jiraClient.editIssue
@@ -68,7 +68,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("returns empty arrays", async () => {
+        await it("returns empty arrays", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new EditIssueFieldCommand(

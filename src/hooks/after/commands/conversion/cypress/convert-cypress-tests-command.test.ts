@@ -21,8 +21,8 @@ import { ConvertCypressTestsCommand } from "./convert-cypress-tests-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(ConvertCypressTestsCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(ConvertCypressTestsCommand.name, () => {
         let options: InternalCypressXrayPluginOptions;
         beforeEach(() => {
             options = {
@@ -44,8 +44,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             };
         });
 
-        describe("<13", () => {
-            it("converts test results into xray results json", async () => {
+        await describe("<13", () => {
+            await it("converts test results into xray results json", async () => {
                 const logger = getMockedLogger();
                 const result = JSON.parse(
                     readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
@@ -91,7 +91,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 ]);
             });
 
-            it("converts test results with multiple issue keys into xray results json", async () => {
+            await it("converts test results with multiple issue keys into xray results json", async () => {
                 const logger = getMockedLogger();
                 const result = JSON.parse(
                     readFileSync(
@@ -153,8 +153,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe(">=13", () => {
-            it("converts test results into xray results json", async () => {
+        await describe(">=13", () => {
+            await it("converts test results into xray results json", async () => {
                 const logger = getMockedLogger();
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
@@ -212,7 +212,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 ]);
             });
 
-            it("converts test results with multiple issue keys into xray results json", async () => {
+            await it("converts test results with multiple issue keys into xray results json", async () => {
                 const logger = getMockedLogger();
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync(
@@ -273,7 +273,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 ]);
             });
 
-            it("warns about non-attributable screenshots", async () => {
+            await it("warns about non-attributable screenshots", async () => {
                 const logger = getMockedLogger();
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(
                     readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
@@ -339,7 +339,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("skips tests when encountering unknown statuses", async () => {
+        await it("skips tests when encountering unknown statuses", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultUnknownStatus.json", "utf-8")
@@ -381,7 +381,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("uploads screenshots by default", async () => {
+        await it("uploads screenshots by default", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
@@ -407,7 +407,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tests[2].evidence[0].filename).to.eq("small.png");
         });
 
-        it("skips cucumber screenshots", async () => {
+        await it("skips cucumber screenshots", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResult_13_0_0_mixed.json", "utf-8")
@@ -435,7 +435,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("skips screenshot upload if disabled", async () => {
+        await it("skips screenshot upload if disabled", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
@@ -461,7 +461,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tests[2].evidence).to.be.undefined;
         });
 
-        it("normalizes screenshot filenames if enabled", async () => {
+        await it("normalizes screenshot filenames if enabled", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
@@ -485,7 +485,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tests[0].evidence[0].filename).to.eq("t_rtle_with_problem_tic_name.png");
         });
 
-        it("does not normalize screenshot filenames by default", async () => {
+        await it("does not normalize screenshot filenames by default", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultProblematicScreenshot.json", "utf-8")
@@ -508,7 +508,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tests[0].evidence[0].filename).to.eq("tûrtle with problemätic name.png");
         });
 
-        it("includes all evidence", async () => {
+        await it("includes all evidence", async () => {
             const logger = getMockedLogger();
             const result: CypressCommandLine.CypressRunResult = JSON.parse(
                 readFileSync("./test/resources/runResult_13_0_0.json", "utf-8")
@@ -589,7 +589,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("uses custom passed statuses", async () => {
+        await it("uses custom passed statuses", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
@@ -612,7 +612,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tests[1].status).to.eq("it worked");
         });
 
-        it("uses custom failed statuses", async () => {
+        await it("uses custom failed statuses", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
@@ -634,7 +634,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tests[2].status).to.eq("it did not work");
         });
 
-        it("uses custom pending statuses", async () => {
+        await it("uses custom pending statuses", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultPending.json", "utf-8")
@@ -659,7 +659,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tests[3].status).to.eq("still pending");
         });
 
-        it("uses custom skipped statuses", async () => {
+        await it("uses custom skipped statuses", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultSkipped.json", "utf-8")
@@ -681,7 +681,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tests[1].status).to.eq("omit");
         });
 
-        it("does not modify test information", async () => {
+        await it("does not modify test information", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
@@ -704,7 +704,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tests[2].testInfo).to.be.undefined;
         });
 
-        it("includes test issue keys", async () => {
+        await it("includes test issue keys", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
@@ -727,7 +727,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tests[2].testKey).to.eq("CYP-49");
         });
 
-        it("defaults to server status values", async () => {
+        await it("defaults to server status values", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
@@ -750,7 +750,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tests[2].status).to.eq("FAIL");
         });
 
-        it("uses cloud status values", async () => {
+        await it("uses cloud status values", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
@@ -774,7 +774,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tests[2].status).to.eq("FAILED");
         });
 
-        it("throws if no native cypress tests were executed", async () => {
+        await it("throws if no native cypress tests were executed", async () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")
@@ -796,7 +796,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("returns its parameters", () => {
+        await it("returns its parameters", () => {
             const logger = getMockedLogger();
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/runResultExistingTestIssues.json", "utf-8")

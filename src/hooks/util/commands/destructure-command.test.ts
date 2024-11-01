@@ -4,9 +4,9 @@ import { getMockedLogger } from "../../../../test/mocks.js";
 import { ConstantCommand } from "./constant-command.js";
 import { DestructureCommand } from "./destructure-command.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(DestructureCommand.name, () => {
-        it("returns the accessed object value", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(DestructureCommand.name, () => {
+        await it("returns the accessed object value", async () => {
             const logger = getMockedLogger();
             const command = new DestructureCommand(
                 logger,
@@ -19,7 +19,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(await command.compute()).to.deep.eq({ c: "bonjour" });
         });
 
-        it("throws for invalid object accesses", async () => {
+        await it("throws for invalid object accesses", async () => {
             const logger = getMockedLogger();
             const command = new DestructureCommand(
                 logger,

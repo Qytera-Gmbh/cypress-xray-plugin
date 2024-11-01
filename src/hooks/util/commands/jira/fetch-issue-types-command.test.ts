@@ -6,9 +6,9 @@ import { FetchIssueTypesCommand } from "./fetch-issue-types-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(FetchIssueTypesCommand.name, () => {
-        it("fetches issue types", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(FetchIssueTypesCommand.name, () => {
+        await it("fetches issue types", async () => {
             const jiraClient = getMockedJiraClient();
             const types = [
                 {

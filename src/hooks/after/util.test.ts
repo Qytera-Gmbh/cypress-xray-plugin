@@ -5,8 +5,8 @@ import type { CypressRunResultType } from "../../types/cypress/cypress.js";
 import { dedent } from "../../util/dedent.js";
 import { containsCucumberTest, containsCypressTest, getTestIssueKeys } from "./util.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(containsCypressTest.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(containsCypressTest.name, () => {
         let result: CypressRunResultType;
 
         beforeEach(() => {
@@ -15,25 +15,25 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ) as CypressRunResultType;
         });
 
-        it("returns true for native runs", () => {
+        await it("returns true for native runs", () => {
             expect(containsCypressTest(result)).to.be.true;
         });
 
-        it("returns true for mixed runs", () => {
+        await it("returns true for mixed runs", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
             ) as CypressRunResultType;
             expect(containsCypressTest(result, ".feature")).to.be.true;
         });
 
-        it("returns false for cucumber runs", () => {
+        await it("returns false for cucumber runs", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
             ) as CypressRunResultType;
             expect(containsCypressTest(result, ".feature")).to.be.false;
         });
 
-        it("regards cucumber runs as native if cucumber was not configured", () => {
+        await it("regards cucumber runs as native if cucumber was not configured", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
             ) as CypressRunResultType;
@@ -41,29 +41,29 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(containsCucumberTest.name, () => {
-        it("returns true for Cucumber runs", () => {
+    await describe(containsCucumberTest.name, () => {
+        await it("returns true for Cucumber runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
             ) as CypressRunResultType;
             expect(containsCucumberTest(result, ".feature")).to.be.true;
         });
 
-        it("returns true for mixed runs", () => {
+        await it("returns true for mixed runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
             ) as CypressRunResultType;
             expect(containsCucumberTest(result, ".feature")).to.be.true;
         });
 
-        it("returns false for native runs", () => {
+        await it("returns false for native runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;
             expect(containsCucumberTest(result, ".feature")).to.be.false;
         });
 
-        it("regards cucumber runs as native if cucumber was not configured", () => {
+        await it("regards cucumber runs as native if cucumber was not configured", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
             ) as CypressRunResultType;
@@ -71,12 +71,12 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(getTestIssueKeys.name, () => {
-        it("extracts single test issue keys", () => {
+    await describe(getTestIssueKeys.name, () => {
+        await it("extracts single test issue keys", () => {
             expect(getTestIssueKeys("this is CYP-123 a test", "CYP")).to.deep.eq(["CYP-123"]);
         });
 
-        it("extracts multiple test issue keys", () => {
+        await it("extracts multiple test issue keys", () => {
             expect(getTestIssueKeys("CYP-123 this is a CYP-456 test CYP-789", "CYP")).to.deep.eq([
                 "CYP-123",
                 "CYP-456",
@@ -84,7 +84,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("logs warnings for missing test issue keys", () => {
+        await it("logs warnings for missing test issue keys", () => {
             expect(() => getTestIssueKeys("this is a test", "CYP")).to.throw(
                 dedent(`
                     Test: this is a test
@@ -93,7 +93,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
 
                       You can target existing test issues by adding a corresponding issue key:
 
-                        it("CYP-123 this is a test", () => {
+                        await it("CYP-123 this is a test", () => {
                           // ...
                         });
 

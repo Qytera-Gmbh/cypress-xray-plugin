@@ -23,7 +23,7 @@ import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command.j
 import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command.js";
 import { addSynchronizationCommands } from "./file-preprocessor.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
     let clients: ClientCombination;
     let options: InternalCypressXrayPluginOptions;
 
@@ -65,7 +65,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         };
     });
 
-    describe(addSynchronizationCommands.name, () => {
+    await describe(addSynchronizationCommands.name, () => {
         const file = {
             ...({} as Cypress.FileObject),
             filePath: "./path/to/file.feature",
@@ -73,7 +73,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             shouldWatch: false,
         };
 
-        it("adds all commands necessary for feature file upload", () => {
+        await it("adds all commands necessary for feature file upload", () => {
             const logger = getMockedLogger();
             const graph = new ExecutableGraph<Command>();
             addSynchronizationCommands(file, options, clients, graph, logger);
@@ -117,7 +117,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(graph.size("vertices")).to.eq(13);
         });
 
-        it("correctly connects all commands", () => {
+        await it("correctly connects all commands", () => {
             const logger = getMockedLogger();
             const graph = new ExecutableGraph<Command>();
             addSynchronizationCommands(file, options, clients, graph, logger);
@@ -182,7 +182,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(graph.size("edges")).to.eq(18);
         });
 
-        it("reuses existing commands", () => {
+        await it("reuses existing commands", () => {
             const logger = getMockedLogger();
             const graph = new ExecutableGraph<Command>();
             const parseFeatureFileCommand = graph.place(
@@ -196,7 +196,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("uses preconfigured jira field ids", () => {
+        await it("uses preconfigured jira field ids", () => {
             const logger = getMockedLogger();
             const graph = new ExecutableGraph<Command>();
             addSynchronizationCommands(file, options, clients, graph, logger);

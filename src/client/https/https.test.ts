@@ -12,14 +12,14 @@ import { AxiosRestClient } from "./https.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
     beforeEach(() => {
         BaseAxios.default.interceptors.request.clear();
         BaseAxios.default.interceptors.response.clear();
     });
 
-    describe("get", () => {
-        it("returns the response", async () => {
+    await describe("get", () => {
+        await it("returns the response", async () => {
             const response: BaseAxios.AxiosResponse<string> = {
                 config: {
                     headers: new BaseAxios.AxiosHeaders(),
@@ -36,7 +36,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(await client.get("https://example.org")).to.deep.contain(response);
         });
 
-        it("writes to a file on encountering axios errors if debug is enabled", async () => {
+        await it("writes to a file on encountering axios errors if debug is enabled", async () => {
             const logger = getMockedLogger();
             logger.message.withArgs(Level.DEBUG, "Request:  request.json").onFirstCall().returns();
             logger.message
@@ -71,7 +71,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("writes to a file on encountering axios errors if debug is disabled", async () => {
+        await it("writes to a file on encountering axios errors if debug is disabled", async () => {
             const logger = getMockedLogger();
             const client = new AxiosRestClient();
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
@@ -79,7 +79,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(logger.message).to.have.been.calledOnce;
         });
 
-        it("logs progress", async () => {
+        await it("logs progress", async () => {
             const clock = useFakeTimers();
             const logger = getMockedLogger();
             const stubbedAxios = stub(BaseAxios.default.create());
@@ -112,8 +112,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe("post", () => {
-        it("returns the response", async () => {
+    await describe("post", () => {
+        await it("returns the response", async () => {
             const client = new AxiosRestClient();
             const response: BaseAxios.AxiosResponse<string> = {
                 config: {
@@ -130,7 +130,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(await client.post("https://example.org")).to.deep.eq(response);
         });
 
-        it("writes to a file on encountering axios errors if debug is enabled", async () => {
+        await it("writes to a file on encountering axios errors if debug is enabled", async () => {
             const logger = getMockedLogger();
             logger.message.withArgs(Level.DEBUG, "Request:  request.json").onFirstCall().returns();
             logger.message
@@ -176,7 +176,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("writes to a file on encountering axios errors if debug is disabled", async () => {
+        await it("writes to a file on encountering axios errors if debug is disabled", async () => {
             const logger = getMockedLogger();
             const client = new AxiosRestClient();
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
@@ -184,7 +184,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(logger.logToFile).to.have.been.calledOnce;
         });
 
-        it("logs progress", async () => {
+        await it("logs progress", async () => {
             const clock = useFakeTimers();
             const logger = getMockedLogger();
             const stubbedAxios = stub(BaseAxios.default.create());
@@ -217,8 +217,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe("put", () => {
-        it("returns the response", async () => {
+    await describe("put", () => {
+        await it("returns the response", async () => {
             const client = new AxiosRestClient();
             const response: BaseAxios.AxiosResponse<string> = {
                 config: {
@@ -235,7 +235,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(await client.put("https://example.org")).to.deep.eq(response);
         });
 
-        it("writes to a file on encountering axios errors if debug is enabled", async () => {
+        await it("writes to a file on encountering axios errors if debug is enabled", async () => {
             const logger = getMockedLogger();
             logger.message.withArgs(Level.DEBUG, "Request:  request.json").onFirstCall().returns();
             logger.message
@@ -282,7 +282,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("writes to a file on encountering axios errors if debug is disabled", async () => {
+        await it("writes to a file on encountering axios errors if debug is disabled", async () => {
             const logger = getMockedLogger();
             const client = new AxiosRestClient();
             await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
@@ -290,7 +290,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(logger.logToFile).to.have.been.calledOnce;
         });
 
-        it("logs progress", async () => {
+        await it("logs progress", async () => {
             const clock = useFakeTimers();
             const logger = getMockedLogger();
             const stubbedAxios = stub(BaseAxios.default.create());
@@ -323,7 +323,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    it("logs form data", async () => {
+    await it("logs form data", async () => {
         const logger = getMockedLogger();
         const restClient = new AxiosRestClient({ debug: true });
         const formdata = new FormData();
@@ -334,7 +334,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         expect(logger.logToFile.firstCall.args[0]).to.contain('{\\"hello\\":\\"bonjour\\"}');
     });
 
-    it("logs formdata only up to a certain length", async () => {
+    await it("logs formdata only up to a certain length", async () => {
         const logger = getMockedLogger();
         const restClient = new AxiosRestClient({ debug: true, fileSizeLimit: 0.5 });
         const formdata = new FormData();
@@ -347,7 +347,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         expect(logger.logToFile.secondCall.args[0]).to.contain("[... omitted due to file size]");
     });
 
-    it("logs requests happening at the same time", async () => {
+    await it("logs requests happening at the same time", async () => {
         useFakeTimers(new Date(12345));
         const logger = getMockedLogger();
         const restClient = new AxiosRestClient({ debug: true });
@@ -365,7 +365,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         );
     });
 
-    it("does not rate limit requests by default", async () => {
+    await it("does not rate limit requests by default", async () => {
         const restClient = new AxiosRestClient();
         const responses = await Promise.all([
             restClient.get(`http://${LOCAL_SERVER.url}`),
@@ -402,7 +402,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         expect(dateHeader9.getTime() - dateHeader8.getTime()).to.be.approximately(0, 50);
     }).timeout(3000);
 
-    it("rate limits requests", async () => {
+    await it("rate limits requests", async () => {
         const restClient = new AxiosRestClient({ rateLimiting: { requestsPerSecond: 2 } });
         const responses = await Promise.all([
             restClient.get(`http://${LOCAL_SERVER.url}`),

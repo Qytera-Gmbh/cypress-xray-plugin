@@ -23,8 +23,8 @@ import { XrayClientCloud } from "./xray-client-cloud.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(XrayClientCloud.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(XrayClientCloud.name, () => {
         let client: XrayClientCloud;
         let restClient: SinonStubbedInstance<AxiosRestClient>;
 
@@ -35,8 +35,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             client = new XrayClientCloud(credentials, restClient);
         });
 
-        describe("import execution", () => {
-            it("calls the correct endpoint", async () => {
+        await describe("import execution", () => {
+            await it("calls the correct endpoint", async () => {
                 getMockedLogger();
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -81,7 +81,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("should handle successful responses", async () => {
+            await it("should handle successful responses", async () => {
                 getMockedLogger();
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -124,7 +124,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(response).to.eq("CYP-123");
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 400",
@@ -172,8 +172,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("import execution multipart", () => {
-            it("calls the correct endpoint", async () => {
+        await describe("import execution multipart", () => {
+            await it("calls the correct endpoint", async () => {
                 getMockedLogger();
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -205,7 +205,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles successful responses", async () => {
+            await it("handles successful responses", async () => {
                 getMockedLogger();
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -235,7 +235,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(response).to.eq("CYP-123");
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 400",
@@ -280,8 +280,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("import execution cucumber multipart", () => {
-            it("calls the correct endpoint", async () => {
+        await describe("import execution cucumber multipart", () => {
+            await it("calls the correct endpoint", async () => {
                 getMockedLogger();
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -313,7 +313,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("should handle successful responses", async () => {
+            await it("should handle successful responses", async () => {
                 getMockedLogger();
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -343,7 +343,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(response).to.eq("CYP-123");
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 400",
@@ -388,8 +388,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("import feature", () => {
-            it("calls the correct endpoint", async () => {
+        await describe("import feature", () => {
+            await it("calls the correct endpoint", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: {
@@ -427,7 +427,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles successful responses", async () => {
+            await it("handles successful responses", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: {
@@ -466,7 +466,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 });
             });
 
-            it("handles responses with errors", async () => {
+            await it("handles responses with errors", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post
                     .withArgs(
@@ -514,7 +514,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles responses without any updated issues", async () => {
+            await it("handles responses without any updated issues", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post
                     .withArgs("https://xray.cloud.getxray.app/api/v2/import/feature?source=CYP")
@@ -557,7 +557,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 400",
@@ -597,7 +597,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles network failures", async () => {
+            await it("handles network failures", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new Error("Connection timeout");
                 restClient.post.onFirstCall().rejects(error);
@@ -617,8 +617,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("get test types", () => {
-            it("calls the correct endpoint", async () => {
+        await describe("get test types", () => {
+            await it("calls the correct endpoint", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: JSON.parse(
@@ -658,7 +658,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("should handle successful responses", async () => {
+            await it("should handle successful responses", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: JSON.parse(
@@ -686,7 +686,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 });
             });
 
-            it("should paginate big requests", async () => {
+            await it("should paginate big requests", async () => {
                 const mockedData: GetTestsResponse<unknown> = JSON.parse(
                     fs.readFileSync(
                         "./test/resources/fixtures/xray/responses/getTestsTypes.json",
@@ -813,7 +813,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 });
             });
 
-            it("should handle bad responses", async () => {
+            await it("should handle bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 400",
@@ -845,8 +845,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("get test results", () => {
-            it("calls the correct endpoint", async () => {
+        await describe("get test results", () => {
+            await it("calls the correct endpoint", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: {
@@ -919,7 +919,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles successful responses", async () => {
+            await it("handles successful responses", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: {
@@ -997,7 +997,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 ]);
             });
 
-            it("should paginate big requests", async () => {
+            await it("should paginate big requests", async () => {
                 restClient.post.onCall(0).resolves({
                     config: { headers: new AxiosHeaders() },
                     data: {
@@ -1181,7 +1181,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 ]);
             });
 
-            it("should handle bad responses", async () => {
+            await it("should handle bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 400",

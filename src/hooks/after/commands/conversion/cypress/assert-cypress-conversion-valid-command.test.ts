@@ -9,9 +9,9 @@ import { AssertCypressConversionValidCommand } from "./assert-cypress-conversion
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(AssertCypressConversionValidCommand.name, () => {
-        it("correctly verifies xray json data", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(AssertCypressConversionValidCommand.name, () => {
+        await it("correctly verifies xray json data", async () => {
             const logger = getMockedLogger();
             const xrayJson: Parameters<XrayClient["importExecutionMultipart"]> = [
                 {
@@ -36,7 +36,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             await expect(command.compute()).to.eventually.not.be.rejected;
         });
 
-        it("throws for missing xray test arrays", async () => {
+        await it("throws for missing xray test arrays", async () => {
             const logger = getMockedLogger();
             const xrayJson: Parameters<XrayClient["importExecutionMultipart"]> = [
                 { testExecutionKey: "CYP-123" },
@@ -60,7 +60,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("throws for empty xray test arrays", async () => {
+        await it("throws for empty xray test arrays", async () => {
             const logger = getMockedLogger();
             const xrayJson: Parameters<XrayClient["importExecutionMultipart"]> = [
                 {

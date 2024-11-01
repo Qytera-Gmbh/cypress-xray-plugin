@@ -2,12 +2,12 @@ import { expect } from "chai";
 import path from "path";
 import { dedent } from "./dedent.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    it("strips leading whitespace", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await it("strips leading whitespace", () => {
         expect(dedent(`   Hello\nthere\nyo`)).to.eq("Hello\nthere\nyo");
     });
 
-    it("strips leading and trailing multiline whitespace", () => {
+    await it("strips leading and trailing multiline whitespace", () => {
         expect(
             dedent(`
                 Hello
@@ -17,7 +17,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         ).to.eq("Hello\n  there\n    yo");
     });
 
-    it("adds indentation to newlines in between", () => {
+    await it("adds indentation to newlines in between", () => {
         expect(
             dedent(`
                 Hello
@@ -28,7 +28,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         ).to.eq("Hello\n  there\n    example 1\n    example 2\n  yo");
     });
 
-    it("handles unindented strings", () => {
+    await it("handles unindented strings", () => {
         expect(dedent(`Hello`)).to.eq("Hello");
     });
 });

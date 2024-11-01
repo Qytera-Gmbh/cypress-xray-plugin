@@ -5,9 +5,9 @@ import { dedent } from "../../../../util/dedent.js";
 import { Level } from "../../../../util/logging.js";
 import { ImportFeatureCommand } from "./import-feature-command.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(ImportFeatureCommand.name, () => {
-        it("imports features", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(ImportFeatureCommand.name, () => {
+        await it("imports features", async () => {
             const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient();
             const command = new ImportFeatureCommand(
@@ -31,7 +31,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("warns about import errors", async () => {
+        await it("warns about import errors", async () => {
             const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient();
             const command = new ImportFeatureCommand(

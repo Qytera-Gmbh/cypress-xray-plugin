@@ -10,9 +10,9 @@ import { VerifyResultsUploadCommand } from "./verify-results-upload-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(VerifyResultsUploadCommand.name, () => {
-        it("prints a success message for successful cypress uploads", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(VerifyResultsUploadCommand.name, () => {
+        await it("prints a success message for successful cypress uploads", async () => {
             const logger = getMockedLogger();
             const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
                 cucumberExecutionIssueKey: new ConstantCommand(logger, undefined),
@@ -25,7 +25,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("prints a success message for successful cucumber uploads", async () => {
+        await it("prints a success message for successful cucumber uploads", async () => {
             const logger = getMockedLogger();
             const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
                 cucumberExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
@@ -38,7 +38,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("prints a success message for successful uploads", async () => {
+        await it("prints a success message for successful uploads", async () => {
             const logger = getMockedLogger();
             const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
                 cucumberExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
@@ -51,7 +51,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("skips for mismatched execution issue keys", async () => {
+        await it("skips for mismatched execution issue keys", async () => {
             const logger = getMockedLogger();
             const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
                 cucumberExecutionIssueKey: new ConstantCommand(logger, "CYP-456"),
@@ -71,7 +71,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
         });
 
-        it("skips when there are no results", async () => {
+        await it("skips when there are no results", async () => {
             const logger = getMockedLogger();
             const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
                 cucumberExecutionIssueKey: new ConstantCommand(logger, undefined),

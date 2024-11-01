@@ -108,7 +108,7 @@
     },
     "overrides": [
         {
-            "files": ["*.spec.ts"],
+            "files": ["*.test.ts"],
             "rules": {
                 // Clashes with sinon/chai assertions like: expect(method).to.not.have.been.called
                 "@typescript-eslint/unbound-method": "off",

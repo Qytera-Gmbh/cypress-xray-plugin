@@ -2,15 +2,15 @@ import { expect } from "chai";
 import path from "path";
 import { Queue } from "./queue.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
     let queue = new Queue<number>();
 
     beforeEach(() => {
         queue = new Queue<number>();
     });
 
-    describe(queue.enqueue.name, () => {
-        it("enqueues elements", () => {
+    await describe(queue.enqueue.name, () => {
+        await it("enqueues elements", () => {
             queue.enqueue(10);
             expect(queue.peek()).to.eq(10);
             queue.enqueue(15);
@@ -18,8 +18,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(queue.dequeue.name, () => {
-        it("dequeues elements", () => {
+    await describe(queue.dequeue.name, () => {
+        await it("dequeues elements", () => {
             queue
                 .enqueue(0)
                 .enqueue(1)
@@ -41,13 +41,13 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(queue.dequeue()).to.eq(8);
         });
 
-        it("throws if the queue is empty", () => {
+        await it("throws if the queue is empty", () => {
             expect(() => queue.dequeue()).to.throw("Queue is empty");
         });
     });
 
-    describe(queue.peek.name, () => {
-        it("peeks elements", () => {
+    await describe(queue.peek.name, () => {
+        await it("peeks elements", () => {
             queue.enqueue(0);
             expect(queue.peek()).to.eq(0);
             queue.enqueue(1);
@@ -56,13 +56,13 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(queue.peek()).to.eq(0);
         });
 
-        it("throws if the queue is empty", () => {
+        await it("throws if the queue is empty", () => {
             expect(() => queue.peek()).to.throw("Queue is empty");
         });
     });
 
-    describe(queue.size.name, () => {
-        it("computes the size", () => {
+    await describe(queue.size.name, () => {
+        await it("computes the size", () => {
             expect(queue.size()).to.eq(0);
             queue.enqueue(0);
             expect(queue.size()).to.eq(1);
@@ -75,8 +75,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(queue.has.name, () => {
-        it("returns true for known elements", () => {
+    await describe(queue.has.name, () => {
+        await it("returns true for known elements", () => {
             queue
                 .enqueue(0)
                 .enqueue(1)
@@ -98,28 +98,28 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(queue.has(8)).to.be.true;
         });
 
-        it("returns false for unknown elements", () => {
+        await it("returns false for unknown elements", () => {
             queue.enqueue(0).enqueue(1).enqueue(2);
             expect(queue.has(4)).to.be.false;
         });
     });
 
-    describe(queue.find.name, () => {
-        it("finds elements", () => {
+    await describe(queue.find.name, () => {
+        await it("finds elements", () => {
             queue.enqueue(0).enqueue(1).enqueue(2);
             expect(queue.find((e) => e === 0)).to.eq(0);
             expect(queue.find((e) => e === 1)).to.eq(1);
             expect(queue.find((e) => e === 2)).to.eq(2);
         });
 
-        it("does not find nonexistent elements", () => {
+        await it("does not find nonexistent elements", () => {
             queue.enqueue(0).enqueue(1).enqueue(2);
             expect(queue.find((e) => e === 4)).to.be.undefined;
         });
     });
 
-    describe(queue.isEmpty.name, () => {
-        it("computes the emptiness", () => {
+    await describe(queue.isEmpty.name, () => {
+        await it("computes the emptiness", () => {
             expect(queue.isEmpty()).to.be.true;
             queue.enqueue(0);
             expect(queue.isEmpty()).to.be.false;

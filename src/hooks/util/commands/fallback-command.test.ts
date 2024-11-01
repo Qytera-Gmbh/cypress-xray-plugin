@@ -5,9 +5,9 @@ import { ComputableState } from "../../command.js";
 import { ConstantCommand } from "./constant-command.js";
 import { FallbackCommand } from "./fallback-command.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(FallbackCommand.name, () => {
-        it("computes the result if possible", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(FallbackCommand.name, () => {
+        await it("computes the result if possible", async () => {
             const logger = getMockedLogger();
             const input = new ConstantCommand(logger, 42);
             const command = new FallbackCommand(
@@ -21,7 +21,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(await command.compute()).to.eq(42);
         });
 
-        it("returns the fallback value", async () => {
+        await it("returns the fallback value", async () => {
             const logger = getMockedLogger();
             const input = new ConstantCommand(logger, 42);
             const command = new FallbackCommand(

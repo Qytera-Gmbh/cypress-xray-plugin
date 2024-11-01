@@ -4,9 +4,9 @@ import { getMockedLogger } from "../../../../../../test/mocks.js";
 import { ConstantCommand } from "../../../../util/commands/constant-command.js";
 import { CombineCypressJsonCommand } from "./combine-cypress-xray-command.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(CombineCypressJsonCommand.name, () => {
-        it("combines cucumber multipart data", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(CombineCypressJsonCommand.name, () => {
+        await it("combines cucumber multipart data", async () => {
             const logger = getMockedLogger();
             const command = new CombineCypressJsonCommand(
                 { testExecutionIssueKey: "CYP-123" },

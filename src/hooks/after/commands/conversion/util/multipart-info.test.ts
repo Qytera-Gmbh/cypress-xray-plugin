@@ -3,9 +3,9 @@ import path from "path";
 import { dedent } from "../../../../../util/dedent.js";
 import { buildMultipartInfoCloud, buildMultipartInfoServer } from "./multipart-info.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(buildMultipartInfoCloud.name, () => {
-        it("adds default information", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(buildMultipartInfoCloud.name, () => {
+        await it("adds default information", () => {
             const info = buildMultipartInfoCloud(
                 {
                     browserName: "Chromium",
@@ -31,7 +31,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(info.fields.issuetype).to.be.undefined;
         });
 
-        it("uses provided summaries", () => {
+        await it("uses provided summaries", () => {
             const info = buildMultipartInfoCloud(
                 {
                     browserName: "Chromium",
@@ -48,7 +48,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(info.fields.summary).to.eq("Hello");
         });
 
-        it("uses provided descriptions", () => {
+        await it("uses provided descriptions", () => {
             const info = buildMultipartInfoCloud(
                 {
                     browserName: "Chromium",
@@ -65,7 +65,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(info.fields.description).to.eq("Hello There");
         });
 
-        it("uses provided test execution issue types", () => {
+        await it("uses provided test execution issue types", () => {
             const info = buildMultipartInfoCloud(
                 {
                     browserName: "Chromium",
@@ -91,7 +91,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("uses provided test plans", () => {
+        await it("uses provided test plans", () => {
             const info = buildMultipartInfoCloud(
                 {
                     browserName: "Chromium",
@@ -111,7 +111,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(info.xrayFields).to.deep.eq({ environments: undefined, testPlanKey: "CYP-123" });
         });
 
-        it("uses provided test environments", () => {
+        await it("uses provided test environments", () => {
             const info = buildMultipartInfoCloud(
                 {
                     browserName: "Chromium",
@@ -134,7 +134,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("uses provided custom data", () => {
+        await it("uses provided custom data", () => {
             const info = buildMultipartInfoCloud(
                 {
                     browserName: "Chromium",
@@ -178,7 +178,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("prefers custom data to plugin data", () => {
+        await it("prefers custom data to plugin data", () => {
             const info = buildMultipartInfoCloud(
                 {
                     browserName: "Chromium",
@@ -208,8 +208,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(buildMultipartInfoServer.name, () => {
-        it("adds default information", () => {
+    await describe(buildMultipartInfoServer.name, () => {
+        await it("adds default information", () => {
             const info = buildMultipartInfoServer(
                 {
                     browserName: "Chromium",
@@ -236,7 +236,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(info.fields.issuetype).to.be.undefined;
         });
 
-        it("uses provided summaries", () => {
+        await it("uses provided summaries", () => {
             const info = buildMultipartInfoServer(
                 {
                     browserName: "Chromium",
@@ -253,7 +253,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(info.fields.summary).to.eq("Hello");
         });
 
-        it("uses provided descriptions", () => {
+        await it("uses provided descriptions", () => {
             const info = buildMultipartInfoServer(
                 {
                     browserName: "Chromium",
@@ -270,7 +270,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(info.fields.description).to.eq("Hello There");
         });
 
-        it("uses provided test execution issue types", () => {
+        await it("uses provided test execution issue types", () => {
             const info = buildMultipartInfoServer(
                 {
                     browserName: "Chromium",
@@ -295,7 +295,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("uses provided test plans", () => {
+        await it("uses provided test plans", () => {
             const info = buildMultipartInfoServer(
                 {
                     browserName: "Chromium",
@@ -316,7 +316,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(info.fields.customField_12345).to.deep.eq(["CYP-123"]);
         });
 
-        it("uses provided test environments", () => {
+        await it("uses provided test environments", () => {
             const info = buildMultipartInfoServer(
                 {
                     browserName: "Chromium",
@@ -337,7 +337,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(info.fields.customField_12345).to.deep.eq(["DEV"]);
         });
 
-        it("uses provided custom data", () => {
+        await it("uses provided custom data", () => {
             const info = buildMultipartInfoServer(
                 {
                     browserName: "Chromium",
@@ -377,7 +377,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("prefers custom data to plugin data", () => {
+        await it("prefers custom data to plugin data", () => {
             const info = buildMultipartInfoServer(
                 {
                     browserName: "Chromium",

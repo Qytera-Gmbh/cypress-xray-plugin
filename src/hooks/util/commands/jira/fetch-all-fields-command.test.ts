@@ -6,9 +6,9 @@ import { FetchAllFieldsCommand } from "./fetch-all-fields-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(FetchAllFieldsCommand.name, () => {
-        it("fetches fields", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(FetchAllFieldsCommand.name, () => {
+        await it("fetches fields", async () => {
             const jiraClient = getMockedJiraClient();
             const fields = [
                 {

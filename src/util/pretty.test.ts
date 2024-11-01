@@ -2,9 +2,9 @@ import { expect } from "chai";
 import path from "path";
 import { prettyPadObjects, prettyPadValues } from "./pretty.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(prettyPadObjects.name, () => {
-        it("pretty pad object arrays", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(prettyPadObjects.name, () => {
+        await it("pretty pad object arrays", () => {
             const array = [
                 {
                     clauseNames: ["summary"],
@@ -52,7 +52,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 },
             ]);
         });
-        it("pretty pad object values", () => {
+        await it("pretty pad object values", () => {
             expect(
                 prettyPadValues({
                     a: [1, 2, false, true, "george"],

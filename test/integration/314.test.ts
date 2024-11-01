@@ -12,7 +12,7 @@ import { runCypress, setupCypressProject } from "../sh.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/314
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
     for (const test of [
         {
             commandFileContent: dedent(`
@@ -71,14 +71,14 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             title: "cy.request gets overwritten using task calls (server)",
         },
     ] as const) {
-        it(test.title, () => {
+        await it(test.title, () => {
             const project = setupCypressProject({
                 commandFileContent: test.commandFileContent,
                 testFiles: [
                     {
                         content: dedent(`
-                            describe("request", () => {
-                                it("${test.testIssueKey} does something", () => {
+                            await describe("request", () => {
+                                await it("${test.testIssueKey} does something", () => {
                                     cy.request("${LOCAL_SERVER.url}");
                                 });
                             });

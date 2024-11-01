@@ -7,9 +7,9 @@ import type { MultipartInfo } from "../../../../../types/xray/requests/import-ex
 import { ConstantCommand } from "../../../../util/commands/constant-command.js";
 import { CombineCucumberMultipartCommand } from "./combine-cucumber-multipart-command.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(CombineCucumberMultipartCommand.name, () => {
-        it("combines cucumber multipart data", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(CombineCucumberMultipartCommand.name, () => {
+        await it("combines cucumber multipart data", async () => {
             const logger = getMockedLogger();
             const cucumberFeatures: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(

@@ -16,8 +16,8 @@ import { BaseJiraClient } from "./jira-client.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(BaseJiraClient.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(BaseJiraClient.name, () => {
         let client: BaseJiraClient;
         let restClient: SinonStubbedInstance<AxiosRestClient>;
 
@@ -30,8 +30,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        describe("add attachment", () => {
-            it("should use the correct headers", async () => {
+        await describe("add attachment", () => {
+            await it("should use the correct headers", async () => {
                 restClient.post.resolves({
                     config: {
                         headers: new AxiosHeaders(),
@@ -54,8 +54,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(headers["content-type"]).to.match(/multipart\/form-data; .+/);
             });
 
-            describe("single file attachment", () => {
-                it("returns the correct values", async () => {
+            await describe("single file attachment", () => {
+                await it("returns the correct values", async () => {
                     const mockedData = JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/singleAttachment.json",
@@ -79,8 +79,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 });
             });
 
-            describe("multiple file attachment", () => {
-                it("returns the correct values", async () => {
+            await describe("multiple file attachment", () => {
+                await it("returns the correct values", async () => {
                     const mockedData = JSON.parse(
                         fs.readFileSync(
                             "./test/resources/fixtures/jira/responses/multipleAttachments.json",
@@ -105,7 +105,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 });
             });
 
-            it("logs missing files", async () => {
+            await it("logs missing files", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const mockedData = JSON.parse(
                     fs.readFileSync(
@@ -135,7 +135,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("skips missing files", async () => {
+            await it("skips missing files", async () => {
                 getMockedLogger({ allowUnstubbedCalls: true });
                 const mockedData = JSON.parse(
                     fs.readFileSync(
@@ -161,7 +161,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(response).to.eq(mockedData);
             });
 
-            it("immediately returns an empty array when all files are missing", async () => {
+            await it("immediately returns an empty array when all files are missing", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const response = await client.addAttachment(
                     "CYP-123",
@@ -175,7 +175,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("immediately returns an empty array when no files are provided", async () => {
+            await it("immediately returns an empty array when no files are provided", async () => {
                 const logger = getMockedLogger();
                 logger.message
                     .withArgs(
@@ -188,7 +188,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(response).to.be.an("array").that.is.empty;
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 413",
@@ -220,8 +220,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("get issue types", () => {
-            it("returns issue types", async () => {
+        await describe("get issue types", () => {
+            await it("returns issue types", async () => {
                 const issueTypes = JSON.parse(
                     fs.readFileSync(
                         "./test/resources/fixtures/jira/responses/getIssueTypes.json",
@@ -240,7 +240,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(await client.getIssueTypes()).to.eq(issueTypes);
             });
 
-            it("handles issues without name or id", async () => {
+            await it("handles issues without name or id", async () => {
                 const issueTypes: IssueTypeDetails[] = [
                     { id: "12345" },
                     { name: "Custom issue" },
@@ -258,7 +258,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(await client.getIssueTypes()).to.eq(issueTypes);
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 409",
@@ -290,8 +290,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("get fields", () => {
-            it("returns the correct values", async () => {
+        await describe("get fields", () => {
+            await it("returns the correct values", async () => {
                 const mockedData = JSON.parse(
                     fs.readFileSync(
                         "./test/resources/fixtures/jira/responses/getFields.json",
@@ -311,7 +311,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(fields).to.eq(mockedData);
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 409",
@@ -343,8 +343,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("get myself", () => {
-            it("returns user details", async () => {
+        await describe("get myself", () => {
+            await it("returns user details", async () => {
                 restClient.get.onFirstCall().resolves({
                     config: {
                         headers: new AxiosHeaders(),
@@ -369,7 +369,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 409",
@@ -401,8 +401,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("search", () => {
-            it("should return all issues without pagination", async () => {
+        await describe("search", () => {
+            await it("should return all issues without pagination", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: {
                         headers: new AxiosHeaders(),
@@ -429,7 +429,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(response[3].key).to.eq("CYP-268");
             });
 
-            it("returns all issues with pagination", async () => {
+            await it("returns all issues with pagination", async () => {
                 const mockedData: SearchResults = JSON.parse(
                     fs.readFileSync("./test/resources/fixtures/jira/responses/search.json", "utf-8")
                 ) as SearchResults;
@@ -521,7 +521,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(response[3].key).to.eq("CYP-268");
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 401",
@@ -553,8 +553,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("editIssue", () => {
-            it("edits issues", async () => {
+        await describe("editIssue", () => {
+            await it("edits issues", async () => {
                 restClient.put
                     .withArgs("https://example.org/rest/api/latest/issue/CYP-XYZ", {
                         fields: { summary: "Hi" },
@@ -576,7 +576,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 ).to.eq("CYP-XYZ");
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 400",
@@ -610,8 +610,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("transitionIssue", () => {
-            it("transitions issues", async () => {
+        await describe("transitionIssue", () => {
+            await it("transitions issues", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: {
                         headers: new AxiosHeaders(),
@@ -645,7 +645,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 404",

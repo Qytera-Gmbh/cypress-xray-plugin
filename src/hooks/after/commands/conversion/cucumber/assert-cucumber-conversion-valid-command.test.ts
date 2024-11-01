@@ -13,9 +13,9 @@ import { AssertCucumberConversionValidCommand } from "./assert-cucumber-conversi
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(AssertCucumberConversionValidCommand.name, () => {
-        it("correctly verifies cucumber multipart data", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(AssertCucumberConversionValidCommand.name, () => {
+        await it("correctly verifies cucumber multipart data", async () => {
             const logger = getMockedLogger();
             const cucumberFeatures: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
@@ -40,7 +40,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             await expect(command.compute()).to.not.be.rejected;
         });
 
-        it("throws for empty feature arrays", async () => {
+        await it("throws for empty feature arrays", async () => {
             const logger = getMockedLogger();
             const cucumberInfo: MultipartInfo = JSON.parse(
                 fs.readFileSync(
