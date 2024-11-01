@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { describe, it } from "node:test";
 import path from "path";
 import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks.js";
 import type { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results.js";

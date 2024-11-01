@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { describe, it } from "node:test";
 import path from "path";
 import { dedent } from "../../../../../util/dedent.js";
 import { buildMultipartInfoCloud, buildMultipartInfoServer } from "./multipart-info.js";

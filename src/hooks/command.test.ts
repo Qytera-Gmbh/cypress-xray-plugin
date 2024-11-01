@@ -1,4 +1,4 @@
-import chai, { expect } from "chai";
+import chai, { expect } from "chai"; import { describe, it } from "node:test";
 import chaiAsPromised from "chai-as-promised";
 import EventEmitter from "events";
 import path from "path";

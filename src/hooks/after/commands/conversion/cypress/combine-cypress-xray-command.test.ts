@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { describe, it } from "node:test";
 import path from "path";
 import { getMockedLogger } from "../../../../../../test/mocks.js";
 import { ConstantCommand } from "../../../../util/commands/constant-command.js";

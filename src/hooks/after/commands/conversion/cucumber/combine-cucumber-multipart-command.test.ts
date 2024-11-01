@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import fs from "fs";
+import { describe, it } from "node:test";
 import path from "path";
 import { getMockedLogger } from "../../../../../../test/mocks.js";
 import type { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart.js";

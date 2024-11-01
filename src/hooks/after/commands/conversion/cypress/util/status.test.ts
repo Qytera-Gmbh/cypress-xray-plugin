@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { describe, it } from "node:test";
 import path from "path";
 import { CypressStatus } from "../../../../../../types/cypress/status.js";
 import { getXrayStatus, toCypressStatus } from "./status.js";

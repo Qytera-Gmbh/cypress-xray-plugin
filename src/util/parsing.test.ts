@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { describe, it } from "node:test";
 import path from "path";
 import { dedent } from "./dedent.js";
 import { asArrayOfStrings, asBoolean, asFloat, asInt, asObject } from "./parsing.js";

@@ -1,5 +1,6 @@
 import type { Background } from "@cucumber/messages";
 import { expect } from "chai";
+import { describe, it } from "node:test";
 import path from "path";
 import { parseFeatureFile } from "./gherkin.js";
 import {

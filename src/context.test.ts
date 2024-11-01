@@ -1,5 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { describe, it } from "node:test";
 import { stub } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../test/mocks.js";
 import {

@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { describe, it } from "node:test";
 import path from "path";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks.js";
 import { assertIsInstanceOf } from "../../../test/util.js";
