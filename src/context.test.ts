@@ -23,7 +23,7 @@ import {
 } from "./context.js";
 
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
-import path from "path";
+import { relative } from "path";
 import { AxiosRestClient } from "./client/https/https.js";
 import type { User } from "./types/jira/responses/user.js";
 import type {
@@ -40,7 +40,7 @@ import { CapturingLogger, Level } from "./util/logging.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe("the plugin context configuration", async () => {
         await describe("the option initialization", async () => {
             await describe("should have certain default values", async () => {

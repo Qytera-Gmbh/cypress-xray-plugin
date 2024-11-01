@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { LoggedError, errorMessage, isLoggedError } from "./errors.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(errorMessage.name, async () => {
         await it("returns error messages", () => {
             expect(errorMessage(new Error("Hi"))).to.eq("Hi");

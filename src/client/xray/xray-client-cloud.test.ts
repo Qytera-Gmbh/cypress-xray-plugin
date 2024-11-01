@@ -3,7 +3,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import { beforeEach, describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import type { SinonStubbedInstance } from "sinon";
 import {
     getMockedJwtCredentials,
@@ -24,7 +24,7 @@ import { XrayClientCloud } from "./xray-client-cloud.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(XrayClientCloud.name, async () => {
         let client: XrayClientCloud;
         let restClient: SinonStubbedInstance<AxiosRestClient>;

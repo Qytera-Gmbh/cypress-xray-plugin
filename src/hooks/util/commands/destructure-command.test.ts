@@ -1,11 +1,11 @@
 import { expect } from "chai";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedLogger } from "../../../../test/mocks.js";
 import { ConstantCommand } from "./constant-command.js";
 import { DestructureCommand } from "./destructure-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(DestructureCommand.name, async () => {
         await it("returns the accessed object value", async () => {
             const logger = getMockedLogger();

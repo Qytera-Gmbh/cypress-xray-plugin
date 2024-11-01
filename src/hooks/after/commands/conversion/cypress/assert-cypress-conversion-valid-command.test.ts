@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedLogger } from "../../../../../../test/mocks.js";
 import type { XrayClient } from "../../../../../client/xray/xray-client.js";
 import type { XrayTest } from "../../../../../types/xray/import-test-execution-results.js";
@@ -10,7 +10,7 @@ import { AssertCypressConversionValidCommand } from "./assert-cypress-conversion
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(AssertCypressConversionValidCommand.name, async () => {
         await it("correctly verifies xray json data", async () => {
             const logger = getMockedLogger();

@@ -1,11 +1,11 @@
 import type { Scenario } from "@cucumber/messages";
 import { expect } from "chai";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { parseFeatureFile } from "./gherkin.js";
 import { getCucumberScenarioIssueTags } from "./scenario.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(getCucumberScenarioIssueTags.name, async () => {
         await it("extracts scenario tags without prefix", () => {
             const feature = parseFeatureFile(

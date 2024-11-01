@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { dedent } from "./dedent.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await it("strips leading whitespace", () => {
         expect(dedent(`   Hello\nthere\nyo`)).to.eq("Hello\nthere\nyo");
     });

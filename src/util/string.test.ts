@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { dedent } from "./dedent.js";
 import { unknownToString } from "./string.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(unknownToString.name, async () => {
         await it("string", () => {
             expect(unknownToString("hi")).to.eq("hi");

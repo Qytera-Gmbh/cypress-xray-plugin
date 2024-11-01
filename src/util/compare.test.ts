@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { contains } from "./compare.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(contains.name, async () => {
         await describe("primitive types", async () => {
             await it("bigint", () => {

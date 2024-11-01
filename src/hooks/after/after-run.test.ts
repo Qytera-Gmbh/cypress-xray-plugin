@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import { beforeEach, describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { useFakeTimers } from "sinon";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks.js";
 import { assertIsInstanceOf } from "../../../test/util.js";
@@ -1182,7 +1182,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                 graph.place(
                     new ImportFeatureCommand(
                         {
-                            filePath: path.relative(".", "cypress/e2e/nonexistent.cy.feature"),
+                            filePath: relative(".", "cypress/e2e/nonexistent.cy.feature"),
                             xrayClient: clients.xrayClient,
                         },
                         logger

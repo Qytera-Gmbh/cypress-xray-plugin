@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import process from "process";
 import { dedent } from "../../src/util/dedent.js";
 import { runCypress, setupCypressProject } from "../sh.js";
@@ -12,39 +12,36 @@ import { getCreatedTestExecutionIssueKey } from "./util.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/341
 // ============================================================================================== //
 
-await describe(
-    path.relative(process.cwd(), import.meta.filename),
-    { timeout: 180000 },
-    async () => {
-        for (const test of [
-            {
-                cucumberTestPrefix: "TestName:",
-                projectKey: "CYP",
-                service: "cloud",
-                testKeys: {
-                    included: "CYP-798",
-                    skipped: "CYP-797",
-                },
-                title: "results upload works for skipped cucumber tests (cloud)",
-                xrayPassedStatus: "PASSED",
-                xraySkippedStatus: "SKIPPED",
+await describe(relative(process.cwd(), import.meta.filename), { timeout: 180000 }, async () => {
+    for (const test of [
+        {
+            cucumberTestPrefix: "TestName:",
+            projectKey: "CYP",
+            service: "cloud",
+            testKeys: {
+                included: "CYP-798",
+                skipped: "CYP-797",
             },
-            {
-                cucumberTestPrefix: "TEST_",
-                projectKey: "CYPLUG",
-                service: "server",
-                testKeys: {
-                    included: "CYPLUG-208",
-                    skipped: "CYPLUG-209",
-                },
-                title: "results upload works for skipped cucumber tests (server)",
-                xrayPassedStatus: "PASS",
-                xraySkippedStatus: "ABORTED",
+            title: "results upload works for skipped cucumber tests (cloud)",
+            xrayPassedStatus: "PASSED",
+            xraySkippedStatus: "SKIPPED",
+        },
+        {
+            cucumberTestPrefix: "TEST_",
+            projectKey: "CYPLUG",
+            service: "server",
+            testKeys: {
+                included: "CYPLUG-208",
+                skipped: "CYPLUG-209",
             },
-        ] as const) {
-            await it(test.title, async () => {
-                const project = setupCypressProject({
-                    configFileContent: dedent(`
+            title: "results upload works for skipped cucumber tests (server)",
+            xrayPassedStatus: "PASS",
+            xraySkippedStatus: "ABORTED",
+        },
+    ] as const) {
+        await it(test.title, async () => {
+            const project = setupCypressProject({
+                configFileContent: dedent(`
                     const preprocessor = require("@badeball/cypress-cucumber-preprocessor");
                     const createEsbuildPlugin = require("@badeball/cypress-cucumber-preprocessor/esbuild");
                     const createBundler = require("@bahmutov/cypress-esbuild-preprocessor");
@@ -100,30 +97,30 @@ await describe(
                         },
                     });
                 `),
-                    cucumber: {
-                        configFileContent: dedent(`
+                cucumber: {
+                    configFileContent: dedent(`
                         {
                             "json": {
                                 "enabled": true
                             }
                         }
                     `),
-                        stepDefinitions: [
-                            {
-                                content: dedent(`
+                    stepDefinitions: [
+                        {
+                            content: dedent(`
                                 import { Given } from "@badeball/cypress-cucumber-preprocessor";
 
                                 Given("a step", () => {
                                     expect(true).to.be.true;
                                 });
                             `),
-                                filename: "steps.js",
-                            },
-                        ],
-                    },
-                    testFiles: [
-                        {
-                            content: dedent(`
+                            filename: "steps.js",
+                        },
+                    ],
+                },
+                testFiles: [
+                    {
+                        content: dedent(`
                             Feature: Testing a single scenario
 
                                 @skip
@@ -133,68 +130,66 @@ await describe(
                                     Given a step
                                     Given a step
                         `),
-                            fileName: "cucumber-skipped.feature",
-                        },
-                        {
-                            content: dedent(`
+                        fileName: "cucumber-skipped.feature",
+                    },
+                    {
+                        content: dedent(`
                             Feature: Testing a single scenario
 
                             @${test.cucumberTestPrefix}${test.testKeys.included}
                                 Scenario: included cucumber test
                                     Given a step
                         `),
-                            fileName: "cucumber-included.feature",
-                        },
-                    ],
-                });
-                const output = runCypress(project.projectDirectory, {
-                    env: {
-                        ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 341",
+                        fileName: "cucumber-included.feature",
                     },
-                    includeDefaultEnv: test.service,
-                });
-
-                const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
-                    test.projectKey,
-                    output,
-                    "cucumber"
-                );
-
-                if (test.service === "cloud") {
-                    const searchResult = await getIntegrationClient("jira", test.service).search({
-                        fields: ["id"],
-                        jql: `issue in (${testExecutionIssueKey})`,
-                    });
-                    expectToExist(searchResult[0].id);
-                    const testResults = await getIntegrationClient(
-                        "xray",
-                        test.service
-                    ).getTestResults(searchResult[0].id);
-                    const includedTest = testResults.find(
-                        (r) => r.jira.summary === "included cucumber test"
-                    );
-                    expectToExist(includedTest);
-                    expect(includedTest.status?.name).to.eq(test.xrayPassedStatus);
-                    const skippedTest = testResults.find(
-                        (r) => r.jira.summary === "skipped cucumber test"
-                    );
-                    expectToExist(skippedTest);
-                    expect(skippedTest.status?.name).to.eq(test.xraySkippedStatus);
-                }
-
-                if (test.service === "server") {
-                    const testResults = await getIntegrationClient(
-                        "xray",
-                        test.service
-                    ).getTestExecution(testExecutionIssueKey);
-                    const includedTest = testResults.find((r) => r.key === test.testKeys.included);
-                    expectToExist(includedTest);
-                    expect(includedTest.status).to.eq(test.xrayPassedStatus);
-                    const skippedTest = testResults.find((r) => r.key === test.testKeys.skipped);
-                    expectToExist(skippedTest);
-                    expect(skippedTest.status).to.eq(test.xraySkippedStatus);
-                }
+                ],
             });
-        }
+            const output = runCypress(project.projectDirectory, {
+                env: {
+                    ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 341",
+                },
+                includeDefaultEnv: test.service,
+            });
+
+            const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
+                test.projectKey,
+                output,
+                "cucumber"
+            );
+
+            if (test.service === "cloud") {
+                const searchResult = await getIntegrationClient("jira", test.service).search({
+                    fields: ["id"],
+                    jql: `issue in (${testExecutionIssueKey})`,
+                });
+                expectToExist(searchResult[0].id);
+                const testResults = await getIntegrationClient("xray", test.service).getTestResults(
+                    searchResult[0].id
+                );
+                const includedTest = testResults.find(
+                    (r) => r.jira.summary === "included cucumber test"
+                );
+                expectToExist(includedTest);
+                expect(includedTest.status?.name).to.eq(test.xrayPassedStatus);
+                const skippedTest = testResults.find(
+                    (r) => r.jira.summary === "skipped cucumber test"
+                );
+                expectToExist(skippedTest);
+                expect(skippedTest.status?.name).to.eq(test.xraySkippedStatus);
+            }
+
+            if (test.service === "server") {
+                const testResults = await getIntegrationClient(
+                    "xray",
+                    test.service
+                ).getTestExecution(testExecutionIssueKey);
+                const includedTest = testResults.find((r) => r.key === test.testKeys.included);
+                expectToExist(includedTest);
+                expect(includedTest.status).to.eq(test.xrayPassedStatus);
+                const skippedTest = testResults.find((r) => r.key === test.testKeys.skipped);
+                expectToExist(skippedTest);
+                expect(skippedTest.status).to.eq(test.xraySkippedStatus);
+            }
+        });
     }
-);
+});

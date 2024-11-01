@@ -2,14 +2,14 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import EventEmitter from "events";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedLogger } from "../../test/mocks.js";
 import { SkippedError } from "../util/errors.js";
 import { Command, ComputableState } from "./command.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(Command.name, async () => {
         await it("computes the result on compute call", async () => {
             const logger = getMockedLogger();

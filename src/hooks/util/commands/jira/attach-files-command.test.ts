@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks.js";
 import { Level } from "../../../../util/logging.js";
 import { ConstantCommand } from "../constant-command.js";
@@ -9,7 +9,7 @@ import { AttachFilesCommand } from "./attach-files-command.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(AttachFilesCommand.name, async () => {
         await it("attaches files", async () => {
             const logger = getMockedLogger();

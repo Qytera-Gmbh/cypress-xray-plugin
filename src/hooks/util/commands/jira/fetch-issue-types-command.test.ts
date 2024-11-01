@@ -1,13 +1,13 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks.js";
 import { FetchIssueTypesCommand } from "./fetch-issue-types-command.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(FetchIssueTypesCommand.name, async () => {
         await it("fetches issue types", async () => {
             const jiraClient = getMockedJiraClient();

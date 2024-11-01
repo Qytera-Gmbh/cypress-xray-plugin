@@ -1,14 +1,14 @@
 import { expect } from "chai";
 import fs from "fs";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedLogger } from "../../../../../../test/mocks.js";
 import type { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart.js";
 import type { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info.js";
 import { ConstantCommand } from "../../../../util/commands/constant-command.js";
 import { CombineCucumberMultipartCommand } from "./combine-cucumber-multipart-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(CombineCucumberMultipartCommand.name, async () => {
         await it("combines cucumber multipart data", async () => {
             const logger = getMockedLogger();
