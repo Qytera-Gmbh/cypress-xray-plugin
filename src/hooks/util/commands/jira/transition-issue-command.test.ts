@@ -1,7 +1,8 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks.js";
 import { Level } from "../../../../util/logging.js";
 import { ConstantCommand } from "../constant-command.js";
@@ -9,7 +10,7 @@ import { TransitionIssueCommand } from "./transition-issue-command.js";
 
 chai.use(chaiAsPromised);
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(TransitionIssueCommand.name, async () => {
         await it("transitions issues", async () => {
             const logger = getMockedLogger();

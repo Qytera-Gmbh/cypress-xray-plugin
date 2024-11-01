@@ -1,9 +1,10 @@
 import { expect } from "chai";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { encodeFile } from "./base64.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await it("should encode png files to base64", () => {
         const encodedString = encodeFile("./test/resources/turtle.png");
         expect(encodedString).to.have.length.greaterThan(0);

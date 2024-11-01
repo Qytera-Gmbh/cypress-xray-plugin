@@ -1,10 +1,11 @@
 import { expect } from "chai";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { dedent } from "../../../../../util/dedent.js";
 import { buildMultipartInfoCloud, buildMultipartInfoServer } from "./multipart-info.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(buildMultipartInfoCloud.name, async () => {
         await it("adds default information", () => {
             const info = buildMultipartInfoCloud(

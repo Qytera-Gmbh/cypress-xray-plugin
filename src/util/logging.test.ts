@@ -2,15 +2,16 @@ import ansiColors from "ansi-colors";
 import type { AxiosResponse } from "axios";
 import { AxiosError, AxiosHeaders } from "axios";
 import { expect } from "chai";
-import fs from "fs";
+import fs from "node:fs";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { stub } from "sinon";
 import { resolveTestDirPath } from "../../test/util.js";
 import { LoggedError } from "./errors.js";
 import { CapturingLogger, Level, PluginLogger } from "./logging.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(PluginLogger.name, async () => {
         await describe("message", async () => {
             await it("handles single line messages", () => {
@@ -47,7 +48,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
         await describe("logToFile", async () => {
             await it("writes to relative directories", () => {
                 const logger = new PluginLogger({
-                    logDirectory: path.relative(".", resolveTestDirPath("logs")),
+                    logDirectory: relative(".", resolveTestDirPath("logs")),
                 });
                 const actualPath = logger.logToFile("[1, 2, 3]", "logToFileRelative.json");
                 const expectedPath = resolveTestDirPath("logs", "logToFileRelative.json");

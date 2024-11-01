@@ -1,7 +1,8 @@
 import { expect } from "chai";
-import fs from "fs";
+import fs from "node:fs";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { getMockedLogger } from "../../../../../../test/mocks.js";
 import { expectToExist } from "../../../../../../test/util.js";
 import type { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart.js";
@@ -10,7 +11,7 @@ import { Level } from "../../../../../util/logging.js";
 import { ConstantCommand } from "../../../../util/commands/constant-command.js";
 import { ConvertCucumberFeaturesCommand } from "./convert-cucumber-features-command.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(ConvertCucumberFeaturesCommand.name, async () => {
         await it("converts cucumber results into cucumber features data", async () => {
             const logger = getMockedLogger();

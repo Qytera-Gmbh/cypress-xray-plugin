@@ -1,7 +1,8 @@
 import { expect } from "chai";
-import fs from "fs";
+import fs from "node:fs";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import { relative } from "path";
 import Sinon, { stub } from "sinon";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../test/mocks.js";
 import { mockedCypressEventEmitter } from "../test/util.js";
@@ -17,7 +18,7 @@ import { dedent } from "./util/dedent.js";
 import { ExecutableGraph } from "./util/graph/executable-graph.js";
 import { CapturingLogger, Level } from "./util/logging.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     let jiraClient: Sinon.SinonStubbedInstance<JiraClient>;
     let config: Cypress.PluginConfigOptions;
     let pluginContext: context.PluginContext;

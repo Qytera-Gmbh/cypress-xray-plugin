@@ -1,5 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
 import { stub } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../test/mocks.js";
@@ -23,7 +24,7 @@ import {
 } from "./context.js";
 
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
-import { relative } from "path";
+import { relative } from "node:path";
 import { AxiosRestClient } from "./client/https/https.js";
 import type { User } from "./types/jira/responses/user.js";
 import type {
@@ -40,7 +41,7 @@ import { CapturingLogger, Level } from "./util/logging.js";
 
 chai.use(chaiAsPromised);
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe("the plugin context configuration", async () => {
         await describe("the option initialization", async () => {
             await describe("should have certain default values", async () => {

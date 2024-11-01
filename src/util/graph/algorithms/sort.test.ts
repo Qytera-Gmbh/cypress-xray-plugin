@@ -1,10 +1,11 @@
 import { expect } from "chai";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { SimpleDirectedGraph } from "../graph.js";
 import { computeTopologicalOrder, traverse } from "./sort.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(computeTopologicalOrder.name, async () => {
         await it("computes the order for directed graphs", () => {
             const graph = new SimpleDirectedGraph<number>();

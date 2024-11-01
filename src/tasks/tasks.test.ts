@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { relative } from "node:path";
-import process from "node:process";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import sinon from "sinon";
 import { getMockedCypress, getMockedLogger } from "../../test/mocks.js";
@@ -9,7 +9,7 @@ import { dedent } from "../util/dedent.js";
 import { Level } from "../util/logging.js";
 import * as tasks from "./tasks.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(tasks.enqueueTask.name, async () => {
         await it("uses the current test title by default", () => {
             const { cy, cypress } = getMockedCypress();

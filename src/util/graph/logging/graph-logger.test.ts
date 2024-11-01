@@ -1,6 +1,7 @@
 import { expect } from "chai";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { getMockedXrayClient } from "../../../../test/mocks.js";
 import type { Failable } from "../../../hooks/command.js";
 import { Command, ComputableState } from "../../../hooks/command.js";
@@ -16,7 +17,7 @@ import { CapturingLogger, Level } from "../../logging.js";
 import { SimpleDirectedGraph } from "../graph.js";
 import { ChainingCommandGraphLogger, ChainingGraphLogger } from "./graph-logger.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(ChainingGraphLogger.name, async () => {
         await it("logs correctly indented message chains", () => {
             const graph = new SimpleDirectedGraph<Failable>();

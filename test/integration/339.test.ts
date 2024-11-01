@@ -1,8 +1,8 @@
 import { expect } from "chai";
-import fs from "fs";
+import fs from "node:fs";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
-import process from "process";
 import { dedent } from "../../src/util/dedent.js";
 import { LOCAL_SERVER } from "../server-config.js";
 import { runCypress, setupCypressProject } from "../sh.js";
@@ -11,7 +11,7 @@ import { runCypress, setupCypressProject } from "../sh.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/339
 // ============================================================================================== //
 
-await describe(relative(process.cwd(), import.meta.filename), { timeout: 180000 }, async () => {
+await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             env: {
