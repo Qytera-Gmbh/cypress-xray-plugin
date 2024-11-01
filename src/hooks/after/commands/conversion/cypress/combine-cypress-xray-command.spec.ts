@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedLogger } from "../../../../../../test/mocks";
-import { ConstantCommand } from "../../../../util/commands/constant-command";
-import { CombineCypressJsonCommand } from "./combine-cypress-xray-command";
+import { getMockedLogger } from "../../../../../../test/mocks.js";
+import { ConstantCommand } from "../../../../util/commands/constant-command.js";
+import { CombineCypressJsonCommand } from "./combine-cypress-xray-command.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(CombineCypressJsonCommand.name, () => {
         it("combines cucumber multipart data", async () => {
             const logger = getMockedLogger();

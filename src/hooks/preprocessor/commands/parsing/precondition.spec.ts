@@ -1,13 +1,13 @@
 import type { Background } from "@cucumber/messages";
 import { expect } from "chai";
 import path from "path";
-import { parseFeatureFile } from "./gherkin";
+import { parseFeatureFile } from "./gherkin.js";
 import {
     getCucumberPreconditionIssueComments,
     getCucumberPreconditionIssueTags,
-} from "./precondition";
+} from "./precondition.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(getCucumberPreconditionIssueComments.name, () => {
         it("extracts relevant comments without prefix", () => {
             const document = parseFeatureFile(

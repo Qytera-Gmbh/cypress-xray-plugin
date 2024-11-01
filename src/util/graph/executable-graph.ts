@@ -1,7 +1,7 @@
-import type { Computable, Stateful } from "../../hooks/command";
-import { ComputableState } from "../../hooks/command";
-import type { DirectedEdge, SimpleDirectedEdge} from "./graph";
-import { SimpleDirectedGraph } from "./graph";
+import type { Computable, Stateful } from "../../hooks/command.js";
+import { ComputableState } from "../../hooks/command.js";
+import type { DirectedEdge, SimpleDirectedEdge } from "./graph.js";
+import { SimpleDirectedGraph } from "./graph.js";
 
 enum VertexState {
     /**

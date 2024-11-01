@@ -1,8 +1,8 @@
-import type { XrayClient } from "../../../../client/xray/xray-client";
-import type { CucumberMultipart } from "../../../../types/xray/requests/import-execution-cucumber-multipart";
-import type { Logger } from "../../../../util/logging";
-import type { Computable } from "../../../command";
-import { Command } from "../../../command";
+import type { XrayClient } from "../../../../client/xray/xray-client.js";
+import type { CucumberMultipart } from "../../../../types/xray/requests/import-execution-cucumber-multipart.js";
+import type { Logger } from "../../../../util/logging.js";
+import type { Computable } from "../../../command.js";
+import { Command } from "../../../command.js";
 
 interface Parameters {
     xrayClient: XrayClient;

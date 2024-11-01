@@ -3,58 +3,61 @@ import chaiAsPromised from "chai-as-promised";
 import { readFileSync } from "fs";
 import path from "path";
 import { useFakeTimers } from "sinon";
-import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks";
-import { assertIsInstanceOf } from "../../../test/util";
+import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks.js";
+import { assertIsInstanceOf } from "../../../test/util.js";
 import {
     SimpleEvidenceCollection,
     initCucumberOptions,
     initJiraOptions,
     initPluginOptions,
     initXrayOptions,
-} from "../../context";
-import type { CypressRunResultType } from "../../types/cypress/cypress";
-import type { ClientCombination } from "../../types/plugin";
+} from "../../context.js";
+import type { CypressRunResultType } from "../../types/cypress/cypress.js";
+import type { ClientCombination } from "../../types/plugin.js";
 import {
     type InternalCucumberOptions,
     type InternalCypressXrayPluginOptions,
-} from "../../types/plugin";
+} from "../../types/plugin.js";
 import type {
     CucumberMultipart,
     CucumberMultipartFeature,
-} from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { ExecutableGraph } from "../../util/graph/executable-graph";
-import { Level } from "../../util/logging";
-import type { Command } from "../command";
-import { ComputableState } from "../command";
-import { ConstantCommand } from "../util/commands/constant-command";
-import { DestructureCommand } from "../util/commands/destructure-command";
-import { FallbackCommand } from "../util/commands/fallback-command";
-import { AttachFilesCommand } from "../util/commands/jira/attach-files-command";
-import { ExtractFieldIdCommand, JiraField } from "../util/commands/jira/extract-field-id-command";
-import { FetchAllFieldsCommand } from "../util/commands/jira/fetch-all-fields-command";
-import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command";
-import { TransitionIssueCommand } from "../util/commands/jira/transition-issue-command";
-import { ImportExecutionCucumberCommand } from "../util/commands/xray/import-execution-cucumber-command";
-import { ImportExecutionCypressCommand } from "../util/commands/xray/import-execution-cypress-command";
-import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
-import { addUploadCommands } from "./after-run";
+} from "../../types/xray/requests/import-execution-cucumber-multipart.js";
+import { ExecutableGraph } from "../../util/graph/executable-graph.js";
+import { Level } from "../../util/logging.js";
+import type { Command } from "../command.js";
+import { ComputableState } from "../command.js";
+import { ConstantCommand } from "../util/commands/constant-command.js";
+import { DestructureCommand } from "../util/commands/destructure-command.js";
+import { FallbackCommand } from "../util/commands/fallback-command.js";
+import { AttachFilesCommand } from "../util/commands/jira/attach-files-command.js";
+import {
+    ExtractFieldIdCommand,
+    JiraField,
+} from "../util/commands/jira/extract-field-id-command.js";
+import { FetchAllFieldsCommand } from "../util/commands/jira/fetch-all-fields-command.js";
+import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command.js";
+import { TransitionIssueCommand } from "../util/commands/jira/transition-issue-command.js";
+import { ImportExecutionCucumberCommand } from "../util/commands/xray/import-execution-cucumber-command.js";
+import { ImportExecutionCypressCommand } from "../util/commands/xray/import-execution-cypress-command.js";
+import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command.js";
+import { addUploadCommands } from "./after-run.js";
 import {
     ConvertInfoCloudCommand,
     ConvertInfoServerCommand,
-} from "./commands/conversion/convert-info-command";
-import { AssertCucumberConversionValidCommand } from "./commands/conversion/cucumber/assert-cucumber-conversion-valid-command";
-import { CombineCucumberMultipartCommand } from "./commands/conversion/cucumber/combine-cucumber-multipart-command";
-import { ConvertCucumberFeaturesCommand } from "./commands/conversion/cucumber/convert-cucumber-features-command";
-import { AssertCypressConversionValidCommand } from "./commands/conversion/cypress/assert-cypress-conversion-valid-command";
-import { CombineCypressJsonCommand } from "./commands/conversion/cypress/combine-cypress-xray-command";
-import { ConvertCypressTestsCommand } from "./commands/conversion/cypress/convert-cypress-tests-command";
-import { ExtractVideoFilesCommand } from "./commands/extract-video-files-command";
-import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issue-key-command";
-import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-command";
+} from "./commands/conversion/convert-info-command.js";
+import { AssertCucumberConversionValidCommand } from "./commands/conversion/cucumber/assert-cucumber-conversion-valid-command.js";
+import { CombineCucumberMultipartCommand } from "./commands/conversion/cucumber/combine-cucumber-multipart-command.js";
+import { ConvertCucumberFeaturesCommand } from "./commands/conversion/cucumber/convert-cucumber-features-command.js";
+import { AssertCypressConversionValidCommand } from "./commands/conversion/cypress/assert-cypress-conversion-valid-command.js";
+import { CombineCypressJsonCommand } from "./commands/conversion/cypress/combine-cypress-xray-command.js";
+import { ConvertCypressTestsCommand } from "./commands/conversion/cypress/convert-cypress-tests-command.js";
+import { ExtractVideoFilesCommand } from "./commands/extract-video-files-command.js";
+import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issue-key-command.js";
+import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     let clients: ClientCombination;
     let options: InternalCypressXrayPluginOptions;
     beforeEach(async () => {

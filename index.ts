@@ -1,2 +1,2 @@
-export { configureXrayPlugin, syncFeatureFile } from "./src/plugin";
-export type { CypressXrayPluginOptions } from "./src/types/plugin";
+export { configureXrayPlugin, syncFeatureFile } from "./src/plugin.js";
+export type { CypressXrayPluginOptions } from "./src/types/plugin.js";

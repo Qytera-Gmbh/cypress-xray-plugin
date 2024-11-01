@@ -1,14 +1,14 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { getMockedLogger } from "../../../../../test/mocks";
-import { dedent } from "../../../../util/dedent";
-import { ConstantCommand } from "../constant-command";
-import { ExtractFieldIdCommand, JiraField } from "./extract-field-id-command";
+import { getMockedLogger } from "../../../../../test/mocks.js";
+import { dedent } from "../../../../util/dedent.js";
+import { ConstantCommand } from "../constant-command.js";
+import { ExtractFieldIdCommand, JiraField } from "./extract-field-id-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ExtractFieldIdCommand.name, () => {
         it("extracts fields case-insensitively", async () => {
             const logger = getMockedLogger();

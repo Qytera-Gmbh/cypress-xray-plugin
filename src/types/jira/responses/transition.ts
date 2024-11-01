@@ -1,5 +1,5 @@
-import type { FieldMeta } from "./field-meta";
-import type { StatusDetails } from "./status-details";
+import type { FieldMeta } from "./field-meta.js";
+import type { StatusDetails } from "./status-details.js";
 
 export interface Transition {
     /**

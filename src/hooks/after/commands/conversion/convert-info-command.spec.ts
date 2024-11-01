@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedLogger } from "../../../../../test/mocks";
-import { ConstantCommand } from "../../../util/commands/constant-command";
-import { ConvertInfoCloudCommand, ConvertInfoServerCommand } from "./convert-info-command";
+import { getMockedLogger } from "../../../../../test/mocks.js";
+import { ConstantCommand } from "../../../util/commands/constant-command.js";
+import { ConvertInfoCloudCommand, ConvertInfoServerCommand } from "./convert-info-command.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ConvertInfoServerCommand.name, () => {
         it("converts cucumber results into server cucumber info data", async () => {
             const logger = getMockedLogger();

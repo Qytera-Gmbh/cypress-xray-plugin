@@ -1,17 +1,17 @@
-import type { HttpCredentials } from "./client/authentication/credentials";
+import type { HttpCredentials } from "./client/authentication/credentials.js";
 import {
     BasicAuthCredentials,
     JwtCredentials,
     PatCredentials,
-} from "./client/authentication/credentials";
-import { AxiosRestClient } from "./client/https/https";
-import type { JiraClient } from "./client/jira/jira-client";
-import { BaseJiraClient } from "./client/jira/jira-client";
-import { XrayClientCloud } from "./client/xray/xray-client-cloud";
-import type { XrayClientServer } from "./client/xray/xray-client-server";
-import { ServerClient } from "./client/xray/xray-client-server";
-import { ENV_NAMES } from "./env";
-import type { Command } from "./hooks/command";
+} from "./client/authentication/credentials.js";
+import { AxiosRestClient } from "./client/https/https.js";
+import type { JiraClient } from "./client/jira/jira-client.js";
+import { BaseJiraClient } from "./client/jira/jira-client.js";
+import { XrayClientCloud } from "./client/xray/xray-client-cloud.js";
+import type { XrayClientServer } from "./client/xray/xray-client-server.js";
+import { ServerClient } from "./client/xray/xray-client-server.js";
+import { ENV_NAMES } from "./env.js";
+import type { Command } from "./hooks/command.js";
 import type {
     ClientCombination,
     CypressXrayPluginOptions,
@@ -22,17 +22,17 @@ import type {
     InternalJiraOptions,
     InternalPluginOptions,
     InternalXrayOptions,
-} from "./types/plugin";
-import type { XrayEvidenceItem } from "./types/xray/import-test-execution-results";
-import { dedent } from "./util/dedent";
-import type { CucumberPreprocessorArgs, CucumberPreprocessorExports } from "./util/dependencies";
-import { importOptionalDependency } from "./util/dependencies";
-import { errorMessage } from "./util/errors";
-import type { ExecutableGraph } from "./util/graph/executable-graph";
-import { HELP } from "./util/help";
-import type { Logger } from "./util/logging";
-import { LOG, Level } from "./util/logging";
-import { asArrayOfStrings, asBoolean, asObject, asString, parse } from "./util/parsing";
+} from "./types/plugin.js";
+import type { XrayEvidenceItem } from "./types/xray/import-test-execution-results.js";
+import { dedent } from "./util/dedent.js";
+import type { CucumberPreprocessorArgs, CucumberPreprocessorExports } from "./util/dependencies.js";
+import { importOptionalDependency } from "./util/dependencies.js";
+import { errorMessage } from "./util/errors.js";
+import type { ExecutableGraph } from "./util/graph/executable-graph.js";
+import { HELP } from "./util/help.js";
+import type { Logger } from "./util/logging.js";
+import { LOG, Level } from "./util/logging.js";
+import { asArrayOfStrings, asBoolean, asObject, asString, parse } from "./util/parsing.js";
 
 export interface EvidenceCollection {
     addEvidence(issueKey: string, evidence: XrayEvidenceItem): void;

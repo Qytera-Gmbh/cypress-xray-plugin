@@ -2,13 +2,13 @@ import { expect } from "chai";
 import path from "node:path";
 import process from "node:process";
 import sinon from "sinon";
-import { getMockedCypress, getMockedLogger } from "../../test/mocks";
-import { SimpleEvidenceCollection } from "../context";
-import { dedent } from "../util/dedent";
-import { Level } from "../util/logging";
-import * as tasks from "./tasks";
+import { getMockedCypress, getMockedLogger } from "../../test/mocks.js";
+import { SimpleEvidenceCollection } from "../context.js";
+import { dedent } from "../util/dedent.js";
+import { Level } from "../util/logging.js";
+import * as tasks from "./tasks.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(tasks.enqueueTask.name, () => {
         it("uses the current test title by default", () => {
             const { cy, cypress } = getMockedCypress();

@@ -5,14 +5,14 @@ import FormData from "form-data";
 import { createReadStream } from "fs";
 import path from "path";
 import { stub, useFakeTimers } from "sinon";
-import { getMockedLogger } from "../../../test/mocks";
-import { LOCAL_SERVER } from "../../../test/server-config";
-import { Level } from "../../util/logging";
-import { AxiosRestClient } from "./https";
+import { getMockedLogger } from "../../../test/mocks.js";
+import { LOCAL_SERVER } from "../../../test/server-config.js";
+import { Level } from "../../util/logging.js";
+import { AxiosRestClient } from "./https.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     beforeEach(() => {
         BaseAxios.default.interceptors.request.clear();
         BaseAxios.default.interceptors.response.clear();

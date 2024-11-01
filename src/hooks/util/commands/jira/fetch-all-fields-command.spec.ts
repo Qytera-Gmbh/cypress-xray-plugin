@@ -1,12 +1,12 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks";
-import { FetchAllFieldsCommand } from "./fetch-all-fields-command";
+import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks.js";
+import { FetchAllFieldsCommand } from "./fetch-all-fields-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(FetchAllFieldsCommand.name, () => {
         it("fetches fields", async () => {
             const jiraClient = getMockedJiraClient();

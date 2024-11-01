@@ -1,4 +1,4 @@
-import type { ChangeHistory } from "./change-history";
+import type { ChangeHistory } from "./change-history.js";
 
 export interface Changelog {
     /**

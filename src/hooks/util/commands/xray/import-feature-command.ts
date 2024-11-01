@@ -1,8 +1,8 @@
-import type { XrayClient } from "../../../../client/xray/xray-client";
-import type { ImportFeatureResponse } from "../../../../types/xray/responses/import-feature";
-import { dedent } from "../../../../util/dedent";
-import { Level } from "../../../../util/logging";
-import { Command } from "../../../command";
+import type { XrayClient } from "../../../../client/xray/xray-client.js";
+import type { ImportFeatureResponse } from "../../../../types/xray/responses/import-feature.js";
+import { dedent } from "../../../../util/dedent.js";
+import { Level } from "../../../../util/logging.js";
+import { Command } from "../../../command.js";
 
 interface Parameters {
     filePath: string;

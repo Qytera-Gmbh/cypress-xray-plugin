@@ -1,10 +1,13 @@
-import { BasicAuthCredentials, JwtCredentials } from "../../src/client/authentication/credentials";
-import type { Client } from "../../src/client/client";
-import { AxiosRestClient } from "../../src/client/https/https";
-import { BaseJiraClient } from "../../src/client/jira/jira-client";
-import { XrayClientCloud } from "../../src/client/xray/xray-client-cloud";
-import { ServerClient } from "../../src/client/xray/xray-client-server";
-import { unknownToString } from "../../src/util/string";
+import {
+    BasicAuthCredentials,
+    JwtCredentials,
+} from "../../src/client/authentication/credentials.js";
+import type { Client } from "../../src/client/client.js";
+import { AxiosRestClient } from "../../src/client/https/https.js";
+import { BaseJiraClient } from "../../src/client/jira/jira-client.js";
+import { XrayClientCloud } from "../../src/client/xray/xray-client-cloud.js";
+import { ServerClient } from "../../src/client/xray/xray-client-server.js";
+import { unknownToString } from "../../src/util/string.js";
 
 import "dotenv/config";
 

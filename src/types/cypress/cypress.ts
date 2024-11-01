@@ -3,8 +3,8 @@ import type {
     CypressRunResult as CypressRunResult_V_12,
     RunResult as RunResult_V_12,
     TestResult as TestResult_V_12,
-} from "./12.0.0/api";
-import type { PluginConfigOptions as PluginConfigOptions_V_12 } from "./12.0.0/cypress";
+} from "./12.0.0/api.js";
+import type { PluginConfigOptions as PluginConfigOptions_V_12 } from "./12.0.0/cypress.js";
 
 export type RunResultType = CypressCommandLine.RunResult | RunResult_V_12;
 export type TestResultType = CypressCommandLine.TestResult | TestResult_V_12;

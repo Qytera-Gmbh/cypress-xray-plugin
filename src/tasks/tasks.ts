@@ -1,9 +1,9 @@
-import type { EvidenceCollection } from "../context";
-import { getTestIssueKeys } from "../hooks/after/util";
-import { dedent } from "../util/dedent";
-import { errorMessage } from "../util/errors";
-import type { Logger } from "../util/logging";
-import { Level } from "../util/logging";
+import type { EvidenceCollection } from "../context.js";
+import { getTestIssueKeys } from "../hooks/after/util.js";
+import { dedent } from "../util/dedent.js";
+import { errorMessage } from "../util/errors.js";
+import type { Logger } from "../util/logging.js";
+import { Level } from "../util/logging.js";
 
 /**
  * All tasks which are available within the plugin.

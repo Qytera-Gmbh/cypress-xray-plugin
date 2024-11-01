@@ -2,15 +2,15 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import process from "process";
-import { dedent } from "../../src/util/dedent";
-import { LOCAL_SERVER } from "../server-config";
-import { runCypress, setupCypressProject } from "../sh";
+import { dedent } from "../../src/util/dedent.js";
+import { LOCAL_SERVER } from "../server-config.js";
+import { runCypress, setupCypressProject } from "../sh.js";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/339
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     for (const test of [
         {
             env: {

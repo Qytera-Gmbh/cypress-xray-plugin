@@ -1,4 +1,4 @@
-import type { DateTimeIso } from "../util";
+import type { DateTimeIso } from "../util.js";
 
 /**
  * Taken from:

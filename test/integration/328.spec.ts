@@ -1,18 +1,18 @@
 import { expect } from "chai";
 import path from "path";
 import process from "process";
-import { dedent } from "../../src/util/dedent";
-import { LOCAL_SERVER } from "../server-config";
-import { runCypress, setupCypressProject } from "../sh";
-import { expectToExist } from "../util";
-import { getIntegrationClient } from "./clients";
-import { getCreatedTestExecutionIssueKey } from "./util";
+import { dedent } from "../../src/util/dedent.js";
+import { LOCAL_SERVER } from "../server-config.js";
+import { runCypress, setupCypressProject } from "../sh.js";
+import { expectToExist } from "../util.js";
+import { getIntegrationClient } from "./clients.js";
+import { getCreatedTestExecutionIssueKey } from "./util.js";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/328
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     for (const test of [
         {
             cucumberTestPrefix: "TestName:",

@@ -1,13 +1,12 @@
 {
-    "include": ["**/*.ts"],
+    "include": ["**/*.ts", "**/*.js", "test/server.ts"],
     "exclude": ["node_modules/", "dist/"],
     "compilerOptions": {
-        "allowJs": true,
         "declaration": true,
         "esModuleInterop": true,
         "lib": ["ESNext", "DOM"],
-        "module": "CommonJS",
-        "moduleResolution": "Node",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "outDir": "dist",
         "skipLibCheck": true,
         "strict": true,

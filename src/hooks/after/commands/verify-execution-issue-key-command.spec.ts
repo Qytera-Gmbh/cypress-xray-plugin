@@ -1,12 +1,12 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedLogger } from "../../../../test/mocks";
-import { dedent } from "../../../util/dedent";
-import { Level } from "../../../util/logging";
-import { ConstantCommand } from "../../util/commands/constant-command";
-import { VerifyExecutionIssueKeyCommand } from "./verify-execution-issue-key-command";
+import { getMockedLogger } from "../../../../test/mocks.js";
+import { dedent } from "../../../util/dedent.js";
+import { Level } from "../../../util/logging.js";
+import { ConstantCommand } from "../../util/commands/constant-command.js";
+import { VerifyExecutionIssueKeyCommand } from "./verify-execution-issue-key-command.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(VerifyExecutionIssueKeyCommand.name, () => {
         it("verifies without warning", async () => {
             const logger = getMockedLogger();

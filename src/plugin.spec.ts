@@ -2,21 +2,21 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import Sinon, { stub } from "sinon";
-import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../test/mocks";
-import { mockedCypressEventEmitter } from "../test/util";
-import { AxiosRestClient } from "./client/https/https";
-import type { JiraClient } from "./client/jira/jira-client";
-import * as context from "./context";
-import * as afterRunHook from "./hooks/after/after-run";
-import * as synchronizeFeatureFileHook from "./hooks/preprocessor/file-preprocessor";
-import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
-import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
-import type { CypressXrayPluginOptions } from "./types/plugin";
-import { dedent } from "./util/dedent";
-import { ExecutableGraph } from "./util/graph/executable-graph";
-import { CapturingLogger, Level } from "./util/logging";
+import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../test/mocks.js";
+import { mockedCypressEventEmitter } from "../test/util.js";
+import { AxiosRestClient } from "./client/https/https.js";
+import type { JiraClient } from "./client/jira/jira-client.js";
+import * as context from "./context.js";
+import * as afterRunHook from "./hooks/after/after-run.js";
+import * as synchronizeFeatureFileHook from "./hooks/preprocessor/file-preprocessor.js";
+import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin.js";
+import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress.js";
+import type { CypressXrayPluginOptions } from "./types/plugin.js";
+import { dedent } from "./util/dedent.js";
+import { ExecutableGraph } from "./util/graph/executable-graph.js";
+import { CapturingLogger, Level } from "./util/logging.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     let jiraClient: Sinon.SinonStubbedInstance<JiraClient>;
     let config: Cypress.PluginConfigOptions;
     let pluginContext: context.PluginContext;

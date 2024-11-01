@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import path from "path";
-import { dedent } from "./dedent";
-import { asArrayOfStrings, asBoolean, asFloat, asInt, asObject } from "./parsing";
+import { dedent } from "./dedent.js";
+import { asArrayOfStrings, asBoolean, asFloat, asInt, asObject } from "./parsing.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(asBoolean.name, () => {
         describe(true.toString(), () => {
             it("y", () => {

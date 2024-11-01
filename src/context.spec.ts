@@ -1,15 +1,15 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { stub } from "sinon";
-import { getMockedLogger, getMockedRestClient } from "../test/mocks";
+import { getMockedLogger, getMockedRestClient } from "../test/mocks.js";
 import {
     BasicAuthCredentials,
     JwtCredentials,
     PatCredentials,
-} from "./client/authentication/credentials";
-import { BaseJiraClient } from "./client/jira/jira-client";
-import { XrayClientCloud } from "./client/xray/xray-client-cloud";
-import { ServerClient } from "./client/xray/xray-client-server";
+} from "./client/authentication/credentials.js";
+import { BaseJiraClient } from "./client/jira/jira-client.js";
+import { XrayClientCloud } from "./client/xray/xray-client-cloud.js";
+import { ServerClient } from "./client/xray/xray-client-server.js";
 import {
     PluginContext,
     SimpleEvidenceCollection,
@@ -19,27 +19,27 @@ import {
     initJiraOptions,
     initPluginOptions,
     initXrayOptions,
-} from "./context";
+} from "./context.js";
 
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import path from "path";
-import { AxiosRestClient } from "./client/https/https";
-import type { User } from "./types/jira/responses/user";
+import { AxiosRestClient } from "./client/https/https.js";
+import type { User } from "./types/jira/responses/user.js";
 import type {
     InternalCucumberOptions,
     InternalHttpOptions,
     InternalJiraOptions,
     InternalPluginOptions,
     InternalXrayOptions,
-} from "./types/plugin";
-import { dedent } from "./util/dedent";
-import * as dependencies from "./util/dependencies";
-import { ExecutableGraph } from "./util/graph/executable-graph";
-import { CapturingLogger, Level } from "./util/logging";
+} from "./types/plugin.js";
+import { dedent } from "./util/dedent.js";
+import * as dependencies from "./util/dependencies.js";
+import { ExecutableGraph } from "./util/graph/executable-graph.js";
+import { CapturingLogger, Level } from "./util/logging.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe("the plugin context configuration", () => {
         describe("the option initialization", () => {
             describe("should have certain default values", () => {

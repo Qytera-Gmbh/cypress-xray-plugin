@@ -1,21 +1,21 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedXrayClient } from "../../../../test/mocks";
-import type { Failable } from "../../../hooks/command";
-import { Command, ComputableState } from "../../../hooks/command";
-import { ImportExecutionCucumberCommand } from "../../../hooks/util/commands/xray/import-execution-cucumber-command";
-import { ImportExecutionCypressCommand } from "../../../hooks/util/commands/xray/import-execution-cypress-command";
-import { ImportFeatureCommand } from "../../../hooks/util/commands/xray/import-feature-command";
-import type { XrayTestExecutionResults } from "../../../types/xray/import-test-execution-results";
-import type { CucumberMultipart } from "../../../types/xray/requests/import-execution-cucumber-multipart";
-import type { MultipartInfo } from "../../../types/xray/requests/import-execution-multipart-info";
-import { dedent } from "../../dedent";
-import { SkippedError } from "../../errors";
-import { CapturingLogger, Level } from "../../logging";
-import { SimpleDirectedGraph } from "../graph";
-import { ChainingCommandGraphLogger, ChainingGraphLogger } from "./graph-logger";
+import { getMockedXrayClient } from "../../../../test/mocks.js";
+import type { Failable } from "../../../hooks/command.js";
+import { Command, ComputableState } from "../../../hooks/command.js";
+import { ImportExecutionCucumberCommand } from "../../../hooks/util/commands/xray/import-execution-cucumber-command.js";
+import { ImportExecutionCypressCommand } from "../../../hooks/util/commands/xray/import-execution-cypress-command.js";
+import { ImportFeatureCommand } from "../../../hooks/util/commands/xray/import-feature-command.js";
+import type { XrayTestExecutionResults } from "../../../types/xray/import-test-execution-results.js";
+import type { CucumberMultipart } from "../../../types/xray/requests/import-execution-cucumber-multipart.js";
+import type { MultipartInfo } from "../../../types/xray/requests/import-execution-multipart-info.js";
+import { dedent } from "../../dedent.js";
+import { SkippedError } from "../../errors.js";
+import { CapturingLogger, Level } from "../../logging.js";
+import { SimpleDirectedGraph } from "../graph.js";
+import { ChainingCommandGraphLogger, ChainingGraphLogger } from "./graph-logger.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ChainingGraphLogger.name, () => {
         it("logs correctly indented message chains", () => {
             const graph = new SimpleDirectedGraph<Failable>();

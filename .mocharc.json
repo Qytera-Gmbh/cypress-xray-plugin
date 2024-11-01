@@ -1,7 +1,0 @@
-{
-    "extension": ["ts"],
-    "spec": ["**/*.spec.ts"],
-    "ignore": ["node_modules/**/*"],
-    "require": "ts-node/register",
-    "reporter": "test/reporter.ts"
-}

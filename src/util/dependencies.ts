@@ -2,7 +2,7 @@ import type {
     IPreprocessorConfiguration,
     resolvePreprocessorConfiguration,
 } from "@badeball/cypress-cucumber-preprocessor";
-import { LOG, Level } from "./logging";
+import { LOG, Level } from "./logging.js";
 
 export type CucumberPreprocessorArgs = Parameters<typeof resolvePreprocessorConfiguration>;
 

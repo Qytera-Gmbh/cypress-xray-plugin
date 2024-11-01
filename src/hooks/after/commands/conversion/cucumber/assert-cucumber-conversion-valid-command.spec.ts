@@ -2,18 +2,18 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import path from "path";
-import { getMockedLogger } from "../../../../../../test/mocks";
+import { getMockedLogger } from "../../../../../../test/mocks.js";
 import type {
     CucumberMultipart,
     CucumberMultipartFeature,
-} from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
-import type { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
-import { ConstantCommand } from "../../../../util/commands/constant-command";
-import { AssertCucumberConversionValidCommand } from "./assert-cucumber-conversion-valid-command";
+} from "../../../../../types/xray/requests/import-execution-cucumber-multipart.js";
+import type { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info.js";
+import { ConstantCommand } from "../../../../util/commands/constant-command.js";
+import { AssertCucumberConversionValidCommand } from "./assert-cucumber-conversion-valid-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(AssertCucumberConversionValidCommand.name, () => {
         it("correctly verifies cucumber multipart data", async () => {
             const logger = getMockedLogger();

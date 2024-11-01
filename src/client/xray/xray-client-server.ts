@@ -1,23 +1,23 @@
 import type { AxiosResponse } from "axios";
 import FormData from "form-data";
-import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
-import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
-import type { GetTestExecutionResponseServer } from "../../types/xray/responses/graphql/get-test-execution";
-import type { ImportExecutionResponseServer } from "../../types/xray/responses/import-execution";
+import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results.js";
+import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart.js";
+import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info.js";
+import type { GetTestExecutionResponseServer } from "../../types/xray/responses/graphql/get-test-execution.js";
+import type { ImportExecutionResponseServer } from "../../types/xray/responses/import-execution.js";
 import type {
     ImportFeatureResponse,
     ImportFeatureResponseServer,
     IssueDetails,
-} from "../../types/xray/responses/import-feature";
-import type { XrayLicenseStatus } from "../../types/xray/responses/license";
-import { dedent } from "../../util/dedent";
-import { LOG, Level } from "../../util/logging";
-import type { HttpCredentials } from "../authentication/credentials";
-import type { AxiosRestClient } from "../https/https";
-import { loggedRequest } from "../util";
-import type { XrayClient } from "./xray-client";
-import { AbstractXrayClient } from "./xray-client";
+} from "../../types/xray/responses/import-feature.js";
+import type { XrayLicenseStatus } from "../../types/xray/responses/license.js";
+import { dedent } from "../../util/dedent.js";
+import { LOG, Level } from "../../util/logging.js";
+import type { HttpCredentials } from "../authentication/credentials.js";
+import type { AxiosRestClient } from "../https/https.js";
+import { loggedRequest } from "../util.js";
+import type { XrayClient } from "./xray-client.js";
+import { AbstractXrayClient } from "./xray-client.js";
 
 export interface XrayClientServer extends XrayClient {
     /**

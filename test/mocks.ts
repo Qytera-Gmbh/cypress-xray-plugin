@@ -3,24 +3,24 @@ import chai from "chai";
 import type { SinonStub, SinonStubbedInstance } from "sinon";
 import { restore, stub } from "sinon";
 import sinonChai from "sinon-chai";
-import { JwtCredentials } from "../src/client/authentication/credentials";
-import { AxiosRestClient } from "../src/client/https/https";
-import type { JiraClient } from "../src/client/jira/jira-client";
-import type { XrayClient } from "../src/client/xray/xray-client";
+import { JwtCredentials } from "../src/client/authentication/credentials.js";
+import { AxiosRestClient } from "../src/client/https/https.js";
+import type { JiraClient } from "../src/client/jira/jira-client.js";
 import type {
     HasTestResults,
     HasTestTypes,
     XrayClientCloud,
-} from "../src/client/xray/xray-client-cloud";
-import type { SearchRequest } from "../src/types/jira/requests/search";
-import type { IssueUpdate } from "../src/types/jira/responses/issue-update";
-import type { User } from "../src/types/jira/responses/user";
-import type { XrayTestExecutionResults } from "../src/types/xray/import-test-execution-results";
-import type { CucumberMultipartFeature } from "../src/types/xray/requests/import-execution-cucumber-multipart";
-import type { MultipartInfo } from "../src/types/xray/requests/import-execution-multipart-info";
-import { dedent } from "../src/util/dedent";
-import type { Logger } from "../src/util/logging";
-import * as logging from "../src/util/logging";
+} from "../src/client/xray/xray-client-cloud.js";
+import type { XrayClient } from "../src/client/xray/xray-client.js";
+import type { SearchRequest } from "../src/types/jira/requests/search.js";
+import type { IssueUpdate } from "../src/types/jira/responses/issue-update.js";
+import type { User } from "../src/types/jira/responses/user.js";
+import type { XrayTestExecutionResults } from "../src/types/xray/import-test-execution-results.js";
+import type { CucumberMultipartFeature } from "../src/types/xray/requests/import-execution-cucumber-multipart.js";
+import type { MultipartInfo } from "../src/types/xray/requests/import-execution-multipart-info.js";
+import { dedent } from "../src/util/dedent.js";
+import type { Logger } from "../src/util/logging.js";
+import * as logging from "../src/util/logging.js";
 
 chai.use(sinonChai);
 

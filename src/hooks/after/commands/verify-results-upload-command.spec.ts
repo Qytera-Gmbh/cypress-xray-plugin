@@ -1,16 +1,16 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { getMockedLogger } from "../../../../test/mocks";
-import { dedent } from "../../../util/dedent";
-import { SkippedError } from "../../../util/errors";
-import { Level } from "../../../util/logging";
-import { ConstantCommand } from "../../util/commands/constant-command";
-import { VerifyResultsUploadCommand } from "./verify-results-upload-command";
+import { getMockedLogger } from "../../../../test/mocks.js";
+import { dedent } from "../../../util/dedent.js";
+import { SkippedError } from "../../../util/errors.js";
+import { Level } from "../../../util/logging.js";
+import { ConstantCommand } from "../../util/commands/constant-command.js";
+import { VerifyResultsUploadCommand } from "./verify-results-upload-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(VerifyResultsUploadCommand.name, () => {
         it("prints a success message for successful cypress uploads", async () => {
             const logger = getMockedLogger();

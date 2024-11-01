@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import path from "path";
-import { SimpleDirectedEdge, SimpleDirectedGraph } from "./graph";
+import { SimpleDirectedEdge, SimpleDirectedGraph } from "./graph.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(SimpleDirectedGraph.name, () => {
         let graph: SimpleDirectedGraph<number> = new SimpleDirectedGraph<number>();
 

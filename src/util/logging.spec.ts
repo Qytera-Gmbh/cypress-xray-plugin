@@ -5,11 +5,11 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import { stub } from "sinon";
-import { resolveTestDirPath } from "../../test/util";
-import { LoggedError } from "./errors";
-import { CapturingLogger, Level, PluginLogger } from "./logging";
+import { resolveTestDirPath } from "../../test/util.js";
+import { LoggedError } from "./errors.js";
+import { CapturingLogger, Level, PluginLogger } from "./logging.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(PluginLogger.name, () => {
         describe("message", () => {
             it("handles single line messages", () => {

@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import path from "path";
-import { prettyPadObjects, prettyPadValues } from "./pretty";
+import { prettyPadObjects, prettyPadValues } from "./pretty.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(prettyPadObjects.name, () => {
         it("pretty pad object arrays", () => {
             const array = [

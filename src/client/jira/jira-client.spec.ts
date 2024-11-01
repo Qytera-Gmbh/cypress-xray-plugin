@@ -4,19 +4,19 @@ import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
 import path from "path";
 import type { SinonStubbedInstance } from "sinon";
-import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
-import { expectToExist } from "../../../test/util";
-import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
-import type { SearchResults } from "../../types/jira/responses/search-results";
-import type { User } from "../../types/jira/responses/user";
-import { Level } from "../../util/logging";
-import { BasicAuthCredentials } from "../authentication/credentials";
-import type { AxiosRestClient } from "../https/https";
-import { BaseJiraClient } from "./jira-client";
+import { getMockedLogger, getMockedRestClient } from "../../../test/mocks.js";
+import { expectToExist } from "../../../test/util.js";
+import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details.js";
+import type { SearchResults } from "../../types/jira/responses/search-results.js";
+import type { User } from "../../types/jira/responses/user.js";
+import { Level } from "../../util/logging.js";
+import { BasicAuthCredentials } from "../authentication/credentials.js";
+import type { AxiosRestClient } from "../https/https.js";
+import { BaseJiraClient } from "./jira-client.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(BaseJiraClient.name, () => {
         let client: BaseJiraClient;
         let restClient: SinonStubbedInstance<AxiosRestClient>;

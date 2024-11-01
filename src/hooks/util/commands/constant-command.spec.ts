@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import path from "path";
-import { getMockedLogger } from "../../../../test/mocks";
-import { ConstantCommand } from "./constant-command";
+import { getMockedLogger } from "../../../../test/mocks.js";
+import { ConstantCommand } from "./constant-command.js";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(path.relative(process.cwd(), import.meta.filename), () => {
     describe(ConstantCommand.name, () => {
         it("returns the value", async () => {
             const command = new ConstantCommand(getMockedLogger(), {

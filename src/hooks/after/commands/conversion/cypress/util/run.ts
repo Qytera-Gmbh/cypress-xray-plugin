@@ -2,11 +2,11 @@ import type {
     RunResult as RunResult_V12,
     ScreenshotInformation as ScreenshotInformation_V12,
     TestResult as TestResult_V12,
-} from "../../../../../../types/cypress/12.0.0/api";
-import type { CypressStatus } from "../../../../../../types/cypress/status";
-import type { StringMap } from "../../../../../../types/util";
-import { getTestIssueKeys } from "../../../../util";
-import { toCypressStatus } from "./status";
+} from "../../../../../../types/cypress/12.0.0/api.js";
+import type { CypressStatus } from "../../../../../../types/cypress/status.js";
+import type { StringMap } from "../../../../../../types/util.js";
+import { getTestIssueKeys } from "../../../../util.js";
+import { toCypressStatus } from "./status.js";
 
 /**
  * Test data extracted from Cypress tests, ready to be converted into an Xray JSON test.
