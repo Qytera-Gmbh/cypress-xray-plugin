@@ -1,9 +1,11 @@
-import { ImportFeatureResponse } from "../../../types/xray/responses/import-feature";
+import type { ImportFeatureResponse } from "../../../types/xray/responses/import-feature";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
-import { Level, Logger } from "../../../util/logging";
+import type { Logger } from "../../../util/logging";
+import { Level } from "../../../util/logging";
 import { computeOverlap } from "../../../util/set";
-import { Command, Computable } from "../../command";
+import type { Computable } from "../../command";
+import { Command } from "../../command";
 
 interface Parameters {
     filePath: string;

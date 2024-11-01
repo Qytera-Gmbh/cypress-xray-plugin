@@ -1,19 +1,18 @@
-import { Command } from "../command";
+import type { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
+import type { ExecutableGraph } from "../../util/graph/executable-graph";
+import type { Logger } from "../../util/logging";
+import type { Command } from "../command";
+import { ConstantCommand } from "../util/commands/constant-command";
 import { EditIssueFieldCommand } from "../util/commands/jira/edit-issue-field-command";
 import { GetLabelValuesCommand } from "../util/commands/jira/get-label-values-command";
 import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command";
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command";
 import { ExtractFeatureFileIssuesCommand } from "./commands/extract-feature-file-issues-command";
-import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command";
-
-import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
-import { ExecutableGraph } from "../../util/graph/executable-graph";
-import { Logger } from "../../util/logging";
-import { ConstantCommand } from "../util/commands/constant-command";
 import { ExtractIssueKeysCommand } from "./commands/extract-issue-keys-command";
 import { GetLabelsToResetCommand } from "./commands/get-labels-to-reset-command";
 import { GetSummariesToResetCommand } from "./commands/get-summaries-to-reset-command";
 import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command";
+import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command";
 
 export function addSynchronizationCommands(
     file: Cypress.FileObject,

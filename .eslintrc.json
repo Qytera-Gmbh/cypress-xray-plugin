@@ -12,6 +12,8 @@
     },
     "rules": {
         "no-shadow": "off",
+        "@typescript-eslint/consistent-type-exports": "error",
+        "@typescript-eslint/consistent-type-imports": "error",
         "@typescript-eslint/parameter-properties": "error",
         "@typescript-eslint/non-nullable-type-assertion-style": "off",
         "@typescript-eslint/member-ordering": "error",

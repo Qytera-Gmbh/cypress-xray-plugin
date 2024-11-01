@@ -1,4 +1,4 @@
-import { StatusCategory } from "./status-category";
+import type { StatusCategory } from "./status-category";
 
 export interface StatusDetails {
     /**

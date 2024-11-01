@@ -3,7 +3,7 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import process from "process";
-import { LoggedRequest } from "../../src/client/https/https";
+import type { LoggedRequest } from "../../src/client/https/https";
 import { dedent } from "../../src/util/dedent";
 import { LOCAL_SERVER } from "../server-config";
 import { runCypress, setupCypressProject } from "../sh";

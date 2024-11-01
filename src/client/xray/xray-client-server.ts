@@ -1,22 +1,23 @@
-import { AxiosResponse } from "axios";
+import type { AxiosResponse } from "axios";
 import FormData from "form-data";
-import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
-import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
-import { GetTestExecutionResponseServer } from "../../types/xray/responses/graphql/get-test-execution";
-import { ImportExecutionResponseServer } from "../../types/xray/responses/import-execution";
-import {
+import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
+import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
+import type { GetTestExecutionResponseServer } from "../../types/xray/responses/graphql/get-test-execution";
+import type { ImportExecutionResponseServer } from "../../types/xray/responses/import-execution";
+import type {
     ImportFeatureResponse,
     ImportFeatureResponseServer,
     IssueDetails,
 } from "../../types/xray/responses/import-feature";
-import { XrayLicenseStatus } from "../../types/xray/responses/license";
+import type { XrayLicenseStatus } from "../../types/xray/responses/license";
 import { dedent } from "../../util/dedent";
 import { LOG, Level } from "../../util/logging";
-import { HttpCredentials } from "../authentication/credentials";
-import { AxiosRestClient } from "../https/https";
+import type { HttpCredentials } from "../authentication/credentials";
+import type { AxiosRestClient } from "../https/https";
 import { loggedRequest } from "../util";
-import { AbstractXrayClient, XrayClient } from "./xray-client";
+import type { XrayClient } from "./xray-client";
+import { AbstractXrayClient } from "./xray-client";
 
 export interface XrayClientServer extends XrayClient {
     /**

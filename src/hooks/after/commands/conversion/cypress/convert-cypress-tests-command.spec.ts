@@ -11,9 +11,9 @@ import {
     initPluginOptions,
     initXrayOptions,
 } from "../../../../../context";
-import { CypressRunResult as CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
-import { CypressRunResultType } from "../../../../../types/cypress/cypress";
-import { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
+import type { CypressRunResult as CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
+import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
+import type { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
 import { dedent } from "../../../../../util/dedent";
 import { Level } from "../../../../../util/logging";
 import { ConstantCommand } from "../../../../util/commands/constant-command";

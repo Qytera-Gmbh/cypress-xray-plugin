@@ -1,8 +1,9 @@
 import ansiColors from "ansi-colors";
-import { AxiosError, AxiosHeaders, AxiosResponse } from "axios";
+import type { AxiosResponse } from "axios";
+import { AxiosError, AxiosHeaders } from "axios";
 import { expect } from "chai";
-import fs from "node:fs";
-import path from "node:path";
+import fs from "fs";
+import path from "path";
 import { stub } from "sinon";
 import { resolveTestDirPath } from "../../test/util";
 import { LoggedError } from "./errors";

@@ -1,9 +1,9 @@
-import { JiraClient } from "../../../../client/jira/jira-client";
-import { Issue } from "../../../../types/jira/responses/issue";
-import { StringMap } from "../../../../types/util";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import type { Issue } from "../../../../types/jira/responses/issue";
+import type { StringMap } from "../../../../types/util";
 import { extractString } from "../../../../util/extraction";
-import { Logger } from "../../../../util/logging";
-import { Computable } from "../../../command";
+import type { Logger } from "../../../../util/logging";
+import type { Computable } from "../../../command";
 import { ConstantCommand } from "../constant-command";
 import { GetFieldValuesCommand } from "./get-field-values-command";
 

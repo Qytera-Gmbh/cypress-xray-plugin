@@ -1,9 +1,10 @@
-import { JiraClient } from "../../client/jira/jira-client";
-import { ExecutableGraph } from "../../util/graph/executable-graph";
-import { Logger } from "../../util/logging";
-import { Command } from "../command";
+import type { JiraClient } from "../../client/jira/jira-client";
+import type { ExecutableGraph } from "../../util/graph/executable-graph";
+import type { Logger } from "../../util/logging";
+import type { Command } from "../command";
 import { ConstantCommand } from "./commands/constant-command";
-import { ExtractFieldIdCommand, JiraField } from "./commands/jira/extract-field-id-command";
+import type { JiraField } from "./commands/jira/extract-field-id-command";
+import { ExtractFieldIdCommand } from "./commands/jira/extract-field-id-command";
 import { FetchAllFieldsCommand } from "./commands/jira/fetch-all-fields-command";
 
 export function getOrCreateConstantCommand<T>(

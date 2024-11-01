@@ -1,9 +1,9 @@
 import axios, {
-    AxiosInstance,
-    AxiosRequestConfig,
-    AxiosRequestHeaders,
-    AxiosResponse,
-    InternalAxiosRequestConfig,
+    type AxiosInstance,
+    type AxiosRequestConfig,
+    type AxiosRequestHeaders,
+    type AxiosResponse,
+    type InternalAxiosRequestConfig,
     isAxiosError,
 } from "axios";
 import FormData from "form-data";

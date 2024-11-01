@@ -1,4 +1,4 @@
-import { StringMap } from "../types/util";
+import type { StringMap } from "../types/util";
 
 /**
  * Converts the values of all given objects into strings and pads them such that values belonging to

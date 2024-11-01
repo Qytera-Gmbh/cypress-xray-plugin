@@ -1,26 +1,28 @@
 import fs from "fs";
 import path from "path";
-import { XrayClient } from "../../client/xray/xray-client";
-import { EvidenceCollection } from "../../context";
-import { CypressRunResultType } from "../../types/cypress/cypress";
-import { IssueTransition } from "../../types/jira/responses/issue-transition";
-import { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
-import {
+import type { XrayClient } from "../../client/xray/xray-client";
+import type { EvidenceCollection } from "../../context";
+import type { CypressRunResultType } from "../../types/cypress/cypress";
+import type { IssueTransition } from "../../types/jira/responses/issue-transition";
+import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
+import type {
     ClientCombination,
     InternalCypressXrayPluginOptions,
     PluginIssueUpdate,
 } from "../../types/plugin";
-import { XrayTest } from "../../types/xray/import-test-execution-results";
-import {
+import type { XrayTest } from "../../types/xray/import-test-execution-results";
+import type {
     CucumberMultipart,
     CucumberMultipartFeature,
 } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
+import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import { getOrCall } from "../../util/functions";
-import { ExecutableGraph } from "../../util/graph/executable-graph";
-import { Level, Logger } from "../../util/logging";
-import { Command, ComputableState } from "../command";
-import { ConstantCommand } from "../util/commands/constant-command";
+import type { ExecutableGraph } from "../../util/graph/executable-graph";
+import type { Logger } from "../../util/logging";
+import { Level } from "../../util/logging";
+import type { Command } from "../command";
+import { ComputableState } from "../command";
+import type { ConstantCommand } from "../util/commands/constant-command";
 import { DestructureCommand } from "../util/commands/destructure-command";
 import { FallbackCommand } from "../util/commands/fallback-command";
 import { AttachFilesCommand } from "../util/commands/jira/attach-files-command";

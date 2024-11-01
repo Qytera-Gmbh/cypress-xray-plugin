@@ -1,11 +1,12 @@
-import { Background, Comment, GherkinDocument, Scenario } from "@cucumber/messages";
-import { FeatureFileIssueData } from "../../../types/cucumber/cucumber";
-import { CucumberOptions } from "../../../types/plugin";
+import type { Background, Comment, GherkinDocument, Scenario } from "@cucumber/messages";
+import type { FeatureFileIssueData } from "../../../types/cucumber/cucumber";
+import type { CucumberOptions } from "../../../types/plugin";
 import { dedent } from "../../../util/dedent";
 import { errorMessage, missingTestKeyInCucumberScenarioError } from "../../../util/errors";
 import { HELP } from "../../../util/help";
-import { Logger } from "../../../util/logging";
-import { Command, Computable } from "../../command";
+import type { Logger } from "../../../util/logging";
+import type { Computable } from "../../command";
+import { Command } from "../../command";
 import {
     getCucumberPreconditionIssueComments,
     getCucumberPreconditionIssueTags,

@@ -1,5 +1,5 @@
-import { JsonType } from "./json-type";
-import { Scope } from "./scope";
+import type { JsonType } from "./json-type";
+import type { Scope } from "./scope";
 
 export interface FieldDetail {
     /**

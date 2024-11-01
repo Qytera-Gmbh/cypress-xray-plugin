@@ -47,7 +47,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     const { defineConfig } = require("cypress");
                     const fix = require("cypress-on-fix");
                     const { configureXrayPlugin, syncFeatureFile } = require("cypress-xray-plugin");
-                    const fs = require("node:fs");
+                    const fs = require("fs");
 
                     module.exports = defineConfig({
                         video: false,

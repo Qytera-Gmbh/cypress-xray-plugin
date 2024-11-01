@@ -1,4 +1,4 @@
-import { Scenario } from "@cucumber/messages";
+import type { Scenario } from "@cucumber/messages";
 import { expect } from "chai";
 import path from "path";
 import { parseFeatureFile } from "./gherkin";

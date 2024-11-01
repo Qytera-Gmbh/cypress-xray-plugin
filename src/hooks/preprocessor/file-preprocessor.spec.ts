@@ -8,9 +8,9 @@ import {
     initPluginOptions,
     initXrayOptions,
 } from "../../context";
-import { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
+import type { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
-import { Command } from "../command";
+import type { Command } from "../command";
 import { EditIssueFieldCommand } from "../util/commands/jira/edit-issue-field-command";
 import { GetLabelValuesCommand } from "../util/commands/jira/get-label-values-command";
 import { GetSummaryValuesCommand } from "../util/commands/jira/get-summary-values-command";

@@ -1,4 +1,4 @@
-import { Background } from "@cucumber/messages";
+import type { Background } from "@cucumber/messages";
 import { expect } from "chai";
 import path from "path";
 import { parseFeatureFile } from "./gherkin";

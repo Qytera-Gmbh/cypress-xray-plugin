@@ -1,9 +1,11 @@
-import { JiraClient } from "../../../../client/jira/jira-client";
-import { StringMap } from "../../../../types/util";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import type { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
-import { Level, Logger } from "../../../../util/logging";
+import type { Logger } from "../../../../util/logging";
+import { Level } from "../../../../util/logging";
 import { unknownToString } from "../../../../util/string";
-import { Command, Computable } from "../../../command";
+import type { Computable } from "../../../command";
+import { Command } from "../../../command";
 
 interface Parameters {
     fieldId: string;
