@@ -6,8 +6,8 @@ import { dedent } from "../../../../util/dedent.js";
 import { Level } from "../../../../util/logging.js";
 import { ImportFeatureCommand } from "./import-feature-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(ImportFeatureCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(ImportFeatureCommand.name, async async () => {
         await it("imports features", async () => {
             const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient();

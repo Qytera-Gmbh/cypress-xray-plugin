@@ -3,8 +3,8 @@ import { describe, it } from "node:test";
 import path from "path";
 import { getXrayStatus } from "./status.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(getXrayStatus.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(getXrayStatus.name, async async async async async async async async async async async async async () => {
         await it("uses passed as default status name for passed tests", () => {
             expect(getXrayStatus("passed")).to.eq("passed");
         });

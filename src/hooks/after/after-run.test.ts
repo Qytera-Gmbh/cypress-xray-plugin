@@ -58,7 +58,7 @@ import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-com
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
     let clients: ClientCombination;
     let options: InternalCypressXrayPluginOptions;
     beforeEach(async () => {
@@ -99,8 +99,8 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         };
     });
 
-    await describe(addUploadCommands.name, () => {
-        await describe("cypress", () => {
+    await describe(addUploadCommands.name, async async async () => {
+        await describe("cypress", async async async async async async async async () => {
             let result: CypressRunResultType;
 
             beforeEach(() => {
@@ -487,7 +487,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe("cucumber", () => {
+        await describe("cucumber", async async async async async () => {
             let cypressResult: CypressRunResultType;
             let cucumberResult: CucumberMultipartFeature[];
 
@@ -515,7 +515,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                 ) as CucumberMultipartFeature[];
             });
 
-            await describe("server", () => {
+            await describe("server", async async async async async async async () => {
                 await it("adds commands necessary for cucumber results upload", async () => {
                     useFakeTimers(new Date(12345));
                     const graph = new ExecutableGraph<Command>();
@@ -857,7 +857,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                 });
             });
 
-            await describe("cloud", () => {
+            await describe("cloud", async async () => {
                 beforeEach(() => {
                     clients.kind = "cloud";
                 });
@@ -1216,7 +1216,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe("mixed", () => {
+        await describe("mixed", async () => {
             let cypressResult: CypressRunResultType;
             let cucumberResult: CucumberMultipart;
 

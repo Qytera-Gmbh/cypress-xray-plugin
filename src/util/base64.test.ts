@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import path from "path";
 import { encodeFile } from "./base64.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
     await it("should encode png files to base64", () => {
         const encodedString = encodeFile("./test/resources/turtle.png");
         expect(encodedString).to.have.length.greaterThan(0);

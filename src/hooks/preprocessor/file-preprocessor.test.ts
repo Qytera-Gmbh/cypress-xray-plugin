@@ -24,7 +24,7 @@ import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command.j
 import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command.js";
 import { addSynchronizationCommands } from "./file-preprocessor.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
     let clients: ClientCombination;
     let options: InternalCypressXrayPluginOptions;
 
@@ -66,7 +66,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         };
     });
 
-    await describe(addSynchronizationCommands.name, () => {
+    await describe(addSynchronizationCommands.name, async async async async () => {
         const file = {
             ...({} as Cypress.FileObject),
             filePath: "./path/to/file.feature",

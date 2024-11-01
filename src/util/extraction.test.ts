@@ -3,8 +3,8 @@ import { describe, it } from "node:test";
 import path from "path";
 import { extractArrayOfStrings, extractNestedString, extractString } from "./extraction.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe("extractString", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async async () => {
+    await describe("extractString", async async async async async async () => {
         await it("extracts string properties", () => {
             const data = {
                 x: "nice to meet you",
@@ -42,7 +42,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe("extractArrayOfStrings", () => {
+    await describe("extractArrayOfStrings", async async async async async async async () => {
         await it("extracts string array properties", () => {
             const data = {
                 x: ["nice", "to", "meet", "you"],
@@ -90,7 +90,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe("extractNestedString", () => {
+    await describe("extractNestedString", async async async async async async () => {
         await it("extracts nested string properties", () => {
             const data = {
                 a: {

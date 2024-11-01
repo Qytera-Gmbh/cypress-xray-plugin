@@ -3,14 +3,14 @@ import { describe, it } from "node:test";
 import path from "path";
 import { Stack } from "./stack.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async async async async async () => {
     let stack = new Stack<number>();
 
     beforeEach(() => {
         stack = new Stack<number>();
     });
 
-    await describe(stack.push.name, () => {
+    await describe(stack.push.name, async () => {
         await it("pushes elements", () => {
             stack.push(10);
             expect(stack.top()).to.eq(10);
@@ -19,7 +19,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(stack.pop.name, () => {
+    await describe(stack.pop.name, async async () => {
         await it("pops elements", () => {
             stack.push(0).push(1).push(2).push(3).push(4);
             expect(stack.pop()).to.eq(4);
@@ -34,7 +34,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(stack.top.name, () => {
+    await describe(stack.top.name, async async () => {
         await it("returns the top element", () => {
             stack.push(0);
             expect(stack.top()).to.eq(0);
@@ -49,7 +49,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(stack.size.name, () => {
+    await describe(stack.size.name, async () => {
         await it("computes the size", () => {
             expect(stack.size()).to.eq(0);
             stack.push(0);
@@ -63,7 +63,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(stack.has.name, () => {
+    await describe(stack.has.name, async async () => {
         await it("finds elements", () => {
             stack.push(0).push(1).push(2).push(3).push(4);
             expect(stack.has(0)).to.be.true;
@@ -79,7 +79,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(stack.isEmpty.name, () => {
+    await describe(stack.isEmpty.name, async () => {
         await it("computes the emptiness", () => {
             expect(stack.isEmpty()).to.be.true;
             stack.push(0);

@@ -4,8 +4,8 @@ import path from "path";
 import { CypressStatus } from "../../../../../../types/cypress/status.js";
 import { getXrayStatus, toCypressStatus } from "./status.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(toCypressStatus.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
+    await describe(toCypressStatus.name, async async async async async () => {
         await it("parses passed statuses", () => {
             expect(toCypressStatus("passed")).to.eq(CypressStatus.PASSED);
         });
@@ -23,8 +23,8 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(getXrayStatus.name, () => {
-        await describe("server", () => {
+    await describe(getXrayStatus.name, async async async async async async () => {
+        await describe("server", async async async async () => {
             await it("uses PASS as default status name for passed tests", () => {
                 expect(getXrayStatus(CypressStatus.PASSED, false)).to.eq("PASS");
             });
@@ -38,7 +38,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(getXrayStatus(CypressStatus.SKIPPED, false)).to.eq("FAIL");
             });
         });
-        await describe("cloud", () => {
+        await describe("cloud", async async async async () => {
             await it("uses PASSED as default status name for passed tests", () => {
                 expect(getXrayStatus(CypressStatus.PASSED, true)).to.eq("PASSED");
             });

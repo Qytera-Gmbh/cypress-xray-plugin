@@ -3,14 +3,14 @@ import { describe, it } from "node:test";
 import path from "path";
 import { Queue } from "./queue.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async async async async async async () => {
     let queue = new Queue<number>();
 
     beforeEach(() => {
         queue = new Queue<number>();
     });
 
-    await describe(queue.enqueue.name, () => {
+    await describe(queue.enqueue.name, async () => {
         await it("enqueues elements", () => {
             queue.enqueue(10);
             expect(queue.peek()).to.eq(10);
@@ -19,7 +19,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(queue.dequeue.name, () => {
+    await describe(queue.dequeue.name, async async () => {
         await it("dequeues elements", () => {
             queue
                 .enqueue(0)
@@ -47,7 +47,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(queue.peek.name, () => {
+    await describe(queue.peek.name, async async () => {
         await it("peeks elements", () => {
             queue.enqueue(0);
             expect(queue.peek()).to.eq(0);
@@ -62,7 +62,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(queue.size.name, () => {
+    await describe(queue.size.name, async () => {
         await it("computes the size", () => {
             expect(queue.size()).to.eq(0);
             queue.enqueue(0);
@@ -76,7 +76,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(queue.has.name, () => {
+    await describe(queue.has.name, async async () => {
         await it("returns true for known elements", () => {
             queue
                 .enqueue(0)
@@ -105,7 +105,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(queue.find.name, () => {
+    await describe(queue.find.name, async async () => {
         await it("finds elements", () => {
             queue.enqueue(0).enqueue(1).enqueue(2);
             expect(queue.find((e) => e === 0)).to.eq(0);
@@ -119,7 +119,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(queue.isEmpty.name, () => {
+    await describe(queue.isEmpty.name, async () => {
         await it("computes the emptiness", () => {
             expect(queue.isEmpty()).to.be.true;
             queue.enqueue(0);

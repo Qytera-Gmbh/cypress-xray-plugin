@@ -3,9 +3,9 @@ import { describe, it } from "node:test";
 import path from "path";
 import { contains } from "./compare.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(contains.name, () => {
-        await describe("primitive types", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(contains.name, async async async async () => {
+        await describe("primitive types", async async async async async async async async async async async async async async () => {
             await it("bigint", () => {
                 expect(contains(BigInt(200), BigInt(200))).to.be.true;
             });
@@ -50,7 +50,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe("arrays", () => {
+        await describe("arrays", async async async async () => {
             await it("equal", () => {
                 expect(contains([1, 2, 3, "hello", false], [1, 2, 3, "hello", false])).to.be.true;
             });
@@ -65,7 +65,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe("objects", () => {
+        await describe("objects", async async async () => {
             await it("equal", () => {
                 expect(contains({ a: "b", c: 5, d: false }, { a: "b", c: 5, d: false })).to.be.true;
             });
@@ -77,7 +77,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe("complex", () => {
+        await describe("complex", async () => {
             await it("partially equal", () => {
                 expect(
                     contains(

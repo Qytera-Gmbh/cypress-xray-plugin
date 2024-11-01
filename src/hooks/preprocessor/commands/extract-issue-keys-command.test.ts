@@ -5,8 +5,8 @@ import { getMockedLogger } from "../../../../test/mocks.js";
 import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { ExtractIssueKeysCommand } from "./extract-issue-keys-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(ExtractIssueKeysCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(ExtractIssueKeysCommand.name, async () => {
         await it("merges all issue keys into one array", async () => {
             const logger = getMockedLogger();
             const extractIssueKeysCommand = new ExtractIssueKeysCommand(

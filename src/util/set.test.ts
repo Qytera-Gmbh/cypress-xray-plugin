@@ -3,8 +3,8 @@ import { describe, it } from "node:test";
 import path from "path";
 import { computeOverlap } from "./set.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe("computeOverlap", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe("computeOverlap", async async async async () => {
         await it("computes the overlap of arrays", () => {
             expect(computeOverlap([1, 2, 3], [2, 5, 9, 1])).to.deep.eq({
                 intersection: [1, 2],

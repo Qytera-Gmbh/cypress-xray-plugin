@@ -9,8 +9,8 @@ import { JwtCredentials } from "./credentials.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(JwtCredentials.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(JwtCredentials.name, async () => {
         let restClient = getMockedRestClient();
         let credentials: JwtCredentials = new JwtCredentials(
             "id",
@@ -24,7 +24,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             credentials = new JwtCredentials("id", "secret", "https://example.org", restClient);
         });
 
-        await describe(credentials.getAuthorizationHeader.name, () => {
+        await describe(credentials.getAuthorizationHeader.name, async async async async () => {
             await it("returns authorization headers", async () => {
                 getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post.onFirstCall().resolves({

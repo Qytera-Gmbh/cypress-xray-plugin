@@ -40,11 +40,11 @@ import { CapturingLogger, Level } from "./util/logging.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe("the plugin context configuration", () => {
-        await describe("the option initialization", () => {
-            await describe("should have certain default values", () => {
-                await describe("jira", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async async () => {
+    await describe("the plugin context configuration", async async async () => {
+        await describe("the option initialization", async async async async () => {
+            await describe("should have certain default values", async async async async () => {
+                await describe("jira", async async async async () => {
                     const jiraOptions: InternalJiraOptions = initJiraOptions(
                         {},
                         {
@@ -55,7 +55,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                     await it("attachVideos", () => {
                         expect(jiraOptions.attachVideos).to.eq(false);
                     });
-                    await describe("fields", () => {
+                    await describe("fields", async async () => {
                         await it("testEnvironments", () => {
                             expect(jiraOptions.fields.testEnvironments).to.eq(undefined);
                         });
@@ -71,7 +71,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
 
-                await describe("plugin", () => {
+                await describe("plugin", async async async async () => {
                     const pluginOptions: InternalPluginOptions = initPluginOptions({}, {});
                     await it("debug", () => {
                         expect(pluginOptions.debug).to.eq(false);
@@ -87,9 +87,9 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
 
-                await describe("xray", () => {
+                await describe("xray", async async async async () => {
                     const xrayOptions: InternalXrayOptions = initXrayOptions({}, {});
-                    await describe("status", () => {
+                    await describe("status", async async async async async () => {
                         await it("failed", () => {
                             expect(xrayOptions.status.failed).to.eq(undefined);
                         });
@@ -102,7 +102,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                         await it("skipped", () => {
                             expect(xrayOptions.status.skipped).to.eq(undefined);
                         });
-                        await describe("step", () => {
+                        await describe("step", async async async async () => {
                             await it("failed", () => {
                                 expect(xrayOptions.status.step?.failed).to.eq(undefined);
                             });
@@ -128,7 +128,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
 
-                await describe("cucumber", () => {
+                await describe("cucumber", async async async () => {
                     let cucumberOptions: InternalCucumberOptions | undefined = undefined;
                     beforeEach(async () => {
                         cucumberOptions = await initCucumberOptions(
@@ -149,7 +149,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(cucumberOptions?.downloadFeatures).to.eq(false);
                     });
 
-                    await describe("prefixes", () => {
+                    await describe("prefixes", async async () => {
                         await it("precondition", () => {
                             expect(cucumberOptions?.prefixes.precondition).to.eq(undefined);
                         });
@@ -162,8 +162,8 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
             });
-            await describe("should prefer provided values over default ones", () => {
-                await describe("jira", () => {
+            await describe("should prefer provided values over default ones", async async async async () => {
+                await describe("jira", async async async async async () => {
                     await it("attachVideos", () => {
                         const jiraOptions = initJiraOptions(
                             {},
@@ -175,7 +175,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                         );
                         expect(jiraOptions.attachVideos).to.eq(true);
                     });
-                    await describe("fields", () => {
+                    await describe("fields", async async () => {
                         await it("testEnvironments", () => {
                             const jiraOptions = initJiraOptions(
                                 {},
@@ -239,7 +239,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
 
-                await describe("plugin", () => {
+                await describe("plugin", async async async async () => {
                     await it("debug", () => {
                         const pluginOptions = initPluginOptions(
                             {},
@@ -278,8 +278,8 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
 
-                await describe("xray", () => {
-                    await describe("status", () => {
+                await describe("xray", async async async async () => {
+                    await describe("status", async async async async async () => {
                         await it("failed", () => {
                             const xrayOptions = initXrayOptions(
                                 {},
@@ -324,7 +324,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                             );
                             expect(xrayOptions.status.skipped).to.eq("SKIPPING STONE");
                         });
-                        await describe("step", () => {
+                        await describe("step", async async async async () => {
                             await it("failed", () => {
                                 const xrayOptions = initXrayOptions(
                                     {},
@@ -411,7 +411,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
 
-                await describe("cucumber", () => {
+                await describe("cucumber", async async async () => {
                     await it("downloadFeatures", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
@@ -429,7 +429,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                         );
                         expect(cucumberOptions?.downloadFeatures).to.eq(true);
                     });
-                    await describe("prefixes", () => {
+                    await describe("prefixes", async async () => {
                         await it("precondition", async () => {
                             const cucumberOptions = await initCucumberOptions(
                                 {
@@ -486,8 +486,8 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
             });
-            await describe("should prefer environment variables over provided values", () => {
-                await describe("jira", () => {
+            await describe("should prefer environment variables over provided values", async async async async () => {
+                await describe("jira", async async async async async async () => {
                     await it("JIRA_PROJECT_KEY", () => {
                         const env = {
                             ["JIRA_PROJECT_KEY"]: "ABC",
@@ -511,7 +511,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(jiraOptions.attachVideos).to.be.true;
                     });
 
-                    await describe("fields", () => {
+                    await describe("fields", async async () => {
                         await it("JIRA_FIELDS_TEST_ENVIRONMENTS", () => {
                             const env = {
                                 ["JIRA_FIELDS_TEST_ENVIRONMENTS"]: "customfield_98765",
@@ -590,7 +590,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(jiraOptions.url).to.eq("https://example.org");
                     });
                 });
-                await describe("xray", () => {
+                await describe("xray", async async async async async async async async async async async () => {
                     await it("XRAY_STATUS_FAILED", () => {
                         const env = {
                             ["XRAY_STATUS_FAILED"]: "no",
@@ -719,7 +719,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(xrayOptions.uploadScreenshots).to.be.false;
                     });
                 });
-                await describe("cucumber", () => {
+                await describe("cucumber", async async async async async () => {
                     await it("CUCUMBER_FEATURE_FILE_EXTENSION", async () => {
                         const cucumberOptions = await initCucumberOptions(
                             {
@@ -824,7 +824,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                         expect(cucumberOptions?.uploadFeatures).to.be.true;
                     });
                 });
-                await describe("plugin", () => {
+                await describe("plugin", async async async async () => {
                     await it("PLUGIN_DEBUG", () => {
                         const env = {
                             ["PLUGIN_DEBUG"]: "true",
@@ -866,7 +866,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                     });
                 });
             });
-            await describe("detects invalid configurations", () => {
+            await describe("detects invalid configurations", async async async async () => {
                 await it("detects unset project keys", () => {
                     expect(() =>
                         initJiraOptions(
@@ -955,7 +955,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe("the http clients instantiation", () => {
+        await describe("the http clients instantiation", async async async async async async async async async async () => {
             await it("creates a single client by default", () => {
                 const httpClients = initHttpClients(undefined, undefined);
                 expect(httpClients.jira).to.eq(httpClients.xray);
@@ -1209,7 +1209,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe("the clients instantiation", () => {
+        await describe("the clients instantiation", async async async async async async async async async async async () => {
             let jiraOptions: InternalJiraOptions;
             beforeEach(() => {
                 jiraOptions = initJiraOptions(
@@ -1648,7 +1648,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(SimpleEvidenceCollection.name, () => {
+    await describe(SimpleEvidenceCollection.name, async async async () => {
         await it("collects evidence for single tests", () => {
             const evidenceCollection = new SimpleEvidenceCollection();
             evidenceCollection.addEvidence("CYP-123", {
@@ -1714,7 +1714,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(PluginContext.name, () => {
+    await describe(PluginContext.name, async async async () => {
         let context: PluginContext;
 
         beforeEach(() => {
