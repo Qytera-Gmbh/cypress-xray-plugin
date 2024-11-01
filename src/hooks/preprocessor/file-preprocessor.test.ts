@@ -66,7 +66,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
         };
     });
 
-    await describe(addSynchronizationCommands.name, async async async async () => {
+    await describe(addSynchronizationCommands.name, async () => {
         const file = {
             ...({} as Cypress.FileObject),
             filePath: "./path/to/file.feature",

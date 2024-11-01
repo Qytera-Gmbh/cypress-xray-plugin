@@ -13,13 +13,13 @@ import { AxiosRestClient } from "./https.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async async async async async async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
     beforeEach(() => {
         BaseAxios.default.interceptors.request.clear();
         BaseAxios.default.interceptors.response.clear();
     });
 
-    await describe("get", async async async async () => {
+    await describe("get", async () => {
         await it("returns the response", async () => {
             const response: BaseAxios.AxiosResponse<string> = {
                 config: {
@@ -113,7 +113,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         });
     });
 
-    await describe("post", async async async async () => {
+    await describe("post", async () => {
         await it("returns the response", async () => {
             const client = new AxiosRestClient();
             const response: BaseAxios.AxiosResponse<string> = {
@@ -218,7 +218,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         });
     });
 
-    await describe("put", async async async async () => {
+    await describe("put", async () => {
         await it("returns the response", async () => {
             const client = new AxiosRestClient();
             const response: BaseAxios.AxiosResponse<string> = {
@@ -401,7 +401,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         expect(dateHeader7.getTime() - dateHeader6.getTime()).to.be.approximately(0, 50);
         expect(dateHeader8.getTime() - dateHeader7.getTime()).to.be.approximately(0, 50);
         expect(dateHeader9.getTime() - dateHeader8.getTime()).to.be.approximately(0, 50);
-    }).timeout(3000);
+    });
 
     await it("rate limits requests", async () => {
         const restClient = new AxiosRestClient({ rateLimiting: { requestsPerSecond: 2 } });
@@ -423,5 +423,5 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         expect(dateHeader2.getTime() - dateHeader1.getTime()).to.be.approximately(500, 50);
         expect(dateHeader3.getTime() - dateHeader2.getTime()).to.be.approximately(500, 50);
         expect(dateHeader4.getTime() - dateHeader3.getTime()).to.be.approximately(500, 50);
-    }).timeout(3000);
+    });
 });

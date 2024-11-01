@@ -10,7 +10,7 @@ import { ExtractFieldIdCommand, JiraField } from "./extract-field-id-command.js"
 chai.use(chaiAsPromised);
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(ExtractFieldIdCommand.name, async async async async () => {
+    await describe(ExtractFieldIdCommand.name, async () => {
         await it("extracts fields case-insensitively", async () => {
             const logger = getMockedLogger();
             const command = new ExtractFieldIdCommand(
@@ -88,7 +88,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             );
         });
 
-        await describe("throws for missing fields and displays a hint", async async () => {
+        await describe("throws for missing fields and displays a hint", async () => {
             await it(JiraField.TEST_ENVIRONMENTS, async () => {
                 const logger = getMockedLogger();
                 const command = new ExtractFieldIdCommand(

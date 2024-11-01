@@ -8,8 +8,8 @@ import {
     getCucumberPreconditionIssueTags,
 } from "./precondition.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
-    await describe(getCucumberPreconditionIssueComments.name, async async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(getCucumberPreconditionIssueComments.name, async () => {
         await it("extracts relevant comments without prefix", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
@@ -46,7 +46,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async (
         });
     });
 
-    await describe(getCucumberPreconditionIssueTags.name, async async async () => {
+    await describe(getCucumberPreconditionIssueTags.name, async () => {
         await it("extracts background tags without prefix", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedNoPrefixMultipleBackground.feature"

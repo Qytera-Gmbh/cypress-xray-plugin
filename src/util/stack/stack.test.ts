@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import path from "path";
 import { Stack } from "./stack.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async async async async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
     let stack = new Stack<number>();
 
     beforeEach(() => {
@@ -19,7 +19,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         });
     });
 
-    await describe(stack.pop.name, async async () => {
+    await describe(stack.pop.name, async () => {
         await it("pops elements", () => {
             stack.push(0).push(1).push(2).push(3).push(4);
             expect(stack.pop()).to.eq(4);
@@ -34,7 +34,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         });
     });
 
-    await describe(stack.top.name, async async () => {
+    await describe(stack.top.name, async () => {
         await it("returns the top element", () => {
             stack.push(0);
             expect(stack.top()).to.eq(0);
@@ -63,7 +63,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         });
     });
 
-    await describe(stack.has.name, async async () => {
+    await describe(stack.has.name, async () => {
         await it("finds elements", () => {
             stack.push(0).push(1).push(2).push(3).push(4);
             expect(stack.has(0)).to.be.true;

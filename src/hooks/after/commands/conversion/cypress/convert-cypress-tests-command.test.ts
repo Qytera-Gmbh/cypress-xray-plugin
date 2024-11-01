@@ -23,7 +23,7 @@ import { ConvertCypressTestsCommand } from "./convert-cypress-tests-command.js";
 chai.use(chaiAsPromised);
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(ConvertCypressTestsCommand.name, async async async async async async async async async async async async async async async async async async async () => {
+    await describe(ConvertCypressTestsCommand.name, async () => {
         let options: InternalCypressXrayPluginOptions;
         beforeEach(() => {
             options = {
@@ -45,7 +45,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             };
         });
 
-        await describe("<13", async async () => {
+        await describe("<13", async () => {
             await it("converts test results into xray results json", async () => {
                 const logger = getMockedLogger();
                 const result = JSON.parse(
@@ -154,7 +154,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe(">=13", async async async () => {
+        await describe(">=13", async () => {
             await it("converts test results into xray results json", async () => {
                 const logger = getMockedLogger();
                 const result: CypressCommandLine.CypressRunResult = JSON.parse(

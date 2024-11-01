@@ -15,7 +15,7 @@ import { AssertCucumberConversionValidCommand } from "./assert-cucumber-conversi
 chai.use(chaiAsPromised);
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(AssertCucumberConversionValidCommand.name, async async () => {
+    await describe(AssertCucumberConversionValidCommand.name, async () => {
         await it("correctly verifies cucumber multipart data", async () => {
             const logger = getMockedLogger();
             const cucumberFeatures: CucumberMultipartFeature[] = JSON.parse(

@@ -18,7 +18,7 @@ import { BaseJiraClient } from "./jira-client.js";
 chai.use(chaiAsPromised);
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(BaseJiraClient.name, async async async async async async async () => {
+    await describe(BaseJiraClient.name, async () => {
         let client: BaseJiraClient;
         let restClient: SinonStubbedInstance<AxiosRestClient>;
 
@@ -31,7 +31,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             );
         });
 
-        await describe("add attachment", async async async async async async async async () => {
+        await describe("add attachment", async () => {
             await it("should use the correct headers", async () => {
                 restClient.post.resolves({
                     config: {
@@ -221,7 +221,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("get issue types", async async async () => {
+        await describe("get issue types", async () => {
             await it("returns issue types", async () => {
                 const issueTypes = JSON.parse(
                     fs.readFileSync(
@@ -291,7 +291,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("get fields", async async () => {
+        await describe("get fields", async () => {
             await it("returns the correct values", async () => {
                 const mockedData = JSON.parse(
                     fs.readFileSync(
@@ -344,7 +344,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("get myself", async async () => {
+        await describe("get myself", async () => {
             await it("returns user details", async () => {
                 restClient.get.onFirstCall().resolves({
                     config: {
@@ -402,7 +402,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("search", async async async () => {
+        await describe("search", async () => {
             await it("should return all issues without pagination", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: {
@@ -554,7 +554,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("editIssue", async async () => {
+        await describe("editIssue", async () => {
             await it("edits issues", async () => {
                 restClient.put
                     .withArgs("https://example.org/rest/api/latest/issue/CYP-XYZ", {
@@ -611,7 +611,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("transitionIssue", async async () => {
+        await describe("transitionIssue", async () => {
             await it("transitions issues", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: {

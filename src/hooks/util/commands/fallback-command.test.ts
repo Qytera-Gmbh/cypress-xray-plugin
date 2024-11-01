@@ -7,7 +7,7 @@ import { ConstantCommand } from "./constant-command.js";
 import { FallbackCommand } from "./fallback-command.js";
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(FallbackCommand.name, async async () => {
+    await describe(FallbackCommand.name, async () => {
         await it("computes the result if possible", async () => {
             const logger = getMockedLogger();
             const input = new ConstantCommand(logger, 42);

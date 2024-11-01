@@ -4,7 +4,7 @@ import path from "path";
 import { getOrCall } from "./functions.js";
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(getOrCall.name, async async async () => {
+    await describe(getOrCall.name, async () => {
         await it("returns unwrapped values", async () => {
             expect(await getOrCall("hello")).to.eq("hello");
         });

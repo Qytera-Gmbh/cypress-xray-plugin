@@ -12,7 +12,7 @@ import { parseFeatureFile } from "./parsing/gherkin.js";
 chai.use(chaiAsPromised);
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(ExtractFeatureFileIssuesCommand.name, async async async async async async async async async async async async async () => {
+    await describe(ExtractFeatureFileIssuesCommand.name, async () => {
         await it("extracts cucumber issue data", async () => {
             const logger = getMockedLogger();
             const document = parseFeatureFile(
@@ -600,7 +600,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             );
         });
 
-        await describe("no prefix", async async async () => {
+        await describe("no prefix", async () => {
             await it("throws for multiple scenario tags (no scenario name, no steps)", async () => {
                 const logger = getMockedLogger();
                 const document = parseFeatureFile(
@@ -726,7 +726,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("prefixed", async async () => {
+        await describe("prefixed", async () => {
             await it("throws for multiple scenario tags", async () => {
                 const logger = getMockedLogger();
                 const document = parseFeatureFile(

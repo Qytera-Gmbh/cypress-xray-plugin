@@ -6,7 +6,7 @@ import { ConstantCommand } from "./constant-command.js";
 import { DestructureCommand } from "./destructure-command.js";
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(DestructureCommand.name, async async () => {
+    await describe(DestructureCommand.name, async () => {
         await it("returns the accessed object value", async () => {
             const logger = getMockedLogger();
             const command = new DestructureCommand(

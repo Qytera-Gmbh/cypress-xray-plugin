@@ -4,7 +4,7 @@ import path from "path";
 import { prettyPadObjects, prettyPadValues } from "./pretty.js";
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(prettyPadObjects.name, async async () => {
+    await describe(prettyPadObjects.name, async () => {
         await it("pretty pad object arrays", () => {
             const array = [
                 {

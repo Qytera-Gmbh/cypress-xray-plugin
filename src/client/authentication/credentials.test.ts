@@ -24,7 +24,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             credentials = new JwtCredentials("id", "secret", "https://example.org", restClient);
         });
 
-        await describe(credentials.getAuthorizationHeader.name, async async async async () => {
+        await describe(credentials.getAuthorizationHeader.name, async () => {
             await it("returns authorization headers", async () => {
                 getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post.onFirstCall().resolves({

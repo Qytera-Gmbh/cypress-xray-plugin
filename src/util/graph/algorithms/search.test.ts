@@ -16,7 +16,7 @@ class Vertex {
     }
 }
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
     const graph = new SimpleDirectedGraph<Vertex>();
     const v0 = graph.place(new Vertex(0));
     const v1 = graph.place(new Vertex(1));
@@ -42,7 +42,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async (
     graph.connect(v6, v9);
     graph.connect(v9, v7);
 
-    await describe(bfs.name, async async async async async async async async async async () => {
+    await describe(bfs.name, async () => {
         await it("finds vertices by reference", () => {
             expect(
                 bfs(graph, {
@@ -132,7 +132,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async (
         });
     });
 
-    await describe(dfs.name, async async async async async async async async async async () => {
+    await describe(dfs.name, async () => {
         await it("finds vertices by reference", () => {
             expect(
                 dfs(graph, {

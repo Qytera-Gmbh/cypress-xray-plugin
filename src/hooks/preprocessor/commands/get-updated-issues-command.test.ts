@@ -7,7 +7,7 @@ import { Level } from "../../../util/logging.js";
 import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { GetUpdatedIssuesCommand } from "./get-updated-issues-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
     await describe(GetUpdatedIssuesCommand.name, async () => {
         await it("returns all affected issues", async () => {
             const logger = getMockedLogger();
