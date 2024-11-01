@@ -1,9 +1,10 @@
 import { expect } from "chai";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { computeOverlap } from "./set.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe("computeOverlap", async () => {
         await it("computes the overlap of arrays", () => {
             expect(computeOverlap([1, 2, 3], [2, 5, 9, 1])).to.deep.eq({

@@ -1,7 +1,7 @@
 import { expect } from "chai";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
-import process from "process";
 import { dedent } from "../../src/util/dedent.js";
 import { runCypress, setupCypressProject } from "../sh.js";
 import { expectToExist } from "../util.js";
@@ -12,7 +12,7 @@ import { getCreatedTestExecutionIssueKey } from "./util.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/341
 // ============================================================================================== //
 
-await describe(relative(process.cwd(), import.meta.filename), { timeout: 180000 }, async () => {
+await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             cucumberTestPrefix: "TestName:",

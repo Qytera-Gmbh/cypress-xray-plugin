@@ -1,9 +1,10 @@
 import { expect } from "chai";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { prettyPadObjects, prettyPadValues } from "./pretty.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(prettyPadObjects.name, async () => {
         await it("pretty pad object arrays", () => {
             const array = [

@@ -1,7 +1,8 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks.js";
 import { dedent } from "../../../../util/dedent.js";
 import { Level } from "../../../../util/logging.js";
@@ -10,7 +11,7 @@ import { GetLabelValuesCommand } from "./get-label-values-command.js";
 
 chai.use(chaiAsPromised);
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(GetLabelValuesCommand.name, async () => {
         await it("fetches labels", async () => {
             const logger = getMockedLogger();

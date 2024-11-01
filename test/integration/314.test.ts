@@ -1,9 +1,9 @@
 import ansiColors from "ansi-colors";
 import { expect } from "chai";
-import fs from "fs";
+import fs from "node:fs";
+import { join, relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
-import process from "process";
 import type { LoggedRequest } from "../../src/client/https/https.js";
 import { dedent } from "../../src/util/dedent.js";
 import { LOCAL_SERVER } from "../server-config.js";
@@ -13,7 +13,7 @@ import { runCypress, setupCypressProject } from "../sh.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/314
 // ============================================================================================== //
 
-await describe(relative(process.cwd(), import.meta.filename), { timeout: 180000 }, async () => {
+await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             commandFileContent: dedent(`
@@ -100,7 +100,7 @@ await describe(relative(process.cwd(), import.meta.filename), { timeout: 180000 
                     continue;
                 }
                 const fileContent = JSON.parse(
-                    fs.readFileSync(path.join(entry.parentPath, entry.name), "utf8")
+                    fs.readFileSync(join(entry.parentPath, entry.name), "utf8")
                 ) as LoggedRequest;
                 expect(fileContent.body).to.contain(
                     '"evidence":[{"contentType":"application/json","data":"ImxvY2FsaG9zdDo4MDgwIg=="'

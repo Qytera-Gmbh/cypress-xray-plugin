@@ -1,6 +1,7 @@
 import { expect } from "chai";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import type { Computable, Stateful } from "../../hooks/command.js";
 import { ComputableState } from "../../hooks/command.js";
 import { SkippedError } from "../errors.js";
@@ -31,7 +32,7 @@ class ComputableVertex implements Computable<unknown>, Stateful<ComputableState>
     }
 }
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(ExecutableGraph.name, async () => {
         await it("executes vertices in post-order", async () => {
             const messages: string[] = [];

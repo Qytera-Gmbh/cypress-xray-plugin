@@ -2,6 +2,7 @@ import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import assert from "node:assert";
 import { readFileSync } from "node:fs";
 import { relative } from "node:path";
+import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
 import type { SinonStubbedInstance } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks.js";
@@ -15,7 +16,7 @@ import { BasicAuthCredentials } from "../authentication/credentials.js";
 import type { AxiosRestClient } from "../https/https.js";
 import { BaseJiraClient } from "./jira-client.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(BaseJiraClient.name, async () => {
         let client: BaseJiraClient;
         let restClient: SinonStubbedInstance<AxiosRestClient>;

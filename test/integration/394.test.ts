@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import chalk from "chalk";
-import fs from "fs";
+import fs from "node:fs";
+import { join, relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
-import process from "process";
 import type { LoggedRequest } from "../../src/client/https/https.js";
 import { dedent } from "../../src/util/dedent.js";
 import { runCypress, setupCypressProject } from "../sh.js";
@@ -12,7 +12,7 @@ import { runCypress, setupCypressProject } from "../sh.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/394
 // ============================================================================================== //
 
-await describe(relative(process.cwd(), import.meta.filename), { timeout: 180000 }, async () => {
+await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             env: {
@@ -72,7 +72,7 @@ await describe(relative(process.cwd(), import.meta.filename), { timeout: 180000 
                     continue;
                 }
                 const fileContent = JSON.parse(
-                    fs.readFileSync(path.join(entry.parentPath, entry.name), "utf8")
+                    fs.readFileSync(join(entry.parentPath, entry.name), "utf8")
                 ) as LoggedRequest;
                 expect(fileContent.body).to.contain(
                     '"evidence":[{"contentType":"application/json","data":"eyJuYW1lIjoiQm9iIn0=","filename":"queued.json"},{"contentType":"application/json","data":"eyJuYW1lIjoiSmVmZiJ9","filename":"raw.json"}]'

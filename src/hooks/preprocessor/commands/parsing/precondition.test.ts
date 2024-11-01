@@ -1,14 +1,15 @@
 import type { Background } from "@cucumber/messages";
 import { expect } from "chai";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { parseFeatureFile } from "./gherkin.js";
 import {
     getCucumberPreconditionIssueComments,
     getCucumberPreconditionIssueTags,
 } from "./precondition.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(getCucumberPreconditionIssueComments.name, async () => {
         await it("extracts relevant comments without prefix", () => {
             const document = parseFeatureFile(

@@ -1,8 +1,9 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import { relative } from "path";
 import { useFakeTimers } from "sinon";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks.js";
 import { assertIsInstanceOf } from "../../../test/util.js";
@@ -58,7 +59,7 @@ import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-com
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     let clients: ClientCombination;
     let options: InternalCypressXrayPluginOptions;
     beforeEach(async () => {

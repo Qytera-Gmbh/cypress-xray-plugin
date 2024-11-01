@@ -1,6 +1,7 @@
 import { expect } from "chai";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { SimpleDirectedGraph } from "../graph.js";
 import { bfs, dfs } from "./search.js";
 
@@ -16,7 +17,7 @@ class Vertex {
     }
 }
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     const graph = new SimpleDirectedGraph<Vertex>();
     const v0 = graph.place(new Vertex(0));
     const v1 = graph.place(new Vertex(1));

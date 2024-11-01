@@ -1,10 +1,11 @@
 import { expect } from "chai";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { CypressStatus } from "../../../../../../types/cypress/status.js";
 import { getXrayStatus, toCypressStatus } from "./status.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(toCypressStatus.name, async () => {
         await it("parses passed statuses", () => {
             expect(toCypressStatus("passed")).to.eq(CypressStatus.PASSED);

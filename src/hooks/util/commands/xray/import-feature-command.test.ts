@@ -1,12 +1,13 @@
 import { expect } from "chai";
+import { relative } from "node:path";
+import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { relative } from "path";
 import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks.js";
 import { dedent } from "../../../../util/dedent.js";
 import { Level } from "../../../../util/logging.js";
 import { ImportFeatureCommand } from "./import-feature-command.js";
 
-await describe(relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(ImportFeatureCommand.name, async () => {
         await it("imports features", async () => {
             const logger = getMockedLogger();
