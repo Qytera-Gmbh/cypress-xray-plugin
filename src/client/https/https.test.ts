@@ -1,12 +1,14 @@
 import * as BaseAxios from "axios";
 import FormData from "form-data";
-import { createReadStream } from "fs";
+import assert from "node:assert";
+import { createReadStream } from "node:fs";
+import path from "node:path";
 import { beforeEach, describe, it } from "node:test";
-import path from "path";
-import { stub, useFakeTimers } from "sinon";
+import { stub } from "sinon";
 import { getMockedLogger } from "../../../test/mocks.js";
 import { LOCAL_SERVER } from "../../../test/server-config.js";
-import { Level } from "../../util/logging.js";
+import type { Logger } from "../../util/logging.js";
+import { Level, LOG } from "../../util/logging.js";
 import { AxiosRestClient } from "./https.js";
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
@@ -30,10 +32,13 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             stub(BaseAxios.default, "create").returns(restClient);
             restClient.get.resolves(response);
             const client = new AxiosRestClient();
-            expect(await client.get("https://example.org")).to.deep.contain(response);
+            assert.deepStrictEqual(await client.get("https://example.org"), response);
         });
 
-        await it("writes to a file on encountering axios errors if debug is enabled", async () => {
+        await it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
+            context.mock.timers.enable({ apis: ["Date"] });
+            context.mock.timers.tick(12345);
+
             const logger = getMockedLogger();
             logger.message.withArgs(Level.DEBUG, "Request:  request.json").onFirstCall().returns();
             logger.message
@@ -42,28 +47,32 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                 .returns();
             logger.logToFile.onFirstCall().returns("request.json");
             logger.logToFile.onSecondCall().returns("response.json");
-            useFakeTimers(new Date(12345));
 
             const client = new AxiosRestClient({ debug: true });
-            await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
-            expect(logger.message).to.have.been.calledTwice;
+            await assert.rejects(client.get("https://localhost:1234"));
+            assert.strictEqual(logger.message.callCount, 2);
 
             const requestBody = JSON.parse(logger.logToFile.getCall(0).args[0]) as unknown;
-            expect(requestBody).to.have.property("url", "https://localhost:1234");
-            expect(requestBody).to.not.have.property("params");
-            expect(requestBody).to.not.have.property("body");
+            assert.deepStrictEqual(requestBody, {
+                headers: {
+                    ["Accept"]: "application/json, text/plain, */*",
+                },
+                url: "https://localhost:1234",
+            });
             // Complicated assertion to handle different timezones on local and CI.
             const date = new Date();
-            expect(logger.logToFile.getCall(0).args[1]).to.eq(
+            assert.strictEqual(
+                logger.logToFile.getCall(0).args[1],
                 `0${date.getHours().toString()}_00_12_GET_https_localhost_1234_request.json`
             );
 
             const error = JSON.parse(logger.logToFile.getCall(1).args[0]) as BaseAxios.AxiosError;
-            expect(error.code).to.eq("ECONNREFUSED");
-            expect(error.config?.url).to.eq("https://localhost:1234");
-            expect(error.config?.method).to.eq("get");
+            assert.strictEqual(error.code, "ECONNREFUSED");
+            assert.strictEqual(error.config?.url, "https://localhost:1234");
+            assert.strictEqual(error.config.method, "get");
             // Complicated assertion to handle different timezones on local and CI.
-            expect(logger.logToFile.getCall(1).args[1]).to.eq(
+            assert.strictEqual(
+                logger.logToFile.getCall(1).args[1],
                 `0${date.getHours().toString()}_00_12_GET_https_localhost_1234_response.json`
             );
         });
@@ -71,14 +80,16 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
         await it("writes to a file on encountering axios errors if debug is disabled", async () => {
             const logger = getMockedLogger();
             const client = new AxiosRestClient();
-            await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
-            expect(logger.message).to.have.been.calledOnce;
-            expect(logger.message).to.have.been.calledOnce;
+            await assert.rejects(client.get("https://localhost:1234"));
+            assert.strictEqual(logger.message.callCount, 1);
+            assert.strictEqual(logger.logToFile.callCount, 1);
         });
 
-        await it("logs progress", async () => {
-            const clock = useFakeTimers();
-            const logger = getMockedLogger();
+        await it("logs progress", async (context) => {
+            context.mock.timers.enable({ apis: ["Date", "setTimeout", "setInterval"] });
+
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+
             const stubbedAxios = stub(BaseAxios.default.create());
             stub(BaseAxios.default, "create").returns(stubbedAxios);
             const restClient = new AxiosRestClient();
@@ -95,17 +106,21 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                     }, 23000);
                 })
             );
+
             const promise = restClient.get("https://example.org");
-            await clock.tickAsync(27000);
+
+            await Promise.resolve();
+            context.mock.timers.tick(27000);
             await promise;
-            expect(logger.message).to.have.been.calledWithExactly(
+
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.INFO,
-                "Waiting for https://example.org to respond... (10 seconds)"
-            );
-            expect(logger.message).to.have.been.calledWithExactly(
+                "Waiting for https://example.org to respond... (10 seconds)",
+            ]);
+            assert.deepStrictEqual(message.mock.calls[1].arguments, [
                 Level.INFO,
-                "Waiting for https://example.org to respond... (20 seconds)"
-            );
+                "Waiting for https://example.org to respond... (20 seconds)",
+            ]);
         });
     });
 
@@ -124,10 +139,13 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             const restClient = stub(BaseAxios.default.create());
             stub(BaseAxios.default, "create").returns(restClient);
             restClient.post.resolves(response);
-            expect(await client.post("https://example.org")).to.deep.eq(response);
+            assert.deepStrictEqual(await client.post("https://example.org"), response);
         });
 
-        await it("writes to a file on encountering axios errors if debug is enabled", async () => {
+        await it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
+            context.mock.timers.enable({ apis: ["Date"] });
+            context.mock.timers.tick(12345);
+
             const logger = getMockedLogger();
             logger.message.withArgs(Level.DEBUG, "Request:  request.json").onFirstCall().returns();
             logger.message
@@ -136,39 +154,44 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                 .returns();
             logger.logToFile.onFirstCall().returns("request.json");
             logger.logToFile.onSecondCall().returns("response.json");
-            useFakeTimers(new Date(12345));
 
             const client = new AxiosRestClient({ debug: true });
-            await expect(
+            await assert.rejects(
                 client.post("https://localhost:1234", {
                     five: 6,
                     hello: "!",
                     seven: [1, 2, 3],
                     there: "!",
                 })
-            ).to.eventually.be.rejected;
-            expect(logger.message).to.have.been.calledTwice;
+            );
+            assert.strictEqual(logger.message.callCount, 2);
 
             const requestBody = JSON.parse(logger.logToFile.getCall(0).args[0]) as unknown;
-            expect(requestBody).to.have.property("url", "https://localhost:1234");
-            expect(requestBody).to.not.have.property("params");
-            expect(requestBody).to.have.deep.property("body", {
-                five: 6,
-                hello: "!",
-                seven: [1, 2, 3],
-                there: "!",
+            assert.deepStrictEqual(requestBody, {
+                body: {
+                    five: 6,
+                    hello: "!",
+                    seven: [1, 2, 3],
+                    there: "!",
+                },
+                headers: {
+                    ["Accept"]: "application/json, text/plain, */*",
+                },
+                url: "https://localhost:1234",
             });
             // Complicated assertion to handle different timezones on local and CI.
             const date = new Date();
-            expect(logger.logToFile.getCall(0).args[1]).to.eq(
+            assert.strictEqual(
+                logger.logToFile.getCall(0).args[1],
                 `0${date.getHours().toString()}_00_12_POST_https_localhost_1234_request.json`
             );
 
             const error = JSON.parse(logger.logToFile.getCall(1).args[0]) as BaseAxios.AxiosError;
-            expect(error.code).to.eq("ECONNREFUSED");
-            expect(error.config?.url).to.eq("https://localhost:1234");
-            expect(error.config?.method).to.eq("post");
-            expect(logger.logToFile.getCall(1).args[1]).to.eq(
+            assert.strictEqual(error.code, "ECONNREFUSED");
+            assert.strictEqual(error.config?.url, "https://localhost:1234");
+            assert.strictEqual(error.config.method, "post");
+            assert.strictEqual(
+                logger.logToFile.getCall(1).args[1],
                 `0${date.getHours().toString()}_00_12_POST_https_localhost_1234_response.json`
             );
         });
@@ -176,14 +199,16 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
         await it("writes to a file on encountering axios errors if debug is disabled", async () => {
             const logger = getMockedLogger();
             const client = new AxiosRestClient();
-            await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
-            expect(logger.message).to.have.been.calledOnce;
-            expect(logger.logToFile).to.have.been.calledOnce;
+            await assert.rejects(client.get("https://localhost:1234"));
+            assert.strictEqual(logger.message.callCount, 1);
+            assert.strictEqual(logger.logToFile.callCount, 1);
         });
 
-        await it("logs progress", async () => {
-            const clock = useFakeTimers();
-            const logger = getMockedLogger();
+        await it("logs progress", async (context) => {
+            context.mock.timers.enable({ apis: ["Date", "setTimeout", "setInterval"] });
+
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+
             const stubbedAxios = stub(BaseAxios.default.create());
             stub(BaseAxios.default, "create").returns(stubbedAxios);
             const restClient = new AxiosRestClient();
@@ -201,16 +226,19 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                 })
             );
             const promise = restClient.post("https://example.org");
-            await clock.tickAsync(27000);
+
+            await Promise.resolve();
+            context.mock.timers.tick(27000);
             await promise;
-            expect(logger.message).to.have.been.calledWithExactly(
+
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.INFO,
-                "Waiting for https://example.org to respond... (10 seconds)"
-            );
-            expect(logger.message).to.have.been.calledWithExactly(
+                "Waiting for https://example.org to respond... (10 seconds)",
+            ]);
+            assert.deepStrictEqual(message.mock.calls[1].arguments, [
                 Level.INFO,
-                "Waiting for https://example.org to respond... (20 seconds)"
-            );
+                "Waiting for https://example.org to respond... (20 seconds)",
+            ]);
         });
     });
 
@@ -229,10 +257,13 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             const restClient = stub(BaseAxios.default.create());
             stub(BaseAxios.default, "create").returns(restClient);
             restClient.put.resolves(response);
-            expect(await client.put("https://example.org")).to.deep.eq(response);
+            assert.deepStrictEqual(await client.put("https://example.org"), response);
         });
 
-        await it("writes to a file on encountering axios errors if debug is enabled", async () => {
+        await it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
+            context.mock.timers.enable({ apis: ["Date"] });
+            context.mock.timers.tick(12345);
+
             const logger = getMockedLogger();
             logger.message.withArgs(Level.DEBUG, "Request:  request.json").onFirstCall().returns();
             logger.message
@@ -241,40 +272,45 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                 .returns();
             logger.logToFile.onFirstCall().returns("request.json");
             logger.logToFile.onSecondCall().returns("response.json");
-            useFakeTimers(new Date(12345));
 
             const client = new AxiosRestClient({ debug: true });
-            await expect(
+            await assert.rejects(
                 client.put("https://localhost:1234", {
                     five: 6,
                     hello: "!",
                     seven: [1, 2, 3],
                     there: "!",
                 })
-            ).to.eventually.be.rejected;
-            expect(logger.message).to.have.been.calledTwice;
+            );
+            assert.strictEqual(logger.message.callCount, 2);
 
             const requestBody = JSON.parse(logger.logToFile.getCall(0).args[0]) as unknown;
-            expect(requestBody).to.have.property("url", "https://localhost:1234");
-            expect(requestBody).to.not.have.property("params");
-            expect(requestBody).to.have.deep.property("body", {
-                five: 6,
-                hello: "!",
-                seven: [1, 2, 3],
-                there: "!",
+            assert.deepStrictEqual(requestBody, {
+                body: {
+                    five: 6,
+                    hello: "!",
+                    seven: [1, 2, 3],
+                    there: "!",
+                },
+                headers: {
+                    ["Accept"]: "application/json, text/plain, */*",
+                },
+                url: "https://localhost:1234",
             });
             // Complicated assertion to handle different timezones on local and CI.
             const date = new Date();
-            expect(logger.logToFile.getCall(0).args[1]).to.eq(
+            assert.strictEqual(
+                logger.logToFile.getCall(0).args[1],
                 `0${date.getHours().toString()}_00_12_PUT_https_localhost_1234_request.json`
             );
 
             const error = JSON.parse(logger.logToFile.getCall(1).args[0]) as BaseAxios.AxiosError;
-            expect(error.code).to.eq("ECONNREFUSED");
-            expect(error.config?.url).to.eq("https://localhost:1234");
-            expect(error.config?.method).to.eq("put");
+            assert.strictEqual(error.code, "ECONNREFUSED");
+            assert.strictEqual(error.config?.url, "https://localhost:1234");
+            assert.strictEqual(error.config.method, "put");
 
-            expect(logger.logToFile.getCall(1).args[1]).to.eq(
+            assert.strictEqual(
+                logger.logToFile.getCall(1).args[1],
                 `0${date.getHours().toString()}_00_12_PUT_https_localhost_1234_response.json`
             );
         });
@@ -282,14 +318,16 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
         await it("writes to a file on encountering axios errors if debug is disabled", async () => {
             const logger = getMockedLogger();
             const client = new AxiosRestClient();
-            await expect(client.get("https://localhost:1234")).to.eventually.be.rejected;
-            expect(logger.message).to.have.been.calledOnce;
-            expect(logger.logToFile).to.have.been.calledOnce;
+            await assert.rejects(client.get("https://localhost:1234"));
+            assert.strictEqual(logger.message.callCount, 1);
+            assert.strictEqual(logger.logToFile.callCount, 1);
         });
 
-        await it("logs progress", async () => {
-            const clock = useFakeTimers();
-            const logger = getMockedLogger();
+        await it("logs progress", async (context) => {
+            context.mock.timers.enable({ apis: ["Date", "setTimeout", "setInterval"] });
+
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+
             const stubbedAxios = stub(BaseAxios.default.create());
             stub(BaseAxios.default, "create").returns(stubbedAxios);
             const restClient = new AxiosRestClient();
@@ -307,32 +345,45 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                 })
             );
             const promise = restClient.put("https://example.org");
-            await clock.tickAsync(27000);
+
+            await Promise.resolve();
+            context.mock.timers.tick(27000);
             await promise;
-            expect(logger.message).to.have.been.calledWithExactly(
+
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.INFO,
-                "Waiting for https://example.org to respond... (10 seconds)"
-            );
-            expect(logger.message).to.have.been.calledWithExactly(
+                "Waiting for https://example.org to respond... (10 seconds)",
+            ]);
+            assert.deepStrictEqual(message.mock.calls[1].arguments, [
                 Level.INFO,
-                "Waiting for https://example.org to respond... (20 seconds)"
-            );
+                "Waiting for https://example.org to respond... (20 seconds)",
+            ]);
         });
     });
 
-    await it("logs form data", async () => {
-        const logger = getMockedLogger();
+    await it("logs form data", async (context) => {
+        const logToFile = context.mock.method(
+            LOG,
+            "logToFile",
+            context.mock.fn<Logger["logToFile"]>()
+        );
+
         const restClient = new AxiosRestClient({ debug: true });
         const formdata = new FormData();
         formdata.append("hello.json", JSON.stringify({ hello: "bonjour" }));
         await restClient.post(`http://${LOCAL_SERVER.url}`, formdata, {
             headers: { ...formdata.getHeaders() },
         });
-        expect(logger.logToFile.firstCall.args[0]).to.contain('{\\"hello\\":\\"bonjour\\"}');
+        assert.match(logToFile.mock.calls[0].arguments[0], /{\\"hello\\":\\"bonjour\\"}/g);
     });
 
-    await it("logs formdata only up to a certain length", async () => {
-        const logger = getMockedLogger();
+    await it("logs formdata only up to a certain length", async (context) => {
+        const logToFile = context.mock.method(
+            LOG,
+            "logToFile",
+            context.mock.fn<Logger["logToFile"]>()
+        );
+
         const restClient = new AxiosRestClient({ debug: true, fileSizeLimit: 0.5 });
         const formdata = new FormData();
         formdata.append("long.txt", createReadStream("./test/resources/big.txt"));
@@ -341,12 +392,18 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
         });
         // The 'end' event is emitted after the response has arrived.
         await new Promise((resolve) => setTimeout(resolve, 100));
-        expect(logger.logToFile.secondCall.args[0]).to.contain("[... omitted due to file size]");
+        assert.match(logToFile.mock.calls[0].arguments[0], /[... omitted due to file size]/g);
     });
 
-    await it("logs requests happening at the same time", async () => {
-        useFakeTimers(new Date(12345));
-        const logger = getMockedLogger();
+    await it("logs requests happening at the same time", async (context) => {
+        const logToFile = context.mock.method(
+            LOG,
+            "logToFile",
+            context.mock.fn<Logger["logToFile"]>()
+        );
+        context.mock.timers.enable({ apis: ["Date"] });
+        context.mock.timers.tick(12345);
+
         const restClient = new AxiosRestClient({ debug: true });
         await Promise.all([
             restClient.get(`http://${LOCAL_SERVER.url}`),
@@ -354,10 +411,12 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
         ]);
         // Complicated assertion to handle different timezones on local and CI.
         const date = new Date();
-        expect(logger.logToFile.firstCall.args[1]).to.eq(
+        assert.strictEqual(
+            logToFile.mock.calls[0].arguments[1],
             `0${date.getHours().toString()}_00_12_GET_http_localhost_8080_request.json`
         );
-        expect(logger.logToFile.secondCall.args[1]).to.eq(
+        assert.strictEqual(
+            logToFile.mock.calls[1].arguments[1],
             `0${date.getHours().toString()}_00_12_GET_http_localhost_8080_request_1.json`
         );
     });
@@ -388,15 +447,15 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
         const dateHeader8 = new Date(Number.parseInt(responses[8].headers["x-response-time"]));
         const dateHeader9 = new Date(Number.parseInt(responses[9].headers["x-response-time"]));
         /* eslint-enable @typescript-eslint/no-unsafe-argument */
-        expect(dateHeader1.getTime() - dateHeader0.getTime()).to.be.approximately(0, 50);
-        expect(dateHeader2.getTime() - dateHeader1.getTime()).to.be.approximately(0, 50);
-        expect(dateHeader3.getTime() - dateHeader2.getTime()).to.be.approximately(0, 50);
-        expect(dateHeader4.getTime() - dateHeader3.getTime()).to.be.approximately(0, 50);
-        expect(dateHeader5.getTime() - dateHeader4.getTime()).to.be.approximately(0, 50);
-        expect(dateHeader6.getTime() - dateHeader5.getTime()).to.be.approximately(0, 50);
-        expect(dateHeader7.getTime() - dateHeader6.getTime()).to.be.approximately(0, 50);
-        expect(dateHeader8.getTime() - dateHeader7.getTime()).to.be.approximately(0, 50);
-        expect(dateHeader9.getTime() - dateHeader8.getTime()).to.be.approximately(0, 50);
+        assertApprox(dateHeader1.getTime() - dateHeader0.getTime(), 0, 50);
+        assertApprox(dateHeader2.getTime() - dateHeader1.getTime(), 0, 50);
+        assertApprox(dateHeader3.getTime() - dateHeader2.getTime(), 0, 50);
+        assertApprox(dateHeader4.getTime() - dateHeader3.getTime(), 0, 50);
+        assertApprox(dateHeader5.getTime() - dateHeader4.getTime(), 0, 50);
+        assertApprox(dateHeader6.getTime() - dateHeader5.getTime(), 0, 50);
+        assertApprox(dateHeader7.getTime() - dateHeader6.getTime(), 0, 50);
+        assertApprox(dateHeader8.getTime() - dateHeader7.getTime(), 0, 50);
+        assertApprox(dateHeader9.getTime() - dateHeader8.getTime(), 0, 50);
     });
 
     await it("rate limits requests", async () => {
@@ -415,9 +474,20 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
         const dateHeader3 = new Date(Number.parseInt(responses[3].headers["x-response-time"]));
         const dateHeader4 = new Date(Number.parseInt(responses[4].headers["x-response-time"]));
         /* eslint-enable @typescript-eslint/no-unsafe-argument */
-        expect(dateHeader1.getTime() - dateHeader0.getTime()).to.be.approximately(500, 50);
-        expect(dateHeader2.getTime() - dateHeader1.getTime()).to.be.approximately(500, 50);
-        expect(dateHeader3.getTime() - dateHeader2.getTime()).to.be.approximately(500, 50);
-        expect(dateHeader4.getTime() - dateHeader3.getTime()).to.be.approximately(500, 50);
+        assertApprox(dateHeader1.getTime() - dateHeader0.getTime(), 500, 50);
+        assertApprox(dateHeader2.getTime() - dateHeader1.getTime(), 500, 50);
+        assertApprox(dateHeader3.getTime() - dateHeader2.getTime(), 500, 50);
+        assertApprox(dateHeader4.getTime() - dateHeader3.getTime(), 500, 50);
     });
 });
+
+function assertApprox(actual: number, expected: number, delta: number) {
+    assert.ok(
+        actual >= expected - delta,
+        `${actual.toString()} ~/~ ${expected.toString()} - ${delta.toString()}`
+    );
+    assert.ok(
+        actual <= expected + delta,
+        `${actual.toString()} ~/~ ${expected.toString()} + ${delta.toString()}`
+    );
+}
