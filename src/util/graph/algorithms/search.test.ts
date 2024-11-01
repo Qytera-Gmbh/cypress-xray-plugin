@@ -15,7 +15,7 @@ class Vertex {
     }
 }
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
     const graph = new SimpleDirectedGraph<Vertex>();
     const v0 = graph.place(new Vertex(0));
     const v1 = graph.place(new Vertex(1));
@@ -41,8 +41,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
     graph.connect(v6, v9);
     graph.connect(v9, v7);
 
-    describe(bfs.name, () => {
-        it("finds vertices by reference", () => {
+    await describe(bfs.name, () => {
+        await it("finds vertices by reference", () => {
             expect(
                 bfs(graph, {
                     destination: v9,
@@ -51,7 +51,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.true;
         });
 
-        it("does not find nonexistent vertices by reference", () => {
+        await it("does not find nonexistent vertices by reference", () => {
             expect(
                 bfs(graph, {
                     destination: new Vertex(17),
@@ -60,7 +60,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.false;
         });
 
-        it("does not find unreachable vertices by reference", () => {
+        await it("does not find unreachable vertices by reference", () => {
             expect(
                 bfs(graph, {
                     destination: v0,
@@ -69,7 +69,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.false;
         });
 
-        it("finds vertices by filtering", () => {
+        await it("finds vertices by filtering", () => {
             expect(
                 bfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 6,
@@ -78,7 +78,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.true;
         });
 
-        it("does not find nonexistent vertices by filtering", () => {
+        await it("does not find nonexistent vertices by filtering", () => {
             expect(
                 bfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 17,
@@ -87,7 +87,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.false;
         });
 
-        it("does not find unreachable vertices by filtering", () => {
+        await it("does not find unreachable vertices by filtering", () => {
             expect(
                 bfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 0,
@@ -96,7 +96,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.false;
         });
 
-        it("finds vertices anywhere by reference", () => {
+        await it("finds vertices anywhere by reference", () => {
             expect(
                 dfs(graph, {
                     destination: v0,
@@ -104,7 +104,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.true;
         });
 
-        it("finds vertices anywhere by filtering", () => {
+        await it("finds vertices anywhere by filtering", () => {
             expect(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 0,
@@ -112,7 +112,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.true;
         });
 
-        it("finds the starting vertex by reference", () => {
+        await it("finds the starting vertex by reference", () => {
             expect(
                 dfs(graph, {
                     destination: v0,
@@ -121,7 +121,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.true;
         });
 
-        it("finds the starting vertex by filtering", () => {
+        await it("finds the starting vertex by filtering", () => {
             expect(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 0,
@@ -131,8 +131,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(dfs.name, () => {
-        it("finds vertices by reference", () => {
+    await describe(dfs.name, () => {
+        await it("finds vertices by reference", () => {
             expect(
                 dfs(graph, {
                     destination: v9,
@@ -141,7 +141,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.true;
         });
 
-        it("does not find nonexistent vertices by reference", () => {
+        await it("does not find nonexistent vertices by reference", () => {
             expect(
                 dfs(graph, {
                     destination: new Vertex(17),
@@ -150,7 +150,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.false;
         });
 
-        it("does not find unreachable vertices by reference", () => {
+        await it("does not find unreachable vertices by reference", () => {
             expect(
                 dfs(graph, {
                     destination: v0,
@@ -159,7 +159,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.false;
         });
 
-        it("finds vertices by filtering", () => {
+        await it("finds vertices by filtering", () => {
             expect(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 6,
@@ -168,7 +168,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.true;
         });
 
-        it("does not find nonexistent vertices by filtering", () => {
+        await it("does not find nonexistent vertices by filtering", () => {
             expect(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 17,
@@ -177,7 +177,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.false;
         });
 
-        it("does not find unreachable vertices by filtering", () => {
+        await it("does not find unreachable vertices by filtering", () => {
             expect(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 0,
@@ -186,7 +186,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.false;
         });
 
-        it("finds vertices anywhere by reference", () => {
+        await it("finds vertices anywhere by reference", () => {
             expect(
                 dfs(graph, {
                     destination: v0,
@@ -194,7 +194,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.true;
         });
 
-        it("finds vertices anywhere by filtering", () => {
+        await it("finds vertices anywhere by filtering", () => {
             expect(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 0,
@@ -202,7 +202,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.true;
         });
 
-        it("finds the starting vertex by reference", () => {
+        await it("finds the starting vertex by reference", () => {
             expect(
                 dfs(graph, {
                     destination: v0,
@@ -211,7 +211,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.be.true;
         });
 
-        it("finds the starting vertex by filtering", () => {
+        await it("finds the starting vertex by filtering", () => {
             expect(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 0,

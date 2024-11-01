@@ -2,30 +2,30 @@ import { expect } from "chai";
 import path from "path";
 import { extractArrayOfStrings, extractNestedString, extractString } from "./extraction.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe("extractString", () => {
-        it("extracts string properties", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe("extractString", () => {
+        await it("extracts string properties", () => {
             const data = {
                 x: "nice to meet you",
             };
             expect(extractString(data, "x")).to.eq("nice to meet you");
         });
-        it("throws if data is not an object", () => {
+        await it("throws if data is not an object", () => {
             expect(() => extractString(5, "x")).to.throw(
                 "Expected an object containing property 'x', but got: 5"
             );
         });
-        it("throws if data is null", () => {
+        await it("throws if data is null", () => {
             expect(() => extractString(null, "x")).to.throw(
                 "Expected an object containing property 'x', but got: null"
             );
         });
-        it("throws if data is undefined", () => {
+        await it("throws if data is undefined", () => {
             expect(() => extractString(undefined, "x")).to.throw(
                 "Expected an object containing property 'x', but got: undefined"
             );
         });
-        it("throws if data does not contain the property", () => {
+        await it("throws if data does not contain the property", () => {
             const data = {
                 x: "nice to meet you",
             };
@@ -33,7 +33,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 'Expected an object containing property \'missing\', but got: {"x":"nice to meet you"}'
             );
         });
-        it("throws if the property is not a string value", () => {
+        await it("throws if the property is not a string value", () => {
             const data = {
                 x: 5,
             };
@@ -41,29 +41,29 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe("extractArrayOfStrings", () => {
-        it("extracts string array properties", () => {
+    await describe("extractArrayOfStrings", () => {
+        await it("extracts string array properties", () => {
             const data = {
                 x: ["nice", "to", "meet", "you"],
             };
             expect(extractArrayOfStrings(data, "x")).to.deep.eq(["nice", "to", "meet", "you"]);
         });
-        it("throws if data is not an object", () => {
+        await it("throws if data is not an object", () => {
             expect(() => extractArrayOfStrings(5, "x")).to.throw(
                 "Expected an object containing property 'x', but got: 5"
             );
         });
-        it("throws if data is null", () => {
+        await it("throws if data is null", () => {
             expect(() => extractArrayOfStrings(null, "x")).to.throw(
                 "Expected an object containing property 'x', but got: null"
             );
         });
-        it("throws if data is undefined", () => {
+        await it("throws if data is undefined", () => {
             expect(() => extractArrayOfStrings(undefined, "x")).to.throw(
                 "Expected an object containing property 'x', but got: undefined"
             );
         });
-        it("throws if data does not contain the property", () => {
+        await it("throws if data does not contain the property", () => {
             const data = {
                 x: ["nice", "to", "meet", "you"],
             };
@@ -71,7 +71,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 'Expected an object containing property \'missing\', but got: {"x":["nice","to","meet","you"]}'
             );
         });
-        it("throws if the property is not an array value", () => {
+        await it("throws if the property is not an array value", () => {
             const data = {
                 x: "good morning",
             };
@@ -79,7 +79,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 'Value is not an array of type string: "good morning"'
             );
         });
-        it("throws if the property is not a string array value", () => {
+        await it("throws if the property is not a string array value", () => {
             const data = {
                 x: ["good", "morning", "my", 42, "friends"],
             };
@@ -89,8 +89,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe("extractNestedString", () => {
-        it("extracts nested string properties", () => {
+    await describe("extractNestedString", () => {
+        await it("extracts nested string properties", () => {
             const data = {
                 a: {
                     b: {
@@ -102,22 +102,22 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             };
             expect(extractNestedString(data, ["a", "b", "c", "d"])).to.eq("hello");
         });
-        it("throws if data is not an object", () => {
+        await it("throws if data is not an object", () => {
             expect(() => extractNestedString(5, ["x"])).to.throw(
                 "Expected an object containing property 'x', but got: 5"
             );
         });
-        it("throws if data is null", () => {
+        await it("throws if data is null", () => {
             expect(() => extractNestedString(null, ["x"])).to.throw(
                 "Expected an object containing property 'x', but got: null"
             );
         });
-        it("throws if data is undefined", () => {
+        await it("throws if data is undefined", () => {
             expect(() => extractNestedString(undefined, ["x"])).to.throw(
                 "Expected an object containing property 'x', but got: undefined"
             );
         });
-        it("throws if a nested property is not an object value", () => {
+        await it("throws if a nested property is not an object value", () => {
             const data = {
                 a: {
                     b: {
@@ -129,7 +129,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 "Expected an object containing property 'd', but got: \"surprise\""
             );
         });
-        it("throws if the final property is not a string value", () => {
+        await it("throws if the final property is not a string value", () => {
             const data = {
                 a: {
                     b: {

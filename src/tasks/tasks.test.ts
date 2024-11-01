@@ -8,9 +8,9 @@ import { dedent } from "../util/dedent.js";
 import { Level } from "../util/logging.js";
 import * as tasks from "./tasks.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(tasks.enqueueTask.name, () => {
-        it("uses the current test title by default", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(tasks.enqueueTask.name, () => {
+        await it("uses the current test title by default", () => {
             const { cy, cypress } = getMockedCypress();
             cypress.currentTest.title = "A test title";
             const stubbedTask = sinon.stub(cy, "task");
@@ -23,8 +23,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(tasks.PluginTaskListener.name, () => {
-        it("handles single evidence calls for tests with issue key", () => {
+    await describe(tasks.PluginTaskListener.name, () => {
+        await it("handles single evidence calls for tests with issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
             const logger = getMockedLogger();
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
@@ -43,7 +43,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("handles single evidence calls for tests with multiple issue keys", () => {
+        await it("handles single evidence calls for tests with multiple issue keys", () => {
             const evidenceCollection = new SimpleEvidenceCollection();
             const logger = getMockedLogger();
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
@@ -78,7 +78,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("handles single evidence calls for tests without issue key", () => {
+        await it("handles single evidence calls for tests without issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
@@ -103,7 +103,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
 
                           You can target existing test issues by adding a corresponding issue key:
 
-                            it("CYP-123 This is a test", () => {
+                            await it("CYP-123 This is a test", () => {
                               // ...
                             });
 
@@ -113,7 +113,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("handles multiple evidence calls for tests with the same issue key", () => {
+        await it("handles multiple evidence calls for tests with the same issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
             const logger = getMockedLogger();
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
@@ -150,7 +150,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("handles multiple evidence calls for tests without issue key", () => {
+        await it("handles multiple evidence calls for tests without issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
@@ -182,7 +182,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
 
                           You can target existing test issues by adding a corresponding issue key:
 
-                            it("CYP-123 This is a test", () => {
+                            await it("CYP-123 This is a test", () => {
                               // ...
                             });
 

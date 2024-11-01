@@ -8,9 +8,9 @@ import { TransitionIssueCommand } from "./transition-issue-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(TransitionIssueCommand.name, () => {
-        it("transitions issues", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(TransitionIssueCommand.name, () => {
+        await it("transitions issues", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             jiraClient.transitionIssue.onFirstCall().resolves();

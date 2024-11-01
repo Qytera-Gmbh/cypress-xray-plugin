@@ -9,9 +9,9 @@ import { GetSummaryValuesCommand } from "./get-summary-values-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(GetSummaryValuesCommand.name, () => {
-        it("fetches summaries", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(GetSummaryValuesCommand.name, () => {
+        await it("fetches summaries", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetSummaryValuesCommand(
@@ -37,7 +37,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("displays a warning for issues which do not exist", async () => {
+        await it("displays a warning for issues which do not exist", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetSummaryValuesCommand(
@@ -65,7 +65,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("displays a warning for issues whose fields cannot be parsed", async () => {
+        await it("displays a warning for issues whose fields cannot be parsed", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetSummaryValuesCommand(
@@ -101,7 +101,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("throws when encountering search failures", async () => {
+        await it("throws when encountering search failures", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetSummaryValuesCommand(

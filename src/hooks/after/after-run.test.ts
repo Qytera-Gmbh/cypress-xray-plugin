@@ -57,7 +57,7 @@ import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-com
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
     let clients: ClientCombination;
     let options: InternalCypressXrayPluginOptions;
     beforeEach(async () => {
@@ -98,8 +98,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         };
     });
 
-    describe(addUploadCommands.name, () => {
-        describe("cypress", () => {
+    await describe(addUploadCommands.name, () => {
+        await describe("cypress", () => {
             let result: CypressRunResultType;
 
             beforeEach(() => {
@@ -108,7 +108,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 ) as CypressRunResultType;
             });
 
-            it("adds commands necessary for cypress results upload", async () => {
+            await it("adds commands necessary for cypress results upload", async () => {
                 const graph = new ExecutableGraph<Command>();
                 await addUploadCommands(
                     result,
@@ -220,7 +220,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(graph.size("edges")).to.eq(11);
             });
 
-            it("uses configured test execution issue keys", async () => {
+            await it("uses configured test execution issue keys", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.testExecutionIssue = {
                     key: "CYP-415",
@@ -281,7 +281,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(graph.size("edges")).to.eq(15);
             });
 
-            it("uses configured test execution issue data with known fields", async () => {
+            await it("uses configured test execution issue data with known fields", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.testExecutionIssue = {
                     fields: {
@@ -319,7 +319,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(graph.size("edges")).to.eq(15);
             });
 
-            it("uses configured summaries", async () => {
+            await it("uses configured summaries", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.testExecutionIssue = {
                     fields: {
@@ -351,7 +351,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(graph.size("edges")).to.eq(12);
             });
 
-            it("uses configured custom issue data", async () => {
+            await it("uses configured custom issue data", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.testExecutionIssue = {
                     fields: {
@@ -383,7 +383,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(graph.size("edges")).to.eq(12);
             });
 
-            it("attaches videos", async () => {
+            await it("attaches videos", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.attachVideos = true;
                 await addUploadCommands(
@@ -421,7 +421,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(graph.size("edges")).to.eq(14);
             });
 
-            it("explicitly transitions issues in server environments", async () => {
+            await it("explicitly transitions issues in server environments", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.testExecutionIssue = {
                     transition: {
@@ -458,7 +458,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(graph.size("edges")).to.eq(13);
             });
 
-            it("does not explicitly transition issues in cloud environments", async () => {
+            await it("does not explicitly transition issues in cloud environments", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.testExecutionIssue = {
                     transition: {
@@ -486,7 +486,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("cucumber", () => {
+        await describe("cucumber", () => {
             let cypressResult: CypressRunResultType;
             let cucumberResult: CucumberMultipartFeature[];
 
@@ -514,8 +514,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 ) as CucumberMultipartFeature[];
             });
 
-            describe("server", () => {
-                it("adds commands necessary for cucumber results upload", async () => {
+            await describe("server", () => {
+                await it("adds commands necessary for cucumber results upload", async () => {
                     useFakeTimers(new Date(12345));
                     const graph = new ExecutableGraph<Command>();
                     await addUploadCommands(
@@ -652,7 +652,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     expect(graph.size("edges")).to.eq(11);
                 });
 
-                it("uses configured test plan data", async () => {
+                await it("uses configured test plan data", async () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     const graph = new ExecutableGraph<Command>();
                     await addUploadCommands(
@@ -689,7 +689,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     expect(graph.size("edges")).to.eq(13);
                 });
 
-                it("uses configured test plan data with hardcoded test plan ids", async () => {
+                await it("uses configured test plan data with hardcoded test plan ids", async () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     options.jira.fields.testPlan = "customfield_12345";
                     const graph = new ExecutableGraph<Command>();
@@ -717,7 +717,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     expect(graph.size("edges")).to.eq(12);
                 });
 
-                it("uses configured test environment data", async () => {
+                await it("uses configured test environment data", async () => {
                     options.xray.testEnvironments = ["DEV"];
                     const graph = new ExecutableGraph<Command>();
                     await addUploadCommands(
@@ -754,7 +754,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     expect(graph.size("edges")).to.eq(13);
                 });
 
-                it("uses configured test environment data with hardcoded test environment ids", async () => {
+                await it("uses configured test environment data with hardcoded test environment ids", async () => {
                     options.xray.testEnvironments = ["DEV"];
                     options.jira.fields.testEnvironments = "customfield_67890";
                     const graph = new ExecutableGraph<Command>();
@@ -782,7 +782,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     expect(graph.size("edges")).to.eq(12);
                 });
 
-                it("uses configured test plan and environment data", async () => {
+                await it("uses configured test plan and environment data", async () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     options.xray.testEnvironments = ["DEV"];
                     const graph = new ExecutableGraph<Command>();
@@ -819,7 +819,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     expect(graph.size("edges")).to.eq(15);
                 });
 
-                it("uses configured test plan and environment data with hardcoded ids", async () => {
+                await it("uses configured test plan and environment data with hardcoded ids", async () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     options.jira.fields.testPlan = "customfield_12345";
                     options.xray.testEnvironments = ["DEV"];
@@ -856,12 +856,12 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 });
             });
 
-            describe("cloud", () => {
+            await describe("cloud", () => {
                 beforeEach(() => {
                     clients.kind = "cloud";
                 });
 
-                it("adds commands necessary for cucumber results upload", async () => {
+                await it("adds commands necessary for cucumber results upload", async () => {
                     const graph = new ExecutableGraph<Command>();
                     await addUploadCommands(
                         cypressResult,
@@ -921,7 +921,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     expect(graph.size("vertices")).to.eq(11);
                 });
 
-                it("uses configured test execution issue data", async () => {
+                await it("uses configured test execution issue data", async () => {
                     const graph = new ExecutableGraph<Command>();
                     options.jira.testExecutionIssue = {
                         fields: {
@@ -1105,7 +1105,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 });
             });
 
-            it("throws if the cucumber report was not configured", async () => {
+            await it("throws if the cucumber report was not configured", async () => {
                 const graph = new ExecutableGraph<Command>();
                 const preprocessorOptions = options.cucumber as InternalCucumberOptions;
                 preprocessorOptions.preprocessor = undefined;
@@ -1124,7 +1124,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("does not add any commands if neither cypress nor cucumber results exist", async () => {
+            await it("does not add any commands if neither cypress nor cucumber results exist", async () => {
                 const logger = getMockedLogger();
                 cypressResult.runs = [];
                 const graph = new ExecutableGraph<Command>();
@@ -1145,7 +1145,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("adds connections from feature file imports to execution uploads", async () => {
+            await it("adds connections from feature file imports to execution uploads", async () => {
                 options.cucumber = {
                     downloadFeatures: false,
                     featureFileExtension: ".feature",
@@ -1215,7 +1215,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("mixed", () => {
+        await describe("mixed", () => {
             let cypressResult: CypressRunResultType;
             let cucumberResult: CucumberMultipart;
 
@@ -1243,7 +1243,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 };
             });
 
-            it("adds commands necessary for mixed results upload", async () => {
+            await it("adds commands necessary for mixed results upload", async () => {
                 useFakeTimers(new Date(12345));
                 const graph = new ExecutableGraph<Command>();
                 await addUploadCommands(

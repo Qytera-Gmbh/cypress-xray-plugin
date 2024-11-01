@@ -7,9 +7,9 @@ import {
     getCucumberPreconditionIssueTags,
 } from "./precondition.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(getCucumberPreconditionIssueComments.name, () => {
-        it("extracts relevant comments without prefix", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(getCucumberPreconditionIssueComments.name, () => {
+        await it("extracts relevant comments without prefix", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
             );
@@ -19,7 +19,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(comments).to.deep.eq(["#@CYP-244", "# a random comment", "#@CYP-262"]);
         });
 
-        it("extracts relevant comments with prefix", () => {
+        await it("extracts relevant comments with prefix", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMultipleBackground.feature"
             );
@@ -33,7 +33,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("handles empty backgrounds", () => {
+        await it("handles empty backgrounds", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
             );
@@ -45,8 +45,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(getCucumberPreconditionIssueTags.name, () => {
-        it("extracts background tags without prefix", () => {
+    await describe(getCucumberPreconditionIssueTags.name, () => {
+        await it("extracts background tags without prefix", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
             );
@@ -57,7 +57,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tags).to.deep.eq(["CYP-244", "CYP-262"]);
         });
 
-        it("extracts background tags with prefix", () => {
+        await it("extracts background tags with prefix", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMultipleBackground.feature"
             );
@@ -73,7 +73,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(tags).to.deep.eq(["CYP-244", "CYP-262"]);
         });
 
-        it("handles empty backgrounds", () => {
+        await it("handles empty backgrounds", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMultipleBackground.feature"
             );

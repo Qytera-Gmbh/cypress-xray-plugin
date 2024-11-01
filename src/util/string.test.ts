@@ -3,21 +3,21 @@ import path from "path";
 import { dedent } from "./dedent.js";
 import { unknownToString } from "./string.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(unknownToString.name, () => {
-        it("string", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(unknownToString.name, () => {
+        await it("string", () => {
             expect(unknownToString("hi")).to.eq("hi");
         });
-        it("number", () => {
+        await it("number", () => {
             expect(unknownToString(423535.568)).to.eq("423535.568");
         });
-        it("boolean", () => {
+        await it("boolean", () => {
             expect(unknownToString(false)).to.eq("false");
         });
-        it("symbol", () => {
+        await it("symbol", () => {
             expect(unknownToString(Symbol("hello"))).to.eq("Symbol(hello)");
         });
-        it("function", () => {
+        await it("function", () => {
             const f: (arg1: number) => Promise<void> = async (arg1: number) => {
                 await new Promise((resolve) => {
                     resolve(arg1);
@@ -31,15 +31,15 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             }`
             );
         });
-        it("undefined", () => {
+        await it("undefined", () => {
             expect(unknownToString(undefined)).to.eq("undefined");
         });
-        it("object", () => {
+        await it("object", () => {
             expect(unknownToString({ a: 5, b: [1, 2, 3], c: { d: "hi" } })).to.eq(
                 '{"a":5,"b":[1,2,3],"c":{"d":"hi"}}'
             );
         });
-        it("object (pretty)", () => {
+        await it("object (pretty)", () => {
             expect(unknownToString({ a: 5, b: [1, 2, 3], c: { d: "hi" } }, true)).to.eq(
                 dedent(`
                     {

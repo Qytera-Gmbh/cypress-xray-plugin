@@ -9,10 +9,10 @@ import { resolveTestDirPath } from "../../test/util.js";
 import { LoggedError } from "./errors.js";
 import { CapturingLogger, Level, PluginLogger } from "./logging.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(PluginLogger.name, () => {
-        describe("message", () => {
-            it("handles single line messages", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(PluginLogger.name, () => {
+        await describe("message", () => {
+            await it("handles single line messages", () => {
                 const stdout = stub(console, "info");
                 const logger = new PluginLogger();
                 logger.message(Level.INFO, "hello");
@@ -22,7 +22,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                     )}`
                 );
             });
-            it("handles multi line messages", () => {
+            await it("handles multi line messages", () => {
                 const stdout = stub(console, "info");
                 const logger = new PluginLogger();
                 logger.message(Level.INFO, "hello\nbonjour");
@@ -43,8 +43,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("logToFile", () => {
-            it("writes to relative directories", () => {
+        await describe("logToFile", () => {
+            await it("writes to relative directories", () => {
                 const logger = new PluginLogger({
                     logDirectory: path.relative(".", resolveTestDirPath("logs")),
                 });
@@ -55,7 +55,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(parsedFile).to.deep.eq("[1, 2, 3]");
             });
 
-            it("writes to absolute directories", () => {
+            await it("writes to absolute directories", () => {
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs"),
                 });
@@ -66,7 +66,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(parsedFile).to.deep.eq("[4, 5, 6]");
             });
 
-            it("writes to non-existent directories", () => {
+            await it("writes to non-existent directories", () => {
                 const timestamp = Date.now();
                 const stderr = stub(console, "error");
                 const logger = new PluginLogger({
@@ -96,8 +96,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("logErrorToFile", () => {
-            it("writes to relative directories", () => {
+        await describe("logErrorToFile", () => {
+            await it("writes to relative directories", () => {
                 const stderr = stub(console, "error");
                 const logger = new PluginLogger({
                     logDirectory: path.relative(".", resolveTestDirPath("logs")),
@@ -121,7 +121,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("writes to absolute directories", () => {
+            await it("writes to absolute directories", () => {
                 const stderr = stub(console, "error");
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs"),
@@ -145,7 +145,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("writes to non-existent directories", () => {
+            await it("writes to non-existent directories", () => {
                 const timestamp = Date.now();
                 const stderr = stub(console, "error");
                 const logger = new PluginLogger({
@@ -174,7 +174,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("writes axios errors", () => {
+            await it("writes axios errors", () => {
                 const timestamp = Date.now();
                 const stderr = stub(console, "error");
                 const logger = new PluginLogger({
@@ -225,7 +225,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 });
             });
 
-            it("writes generic errors", () => {
+            await it("writes generic errors", () => {
                 const timestamp = Date.now();
                 const stderr = stub(console, "error");
                 const logger = new PluginLogger({
@@ -246,7 +246,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("does not write already logged errors", () => {
+            await it("does not write already logged errors", () => {
                 const timestamp = Date.now();
                 const stderr = stub(console, "error");
                 const logger = new PluginLogger({
@@ -264,9 +264,9 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(CapturingLogger.name, () => {
-        describe("message", () => {
-            it("stores calls", () => {
+    await describe(CapturingLogger.name, () => {
+        await describe("message", () => {
+            await it("stores calls", () => {
                 const logger = new CapturingLogger();
                 logger.message(Level.INFO, "hello");
                 logger.message(Level.ERROR, "alarm");
@@ -277,8 +277,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("logToFile", () => {
-            it("stores calls", () => {
+        await describe("logToFile", () => {
+            await it("stores calls", () => {
                 const logger = new CapturingLogger();
                 expect([
                     logger.logToFile("[1, 2, 3]", "logToFile1.json"),
@@ -291,8 +291,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("logErrorToFile", () => {
-            it("stores calls", () => {
+        await describe("logErrorToFile", () => {
+            await it("stores calls", () => {
                 const logger = new CapturingLogger();
                 logger.logErrorToFile(new Error("I failed"), "logToFile1.json");
                 logger.logErrorToFile(new Error("I failed, too"), "logToFile2.json");
@@ -303,8 +303,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("configure", () => {
-            it("does nothing", () => {
+        await describe("configure", () => {
+            await it("does nothing", () => {
                 const unconfiguredLogger = new CapturingLogger();
                 const configuredLogger = new CapturingLogger();
                 configuredLogger.configure();

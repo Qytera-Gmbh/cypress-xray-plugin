@@ -6,9 +6,9 @@ import { Level } from "../../../util/logging.js";
 import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { GetSummariesToResetCommand } from "./get-summaries-to-reset-command.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(GetSummariesToResetCommand.name, () => {
-        it("returns summaries of issues to reset", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(GetSummariesToResetCommand.name, () => {
+        await it("returns summaries of issues to reset", async () => {
             const logger = getMockedLogger();
             const command = new GetSummariesToResetCommand(
                 logger,
@@ -26,7 +26,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("warns about unknown old summaries", async () => {
+        await it("warns about unknown old summaries", async () => {
             const logger = getMockedLogger();
             const command = new GetSummariesToResetCommand(
                 logger,

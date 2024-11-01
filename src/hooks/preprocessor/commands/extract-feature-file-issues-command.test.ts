@@ -10,9 +10,9 @@ import { parseFeatureFile } from "./parsing/gherkin.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(ExtractFeatureFileIssuesCommand.name, () => {
-        it("extracts cucumber issue data", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(ExtractFeatureFileIssuesCommand.name, () => {
+        await it("extracts cucumber issue data", async () => {
             const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixCorrect.feature"
@@ -44,7 +44,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("skips empty feature files", async () => {
+        await it("skips empty feature files", async () => {
             const logger = getMockedLogger();
             const document: GherkinDocument = {
                 comments: [],
@@ -65,7 +65,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("handles rules", async () => {
+        await it("handles rules", async () => {
             const logger = getMockedLogger();
             const document: GherkinDocument = {
                 comments: [{ location: { line: 5 }, text: "@CYP-456" }],
@@ -143,7 +143,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("throws for missing scenario tags", async () => {
+        await it("throws for missing scenario tags", async () => {
             const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMissingScenario.feature"
@@ -200,7 +200,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("throws for missing scenario tags (no scenario name)", async () => {
+        await it("throws for missing scenario tags (no scenario name)", async () => {
             const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMissingScenario.feature"
@@ -260,7 +260,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("throws for wrong scenario tags", async () => {
+        await it("throws for wrong scenario tags", async () => {
             const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongScenarioTags.feature"
@@ -314,7 +314,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("throws for wrong scenario tags (no scenario name, no steps)", async () => {
+        await it("throws for wrong scenario tags (no scenario name, no steps)", async () => {
             const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongScenarioTags.feature"
@@ -372,7 +372,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("throws for missing background tags", async () => {
+        await it("throws for missing background tags", async () => {
             const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMissingBackground.feature"
@@ -429,7 +429,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("throws for missing background tags (no background steps and names)", async () => {
+        await it("throws for missing background tags (no background steps and names)", async () => {
             const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMissingBackground.feature"
@@ -490,7 +490,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("throws for wrong background tags (no background name)", async () => {
+        await it("throws for wrong background tags (no background name)", async () => {
             const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongBackgroundTags.feature"
@@ -546,7 +546,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("throws for wrong background tags", async () => {
+        await it("throws for wrong background tags", async () => {
             const logger = getMockedLogger();
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongBackgroundTags.feature"
@@ -599,8 +599,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        describe("no prefix", () => {
-            it("throws for multiple scenario tags (no scenario name, no steps)", async () => {
+        await describe("no prefix", () => {
+            await it("throws for multiple scenario tags (no scenario name, no steps)", async () => {
                 const logger = getMockedLogger();
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedNoPrefixMultipleScenario.feature"
@@ -641,7 +641,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("throws for multiple background tags", async () => {
+            await it("throws for multiple background tags", async () => {
                 const logger = getMockedLogger();
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
@@ -681,7 +681,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("throws for multiple background tags (no background name)", async () => {
+            await it("throws for multiple background tags (no background name)", async () => {
                 const logger = getMockedLogger();
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
@@ -725,8 +725,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("prefixed", () => {
-            it("throws for multiple scenario tags", async () => {
+        await describe("prefixed", () => {
+            await it("throws for multiple scenario tags", async () => {
                 const logger = getMockedLogger();
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedPrefixMultipleScenario.feature"
@@ -762,7 +762,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("throws for multiple background tags", async () => {
+            await it("throws for multiple background tags", async () => {
                 const logger = getMockedLogger();
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedPrefixMultipleBackground.feature"

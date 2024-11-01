@@ -4,9 +4,9 @@ import { getMockedLogger } from "../../../../../test/mocks.js";
 import { ConstantCommand } from "../../../util/commands/constant-command.js";
 import { ConvertInfoCloudCommand, ConvertInfoServerCommand } from "./convert-info-command.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(ConvertInfoServerCommand.name, () => {
-        it("converts cucumber results into server cucumber info data", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(ConvertInfoServerCommand.name, () => {
+        await it("converts cucumber results into server cucumber info data", async () => {
             const logger = getMockedLogger();
             const command = new ConvertInfoServerCommand(
                 {
@@ -45,7 +45,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("includes configured test plan issue keys", async () => {
+        await it("includes configured test plan issue keys", async () => {
             const logger = getMockedLogger();
             const command = new ConvertInfoServerCommand(
                 {
@@ -75,7 +75,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(info.fields).to.have.deep.property("customfield_12345", ["CYP-123"]);
         });
 
-        it("includes configured test environments", async () => {
+        await it("includes configured test environments", async () => {
             const logger = getMockedLogger();
             const command = new ConvertInfoServerCommand(
                 {
@@ -104,7 +104,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(info.fields).to.have.deep.property("customfield_45678", ["DEV", "PROD"]);
         });
 
-        it("throws if no test plan id is supplied", () => {
+        await it("throws if no test plan id is supplied", () => {
             const logger = getMockedLogger();
             expect(
                 () =>
@@ -132,7 +132,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ).to.throw("A test plan issue key was supplied without the test plan Jira field ID");
         });
 
-        it("throws if no test environments id is supplied", () => {
+        await it("throws if no test environments id is supplied", () => {
             const logger = getMockedLogger();
             expect(
                 () =>
@@ -161,7 +161,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("returns parameters", () => {
+        await it("returns parameters", () => {
             const logger = getMockedLogger();
             const command = new ConvertInfoServerCommand(
                 {
@@ -192,8 +192,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    describe(ConvertInfoCloudCommand.name, () => {
-        it("converts cucumber results into cucumber info data", async () => {
+    await describe(ConvertInfoCloudCommand.name, () => {
+        await it("converts cucumber results into cucumber info data", async () => {
             const logger = getMockedLogger();
             const command = new ConvertInfoCloudCommand(
                 {
@@ -236,7 +236,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("includes configured test plan issue keys", async () => {
+        await it("includes configured test plan issue keys", async () => {
             const logger = getMockedLogger();
             const command = new ConvertInfoCloudCommand(
                 {
@@ -266,7 +266,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("includes configured test environments", async () => {
+        await it("includes configured test environments", async () => {
             const logger = getMockedLogger();
             const command = new ConvertInfoCloudCommand(
                 {

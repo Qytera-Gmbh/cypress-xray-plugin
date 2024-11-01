@@ -6,9 +6,9 @@ import { Level } from "../../../util/logging.js";
 import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { GetLabelsToResetCommand } from "./get-labels-to-reset-command.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(GetLabelsToResetCommand.name, () => {
-        it("returns labels of issues to reset", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(GetLabelsToResetCommand.name, () => {
+        await it("returns labels of issues to reset", async () => {
             const logger = getMockedLogger();
             const command = new GetLabelsToResetCommand(
                 logger,
@@ -29,7 +29,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("warns about unknown old labels", async () => {
+        await it("warns about unknown old labels", async () => {
             const logger = getMockedLogger();
             const command = new GetLabelsToResetCommand(
                 logger,

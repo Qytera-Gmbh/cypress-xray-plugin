@@ -4,9 +4,9 @@ import path from "path";
 import { parseFeatureFile } from "./gherkin.js";
 import { getCucumberScenarioIssueTags } from "./scenario.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(getCucumberScenarioIssueTags.name, () => {
-        it("extracts scenario tags without prefix", () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(getCucumberScenarioIssueTags.name, () => {
+        await it("extracts scenario tags without prefix", () => {
             const feature = parseFeatureFile(
                 "./test/resources/features/taggedNoPrefixMultipleScenario.feature"
             ).feature;
@@ -18,7 +18,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             ]);
         });
 
-        it("extracts scenario tags with prefix", () => {
+        await it("extracts scenario tags with prefix", () => {
             const feature = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMultipleScenario.feature"
             ).feature;

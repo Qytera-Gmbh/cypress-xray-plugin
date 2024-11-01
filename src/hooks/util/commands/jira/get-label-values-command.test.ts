@@ -9,9 +9,9 @@ import { GetLabelValuesCommand } from "./get-label-values-command.js";
 
 chai.use(chaiAsPromised);
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(GetLabelValuesCommand.name, () => {
-        it("fetches labels", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(GetLabelValuesCommand.name, () => {
+        await it("fetches labels", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetLabelValuesCommand(
@@ -37,7 +37,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("displays a warning for issues which do not exist", async () => {
+        await it("displays a warning for issues which do not exist", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetLabelValuesCommand(
@@ -65,7 +65,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("displays a warning for issues whose fields cannot be parsed", async () => {
+        await it("displays a warning for issues whose fields cannot be parsed", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetLabelValuesCommand(
@@ -98,7 +98,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("throws when encountering search failures", async () => {
+        await it("throws when encountering search failures", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();
             const command = new GetLabelValuesCommand(

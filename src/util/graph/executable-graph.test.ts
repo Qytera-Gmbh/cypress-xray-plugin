@@ -30,9 +30,9 @@ class ComputableVertex implements Computable<unknown>, Stateful<ComputableState>
     }
 }
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(ExecutableGraph.name, () => {
-        it("executes vertices in post-order", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(ExecutableGraph.name, () => {
+        await it("executes vertices in post-order", async () => {
             const messages: string[] = [];
             const logger = (message: string) => messages.push(message);
 
@@ -51,7 +51,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(messages).to.deep.eq(["vertex 2", "vertex 4", "vertex 1", "vertex 3"]);
         });
 
-        it("does not execute successors on partial failure", async () => {
+        await it("does not execute successors on partial failure", async () => {
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1") {
@@ -74,7 +74,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(messages).to.deep.eq(["vertex 2", "vertex 4"]);
         });
 
-        it("does not execute successors on full failure", async () => {
+        await it("does not execute successors on full failure", async () => {
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1" || message === "vertex 4") {
@@ -97,7 +97,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(messages).to.deep.eq(["vertex 2"]);
         });
 
-        it("does not execute successors on skip", async () => {
+        await it("does not execute successors on skip", async () => {
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1") {
@@ -120,7 +120,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(messages).to.deep.eq(["vertex 2", "vertex 4"]);
         });
 
-        it("still executes successors on failure if marked as optional", async () => {
+        await it("still executes successors on failure if marked as optional", async () => {
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1") {
@@ -144,7 +144,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(messages).to.deep.eq(["vertex 2", "vertex 4", "vertex 3"]);
         });
 
-        it("still executes successors on skip if marked as optional", async () => {
+        await it("still executes successors on skip if marked as optional", async () => {
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1") {

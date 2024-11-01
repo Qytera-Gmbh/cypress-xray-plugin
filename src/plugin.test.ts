@@ -16,7 +16,7 @@ import { dedent } from "./util/dedent.js";
 import { ExecutableGraph } from "./util/graph/executable-graph.js";
 import { CapturingLogger, Level } from "./util/logging.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
     let jiraClient: Sinon.SinonStubbedInstance<JiraClient>;
     let config: Cypress.PluginConfigOptions;
     let pluginContext: context.PluginContext;
@@ -55,8 +55,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         resetPlugin();
     });
 
-    describe(configureXrayPlugin.name, () => {
-        it("registers tasks only if disabled", async () => {
+    await describe(configureXrayPlugin.name, () => {
+        await it("registers tasks only if disabled", async () => {
             const logger = getMockedLogger();
             const mockedOn = Sinon.spy();
             await configureXrayPlugin(mockedOn, config, {
@@ -75,7 +75,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(mockedOn).to.have.been.calledOnceWith("task");
         });
 
-        it("registers tasks only if run in interactive mode", async () => {
+        await it("registers tasks only if run in interactive mode", async () => {
             const logger = getMockedLogger({ allowUnstubbedCalls: true });
             const mockedOn = Sinon.spy();
             config.isTextTerminal = false;
@@ -92,7 +92,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(mockedOn).to.have.been.calledOnceWith("task");
         });
 
-        it("initializes the plugin context with the provided options", async () => {
+        await it("initializes the plugin context with the provided options", async () => {
             config.env = {
                 ["JIRA_API_TOKEN"]: "token",
                 jsonEnabled: true,
@@ -206,7 +206,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("initializes the clients with different http configurations", async () => {
+        await it("initializes the clients with different http configurations", async () => {
             const options: CypressXrayPluginOptions = {
                 http: {
                     jira: {
@@ -255,7 +255,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("initializes the logging module", async () => {
+        await it("initializes the logging module", async () => {
             const stubbedClients = stub(context, "initClients");
             const logger = getMockedLogger();
             stubbedClients.onFirstCall().resolves(pluginContext.getClients());
@@ -272,7 +272,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("initializes the logging module with resolved relative paths", async () => {
+        await it("initializes the logging module with resolved relative paths", async () => {
             const stubbedClients = stub(context, "initClients");
             const logger = getMockedLogger();
             stubbedClients.onFirstCall().resolves(pluginContext.getClients());
@@ -292,7 +292,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("initializes the logging module without changing absolute paths", async () => {
+        await it("initializes the logging module without changing absolute paths", async () => {
             const stubbedClients = stub(context, "initClients");
             const logger = getMockedLogger();
             stubbedClients.onFirstCall().resolves(pluginContext.getClients());
@@ -312,7 +312,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("adds upload commands", async () => {
+        await it("adds upload commands", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
             const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
@@ -354,7 +354,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(stubbedHook.firstCall.args[6]).to.be.an.instanceOf(CapturingLogger);
         });
 
-        it("displays an error for failed runs", async () => {
+        await it("displays an error for failed runs", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
             stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
             const failedResults: CypressFailedRunResultType = {
@@ -378,7 +378,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("does not display a warning if the plugin was configured but disabled", async () => {
+        await it("does not display a warning if the plugin was configured but disabled", async () => {
             const logger = getMockedLogger();
             await configureXrayPlugin(mockedCypressEventEmitter, config, {
                 jira: { projectKey: "CYP", url: "https://example.org" },
@@ -390,7 +390,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("does not display an error for failed runs if disabled", async () => {
+        await it("does not display an error for failed runs if disabled", async () => {
             const failedResults: CypressFailedRunResultType = {
                 failures: 47,
                 message: "Pretty messed up",
@@ -409,7 +409,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("should skip the results upload if disabled", async () => {
+        await it("should skip the results upload if disabled", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
             stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
             const afterRunResult: CypressRunResultType = JSON.parse(
@@ -429,7 +429,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("displays a warning if there are failed vertices", async () => {
+        await it("displays a warning if there are failed vertices", async () => {
             stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
             jiraClient.getIssueTypes.onFirstCall().resolves([{ name: "Test Execution" }]);
             const afterRunResult: CypressRunResultType = JSON.parse(
@@ -467,7 +467,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
 
                             You can target existing test issues by adding a corresponding issue key:
 
-                              it("CYP-123 xray upload demo should look for paragraph elements", () => {
+                              await it("CYP-123 xray upload demo should look for paragraph elements", () => {
                                 // ...
                               });
 
@@ -490,7 +490,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
 
                             You can target existing test issues by adding a corresponding issue key:
 
-                              it("CYP-123 xray upload demo should look for the anchor element", () => {
+                              await it("CYP-123 xray upload demo should look for the anchor element", () => {
                                 // ...
                               });
 
@@ -513,7 +513,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
 
                             You can target existing test issues by adding a corresponding issue key:
 
-                              it("CYP-123 xray upload demo should fail", () => {
+                              await it("CYP-123 xray upload demo should fail", () => {
                                 // ...
                               });
 
@@ -536,7 +536,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    it("displays warning and errors after other log messages", async () => {
+    await it("displays warning and errors after other log messages", async () => {
         const logger = getMockedLogger();
         const xrayClient = getMockedXrayClient();
         stub(context, "initClients").onFirstCall().resolves({
@@ -657,7 +657,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
         ]);
     });
 
-    describe(syncFeatureFile.name, () => {
+    await describe(syncFeatureFile.name, () => {
         let file: Cypress.FileObject;
         beforeEach(() => {
             file = {
@@ -668,7 +668,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             };
         });
 
-        it("displays warnings if the plugin was not configured", () => {
+        await it("displays warnings if the plugin was not configured", () => {
             const logger = getMockedLogger();
             syncFeatureFile(file);
             expect(logger.message).to.have.been.calledWithExactly(
@@ -683,7 +683,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("does not display a warning if the plugin was configured but disabled", async () => {
+        await it("does not display a warning if the plugin was configured but disabled", async () => {
             const logger = getMockedLogger();
             await configureXrayPlugin(mockedCypressEventEmitter, config, {
                 jira: { projectKey: "CYP", url: "https://example.org" },
@@ -696,7 +696,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("does not do anything if disabled", () => {
+        await it("does not do anything if disabled", () => {
             file.filePath = "./test/resources/features/taggedCloud.feature";
             const logger = getMockedLogger();
             pluginContext.getOptions().plugin.enabled = false;
@@ -712,7 +712,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("adds synchronization commands", () => {
+        await it("adds synchronization commands", () => {
             const stubbedHook = stub(synchronizeFeatureFileHook, "addSynchronizationCommands");
             pluginContext.getOptions().cucumber = {
                 downloadFeatures: false,
@@ -731,7 +731,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("does not add synchronization commands for native test files", () => {
+        await it("does not add synchronization commands for native test files", () => {
             const stubbedHook = stub(synchronizeFeatureFileHook, "addSynchronizationCommands");
             pluginContext.getOptions().cucumber = {
                 downloadFeatures: false,

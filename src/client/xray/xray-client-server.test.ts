@@ -14,8 +14,8 @@ import type { AxiosRestClient } from "../https/https.js";
 import type { XrayClientServer } from "./xray-client-server.js";
 import { ServerClient } from "./xray-client-server.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(ServerClient.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(ServerClient.name, () => {
         let restClient: SinonStubbedInstance<AxiosRestClient>;
         let client: XrayClientServer;
 
@@ -28,8 +28,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        describe("import execution", () => {
-            it("calls the correct endpoint", async () => {
+        await describe("import execution", () => {
+            await it("calls the correct endpoint", async () => {
                 getMockedLogger();
                 restClient.post.resolves({
                     config: { headers: new AxiosHeaders() },
@@ -76,7 +76,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("should handle successful responses", async () => {
+            await it("should handle successful responses", async () => {
                 getMockedLogger();
                 restClient.post.resolves({
                     config: { headers: new AxiosHeaders() },
@@ -122,8 +122,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("import execution multipart", () => {
-            it("calls the correct endpoint", async () => {
+        await describe("import execution multipart", () => {
+            await it("calls the correct endpoint", async () => {
                 getMockedLogger();
                 restClient.post.resolves({
                     config: { headers: new AxiosHeaders() },
@@ -157,7 +157,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles successful responses", async () => {
+            await it("handles successful responses", async () => {
                 getMockedLogger();
                 restClient.post.resolves({
                     config: { headers: new AxiosHeaders() },
@@ -207,8 +207,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("import execution cucumber multipart", () => {
-            it("calls the correct endpoint", async () => {
+        await describe("import execution cucumber multipart", () => {
+            await it("calls the correct endpoint", async () => {
                 getMockedLogger();
                 restClient.post.resolves({
                     config: { headers: new AxiosHeaders() },
@@ -242,7 +242,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("should handle successful responses", async () => {
+            await it("should handle successful responses", async () => {
                 getMockedLogger();
                 restClient.post.resolves({
                     config: { headers: new AxiosHeaders() },
@@ -275,8 +275,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("import feature", () => {
-            it("calls the correct endpoint", async () => {
+        await describe("import feature", () => {
+            await it("calls the correct endpoint", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: [
@@ -321,7 +321,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles successful responses", async () => {
+            await it("handles successful responses", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: [
@@ -367,7 +367,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 });
             });
 
-            it("handles responses with errors", async () => {
+            await it("handles responses with errors", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -414,7 +414,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles responses with empty messages", async () => {
+            await it("handles responses with empty messages", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
                     data: {
@@ -455,7 +455,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 });
             });
 
-            it("handles responses without any updated issues", async () => {
+            await it("handles responses without any updated issues", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -485,7 +485,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 400",
@@ -525,7 +525,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles network failures", async () => {
+            await it("handles network failures", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new Error("Connection timeout");
                 restClient.post.onFirstCall().rejects(error);
@@ -545,8 +545,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("get test execution", () => {
-            it("returns tests", async () => {
+        await describe("get test execution", () => {
+            await it("returns tests", async () => {
                 getMockedLogger();
                 restClient.get.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -618,7 +618,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 400",
@@ -650,8 +650,8 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        describe("get xray license", () => {
-            it("returns the license", async () => {
+        await describe("get xray license", () => {
+            await it("returns the license", async () => {
                 restClient.get.resolves({
                     config: { headers: new AxiosHeaders() },
                     data: {
@@ -675,7 +675,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 );
             });
 
-            it("handles bad responses", async () => {
+            await it("handles bad responses", async () => {
                 const logger = getMockedLogger({ allowUnstubbedCalls: true });
                 const error = new AxiosError(
                     "Request failed with status code 400",

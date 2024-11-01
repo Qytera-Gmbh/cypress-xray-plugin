@@ -9,9 +9,9 @@ import { Level } from "../../../../../util/logging.js";
 import { ConstantCommand } from "../../../../util/commands/constant-command.js";
 import { ConvertCucumberFeaturesCommand } from "./convert-cucumber-features-command.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(ConvertCucumberFeaturesCommand.name, () => {
-        it("converts cucumber results into cucumber features data", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(ConvertCucumberFeaturesCommand.name, () => {
+        await it("converts cucumber results into cucumber features data", async () => {
             const logger = getMockedLogger();
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
@@ -35,7 +35,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(features).to.be.an("array").with.length(1);
         });
 
-        it("returns parameters", () => {
+        await it("returns parameters", () => {
             const logger = getMockedLogger();
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
@@ -70,7 +70,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        it("converts cucumber results into cloud cucumber features data", async () => {
+        await it("converts cucumber results into cloud cucumber features data", async () => {
             const logger = getMockedLogger();
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
@@ -95,7 +95,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(features).to.be.an("array").with.length(1);
         });
 
-        it("includes all tagged features and tests", async () => {
+        await it("includes all tagged features and tests", async () => {
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
@@ -122,7 +122,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(features[1].elements).to.be.an("array").with.length(1);
         });
 
-        it("uses the configured test execution issue key", async () => {
+        await it("uses the configured test execution issue key", async () => {
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
@@ -151,7 +151,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(features[1].tags).to.deep.eq([{ name: "@CYP-456" }]);
         });
 
-        it("uses the configured test execution issue key even without existing tags", async () => {
+        await it("uses the configured test execution issue key even without existing tags", async () => {
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
@@ -180,7 +180,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(features[0].tags).to.deep.eq([{ name: "@CYP-456" }]);
         });
 
-        it("includes screenshots if enabled", async () => {
+        await it("includes screenshots if enabled", async () => {
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
@@ -208,7 +208,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(features[0].elements[2].steps[1].embeddings[0].mime_type).to.eq("image/png");
         });
 
-        it("respects custom statuses", async () => {
+        await it("respects custom statuses", async () => {
             const logger = getMockedLogger();
             const command = new ConvertCucumberFeaturesCommand(
                 {
@@ -337,7 +337,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(features[0].elements[0].steps[5].result.status).to.eq("IS PENDING");
         });
 
-        it("skips background elements", async () => {
+        await it("skips background elements", async () => {
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
@@ -363,7 +363,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(features[0].elements).to.have.length(2);
         });
 
-        it("skips embeddings if screenshots are disabled", async () => {
+        await it("skips embeddings if screenshots are disabled", async () => {
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
@@ -393,7 +393,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(features[0].elements[2].steps[1].embeddings).to.be.empty;
         });
 
-        it("skips untagged scenarios", async () => {
+        await it("skips untagged scenarios", async () => {
             const logger = getMockedLogger();
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
@@ -471,7 +471,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(features).to.have.length(0);
         });
 
-        it("skips scenarios without recognised issue tags", async () => {
+        await it("skips scenarios without recognised issue tags", async () => {
             const logger = getMockedLogger();
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(
@@ -537,7 +537,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(features).to.have.length(0);
         });
 
-        it("includes scenarios with multiple tags", async () => {
+        await it("includes scenarios with multiple tags", async () => {
             const logger = getMockedLogger();
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
                 fs.readFileSync(

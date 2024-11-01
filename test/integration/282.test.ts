@@ -12,7 +12,7 @@ import { getCreatedTestExecutionIssueKey } from "./util.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/282
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
     for (const test of [
         {
             cucumberTestPrefix: "TestName:",
@@ -33,7 +33,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             xrayPassedStatus: "EXECUTING", // Must be a non-final status (I don't have permission)
         },
     ] as const) {
-        it(test.title, async () => {
+        await it(test.title, async () => {
             const project = setupCypressProject({
                 configFileContent: dedent(`
                     const preprocessor = require("@badeball/cypress-cucumber-preprocessor");
@@ -112,9 +112,9 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
                 testFiles: [
                     {
                         content: dedent(`
-                            describe("${test.testIssueKey} template spec", () => {
-                                it("passes", () => {
-                                    cy.visit("${LOCAL_SERVER.url}");
+                            await describe("${test.testIssueKey} template spec", () => {
+                                await it("passes", () => {
+                                    cy.visawait it("${LOCAL_SERVER.url}");
                                 });
                             });
                         `),

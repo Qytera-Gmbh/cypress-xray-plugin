@@ -6,9 +6,9 @@ import { Level } from "../../../util/logging.js";
 import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { VerifyExecutionIssueKeyCommand } from "./verify-execution-issue-key-command.js";
 
-describe(path.relative(process.cwd(), import.meta.filename), () => {
-    describe(VerifyExecutionIssueKeyCommand.name, () => {
-        it("verifies without warning", async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), () => {
+    await describe(VerifyExecutionIssueKeyCommand.name, () => {
+        await it("verifies without warning", async () => {
             const logger = getMockedLogger();
             const command = new VerifyExecutionIssueKeyCommand(
                 {
@@ -24,7 +24,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(logger.message).to.not.have.been.called;
         });
 
-        it("prints a warning for cypress import failures", async () => {
+        await it("prints a warning for cypress import failures", async () => {
             const logger = getMockedLogger();
             const command = new VerifyExecutionIssueKeyCommand(
                 {
@@ -53,7 +53,7 @@ describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        it("prints a warning for cucumber import failures", async () => {
+        await it("prints a warning for cucumber import failures", async () => {
             const logger = getMockedLogger();
             const command = new VerifyExecutionIssueKeyCommand(
                 {
