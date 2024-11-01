@@ -7,7 +7,7 @@ import * as dependencies from "./dependencies.js";
 // Enable promise assertions.
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
     await it("throws if a package is not installed", async () => {
         await expect(
             dependencies.importOptionalDependency("nonexistent")

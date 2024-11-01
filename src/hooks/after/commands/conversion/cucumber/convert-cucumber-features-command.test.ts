@@ -10,8 +10,8 @@ import { Level } from "../../../../../util/logging.js";
 import { ConstantCommand } from "../../../../util/commands/constant-command.js";
 import { ConvertCucumberFeaturesCommand } from "./convert-cucumber-features-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(ConvertCucumberFeaturesCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
+    await describe(ConvertCucumberFeaturesCommand.name, async async async async async async async async async async async async async async async async async async async async async async async async async async () => {
         await it("converts cucumber results into cucumber features data", async () => {
             const logger = getMockedLogger();
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(

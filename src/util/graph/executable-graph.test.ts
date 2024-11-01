@@ -31,8 +31,8 @@ class ComputableVertex implements Computable<unknown>, Stateful<ComputableState>
     }
 }
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(ExecutableGraph.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(ExecutableGraph.name, async async async async async async () => {
         await it("executes vertices in post-order", async () => {
             const messages: string[] = [];
             const logger = (message: string) => messages.push(message);

@@ -10,8 +10,8 @@ import { GetLabelValuesCommand } from "./get-label-values-command.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(GetLabelValuesCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(GetLabelValuesCommand.name, async async async async () => {
         await it("fetches labels", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();

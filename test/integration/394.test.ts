@@ -12,7 +12,7 @@ import { runCypress, setupCypressProject } from "../sh.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/394
 // ============================================================================================== //
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
     for (const test of [
         {
             env: {

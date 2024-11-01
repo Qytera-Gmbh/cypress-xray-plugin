@@ -10,8 +10,8 @@ import { GetSummaryValuesCommand } from "./get-summary-values-command.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(GetSummaryValuesCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(GetSummaryValuesCommand.name, async async async async () => {
         await it("fetches summaries", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();

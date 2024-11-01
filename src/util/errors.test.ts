@@ -3,8 +3,8 @@ import { describe, it } from "node:test";
 import path from "path";
 import { LoggedError, errorMessage, isLoggedError } from "./errors.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(errorMessage.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
+    await describe(errorMessage.name, async async () => {
         await it("returns error messages", () => {
             expect(errorMessage(new Error("Hi"))).to.eq("Hi");
         });
@@ -14,7 +14,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(isLoggedError.name, () => {
+    await describe(isLoggedError.name, async async () => {
         await it("returns true for LoggedError", () => {
             expect(isLoggedError(new LoggedError())).to.be.true;
         });

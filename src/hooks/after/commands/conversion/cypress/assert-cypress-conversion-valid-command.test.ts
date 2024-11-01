@@ -10,8 +10,8 @@ import { AssertCypressConversionValidCommand } from "./assert-cypress-conversion
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(AssertCypressConversionValidCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(AssertCypressConversionValidCommand.name, async async async () => {
         await it("correctly verifies xray json data", async () => {
             const logger = getMockedLogger();
             const xrayJson: Parameters<XrayClient["importExecutionMultipart"]> = [

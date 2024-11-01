@@ -4,8 +4,8 @@ import path from "path";
 import { SimpleDirectedGraph } from "../graph.js";
 import { computeTopologicalOrder, traverse } from "./sort.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(computeTopologicalOrder.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
+    await describe(computeTopologicalOrder.name, async () => {
         await it("computes the order for directed graphs", () => {
             const graph = new SimpleDirectedGraph<number>();
             graph.place(0);
@@ -48,7 +48,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe(traverse.name, () => {
+    await describe(traverse.name, async async () => {
         await it("traverses forests top-down", () => {
             const graph = new SimpleDirectedGraph<string>();
             graph.place("A");

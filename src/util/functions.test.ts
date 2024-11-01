@@ -3,8 +3,8 @@ import { describe, it } from "node:test";
 import path from "path";
 import { getOrCall } from "./functions.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(getOrCall.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(getOrCall.name, async async async () => {
         await it("returns unwrapped values", async () => {
             expect(await getOrCall("hello")).to.eq("hello");
         });

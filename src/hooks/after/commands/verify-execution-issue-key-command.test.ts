@@ -7,8 +7,8 @@ import { Level } from "../../../util/logging.js";
 import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { VerifyExecutionIssueKeyCommand } from "./verify-execution-issue-key-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(VerifyExecutionIssueKeyCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(VerifyExecutionIssueKeyCommand.name, async async async () => {
         await it("verifies without warning", async () => {
             const logger = getMockedLogger();
             const command = new VerifyExecutionIssueKeyCommand(

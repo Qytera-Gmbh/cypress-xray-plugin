@@ -7,8 +7,8 @@ import type { MultipartInfo } from "../../../../types/xray/requests/import-execu
 import { ConstantCommand } from "../constant-command.js";
 import { ImportExecutionCypressCommand } from "./import-execution-cypress-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(ImportExecutionCypressCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(ImportExecutionCypressCommand.name, async () => {
         await it("imports cypress xray json", async () => {
             const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient();

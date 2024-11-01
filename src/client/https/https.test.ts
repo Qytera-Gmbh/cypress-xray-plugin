@@ -13,13 +13,13 @@ import { AxiosRestClient } from "./https.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async async async async async async async () => {
     beforeEach(() => {
         BaseAxios.default.interceptors.request.clear();
         BaseAxios.default.interceptors.response.clear();
     });
 
-    await describe("get", () => {
+    await describe("get", async async async async () => {
         await it("returns the response", async () => {
             const response: BaseAxios.AxiosResponse<string> = {
                 config: {
@@ -113,7 +113,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe("post", () => {
+    await describe("post", async async async async () => {
         await it("returns the response", async () => {
             const client = new AxiosRestClient();
             const response: BaseAxios.AxiosResponse<string> = {
@@ -218,7 +218,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe("put", () => {
+    await describe("put", async async async async () => {
         await it("returns the response", async () => {
             const client = new AxiosRestClient();
             const response: BaseAxios.AxiosResponse<string> = {

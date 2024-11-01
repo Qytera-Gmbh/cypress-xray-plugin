@@ -5,8 +5,8 @@ import path from "path";
 import { parseFeatureFile } from "./gherkin.js";
 import { getCucumberScenarioIssueTags } from "./scenario.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(getCucumberScenarioIssueTags.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(getCucumberScenarioIssueTags.name, async async () => {
         await it("extracts scenario tags without prefix", () => {
             const feature = parseFeatureFile(
                 "./test/resources/features/taggedNoPrefixMultipleScenario.feature"

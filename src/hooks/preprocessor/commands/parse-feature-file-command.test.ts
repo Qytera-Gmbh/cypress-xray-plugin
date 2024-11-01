@@ -6,8 +6,8 @@ import { dedent } from "../../../util/dedent.js";
 import { Level } from "../../../util/logging.js";
 import { ParseFeatureFileCommand } from "./parse-feature-file-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(ParseFeatureFileCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(ParseFeatureFileCommand.name, async () => {
         await it("displays errors for invalid feature files", async () => {
             const logger = getMockedLogger();
             const filePath = "./test/resources/features/invalid.feature";

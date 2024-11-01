@@ -4,9 +4,9 @@ import path from "path";
 import { dedent } from "./dedent.js";
 import { asArrayOfStrings, asBoolean, asFloat, asInt, asObject } from "./parsing.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(asBoolean.name, () => {
-        await describe(true.toString(), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async async async async () => {
+    await describe(asBoolean.name, async async async () => {
+        await describe(true.toString(), async async async async async () => {
             await it("y", () => {
                 expect(asBoolean("y")).to.be.true;
             });
@@ -23,7 +23,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
                 expect(asBoolean("on")).to.be.true;
             });
         });
-        await describe(false.toString(), () => {
+        await describe(false.toString(), async async async async async () => {
             await it("n", () => {
                 expect(asBoolean("n")).to.be.false;
             });
@@ -44,7 +44,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(() => asBoolean("hi")).to.throw("Failed to parse boolean value from string: hi");
         });
     });
-    await describe(asFloat.name, () => {
+    await describe(asFloat.name, async async async () => {
         await it("10", () => {
             expect(asFloat("10")).to.eq(10.0);
         });
@@ -55,7 +55,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(asFloat("hi")).to.be.NaN;
         });
     });
-    await describe(asInt.name, () => {
+    await describe(asInt.name, async async async () => {
         await it("10", () => {
             expect(asInt("10")).to.eq(10);
         });
@@ -66,7 +66,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             expect(asInt("hi")).to.be.NaN;
         });
     });
-    await describe(asArrayOfStrings.name, () => {
+    await describe(asArrayOfStrings.name, async async async async () => {
         await it("parses arrays containing primitives", () => {
             expect(asArrayOfStrings([false, 5, 6, "hello", Symbol("anubis")])).to.deep.eq([
                 "false",
@@ -104,7 +104,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
     });
-    await describe(asObject.name, () => {
+    await describe(asObject.name, async async async async async () => {
         await it("parses objects", () => {
             expect(asObject({ hello: 5, something: { nested: "hi" } })).to.deep.eq({
                 hello: 5,
@@ -118,7 +118,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             );
         });
 
-        await describe("throws for primitive arguments", () => {
+        await describe("throws for primitive arguments", async () => {
             for (const value of ["hi", false, 15, Symbol("good"), BigInt(12345)]) {
                 await it(`type: ${typeof value}`, () => {
                     expect(() => asObject(value)).to.throw(

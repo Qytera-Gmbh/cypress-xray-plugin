@@ -3,8 +3,8 @@ import { describe, it } from "node:test";
 import path from "path";
 import { SimpleDirectedEdge, SimpleDirectedGraph } from "./graph.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(SimpleDirectedGraph.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
+    await describe(SimpleDirectedGraph.name, async async async async async async async async async async () => {
         let graph: SimpleDirectedGraph<number> = new SimpleDirectedGraph<number>();
 
         beforeEach(() => {
@@ -20,7 +20,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             graph.connect(2, 4);
         });
 
-        await describe(graph.place.name, () => {
+        await describe(graph.place.name, async async () => {
             await it("adds vertices", () => {
                 graph.place(7);
                 expect([...graph.getVertices()]).to.deep.eq([0, 1, 2, 3, 4, 7]);
@@ -34,7 +34,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe(graph.connect.name, () => {
+        await describe(graph.connect.name, async async async async async async () => {
             await it("connects to existing vertices", () => {
                 graph.place(5);
                 graph.connect(0, 5);
@@ -79,7 +79,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe(graph.find.name, () => {
+        await describe(graph.find.name, async async () => {
             await it("finds vertices", () => {
                 expect(graph.find((vertex: number) => vertex === 3)).to.eq(3);
             });
@@ -89,13 +89,13 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe(graph.getVertices.name, () => {
+        await describe(graph.getVertices.name, async () => {
             await it("returns all vertices", () => {
                 expect([...graph.getVertices()]).to.deep.eq([0, 1, 2, 3, 4]);
             });
         });
 
-        await describe(graph.getEdges.name, () => {
+        await describe(graph.getEdges.name, async () => {
             await it("returns all edges", () => {
                 expect([...graph.getEdges()]).to.deep.eq([
                     new SimpleDirectedEdge(0, 1),
@@ -106,7 +106,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe(graph.size.name, () => {
+        await describe(graph.size.name, async async () => {
             await it("returns the vertex set cardinality", () => {
                 expect(graph.size("vertices")).to.eq(5);
             });
@@ -116,7 +116,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe(graph.getOutgoing.name, () => {
+        await describe(graph.getOutgoing.name, async async async () => {
             await it("returns the outgoing edges of a vertex", () => {
                 expect([...graph.getOutgoing(0)]).to.deep.eq([
                     new SimpleDirectedEdge(0, 1),
@@ -134,7 +134,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe(graph.getIncoming.name, () => {
+        await describe(graph.getIncoming.name, async async async () => {
             await it("returns the incoming edges of a vertex", () => {
                 expect([...graph.getIncoming(3)]).to.deep.eq([new SimpleDirectedEdge(0, 3)]);
             });
@@ -148,7 +148,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe(graph.hasOutgoing.name, () => {
+        await describe(graph.hasOutgoing.name, async async async () => {
             await it("returns true for vertices with outgoing edges", () => {
                 expect(graph.hasOutgoing(0)).to.be.true;
             });
@@ -162,7 +162,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             });
         });
 
-        await describe(graph.hasIncoming.name, () => {
+        await describe(graph.hasIncoming.name, async async async () => {
             await it("returns true for vertices with incoming edges", () => {
                 expect(graph.hasIncoming(1)).to.be.true;
             });
@@ -177,16 +177,16 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         });
     });
 
-    await describe("edge", () => {
+    await describe("edge", async async () => {
         const edge = new SimpleDirectedEdge("abc", "def");
 
-        await describe(edge.getSource.name, () => {
+        await describe(edge.getSource.name, async () => {
             await it("returns the source vertex", () => {
                 expect(edge.getSource()).to.eq("abc");
             });
         });
 
-        await describe(edge.getDestination.name, () => {
+        await describe(edge.getDestination.name, async () => {
             await it("returns the destination vertex", () => {
                 expect(edge.getDestination()).to.eq("def");
             });

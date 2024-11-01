@@ -13,7 +13,7 @@ import { runCypress, setupCypressProject } from "../sh.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/314
 // ============================================================================================== //
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
     for (const test of [
         {
             commandFileContent: dedent(`

@@ -11,8 +11,8 @@ import { VerifyResultsUploadCommand } from "./verify-results-upload-command.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(VerifyResultsUploadCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(VerifyResultsUploadCommand.name, async async async async async () => {
         await it("prints a success message for successful cypress uploads", async () => {
             const logger = getMockedLogger();
             const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {

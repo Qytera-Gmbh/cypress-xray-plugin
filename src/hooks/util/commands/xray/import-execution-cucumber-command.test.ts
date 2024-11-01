@@ -8,8 +8,8 @@ import type { MultipartInfo } from "../../../../types/xray/requests/import-execu
 import { ConstantCommand } from "../constant-command.js";
 import { ImportExecutionCucumberCommand } from "./import-execution-cucumber-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(ImportExecutionCucumberCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(ImportExecutionCucumberCommand.name, async () => {
         await it("imports cucumber multipart", async () => {
             const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient();

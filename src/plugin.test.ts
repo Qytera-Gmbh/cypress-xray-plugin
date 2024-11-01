@@ -17,7 +17,7 @@ import { dedent } from "./util/dedent.js";
 import { ExecutableGraph } from "./util/graph/executable-graph.js";
 import { CapturingLogger, Level } from "./util/logging.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async async async () => {
     let jiraClient: Sinon.SinonStubbedInstance<JiraClient>;
     let config: Cypress.PluginConfigOptions;
     let pluginContext: context.PluginContext;
@@ -56,7 +56,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         resetPlugin();
     });
 
-    await describe(configureXrayPlugin.name, () => {
+    await describe(configureXrayPlugin.name, async async async async async async async async async async async async async () => {
         await it("registers tasks only if disabled", async () => {
             const logger = getMockedLogger();
             const mockedOn = Sinon.spy();
@@ -658,7 +658,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
         ]);
     });
 
-    await describe(syncFeatureFile.name, () => {
+    await describe(syncFeatureFile.name, async async async async async () => {
         let file: Cypress.FileObject;
         beforeEach(() => {
             file = {
