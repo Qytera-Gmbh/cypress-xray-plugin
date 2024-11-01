@@ -12,15 +12,18 @@ import { getCreatedTestExecutionIssueKey } from "./util.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/359
 // ============================================================================================== //
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    for (const test of [
-        {
-            expectedLabels: [],
-            expectedSummary: "Integration test 359 (hardcoded)",
-            manualTest: "CYP-1139",
-            projectKey: "CYP",
-            service: "cloud",
-            testExecutionIssueData: dedent(`
+await describe(
+    path.relative(process.cwd(), import.meta.filename),
+    { timeout: 180000 },
+    async () => {
+        for (const test of [
+            {
+                expectedLabels: [],
+                expectedSummary: "Integration test 359 (hardcoded)",
+                manualTest: "CYP-1139",
+                projectKey: "CYP",
+                service: "cloud",
+                testExecutionIssueData: dedent(`
                 {
                     fields: {
                         summary: "Integration test 359 (hardcoded)",
@@ -28,16 +31,16 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                     }
                 }
             `),
-            title: "test execution issue data is hardcoded (cloud)",
-            xrayPassedStatus: "PASSED",
-        },
-        {
-            expectedLabels: ["x", "y"],
-            expectedSummary: "Integration test 359 (wrapped)",
-            manualTest: "CYP-1139",
-            projectKey: "CYP",
-            service: "cloud",
-            testExecutionIssueData: dedent(`
+                title: "test execution issue data is hardcoded (cloud)",
+                xrayPassedStatus: "PASSED",
+            },
+            {
+                expectedLabels: ["x", "y"],
+                expectedSummary: "Integration test 359 (wrapped)",
+                manualTest: "CYP-1139",
+                projectKey: "CYP",
+                service: "cloud",
+                testExecutionIssueData: dedent(`
                 () => {
                     return {
                         fields: {
@@ -47,16 +50,16 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                     };
                 }
             `),
-            title: "test execution issue data is wrapped (cloud)",
-            xrayPassedStatus: "PASSED",
-        },
-        {
-            expectedLabels: [],
-            expectedSummary: "Integration test 359 (hardcoded)",
-            manualTest: "CYPLUG-461",
-            projectKey: "CYPLUG",
-            service: "server",
-            testExecutionIssueData: dedent(`
+                title: "test execution issue data is wrapped (cloud)",
+                xrayPassedStatus: "PASSED",
+            },
+            {
+                expectedLabels: [],
+                expectedSummary: "Integration test 359 (hardcoded)",
+                manualTest: "CYPLUG-461",
+                projectKey: "CYPLUG",
+                service: "server",
+                testExecutionIssueData: dedent(`
                 {
                     fields: {
                         summary: "Integration test 359 (hardcoded)",
@@ -64,16 +67,16 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                     }
                 }
             `),
-            title: "test execution issue data is hardcoded (server)",
-            xrayPassedStatus: "PASS",
-        },
-        {
-            expectedLabels: ["x", "y"],
-            expectedSummary: "Integration test 359 (wrapped)",
-            manualTest: "CYPLUG-461",
-            projectKey: "CYPLUG",
-            service: "server",
-            testExecutionIssueData: dedent(`
+                title: "test execution issue data is hardcoded (server)",
+                xrayPassedStatus: "PASS",
+            },
+            {
+                expectedLabels: ["x", "y"],
+                expectedSummary: "Integration test 359 (wrapped)",
+                manualTest: "CYPLUG-461",
+                projectKey: "CYPLUG",
+                service: "server",
+                testExecutionIssueData: dedent(`
                 () => {
                     return {
                         fields: {
@@ -83,13 +86,13 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                     };
                 }
             `),
-            title: "test execution issue data is wrapped (server)",
-            xrayPassedStatus: "PASS",
-        },
-    ] as const) {
-        await it(test.title, async () => {
-            const project = setupCypressProject({
-                configFileContent: dedent(`
+                title: "test execution issue data is wrapped (server)",
+                xrayPassedStatus: "PASS",
+            },
+        ] as const) {
+            await it(test.title, async () => {
+                const project = setupCypressProject({
+                    configFileContent: dedent(`
                     const { defineConfig } = require("cypress");
                     const fix = require("cypress-on-fix");
                     const { configureXrayPlugin } = require("cypress-xray-plugin");
@@ -127,9 +130,9 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                         },
                     });
                 `),
-                testFiles: [
-                    {
-                        content: dedent(`
+                    testFiles: [
+                        {
+                            content: dedent(`
                             await describe("${test.manualTest} template spec", () => {
                                 await it("passes", () => {
                                     cy.visawait it("${LOCAL_SERVER.url}");
@@ -137,27 +140,28 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                                 });
                             });
                         `),
-                        fileName: "spec.cy.js",
-                    },
-                ],
-            });
+                            fileName: "spec.cy.js",
+                        },
+                    ],
+                });
 
-            const output = runCypress(project.projectDirectory, {
-                includeDefaultEnv: test.service,
-            });
+                const output = runCypress(project.projectDirectory, {
+                    includeDefaultEnv: test.service,
+                });
 
-            const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
-                test.projectKey,
-                output,
-                "cypress"
-            );
+                const testExecutionIssueKey = getCreatedTestExecutionIssueKey(
+                    test.projectKey,
+                    output,
+                    "cypress"
+                );
 
-            const searchResult = await getIntegrationClient("jira", test.service).search({
-                fields: ["labels", "summary"],
-                jql: `issue in (${testExecutionIssueKey})`,
+                const searchResult = await getIntegrationClient("jira", test.service).search({
+                    fields: ["labels", "summary"],
+                    jql: `issue in (${testExecutionIssueKey})`,
+                });
+                expect(searchResult[0].fields?.labels).to.deep.eq(test.expectedLabels);
+                expect(searchResult[0].fields?.summary).to.deep.eq(test.expectedSummary);
             });
-            expect(searchResult[0].fields?.labels).to.deep.eq(test.expectedLabels);
-            expect(searchResult[0].fields?.summary).to.deep.eq(test.expectedSummary);
-        });
+        }
     }
-});
+);

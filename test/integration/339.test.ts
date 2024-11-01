@@ -11,49 +11,53 @@ import { runCypress, setupCypressProject } from "../sh.js";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/339
 // ============================================================================================== //
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    for (const test of [
-        {
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 339",
-                ["CYPRESS_PLUGIN_ENABLED"]: "false",
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+await describe(
+    path.relative(process.cwd(), import.meta.filename),
+    { timeout: 180000 },
+    async () => {
+        for (const test of [
+            {
+                env: {
+                    ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 339",
+                    ["CYPRESS_PLUGIN_ENABLED"]: "false",
+                    ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+                },
+                service: "cloud",
+                testIssueKey: "CYP-741",
+                title: "the cy.request task does not do anything if disabled (cloud)",
             },
-            service: "cloud",
-            testIssueKey: "CYP-741",
-            title: "the cy.request task does not do anything if disabled (cloud)",
-        },
-        {
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 339",
-                ["CYPRESS_PLUGIN_ENABLED"]: "false",
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+            {
+                env: {
+                    ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 339",
+                    ["CYPRESS_PLUGIN_ENABLED"]: "false",
+                    ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
+                },
+                service: "server",
+                testIssueKey: "CYPLUG-154",
+                title: "the cy.request task does not do anything if disabled (server)",
             },
-            service: "server",
-            testIssueKey: "CYPLUG-154",
-            title: "the cy.request task does not do anything if disabled (server)",
-        },
-    ] as const) {
-        await it(test.title, () => {
-            const project = setupCypressProject({
-                testFiles: [
-                    {
-                        content: dedent(`
+        ] as const) {
+            await it(test.title, () => {
+                const project = setupCypressProject({
+                    testFiles: [
+                        {
+                            content: dedent(`
                             await describe("request", () => {
                                 await it("${test.testIssueKey} does something", () => {
                                     cy.request("${LOCAL_SERVER.url}");
                                 });
                             });
                         `),
-                        fileName: "cy.request.cy.js",
-                    },
-                ],
+                            fileName: "cy.request.cy.js",
+                        },
+                    ],
+                });
+                runCypress(project.projectDirectory, {
+                    env: test.env,
+                    includeDefaultEnv: test.service,
+                });
+                expect(fs.existsSync(project.logDirectory)).to.be.false;
             });
-            runCypress(project.projectDirectory, {
-                env: test.env,
-                includeDefaultEnv: test.service,
-            });
-            expect(fs.existsSync(project.logDirectory)).to.be.false;
-        });
+        }
     }
-});
+);
