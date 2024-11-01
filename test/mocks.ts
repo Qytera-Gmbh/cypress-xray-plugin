@@ -1,8 +1,7 @@
 import type { AxiosRequestConfig } from "axios";
-import chai from "chai";
+import { beforeEach } from "node:test";
 import type { SinonStub, SinonStubbedInstance } from "sinon";
 import { restore, stub } from "sinon";
-import sinonChai from "sinon-chai";
 import { JwtCredentials } from "../src/client/authentication/credentials.js";
 import { AxiosRestClient } from "../src/client/https/https.js";
 import type { JiraClient } from "../src/client/jira/jira-client.js";
@@ -21,8 +20,6 @@ import type { MultipartInfo } from "../src/types/xray/requests/import-execution-
 import { dedent } from "../src/util/dedent.js";
 import type { Logger } from "../src/util/logging.js";
 import * as logging from "../src/util/logging.js";
-
-chai.use(sinonChai);
 
 beforeEach(() => {
     restore();
