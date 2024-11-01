@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import fs from "fs";
+import { describe, it } from "node:test";
 import path from "path";
 import Sinon, { stub } from "sinon";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../test/mocks.js";

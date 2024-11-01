@@ -3,6 +3,7 @@ import type { AxiosResponse } from "axios";
 import { AxiosError, AxiosHeaders } from "axios";
 import { expect } from "chai";
 import fs from "fs";
+import { describe, it } from "node:test";
 import path from "path";
 import { stub } from "sinon";
 import { resolveTestDirPath } from "../../test/util.js";

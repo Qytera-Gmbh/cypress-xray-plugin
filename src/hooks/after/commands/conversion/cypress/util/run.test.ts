@@ -1,5 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { describe, it } from "node:test";
 import path from "path";
 import type { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api.js";
 import { CypressStatus } from "../../../../../../types/cypress/status.js";

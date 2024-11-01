@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { describe, it } from "node:test";
 import path from "path";
 import { getMockedXrayClient } from "../../../../test/mocks.js";
 import type { Failable } from "../../../hooks/command.js";

@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { describe, it } from "node:test";
 import path from "path";
 import { LoggedError, errorMessage, isLoggedError } from "./errors.js";
 
