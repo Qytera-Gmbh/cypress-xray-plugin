@@ -1,13 +1,10 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import { describe, it } from "node:test";
+import assert from "node:assert";
+import { beforeEach, describe, it } from "node:test";
 import path from "path";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks.js";
 import { Level } from "../../util/logging.js";
 import { JwtCredentials } from "./credentials.js";
-
-chai.use(chaiAsPromised);
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
     await describe(JwtCredentials.name, async () => {
@@ -34,7 +31,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                     status: HttpStatusCode.Found,
                     statusText: HttpStatusCode[HttpStatusCode.Found],
                 });
-                await expect(credentials.getAuthorizationHeader()).to.eventually.deep.eq({
+                assert.deepEqual(await credentials.getAuthorizationHeader(), {
                     ["Authorization"]:
                         "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
                 });
@@ -55,11 +52,11 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                     ["Authorization"]:
                         "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
                 };
-                await expect(Promise.all([header1, header2])).to.eventually.deep.eq([
+                assert.deepEqual(await Promise.all([header1, header2]), [
                     expectedHeader,
                     expectedHeader,
                 ]);
-                expect(restClient.post).to.have.been.calledOnce;
+                assert.ok(restClient.post.callCount === 1);
             });
 
             await it("handles unparseable tokens", async () => {
@@ -71,9 +68,9 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                     status: HttpStatusCode.Found,
                     statusText: HttpStatusCode[HttpStatusCode.Found],
                 });
-                await expect(credentials.getAuthorizationHeader()).to.eventually.be.rejectedWith(
-                    "Failed to authenticate"
-                );
+                await assert.rejects(credentials.getAuthorizationHeader(), {
+                    message: "Failed to authenticate",
+                });
             });
 
             await it("handles bad responses", async () => {
@@ -95,13 +92,13 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                         }
                     )
                 );
-                await expect(credentials.getAuthorizationHeader()).to.eventually.be.rejectedWith(
-                    "Failed to authenticate"
-                );
-                expect(logger.message).to.have.been.calledWithExactly(
+                await assert.rejects(credentials.getAuthorizationHeader(), {
+                    message: "Failed to authenticate",
+                });
+                assert.deepEqual(logger.message.getCall(1).args, [
                     Level.ERROR,
-                    "Failed to authenticate: Request failed with status code 404"
-                );
+                    "Failed to authenticate: Request failed with status code 404",
+                ]);
             });
         });
     });

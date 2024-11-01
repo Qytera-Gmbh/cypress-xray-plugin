@@ -64,14 +64,12 @@
     "devDependencies": {
         "@bahmutov/cypress-esbuild-preprocessor": "^2.2.3",
         "@types/chai": "^5.0.1",
-        "@types/chai-as-promised": "^8.0.1",
         "@types/node": "^22.7.4",
         "@types/semver": "^7.5.8",
-        "@types/sinon-chai": "^4.0.0",
+        "@types/sinon": "^17.0.3",
         "@typescript-eslint/eslint-plugin": "^8.8.0",
         "@typescript-eslint/parser": "^8.8.0",
         "chai": "^5.1.2",
-        "chai-as-promised": "^8.0.0",
         "cypress": "^13.14.1",
         "cypress-on-fix": "^1.0.3",
         "dotenv": "^16.4.5",
@@ -82,7 +80,6 @@
         "nyc": "^17.0.0",
         "shx": "^0.3.4",
         "sinon": "^19.0.2",
-        "sinon-chai": "^4.0.0",
         "ts-node": "^10.9.2",
         "typescript": "^5.5.4"
     }
