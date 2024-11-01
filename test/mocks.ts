@@ -1,10 +1,10 @@
 import type { AxiosRequestConfig } from "axios";
 import chai from "chai";
-import type { SinonStub, SinonStubbedInstance} from "sinon";
+import type { SinonStub, SinonStubbedInstance } from "sinon";
 import { restore, stub } from "sinon";
 import sinonChai from "sinon-chai";
 import { JwtCredentials } from "../src/client/authentication/credentials";
-import { AxiosRestClient } from "../src/client/https/requests";
+import { AxiosRestClient } from "../src/client/https/https";
 import type { JiraClient } from "../src/client/jira/jira-client";
 import type { XrayClient } from "../src/client/xray/xray-client";
 import type {
@@ -19,8 +19,8 @@ import type { XrayTestExecutionResults } from "../src/types/xray/import-test-exe
 import type { CucumberMultipartFeature } from "../src/types/xray/requests/import-execution-cucumber-multipart";
 import type { MultipartInfo } from "../src/types/xray/requests/import-execution-multipart-info";
 import { dedent } from "../src/util/dedent";
-import * as logging from "../src/util/logging";
 import type { Logger } from "../src/util/logging";
+import * as logging from "../src/util/logging";
 
 chai.use(sinonChai);
 

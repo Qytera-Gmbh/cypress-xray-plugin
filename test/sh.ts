@@ -1,4 +1,3 @@
-import chalk from "chalk";
 import * as childProcess from "child_process";
 import fs from "fs";
 import path from "path";
@@ -7,6 +6,7 @@ import { TEST_TMP_DIR } from "./util";
 
 const ENV_BACKUP = { ...process.env };
 
+import ansiColors from "ansi-colors";
 import "dotenv/config";
 
 const CYPRESS_EXECUTABLE = path.join(__dirname, "..", "node_modules", ".bin", "cypress");
@@ -43,7 +43,7 @@ const E2E_FILE = dedent(`
 `);
 
 const COMMANDS_FILE = dedent(`
-    import "cypress-xray-plugin/commands";
+    // Nothing.
 `);
 
 export function setupCypressProject(project: {
@@ -180,11 +180,11 @@ export function runCypress(
         if (result.error) {
             throw new Error(
                 dedent(`
-                    Cypress command finished with unexpected non-zero status code ${chalk.red(
-                        result.status
+                    Cypress command finished with unexpected non-zero status code ${ansiColors.red(
+                        String(result.status)
                     )}:
 
-                        ${chalk.red(result.error.toString())}
+                        ${ansiColors.red(result.error.toString())}
 
                         stdout:
 
@@ -198,8 +198,8 @@ export function runCypress(
         }
         throw new Error(
             dedent(`
-                Cypress command finished with unexpected non-zero status code ${chalk.red(
-                    result.status
+                Cypress command finished with unexpected non-zero status code ${ansiColors.red(
+                    String(result.status)
                 )}
 
                     stdout:

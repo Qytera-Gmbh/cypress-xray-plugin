@@ -14,7 +14,7 @@ import type { XrayLicenseStatus } from "../../types/xray/responses/license";
 import { dedent } from "../../util/dedent";
 import { LOG, Level } from "../../util/logging";
 import type { HttpCredentials } from "../authentication/credentials";
-import type { AxiosRestClient } from "../https/requests";
+import type { AxiosRestClient } from "../https/https";
 import { loggedRequest } from "../util";
 import type { XrayClient } from "./xray-client";
 import { AbstractXrayClient } from "./xray-client";

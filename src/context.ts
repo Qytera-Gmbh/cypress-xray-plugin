@@ -1,11 +1,10 @@
-import type {
-    HttpCredentials} from "./client/authentication/credentials";
+import type { HttpCredentials } from "./client/authentication/credentials";
 import {
     BasicAuthCredentials,
     JwtCredentials,
     PatCredentials,
 } from "./client/authentication/credentials";
-import { AxiosRestClient } from "./client/https/requests";
+import { AxiosRestClient } from "./client/https/https";
 import type { JiraClient } from "./client/jira/jira-client";
 import { BaseJiraClient } from "./client/jira/jira-client";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud";
@@ -26,21 +25,14 @@ import type {
 } from "./types/plugin";
 import type { XrayEvidenceItem } from "./types/xray/import-test-execution-results";
 import { dedent } from "./util/dedent";
-import type {
-    CucumberPreprocessorArgs,
-    CucumberPreprocessorExports} from "./util/dependencies";
-import {
-    importOptionalDependency,
-} from "./util/dependencies";
+import type { CucumberPreprocessorArgs, CucumberPreprocessorExports } from "./util/dependencies";
+import { importOptionalDependency } from "./util/dependencies";
 import { errorMessage } from "./util/errors";
 import type { ExecutableGraph } from "./util/graph/executable-graph";
 import { HELP } from "./util/help";
 import type { Logger } from "./util/logging";
 import { LOG, Level } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asObject, asString, parse } from "./util/parsing";
-
-// REMOVE IN VERSION 8.0.0
-/* eslint-disable @typescript-eslint/no-deprecated */
 
 export interface EvidenceCollection {
     addEvidence(issueKey: string, evidence: XrayEvidenceItem): void;
@@ -148,11 +140,6 @@ export function initJiraOptions(
         attachVideos:
             parse(env, ENV_NAMES.jira.attachVideos, asBoolean) ?? options.attachVideos ?? false,
         fields: {
-            description:
-                parse(env, ENV_NAMES.jira.fields.description, asString) ??
-                options.fields?.description,
-            labels: parse(env, ENV_NAMES.jira.fields.labels, asString) ?? options.fields?.labels,
-            summary: parse(env, ENV_NAMES.jira.fields.summary, asString) ?? options.fields?.summary,
             testEnvironments:
                 parse(env, ENV_NAMES.jira.fields.testEnvironments, asString) ??
                 options.fields?.testEnvironments,
@@ -162,25 +149,8 @@ export function initJiraOptions(
         projectKey: projectKey,
         testExecutionIssue:
             parse(env, ENV_NAMES.jira.testExecutionIssue, asObject) ?? options.testExecutionIssue,
-        testExecutionIssueDescription:
-            parse(env, ENV_NAMES.jira.testExecutionIssueDescription, asString) ??
-            options.testExecutionIssueDescription,
-        testExecutionIssueKey:
-            parse(env, ENV_NAMES.jira.testExecutionIssueKey, asString) ??
-            options.testExecutionIssueKey,
-        testExecutionIssueSummary:
-            parse(env, ENV_NAMES.jira.testExecutionIssueSummary, asString) ??
-            options.testExecutionIssueSummary,
-        testExecutionIssueType:
-            parse(env, ENV_NAMES.jira.testExecutionIssueType, asString) ??
-            options.testExecutionIssueType ??
-            "Test Execution",
         testPlanIssueKey:
             parse(env, ENV_NAMES.jira.testPlanIssueKey, asString) ?? options.testPlanIssueKey,
-        testPlanIssueType:
-            parse(env, ENV_NAMES.jira.testPlanIssueType, asString) ??
-            options.testPlanIssueType ??
-            "Test Plan",
         url: parse(env, ENV_NAMES.jira.url, asString) ?? options.url,
     };
 }
@@ -249,10 +219,6 @@ export function initXrayOptions(
         testEnvironments:
             parse(env, ENV_NAMES.xray.testEnvironments, asArrayOfStrings) ??
             options?.testEnvironments,
-        uploadRequests:
-            parse(env, ENV_NAMES.xray.uploadRequests, asBoolean) ??
-            options?.uploadRequests ??
-            false,
         uploadResults:
             parse(env, ENV_NAMES.xray.uploadResults, asBoolean) ?? options?.uploadResults ?? true,
         uploadScreenshots:

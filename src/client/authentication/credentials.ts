@@ -1,18 +1,20 @@
-import type { StringMap } from "../../types/util";
 import { encode } from "../../util/base64";
 import { LOG, Level } from "../../util/logging";
-import type { AxiosRestClient } from "../https/requests";
+import type { AxiosRestClient } from "../https/https";
 import { loggedRequest } from "../util";
 
 /**
- * A basic HTTP header.
+ * A basic HTTP authorization header.
+ *
  * @example
+ *
  * ```ts
- *   { "Authorization": "Bearer xyz" }
- *   { "Content-Type": "application/json" }
+ * { "Authorization": "Bearer xyz" }
  * ```
  */
-export type HttpHeader = StringMap<string>;
+interface AuthorizationHeader {
+    ["Authorization"]: string;
+}
 
 /**
  * The interface which all credential classes must implement. All credentials must be usable in an
@@ -24,7 +26,7 @@ export interface HttpCredentials {
      *
      * @returns the HTTP header value
      */
-    getAuthorizationHeader(): HttpHeader | Promise<HttpHeader>;
+    getAuthorizationHeader(): AuthorizationHeader | Promise<AuthorizationHeader>;
 }
 
 /**
@@ -44,7 +46,7 @@ export class BasicAuthCredentials implements HttpCredentials {
         this.encodedCredentials = encode(`${username}:${password}`);
     }
 
-    public getAuthorizationHeader(): HttpHeader {
+    public getAuthorizationHeader(): AuthorizationHeader {
         return {
             ["Authorization"]: `Basic ${this.encodedCredentials}`,
         };
@@ -66,7 +68,7 @@ export class PatCredentials implements HttpCredentials {
         this.token = token;
     }
 
-    public getAuthorizationHeader(): HttpHeader {
+    public getAuthorizationHeader(): AuthorizationHeader {
         return {
             ["Authorization"]: `Bearer ${this.token}`,
         };
@@ -124,7 +126,7 @@ export class JwtCredentials implements HttpCredentials {
         }
     }
 
-    public async getAuthorizationHeader(): Promise<HttpHeader> {
+    public async getAuthorizationHeader(): Promise<AuthorizationHeader> {
         if (!this.token) {
             this.token = this.fetchToken();
         }

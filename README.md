@@ -15,17 +15,17 @@
 
 Features include:
 
-  - upload test results to Xray
-    - attach screenshots as test execution evidence
-    - attach web requests as test execution evidence
-    - attach videos to test execution issues
-    - reuse existing test execution and test plan issues
-  - CI/CD ready
-    - no hardcoded credentials
-    - every option customizable in CLI
-  - Cucumber integration
-    - synchronization/upload of step definitions to Xray
-    - results upload as described above
+-   upload test results to Xray
+    -   attach screenshots as test execution evidence
+    -   attach web requests as test execution evidence
+    -   attach videos to test execution issues
+    -   reuse existing test execution and test plan issues
+-   CI/CD ready
+    -   no hardcoded credentials
+    -   every option customizable in CLI
+-   Cucumber integration
+    -   synchronization/upload of step definitions to Xray
+    -   results upload as described above
 
 ## Quick Setup
 
@@ -33,6 +33,35 @@ Run the following command to add the plugin to your project:
 
 ```sh
 npm install --save-dev cypress-xray-plugin
+```
+
+Then, configure the plugin in the Cypress project configuration:
+
+```js
+import { configureXrayPlugin } from "cypress-xray-plugin";
+
+export default defineConfig({
+    e2e: {
+        async setupNodeEvents(on, config) {
+            await configureXrayPlugin(on, config, {
+                jira: {
+                    projectKey: "PRJ",
+                    url: "https://example.org",
+                },
+            });
+        },
+    },
+});
+```
+
+Make sure you also configure your [credentials](https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#authentication) for Jira/Xray.
+
+To have the plugin upload test results, [link your test cases](https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/) to Xray tests by specifying the corresponding issue keys in the test titles:
+
+```js
+it("PRJ-42 My test", () => {
+    // ...
+});
 ```
 
 > [!NOTE]

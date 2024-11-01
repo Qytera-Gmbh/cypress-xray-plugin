@@ -1,5 +1,5 @@
 import type { HttpCredentials } from "./authentication/credentials";
-import type { AxiosRestClient } from "./https/requests";
+import type { AxiosRestClient } from "./https/https";
 
 /**
  * A basic client interface which stores credentials data used for communicating with a server.
