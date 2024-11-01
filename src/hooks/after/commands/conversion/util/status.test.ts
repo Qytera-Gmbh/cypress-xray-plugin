@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getXrayStatus } from "./status.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(getXrayStatus.name, async () => {
         await it("uses passed as default status name for passed tests", () => {
             expect(getXrayStatus("passed")).to.eq("passed");

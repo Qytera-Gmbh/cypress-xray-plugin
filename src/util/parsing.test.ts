@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { dedent } from "./dedent.js";
 import { asArrayOfStrings, asBoolean, asFloat, asInt, asObject } from "./parsing.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(asBoolean.name, async () => {
         await describe(true.toString(), async () => {
             await it("y", () => {

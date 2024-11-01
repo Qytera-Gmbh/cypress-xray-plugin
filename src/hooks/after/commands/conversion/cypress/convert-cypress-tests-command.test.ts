@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs, { readFileSync } from "fs";
 import { beforeEach, describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import Sinon from "sinon";
 import { getMockedLogger } from "../../../../../../test/mocks.js";
 import { expectToExist } from "../../../../../../test/util.js";
@@ -22,7 +22,7 @@ import { ConvertCypressTestsCommand } from "./convert-cypress-tests-command.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(ConvertCypressTestsCommand.name, async () => {
         let options: InternalCypressXrayPluginOptions;
         beforeEach(() => {

@@ -2,7 +2,7 @@ import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
 import { beforeEach, describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import type { SinonStubbedInstance } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks.js";
 import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results.js";
@@ -15,7 +15,7 @@ import type { AxiosRestClient } from "../https/https.js";
 import type { XrayClientServer } from "./xray-client-server.js";
 import { ServerClient } from "./xray-client-server.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(ServerClient.name, async () => {
         let restClient: SinonStubbedInstance<AxiosRestClient>;
         let client: XrayClientServer;

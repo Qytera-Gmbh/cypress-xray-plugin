@@ -4,7 +4,7 @@ import { AxiosError, AxiosHeaders } from "axios";
 import { expect } from "chai";
 import fs from "fs";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { stub } from "sinon";
 import { resolveTestDirPath } from "../../test/util.js";
 import { LoggedError } from "./errors.js";
@@ -101,7 +101,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             await it("writes to relative directories", () => {
                 const stderr = stub(console, "error");
                 const logger = new PluginLogger({
-                    logDirectory: path.relative(".", resolveTestDirPath("logs")),
+                    logDirectory: relative(".", resolveTestDirPath("logs")),
                 });
                 logger.logErrorToFile(
                     new Error(

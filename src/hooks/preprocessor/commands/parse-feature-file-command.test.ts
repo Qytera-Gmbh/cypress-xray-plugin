@@ -1,12 +1,12 @@
 import { expect } from "chai";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedLogger } from "../../../../test/mocks.js";
 import { dedent } from "../../../util/dedent.js";
 import { Level } from "../../../util/logging.js";
 import { ParseFeatureFileCommand } from "./parse-feature-file-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(ParseFeatureFileCommand.name, async () => {
         await it("displays errors for invalid feature files", async () => {
             const logger = getMockedLogger();

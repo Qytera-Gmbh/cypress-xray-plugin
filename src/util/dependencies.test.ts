@@ -1,9 +1,9 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import * as dependencies from "./dependencies.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await it("throws if a package is not installed", async () => {
         await assert.rejects(dependencies.importOptionalDependency("nonexistent"), {
             message: `Cannot find package 'nonexistent' imported from ${path.resolve(

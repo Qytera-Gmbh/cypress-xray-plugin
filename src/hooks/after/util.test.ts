@@ -1,12 +1,12 @@
 import { expect } from "chai";
 import fs from "fs";
 import { beforeEach, describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import type { CypressRunResultType } from "../../types/cypress/cypress.js";
 import { dedent } from "../../util/dedent.js";
 import { containsCucumberTest, containsCypressTest, getTestIssueKeys } from "./util.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(containsCypressTest.name, async () => {
         let result: CypressRunResultType;
 

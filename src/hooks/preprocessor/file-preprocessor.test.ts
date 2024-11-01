@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { beforeEach, describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks.js";
 import { assertIsInstanceOf } from "../../../test/util.js";
 import {
@@ -24,7 +24,7 @@ import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command.j
 import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command.js";
 import { addSynchronizationCommands } from "./file-preprocessor.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     let clients: ClientCombination;
     let options: InternalCypressXrayPluginOptions;
 

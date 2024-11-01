@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import { beforeEach, describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { SimpleDirectedEdge, SimpleDirectedGraph } from "./graph.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(SimpleDirectedGraph.name, async () => {
         let graph: SimpleDirectedGraph<number> = new SimpleDirectedGraph<number>();
 

@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import { beforeEach, describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { Queue } from "./queue.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     let queue = new Queue<number>();
 
     beforeEach(() => {

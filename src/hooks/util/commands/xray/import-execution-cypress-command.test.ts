@@ -1,13 +1,13 @@
 import { expect } from "chai";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks.js";
 import type { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results.js";
 import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info.js";
 import { ConstantCommand } from "../constant-command.js";
 import { ImportExecutionCypressCommand } from "./import-execution-cypress-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(ImportExecutionCypressCommand.name, async () => {
         await it("imports cypress xray json", async () => {
             const logger = getMockedLogger();

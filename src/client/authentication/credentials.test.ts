@@ -1,12 +1,12 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import assert from "node:assert";
 import { beforeEach, describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks.js";
 import { Level } from "../../util/logging.js";
 import { JwtCredentials } from "./credentials.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(JwtCredentials.name, async () => {
         let restClient = getMockedRestClient();
         let credentials: JwtCredentials = new JwtCredentials(

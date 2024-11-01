@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks.js";
 import { dedent } from "../../../../util/dedent.js";
 import { Level } from "../../../../util/logging.js";
@@ -10,7 +10,7 @@ import { EditIssueFieldCommand } from "./edit-issue-field-command.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(EditIssueFieldCommand.name, async () => {
         await it("edits issues", async () => {
             const logger = getMockedLogger();

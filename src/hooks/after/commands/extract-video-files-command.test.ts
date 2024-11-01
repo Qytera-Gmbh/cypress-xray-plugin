@@ -1,13 +1,13 @@
 import { expect } from "chai";
 import fs from "fs";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedLogger } from "../../../../test/mocks.js";
 import type { CypressRunResultType } from "../../../types/cypress/cypress.js";
 import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { ExtractVideoFilesCommand } from "./extract-video-files-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(ExtractVideoFilesCommand.name, async () => {
         await it("extracts video files", async () => {
             const logger = getMockedLogger();

@@ -1,13 +1,13 @@
 import { expect } from "chai";
 import { describe, it } from "node:test";
-import path from "path";
+import { relative } from "path";
 import { getMockedLogger } from "../../../../test/mocks.js";
 import { dedent } from "../../../util/dedent.js";
 import { Level } from "../../../util/logging.js";
 import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { GetLabelsToResetCommand } from "./get-labels-to-reset-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+await describe(relative(process.cwd(), import.meta.filename), async () => {
     await describe(GetLabelsToResetCommand.name, async () => {
         await it("returns labels of issues to reset", async () => {
             const logger = getMockedLogger();
