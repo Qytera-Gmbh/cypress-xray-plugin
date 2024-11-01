@@ -1,5 +1,5 @@
-import { JiraClient } from "../../../../client/jira/jira-client";
-import { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import type { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
 import { Command } from "../../../command";
 
 interface Parameters {

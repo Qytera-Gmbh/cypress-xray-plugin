@@ -1,7 +1,9 @@
-import { JiraClient } from "../../../../client/jira/jira-client";
-import { Attachment } from "../../../../types/jira/responses/attachment";
-import { Level, Logger } from "../../../../util/logging";
-import { Command, Computable } from "../../../command";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import type { Attachment } from "../../../../types/jira/responses/attachment";
+import type { Logger } from "../../../../util/logging";
+import { Level } from "../../../../util/logging";
+import type { Computable } from "../../../command";
+import { Command } from "../../../command";
 
 interface Parameters {
     jiraClient: JiraClient;

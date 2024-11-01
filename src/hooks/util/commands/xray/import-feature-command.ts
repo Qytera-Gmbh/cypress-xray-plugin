@@ -1,5 +1,5 @@
-import { XrayClient } from "../../../../client/xray/xray-client";
-import { ImportFeatureResponse } from "../../../../types/xray/responses/import-feature";
+import type { XrayClient } from "../../../../client/xray/xray-client";
+import type { ImportFeatureResponse } from "../../../../types/xray/responses/import-feature";
 import { dedent } from "../../../../util/dedent";
 import { Level } from "../../../../util/logging";
 import { Command } from "../../../command";

@@ -1,5 +1,6 @@
-import { Logger } from "../../../util/logging";
-import { Command, Computable, ComputableState, Stateful } from "../../command";
+import type { Logger } from "../../../util/logging";
+import type { Computable, ComputableState, Stateful } from "../../command";
+import { Command } from "../../command";
 
 interface Parameters<T> {
     fallbackOn: ComputableState[];

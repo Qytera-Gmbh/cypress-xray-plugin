@@ -1,4 +1,4 @@
-import { DateTimeIso } from "../util";
+import type { DateTimeIso } from "../util";
 
 /**
  * Taken from:

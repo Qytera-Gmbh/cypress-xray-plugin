@@ -1,6 +1,6 @@
-import * as childProcess from "node:child_process";
-import fs from "node:fs";
-import path from "node:path";
+import * as childProcess from "child_process";
+import fs from "fs";
+import path from "path";
 import { dedent } from "../src/util/dedent";
 import { TEST_TMP_DIR } from "./util";
 

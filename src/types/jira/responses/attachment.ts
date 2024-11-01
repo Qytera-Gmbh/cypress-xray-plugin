@@ -1,5 +1,5 @@
-import { DateTimeIso } from "../../util";
-import { User } from "./user";
+import type { DateTimeIso } from "../../util";
+import type { User } from "./user";
 
 /**
  * An attachment response.

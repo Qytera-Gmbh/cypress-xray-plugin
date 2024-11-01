@@ -2,8 +2,8 @@ import { expect } from "chai";
 import fs from "fs";
 import path from "path";
 import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks";
-import { CucumberMultipartFeature } from "../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
+import type { CucumberMultipartFeature } from "../../../../types/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
 import { ConstantCommand } from "../constant-command";
 import { ImportExecutionCucumberCommand } from "./import-execution-cucumber-command";
 

@@ -1,4 +1,4 @@
-import { Scenario } from "@cucumber/messages";
+import type { Scenario } from "@cucumber/messages";
 
 export function getCucumberScenarioIssueTags(
     scenario: Scenario,

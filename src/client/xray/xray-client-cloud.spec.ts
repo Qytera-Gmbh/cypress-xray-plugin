@@ -2,19 +2,19 @@ import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs";
-import path from "node:path";
-import { SinonStubbedInstance } from "sinon";
+import path from "path";
+import type { SinonStubbedInstance } from "sinon";
 import { getMockedJwtCredentials, getMockedLogger, getMockedRestClient } from "../../../test/mocks";
-import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
-import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import {
+import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
+import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
+import type {
     MultipartInfo,
     MultipartInfoCloud,
 } from "../../types/xray/requests/import-execution-multipart-info";
-import { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
+import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
 import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
-import { AxiosRestClient } from "../https/https";
+import type { AxiosRestClient } from "../https/https";
 import { XrayClientCloud } from "./xray-client-cloud";
 
 chai.use(chaiAsPromised);

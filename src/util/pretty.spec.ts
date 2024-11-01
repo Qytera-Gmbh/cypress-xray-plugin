@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import path from "node:path";
+import path from "path";
 import { prettyPadObjects, prettyPadValues } from "./pretty";
 
 describe(path.relative(process.cwd(), __filename), () => {

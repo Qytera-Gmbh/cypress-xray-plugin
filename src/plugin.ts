@@ -14,8 +14,8 @@ import {
 import { addUploadCommands } from "./hooks/after/after-run";
 import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
 import { PluginTaskListener } from "./tasks/tasks";
-import { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
-import {
+import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
+import type {
     CypressXrayPluginOptions,
     InternalCypressXrayPluginOptions,
     InternalPluginOptions,

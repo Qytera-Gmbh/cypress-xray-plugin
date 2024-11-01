@@ -1,4 +1,4 @@
-import { MaybeFunction } from "../types/util";
+import type { MaybeFunction } from "../types/util";
 
 /**
  * If the value is a function, evaluates it and returns the result. Otherwise, the value will be

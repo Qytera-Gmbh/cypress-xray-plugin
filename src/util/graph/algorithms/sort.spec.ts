@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import path from "node:path";
+import path from "path";
 import { SimpleDirectedGraph } from "../graph";
 import { computeTopologicalOrder, traverse } from "./sort";
 

@@ -1,6 +1,6 @@
-import { EventEmitter } from "node:events";
+import { EventEmitter } from "events";
 import { isSkippedError } from "../util/errors";
-import { Logger } from "../util/logging";
+import type { Logger } from "../util/logging";
 import { unknownToString } from "../util/string";
 
 /**

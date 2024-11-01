@@ -1,7 +1,7 @@
 import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import path from "node:path";
+import path from "path";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
 import { Level } from "../../util/logging";
 import { JwtCredentials } from "./credentials";
