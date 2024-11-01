@@ -4,8 +4,8 @@ import path from "path";
 import { dedent } from "../../../../../util/dedent.js";
 import { buildMultipartInfoCloud, buildMultipartInfoServer } from "./multipart-info.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
-    await describe(buildMultipartInfoCloud.name, async async async async async async async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(buildMultipartInfoCloud.name, async () => {
         await it("adds default information", () => {
             const info = buildMultipartInfoCloud(
                 {
@@ -209,7 +209,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async (
         });
     });
 
-    await describe(buildMultipartInfoServer.name, async async async async async async async async () => {
+    await describe(buildMultipartInfoServer.name, async () => {
         await it("adds default information", () => {
             const info = buildMultipartInfoServer(
                 {

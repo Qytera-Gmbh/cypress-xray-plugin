@@ -4,9 +4,9 @@ import path from "path";
 import { dedent } from "./dedent.js";
 import { asArrayOfStrings, asBoolean, asFloat, asInt, asObject } from "./parsing.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async async async async () => {
-    await describe(asBoolean.name, async async async () => {
-        await describe(true.toString(), async async async async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(asBoolean.name, async () => {
+        await describe(true.toString(), async () => {
             await it("y", () => {
                 expect(asBoolean("y")).to.be.true;
             });
@@ -23,7 +23,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
                 expect(asBoolean("on")).to.be.true;
             });
         });
-        await describe(false.toString(), async async async async async () => {
+        await describe(false.toString(), async () => {
             await it("n", () => {
                 expect(asBoolean("n")).to.be.false;
             });
@@ -44,7 +44,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
             expect(() => asBoolean("hi")).to.throw("Failed to parse boolean value from string: hi");
         });
     });
-    await describe(asFloat.name, async async async () => {
+    await describe(asFloat.name, async () => {
         await it("10", () => {
             expect(asFloat("10")).to.eq(10.0);
         });
@@ -55,7 +55,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
             expect(asFloat("hi")).to.be.NaN;
         });
     });
-    await describe(asInt.name, async async async () => {
+    await describe(asInt.name, async () => {
         await it("10", () => {
             expect(asInt("10")).to.eq(10);
         });
@@ -66,7 +66,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
             expect(asInt("hi")).to.be.NaN;
         });
     });
-    await describe(asArrayOfStrings.name, async async async async () => {
+    await describe(asArrayOfStrings.name, async () => {
         await it("parses arrays containing primitives", () => {
             expect(asArrayOfStrings([false, 5, 6, "hello", Symbol("anubis")])).to.deep.eq([
                 "false",
@@ -104,7 +104,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
             );
         });
     });
-    await describe(asObject.name, async async async async async () => {
+    await describe(asObject.name, async () => {
         await it("parses objects", () => {
             expect(asObject({ hello: 5, something: { nested: "hi" } })).to.deep.eq({
                 hello: 5,

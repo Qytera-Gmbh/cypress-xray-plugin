@@ -11,7 +11,7 @@ import { EditIssueFieldCommand } from "./edit-issue-field-command.js";
 chai.use(chaiAsPromised);
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(EditIssueFieldCommand.name, async async async () => {
+    await describe(EditIssueFieldCommand.name, async () => {
         await it("edits issues", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();

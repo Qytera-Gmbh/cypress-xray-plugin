@@ -5,7 +5,7 @@ import { dedent } from "./dedent.js";
 import { unknownToString } from "./string.js";
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(unknownToString.name, async async async async async async async async () => {
+    await describe(unknownToString.name, async () => {
         await it("string", () => {
             expect(unknownToString("hi")).to.eq("hi");
         });

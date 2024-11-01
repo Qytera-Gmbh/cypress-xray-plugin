@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import path from "path";
 import { Queue } from "./queue.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async async async async async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
     let queue = new Queue<number>();
 
     beforeEach(() => {
@@ -19,7 +19,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         });
     });
 
-    await describe(queue.dequeue.name, async async () => {
+    await describe(queue.dequeue.name, async () => {
         await it("dequeues elements", () => {
             queue
                 .enqueue(0)
@@ -47,7 +47,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         });
     });
 
-    await describe(queue.peek.name, async async () => {
+    await describe(queue.peek.name, async () => {
         await it("peeks elements", () => {
             queue.enqueue(0);
             expect(queue.peek()).to.eq(0);
@@ -76,7 +76,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         });
     });
 
-    await describe(queue.has.name, async async () => {
+    await describe(queue.has.name, async () => {
         await it("returns true for known elements", () => {
             queue
                 .enqueue(0)
@@ -105,7 +105,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         });
     });
 
-    await describe(queue.find.name, async async () => {
+    await describe(queue.find.name, async () => {
         await it("finds elements", () => {
             queue.enqueue(0).enqueue(1).enqueue(2);
             expect(queue.find((e) => e === 0)).to.eq(0);

@@ -1,6 +1,7 @@
-import chai, { expect } from "chai"; import { describe, it } from "node:test";
+import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import EventEmitter from "events";
+import { describe, it } from "node:test";
 import path from "path";
 import { getMockedLogger } from "../../test/mocks.js";
 import { SkippedError } from "../util/errors.js";
@@ -8,8 +9,8 @@ import { Command, ComputableState } from "./command.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(Command.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(Command.name, async () => {
         await it("computes the result on compute call", async () => {
             const logger = getMockedLogger();
             class ArithmeticCommand extends Command<number, null> {
@@ -103,7 +104,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), () => {
             await new Promise<void>((resolve) => {
                 resolve();
             });
-            eventEmitter.emawait it("go");
+            eventEmitter.emit("go");
             expect(await computePromise).to.eq(42);
             expect(command.getState()).to.eq(ComputableState.SUCCEEDED);
         });

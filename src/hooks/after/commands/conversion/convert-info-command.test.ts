@@ -5,8 +5,8 @@ import { getMockedLogger } from "../../../../../test/mocks.js";
 import { ConstantCommand } from "../../../util/commands/constant-command.js";
 import { ConvertInfoCloudCommand, ConvertInfoServerCommand } from "./convert-info-command.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
-    await describe(ConvertInfoServerCommand.name, async async async async async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(ConvertInfoServerCommand.name, async () => {
         await it("converts cucumber results into server cucumber info data", async () => {
             const logger = getMockedLogger();
             const command = new ConvertInfoServerCommand(
@@ -193,7 +193,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async (
         });
     });
 
-    await describe(ConvertInfoCloudCommand.name, async async async () => {
+    await describe(ConvertInfoCloudCommand.name, async () => {
         await it("converts cucumber results into cucumber info data", async () => {
             const logger = getMockedLogger();
             const command = new ConvertInfoCloudCommand(

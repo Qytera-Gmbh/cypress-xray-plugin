@@ -8,7 +8,7 @@ import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { GetSummariesToResetCommand } from "./get-summaries-to-reset-command.js";
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(GetSummariesToResetCommand.name, async async () => {
+    await describe(GetSummariesToResetCommand.name, async () => {
         await it("returns summaries of issues to reset", async () => {
             const logger = getMockedLogger();
             const command = new GetSummariesToResetCommand(

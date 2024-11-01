@@ -6,8 +6,8 @@ import type { CypressRunResultType } from "../../types/cypress/cypress.js";
 import { dedent } from "../../util/dedent.js";
 import { containsCucumberTest, containsCypressTest, getTestIssueKeys } from "./util.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async async () => {
-    await describe(containsCypressTest.name, async async async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(containsCypressTest.name, async () => {
         let result: CypressRunResultType;
 
         beforeEach(() => {
@@ -42,7 +42,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         });
     });
 
-    await describe(containsCucumberTest.name, async async async async () => {
+    await describe(containsCucumberTest.name, async () => {
         await it("returns true for Cucumber runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
@@ -72,7 +72,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async a
         });
     });
 
-    await describe(getTestIssueKeys.name, async async async () => {
+    await describe(getTestIssueKeys.name, async () => {
         await it("extracts single test issue keys", () => {
             expect(getTestIssueKeys("this is CYP-123 a test", "CYP")).to.deep.eq(["CYP-123"]);
         });

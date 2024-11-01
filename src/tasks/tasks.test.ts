@@ -9,7 +9,7 @@ import { dedent } from "../util/dedent.js";
 import { Level } from "../util/logging.js";
 import * as tasks from "./tasks.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
     await describe(tasks.enqueueTask.name, async () => {
         await it("uses the current test title by default", () => {
             const { cy, cypress } = getMockedCypress();
@@ -24,7 +24,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async (
         });
     });
 
-    await describe(tasks.PluginTaskListener.name, async async async async async () => {
+    await describe(tasks.PluginTaskListener.name, async () => {
         await it("handles single evidence calls for tests with issue key", () => {
             const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
             const logger = getMockedLogger();

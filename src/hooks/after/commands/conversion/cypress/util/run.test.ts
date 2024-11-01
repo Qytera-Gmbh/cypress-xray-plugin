@@ -8,8 +8,8 @@ import { getTestRunData_V12, getTestRunData_V13 } from "./run.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
-    await describe(getTestRunData_V12.name, async async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(getTestRunData_V12.name, async () => {
         const passedResult: RunResult_V12 = {
             error: null,
             hooks: [],
@@ -215,7 +215,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async (
         });
     });
 
-    await describe(getTestRunData_V13.name, async async async () => {
+    await describe(getTestRunData_V13.name, async () => {
         const passedResult: CypressCommandLine.RunResult = {
             error: null,
             reporter: "spec",

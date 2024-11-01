@@ -9,8 +9,8 @@ import { AttachFilesCommand } from "./attach-files-command.js";
 
 chai.use(chaiAsPromised);
 
-await describe(path.relative(process.cwd(), import.meta.filename), () => {
-    await describe(AttachFilesCommand.name, () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(AttachFilesCommand.name, async () => {
         await it("attaches files", async () => {
             const logger = getMockedLogger();
             const jiraClient = getMockedJiraClient();

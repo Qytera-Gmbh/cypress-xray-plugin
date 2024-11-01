@@ -16,7 +16,7 @@ import type { XrayClientServer } from "./xray-client-server.js";
 import { ServerClient } from "./xray-client-server.js";
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(ServerClient.name, async async async async async async () => {
+    await describe(ServerClient.name, async () => {
         let restClient: SinonStubbedInstance<AxiosRestClient>;
         let client: XrayClientServer;
 
@@ -29,7 +29,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             );
         });
 
-        await describe("import execution", async async () => {
+        await describe("import execution", async () => {
             await it("calls the correct endpoint", async () => {
                 getMockedLogger();
                 restClient.post.resolves({
@@ -123,7 +123,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("import execution multipart", async async () => {
+        await describe("import execution multipart", async () => {
             await it("calls the correct endpoint", async () => {
                 getMockedLogger();
                 restClient.post.resolves({
@@ -208,7 +208,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("import execution cucumber multipart", async async () => {
+        await describe("import execution cucumber multipart", async () => {
             await it("calls the correct endpoint", async () => {
                 getMockedLogger();
                 restClient.post.resolves({
@@ -276,7 +276,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("import feature", async async async async async async async () => {
+        await describe("import feature", async () => {
             await it("calls the correct endpoint", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -546,7 +546,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("get test execution", async async () => {
+        await describe("get test execution", async () => {
             await it("returns tests", async () => {
                 getMockedLogger();
                 restClient.get.onFirstCall().resolves({
@@ -651,7 +651,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("get xray license", async async () => {
+        await describe("get xray license", async () => {
             await it("returns the license", async () => {
                 restClient.get.resolves({
                     config: { headers: new AxiosHeaders() },

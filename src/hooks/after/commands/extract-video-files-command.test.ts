@@ -8,7 +8,7 @@ import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { ExtractVideoFilesCommand } from "./extract-video-files-command.js";
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(ExtractVideoFilesCommand.name, async async () => {
+    await describe(ExtractVideoFilesCommand.name, async () => {
         await it("extracts video files", async () => {
             const logger = getMockedLogger();
             const runResults = JSON.parse(

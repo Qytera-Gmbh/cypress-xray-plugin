@@ -99,8 +99,8 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
         };
     });
 
-    await describe(addUploadCommands.name, async async async () => {
-        await describe("cypress", async async async async async async async async () => {
+    await describe(addUploadCommands.name, async () => {
+        await describe("cypress", async () => {
             let result: CypressRunResultType;
 
             beforeEach(() => {
@@ -487,7 +487,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("cucumber", async async async async async () => {
+        await describe("cucumber", async () => {
             let cypressResult: CypressRunResultType;
             let cucumberResult: CucumberMultipartFeature[];
 
@@ -515,7 +515,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                 ) as CucumberMultipartFeature[];
             });
 
-            await describe("server", async async async async async async async () => {
+            await describe("server", async () => {
                 await it("adds commands necessary for cucumber results upload", async () => {
                     useFakeTimers(new Date(12345));
                     const graph = new ExecutableGraph<Command>();
@@ -857,7 +857,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
                 });
             });
 
-            await describe("cloud", async async () => {
+            await describe("cloud", async () => {
                 beforeEach(() => {
                     clients.kind = "cloud";
                 });

@@ -25,7 +25,7 @@ import { XrayClientCloud } from "./xray-client-cloud.js";
 chai.use(chaiAsPromised);
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(XrayClientCloud.name, async async async async async async () => {
+    await describe(XrayClientCloud.name, async () => {
         let client: XrayClientCloud;
         let restClient: SinonStubbedInstance<AxiosRestClient>;
 
@@ -36,7 +36,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             client = new XrayClientCloud(credentials, restClient);
         });
 
-        await describe("import execution", async async async () => {
+        await describe("import execution", async () => {
             await it("calls the correct endpoint", async () => {
                 getMockedLogger();
                 restClient.post.onFirstCall().resolves({
@@ -173,7 +173,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("import execution multipart", async async async () => {
+        await describe("import execution multipart", async () => {
             await it("calls the correct endpoint", async () => {
                 getMockedLogger();
                 restClient.post.onFirstCall().resolves({
@@ -281,7 +281,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("import execution cucumber multipart", async async async () => {
+        await describe("import execution cucumber multipart", async () => {
             await it("calls the correct endpoint", async () => {
                 getMockedLogger();
                 restClient.post.onFirstCall().resolves({
@@ -389,7 +389,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("import feature", async async async async async async () => {
+        await describe("import feature", async () => {
             await it("calls the correct endpoint", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -618,7 +618,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("get test types", async async async async () => {
+        await describe("get test types", async () => {
             await it("calls the correct endpoint", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },
@@ -846,7 +846,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async () => {
             });
         });
 
-        await describe("get test results", async async async async () => {
+        await describe("get test results", async () => {
             await it("calls the correct endpoint", async () => {
                 restClient.post.onFirstCall().resolves({
                     config: { headers: new AxiosHeaders() },

@@ -7,7 +7,7 @@ import { Level } from "../../../../util/logging.js";
 import { ImportFeatureCommand } from "./import-feature-command.js";
 
 await describe(path.relative(process.cwd(), import.meta.filename), async () => {
-    await describe(ImportFeatureCommand.name, async async () => {
+    await describe(ImportFeatureCommand.name, async () => {
         await it("imports features", async () => {
             const logger = getMockedLogger();
             const xrayClient = getMockedXrayClient();

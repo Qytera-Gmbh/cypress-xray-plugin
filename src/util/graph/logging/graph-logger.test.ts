@@ -16,8 +16,8 @@ import { CapturingLogger, Level } from "../../logging.js";
 import { SimpleDirectedGraph } from "../graph.js";
 import { ChainingCommandGraphLogger, ChainingGraphLogger } from "./graph-logger.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
-    await describe(ChainingGraphLogger.name, async async async async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(ChainingGraphLogger.name, async () => {
         await it("logs correctly indented message chains", () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({ getFailure: () => new Error("A failed") });
@@ -245,7 +245,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async (
         });
     });
 
-    await describe(ChainingCommandGraphLogger.name, async async async () => {
+    await describe(ChainingCommandGraphLogger.name, async () => {
         class FailingCommand<R> extends Command<R, { message: string }> {
             protected computeResult(): R {
                 throw new Error(`No computing today: ${this.parameters.message}`);

@@ -10,9 +10,9 @@ import { resolveTestDirPath } from "../../test/util.js";
 import { LoggedError } from "./errors.js";
 import { CapturingLogger, Level, PluginLogger } from "./logging.js";
 
-await describe(path.relative(process.cwd(), import.meta.filename), async async () => {
-    await describe(PluginLogger.name, async async async () => {
-        await describe("message", async async () => {
+await describe(path.relative(process.cwd(), import.meta.filename), async () => {
+    await describe(PluginLogger.name, async () => {
+        await describe("message", async () => {
             await it("handles single line messages", () => {
                 const stdout = stub(console, "info");
                 const logger = new PluginLogger();
@@ -44,7 +44,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async (
             });
         });
 
-        await describe("logToFile", async async async () => {
+        await describe("logToFile", async () => {
             await it("writes to relative directories", () => {
                 const logger = new PluginLogger({
                     logDirectory: path.relative(".", resolveTestDirPath("logs")),
@@ -97,7 +97,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async (
             });
         });
 
-        await describe("logErrorToFile", async async async async async async () => {
+        await describe("logErrorToFile", async () => {
             await it("writes to relative directories", () => {
                 const stderr = stub(console, "error");
                 const logger = new PluginLogger({
@@ -265,7 +265,7 @@ await describe(path.relative(process.cwd(), import.meta.filename), async async (
         });
     });
 
-    await describe(CapturingLogger.name, async async async async () => {
+    await describe(CapturingLogger.name, async () => {
         await describe("message", async () => {
             await it("stores calls", () => {
                 const logger = new CapturingLogger();
