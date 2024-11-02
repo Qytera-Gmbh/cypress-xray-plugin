@@ -1,4 +1,4 @@
-import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
+import axios, { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import assert from "node:assert";
 import { readFileSync } from "node:fs";
 import { relative } from "node:path";
@@ -23,7 +23,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         let restClient: AxiosRestClient;
 
         beforeEach(() => {
-            restClient = new AxiosRestClient();
+            restClient = new AxiosRestClient(axios);
             const credentials = new JwtCredentials("abc", "xyz", "https://example.org", restClient);
             mock.method(credentials, "getAuthorizationHeader", () => {
                 return { ["Authorization"]: "ey12345" };

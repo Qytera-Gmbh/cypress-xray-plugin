@@ -1,12 +1,10 @@
-import * as BaseAxios from "axios";
+import axios, { AxiosHeaders, HttpStatusCode, type AxiosError, type AxiosResponse } from "axios";
 import FormData from "form-data";
 import assert from "node:assert";
 import { createReadStream } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import { stub } from "sinon";
-import { getMockedLogger } from "../../../test/mocks.js";
 import { LOCAL_SERVER } from "../../../test/server-config.js";
 import type { Logger } from "../../util/logging.js";
 import { Level, LOG } from "../../util/logging.js";
@@ -14,46 +12,55 @@ import { AxiosRestClient } from "./https.js";
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     beforeEach(() => {
-        BaseAxios.default.interceptors.request.clear();
-        BaseAxios.default.interceptors.response.clear();
+        axios.interceptors.request.clear();
+        axios.interceptors.response.clear();
     });
 
     await describe("get", async () => {
-        await it("returns the response", async () => {
-            const response: BaseAxios.AxiosResponse<string> = {
+        await it("returns the response", async (context) => {
+            const response: AxiosResponse<string> = {
                 config: {
-                    headers: new BaseAxios.AxiosHeaders(),
+                    headers: new AxiosHeaders(),
                 },
                 data: "Example domain 123",
                 headers: {},
-                status: BaseAxios.HttpStatusCode.Ok,
-                statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Ok],
+                status: HttpStatusCode.Ok,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
             };
-            const restClient = stub(BaseAxios.default.create());
-            stub(BaseAxios.default, "create").returns(restClient);
-            restClient.get.resolves(response);
-            const client = new AxiosRestClient();
+
+            context.mock.method(axios, "get", () => response);
+
+            const client = new AxiosRestClient(axios);
             assert.deepStrictEqual(await client.get("https://example.org"), response);
         });
 
         await it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
             context.mock.timers.enable({ apis: ["Date"] });
             context.mock.timers.tick(12345);
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            let i = 0;
+            const logToFile = context.mock.method(LOG, "logToFile", () => {
+                if (i++ == 0) {
+                    return "request.json";
+                }
+                return "response.json";
+            });
 
-            const logger = getMockedLogger();
-            logger.message.withArgs(Level.DEBUG, "Request:  request.json").onFirstCall().returns();
-            logger.message
-                .withArgs(Level.DEBUG, "Response: response.json")
-                .onSecondCall()
-                .returns();
-            logger.logToFile.onFirstCall().returns("request.json");
-            logger.logToFile.onSecondCall().returns("response.json");
-
-            const client = new AxiosRestClient({ debug: true });
+            const client = new AxiosRestClient(axios, { debug: true });
             await assert.rejects(client.get("https://localhost:1234"));
-            assert.strictEqual(logger.message.callCount, 2);
+            assert.strictEqual(message.mock.callCount(), 2);
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
+                Level.DEBUG,
+                "Request:  request.json",
+            ]);
+            assert.deepStrictEqual(message.mock.calls[1].arguments, [
+                Level.DEBUG,
+                "Response: response.json",
+            ]);
 
-            const requestBody = JSON.parse(logger.logToFile.getCall(0).args[0]) as unknown;
+            const requestBody = JSON.parse(
+                logToFile.mock.calls[0].arguments[0] as string
+            ) as unknown;
             assert.deepStrictEqual(requestBody, {
                 headers: {
                     ["Accept"]: "application/json, text/plain, */*",
@@ -63,27 +70,32 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             // Complicated assertion to handle different timezones on local and CI.
             const date = new Date();
             assert.strictEqual(
-                logger.logToFile.getCall(0).args[1],
+                logToFile.mock.calls[0].arguments[1],
                 `0${date.getHours().toString()}_00_12_GET_https_localhost_1234_request.json`
             );
 
-            const error = JSON.parse(logger.logToFile.getCall(1).args[0]) as BaseAxios.AxiosError;
+            const error = JSON.parse(logToFile.mock.calls[1].arguments[0] as string) as AxiosError;
             assert.strictEqual(error.code, "ECONNREFUSED");
             assert.strictEqual(error.config?.url, "https://localhost:1234");
             assert.strictEqual(error.config.method, "get");
             // Complicated assertion to handle different timezones on local and CI.
             assert.strictEqual(
-                logger.logToFile.getCall(1).args[1],
+                logToFile.mock.calls[1].arguments[1],
                 `0${date.getHours().toString()}_00_12_GET_https_localhost_1234_response.json`
             );
         });
 
-        await it("writes to a file on encountering axios errors if debug is disabled", async () => {
-            const logger = getMockedLogger();
-            const client = new AxiosRestClient();
+        await it("writes to a file on encountering axios errors if debug is disabled", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const logToFile = context.mock.method(
+                LOG,
+                "logToFile",
+                context.mock.fn<Logger["logToFile"]>()
+            );
+            const client = new AxiosRestClient(axios);
             await assert.rejects(client.get("https://localhost:1234"));
-            assert.strictEqual(logger.message.callCount, 1);
-            assert.strictEqual(logger.logToFile.callCount, 1);
+            assert.strictEqual(message.mock.callCount(), 1);
+            assert.strictEqual(logToFile.mock.callCount(), 1);
         });
 
         await it("logs progress", async (context) => {
@@ -91,22 +103,24 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             const message = context.mock.method(LOG, "message", context.mock.fn());
 
-            const stubbedAxios = stub(BaseAxios.default.create());
-            stub(BaseAxios.default, "create").returns(stubbedAxios);
-            const restClient = new AxiosRestClient();
-            stubbedAxios.get.onFirstCall().returns(
-                new Promise((resolve) => {
-                    setTimeout(() => {
-                        resolve({
-                            config: { headers: {} },
-                            data: "<html>ok</html>",
-                            headers: {},
-                            status: BaseAxios.HttpStatusCode.Ok,
-                            statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Found],
-                        });
-                    }, 23000);
-                })
+            context.mock.method(
+                axios,
+                "get",
+                () =>
+                    new Promise((resolve) => {
+                        setTimeout(() => {
+                            resolve({
+                                config: { headers: {} },
+                                data: "<html>ok</html>",
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Found],
+                            });
+                        }, 23000);
+                    })
             );
+
+            const restClient = new AxiosRestClient(axios);
 
             const promise = restClient.get("https://example.org");
 
@@ -126,20 +140,19 @@ await describe(relative(cwd(), import.meta.filename), async () => {
     });
 
     await describe("post", async () => {
-        await it("returns the response", async () => {
-            const client = new AxiosRestClient();
-            const response: BaseAxios.AxiosResponse<string> = {
+        await it("returns the response", async (context) => {
+            const response: AxiosResponse<string> = {
                 config: {
-                    headers: new BaseAxios.AxiosHeaders(),
+                    headers: new AxiosHeaders(),
                 },
                 data: "Example domain 123",
                 headers: {},
-                status: BaseAxios.HttpStatusCode.Ok,
-                statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Ok],
+                status: HttpStatusCode.Ok,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
             };
-            const restClient = stub(BaseAxios.default.create());
-            stub(BaseAxios.default, "create").returns(restClient);
-            restClient.post.resolves(response);
+
+            context.mock.method(axios, "post", () => response);
+            const client = new AxiosRestClient(axios);
             assert.deepStrictEqual(await client.post("https://example.org"), response);
         });
 
@@ -147,16 +160,16 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             context.mock.timers.enable({ apis: ["Date"] });
             context.mock.timers.tick(12345);
 
-            const logger = getMockedLogger();
-            logger.message.withArgs(Level.DEBUG, "Request:  request.json").onFirstCall().returns();
-            logger.message
-                .withArgs(Level.DEBUG, "Response: response.json")
-                .onSecondCall()
-                .returns();
-            logger.logToFile.onFirstCall().returns("request.json");
-            logger.logToFile.onSecondCall().returns("response.json");
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            let i = 0;
+            const logToFile = context.mock.method(LOG, "logToFile", () => {
+                if (i++ == 0) {
+                    return "request.json";
+                }
+                return "response.json";
+            });
 
-            const client = new AxiosRestClient({ debug: true });
+            const client = new AxiosRestClient(axios, { debug: true });
             await assert.rejects(
                 client.post("https://localhost:1234", {
                     five: 6,
@@ -165,9 +178,19 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     there: "!",
                 })
             );
-            assert.strictEqual(logger.message.callCount, 2);
+            assert.strictEqual(message.mock.callCount(), 2);
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
+                Level.DEBUG,
+                "Request:  request.json",
+            ]);
+            assert.deepStrictEqual(message.mock.calls[1].arguments, [
+                Level.DEBUG,
+                "Response: response.json",
+            ]);
 
-            const requestBody = JSON.parse(logger.logToFile.getCall(0).args[0]) as unknown;
+            const requestBody = JSON.parse(
+                logToFile.mock.calls[0].arguments[0] as string
+            ) as unknown;
             assert.deepStrictEqual(requestBody, {
                 body: {
                     five: 6,
@@ -183,26 +206,31 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             // Complicated assertion to handle different timezones on local and CI.
             const date = new Date();
             assert.strictEqual(
-                logger.logToFile.getCall(0).args[1],
+                logToFile.mock.calls[0].arguments[1],
                 `0${date.getHours().toString()}_00_12_POST_https_localhost_1234_request.json`
             );
 
-            const error = JSON.parse(logger.logToFile.getCall(1).args[0]) as BaseAxios.AxiosError;
+            const error = JSON.parse(logToFile.mock.calls[1].arguments[0] as string) as AxiosError;
             assert.strictEqual(error.code, "ECONNREFUSED");
             assert.strictEqual(error.config?.url, "https://localhost:1234");
             assert.strictEqual(error.config.method, "post");
             assert.strictEqual(
-                logger.logToFile.getCall(1).args[1],
+                logToFile.mock.calls[1].arguments[1],
                 `0${date.getHours().toString()}_00_12_POST_https_localhost_1234_response.json`
             );
         });
 
-        await it("writes to a file on encountering axios errors if debug is disabled", async () => {
-            const logger = getMockedLogger();
-            const client = new AxiosRestClient();
+        await it("writes to a file on encountering axios errors if debug is disabled", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const logToFile = context.mock.method(
+                LOG,
+                "logToFile",
+                context.mock.fn<Logger["logToFile"]>()
+            );
+            const client = new AxiosRestClient(axios);
             await assert.rejects(client.get("https://localhost:1234"));
-            assert.strictEqual(logger.message.callCount, 1);
-            assert.strictEqual(logger.logToFile.callCount, 1);
+            assert.strictEqual(message.mock.callCount(), 1);
+            assert.strictEqual(logToFile.mock.callCount(), 1);
         });
 
         await it("logs progress", async (context) => {
@@ -210,22 +238,24 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             const message = context.mock.method(LOG, "message", context.mock.fn());
 
-            const stubbedAxios = stub(BaseAxios.default.create());
-            stub(BaseAxios.default, "create").returns(stubbedAxios);
-            const restClient = new AxiosRestClient();
-            stubbedAxios.post.onFirstCall().returns(
-                new Promise((resolve) => {
-                    setTimeout(() => {
-                        resolve({
-                            config: { headers: {} },
-                            data: "<html>ok</html>",
-                            headers: {},
-                            status: BaseAxios.HttpStatusCode.Ok,
-                            statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Found],
-                        });
-                    }, 23000);
-                })
+            context.mock.method(
+                axios,
+                "post",
+                () =>
+                    new Promise((resolve) => {
+                        setTimeout(() => {
+                            resolve({
+                                config: { headers: {} },
+                                data: "<html>ok</html>",
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Found],
+                            });
+                        }, 23000);
+                    })
             );
+
+            const restClient = new AxiosRestClient(axios);
             const promise = restClient.post("https://example.org");
 
             await Promise.resolve();
@@ -244,20 +274,19 @@ await describe(relative(cwd(), import.meta.filename), async () => {
     });
 
     await describe("put", async () => {
-        await it("returns the response", async () => {
-            const client = new AxiosRestClient();
-            const response: BaseAxios.AxiosResponse<string> = {
+        await it("returns the response", async (context) => {
+            const client = new AxiosRestClient(axios);
+            const response: AxiosResponse<string> = {
                 config: {
-                    headers: new BaseAxios.AxiosHeaders(),
+                    headers: new AxiosHeaders(),
                 },
                 data: "Example domain 123",
                 headers: {},
-                status: BaseAxios.HttpStatusCode.Ok,
-                statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Ok],
+                status: HttpStatusCode.Ok,
+                statusText: HttpStatusCode[HttpStatusCode.Ok],
             };
-            const restClient = stub(BaseAxios.default.create());
-            stub(BaseAxios.default, "create").returns(restClient);
-            restClient.put.resolves(response);
+
+            context.mock.method(axios, "put", () => response);
             assert.deepStrictEqual(await client.put("https://example.org"), response);
         });
 
@@ -265,16 +294,16 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             context.mock.timers.enable({ apis: ["Date"] });
             context.mock.timers.tick(12345);
 
-            const logger = getMockedLogger();
-            logger.message.withArgs(Level.DEBUG, "Request:  request.json").onFirstCall().returns();
-            logger.message
-                .withArgs(Level.DEBUG, "Response: response.json")
-                .onSecondCall()
-                .returns();
-            logger.logToFile.onFirstCall().returns("request.json");
-            logger.logToFile.onSecondCall().returns("response.json");
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            let i = 0;
+            const logToFile = context.mock.method(LOG, "logToFile", () => {
+                if (i++ == 0) {
+                    return "request.json";
+                }
+                return "response.json";
+            });
 
-            const client = new AxiosRestClient({ debug: true });
+            const client = new AxiosRestClient(axios, { debug: true });
             await assert.rejects(
                 client.put("https://localhost:1234", {
                     five: 6,
@@ -283,9 +312,19 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     there: "!",
                 })
             );
-            assert.strictEqual(logger.message.callCount, 2);
+            assert.strictEqual(message.mock.callCount(), 2);
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
+                Level.DEBUG,
+                "Request:  request.json",
+            ]);
+            assert.deepStrictEqual(message.mock.calls[1].arguments, [
+                Level.DEBUG,
+                "Response: response.json",
+            ]);
 
-            const requestBody = JSON.parse(logger.logToFile.getCall(0).args[0]) as unknown;
+            const requestBody = JSON.parse(
+                logToFile.mock.calls[0].arguments[0] as string
+            ) as unknown;
             assert.deepStrictEqual(requestBody, {
                 body: {
                     five: 6,
@@ -301,27 +340,32 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             // Complicated assertion to handle different timezones on local and CI.
             const date = new Date();
             assert.strictEqual(
-                logger.logToFile.getCall(0).args[1],
+                logToFile.mock.calls[0].arguments[1],
                 `0${date.getHours().toString()}_00_12_PUT_https_localhost_1234_request.json`
             );
 
-            const error = JSON.parse(logger.logToFile.getCall(1).args[0]) as BaseAxios.AxiosError;
+            const error = JSON.parse(logToFile.mock.calls[1].arguments[0] as string) as AxiosError;
             assert.strictEqual(error.code, "ECONNREFUSED");
             assert.strictEqual(error.config?.url, "https://localhost:1234");
             assert.strictEqual(error.config.method, "put");
 
             assert.strictEqual(
-                logger.logToFile.getCall(1).args[1],
+                logToFile.mock.calls[1].arguments[1],
                 `0${date.getHours().toString()}_00_12_PUT_https_localhost_1234_response.json`
             );
         });
 
-        await it("writes to a file on encountering axios errors if debug is disabled", async () => {
-            const logger = getMockedLogger();
-            const client = new AxiosRestClient();
+        await it("writes to a file on encountering axios errors if debug is disabled", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const logToFile = context.mock.method(
+                LOG,
+                "logToFile",
+                context.mock.fn<Logger["logToFile"]>()
+            );
+            const client = new AxiosRestClient(axios);
             await assert.rejects(client.get("https://localhost:1234"));
-            assert.strictEqual(logger.message.callCount, 1);
-            assert.strictEqual(logger.logToFile.callCount, 1);
+            assert.strictEqual(message.mock.callCount(), 1);
+            assert.strictEqual(logToFile.mock.callCount(), 1);
         });
 
         await it("logs progress", async (context) => {
@@ -329,22 +373,24 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             const message = context.mock.method(LOG, "message", context.mock.fn());
 
-            const stubbedAxios = stub(BaseAxios.default.create());
-            stub(BaseAxios.default, "create").returns(stubbedAxios);
-            const restClient = new AxiosRestClient();
-            stubbedAxios.put.onFirstCall().returns(
-                new Promise((resolve) => {
-                    setTimeout(() => {
-                        resolve({
-                            config: { headers: {} },
-                            data: "<html>ok</html>",
-                            headers: {},
-                            status: BaseAxios.HttpStatusCode.Ok,
-                            statusText: BaseAxios.HttpStatusCode[BaseAxios.HttpStatusCode.Found],
-                        });
-                    }, 23000);
-                })
+            context.mock.method(
+                axios,
+                "put",
+                () =>
+                    new Promise((resolve) => {
+                        setTimeout(() => {
+                            resolve({
+                                config: { headers: {} },
+                                data: "<html>ok</html>",
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Found],
+                            });
+                        }, 23000);
+                    })
             );
+
+            const restClient = new AxiosRestClient(axios);
             const promise = restClient.put("https://example.org");
 
             await Promise.resolve();
@@ -369,7 +415,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             context.mock.fn<Logger["logToFile"]>()
         );
 
-        const restClient = new AxiosRestClient({ debug: true });
+        const restClient = new AxiosRestClient(axios, { debug: true });
         const formdata = new FormData();
         formdata.append("hello.json", JSON.stringify({ hello: "bonjour" }));
         await restClient.post(`http://${LOCAL_SERVER.url}`, formdata, {
@@ -385,7 +431,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             context.mock.fn<Logger["logToFile"]>()
         );
 
-        const restClient = new AxiosRestClient({ debug: true, fileSizeLimit: 0.5 });
+        const restClient = new AxiosRestClient(axios, { debug: true, fileSizeLimit: 0.5 });
         const formdata = new FormData();
         formdata.append("long.txt", createReadStream("./test/resources/big.txt"));
         await restClient.post(`http://${LOCAL_SERVER.url}`, formdata, {
@@ -405,7 +451,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         context.mock.timers.enable({ apis: ["Date"] });
         context.mock.timers.tick(12345);
 
-        const restClient = new AxiosRestClient({ debug: true });
+        const restClient = new AxiosRestClient(axios, { debug: true });
         await Promise.all([
             restClient.get(`http://${LOCAL_SERVER.url}`),
             restClient.get(`http://${LOCAL_SERVER.url}`),
@@ -423,7 +469,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
     });
 
     await it("does not rate limit requests by default", async () => {
-        const restClient = new AxiosRestClient();
+        const restClient = new AxiosRestClient(axios);
         const responses = await Promise.all([
             restClient.get(`http://${LOCAL_SERVER.url}`),
             restClient.get(`http://${LOCAL_SERVER.url}`),
@@ -460,7 +506,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
     });
 
     await it("rate limits requests", async () => {
-        const restClient = new AxiosRestClient({ rateLimiting: { requestsPerSecond: 2 } });
+        const restClient = new AxiosRestClient(axios, { rateLimiting: { requestsPerSecond: 2 } });
         const responses = await Promise.all([
             restClient.get(`http://${LOCAL_SERVER.url}`),
             restClient.get(`http://${LOCAL_SERVER.url}`),
