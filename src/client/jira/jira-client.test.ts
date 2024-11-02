@@ -1,28 +1,27 @@
-import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
+import axios, { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import assert from "node:assert";
 import { readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import type { SinonStubbedInstance } from "sinon";
-import { getMockedLogger, getMockedRestClient } from "../../../test/mocks.js";
 import { expectToExist } from "../../../test/util.js";
+import type { Attachment } from "../../types/jira/responses/attachment.js";
 import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details.js";
 import type { SearchResults } from "../../types/jira/responses/search-results.js";
 import type { User } from "../../types/jira/responses/user.js";
 import type { Logger } from "../../util/logging.js";
 import { Level, LOG } from "../../util/logging.js";
 import { BasicAuthCredentials } from "../authentication/credentials.js";
-import type { AxiosRestClient } from "../https/https.js";
+import { AxiosRestClient } from "../https/https.js";
 import { BaseJiraClient } from "./jira-client.js";
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(BaseJiraClient.name, async () => {
         let client: BaseJiraClient;
-        let restClient: SinonStubbedInstance<AxiosRestClient>;
+        let restClient: AxiosRestClient;
 
         beforeEach(() => {
-            restClient = getMockedRestClient();
+            restClient = new AxiosRestClient(axios);
             client = new BaseJiraClient(
                 "https://example.org",
                 new BasicAuthCredentials("user", "token"),
@@ -31,23 +30,25 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         });
 
         await describe("add attachment", async () => {
-            await it("should use the correct headers", async () => {
-                restClient.post.resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: JSON.parse(
-                        readFileSync(
-                            "./test/resources/fixtures/jira/responses/singleAttachment.json",
-                            "utf-8"
-                        )
-                    ),
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+            await it("should use the correct headers", async (context) => {
+                const post = context.mock.method(restClient, "post", () => {
+                    return {
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
+                        data: JSON.parse(
+                            readFileSync(
+                                "./test/resources/fixtures/jira/responses/singleAttachment.json",
+                                "utf-8"
+                            )
+                        ) as Attachment,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 await client.addAttachment("CYP-123", "./test/resources/turtle.png");
-                const headers = restClient.post.getCalls()[0].args[2]?.headers;
+                const headers = post.mock.calls[0].arguments[2]?.headers;
                 expectToExist(headers);
                 assert.strictEqual(headers.Authorization, "Basic dXNlcjp0b2tlbg==");
                 assert.strictEqual(headers["X-Atlassian-Token"], "no-check");
@@ -55,21 +56,23 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             });
 
             await describe("single file attachment", async () => {
-                await it("returns the correct values", async () => {
+                await it("returns the correct values", async (context) => {
                     const mockedData = JSON.parse(
                         readFileSync(
                             "./test/resources/fixtures/jira/responses/singleAttachment.json",
                             "utf-8"
                         )
                     ) as unknown;
-                    restClient.post.resolves({
-                        config: {
-                            headers: new AxiosHeaders(),
-                        },
-                        data: mockedData,
-                        headers: {},
-                        status: HttpStatusCode.Ok,
-                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    context.mock.method(restClient, "post", () => {
+                        return {
+                            config: {
+                                headers: new AxiosHeaders(),
+                            },
+                            data: mockedData,
+                            headers: {},
+                            status: HttpStatusCode.Ok,
+                            statusText: HttpStatusCode[HttpStatusCode.Ok],
+                        };
                     });
                     const response = await client.addAttachment(
                         "CYP-123",
@@ -80,21 +83,23 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             });
 
             await describe("multiple file attachment", async () => {
-                await it("returns the correct values", async () => {
+                await it("returns the correct values", async (context) => {
                     const mockedData = JSON.parse(
                         readFileSync(
                             "./test/resources/fixtures/jira/responses/multipleAttachments.json",
                             "utf-8"
                         )
                     ) as unknown;
-                    restClient.post.resolves({
-                        config: {
-                            headers: new AxiosHeaders(),
-                        },
-                        data: mockedData,
-                        headers: {},
-                        status: HttpStatusCode.Ok,
-                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    context.mock.method(restClient, "post", () => {
+                        return {
+                            config: {
+                                headers: new AxiosHeaders(),
+                            },
+                            data: mockedData,
+                            headers: {},
+                            status: HttpStatusCode.Ok,
+                            statusText: HttpStatusCode[HttpStatusCode.Ok],
+                        };
                     });
                     const response = await client.addAttachment(
                         "CYP-123",
@@ -114,14 +119,16 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         "utf-8"
                     )
                 ) as unknown;
-                restClient.post.resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: mockedData,
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
+                        data: mockedData,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 const response = await client.addAttachment(
                     "CYP-123",
@@ -136,22 +143,24 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 ]);
             });
 
-            await it("skips missing files", async () => {
-                getMockedLogger({ allowUnstubbedCalls: true });
+            await it("skips missing files", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const mockedData = JSON.parse(
                     readFileSync(
                         "./test/resources/fixtures/jira/responses/multipleAttachments.json",
                         "utf-8"
                     )
                 ) as unknown;
-                restClient.post.resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: mockedData,
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
+                        data: mockedData,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 const response = await client.addAttachment(
                     "CYP-123",
@@ -177,16 +186,13 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 ]);
             });
 
-            await it("immediately returns an empty array when no files are provided", async () => {
-                const logger = getMockedLogger();
-                logger.message
-                    .withArgs(
-                        Level.WARNING,
-                        "No files provided to attach to issue CYP-123. Skipping attaching."
-                    )
-                    .onFirstCall()
-                    .returns();
+            await it("immediately returns an empty array when no files are provided", async (context) => {
+                const message = context.mock.method(LOG, "message", context.mock.fn());
                 assert.deepStrictEqual(await client.addAttachment("CYP-123"), []);
+                assert.deepStrictEqual(message.mock.calls[0].arguments, [
+                    Level.WARNING,
+                    "No files provided to attach to issue CYP-123. Skipping attaching.",
+                ]);
             });
 
             await it("handles bad responses", async (context) => {
@@ -211,7 +217,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.PayloadTooLarge],
                     }
                 );
-                restClient.post.rejects(error);
+                context.mock.method(restClient, "post", () => {
+                    throw error;
+                });
                 await assert.rejects(
                     client.addAttachment("CYP-123", "./test/resources/greetings.txt"),
                     { message: "Failed to attach files" }
@@ -228,39 +236,43 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         });
 
         await describe("get issue types", async () => {
-            await it("returns issue types", async () => {
+            await it("returns issue types", async (context) => {
                 const issueTypes = JSON.parse(
                     readFileSync(
                         "./test/resources/fixtures/jira/responses/getIssueTypes.json",
                         "utf-8"
                     )
                 ) as IssueTypeDetails[];
-                restClient.get.onFirstCall().resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: issueTypes,
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                context.mock.method(restClient, "get", () => {
+                    return {
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
+                        data: issueTypes,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 assert.strictEqual(await client.getIssueTypes(), issueTypes);
             });
 
-            await it("handles issues without name or id", async () => {
+            await it("handles issues without name or id", async (context) => {
                 const issueTypes: IssueTypeDetails[] = [
                     { id: "12345" },
                     { name: "Custom issue" },
                     { description: "A legacy subtask" },
                 ];
-                restClient.get.onFirstCall().resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: issueTypes,
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                context.mock.method(restClient, "get", () => {
+                    return {
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
+                        data: issueTypes,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 assert.strictEqual(await client.getIssueTypes(), issueTypes);
             });
@@ -287,7 +299,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.Conflict],
                     }
                 );
-                restClient.get.onFirstCall().rejects(error);
+                context.mock.method(restClient, "get", () => {
+                    throw error;
+                });
                 await assert.rejects(client.getIssueTypes(), {
                     message: "Failed to get issue types",
                 });
@@ -303,18 +317,20 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         });
 
         await describe("get fields", async () => {
-            await it("returns the correct values", async () => {
+            await it("returns the correct values", async (context) => {
                 const mockedData = JSON.parse(
                     readFileSync("./test/resources/fixtures/jira/responses/getFields.json", "utf-8")
                 ) as unknown;
-                restClient.get.onFirstCall().resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: mockedData,
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                context.mock.method(restClient, "get", () => {
+                    return {
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
+                        data: mockedData,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 const fields = await client.getFields();
                 assert.strictEqual(fields, mockedData);
@@ -342,7 +358,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.Conflict],
                     }
                 );
-                restClient.get.onFirstCall().rejects(error);
+                context.mock.method(restClient, "get", () => {
+                    throw error;
+                });
                 await assert.rejects(client.getFields(), { message: "Failed to get fields" });
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
                     Level.ERROR,
@@ -356,25 +374,27 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         });
 
         await describe("get myself", async () => {
-            await it("returns user details", async () => {
-                restClient.get.onFirstCall().resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: {
-                        active: true,
-                        displayName: "Demo User",
-                    } as User,
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+            await it("returns user details", async (context) => {
+                const get = context.mock.method(restClient, "get", () => {
+                    return {
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
+                        data: {
+                            active: true,
+                            displayName: "Demo User",
+                        } as User,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 assert.deepStrictEqual(await client.getMyself(), {
                     active: true,
                     displayName: "Demo User",
                 });
-                assert.strictEqual(restClient.get.callCount, 1);
-                assert.deepStrictEqual(restClient.get.getCall(0).args, [
+                assert.strictEqual(get.mock.callCount(), 1);
+                assert.deepStrictEqual(get.mock.calls[0].arguments, [
                     "https://example.org/rest/api/latest/myself",
                     {
                         headers: { ["Authorization"]: "Basic dXNlcjp0b2tlbg==" },
@@ -404,7 +424,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.Conflict],
                     }
                 );
-                restClient.get.onFirstCall().rejects(error);
+                context.mock.method(restClient, "get", () => {
+                    throw error;
+                });
                 await assert.rejects(client.getMyself(), { message: "Failed to get user details" });
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
                     Level.ERROR,
@@ -418,26 +440,28 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         });
 
         await describe("search", async () => {
-            await it("should return all issues without pagination", async () => {
-                restClient.post.onFirstCall().resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: JSON.parse(
-                        readFileSync(
-                            "./test/resources/fixtures/jira/responses/search.json",
-                            "utf-8"
-                        )
-                    ),
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+            await it("should return all issues without pagination", async (context) => {
+                const post = context.mock.method(restClient, "post", () => {
+                    return {
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
+                        data: JSON.parse(
+                            readFileSync(
+                                "./test/resources/fixtures/jira/responses/search.json",
+                                "utf-8"
+                            )
+                        ) as SearchResults,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 const response = await client.search({
                     fields: ["customfield_12100"],
                     jql: "project = CYP AND issue in (CYP-268,CYP-237,CYP-332,CYP-333,CYP-338)",
                 });
-                assert.strictEqual(restClient.post.callCount, 1);
+                assert.strictEqual(post.mock.callCount(), 1);
                 assert.strictEqual(response.length, 4);
                 assert.strictEqual(response[0].key, "CYP-333");
                 assert.strictEqual(response[1].key, "CYP-338");
@@ -445,104 +469,114 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 assert.strictEqual(response[3].key, "CYP-268");
             });
 
-            await it("returns all issues with pagination", async () => {
+            await it("returns all issues with pagination", async (context) => {
                 const mockedData: SearchResults = JSON.parse(
                     readFileSync("./test/resources/fixtures/jira/responses/search.json", "utf-8")
                 ) as SearchResults;
-                restClient.post.onCall(0).resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: {
-                        ...mockedData,
-                        issues: mockedData.issues?.slice(0, 1),
-                        maxResults: 1,
-                        startAt: 0,
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
-                });
-                restClient.post.onCall(1).resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: {
-                        ...mockedData,
-                        issues: undefined,
-                        maxResults: 0,
-                        startAt: 1,
-                        total: undefined,
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
-                });
-                restClient.post.onCall(2).resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: {
-                        ...mockedData,
-                        issues: mockedData.issues?.slice(1, 2),
-                        maxResults: 1,
-                        startAt: undefined,
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
-                });
-                restClient.post.onCall(3).resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: {
-                        ...mockedData,
-                        issues: mockedData.issues?.slice(1, 2),
-                        maxResults: 1,
-                        startAt: 1,
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
-                });
-                restClient.post.onCall(4).resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: {
-                        ...mockedData,
-                        issues: mockedData.issues?.slice(2),
-                        maxResults: 3,
-                        startAt: 2,
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                let i = 0;
+                const post = context.mock.method(restClient, "post", () => {
+                    switch (i++) {
+                        case 0:
+                            return {
+                                config: {
+                                    headers: new AxiosHeaders(),
+                                },
+                                data: {
+                                    ...mockedData,
+                                    issues: mockedData.issues?.slice(0, 1),
+                                    maxResults: 1,
+                                    startAt: 0,
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 1:
+                            return {
+                                config: {
+                                    headers: new AxiosHeaders(),
+                                },
+                                data: {
+                                    ...mockedData,
+                                    issues: undefined,
+                                    maxResults: 0,
+                                    startAt: 1,
+                                    total: undefined,
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 2:
+                            return {
+                                config: {
+                                    headers: new AxiosHeaders(),
+                                },
+                                data: {
+                                    ...mockedData,
+                                    issues: mockedData.issues?.slice(1, 2),
+                                    maxResults: 1,
+                                    startAt: undefined,
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 3:
+                            return {
+                                config: {
+                                    headers: new AxiosHeaders(),
+                                },
+                                data: {
+                                    ...mockedData,
+                                    issues: mockedData.issues?.slice(1, 2),
+                                    maxResults: 1,
+                                    startAt: 1,
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 4:
+                            return {
+                                config: {
+                                    headers: new AxiosHeaders(),
+                                },
+                                data: {
+                                    ...mockedData,
+                                    issues: mockedData.issues?.slice(2),
+                                    maxResults: 3,
+                                    startAt: 2,
+                                },
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                    }
                 });
                 const response = await client.search({
                     fields: ["customfield_12100"],
                     jql: "project = CYP AND issue in (CYP-268,CYP-237,CYP-332,CYP-333,CYP-338)",
                 });
-                assert.strictEqual(restClient.post.callCount, 5);
+                assert.strictEqual(post.mock.callCount(), 5);
                 assert.strictEqual(
-                    (restClient.post.getCall(0).args[1] as Record<string, unknown>).startAt,
+                    (post.mock.calls[0].arguments[1] as Record<string, unknown>).startAt,
                     0
                 );
                 assert.strictEqual(
-                    (restClient.post.getCall(1).args[1] as Record<string, unknown>).startAt,
+                    (post.mock.calls[1].arguments[1] as Record<string, unknown>).startAt,
                     1
                 );
                 assert.strictEqual(
-                    (restClient.post.getCall(2).args[1] as Record<string, unknown>).startAt,
+                    (post.mock.calls[2].arguments[1] as Record<string, unknown>).startAt,
                     1
                 );
                 assert.strictEqual(
-                    (restClient.post.getCall(3).args[1] as Record<string, unknown>).startAt,
+                    (post.mock.calls[3].arguments[1] as Record<string, unknown>).startAt,
                     1
                 );
                 assert.strictEqual(
-                    (restClient.post.getCall(4).args[1] as Record<string, unknown>).startAt,
+                    (post.mock.calls[4].arguments[1] as Record<string, unknown>).startAt,
                     2
                 );
                 assert.strictEqual(response.length, 4);
@@ -574,7 +608,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.Unauthorized],
                     }
                 );
-                restClient.post.onFirstCall().rejects(error);
+                context.mock.method(restClient, "post", () => {
+                    throw error;
+                });
                 await assert.rejects(client.search({}), { message: "Failed to search issues" });
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
                     Level.ERROR,
@@ -588,13 +624,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         });
 
         await describe("editIssue", async () => {
-            await it("edits issues", async () => {
-                restClient.put
-                    .withArgs("https://example.org/rest/api/latest/issue/CYP-XYZ", {
-                        fields: { summary: "Hi" },
-                    })
-                    .onFirstCall()
-                    .resolves({
+            await it("edits issues", async (context) => {
+                const put = context.mock.method(restClient, "put", () => {
+                    return {
                         config: {
                             headers: new AxiosHeaders(),
                         },
@@ -602,13 +634,22 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         headers: {},
                         status: HttpStatusCode.NoContent,
                         statusText: HttpStatusCode[HttpStatusCode.NoContent],
-                    });
+                    };
+                });
                 assert.strictEqual(
                     await client.editIssue("CYP-XYZ", {
                         fields: { summary: "Hi" },
                     }),
                     "CYP-XYZ"
                 );
+                assert.strictEqual(put.mock.callCount(), 1);
+                assert.strictEqual(
+                    put.mock.calls[0].arguments[0],
+                    "https://example.org/rest/api/latest/issue/CYP-XYZ"
+                );
+                assert.deepStrictEqual(put.mock.calls[0].arguments[1], {
+                    fields: { summary: "Hi" },
+                });
             });
 
             await it("handles bad responses", async (context) => {
@@ -633,7 +674,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.BadRequest],
                     }
                 );
-                restClient.put.onFirstCall().rejects(error);
+                context.mock.method(restClient, "put", () => {
+                    throw error;
+                });
                 await assert.rejects(
                     client.editIssue("CYP-XYZ", {
                         fields: { summary: "Hi" },
@@ -652,15 +695,17 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         });
 
         await describe("transitionIssue", async () => {
-            await it("transitions issues", async () => {
-                restClient.post.onFirstCall().resolves({
-                    config: {
-                        headers: new AxiosHeaders(),
-                    },
-                    data: undefined,
-                    headers: {},
-                    status: HttpStatusCode.NoContent,
-                    statusText: HttpStatusCode[HttpStatusCode.NoContent],
+            await it("transitions issues", async (context) => {
+                const post = context.mock.method(restClient, "post", () => {
+                    return {
+                        config: {
+                            headers: new AxiosHeaders(),
+                        },
+                        data: undefined,
+                        headers: {},
+                        status: HttpStatusCode.NoContent,
+                        statusText: HttpStatusCode[HttpStatusCode.NoContent],
+                    };
                 });
                 await client.transitionIssue("CYP-XYZ", {
                     transition: {
@@ -670,8 +715,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         },
                     },
                 });
-                assert.strictEqual(restClient.post.callCount, 1);
-                assert.deepStrictEqual(restClient.post.getCall(0).args, [
+                assert.strictEqual(post.mock.callCount(), 1);
+                assert.deepStrictEqual(post.mock.calls[0].arguments, [
                     "https://example.org/rest/api/latest/issue/CYP-XYZ/transitions",
                     {
                         transition: {
@@ -709,7 +754,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.NotFound],
                     }
                 );
-                restClient.post.onFirstCall().rejects(error);
+                context.mock.method(restClient, "post", () => {
+                    throw error;
+                });
                 await assert.rejects(
                     client.transitionIssue("CYP-XYZ", {
                         transition: {
