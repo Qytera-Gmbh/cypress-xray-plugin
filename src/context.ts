@@ -1,3 +1,4 @@
+import axios from "axios";
 import type { HttpCredentials } from "./client/authentication/credentials.js";
 import {
     BasicAuthCredentials,
@@ -327,7 +328,7 @@ export function initHttpClients(
         const { jira, rateLimiting: rateLimitingCommon, xray, ...httpConfigCommon } = httpOptions;
         if (jira) {
             const { rateLimiting: rateLimitingJira, ...httpConfig } = jira;
-            jiraClient = new AxiosRestClient({
+            jiraClient = new AxiosRestClient(axios, {
                 debug: pluginOptions?.debug,
                 http: {
                     ...httpConfigCommon,
@@ -338,7 +339,7 @@ export function initHttpClients(
         }
         if (xray) {
             const { rateLimiting: rateLimitingXray, ...httpConfig } = xray;
-            xrayClient = new AxiosRestClient({
+            xrayClient = new AxiosRestClient(axios, {
                 debug: pluginOptions?.debug,
                 http: {
                     ...httpConfigCommon,
@@ -348,7 +349,7 @@ export function initHttpClients(
             });
         }
         if (!jiraClient || !xrayClient) {
-            const httpClient = new AxiosRestClient({
+            const httpClient = new AxiosRestClient(axios, {
                 debug: pluginOptions?.debug,
                 http: httpConfigCommon,
                 rateLimiting: rateLimitingCommon,
@@ -361,7 +362,7 @@ export function initHttpClients(
             }
         }
     } else {
-        const httpClient = new AxiosRestClient({
+        const httpClient = new AxiosRestClient(axios, {
             debug: pluginOptions?.debug,
         });
         jiraClient = httpClient;
