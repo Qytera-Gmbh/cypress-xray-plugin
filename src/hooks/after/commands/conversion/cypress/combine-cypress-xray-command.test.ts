@@ -1,20 +1,20 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedLogger } from "../../../../../../test/mocks.js";
+import { LOG } from "../../../../../util/logging.js";
 import { ConstantCommand } from "../../../../util/commands/constant-command.js";
 import { CombineCypressJsonCommand } from "./combine-cypress-xray-command.js";
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(CombineCypressJsonCommand.name, async () => {
-        await it("combines cucumber multipart data", async () => {
-            const logger = getMockedLogger();
+        await it("combines cucumber multipart data", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const command = new CombineCypressJsonCommand(
                 { testExecutionIssueKey: "CYP-123" },
-                logger,
-                new ConstantCommand(logger, [{ status: "PASS" }, { status: "FAIL" }]),
-                new ConstantCommand(logger, {
+                LOG,
+                new ConstantCommand(LOG, [{ status: "PASS" }, { status: "FAIL" }]),
+                new ConstantCommand(LOG, {
                     fields: {
                         description: "Run using Cypress",
                         issuetype: { name: "Test Execution", subtask: false },
@@ -25,7 +25,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 })
             );
-            expect(await command.compute()).to.deep.eq([
+            assert.deepStrictEqual(await command.compute(), [
                 {
                     testExecutionKey: "CYP-123",
                     tests: [{ status: "PASS" }, { status: "FAIL" }],

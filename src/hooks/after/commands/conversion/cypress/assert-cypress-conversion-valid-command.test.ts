@@ -1,20 +1,17 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedLogger } from "../../../../../../test/mocks.js";
 import type { XrayClient } from "../../../../../client/xray/xray-client.js";
 import type { XrayTest } from "../../../../../types/xray/import-test-execution-results.js";
+import { LOG } from "../../../../../util/logging.js";
 import { ConstantCommand } from "../../../../util/commands/constant-command.js";
 import { AssertCypressConversionValidCommand } from "./assert-cypress-conversion-valid-command.js";
 
-chai.use(chaiAsPromised);
-
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(AssertCypressConversionValidCommand.name, async () => {
-        await it("correctly verifies xray json data", async () => {
-            const logger = getMockedLogger();
+        await it("correctly verifies xray json data", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const xrayJson: Parameters<XrayClient["importExecutionMultipart"]> = [
                 {
                     testExecutionKey: "CYP-123",
@@ -32,14 +29,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 },
             ];
             const command = new AssertCypressConversionValidCommand(
-                logger,
-                new ConstantCommand(logger, xrayJson)
+                LOG,
+                new ConstantCommand(LOG, xrayJson)
             );
-            await expect(command.compute()).to.eventually.not.be.rejected;
+            await assert.doesNotReject(command.compute());
         });
 
-        await it("throws for missing xray test arrays", async () => {
-            const logger = getMockedLogger();
+        await it("throws for missing xray test arrays", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const xrayJson: Parameters<XrayClient["importExecutionMultipart"]> = [
                 { testExecutionKey: "CYP-123" },
                 {
@@ -54,16 +51,16 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 },
             ];
             const command = new AssertCypressConversionValidCommand(
-                logger,
-                new ConstantCommand(logger, xrayJson)
+                LOG,
+                new ConstantCommand(LOG, xrayJson)
             );
-            await expect(command.compute()).to.be.rejectedWith(
-                "Skipping Cypress results upload: No native Cypress tests were executed"
-            );
+            await assert.rejects(command.compute(), {
+                message: "Skipping Cypress results upload: No native Cypress tests were executed",
+            });
         });
 
-        await it("throws for empty xray test arrays", async () => {
-            const logger = getMockedLogger();
+        await it("throws for empty xray test arrays", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const xrayJson: Parameters<XrayClient["importExecutionMultipart"]> = [
                 {
                     testExecutionKey: "CYP-123",
@@ -81,12 +78,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 },
             ];
             const command = new AssertCypressConversionValidCommand(
-                logger,
-                new ConstantCommand(logger, xrayJson)
+                LOG,
+                new ConstantCommand(LOG, xrayJson)
             );
-            await expect(command.compute()).to.be.rejectedWith(
-                "Skipping Cypress results upload: No native Cypress tests were executed"
-            );
+            await assert.rejects(command.compute(), {
+                message: "Skipping Cypress results upload: No native Cypress tests were executed",
+            });
         });
     });
 });
