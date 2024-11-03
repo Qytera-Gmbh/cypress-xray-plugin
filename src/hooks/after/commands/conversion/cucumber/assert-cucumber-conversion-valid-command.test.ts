@@ -1,32 +1,29 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import fs from "node:fs";
+import assert from "node:assert";
+import { readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedLogger } from "../../../../../../test/mocks.js";
 import type {
     CucumberMultipart,
     CucumberMultipartFeature,
 } from "../../../../../types/xray/requests/import-execution-cucumber-multipart.js";
 import type { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info.js";
+import { LOG } from "../../../../../util/logging.js";
 import { ConstantCommand } from "../../../../util/commands/constant-command.js";
 import { AssertCucumberConversionValidCommand } from "./assert-cucumber-conversion-valid-command.js";
 
-chai.use(chaiAsPromised);
-
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(AssertCucumberConversionValidCommand.name, async () => {
-        await it("correctly verifies cucumber multipart data", async () => {
-            const logger = getMockedLogger();
+        await it("correctly verifies cucumber multipart data", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const cucumberFeatures: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
             const cucumberInfo: MultipartInfo = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
                     "utf-8"
                 )
@@ -36,16 +33,17 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 info: cucumberInfo,
             };
             const command = new AssertCucumberConversionValidCommand(
-                logger,
-                new ConstantCommand(logger, cucumberMultipart)
+                LOG,
+                new ConstantCommand(LOG, cucumberMultipart)
             );
-            await expect(command.compute()).to.not.be.rejected;
+
+            await assert.doesNotReject(command.compute());
         });
 
-        await it("throws for empty feature arrays", async () => {
-            const logger = getMockedLogger();
+        await it("throws for empty feature arrays", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const cucumberInfo: MultipartInfo = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
                     "utf-8"
                 )
@@ -55,12 +53,13 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 info: cucumberInfo,
             };
             const command = new AssertCucumberConversionValidCommand(
-                logger,
-                new ConstantCommand(logger, cucumberMultipart)
+                LOG,
+                new ConstantCommand(LOG, cucumberMultipart)
             );
-            await expect(command.compute()).to.be.rejectedWith(
-                "Skipping Cucumber results upload: No Cucumber tests were executed"
-            );
+
+            await assert.rejects(command.compute(), {
+                message: "Skipping Cucumber results upload: No Cucumber tests were executed",
+            });
         });
     });
 });
