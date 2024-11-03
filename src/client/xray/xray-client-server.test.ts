@@ -1,51 +1,53 @@
-import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
-import { expect } from "chai";
-import fs from "node:fs";
+import axios, { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
+import assert from "node:assert";
+import { readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import type { SinonStubbedInstance } from "sinon";
-import { getMockedLogger, getMockedRestClient } from "../../../test/mocks.js";
 import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results.js";
 import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart.js";
 import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info.js";
 import { dedent } from "../../util/dedent.js";
-import { Level } from "../../util/logging.js";
-import { BasicAuthCredentials } from "../authentication/credentials.js";
-import type { AxiosRestClient } from "../https/https.js";
+import { Level, LOG } from "../../util/logging.js";
+import { PatCredentials } from "../authentication/credentials.js";
+import { AxiosRestClient } from "../https/https.js";
 import type { XrayClientServer } from "./xray-client-server.js";
 import { ServerClient } from "./xray-client-server.js";
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(ServerClient.name, async () => {
-        let restClient: SinonStubbedInstance<AxiosRestClient>;
         let client: XrayClientServer;
+        let restClient: AxiosRestClient;
 
         beforeEach(() => {
-            restClient = getMockedRestClient();
+            restClient = new AxiosRestClient(axios);
             client = new ServerClient(
                 "https://example.org",
-                new BasicAuthCredentials("user", "xyz"),
+                new PatCredentials("token"),
                 restClient
             );
         });
 
         await describe("import execution", async () => {
-            await it("calls the correct endpoint", async () => {
-                getMockedLogger();
-                restClient.post.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        testExecIssue: {
-                            id: "12345",
-                            key: "CYP-123",
-                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+            await it("calls the correct endpoint", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+
+                const post = context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            testExecIssue: {
+                                id: "12345",
+                                key: "CYP-123",
+                                self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                            },
                         },
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
+
                 await client.importExecution({
                     info: {
                         description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
@@ -73,26 +75,33 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         },
                     ],
                 });
-                expect(restClient.post).to.have.been.calledOnceWith(
+
+                assert.strictEqual(post.mock.calls.length, 1);
+                assert.strictEqual(
+                    post.mock.calls[0].arguments[0],
                     "https://example.org/rest/raven/latest/import/execution"
                 );
             });
 
-            await it("should handle successful responses", async () => {
-                getMockedLogger();
-                restClient.post.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        testExecIssue: {
-                            id: "12345",
-                            key: "CYP-123",
-                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+            await it("should handle successful responses", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            testExecIssue: {
+                                id: "12345",
+                                key: "CYP-123",
+                                self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                            },
                         },
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
+
                 const response = await client.importExecution({
                     info: {
                         description: "Cypress version: 11.1.0 Browser: electron (106.0.5249.51)",
@@ -120,375 +129,436 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         },
                     ],
                 });
-                expect(response).to.eq("CYP-123");
+
+                assert.strictEqual(response, "CYP-123");
             });
         });
 
         await describe("import execution multipart", async () => {
-            await it("calls the correct endpoint", async () => {
-                getMockedLogger();
-                restClient.post.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        testExecIssue: {
-                            id: "12345",
-                            key: "CYP-123",
-                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+            await it("calls the correct endpoint", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+
+                const post = context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            testExecIssue: {
+                                id: "12345",
+                                key: "CYP-123",
+                                self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                            },
                         },
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
+
                 await client.importExecutionMultipart(
                     JSON.parse(
-                        fs.readFileSync(
+                        readFileSync(
                             "./test/resources/fixtures/xray/requests/importExecutionMultipartResultsServer.json",
                             "utf-8"
                         )
                     ) as XrayTestExecutionResults,
                     JSON.parse(
-                        fs.readFileSync(
+                        readFileSync(
                             "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoServer.json",
                             "utf-8"
                         )
                     ) as MultipartInfo
                 );
-                expect(restClient.post).to.have.been.calledOnceWith(
+
+                assert.strictEqual(post.mock.calls.length, 1);
+                assert.strictEqual(
+                    post.mock.calls[0].arguments[0],
                     "https://example.org/rest/raven/latest/import/execution/multipart"
                 );
             });
 
-            await it("handles successful responses", async () => {
-                getMockedLogger();
-                restClient.post.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        infoMessages: [],
-                        testExecIssue: {
-                            id: "24556",
-                            key: "CYPLUG-123",
-                            self: "https://example.org/rest/api/2/issue/24556",
+            await it("handles successful responses", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            infoMessages: [],
+                            testExecIssue: {
+                                id: "24556",
+                                key: "CYPLUG-123",
+                                self: "https://example.org/rest/api/2/issue/24556",
+                            },
+                            testIssues: {
+                                success: [
+                                    {
+                                        id: "22979",
+                                        key: "CYPLUG-43",
+                                        self: "https://example.org/rest/api/2/issue/22979",
+                                        testVersionId: 430,
+                                    },
+                                    {
+                                        id: "22946",
+                                        key: "CYPLUG-10",
+                                        self: "https://example.org/rest/api/2/issue/22946",
+                                        testVersionId: 425,
+                                    },
+                                ],
+                            },
                         },
-                        testIssues: {
-                            success: [
-                                {
-                                    id: "22979",
-                                    key: "CYPLUG-43",
-                                    self: "https://example.org/rest/api/2/issue/22979",
-                                    testVersionId: 430,
-                                },
-                                {
-                                    id: "22946",
-                                    key: "CYPLUG-10",
-                                    self: "https://example.org/rest/api/2/issue/22946",
-                                    testVersionId: 425,
-                                },
-                            ],
-                        },
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
+
                 const response = await client.importExecutionMultipart(
                     JSON.parse(
-                        fs.readFileSync(
+                        readFileSync(
                             "./test/resources/fixtures/xray/requests/importExecutionMultipartResultsServer.json",
                             "utf-8"
                         )
                     ) as XrayTestExecutionResults,
                     JSON.parse(
-                        fs.readFileSync(
+                        readFileSync(
                             "./test/resources/fixtures/xray/requests/importExecutionMultipartInfoServer.json",
                             "utf-8"
                         )
                     ) as MultipartInfo
                 );
-                expect(response).to.eq("CYPLUG-123");
+
+                assert.strictEqual(response, "CYPLUG-123");
             });
         });
 
         await describe("import execution cucumber multipart", async () => {
-            await it("calls the correct endpoint", async () => {
-                getMockedLogger();
-                restClient.post.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        testExecIssue: {
-                            id: "12345",
-                            key: "CYP-123",
-                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+            await it("calls the correct endpoint", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+
+                const post = context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            testExecIssue: {
+                                id: "12345",
+                                key: "CYP-123",
+                                self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                            },
                         },
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
+
                 await client.importExecutionCucumberMultipart(
                     JSON.parse(
-                        fs.readFileSync(
+                        readFileSync(
                             "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                             "utf-8"
                         )
                     ) as CucumberMultipartFeature[],
                     JSON.parse(
-                        fs.readFileSync(
+                        readFileSync(
                             "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
                             "utf-8"
                         )
                     ) as MultipartInfo
                 );
-                expect(restClient.post).to.have.been.calledOnceWith(
+
+                assert.strictEqual(post.mock.calls.length, 1);
+                assert.strictEqual(
+                    post.mock.calls[0].arguments[0],
                     "https://example.org/rest/raven/latest/import/execution/cucumber/multipart"
                 );
             });
 
-            await it("should handle successful responses", async () => {
-                getMockedLogger();
-                restClient.post.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        testExecIssue: {
-                            id: "12345",
-                            key: "CYP-123",
-                            self: "http://www.example.org/jira/rest/api/2/issue/12345",
+            await it("should handle successful responses", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            testExecIssue: {
+                                id: "12345",
+                                key: "CYP-123",
+                                self: "http://www.example.org/jira/rest/api/2/issue/12345",
+                            },
                         },
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
+
                 const response = await client.importExecutionCucumberMultipart(
                     JSON.parse(
-                        fs.readFileSync(
+                        readFileSync(
                             "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                             "utf-8"
                         )
                     ) as CucumberMultipartFeature[],
                     JSON.parse(
-                        fs.readFileSync(
+                        readFileSync(
                             "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartInfoServer.json",
                             "utf-8"
                         )
                     ) as MultipartInfo
                 );
-                expect(response).to.eq("CYP-123");
+
+                assert.strictEqual(response, "CYP-123");
             });
         });
 
         await describe("import feature", async () => {
-            await it("calls the correct endpoint", async () => {
-                restClient.post.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: [
-                        {
-                            id: "14400",
-                            issueType: {
-                                id: "10100",
-                                name: "Test",
+            await it("calls the correct endpoint", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+
+                const post = context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: [
+                            {
+                                id: "14400",
+                                issueType: {
+                                    id: "10100",
+                                    name: "Test",
+                                },
+                                key: "CYP-333",
+                                self: "http://localhost:8727/rest/api/2/issue/14400",
                             },
-                            key: "CYP-333",
-                            self: "http://localhost:8727/rest/api/2/issue/14400",
-                        },
-                        {
-                            id: "14401",
-                            issueType: {
-                                id: "10103",
-                                name: "Test",
+                            {
+                                id: "14401",
+                                issueType: {
+                                    id: "10103",
+                                    name: "Test",
+                                },
+                                key: "CYP-555",
+                                self: "http://localhost:8727/rest/api/2/issue/14401",
                             },
-                            key: "CYP-555",
-                            self: "http://localhost:8727/rest/api/2/issue/14401",
-                        },
-                        {
-                            id: "14401",
-                            issueType: {
-                                id: "10103",
-                                name: "Pre-Condition",
+                            {
+                                id: "14401",
+                                issueType: {
+                                    id: "10103",
+                                    name: "Pre-Condition",
+                                },
+                                key: "CYP-222",
+                                self: "http://localhost:8727/rest/api/2/issue/14401",
                             },
-                            key: "CYP-222",
-                            self: "http://localhost:8727/rest/api/2/issue/14401",
-                        },
-                    ],
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                        ],
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
+
                 await client.importFeature(
                     "./test/resources/features/taggedPrefixCorrect.feature",
                     { projectKey: "CYP" }
                 );
-                expect(restClient.post).to.have.been.calledOnceWith(
+
+                assert.strictEqual(post.mock.calls.length, 1);
+                assert.strictEqual(
+                    post.mock.calls[0].arguments[0],
                     "https://example.org/rest/raven/latest/import/feature?projectKey=CYP"
                 );
             });
 
-            await it("handles successful responses", async () => {
-                restClient.post.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: [
-                        {
-                            id: "14400",
-                            issueType: {
-                                id: "10100",
-                                name: "Test",
+            await it("handles successful responses", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: [
+                            {
+                                id: "14400",
+                                issueType: {
+                                    id: "10100",
+                                    name: "Test",
+                                },
+                                key: "CYP-333",
+                                self: "http://localhost:8727/rest/api/2/issue/14400",
                             },
-                            key: "CYP-333",
-                            self: "http://localhost:8727/rest/api/2/issue/14400",
-                        },
-                        {
-                            id: "14401",
-                            issueType: {
-                                id: "10103",
-                                name: "Test",
+                            {
+                                id: "14401",
+                                issueType: {
+                                    id: "10103",
+                                    name: "Test",
+                                },
+                                key: "CYP-555",
+                                self: "http://localhost:8727/rest/api/2/issue/14401",
                             },
-                            key: "CYP-555",
-                            self: "http://localhost:8727/rest/api/2/issue/14401",
-                        },
-                        {
-                            id: "14401",
-                            issueType: {
-                                id: "10103",
-                                name: "Pre-Condition",
+                            {
+                                id: "14401",
+                                issueType: {
+                                    id: "10103",
+                                    name: "Pre-Condition",
+                                },
+                                key: "CYP-222",
+                                self: "http://localhost:8727/rest/api/2/issue/14401",
                             },
-                            key: "CYP-222",
-                            self: "http://localhost:8727/rest/api/2/issue/14401",
-                        },
-                    ],
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                        ],
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
+
                 const response = await client.importFeature(
                     "./test/resources/features/taggedPrefixCorrect.feature",
                     { projectKey: "CYP" }
                 );
-                expect(response).to.deep.eq({
+
+                assert.deepStrictEqual(response, {
                     errors: [],
                     updatedOrCreatedIssues: ["CYP-333", "CYP-555", "CYP-222"],
                 });
             });
 
-            await it("handles responses with errors", async () => {
-                const logger = getMockedLogger({ allowUnstubbedCalls: true });
-                restClient.post.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        message: "Test with key CYP-333 was not found!",
-                        preconditionIssues: [
-                            {
-                                id: "14401",
-                                issueType: {
-                                    id: "10103",
-                                    name: "Pre-Condition",
+            await it("handles responses with errors", async (context) => {
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            message: "Test with key CYP-333 was not found!",
+                            preconditionIssues: [
+                                {
+                                    id: "14401",
+                                    issueType: {
+                                        id: "10103",
+                                        name: "Pre-Condition",
+                                    },
+                                    key: "CYP-222",
+                                    self: "http://localhost:8727/rest/api/2/issue/14401",
                                 },
-                                key: "CYP-222",
-                                self: "http://localhost:8727/rest/api/2/issue/14401",
-                            },
-                        ],
-                        testIssues: [
-                            {
-                                id: "14401",
-                                issueType: {
-                                    id: "10103",
-                                    name: "Test",
+                            ],
+                            testIssues: [
+                                {
+                                    id: "14401",
+                                    issueType: {
+                                        id: "10103",
+                                        name: "Test",
+                                    },
+                                    key: "CYP-555",
+                                    self: "http://localhost:8727/rest/api/2/issue/14401",
                                 },
-                                key: "CYP-555",
-                                self: "http://localhost:8727/rest/api/2/issue/14401",
-                            },
-                        ],
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            ],
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
+
                 const response = await client.importFeature(
                     "./test/resources/features/taggedPrefixCorrect.feature",
                     { projectKey: "CYP" }
                 );
-                expect(response).to.deep.eq({
+
+                assert.strictEqual(message.mock.callCount(), 4);
+                assert.deepStrictEqual(message.mock.calls[1].arguments, [
+                    Level.DEBUG,
+                    "Encountered an error during feature file import: Test with key CYP-333 was not found!",
+                ]);
+                assert.deepStrictEqual(response, {
                     errors: ["Test with key CYP-333 was not found!"],
                     updatedOrCreatedIssues: ["CYP-555", "CYP-222"],
                 });
-                expect(logger.message).to.have.been.calledWithExactly(
-                    Level.DEBUG,
-                    "Encountered an error during feature file import: Test with key CYP-333 was not found!"
-                );
             });
 
-            await it("handles responses with empty messages", async () => {
-                restClient.post.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        preconditionIssues: [
-                            {
-                                id: "14401",
-                                issueType: {
-                                    id: "10103",
-                                    name: "Pre-Condition",
+            await it("handles responses with empty messages", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            preconditionIssues: [
+                                {
+                                    id: "14401",
+                                    issueType: {
+                                        id: "10103",
+                                        name: "Pre-Condition",
+                                    },
+                                    key: "CYP-222",
+                                    self: "http://localhost:8727/rest/api/2/issue/14401",
                                 },
-                                key: "CYP-222",
-                                self: "http://localhost:8727/rest/api/2/issue/14401",
-                            },
-                        ],
-                        testIssues: [
-                            {
-                                id: "14401",
-                                issueType: {
-                                    id: "10103",
-                                    name: "Test",
+                            ],
+                            testIssues: [
+                                {
+                                    id: "14401",
+                                    issueType: {
+                                        id: "10103",
+                                        name: "Test",
+                                    },
+                                    key: "CYP-555",
+                                    self: "http://localhost:8727/rest/api/2/issue/14401",
                                 },
-                                key: "CYP-555",
-                                self: "http://localhost:8727/rest/api/2/issue/14401",
-                            },
-                        ],
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            ],
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
+
                 const response = await client.importFeature(
                     "./test/resources/features/taggedPrefixCorrect.feature",
                     { projectKey: "CYP" }
                 );
-                expect(response).to.deep.eq({
+
+                assert.deepStrictEqual(response, {
                     errors: [],
                     updatedOrCreatedIssues: ["CYP-555", "CYP-222"],
                 });
             });
 
-            await it("handles responses without any updated issues", async () => {
-                const logger = getMockedLogger({ allowUnstubbedCalls: true });
-                restClient.post.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        message:
-                            "Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!",
-                        preconditionIssues: [],
-                        testIssues: [],
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+            await it("handles responses without any updated issues", async (context) => {
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            message:
+                                "Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!",
+                            preconditionIssues: [],
+                            testIssues: [],
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 const response = await client.importFeature(
                     "./test/resources/features/taggedPrefixCorrect.feature",
                     { projectKey: "CYP" }
                 );
-                expect(response).to.deep.eq({
+
+                assert.deepStrictEqual(response, {
                     errors: [
                         "Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!",
                     ],
                     updatedOrCreatedIssues: [],
                 });
-                expect(logger.message).to.have.been.calledWithExactly(
+                assert.strictEqual(message.mock.callCount(), 2);
+                assert.deepStrictEqual(message.mock.calls[1].arguments, [
                     Level.DEBUG,
-                    "Encountered an error during feature file import: Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!"
-                );
+                    "Encountered an error during feature file import: Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!",
+                ]);
             });
 
-            await it("handles bad responses", async () => {
-                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            await it("handles bad responses", async (context) => {
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+                const logErrorToFile = context.mock.method(
+                    LOG,
+                    "logErrorToFile",
+                    context.mock.fn()
+                );
                 const error = new AxiosError(
                     "Request failed with status code 400",
                     "400",
@@ -504,13 +574,18 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: "Bad Request",
                     }
                 );
-                restClient.post.onFirstCall().rejects(error);
-                await expect(
+
+                context.mock.method(restClient, "post", () => {
+                    throw error;
+                });
+
+                await assert.rejects(
                     client.importFeature("./test/resources/features/taggedPrefixCorrect.feature", {
                         projectKey: "CYP",
-                    })
-                ).to.eventually.be.rejectedWith("Feature file import failed");
-                expect(logger.message).to.have.been.calledWithExactly(
+                    }),
+                    { message: "Feature file import failed" }
+                );
+                assert.deepStrictEqual(message.mock.calls[1].arguments, [
                     Level.ERROR,
                     dedent(`
                         Failed to import Cucumber features: Request failed with status code 400
@@ -519,68 +594,89 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
                           For more information, visit:
                           - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
-                    `)
-                );
-                expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                    `),
+                ]);
+                assert.strictEqual(logErrorToFile.mock.callCount(), 1);
+                assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
                     error,
-                    "importFeatureError"
-                );
+                    "importFeatureError",
+                ]);
             });
 
-            await it("handles network failures", async () => {
-                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            await it("handles network failures", async (context) => {
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+                const logErrorToFile = context.mock.method(
+                    LOG,
+                    "logErrorToFile",
+                    context.mock.fn()
+                );
                 const error = new Error("Connection timeout");
-                restClient.post.onFirstCall().rejects(error);
-                await expect(
+
+                context.mock.method(restClient, "post", () => {
+                    throw error;
+                });
+
+                await assert.rejects(
                     client.importFeature("./test/resources/features/taggedPrefixCorrect.feature", {
                         projectKey: "CYP",
-                    })
-                ).to.eventually.be.rejectedWith("Feature file import failed");
-                expect(logger.message).to.have.been.calledWithExactly(
+                    }),
+                    { message: "Feature file import failed" }
+                );
+                assert.deepStrictEqual(message.mock.calls[1].arguments, [
                     Level.ERROR,
-                    "Failed to import Cucumber features: Connection timeout"
-                );
-                expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                    "Failed to import Cucumber features: Connection timeout",
+                ]);
+                assert.strictEqual(logErrorToFile.mock.callCount(), 1);
+                assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
                     error,
-                    "importFeatureError"
-                );
+                    "importFeatureError",
+                ]);
             });
         });
 
         await describe("get test execution", async () => {
-            await it("returns tests", async () => {
-                getMockedLogger();
-                restClient.get.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: [
-                        {
-                            archived: false,
-                            id: 9284,
-                            key: "CYP-123",
-                            rank: 1,
-                            status: "PASS",
-                        },
-                        {
-                            archived: false,
-                            id: 9285,
-                            key: "CYP-456",
-                            rank: 2,
-                            status: "TODO",
-                        },
-                    ],
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
-                });
-                restClient.get.onSecondCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: [],
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+            await it("returns tests", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+
+                let i = 0;
+                const get = context.mock.method(restClient, "get", () => {
+                    switch (i++) {
+                        case 0:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: [
+                                    {
+                                        archived: false,
+                                        id: 9284,
+                                        key: "CYP-123",
+                                        rank: 1,
+                                        status: "PASS",
+                                    },
+                                    {
+                                        archived: false,
+                                        id: 9285,
+                                        key: "CYP-456",
+                                        rank: 2,
+                                        status: "TODO",
+                                    },
+                                ],
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                        case 1:
+                            return {
+                                config: { headers: new AxiosHeaders() },
+                                data: [],
+                                headers: {},
+                                status: HttpStatusCode.Ok,
+                                statusText: HttpStatusCode[HttpStatusCode.Ok],
+                            };
+                    }
                 });
                 const response = await client.getTestExecution("CYP-321");
-                expect(response).to.deep.eq([
+
+                assert.deepStrictEqual(response, [
                     {
                         archived: false,
                         id: 9284,
@@ -596,32 +692,37 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         status: "TODO",
                     },
                 ]);
-                expect(restClient.get).to.have.been.calledWithExactly(
+                assert.deepStrictEqual(get.mock.calls[0].arguments, [
                     "https://example.org/rest/raven/latest/api/testexec/CYP-321/test",
                     {
-                        headers: { ["Authorization"]: "Basic dXNlcjp4eXo=" },
+                        headers: { ["Authorization"]: "Bearer token" },
                         params: {
                             detailed: undefined,
                             limit: undefined,
                             page: 1,
                         },
-                    }
-                );
-                expect(restClient.get).to.have.been.calledWithExactly(
+                    },
+                ]);
+                assert.deepStrictEqual(get.mock.calls[1].arguments, [
                     "https://example.org/rest/raven/latest/api/testexec/CYP-321/test",
                     {
-                        headers: { ["Authorization"]: "Basic dXNlcjp4eXo=" },
+                        headers: { ["Authorization"]: "Bearer token" },
                         params: {
                             detailed: undefined,
                             limit: undefined,
                             page: 2,
                         },
-                    }
-                );
+                    },
+                ]);
             });
 
-            await it("handles bad responses", async () => {
-                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            await it("handles bad responses", async (context) => {
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+                const logErrorToFile = context.mock.method(
+                    LOG,
+                    "logErrorToFile",
+                    context.mock.fn()
+                );
                 const error = new AxiosError(
                     "Request failed with status code 400",
                     "400",
@@ -635,50 +736,64 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: "Bad Request",
                     }
                 );
-                restClient.get.onFirstCall().rejects(error);
-                await expect(client.getTestExecution("CYP-321")).to.eventually.be.rejectedWith(
-                    "Failed to get test execution"
-                );
-                expect(logger.message).to.have.been.calledWithExactly(
+
+                context.mock.method(restClient, "get", () => {
+                    throw error;
+                });
+
+                await assert.rejects(client.getTestExecution("CYP-321"), {
+                    message: "Failed to get test execution",
+                });
+                assert.deepStrictEqual(message.mock.calls[1].arguments, [
                     Level.ERROR,
                     dedent(`
                         Failed to get test execution: Request failed with status code 400
-                    `)
-                );
-                expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                    `),
+                ]);
+                assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
                     error,
-                    "getTestExecutionError"
-                );
+                    "getTestExecutionError",
+                ]);
             });
         });
 
         await describe("get xray license", async () => {
-            await it("returns the license", async () => {
-                restClient.get.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        active: true,
-                        licenseType: "Demo License",
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+            await it("returns the license", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+
+                const get = context.mock.method(restClient, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            active: true,
+                            licenseType: "Demo License",
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 const response = await client.getXrayLicense();
-                expect(response).to.deep.eq({
+
+                assert.deepStrictEqual(response, {
                     active: true,
                     licenseType: "Demo License",
                 });
-                expect(restClient.get).to.have.been.calledOnceWithExactly(
+                assert.deepStrictEqual(get.mock.calls[0].arguments, [
                     "https://example.org/rest/raven/latest/api/xraylicense",
                     {
-                        headers: { ["Authorization"]: "Basic dXNlcjp4eXo=" },
-                    }
-                );
+                        headers: { ["Authorization"]: "Bearer token" },
+                    },
+                ]);
             });
 
-            await it("handles bad responses", async () => {
-                const logger = getMockedLogger({ allowUnstubbedCalls: true });
+            await it("handles bad responses", async (context) => {
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+                const logErrorToFile = context.mock.method(
+                    LOG,
+                    "logErrorToFile",
+                    context.mock.fn()
+                );
                 const error = new AxiosError(
                     "Request failed with status code 400",
                     "400",
@@ -692,20 +807,24 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: "Bad Request",
                     }
                 );
-                restClient.get.onFirstCall().rejects(error);
-                await expect(client.getXrayLicense()).to.eventually.be.rejectedWith(
-                    "Failed to get Xray license"
-                );
-                expect(logger.message).to.have.been.calledWithExactly(
+
+                context.mock.method(restClient, "get", () => {
+                    throw error;
+                });
+
+                await assert.rejects(client.getXrayLicense(), {
+                    message: "Failed to get Xray license",
+                });
+                assert.deepStrictEqual(message.mock.calls[1].arguments, [
                     Level.ERROR,
                     dedent(`
                         Failed to get Xray license: Request failed with status code 400
-                    `)
-                );
-                expect(logger.logErrorToFile).to.have.been.calledOnceWithExactly(
+                    `),
+                ]);
+                assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
                     error,
-                    "getXrayLicenseError"
-                );
+                    "getXrayLicenseError",
+                ]);
             });
         });
     });
