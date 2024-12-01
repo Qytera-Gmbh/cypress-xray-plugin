@@ -1,17 +1,18 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import axios from "axios";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks.js";
+import { PatCredentials } from "../../../../client/authentication/credentials.js";
+import { AxiosRestClient } from "../../../../client/https/https.js";
+import type { JiraClient } from "../../../../client/jira/jira-client.js";
+import { BaseJiraClient } from "../../../../client/jira/jira-client.js";
+import { LOG } from "../../../../util/logging.js";
 import { FetchIssueTypesCommand } from "./fetch-issue-types-command.js";
-
-chai.use(chaiAsPromised);
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(FetchIssueTypesCommand.name, async () => {
-        await it("fetches issue types", async () => {
-            const jiraClient = getMockedJiraClient();
+        await it("fetches issue types", async (context) => {
             const types = [
                 {
                     avatarId: 10314,
@@ -44,12 +45,20 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     untranslatedName: "Story",
                 },
             ];
-            jiraClient.getIssueTypes.onFirstCall().resolves(types);
-            const command = new FetchIssueTypesCommand(
-                { jiraClient: jiraClient },
-                getMockedLogger()
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
             );
-            expect(await command.compute()).to.deep.eq(types);
+            context.mock.method(
+                jiraClient,
+                "getIssueTypes",
+                context.mock.fn<JiraClient["getIssueTypes"]>(async () => {
+                    return await Promise.resolve(types);
+                })
+            );
+            const command = new FetchIssueTypesCommand({ jiraClient: jiraClient }, LOG);
+            assert.deepStrictEqual(await command.compute(), types);
         });
     });
 });
