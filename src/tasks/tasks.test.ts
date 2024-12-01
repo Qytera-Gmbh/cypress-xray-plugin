@@ -1,34 +1,47 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import sinon from "sinon";
-import { getMockedCypress, getMockedLogger } from "../../test/mocks.js";
+import { getMockedCypress } from "../../test/mocks.js";
 import { SimpleEvidenceCollection } from "../context.js";
 import { dedent } from "../util/dedent.js";
-import { Level } from "../util/logging.js";
+import { Level, LOG } from "../util/logging.js";
 import * as tasks from "./tasks.js";
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(tasks.enqueueTask.name, async () => {
-        await it("uses the current test title by default", () => {
+        await it("uses the current test title by default", (context) => {
             const { cy, cypress } = getMockedCypress();
             cypress.currentTest.title = "A test title";
-            const stubbedTask = sinon.stub(cy, "task");
+            const task = context.mock.method(cy, "task", context.mock.fn());
+            const buffer = Buffer.from("https://example.org") as unknown as typeof Cypress.Buffer;
             tasks.enqueueTask("cypress-xray-plugin:add-evidence", {
-                data: Buffer.from("https://example.org") as unknown as typeof Cypress.Buffer,
+                data: buffer,
                 filename: "urlOnly.json",
             });
-            expect(stubbedTask.firstCall.args[0]).to.eq("cypress-xray-plugin:add-evidence");
-            expect(stubbedTask.firstCall.args[1]).to.deep.contain({ test: "A test title" });
+            assert.deepStrictEqual(task.mock.calls[0].arguments, [
+                "cypress-xray-plugin:add-evidence",
+                {
+                    evidence: {
+                        data: buffer,
+                        filename: "urlOnly.json",
+                    },
+                    test: "A test title",
+                },
+            ]);
         });
     });
 
     await describe(tasks.PluginTaskListener.name, async () => {
-        await it("handles single evidence calls for tests with issue key", () => {
-            const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
-            const logger = getMockedLogger();
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
+        await it("handles single evidence calls for tests with issue key", (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const evidenceCollection = new SimpleEvidenceCollection();
+            const addEvidence = context.mock.method(
+                evidenceCollection,
+                "addEvidence",
+                context.mock.fn()
+            );
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
             listener.addEvidence({
                 evidence: {
                     contentType: "text/plain",
@@ -37,17 +50,20 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 },
                 test: "This is a test CYP-123",
             });
-            expect(evidenceCollection.addEvidence).to.have.been.calledOnceWithExactly("CYP-123", {
-                contentType: "text/plain",
-                data: "aGVsbG8=",
-                filename: "hello.txt",
-            });
+            assert.deepStrictEqual(addEvidence.mock.calls[0].arguments, [
+                "CYP-123",
+                {
+                    contentType: "text/plain",
+                    data: "aGVsbG8=",
+                    filename: "hello.txt",
+                },
+            ]);
         });
 
-        await it("handles single evidence calls for tests with multiple issue keys", () => {
+        await it("handles single evidence calls for tests with multiple issue keys", (context) => {
             const evidenceCollection = new SimpleEvidenceCollection();
-            const logger = getMockedLogger();
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
+            context.mock.method(LOG, "message", context.mock.fn());
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
             listener.addEvidence({
                 evidence: {
                     contentType: "text/plain",
@@ -56,21 +72,21 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 },
                 test: "This is a test CYP-123 CYP-124 CYP-125",
             });
-            expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+            assert.deepStrictEqual(evidenceCollection.getEvidence("CYP-123"), [
                 {
                     contentType: "text/plain",
                     data: "aGVsbG8=",
                     filename: "hello.txt",
                 },
             ]);
-            expect(evidenceCollection.getEvidence("CYP-124")).to.deep.eq([
+            assert.deepStrictEqual(evidenceCollection.getEvidence("CYP-124"), [
                 {
                     contentType: "text/plain",
                     data: "aGVsbG8=",
                     filename: "hello.txt",
                 },
             ]);
-            expect(evidenceCollection.getEvidence("CYP-125")).to.deep.eq([
+            assert.deepStrictEqual(evidenceCollection.getEvidence("CYP-125"), [
                 {
                     contentType: "text/plain",
                     data: "aGVsbG8=",
@@ -79,10 +95,15 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             ]);
         });
 
-        await it("handles single evidence calls for tests without issue key", () => {
-            const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
-            const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
+        await it("handles single evidence calls for tests without issue key", (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const evidenceCollection = new SimpleEvidenceCollection();
+            const addEvidence = context.mock.method(
+                evidenceCollection,
+                "addEvidence",
+                context.mock.fn()
+            );
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
             listener.addEvidence({
                 evidence: {
                     data: { data: [...Buffer.from("hello")], type: "Buffer" },
@@ -90,8 +111,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 },
                 test: "This is a test",
             });
-            expect(evidenceCollection.addEvidence).to.not.have.been.called;
-            expect(logger.message).to.have.been.calledOnceWithExactly(
+            assert.strictEqual(addEvidence.mock.callCount(), 0);
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.WARNING,
                 dedent(`
                     Test: This is a test
@@ -104,20 +125,25 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
                           You can target existing test issues by adding a corresponding issue key:
 
-                            await it("CYP-123 This is a test", () => {
+                            it("CYP-123 This is a test", () => {
                               // ...
                             });
 
                           For more information, visit:
                           - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                `)
-            );
+                `),
+            ]);
         });
 
-        await it("handles multiple evidence calls for tests with the same issue key", () => {
-            const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
-            const logger = getMockedLogger();
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
+        await it("handles multiple evidence calls for tests with the same issue key", (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const evidenceCollection = new SimpleEvidenceCollection();
+            const addEvidence = context.mock.method(
+                evidenceCollection,
+                "addEvidence",
+                context.mock.fn()
+            );
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
             listener.addEvidence({
                 evidence: {
                     data: { data: [...Buffer.from("hello")], type: "Buffer" },
@@ -132,29 +158,34 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 },
                 test: "This is a test CYP-123: bonjour",
             });
-            expect(evidenceCollection.addEvidence).to.have.been.calledTwice;
-            expect(evidenceCollection.addEvidence.getCall(0)).to.have.been.calledWithExactly(
+            assert.strictEqual(addEvidence.mock.callCount(), 2);
+            assert.deepStrictEqual(addEvidence.mock.calls[0].arguments, [
                 "CYP-123",
                 {
                     contentType: undefined,
                     data: "aGVsbG8=",
                     filename: "hello1.txt",
-                }
-            );
-            expect(evidenceCollection.addEvidence.getCall(1)).to.have.been.calledWithExactly(
+                },
+            ]);
+            assert.deepStrictEqual(addEvidence.mock.calls[1].arguments, [
                 "CYP-123",
                 {
                     contentType: undefined,
                     data: "Ym9uam91cg==",
                     filename: "hello2.txt",
-                }
-            );
+                },
+            ]);
         });
 
-        await it("handles multiple evidence calls for tests without issue key", () => {
-            const evidenceCollection = sinon.stub(new SimpleEvidenceCollection());
-            const logger = getMockedLogger({ allowUnstubbedCalls: true });
-            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, logger);
+        await it("handles multiple evidence calls for tests without issue key", (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const evidenceCollection = new SimpleEvidenceCollection();
+            const addEvidence = context.mock.method(
+                evidenceCollection,
+                "addEvidence",
+                context.mock.fn()
+            );
+            const listener = new tasks.PluginTaskListener("CYP", evidenceCollection, LOG);
             listener.addEvidence({
                 evidence: {
                     data: { data: [...Buffer.from("This is example text")], type: "Buffer" },
@@ -169,8 +200,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 },
                 test: "This is a test",
             });
-            expect(evidenceCollection.addEvidence).to.not.have.been.called;
-            expect(logger.message).to.have.been.calledOnceWithExactly(
+            assert.strictEqual(addEvidence.mock.callCount(), 0);
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.WARNING,
                 dedent(`
                     Test: This is a test
@@ -183,14 +214,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
                           You can target existing test issues by adding a corresponding issue key:
 
-                            await it("CYP-123 This is a test", () => {
+                            it("CYP-123 This is a test", () => {
                               // ...
                             });
 
                           For more information, visit:
                           - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                `)
-            );
+                `),
+            ]);
         });
     });
 });
