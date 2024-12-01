@@ -15,11 +15,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(AttachFilesCommand.name, async () => {
         await it("attaches files", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
-            const restClient = new AxiosRestClient(axios);
             const jiraClient = new BaseJiraClient(
                 "http://localhost:1234",
                 new PatCredentials("token"),
-                restClient
+                new AxiosRestClient(axios)
             );
             context.mock.method(
                 jiraClient,
@@ -56,11 +55,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
         await it("does not throw without files to attach", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
-            const restClient = new AxiosRestClient(axios);
             const jiraClient = new BaseJiraClient(
                 "http://localhost:1234",
                 new PatCredentials("token"),
-                restClient
+                new AxiosRestClient(axios)
             );
             const addAttachment = context.mock.method(jiraClient, "addAttachment");
             const command = new AttachFilesCommand(
