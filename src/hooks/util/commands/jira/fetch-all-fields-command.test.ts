@@ -1,17 +1,23 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import axios from "axios";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks.js";
+import { PatCredentials } from "../../../../client/authentication/credentials.js";
+import { AxiosRestClient } from "../../../../client/https/https.js";
+import type { JiraClient } from "../../../../client/jira/jira-client.js";
+import { BaseJiraClient } from "../../../../client/jira/jira-client.js";
+import { LOG } from "../../../../util/logging.js";
 import { FetchAllFieldsCommand } from "./fetch-all-fields-command.js";
-
-chai.use(chaiAsPromised);
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(FetchAllFieldsCommand.name, async () => {
-        await it("fetches fields", async () => {
-            const jiraClient = getMockedJiraClient();
+        await it("fetches fields", async (context) => {
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
             const fields = [
                 {
                     clauseNames: ["labels"],
@@ -38,12 +44,15 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     searchable: true,
                 },
             ];
-            jiraClient.getFields.onFirstCall().resolves(fields);
-            const command = new FetchAllFieldsCommand(
-                { jiraClient: jiraClient },
-                getMockedLogger()
+            context.mock.method(
+                jiraClient,
+                "getFields",
+                context.mock.fn<JiraClient["getFields"]>(async () => {
+                    return await Promise.resolve(fields);
+                })
             );
-            expect(await command.compute()).to.deep.eq(fields);
+            const command = new FetchAllFieldsCommand({ jiraClient: jiraClient }, LOG);
+            assert.deepStrictEqual(await command.compute(), fields);
         });
     });
 });
