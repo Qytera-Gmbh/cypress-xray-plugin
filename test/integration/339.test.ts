@@ -53,7 +53,7 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                 env: test.env,
                 includeDefaultEnv: test.service,
             });
-            expect(fs.existsSync(project.logDirectory)).to.be.false;
+            expect(fs.existsSync(project.logDirectory), false);
         });
     }
 });

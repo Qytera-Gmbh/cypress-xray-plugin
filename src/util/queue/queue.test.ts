@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
@@ -14,9 +14,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(queue.enqueue.name, async () => {
         await it("enqueues elements", () => {
             queue.enqueue(10);
-            expect(queue.peek()).to.eq(10);
+            assert.strictEqual(queue.peek(), 10);
             queue.enqueue(15);
-            expect(queue.peek()).to.eq(10);
+            assert.strictEqual(queue.peek(), 10);
         });
     });
 
@@ -32,48 +32,48 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 .enqueue(6)
                 .enqueue(7)
                 .enqueue(8);
-            expect(queue.dequeue()).to.eq(0);
-            expect(queue.dequeue()).to.eq(1);
-            expect(queue.dequeue()).to.eq(2);
-            expect(queue.dequeue()).to.eq(3);
-            expect(queue.dequeue()).to.eq(4);
-            expect(queue.dequeue()).to.eq(5);
-            expect(queue.dequeue()).to.eq(6);
-            expect(queue.dequeue()).to.eq(7);
-            expect(queue.dequeue()).to.eq(8);
+            assert.strictEqual(queue.dequeue(), 0);
+            assert.strictEqual(queue.dequeue(), 1);
+            assert.strictEqual(queue.dequeue(), 2);
+            assert.strictEqual(queue.dequeue(), 3);
+            assert.strictEqual(queue.dequeue(), 4);
+            assert.strictEqual(queue.dequeue(), 5);
+            assert.strictEqual(queue.dequeue(), 6);
+            assert.strictEqual(queue.dequeue(), 7);
+            assert.strictEqual(queue.dequeue(), 8);
         });
 
         await it("throws if the queue is empty", () => {
-            expect(() => queue.dequeue()).to.throw("Queue is empty");
+            assert.throws(() => queue.dequeue(), { message: "Queue is empty" });
         });
     });
 
     await describe(queue.peek.name, async () => {
         await it("peeks elements", () => {
             queue.enqueue(0);
-            expect(queue.peek()).to.eq(0);
+            assert.strictEqual(queue.peek(), 0);
             queue.enqueue(1);
-            expect(queue.peek()).to.eq(0);
+            assert.strictEqual(queue.peek(), 0);
             queue.enqueue(2);
-            expect(queue.peek()).to.eq(0);
+            assert.strictEqual(queue.peek(), 0);
         });
 
         await it("throws if the queue is empty", () => {
-            expect(() => queue.peek()).to.throw("Queue is empty");
+            assert.throws(() => queue.peek(), { message: "Queue is empty" });
         });
     });
 
     await describe(queue.size.name, async () => {
         await it("computes the size", () => {
-            expect(queue.size()).to.eq(0);
+            assert.strictEqual(queue.size(), 0);
             queue.enqueue(0);
-            expect(queue.size()).to.eq(1);
+            assert.strictEqual(queue.size(), 1);
             queue.enqueue(1);
-            expect(queue.size()).to.eq(2);
+            assert.strictEqual(queue.size(), 2);
             queue.dequeue();
-            expect(queue.size()).to.eq(1);
+            assert.strictEqual(queue.size(), 1);
             queue.dequeue();
-            expect(queue.size()).to.eq(0);
+            assert.strictEqual(queue.size(), 0);
         });
     });
 
@@ -89,48 +89,60 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 .enqueue(6)
                 .enqueue(7)
                 .enqueue(8);
-            expect(queue.has(0)).to.be.true;
-            expect(queue.has(1)).to.be.true;
-            expect(queue.has(2)).to.be.true;
-            expect(queue.has(3)).to.be.true;
-            expect(queue.has(4)).to.be.true;
-            expect(queue.has(5)).to.be.true;
-            expect(queue.has(6)).to.be.true;
-            expect(queue.has(7)).to.be.true;
-            expect(queue.has(8)).to.be.true;
+            assert.strictEqual(queue.has(0), true);
+            assert.strictEqual(queue.has(1), true);
+            assert.strictEqual(queue.has(2), true);
+            assert.strictEqual(queue.has(3), true);
+            assert.strictEqual(queue.has(4), true);
+            assert.strictEqual(queue.has(5), true);
+            assert.strictEqual(queue.has(6), true);
+            assert.strictEqual(queue.has(7), true);
+            assert.strictEqual(queue.has(8), true);
         });
 
         await it("returns false for unknown elements", () => {
             queue.enqueue(0).enqueue(1).enqueue(2);
-            expect(queue.has(4)).to.be.false;
+            assert.strictEqual(queue.has(4), false);
         });
     });
 
     await describe(queue.find.name, async () => {
         await it("finds elements", () => {
             queue.enqueue(0).enqueue(1).enqueue(2);
-            expect(queue.find((e) => e === 0)).to.eq(0);
-            expect(queue.find((e) => e === 1)).to.eq(1);
-            expect(queue.find((e) => e === 2)).to.eq(2);
+            assert.strictEqual(
+                queue.find((e) => e === 0),
+                0
+            );
+            assert.strictEqual(
+                queue.find((e) => e === 1),
+                1
+            );
+            assert.strictEqual(
+                queue.find((e) => e === 2),
+                2
+            );
         });
 
         await it("does not find nonexistent elements", () => {
             queue.enqueue(0).enqueue(1).enqueue(2);
-            expect(queue.find((e) => e === 4)).to.be.undefined;
+            assert.strictEqual(
+                queue.find((e) => e === 4),
+                undefined
+            );
         });
     });
 
     await describe(queue.isEmpty.name, async () => {
         await it("computes the emptiness", () => {
-            expect(queue.isEmpty()).to.be.true;
+            assert.strictEqual(queue.isEmpty(), true);
             queue.enqueue(0);
-            expect(queue.isEmpty()).to.be.false;
+            assert.strictEqual(queue.isEmpty(), false);
             queue.enqueue(1);
-            expect(queue.isEmpty()).to.be.false;
+            assert.strictEqual(queue.isEmpty(), false);
             queue.dequeue();
-            expect(queue.isEmpty()).to.be.false;
+            assert.strictEqual(queue.isEmpty(), false);
             queue.dequeue();
-            expect(queue.isEmpty()).to.be.true;
+            assert.strictEqual(queue.isEmpty(), true);
         });
     });
 });

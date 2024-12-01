@@ -509,7 +509,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             projectKey: "CYP",
                             url: "https://example.org",
                         });
-                        expect(jiraOptions.attachVideos).to.be.true;
+                        expect(jiraOptions.attachVideos, true);
                     });
 
                     await describe("fields", async () => {
@@ -707,7 +707,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const xrayOptions = initXrayOptions(env, {
                             uploadResults: true,
                         });
-                        expect(xrayOptions.uploadResults).to.be.false;
+                        expect(xrayOptions.uploadResults, false);
                     });
 
                     await it("XRAY_UPLOAD_SCREENSHOTS", () => {
@@ -717,7 +717,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const xrayOptions = initXrayOptions(env, {
                             uploadScreenshots: true,
                         });
-                        expect(xrayOptions.uploadScreenshots).to.be.false;
+                        expect(xrayOptions.uploadScreenshots, false);
                     });
                 });
                 await describe("cucumber", async () => {
@@ -759,7 +759,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 featureFileExtension: ".feature",
                             }
                         );
-                        expect(cucumberOptions?.downloadFeatures).to.be.true;
+                        expect(cucumberOptions?.downloadFeatures, true);
                     });
 
                     await it("CUCUMBER_PREFIXES_PRECONDITION", async () => {
@@ -822,7 +822,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 uploadFeatures: false,
                             }
                         );
-                        expect(cucumberOptions?.uploadFeatures).to.be.true;
+                        expect(cucumberOptions?.uploadFeatures, true);
                     });
                 });
                 await describe("plugin", async () => {
@@ -833,7 +833,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const pluginOptions = initPluginOptions(env, {
                             debug: false,
                         });
-                        expect(pluginOptions.debug).to.be.true;
+                        expect(pluginOptions.debug, true);
                     });
 
                     await it("PLUGIN_ENABLED", () => {
@@ -843,7 +843,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const pluginOptions = initPluginOptions(env, {
                             enabled: true,
                         });
-                        expect(pluginOptions.enabled).to.be.false;
+                        expect(pluginOptions.enabled, false);
                     });
 
                     await it("PLUGIN_LOG_DIRECTORY", () => {
@@ -863,7 +863,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const pluginOptions = initPluginOptions(env, {
                             normalizeScreenshotNames: false,
                         });
-                        expect(pluginOptions.normalizeScreenshotNames).to.be.true;
+                        expect(pluginOptions.normalizeScreenshotNames, true);
                     });
                 });
             });
