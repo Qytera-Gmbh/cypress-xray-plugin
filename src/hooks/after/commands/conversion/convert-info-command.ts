@@ -1,7 +1,10 @@
 import type { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details.js";
 import type { IssueUpdate } from "../../../../types/jira/responses/issue-update.js";
 import type { InternalXrayOptions } from "../../../../types/plugin.js";
-import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info.js";
+import type {
+    MultipartInfo,
+    MultipartInfoCloud,
+} from "../../../../types/xray/requests/import-execution-multipart-info.js";
 import { getOrCall } from "../../../../util/functions.js";
 import type { Logger } from "../../../../util/logging.js";
 import type { Computable } from "../../../command.js";
@@ -29,7 +32,10 @@ export type ComputedIssueUpdate = IssueUpdate & {
     };
 };
 
-export abstract class ConvertInfoCommand extends Command<MultipartInfo, Parameters> {
+export abstract class ConvertInfoCommand<InfoType extends MultipartInfo> extends Command<
+    InfoType,
+    Parameters
+> {
     private readonly results: Computable<RunData>;
     private readonly summary: Computable<string>;
     private readonly issuetype: Computable<IssueTypeDetails>;
@@ -52,7 +58,7 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
         this.issuetype = input.issuetype;
     }
 
-    protected async computeResult(): Promise<MultipartInfo> {
+    protected async computeResult(): Promise<InfoType> {
         const runInformation = await this.results.compute();
         const issueUpdate = await this.issueUpdate?.compute();
         const testExecutionIssueData: TestExecutionIssueDataServer = {
@@ -75,10 +81,10 @@ export abstract class ConvertInfoCommand extends Command<MultipartInfo, Paramete
     protected abstract buildInfo(
         runInformation: RunData,
         testExecutionIssueData: TestExecutionIssueData
-    ): MultipartInfo | Promise<MultipartInfo>;
+    ): InfoType | Promise<InfoType>;
 }
 
-export class ConvertInfoServerCommand extends ConvertInfoCommand {
+export class ConvertInfoServerCommand extends ConvertInfoCommand<MultipartInfo> {
     private readonly testEnvironmentsId?: Computable<string>;
     private readonly testPlanId?: Computable<string>;
     constructor(
@@ -132,7 +138,7 @@ export class ConvertInfoServerCommand extends ConvertInfoCommand {
     }
 }
 
-export class ConvertInfoCloudCommand extends ConvertInfoCommand {
+export class ConvertInfoCloudCommand extends ConvertInfoCommand<MultipartInfoCloud> {
     protected async buildInfo(
         runInformation: RunData,
         testExecutionIssueData: TestExecutionIssueData
