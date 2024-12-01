@@ -1,51 +1,76 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import axios from "axios";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks.js";
-import { Level } from "../../../../util/logging.js";
+import { PatCredentials } from "../../../../client/authentication/credentials.js";
+import { AxiosRestClient } from "../../../../client/https/https.js";
+import type { JiraClient } from "../../../../client/jira/jira-client.js";
+import { BaseJiraClient } from "../../../../client/jira/jira-client.js";
+import { Level, LOG } from "../../../../util/logging.js";
 import { ConstantCommand } from "../constant-command.js";
 import { AttachFilesCommand } from "./attach-files-command.js";
 
-chai.use(chaiAsPromised);
-
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(AttachFilesCommand.name, async () => {
-        await it("attaches files", async () => {
-            const logger = getMockedLogger();
-            const jiraClient = getMockedJiraClient();
-            jiraClient.addAttachment.withArgs("CYP-123", "image.jpg", "something.mp4").resolves([
-                { filename: "image.jpg", size: 12345 },
-                { filename: "something.mp4", size: 54321 },
-            ]);
+        await it("attaches files", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const restClient = new AxiosRestClient(axios);
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                restClient
+            );
+            context.mock.method(
+                jiraClient,
+                "addAttachment",
+                context.mock.fn<JiraClient["addAttachment"]>((issueIdOrKey, ...files) => {
+                    if (
+                        issueIdOrKey === "CYP-123" &&
+                        files[0] === "image.jpg" &&
+                        files[1] === "something.mp4"
+                    ) {
+                        return Promise.resolve([
+                            { filename: "image.jpg", size: 12345 },
+                            { filename: "something.mp4", size: 54321 },
+                        ]);
+                    }
+                    throw new Error("Mock called unexpectedly");
+                })
+            );
             const command = new AttachFilesCommand(
                 { jiraClient: jiraClient },
-                logger,
-                new ConstantCommand(logger, ["image.jpg", "something.mp4"]),
-                new ConstantCommand(logger, "CYP-123")
+                LOG,
+                new ConstantCommand(LOG, ["image.jpg", "something.mp4"]),
+                new ConstantCommand(LOG, "CYP-123")
             );
-            expect(await command.compute()).to.deep.eq([
+            assert.deepStrictEqual(await command.compute(), [
                 { filename: "image.jpg", size: 12345 },
                 { filename: "something.mp4", size: 54321 },
             ]);
-            expect(logger.message).to.have.been.calledWithExactly(
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.INFO,
-                "Attaching files to test execution issue CYP-123"
-            );
+                "Attaching files to test execution issue CYP-123",
+            ]);
         });
 
-        await it("does not throw without files to attach", async () => {
-            const logger = getMockedLogger();
-            const jiraClient = getMockedJiraClient();
+        await it("does not throw without files to attach", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const restClient = new AxiosRestClient(axios);
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                restClient
+            );
+            const addAttachment = context.mock.method(jiraClient, "addAttachment");
             const command = new AttachFilesCommand(
                 { jiraClient: jiraClient },
-                logger,
-                new ConstantCommand(logger, []),
-                new ConstantCommand(logger, "CYP-123")
+                LOG,
+                new ConstantCommand(LOG, []),
+                new ConstantCommand(LOG, "CYP-123")
             );
-            expect(await command.compute()).to.deep.eq([]);
-            expect(jiraClient.addAttachment).to.not.have.been.called;
+            assert.deepStrictEqual(await command.compute(), []);
+            assert.strictEqual(addAttachment.mock.callCount(), 0);
         });
     });
 });
