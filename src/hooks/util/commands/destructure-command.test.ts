@@ -1,39 +1,39 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedLogger } from "../../../../test/mocks.js";
+import { LOG } from "../../../util/logging.js";
 import { ConstantCommand } from "./constant-command.js";
 import { DestructureCommand } from "./destructure-command.js";
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(DestructureCommand.name, async () => {
-        await it("returns the accessed object value", async () => {
-            const logger = getMockedLogger();
+        await it("returns the accessed object value", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const command = new DestructureCommand(
-                logger,
-                new ConstantCommand(logger, {
+                LOG,
+                new ConstantCommand(LOG, {
                     a: 10,
                     b: { c: "bonjour" },
                 }),
                 "b"
             );
-            expect(await command.compute()).to.deep.eq({ c: "bonjour" });
+            assert.deepStrictEqual(await command.compute(), { c: "bonjour" });
         });
 
-        await it("throws for invalid object accesses", async () => {
-            const logger = getMockedLogger();
+        await it("throws for invalid object accesses", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const command = new DestructureCommand(
-                logger,
-                new ConstantCommand(logger, {
+                LOG,
+                new ConstantCommand(LOG, {
                     a: 10,
                     b: 20,
                 }),
                 "c"
             );
-            await expect(command.compute()).to.eventually.be.rejectedWith(
-                'Failed to access element c in: {"a":10,"b":20}'
-            );
+            await assert.rejects(command.compute(), {
+                message: 'Failed to access element c in: {"a":10,"b":20}',
+            });
         });
     });
 });
