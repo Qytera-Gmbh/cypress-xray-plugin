@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
@@ -45,181 +45,201 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
     await describe(bfs.name, async () => {
         await it("finds vertices by reference", () => {
-            expect(
+            assert.strictEqual(
                 bfs(graph, {
                     destination: v9,
                     source: v1,
-                })
-            ).to.be.true;
+                }),
+                true
+            );
         });
 
         await it("does not find nonexistent vertices by reference", () => {
-            expect(
+            assert.strictEqual(
                 bfs(graph, {
                     destination: new Vertex(17),
                     source: v1,
-                })
-            ).to.be.false;
+                }),
+                false
+            );
         });
 
         await it("does not find unreachable vertices by reference", () => {
-            expect(
+            assert.strictEqual(
                 bfs(graph, {
                     destination: v0,
                     source: v1,
-                })
-            ).to.be.false;
+                }),
+                false
+            );
         });
 
         await it("finds vertices by filtering", () => {
-            expect(
+            assert.strictEqual(
                 bfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 6,
                     source: v1,
-                })
-            ).to.be.true;
+                }),
+                true
+            );
         });
 
         await it("does not find nonexistent vertices by filtering", () => {
-            expect(
+            assert.strictEqual(
                 bfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 17,
                     source: v1,
-                })
-            ).to.be.false;
+                }),
+                false
+            );
         });
 
         await it("does not find unreachable vertices by filtering", () => {
-            expect(
+            assert.strictEqual(
                 bfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 0,
                     source: v1,
-                })
-            ).to.be.false;
+                }),
+                false
+            );
         });
 
         await it("finds vertices anywhere by reference", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     destination: v0,
-                })
-            ).to.be.true;
+                }),
+                true
+            );
         });
 
         await it("finds vertices anywhere by filtering", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 0,
-                })
-            ).to.be.true;
+                }),
+                true
+            );
         });
 
         await it("finds the starting vertex by reference", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     destination: v0,
                     source: v0,
-                })
-            ).to.be.true;
+                }),
+                true
+            );
         });
 
         await it("finds the starting vertex by filtering", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 0,
                     source: v0,
-                })
-            ).to.be.true;
+                }),
+                true
+            );
         });
     });
 
     await describe(dfs.name, async () => {
         await it("finds vertices by reference", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     destination: v9,
                     source: v1,
-                })
-            ).to.be.true;
+                }),
+                true
+            );
         });
 
         await it("does not find nonexistent vertices by reference", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     destination: new Vertex(17),
                     source: v1,
-                })
-            ).to.be.false;
+                }),
+                false
+            );
         });
 
         await it("does not find unreachable vertices by reference", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     destination: v0,
                     source: v1,
-                })
-            ).to.be.false;
+                }),
+                false
+            );
         });
 
         await it("finds vertices by filtering", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 6,
                     source: v1,
-                })
-            ).to.be.true;
+                }),
+                true
+            );
         });
 
         await it("does not find nonexistent vertices by filtering", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 17,
                     source: v1,
-                })
-            ).to.be.false;
+                }),
+                false
+            );
         });
 
         await it("does not find unreachable vertices by filtering", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 0,
                     source: v1,
-                })
-            ).to.be.false;
+                }),
+                false
+            );
         });
 
         await it("finds vertices anywhere by reference", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     destination: v0,
-                })
-            ).to.be.true;
+                }),
+                true
+            );
         });
 
         await it("finds vertices anywhere by filtering", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 0,
-                })
-            ).to.be.true;
+                }),
+                true
+            );
         });
 
         await it("finds the starting vertex by reference", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     destination: v0,
                     source: v0,
-                })
-            ).to.be.true;
+                }),
+                true
+            );
         });
 
         await it("finds the starting vertex by filtering", () => {
-            expect(
+            assert.strictEqual(
                 dfs(graph, {
                     filter: (vertex: Vertex) => vertex.id() === 0,
                     source: v0,
-                })
-            ).to.be.true;
+                }),
+                true
+            );
         });
     });
 });
