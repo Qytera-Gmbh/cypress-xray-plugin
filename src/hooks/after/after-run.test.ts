@@ -1,18 +1,20 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import axios from "axios";
+import assert from "node:assert";
 import { readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import { useFakeTimers } from "sinon";
-import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks.js";
 import { assertIsInstanceOf } from "../../../test/util.js";
+import { PatCredentials } from "../../client/authentication/credentials.js";
+import { AxiosRestClient } from "../../client/https/https.js";
+import { BaseJiraClient } from "../../client/jira/jira-client.js";
+import { ServerClient } from "../../client/xray/xray-client-server.js";
 import {
-    SimpleEvidenceCollection,
     initCucumberOptions,
     initJiraOptions,
     initPluginOptions,
     initXrayOptions,
+    SimpleEvidenceCollection,
 } from "../../context.js";
 import type { CypressRunResultType } from "../../types/cypress/cypress.js";
 import type { ClientCombination } from "../../types/plugin.js";
@@ -25,7 +27,7 @@ import type {
     CucumberMultipartFeature,
 } from "../../types/xray/requests/import-execution-cucumber-multipart.js";
 import { ExecutableGraph } from "../../util/graph/executable-graph.js";
-import { Level } from "../../util/logging.js";
+import { Level, LOG } from "../../util/logging.js";
 import type { Command } from "../command.js";
 import { ComputableState } from "../command.js";
 import { ConstantCommand } from "../util/commands/constant-command.js";
@@ -56,8 +58,6 @@ import { ConvertCypressTestsCommand } from "./commands/conversion/cypress/conver
 import { ExtractVideoFilesCommand } from "./commands/extract-video-files-command.js";
 import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issue-key-command.js";
 import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-command.js";
-
-chai.use(chaiAsPromised);
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     let clients: ClientCombination;
@@ -93,10 +93,19 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             plugin: initPluginOptions({}, {}),
             xray: initXrayOptions({}, {}),
         };
+        const restClient = new AxiosRestClient(axios);
         clients = {
-            jiraClient: getMockedJiraClient(),
+            jiraClient: new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                restClient
+            ),
             kind: "server",
-            xrayClient: getMockedXrayClient(),
+            xrayClient: new ServerClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                restClient
+            ),
         };
     });
 
@@ -119,7 +128,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     graph,
-                    getMockedLogger()
+                    LOG
                 );
                 // Vertices.
                 const [
@@ -148,8 +157,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 assertIsInstanceOf(fallbackCypressUploadCommand, FallbackCommand);
                 assertIsInstanceOf(verifyResultsUploadCommand, VerifyResultsUploadCommand);
                 // Vertex data.
-                expect(resultsCommand.getValue()).to.deep.eq(result);
-                expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(resultsCommand.getValue(), result);
+                assert.deepStrictEqual(convertCypressTestsCommand.getParameters(), {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: ".feature",
                     normalizeScreenshotNames: false,
@@ -169,57 +178,66 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         },
                     },
                 });
-                expect(convertCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(convertCommand.getParameters(), {
                     jira: {
                         projectKey: options.jira.projectKey,
                         testPlanIssueKey: undefined,
                     },
                     xray: options.xray,
                 });
-                expect(issueSummaryCommand.getValue()).to.deep.eq(
+                assert.deepStrictEqual(
+                    issueSummaryCommand.getValue(),
                     "Execution Results [2022-11-28T17:41:12.234Z]"
                 );
-                expect(issuetypeCommand.getValue()).to.deep.eq({ name: "Test Execution" });
-                expect(combineCypressJsonCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(issuetypeCommand.getValue(), { name: "Test Execution" });
+                assert.deepStrictEqual(combineCypressJsonCommand.getParameters(), {
                     testExecutionIssueKey: undefined,
                 });
-                expect(importExecutionCypressCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(importExecutionCypressCommand.getParameters(), {
                     xrayClient: clients.xrayClient,
                 });
-                expect(fallbackCypressUploadCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(fallbackCypressUploadCommand.getParameters(), {
                     fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
                     fallbackValue: undefined,
                 });
-                expect(verifyResultsUploadCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(verifyResultsUploadCommand.getParameters(), {
                     url: "https://example.org",
                 });
                 // Edges.
-                expect([...graph.getSuccessors(resultsCommand)]).to.deep.eq([
-                    convertCypressTestsCommand,
-                    convertCommand,
-                ]);
-                expect([...graph.getSuccessors(convertCypressTestsCommand)]).to.deep.eq([
-                    combineCypressJsonCommand,
-                ]);
-                expect([...graph.getSuccessors(issueSummaryCommand)]).to.deep.eq([convertCommand]);
-                expect([...graph.getSuccessors(convertCommand)]).to.deep.eq([
-                    combineCypressJsonCommand,
-                ]);
-                expect([...graph.getSuccessors(combineCypressJsonCommand)]).to.deep.eq([
-                    assertCypressConversionValidCommand,
-                    importExecutionCypressCommand,
-                ]);
-                expect([...graph.getSuccessors(assertCypressConversionValidCommand)]).to.deep.eq([
-                    importExecutionCypressCommand,
-                ]);
-                expect([...graph.getSuccessors(importExecutionCypressCommand)]).to.deep.eq([
-                    fallbackCypressUploadCommand,
-                ]);
-                expect([...graph.getSuccessors(fallbackCypressUploadCommand)]).to.deep.eq([
-                    verifyResultsUploadCommand,
-                ]);
-                expect(graph.size("vertices")).to.eq(10);
-                expect(graph.size("edges")).to.eq(11);
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(resultsCommand)],
+                    [convertCypressTestsCommand, convertCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(convertCypressTestsCommand)],
+                    [combineCypressJsonCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(issueSummaryCommand)],
+                    [convertCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(convertCommand)],
+                    [combineCypressJsonCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(combineCypressJsonCommand)],
+                    [assertCypressConversionValidCommand, importExecutionCypressCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(assertCypressConversionValidCommand)],
+                    [importExecutionCypressCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(importExecutionCypressCommand)],
+                    [fallbackCypressUploadCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(fallbackCypressUploadCommand)],
+                    [verifyResultsUploadCommand]
+                );
+                assert.strictEqual(graph.size("vertices"), 10);
+                assert.strictEqual(graph.size("edges"), 11);
             });
 
             await it("uses configured test execution issue keys", async () => {
@@ -234,7 +252,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     graph,
-                    getMockedLogger()
+                    LOG
                 );
                 // Vertices.
                 const commands = [...graph.getVertices()];
@@ -252,35 +270,38 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 assertIsInstanceOf(verifyExecutionIssueKeyCommand, VerifyExecutionIssueKeyCommand);
                 assertIsInstanceOf(fallbackCypressUploadCommand, FallbackCommand);
                 // Vertex data.
-                expect(issueKeysCommand.getValue()).to.deep.eq(["CYP-415"]);
-                expect(getSummaryValuesCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(issueKeysCommand.getValue(), ["CYP-415"]);
+                assert.deepStrictEqual(getSummaryValuesCommand.getParameters(), {
                     jiraClient: clients.jiraClient,
                 });
-                expect(destructureCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(destructureCommand.getParameters(), {
                     accessor: "CYP-415",
                 });
-                expect(verifyExecutionIssueKeyCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(verifyExecutionIssueKeyCommand.getParameters(), {
                     displayCloudHelp: false,
                     importType: "cypress",
                     testExecutionIssueKey: "CYP-415",
                     testExecutionIssueType: { name: "Test Execution" },
                 });
                 // Edges.
-                expect([...graph.getSuccessors(issueKeysCommand)]).to.deep.eq([
-                    getSummaryValuesCommand,
-                ]);
-                expect([...graph.getSuccessors(getSummaryValuesCommand)]).to.deep.eq([
-                    destructureCommand,
-                ]);
-                expect([...graph.getSuccessors(destructureCommand)]).to.deep.eq([
-                    convertInfoServerCommand,
-                ]);
-                expect([...graph.getSuccessors(importCypressExecutionCommand)]).to.deep.eq([
-                    verifyExecutionIssueKeyCommand,
-                    fallbackCypressUploadCommand,
-                ]);
-                expect(graph.size("vertices")).to.eq(14);
-                expect(graph.size("edges")).to.eq(15);
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(issueKeysCommand)],
+                    [getSummaryValuesCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(getSummaryValuesCommand)],
+                    [destructureCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(destructureCommand)],
+                    [convertInfoServerCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(importCypressExecutionCommand)],
+                    [verifyExecutionIssueKeyCommand, fallbackCypressUploadCommand]
+                );
+                assert.strictEqual(graph.size("vertices"), 14);
+                assert.strictEqual(graph.size("edges"), 15);
             });
 
             await it("uses configured test execution issue data with known fields", async () => {
@@ -300,7 +321,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     graph,
-                    getMockedLogger()
+                    LOG
                 );
                 // Vertices.
                 const commands = [...graph.getVertices()];
@@ -309,16 +330,17 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 assertIsInstanceOf(issueKeysCommand, ConstantCommand);
                 assertIsInstanceOf(getSummaryValuesCommand, GetSummaryValuesCommand);
                 // Vertex data.
-                expect(issueKeysCommand.getValue()).to.deep.eq(["CYP-415"]);
-                expect(getSummaryValuesCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(issueKeysCommand.getValue(), ["CYP-415"]);
+                assert.deepStrictEqual(getSummaryValuesCommand.getParameters(), {
                     jiraClient: clients.jiraClient,
                 });
                 // Edges.
-                expect([...graph.getSuccessors(issueKeysCommand)]).to.deep.eq([
-                    getSummaryValuesCommand,
-                ]);
-                expect(graph.size("vertices")).to.eq(14);
-                expect(graph.size("edges")).to.eq(15);
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(issueKeysCommand)],
+                    [getSummaryValuesCommand]
+                );
+                assert.strictEqual(graph.size("vertices"), 14);
+                assert.strictEqual(graph.size("edges"), 15);
             });
 
             await it("uses configured summaries", async () => {
@@ -335,7 +357,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     graph,
-                    getMockedLogger()
+                    LOG
                 );
                 // Vertices.
                 const commands = [...graph.getVertices()];
@@ -344,13 +366,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 assertIsInstanceOf(issueSummaryCommand, ConstantCommand);
                 assertIsInstanceOf(convertInfoServerCommand, ConvertInfoServerCommand);
                 // Vertex data.
-                expect(issueSummaryCommand.getValue()).to.deep.eq("My summary");
+                assert.deepStrictEqual(issueSummaryCommand.getValue(), "My summary");
                 // Edges.
-                expect([...graph.getSuccessors(issueSummaryCommand)]).to.deep.eq([
-                    convertInfoServerCommand,
-                ]);
-                expect(graph.size("vertices")).to.eq(11);
-                expect(graph.size("edges")).to.eq(12);
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(issueSummaryCommand)],
+                    [convertInfoServerCommand]
+                );
+                assert.strictEqual(graph.size("vertices"), 11);
+                assert.strictEqual(graph.size("edges"), 12);
             });
 
             await it("uses configured custom issue data", async () => {
@@ -368,21 +391,21 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     graph,
-                    getMockedLogger()
+                    LOG
                 );
                 // Vertices.
                 const commands = [...graph.getVertices()];
                 const issueUpdateCommand = commands[2];
                 assertIsInstanceOf(issueUpdateCommand, ConstantCommand);
                 // Vertex data.
-                expect(issueUpdateCommand.getValue()).to.deep.eq({
+                assert.deepStrictEqual(issueUpdateCommand.getValue(), {
                     fields: {
                         assignee: "someone else",
                         ["customfield_12345"]: "bonjour",
                     },
                 });
-                expect(graph.size("vertices")).to.eq(11);
-                expect(graph.size("edges")).to.eq(12);
+                assert.strictEqual(graph.size("vertices"), 11);
+                assert.strictEqual(graph.size("edges"), 12);
             });
 
             await it("attaches videos", async () => {
@@ -395,7 +418,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     graph,
-                    getMockedLogger()
+                    LOG
                 );
                 // Vertices.
                 const commands = [...graph.getVertices()];
@@ -406,21 +429,24 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 assertIsInstanceOf(extractVideoFilesCommand, ExtractVideoFilesCommand);
                 assertIsInstanceOf(attachVideosCommand, AttachFilesCommand);
                 // Vertex data.
-                expect(attachVideosCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(attachVideosCommand.getParameters(), {
                     jiraClient: clients.jiraClient,
                 });
                 // Edges.
-                expect([...graph.getSuccessors(resultsCommand)]).to.contain(
-                    extractVideoFilesCommand
+                assert.ok(
+                    [...graph.getSuccessors(resultsCommand)].includes(extractVideoFilesCommand)
                 );
-                expect([...graph.getSuccessors(extractVideoFilesCommand)]).to.deep.eq([
-                    attachVideosCommand,
-                ]);
-                expect([...graph.getSuccessors(verifyResultsUploadCommand)]).to.contain(
-                    attachVideosCommand
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(extractVideoFilesCommand)],
+                    [attachVideosCommand]
                 );
-                expect(graph.size("vertices")).to.eq(12);
-                expect(graph.size("edges")).to.eq(14);
+                assert.ok(
+                    [...graph.getSuccessors(verifyResultsUploadCommand)].includes(
+                        attachVideosCommand
+                    )
+                );
+                assert.strictEqual(graph.size("vertices"), 12);
+                assert.strictEqual(graph.size("edges"), 14);
             });
 
             await it("explicitly transitions issues in server environments", async () => {
@@ -438,7 +464,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     graph,
-                    getMockedLogger()
+                    LOG
                 );
                 // Vertices.
                 const commands = [...graph.getVertices()];
@@ -446,18 +472,20 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 const transitionIssueCommand = commands[11];
                 assertIsInstanceOf(transitionIssueCommand, TransitionIssueCommand);
                 // Vertex data.
-                expect(transitionIssueCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(transitionIssueCommand.getParameters(), {
                     jiraClient: clients.jiraClient,
                     transition: {
                         id: "6",
                     },
                 });
                 // Edges.
-                expect([...graph.getSuccessors(verifyResultsUploadCommand)]).to.contain(
-                    transitionIssueCommand
+                assert.ok(
+                    [...graph.getSuccessors(verifyResultsUploadCommand)].includes(
+                        transitionIssueCommand
+                    )
                 );
-                expect(graph.size("vertices")).to.eq(12);
-                expect(graph.size("edges")).to.eq(13);
+                assert.strictEqual(graph.size("vertices"), 12);
+                assert.strictEqual(graph.size("edges"), 13);
             });
 
             await it("does not explicitly transition issues in cloud environments", async () => {
@@ -475,16 +503,16 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     graph,
-                    getMockedLogger()
+                    LOG
                 );
                 // Vertices.
                 const commands = [...graph.getVertices()];
                 const verifyResultsUploadCommand = commands[10];
                 assertIsInstanceOf(verifyResultsUploadCommand, VerifyResultsUploadCommand);
                 // Edges.
-                expect([...graph.getSuccessors(verifyResultsUploadCommand)]).to.deep.eq([]);
-                expect(graph.size("vertices")).to.eq(11);
-                expect(graph.size("edges")).to.eq(12);
+                assert.deepStrictEqual([...graph.getSuccessors(verifyResultsUploadCommand)], []);
+                assert.strictEqual(graph.size("vertices"), 11);
+                assert.strictEqual(graph.size("edges"), 12);
             });
         });
 
@@ -517,8 +545,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             });
 
             await describe("server", async () => {
-                await it("adds commands necessary for cucumber results upload", async () => {
-                    useFakeTimers(new Date(12345));
+                await it("adds commands necessary for cucumber results upload", async (context) => {
+                    context.mock.timers.enable({ apis: ["Date"] });
+                    context.mock.timers.tick(12345);
                     const graph = new ExecutableGraph<Command>();
                     await addUploadCommands(
                         cypressResult,
@@ -527,7 +556,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         graph,
-                        getMockedLogger()
+                        LOG
                     );
                     // Vertices.
                     const [
@@ -567,22 +596,23 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     assertIsInstanceOf(fallbackCucumberUploadCommand, FallbackCommand);
                     assertIsInstanceOf(verifyResultsUploadCommand, VerifyResultsUploadCommand);
                     // Vertex data.
-                    expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
-                    expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
-                    expect(issueSummaryCommand.getValue()).to.deep.eq(
+                    assert.deepStrictEqual(cypressResultsCommand.getValue(), cypressResult);
+                    assert.deepStrictEqual(cucumberResultsCommand.getValue(), cucumberResult);
+                    assert.deepStrictEqual(
+                        issueSummaryCommand.getValue(),
                         "Execution Results [2023-07-23T21:26:15.539Z]"
                     );
-                    expect(issuetypeCommand.getValue()).to.deep.eq({
+                    assert.deepStrictEqual(issuetypeCommand.getValue(), {
                         name: "Test Execution",
                     });
-                    expect(convertMultipartInfoCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(convertMultipartInfoCommand.getParameters(), {
                         jira: {
                             projectKey: options.jira.projectKey,
                             testPlanIssueKey: undefined,
                         },
                         xray: options.xray,
                     });
-                    expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(convertCucumberFeaturesCommand.getParameters(), {
                         cucumber: {
                             prefixes: {
                                 precondition: undefined,
@@ -611,47 +641,57 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             uploadScreenshots: true,
                         },
                     });
-                    expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(importCucumberExecutionCommand.getParameters(), {
                         xrayClient: clients.xrayClient,
                     });
-                    expect(fallbackCucumberUploadCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(fallbackCucumberUploadCommand.getParameters(), {
                         fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
                         fallbackValue: undefined,
                     });
                     // Edges.
-                    expect([...graph.getSuccessors(cypressResultsCommand)]).to.contain(
-                        convertMultipartInfoCommand
+                    assert.ok(
+                        [...graph.getSuccessors(cypressResultsCommand)].includes(
+                            convertMultipartInfoCommand
+                        )
                     );
-                    expect([...graph.getSuccessors(cucumberResultsCommand)]).to.deep.eq([
-                        convertCucumberFeaturesCommand,
-                    ]);
-                    expect([...graph.getSuccessors(issueSummaryCommand)]).to.deep.eq([
-                        convertMultipartInfoCommand,
-                    ]);
-                    expect([...graph.getSuccessors(issuetypeCommand)]).to.deep.eq([
-                        convertMultipartInfoCommand,
-                    ]);
-                    expect([...graph.getSuccessors(convertMultipartInfoCommand)]).to.deep.eq([
-                        combineCucumberMultipartCommand,
-                    ]);
-                    expect([...graph.getSuccessors(convertCucumberFeaturesCommand)]).to.deep.eq([
-                        combineCucumberMultipartCommand,
-                    ]);
-                    expect([...graph.getSuccessors(combineCucumberMultipartCommand)]).to.deep.eq([
-                        assertConversionValidCommand,
-                        importCucumberExecutionCommand,
-                    ]);
-                    expect([...graph.getSuccessors(assertConversionValidCommand)]).to.deep.eq([
-                        importCucumberExecutionCommand,
-                    ]);
-                    expect([...graph.getSuccessors(importCucumberExecutionCommand)]).to.deep.eq([
-                        fallbackCucumberUploadCommand,
-                    ]);
-                    expect([...graph.getSuccessors(fallbackCucumberUploadCommand)]).to.deep.eq([
-                        verifyResultsUploadCommand,
-                    ]);
-                    expect(graph.size("vertices")).to.eq(11);
-                    expect(graph.size("edges")).to.eq(11);
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(cucumberResultsCommand)],
+                        [convertCucumberFeaturesCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(issueSummaryCommand)],
+                        [convertMultipartInfoCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(issuetypeCommand)],
+                        [convertMultipartInfoCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(convertMultipartInfoCommand)],
+                        [combineCucumberMultipartCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(convertCucumberFeaturesCommand)],
+                        [combineCucumberMultipartCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(combineCucumberMultipartCommand)],
+                        [assertConversionValidCommand, importCucumberExecutionCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(assertConversionValidCommand)],
+                        [importCucumberExecutionCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(importCucumberExecutionCommand)],
+                        [fallbackCucumberUploadCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(fallbackCucumberUploadCommand)],
+                        [verifyResultsUploadCommand]
+                    );
+                    assert.strictEqual(graph.size("vertices"), 11);
+                    assert.strictEqual(graph.size("edges"), 11);
                 });
 
                 await it("uses configured test plan data", async () => {
@@ -664,7 +704,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         graph,
-                        getMockedLogger()
+                        LOG
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
@@ -674,21 +714,23 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
                     assertIsInstanceOf(testPlanIdCommand, ExtractFieldIdCommand);
                     // Vertex data.
-                    expect(fetchAllFieldsCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(fetchAllFieldsCommand.getParameters(), {
                         jiraClient: clients.jiraClient,
                     });
-                    expect(testPlanIdCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(testPlanIdCommand.getParameters(), {
                         field: JiraField.TEST_PLAN,
                     });
                     // Edges.
-                    expect([...graph.getSuccessors(fetchAllFieldsCommand)]).to.deep.eq([
-                        testPlanIdCommand,
-                    ]);
-                    expect([...graph.getSuccessors(testPlanIdCommand)]).to.deep.eq([
-                        convertCommand,
-                    ]);
-                    expect(graph.size("vertices")).to.eq(13);
-                    expect(graph.size("edges")).to.eq(13);
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(fetchAllFieldsCommand)],
+                        [testPlanIdCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(testPlanIdCommand)],
+                        [convertCommand]
+                    );
+                    assert.strictEqual(graph.size("vertices"), 13);
+                    assert.strictEqual(graph.size("edges"), 13);
                 });
 
                 await it("uses configured test plan data with hardcoded test plan ids", async () => {
@@ -702,7 +744,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         graph,
-                        getMockedLogger()
+                        LOG
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
@@ -710,13 +752,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     const convertCommand = commands[4];
                     assertIsInstanceOf(testPlanIdCommand, ConstantCommand);
                     // Vertex data.
-                    expect(testPlanIdCommand.getValue()).to.eq("customfield_12345");
+                    assert.strictEqual(testPlanIdCommand.getValue(), "customfield_12345");
                     // Edges.
-                    expect([...graph.getSuccessors(testPlanIdCommand)]).to.deep.eq([
-                        convertCommand,
-                    ]);
-                    expect(graph.size("vertices")).to.eq(12);
-                    expect(graph.size("edges")).to.eq(12);
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(testPlanIdCommand)],
+                        [convertCommand]
+                    );
+                    assert.strictEqual(graph.size("vertices"), 12);
+                    assert.strictEqual(graph.size("edges"), 12);
                 });
 
                 await it("uses configured test environment data", async () => {
@@ -729,7 +772,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         graph,
-                        getMockedLogger()
+                        LOG
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
@@ -739,21 +782,23 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     assertIsInstanceOf(fetchAllFieldsCommand, FetchAllFieldsCommand);
                     assertIsInstanceOf(testEnvironmentsIdCommand, ExtractFieldIdCommand);
                     // Vertex data.
-                    expect(fetchAllFieldsCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(fetchAllFieldsCommand.getParameters(), {
                         jiraClient: clients.jiraClient,
                     });
-                    expect(testEnvironmentsIdCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(testEnvironmentsIdCommand.getParameters(), {
                         field: JiraField.TEST_ENVIRONMENTS,
                     });
                     // Edges.
-                    expect([...graph.getSuccessors(fetchAllFieldsCommand)]).to.deep.eq([
-                        testEnvironmentsIdCommand,
-                    ]);
-                    expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
-                        convertCommand,
-                    ]);
-                    expect(graph.size("vertices")).to.eq(13);
-                    expect(graph.size("edges")).to.eq(13);
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(fetchAllFieldsCommand)],
+                        [testEnvironmentsIdCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(testEnvironmentsIdCommand)],
+                        [convertCommand]
+                    );
+                    assert.strictEqual(graph.size("vertices"), 13);
+                    assert.strictEqual(graph.size("edges"), 13);
                 });
 
                 await it("uses configured test environment data with hardcoded test environment ids", async () => {
@@ -767,7 +812,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         graph,
-                        getMockedLogger()
+                        LOG
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
@@ -775,13 +820,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     const convertCommand = commands[4];
                     assertIsInstanceOf(testEnvironmentsIdCommand, ConstantCommand);
                     // Vertex data.
-                    expect(testEnvironmentsIdCommand.getValue()).to.eq("customfield_67890");
+                    assert.strictEqual(testEnvironmentsIdCommand.getValue(), "customfield_67890");
                     // Edges.
-                    expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
-                        convertCommand,
-                    ]);
-                    expect(graph.size("vertices")).to.eq(12);
-                    expect(graph.size("edges")).to.eq(12);
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(testEnvironmentsIdCommand)],
+                        [convertCommand]
+                    );
+                    assert.strictEqual(graph.size("vertices"), 12);
+                    assert.strictEqual(graph.size("edges"), 12);
                 });
 
                 await it("uses configured test plan and environment data", async () => {
@@ -795,7 +841,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         graph,
-                        getMockedLogger()
+                        LOG
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
@@ -807,18 +853,20 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     assertIsInstanceOf(testPlanIdCommand, ExtractFieldIdCommand);
                     assertIsInstanceOf(testEnvironmentsIdCommand, ExtractFieldIdCommand);
                     // Edges.
-                    expect([...graph.getSuccessors(fetchAllFieldsCommand)]).to.deep.eq([
-                        testPlanIdCommand,
-                        testEnvironmentsIdCommand,
-                    ]);
-                    expect([...graph.getSuccessors(testPlanIdCommand)]).to.deep.eq([
-                        convertCommand,
-                    ]);
-                    expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
-                        convertCommand,
-                    ]);
-                    expect(graph.size("vertices")).to.eq(14);
-                    expect(graph.size("edges")).to.eq(15);
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(fetchAllFieldsCommand)],
+                        [testPlanIdCommand, testEnvironmentsIdCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(testPlanIdCommand)],
+                        [convertCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(testEnvironmentsIdCommand)],
+                        [convertCommand]
+                    );
+                    assert.strictEqual(graph.size("vertices"), 14);
+                    assert.strictEqual(graph.size("edges"), 15);
                 });
 
                 await it("uses configured test plan and environment data with hardcoded ids", async () => {
@@ -834,7 +882,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         graph,
-                        getMockedLogger()
+                        LOG
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
@@ -844,17 +892,19 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     assertIsInstanceOf(testPlanIdCommand, ConstantCommand);
                     assertIsInstanceOf(testEnvironmentsIdCommand, ConstantCommand);
                     // Vertex data.
-                    expect(testPlanIdCommand.getValue()).to.eq("customfield_12345");
-                    expect(testEnvironmentsIdCommand.getValue()).to.eq("customfield_67890");
+                    assert.strictEqual(testPlanIdCommand.getValue(), "customfield_12345");
+                    assert.strictEqual(testEnvironmentsIdCommand.getValue(), "customfield_67890");
                     // Edges.
-                    expect([...graph.getSuccessors(testPlanIdCommand)]).to.deep.eq([
-                        convertCommand,
-                    ]);
-                    expect([...graph.getSuccessors(testEnvironmentsIdCommand)]).to.deep.eq([
-                        convertCommand,
-                    ]);
-                    expect(graph.size("vertices")).to.eq(13);
-                    expect(graph.size("edges")).to.eq(13);
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(testPlanIdCommand)],
+                        [convertCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(testEnvironmentsIdCommand)],
+                        [convertCommand]
+                    );
+                    assert.strictEqual(graph.size("vertices"), 13);
+                    assert.strictEqual(graph.size("edges"), 13);
                 });
             });
 
@@ -872,7 +922,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         graph,
-                        getMockedLogger()
+                        LOG
                     );
                     // Vertices.
                     const commands = [...graph.getVertices()];
@@ -881,17 +931,17 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     const convertCucumberFeaturesCommand = commands[5];
                     assertIsInstanceOf(issuetypeCommand, ConstantCommand);
                     assertIsInstanceOf(convertCommand, ConvertInfoCloudCommand);
-                    expect(issuetypeCommand.getValue()).to.deep.eq({
+                    assert.deepStrictEqual(issuetypeCommand.getValue(), {
                         name: "Test Execution",
                     });
-                    expect(convertCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(convertCommand.getParameters(), {
                         jira: {
                             projectKey: options.jira.projectKey,
                             testPlanIssueKey: undefined,
                         },
                         xray: options.xray,
                     });
-                    expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(convertCucumberFeaturesCommand.getParameters(), {
                         cucumber: {
                             prefixes: {
                                 precondition: undefined,
@@ -920,7 +970,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             uploadScreenshots: true,
                         },
                     });
-                    expect(graph.size("vertices")).to.eq(11);
+                    assert.strictEqual(graph.size("vertices"), 11);
                 });
 
                 await it("uses configured test execution issue data", async () => {
@@ -940,7 +990,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         graph,
-                        getMockedLogger()
+                        LOG
                     );
                     // Vertices.
                     const [
@@ -993,8 +1043,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     assertIsInstanceOf(fallbackCucumberUploadCommand, FallbackCommand);
                     assertIsInstanceOf(verifyResultsUploadCommand, VerifyResultsUploadCommand);
                     // Vertex data.
-                    expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
-                    expect(issueUpdateCommand.getValue()).to.deep.eq({
+                    assert.deepStrictEqual(cypressResultsCommand.getValue(), cypressResult);
+                    assert.deepStrictEqual(issueUpdateCommand.getValue(), {
                         fields: {
                             issuetype: {
                                 name: "Test Run",
@@ -1002,24 +1052,26 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         },
                         key: "CYP-42",
                     });
-                    expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
-                    expect(testExecutionIssueKeyCommand.getValue()).to.deep.eq("CYP-42");
-                    expect(issuetypeCommand.getValue()).to.deep.eq({
+                    assert.deepStrictEqual(cucumberResultsCommand.getValue(), cucumberResult);
+                    assert.deepStrictEqual(testExecutionIssueKeyCommand.getValue(), "CYP-42");
+                    assert.deepStrictEqual(issuetypeCommand.getValue(), {
                         name: "Test Run",
                     });
-                    expect(issueKeysCommand.getValue()).to.deep.eq(["CYP-42"]);
-                    expect(getSummaryValuesCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(issueKeysCommand.getValue(), ["CYP-42"]);
+                    assert.deepStrictEqual(getSummaryValuesCommand.getParameters(), {
                         jiraClient: clients.jiraClient,
                     });
-                    expect(destructureCommand.getParameters()).to.deep.eq({ accessor: "CYP-42" });
-                    expect(convertInfoCloudCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(destructureCommand.getParameters(), {
+                        accessor: "CYP-42",
+                    });
+                    assert.deepStrictEqual(convertInfoCloudCommand.getParameters(), {
                         jira: {
                             projectKey: options.jira.projectKey,
                             testPlanIssueKey: undefined,
                         },
                         xray: options.xray,
                     });
-                    expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(convertCucumberFeaturesCommand.getParameters(), {
                         cucumber: {
                             prefixes: {
                                 precondition: undefined,
@@ -1048,62 +1100,76 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             uploadScreenshots: true,
                         },
                     });
-                    expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(importCucumberExecutionCommand.getParameters(), {
                         xrayClient: clients.xrayClient,
                     });
-                    expect(verifyExecutionIssueKeyCommand.getParameters()).to.deep.eq({
+                    assert.deepStrictEqual(verifyExecutionIssueKeyCommand.getParameters(), {
                         displayCloudHelp: true,
                         importType: "cucumber",
                         testExecutionIssueKey: "CYP-42",
                         testExecutionIssueType: { name: "Test Run" },
                     });
                     // Edges.
-                    expect([...graph.getSuccessors(cypressResultsCommand)]).to.contain(
-                        convertInfoCloudCommand
+                    assert.ok(
+                        [...graph.getSuccessors(cypressResultsCommand)].includes(
+                            convertInfoCloudCommand
+                        )
                     );
-                    expect([...graph.getSuccessors(issueUpdateCommand)]).to.contain(
-                        convertInfoCloudCommand
+                    assert.ok(
+                        [...graph.getSuccessors(issueUpdateCommand)].includes(
+                            convertInfoCloudCommand
+                        )
                     );
-                    expect([...graph.getSuccessors(cucumberResultsCommand)]).to.deep.eq([
-                        convertCucumberFeaturesCommand,
-                    ]);
-                    expect([...graph.getSuccessors(testExecutionIssueKeyCommand)]).to.deep.eq([
-                        convertCucumberFeaturesCommand,
-                    ]);
-                    expect([...graph.getSuccessors(issuetypeCommand)]).to.deep.eq([
-                        convertInfoCloudCommand,
-                    ]);
-                    expect([...graph.getSuccessors(issueKeysCommand)]).to.deep.eq([
-                        getSummaryValuesCommand,
-                    ]);
-                    expect([...graph.getSuccessors(getSummaryValuesCommand)]).to.deep.eq([
-                        destructureCommand,
-                    ]);
-                    expect([...graph.getSuccessors(destructureCommand)]).to.deep.eq([
-                        convertInfoCloudCommand,
-                    ]);
-                    expect([...graph.getSuccessors(convertInfoCloudCommand)]).to.deep.eq([
-                        combineCucumberMultipartCommand,
-                    ]);
-                    expect([...graph.getSuccessors(convertCucumberFeaturesCommand)]).to.deep.eq([
-                        combineCucumberMultipartCommand,
-                    ]);
-                    expect([...graph.getSuccessors(combineCucumberMultipartCommand)]).to.deep.eq([
-                        assertConversionValidCommand,
-                        importCucumberExecutionCommand,
-                    ]);
-                    expect([...graph.getSuccessors(assertConversionValidCommand)]).to.deep.eq([
-                        importCucumberExecutionCommand,
-                    ]);
-                    expect([...graph.getSuccessors(importCucumberExecutionCommand)]).to.deep.eq([
-                        verifyExecutionIssueKeyCommand,
-                        fallbackCucumberUploadCommand,
-                    ]);
-                    expect([...graph.getSuccessors(fallbackCucumberUploadCommand)]).to.deep.eq([
-                        verifyResultsUploadCommand,
-                    ]);
-                    expect(graph.size("vertices")).to.eq(16);
-                    expect(graph.size("edges")).to.eq(16);
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(cucumberResultsCommand)],
+                        [convertCucumberFeaturesCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(testExecutionIssueKeyCommand)],
+                        [convertCucumberFeaturesCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(issuetypeCommand)],
+                        [convertInfoCloudCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(issueKeysCommand)],
+                        [getSummaryValuesCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(getSummaryValuesCommand)],
+                        [destructureCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(destructureCommand)],
+                        [convertInfoCloudCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(convertInfoCloudCommand)],
+                        [combineCucumberMultipartCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(convertCucumberFeaturesCommand)],
+                        [combineCucumberMultipartCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(combineCucumberMultipartCommand)],
+                        [assertConversionValidCommand, importCucumberExecutionCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(assertConversionValidCommand)],
+                        [importCucumberExecutionCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(importCucumberExecutionCommand)],
+                        [verifyExecutionIssueKeyCommand, fallbackCucumberUploadCommand]
+                    );
+                    assert.deepStrictEqual(
+                        [...graph.getSuccessors(fallbackCucumberUploadCommand)],
+                        [verifyResultsUploadCommand]
+                    );
+                    assert.strictEqual(graph.size("vertices"), 16);
+                    assert.strictEqual(graph.size("edges"), 16);
                 });
             });
 
@@ -1111,7 +1177,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 const graph = new ExecutableGraph<Command>();
                 const preprocessorOptions = options.cucumber as InternalCucumberOptions;
                 preprocessorOptions.preprocessor = undefined;
-                await expect(
+                await assert.rejects(
                     addUploadCommands(
                         cypressResult,
                         ".",
@@ -1119,15 +1185,17 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         clients,
                         new SimpleEvidenceCollection(),
                         graph,
-                        getMockedLogger()
-                    )
-                ).to.eventually.be.rejectedWith(
-                    "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured"
+                        LOG
+                    ),
+                    {
+                        message:
+                            "Failed to prepare Cucumber upload: Cucumber preprocessor JSON report path not configured.",
+                    }
                 );
             });
 
-            await it("does not add any commands if neither cypress nor cucumber results exist", async () => {
-                const logger = getMockedLogger();
+            await it("does not add any commands if neither cypress nor cucumber results exist", async (context) => {
+                const message = context.mock.method(LOG, "message", context.mock.fn());
                 cypressResult.runs = [];
                 const graph = new ExecutableGraph<Command>();
                 await addUploadCommands(
@@ -1137,17 +1205,18 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     graph,
-                    logger
+                    LOG
                 );
-                expect(graph.size("vertices")).to.eq(0);
-                expect(graph.size("edges")).to.eq(0);
-                expect(logger.message).to.have.been.calledWithExactly(
+                assert.strictEqual(graph.size("vertices"), 0);
+                assert.strictEqual(graph.size("edges"), 0);
+                assert.deepStrictEqual(message.mock.calls[0].arguments, [
                     Level.WARNING,
-                    "No test execution results to upload, skipping results upload preparations."
-                );
+                    "No test execution results to upload, skipping results upload preparations.",
+                ]);
             });
 
-            await it("adds connections from feature file imports to execution uploads", async () => {
+            await it("adds connections from feature file imports to execution uploads", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 options.cucumber = {
                     downloadFeatures: false,
                     featureFileExtension: ".feature",
@@ -1161,23 +1230,22 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     uploadFeatures: true,
                 };
                 const graph = new ExecutableGraph<Command>();
-                const logger = getMockedLogger();
                 graph.place(
                     new ImportFeatureCommand(
                         {
-                            filePath: path.relative(".", "cypress/e2e/outline.cy.feature"),
+                            filePath: relative(".", "cypress/e2e/outline.cy.feature"),
                             xrayClient: clients.xrayClient,
                         },
-                        logger
+                        LOG
                     )
                 );
                 graph.place(
                     new ImportFeatureCommand(
                         {
-                            filePath: path.relative(".", "cypress/e2e/spec.cy.feature"),
+                            filePath: relative(".", "cypress/e2e/spec.cy.feature"),
                             xrayClient: clients.xrayClient,
                         },
-                        logger
+                        LOG
                     )
                 );
                 graph.place(
@@ -1186,7 +1254,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             filePath: relative(".", "cypress/e2e/nonexistent.cy.feature"),
                             xrayClient: clients.xrayClient,
                         },
-                        logger
+                        LOG
                     )
                 );
                 await addUploadCommands(
@@ -1196,7 +1264,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     graph,
-                    logger
+                    LOG
                 );
                 // Vertices.
                 const commands = [...graph.getVertices()];
@@ -1205,15 +1273,18 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 const importFeatureCommand3 = commands[2];
                 const importCucumberExecutionCommand = commands[11];
                 // Edges.
-                expect([...graph.getSuccessors(importFeatureCommand1)]).to.contain(
-                    importCucumberExecutionCommand
+                assert.ok(
+                    [...graph.getSuccessors(importFeatureCommand1)].includes(
+                        importCucumberExecutionCommand
+                    )
                 );
-                expect([...graph.getSuccessors(importFeatureCommand2)]).to.deep.eq([
-                    importCucumberExecutionCommand,
-                ]);
-                expect([...graph.getSuccessors(importFeatureCommand3)]).to.be.empty;
-                expect(graph.size("vertices")).to.eq(14);
-                expect(graph.size("edges")).to.eq(13);
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(importFeatureCommand2)],
+                    [importCucumberExecutionCommand]
+                );
+                assert.deepStrictEqual([...graph.getSuccessors(importFeatureCommand3)], []);
+                assert.strictEqual(graph.size("vertices"), 14);
+                assert.strictEqual(graph.size("edges"), 13);
             });
         });
 
@@ -1245,8 +1316,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 };
             });
 
-            await it("adds commands necessary for mixed results upload", async () => {
-                useFakeTimers(new Date(12345));
+            await it("adds commands necessary for mixed results upload", async (context) => {
+                context.mock.timers.enable({ apis: ["Date"] });
+                context.mock.timers.tick(12345);
                 const graph = new ExecutableGraph<Command>();
                 await addUploadCommands(
                     cypressResult,
@@ -1255,7 +1327,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     clients,
                     new SimpleEvidenceCollection(),
                     graph,
-                    getMockedLogger()
+                    LOG
                 );
                 // Vertices.
                 const [
@@ -1302,8 +1374,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 assertIsInstanceOf(fallbackCucumberUploadCommand, FallbackCommand);
                 assertIsInstanceOf(verifyResultsUploadCommand, VerifyResultsUploadCommand);
                 // Vertex data.
-                expect(cypressResultsCommand.getValue()).to.deep.eq(cypressResult);
-                expect(convertCypressTestsCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(cypressResultsCommand.getValue(), cypressResult);
+                assert.deepStrictEqual(convertCypressTestsCommand.getParameters(), {
                     evidenceCollection: new SimpleEvidenceCollection(),
                     featureFileExtension: ".feature",
                     normalizeScreenshotNames: false,
@@ -1323,31 +1395,32 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         },
                     },
                 });
-                expect(issueSummaryCommand.getValue()).to.deep.eq(
+                assert.deepStrictEqual(
+                    issueSummaryCommand.getValue(),
                     "Execution Results [2023-07-23T21:26:15.539Z]"
                 );
-                expect(issuetypeCommand.getValue()).to.deep.eq({
+                assert.deepStrictEqual(issuetypeCommand.getValue(), {
                     name: "Test Execution",
                 });
-                expect(convertInfoServerCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(convertInfoServerCommand.getParameters(), {
                     jira: {
                         projectKey: options.jira.projectKey,
                         testPlanIssueKey: undefined,
                     },
                     xray: options.xray,
                 });
-                expect(combineCypressJsonCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(combineCypressJsonCommand.getParameters(), {
                     testExecutionIssueKey: undefined,
                 });
-                expect(importExecutionCypressCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(importExecutionCypressCommand.getParameters(), {
                     xrayClient: clients.xrayClient,
                 });
-                expect(cucumberResultsCommand.getValue()).to.deep.eq(cucumberResult);
-                expect(fallbackCypressUploadCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(cucumberResultsCommand.getValue(), cucumberResult);
+                assert.deepStrictEqual(fallbackCypressUploadCommand.getParameters(), {
                     fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
                     fallbackValue: undefined,
                 });
-                expect(convertCucumberFeaturesCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(convertCucumberFeaturesCommand.getParameters(), {
                     cucumber: {
                         prefixes: {
                             precondition: undefined,
@@ -1376,71 +1449,81 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         uploadScreenshots: true,
                     },
                 });
-                expect(importCucumberExecutionCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(importCucumberExecutionCommand.getParameters(), {
                     xrayClient: clients.xrayClient,
                 });
-                expect(fallbackCucumberUploadCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(fallbackCucumberUploadCommand.getParameters(), {
                     fallbackOn: [ComputableState.FAILED, ComputableState.SKIPPED],
                     fallbackValue: undefined,
                 });
-                expect(verifyResultsUploadCommand.getParameters()).to.deep.eq({
+                assert.deepStrictEqual(verifyResultsUploadCommand.getParameters(), {
                     url: "https://example.org",
                 });
                 // Edges.
                 // Cypress.
-                expect([...graph.getSuccessors(cypressResultsCommand)]).to.deep.eq([
-                    convertCypressTestsCommand,
-                    convertInfoServerCommand,
-                ]);
-                expect([...graph.getSuccessors(convertCypressTestsCommand)]).to.deep.eq([
-                    combineCypressJsonCommand,
-                ]);
-                expect([...graph.getSuccessors(issueSummaryCommand)]).to.deep.eq([
-                    convertInfoServerCommand,
-                ]);
-                expect([...graph.getSuccessors(issuetypeCommand)]).to.deep.eq([
-                    convertInfoServerCommand,
-                ]);
-                expect([...graph.getSuccessors(convertInfoServerCommand)]).to.deep.eq([
-                    combineCypressJsonCommand,
-                    combineCucumberMultipartCommand,
-                ]);
-                expect([...graph.getSuccessors(combineCypressJsonCommand)]).to.deep.eq([
-                    assertCypressConversionValidCommand,
-                    importExecutionCypressCommand,
-                ]);
-                expect([...graph.getSuccessors(assertCypressConversionValidCommand)]).to.deep.eq([
-                    importExecutionCypressCommand,
-                ]);
-                expect([...graph.getSuccessors(importExecutionCypressCommand)]).to.deep.eq([
-                    convertCucumberFeaturesCommand,
-                    fallbackCypressUploadCommand,
-                ]);
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(cypressResultsCommand)],
+                    [convertCypressTestsCommand, convertInfoServerCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(convertCypressTestsCommand)],
+                    [combineCypressJsonCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(issueSummaryCommand)],
+                    [convertInfoServerCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(issuetypeCommand)],
+                    [convertInfoServerCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(convertInfoServerCommand)],
+                    [combineCypressJsonCommand, combineCucumberMultipartCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(combineCypressJsonCommand)],
+                    [assertCypressConversionValidCommand, importExecutionCypressCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(assertCypressConversionValidCommand)],
+                    [importExecutionCypressCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(importExecutionCypressCommand)],
+                    [convertCucumberFeaturesCommand, fallbackCypressUploadCommand]
+                );
                 // Cucumber.
-                expect([...graph.getSuccessors(cucumberResultsCommand)]).to.deep.eq([
-                    convertCucumberFeaturesCommand,
-                ]);
-                expect([...graph.getSuccessors(fallbackCypressUploadCommand)]).to.deep.eq([
-                    verifyResultsUploadCommand,
-                ]);
-                expect([...graph.getSuccessors(convertCucumberFeaturesCommand)]).to.deep.eq([
-                    combineCucumberMultipartCommand,
-                ]);
-                expect([...graph.getSuccessors(combineCucumberMultipartCommand)]).to.deep.eq([
-                    assertCucumberConversionValidCommand,
-                    importCucumberExecutionCommand,
-                ]);
-                expect([...graph.getSuccessors(assertCucumberConversionValidCommand)]).to.deep.eq([
-                    importCucumberExecutionCommand,
-                ]);
-                expect([...graph.getSuccessors(importCucumberExecutionCommand)]).to.deep.eq([
-                    fallbackCucumberUploadCommand,
-                ]);
-                expect([...graph.getSuccessors(fallbackCucumberUploadCommand)]).to.deep.eq([
-                    verifyResultsUploadCommand,
-                ]);
-                expect(graph.size("vertices")).to.eq(16);
-                expect(graph.size("edges")).to.eq(20);
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(cucumberResultsCommand)],
+                    [convertCucumberFeaturesCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(fallbackCypressUploadCommand)],
+                    [verifyResultsUploadCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(convertCucumberFeaturesCommand)],
+                    [combineCucumberMultipartCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(combineCucumberMultipartCommand)],
+                    [assertCucumberConversionValidCommand, importCucumberExecutionCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(assertCucumberConversionValidCommand)],
+                    [importCucumberExecutionCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(importCucumberExecutionCommand)],
+                    [fallbackCucumberUploadCommand]
+                );
+                assert.deepStrictEqual(
+                    [...graph.getSuccessors(fallbackCucumberUploadCommand)],
+                    [verifyResultsUploadCommand]
+                );
+                assert.strictEqual(graph.size("vertices"), 16);
+                assert.strictEqual(graph.size("edges"), 20);
             });
         });
     });
