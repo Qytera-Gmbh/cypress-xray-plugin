@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
@@ -32,7 +32,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             graph.connect(8, 7);
             graph.connect(6, 9);
             graph.connect(9, 7);
-            expect(computeTopologicalOrder(graph)).to.deep.eq(
+            assert.deepStrictEqual(
+                computeTopologicalOrder(graph),
                 new Map([
                     [0, 2],
                     [1, 0],
@@ -73,19 +74,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             graph.connect("X", "Y");
             graph.connect("X", "Z");
-            expect([...traverse(graph, "top-down")]).to.deep.eq([
-                "A",
-                "P",
-                "X",
-                "B",
-                "D",
-                "Q",
-                "Y",
-                "Z",
-                "C",
-                "E",
-                "F",
-            ]);
+            assert.deepStrictEqual(
+                [...traverse(graph, "top-down")],
+                ["A", "P", "X", "B", "D", "Q", "Y", "Z", "C", "E", "F"]
+            );
         });
 
         await it("traverses forests bottom-up", () => {
@@ -111,23 +103,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             graph.connect("X", "Y");
             graph.connect("X", "Z");
-            expect([...traverse(graph, "bottom-up")]).to.deep.eq([
-                "C",
-                "E",
-                "F",
-                "Q",
-                "Y",
-                "Z",
-                "B",
-                "D",
-                "D",
-                "P",
-                "X",
-                "X",
-                "A",
-                "A",
-                "A",
-            ]);
+            assert.deepStrictEqual(
+                [...traverse(graph, "bottom-up")],
+                ["C", "E", "F", "Q", "Y", "Z", "B", "D", "D", "P", "X", "X", "A", "A", "A"]
+            );
         });
     });
 });
