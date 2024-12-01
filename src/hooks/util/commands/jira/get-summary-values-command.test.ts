@@ -1,96 +1,135 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import axios from "axios";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks.js";
+import { PatCredentials } from "../../../../client/authentication/credentials.js";
+import { AxiosRestClient } from "../../../../client/https/https.js";
+import type { JiraClient } from "../../../../client/jira/jira-client.js";
+import { BaseJiraClient } from "../../../../client/jira/jira-client.js";
 import { dedent } from "../../../../util/dedent.js";
-import { Level } from "../../../../util/logging.js";
+import { Level, LOG } from "../../../../util/logging.js";
 import { ConstantCommand } from "../constant-command.js";
 import { GetSummaryValuesCommand } from "./get-summary-values-command.js";
 
-chai.use(chaiAsPromised);
-
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(GetSummaryValuesCommand.name, async () => {
-        await it("fetches summaries", async () => {
-            const logger = getMockedLogger();
-            const jiraClient = getMockedJiraClient();
+        await it("fetches summaries", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            context.mock.method(
+                jiraClient,
+                "search",
+                context.mock.fn<JiraClient["search"]>(async (request) => {
+                    if (
+                        request.fields &&
+                        request.fields[0] === "summary" &&
+                        request.jql === "issue in (CYP-123,CYP-456,CYP-789)"
+                    ) {
+                        return await Promise.resolve([
+                            { fields: { ["summary"]: "Hello" }, key: "CYP-123" },
+                            { fields: { ["summary"]: "Good Morning" }, key: "CYP-456" },
+                            { fields: { ["summary"]: "Goodbye" }, key: "CYP-789" },
+                        ]);
+                    }
+                    throw new Error("Mock called unexpectedly");
+                })
+            );
             const command = new GetSummaryValuesCommand(
                 { jiraClient: jiraClient },
-                logger,
-                new ConstantCommand(logger, ["CYP-123", "CYP-456", "CYP-789"])
+                LOG,
+                new ConstantCommand(LOG, ["CYP-123", "CYP-456", "CYP-789"])
             );
-            jiraClient.search
-                .withArgs({
-                    fields: ["summary"],
-                    jql: "issue in (CYP-123,CYP-456,CYP-789)",
-                })
-                .resolves([
-                    { fields: { ["summary"]: "Hello" }, key: "CYP-123" },
-                    { fields: { ["summary"]: "Good Morning" }, key: "CYP-456" },
-                    { fields: { ["summary"]: "Goodbye" }, key: "CYP-789" },
-                ]);
             const summaries = await command.compute();
-            expect(summaries).to.deep.eq({
+            assert.deepStrictEqual(summaries, {
                 ["CYP-123"]: "Hello",
                 ["CYP-456"]: "Good Morning",
                 ["CYP-789"]: "Goodbye",
             });
         });
 
-        await it("displays a warning for issues which do not exist", async () => {
-            const logger = getMockedLogger();
-            const jiraClient = getMockedJiraClient();
+        await it("displays a warning for issues which do not exist", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            context.mock.method(
+                jiraClient,
+                "search",
+                context.mock.fn<JiraClient["search"]>(async (request) => {
+                    if (
+                        request.fields &&
+                        request.fields[0] === "summary" &&
+                        request.jql === "issue in (CYP-123,CYP-789,CYP-456)"
+                    ) {
+                        return await Promise.resolve([
+                            { fields: { ["summary"]: "Hello" }, key: "CYP-123" },
+                        ]);
+                    }
+                    throw new Error("Mock called unexpectedly");
+                })
+            );
             const command = new GetSummaryValuesCommand(
                 { jiraClient: jiraClient },
-                logger,
-                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
+                LOG,
+                new ConstantCommand(LOG, ["CYP-123", "CYP-789", "CYP-456"])
             );
-            jiraClient.search
-                .withArgs({
-                    fields: ["summary"],
-                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
-                })
-                .resolves([{ fields: { ["summary"]: "Hello" }, key: "CYP-123" }]);
-            expect(await command.compute()).to.deep.eq({
+            assert.deepStrictEqual(await command.compute(), {
                 ["CYP-123"]: "Hello",
             });
-            expect(logger.message).to.have.been.calledWithExactly(
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.WARNING,
                 dedent(`
                     Failed to find Jira issues:
 
                       CYP-456
                       CYP-789
-                `)
-            );
+                `),
+            ]);
         });
 
-        await it("displays a warning for issues whose fields cannot be parsed", async () => {
-            const logger = getMockedLogger();
-            const jiraClient = getMockedJiraClient();
+        await it("displays a warning for issues whose fields cannot be parsed", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            context.mock.method(
+                jiraClient,
+                "search",
+                context.mock.fn<JiraClient["search"]>(async (request) => {
+                    if (
+                        request.fields &&
+                        request.fields[0] === "summary" &&
+                        request.jql === "issue in (CYP-123,CYP-789,CYP-456)"
+                    ) {
+                        return await Promise.resolve([
+                            { fields: { ["summary"]: { an: "object" } }, key: "CYP-123" },
+                            {
+                                fields: { bonjour: ["Where", "did", "I", "come", "from?"] },
+                                key: "CYP-456",
+                            },
+                            { fields: { ["summary"]: [42, 84] }, key: "CYP-789" },
+                            { fields: { ["summary"]: "hi" } },
+                        ]);
+                    }
+                    throw new Error("Mock called unexpectedly");
+                })
+            );
             const command = new GetSummaryValuesCommand(
                 { jiraClient: jiraClient },
-                logger,
-                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
+                LOG,
+                new ConstantCommand(LOG, ["CYP-123", "CYP-789", "CYP-456"])
             );
-            jiraClient.search
-                .withArgs({
-                    fields: ["summary"],
-                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
-                })
-                .resolves([
-                    { fields: { ["summary"]: { an: "object" } }, key: "CYP-123" },
-                    {
-                        fields: { bonjour: ["Where", "did", "I", "come", "from?"] },
-                        key: "CYP-456",
-                    },
-                    { fields: { ["summary"]: [42, 84] }, key: "CYP-789" },
-                    { fields: { ["summary"]: "hi" } },
-                ]);
-            expect(await command.compute()).to.deep.eq({});
-            expect(logger.message).to.have.been.calledWithExactly(
+            assert.deepStrictEqual(await command.compute(), {});
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.WARNING,
                 dedent(`
                     Failed to parse Jira field with ID summary in issues:
@@ -99,25 +138,30 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                       CYP-456: Expected an object containing property 'summary', but got: {"bonjour":["Where","did","I","come","from?"]}
                       CYP-789: Value is not of type string: [42,84]
                       Unknown: {"fields":{"summary":"hi"}}
-                `)
-            );
+                `),
+            ]);
         });
 
-        await it("throws when encountering search failures", async () => {
-            const logger = getMockedLogger();
-            const jiraClient = getMockedJiraClient();
+        await it("throws when encountering search failures", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            context.mock.method(
+                jiraClient,
+                "search",
+                context.mock.fn<JiraClient["search"]>(async () => {
+                    return await Promise.reject(new Error("Connection timeout"));
+                })
+            );
             const command = new GetSummaryValuesCommand(
                 { jiraClient: jiraClient },
-                logger,
-                new ConstantCommand(logger, ["CYP-123", "CYP-789", "CYP-456"])
+                LOG,
+                new ConstantCommand(LOG, ["CYP-123", "CYP-789", "CYP-456"])
             );
-            jiraClient.search
-                .withArgs({
-                    fields: ["summary"],
-                    jql: "issue in (CYP-123,CYP-789,CYP-456)",
-                })
-                .rejects(new Error("Connection timeout"));
-            await expect(command.compute()).to.eventually.be.rejectedWith("Connection timeout");
+            await assert.rejects(command.compute(), { message: "Connection timeout" });
         });
     });
 });
