@@ -87,7 +87,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 {},
                 {
                     projectKey: "CYP",
-                    url: "https://example.org",
+                    url: "http://localhost:1234",
                 }
             ),
             plugin: initPluginOptions({}, {}),
@@ -201,7 +201,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     fallbackValue: undefined,
                 });
                 assert.deepStrictEqual(verifyResultsUploadCommand.getParameters(), {
-                    url: "https://example.org",
+                    url: "http://localhost:1234",
                 });
                 // Edges.
                 assert.deepStrictEqual(
@@ -1457,7 +1457,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     fallbackValue: undefined,
                 });
                 assert.deepStrictEqual(verifyResultsUploadCommand.getParameters(), {
-                    url: "https://example.org",
+                    url: "http://localhost:1234",
                 });
                 // Edges.
                 // Cypress.

@@ -27,7 +27,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     {},
                     {
                         projectKey: "CYP",
-                        url: "https://example.org",
+                        url: "http://localhost:1234",
                     }
                 ),
                 plugin: initPluginOptions({}, {}),

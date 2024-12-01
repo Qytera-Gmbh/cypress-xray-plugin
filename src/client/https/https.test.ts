@@ -31,7 +31,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             context.mock.method(axios, "get", () => response);
 
             const client = new AxiosRestClient(axios);
-            assert.deepStrictEqual(await client.get("https://example.org"), response);
+            assert.deepStrictEqual(await client.get("http://localhost:1234"), response);
         });
 
         await it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
@@ -122,7 +122,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             const restClient = new AxiosRestClient(axios);
 
-            const promise = restClient.get("https://example.org");
+            const promise = restClient.get("http://localhost:1234");
 
             await Promise.resolve();
             context.mock.timers.tick(27000);
@@ -130,11 +130,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.INFO,
-                "Waiting for https://example.org to respond... (10 seconds)",
+                "Waiting for http://localhost:1234 to respond... (10 seconds)",
             ]);
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
                 Level.INFO,
-                "Waiting for https://example.org to respond... (20 seconds)",
+                "Waiting for http://localhost:1234 to respond... (20 seconds)",
             ]);
         });
     });
@@ -153,7 +153,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             context.mock.method(axios, "post", () => response);
             const client = new AxiosRestClient(axios);
-            assert.deepStrictEqual(await client.post("https://example.org"), response);
+            assert.deepStrictEqual(await client.post("http://localhost:1234"), response);
         });
 
         await it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
@@ -256,7 +256,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             );
 
             const restClient = new AxiosRestClient(axios);
-            const promise = restClient.post("https://example.org");
+            const promise = restClient.post("http://localhost:1234");
 
             await Promise.resolve();
             context.mock.timers.tick(27000);
@@ -264,11 +264,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.INFO,
-                "Waiting for https://example.org to respond... (10 seconds)",
+                "Waiting for http://localhost:1234 to respond... (10 seconds)",
             ]);
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
                 Level.INFO,
-                "Waiting for https://example.org to respond... (20 seconds)",
+                "Waiting for http://localhost:1234 to respond... (20 seconds)",
             ]);
         });
     });
@@ -287,7 +287,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             };
 
             context.mock.method(axios, "put", () => response);
-            assert.deepStrictEqual(await client.put("https://example.org"), response);
+            assert.deepStrictEqual(await client.put("http://localhost:1234"), response);
         });
 
         await it("writes to a file on encountering axios errors if debug is enabled", async (context) => {
@@ -391,7 +391,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             );
 
             const restClient = new AxiosRestClient(axios);
-            const promise = restClient.put("https://example.org");
+            const promise = restClient.put("http://localhost:1234");
 
             await Promise.resolve();
             context.mock.timers.tick(27000);
@@ -399,11 +399,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.INFO,
-                "Waiting for https://example.org to respond... (10 seconds)",
+                "Waiting for http://localhost:1234 to respond... (10 seconds)",
             ]);
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
                 Level.INFO,
-                "Waiting for https://example.org to respond... (20 seconds)",
+                "Waiting for http://localhost:1234 to respond... (20 seconds)",
             ]);
         });
     });

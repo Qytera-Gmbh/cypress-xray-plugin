@@ -24,7 +24,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
         beforeEach(() => {
             restClient = new AxiosRestClient(axios);
-            const credentials = new JwtCredentials("abc", "xyz", "https://example.org", restClient);
+            const credentials = new JwtCredentials(
+                "abc",
+                "xyz",
+                "http://localhost:1234",
+                restClient
+            );
             mock.method(credentials, "getAuthorizationHeader", () => {
                 return { ["Authorization"]: "ey12345" };
             });
