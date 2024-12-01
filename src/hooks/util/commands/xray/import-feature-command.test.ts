@@ -1,54 +1,78 @@
-import { expect } from "chai";
+import axios from "axios";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedLogger, getMockedXrayClient } from "../../../../../test/mocks.js";
+import { PatCredentials } from "../../../../client/authentication/credentials.js";
+import { AxiosRestClient } from "../../../../client/https/https.js";
+import { ServerClient } from "../../../../client/xray/xray-client-server.js";
+import type { XrayClient } from "../../../../client/xray/xray-client.js";
 import { dedent } from "../../../../util/dedent.js";
-import { Level } from "../../../../util/logging.js";
+import { Level, LOG } from "../../../../util/logging.js";
 import { ImportFeatureCommand } from "./import-feature-command.js";
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(ImportFeatureCommand.name, async () => {
-        await it("imports features", async () => {
-            const logger = getMockedLogger();
-            const xrayClient = getMockedXrayClient();
+        await it("imports features", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const xrayClient = new ServerClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            context.mock.method(
+                xrayClient,
+                "importFeature",
+                context.mock.fn<XrayClient["importFeature"]>(async () => {
+                    return Promise.resolve({
+                        errors: [],
+                        updatedOrCreatedIssues: ["CYP-123", "CYP-42"],
+                    });
+                })
+            );
             const command = new ImportFeatureCommand(
                 {
                     filePath: "/path/to/some/cucumber.feature",
                     xrayClient: xrayClient,
                 },
-                logger
+                LOG
             );
-            xrayClient.importFeature.onFirstCall().resolves({
+            assert.deepStrictEqual(await command.compute(), {
                 errors: [],
                 updatedOrCreatedIssues: ["CYP-123", "CYP-42"],
             });
-            expect(await command.compute()).to.deep.eq({
-                errors: [],
-                updatedOrCreatedIssues: ["CYP-123", "CYP-42"],
-            });
-            expect(logger.message).to.have.been.calledWithExactly(
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.INFO,
-                "Importing feature file to Xray: /path/to/some/cucumber.feature"
-            );
+                "Importing feature file to Xray: /path/to/some/cucumber.feature",
+            ]);
         });
 
-        await it("warns about import errors", async () => {
-            const logger = getMockedLogger();
-            const xrayClient = getMockedXrayClient();
+        await it("warns about import errors", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const xrayClient = new ServerClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            context.mock.method(
+                xrayClient,
+                "importFeature",
+                context.mock.fn<XrayClient["importFeature"]>(async () => {
+                    return Promise.resolve({
+                        errors: ["CYP-123 does not exist", "CYP-42: Access denied", "Big\nProblem"],
+                        updatedOrCreatedIssues: [],
+                    });
+                })
+            );
             const command = new ImportFeatureCommand(
                 {
                     filePath: "/path/to/some/cucumber.feature",
                     xrayClient: xrayClient,
                 },
-                logger
+                LOG
             );
-            xrayClient.importFeature.onFirstCall().resolves({
-                errors: ["CYP-123 does not exist", "CYP-42: Access denied", "Big\nProblem"],
-                updatedOrCreatedIssues: [],
-            });
             await command.compute();
-            expect(logger.message).to.have.been.calledWithExactly(
+            assert.deepStrictEqual(message.mock.calls[1].arguments, [
                 Level.WARNING,
                 dedent(`
                     /path/to/some/cucumber.feature
@@ -57,8 +81,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                       - CYP-123 does not exist
                       - CYP-42: Access denied
                       - Big\nProblem
-                `)
-            );
+                `),
+            ]);
         });
     });
 });
