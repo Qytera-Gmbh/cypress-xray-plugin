@@ -23,21 +23,6 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 new PatCredentials("token"),
                 new AxiosRestClient(axios)
             );
-            context.mock.method(
-                xrayClient,
-                "importExecutionCucumberMultipart",
-                context.mock.fn<XrayClient["importExecutionCucumberMultipart"]>(
-                    (cucumberJson, cucumberInfo) => {
-                        if (
-                            cucumberJson === multipart.features &&
-                            cucumberInfo === multipart.info
-                        ) {
-                            return Promise.resolve("CYP-123");
-                        }
-                        return Promise.reject(new Error("Connection timeout"));
-                    }
-                )
-            );
             const multipart = {
                 features: JSON.parse(
                     fs.readFileSync(
@@ -52,6 +37,21 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     )
                 ) as MultipartInfo,
             };
+            context.mock.method(
+                xrayClient,
+                "importExecutionCucumberMultipart",
+                context.mock.fn<XrayClient["importExecutionCucumberMultipart"]>(
+                    (cucumberJson, cucumberInfo) => {
+                        if (
+                            cucumberJson === multipart.features &&
+                            cucumberInfo === multipart.info
+                        ) {
+                            return Promise.resolve("CYP-123");
+                        }
+                        return Promise.reject(new Error("Mock called unexpectedly"));
+                    }
+                )
+            );
             const command = new ImportExecutionCucumberCommand(
                 {
                     xrayClient: xrayClient,
