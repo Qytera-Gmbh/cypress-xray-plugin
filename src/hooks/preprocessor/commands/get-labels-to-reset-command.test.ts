@@ -1,51 +1,50 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedLogger } from "../../../../test/mocks.js";
 import { dedent } from "../../../util/dedent.js";
-import { Level } from "../../../util/logging.js";
+import { Level, LOG } from "../../../util/logging.js";
 import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { GetLabelsToResetCommand } from "./get-labels-to-reset-command.js";
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(GetLabelsToResetCommand.name, async () => {
-        await it("returns labels of issues to reset", async () => {
-            const logger = getMockedLogger();
+        await it("returns labels of issues to reset", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const command = new GetLabelsToResetCommand(
-                logger,
-                new ConstantCommand(logger, {
+                LOG,
+                new ConstantCommand(LOG, {
                     ["CYP-123"]: ["a tag"],
                     ["CYP-456"]: ["tag 1", "tag 2"],
                     ["CYP-789"]: ["another tag"],
                 }),
-                new ConstantCommand(logger, {
+                new ConstantCommand(LOG, {
                     ["CYP-123"]: ["a tag"],
                     ["CYP-456"]: ["tag 2"],
                     ["CYP-789"]: [],
                 })
             );
-            expect(await command.compute()).to.deep.eq({
+            assert.deepStrictEqual(await command.compute(), {
                 ["CYP-456"]: ["tag 1", "tag 2"],
                 ["CYP-789"]: ["another tag"],
             });
         });
 
-        await it("warns about unknown old labels", async () => {
-            const logger = getMockedLogger();
+        await it("warns about unknown old labels", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
             const command = new GetLabelsToResetCommand(
-                logger,
-                new ConstantCommand(logger, {
+                LOG,
+                new ConstantCommand(LOG, {
                     ["CYP-789"]: ["another tag"],
                 }),
-                new ConstantCommand(logger, {
+                new ConstantCommand(LOG, {
                     ["CYP-123"]: ["a tag"],
                     ["CYP-456"]: ["tag 1", "tag 2"],
                     ["CYP-789"]: ["another tag"],
                 })
             );
-            expect(await command.compute()).to.deep.eq({});
-            expect(logger.message).to.have.been.calledWithExactly(
+            assert.deepStrictEqual(await command.compute(), {});
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.WARNING,
                 dedent(`
                     CYP-123
@@ -53,9 +52,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                       The plugin tried to reset the issue's labels after importing the feature file, but could not because the previous labels could not be retrieved.
 
                       Make sure to manually restore them if needed.
-                `)
-            );
-            expect(logger.message).to.have.been.calledWithExactly(
+                `),
+            ]);
+            assert.deepStrictEqual(message.mock.calls[1].arguments, [
                 Level.WARNING,
                 dedent(`
                     CYP-456
@@ -63,8 +62,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                       The plugin tried to reset the issue's labels after importing the feature file, but could not because the previous labels could not be retrieved.
 
                       Make sure to manually restore them if needed.
-                `)
-            );
+                `),
+            ]);
         });
     });
 });
