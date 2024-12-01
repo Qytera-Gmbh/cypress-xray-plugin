@@ -1,5 +1,5 @@
 import type { Background } from "@cucumber/messages";
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
@@ -18,7 +18,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             // Cast because we know for certain it exists.
             const background = document.feature?.children[0].background as Background;
             const comments = getCucumberPreconditionIssueComments(background, document.comments);
-            expect(comments).to.deep.eq(["#@CYP-244", "# a random comment", "#@CYP-262"]);
+            assert.deepStrictEqual(comments, ["#@CYP-244", "# a random comment", "#@CYP-262"]);
         });
 
         await it("extracts relevant comments with prefix", () => {
@@ -28,7 +28,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             // Cast because we know for certain it exists.
             const background: Background = document.feature?.children[0].background as Background;
             const comments = getCucumberPreconditionIssueComments(background, document.comments);
-            expect(comments).to.deep.eq([
+            assert.deepStrictEqual(comments, [
                 "#@Precondition:CYP-244",
                 "# a random comment",
                 "#@Precondition:CYP-262",
@@ -43,7 +43,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             const background = document.feature?.children[0].background as Background;
             background.steps = [];
             const comments = getCucumberPreconditionIssueComments(background, document.comments);
-            expect(comments).to.deep.eq([]);
+            assert.deepStrictEqual(comments, []);
         });
     });
 
@@ -56,7 +56,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             const background = document.feature?.children[0].background as Background;
             const comments = getCucumberPreconditionIssueComments(background, document.comments);
             const tags = getCucumberPreconditionIssueTags(background, "CYP", comments);
-            expect(tags).to.deep.eq(["CYP-244", "CYP-262"]);
+            assert.deepStrictEqual(tags, ["CYP-244", "CYP-262"]);
         });
 
         await it("extracts background tags with prefix", () => {
@@ -72,7 +72,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 comments,
                 "Precondition:"
             );
-            expect(tags).to.deep.eq(["CYP-244", "CYP-262"]);
+            assert.deepStrictEqual(tags, ["CYP-244", "CYP-262"]);
         });
 
         await it("handles empty backgrounds", () => {
@@ -83,7 +83,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             const background: Background = document.feature?.children[0].background as Background;
             background.steps = [];
             const tags = getCucumberPreconditionIssueTags(background, "CYP", [], "Precondition:");
-            expect(tags).to.deep.eq([]);
+            assert.deepStrictEqual(tags, []);
         });
     });
 });
