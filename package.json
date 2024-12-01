@@ -67,7 +67,7 @@
         "@types/chai-as-promised": "^7.1.8",
         "@types/node": "^22.7.4",
         "@types/semver": "^7.5.8",
-        "@types/sinon-chai": "^3.2.12",
+        "@types/sinon-chai": "^4.0.0",
         "@typescript-eslint/eslint-plugin": "^8.12.2",
         "@typescript-eslint/parser": "^8.8.0",
         "chai": "^4.4.1",
@@ -83,7 +83,7 @@
         "nyc": "^17.1.0",
         "shx": "^0.3.4",
         "sinon": "^17.0.1",
-        "sinon-chai": "^3.7.0",
+        "sinon-chai": "^4.0.0",
         "ts-node": "^10.9.2",
         "typescript": "^5.6.3"
     }
