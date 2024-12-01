@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
@@ -7,73 +7,81 @@ import { getXrayStatus } from "./status.js";
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(getXrayStatus.name, async () => {
         await it("uses passed as default status name for passed tests", () => {
-            expect(getXrayStatus("passed")).to.eq("passed");
+            assert.strictEqual(getXrayStatus("passed"), "passed");
         });
         await it("uses failed as default status name for failed tests", () => {
-            expect(getXrayStatus("failed")).to.eq("failed");
+            assert.strictEqual(getXrayStatus("failed"), "failed");
         });
         await it("uses pending as default status name for pending tests", () => {
-            expect(getXrayStatus("pending")).to.eq("pending");
+            assert.strictEqual(getXrayStatus("pending"), "pending");
         });
         await it("uses skipped as default status name for skipped tests", () => {
-            expect(getXrayStatus("skipped")).to.eq("skipped");
+            assert.strictEqual(getXrayStatus("skipped"), "skipped");
         });
         await it("uses unknown as default status name for unknown tests", () => {
-            expect(getXrayStatus("unknown")).to.eq("unknown");
+            assert.strictEqual(getXrayStatus("unknown"), "unknown");
         });
         await it("uses undefined as default status name for undefined tests", () => {
-            expect(getXrayStatus("undefined")).to.eq("undefined");
+            assert.strictEqual(getXrayStatus("undefined"), "undefined");
         });
         await it("prefers custom passed statuses", () => {
-            expect(
+            assert.strictEqual(
                 getXrayStatus("passed", {
                     passed: "OK",
-                })
-            ).to.eq("OK");
+                }),
+                "OK"
+            );
         });
         await it("prefers custom failed statuses", () => {
-            expect(
+            assert.strictEqual(
                 getXrayStatus("failed", {
                     failed: "NO",
-                })
-            ).to.eq("NO");
+                }),
+                "NO"
+            );
         });
         await it("prefers custom pending statuses", () => {
-            expect(
+            assert.strictEqual(
                 getXrayStatus("pending", {
                     pending: "WIP",
-                })
-            ).to.eq("WIP");
+                }),
+                "WIP"
+            );
         });
         await it("prefers custom skipped statuses", () => {
-            expect(
+            assert.strictEqual(
                 getXrayStatus("skipped", {
                     skipped: "SKIP",
-                })
-            ).to.eq("SKIP");
+                }),
+                "SKIP"
+            );
         });
         await it("does not modify unknown statuses", () => {
-            expect(
+            assert.strictEqual(
                 getXrayStatus("unknown", {
                     failed: "FAILING",
                     passed: "PASSING",
                     pending: "PENDING",
                     skipped: "SKIPPING",
-                })
-            ).to.eq("unknown");
+                }),
+                "unknown"
+            );
         });
         await it("does not modify undefined statuses", () => {
-            expect(
+            assert.strictEqual(
                 getXrayStatus("undefined", {
                     failed: "FAILING",
                     passed: "PASSING",
                     pending: "PENDING",
                     skipped: "SKIPPING",
-                })
-            ).to.eq("undefined");
+                }),
+                "undefined"
+            );
         });
         await it("throws for unexpected statuses", () => {
-            expect(() => getXrayStatus("abc bla bla")).to.throw("Unknown status: abc bla bla");
+            assert.throws(() => getXrayStatus("abc bla bla"), {
+                message: "Unknown status: abc bla bla",
+            });
         });
     });
 });
