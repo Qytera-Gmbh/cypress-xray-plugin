@@ -23,7 +23,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         beforeEach(() => {
             restClient = new AxiosRestClient(axios);
             client = new BaseJiraClient(
-                "https://example.org",
+                "http://localhost:1234",
                 new BasicAuthCredentials("user", "token"),
                 restClient
             );
@@ -395,7 +395,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 });
                 assert.strictEqual(get.mock.callCount(), 1);
                 assert.deepStrictEqual(get.mock.calls[0].arguments, [
-                    "https://example.org/rest/api/latest/myself",
+                    "http://localhost:1234/rest/api/latest/myself",
                     {
                         headers: { ["Authorization"]: "Basic dXNlcjp0b2tlbg==" },
                     },
@@ -645,7 +645,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 assert.strictEqual(put.mock.callCount(), 1);
                 assert.strictEqual(
                     put.mock.calls[0].arguments[0],
-                    "https://example.org/rest/api/latest/issue/CYP-XYZ"
+                    "http://localhost:1234/rest/api/latest/issue/CYP-XYZ"
                 );
                 assert.deepStrictEqual(put.mock.calls[0].arguments[1], {
                     fields: { summary: "Hi" },
@@ -717,7 +717,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 });
                 assert.strictEqual(post.mock.callCount(), 1);
                 assert.deepStrictEqual(post.mock.calls[0].arguments, [
-                    "https://example.org/rest/api/latest/issue/CYP-XYZ/transitions",
+                    "http://localhost:1234/rest/api/latest/issue/CYP-XYZ/transitions",
                     {
                         transition: {
                             name: "resolve",

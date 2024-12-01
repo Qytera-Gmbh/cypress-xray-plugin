@@ -14,7 +14,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
         beforeEach(() => {
             restClient = new AxiosRestClient(axios);
-            credentials = new JwtCredentials("id", "secret", "https://example.org", restClient);
+            credentials = new JwtCredentials("id", "secret", "http://localhost:1234", restClient);
         });
 
         await describe(JwtCredentials.prototype.getAuthorizationHeader.name, async () => {

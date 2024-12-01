@@ -22,7 +22,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         beforeEach(() => {
             restClient = new AxiosRestClient(axios);
             client = new ServerClient(
-                "https://example.org",
+                "http://localhost:1234",
                 new PatCredentials("token"),
                 restClient
             );
@@ -79,7 +79,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 assert.strictEqual(post.mock.calls.length, 1);
                 assert.strictEqual(
                     post.mock.calls[0].arguments[0],
-                    "https://example.org/rest/raven/latest/import/execution"
+                    "http://localhost:1234/rest/raven/latest/import/execution"
                 );
             });
 
@@ -172,7 +172,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 assert.strictEqual(post.mock.calls.length, 1);
                 assert.strictEqual(
                     post.mock.calls[0].arguments[0],
-                    "https://example.org/rest/raven/latest/import/execution/multipart"
+                    "http://localhost:1234/rest/raven/latest/import/execution/multipart"
                 );
             });
 
@@ -187,20 +187,20 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             testExecIssue: {
                                 id: "24556",
                                 key: "CYPLUG-123",
-                                self: "https://example.org/rest/api/2/issue/24556",
+                                self: "http://localhost:1234/rest/api/2/issue/24556",
                             },
                             testIssues: {
                                 success: [
                                     {
                                         id: "22979",
                                         key: "CYPLUG-43",
-                                        self: "https://example.org/rest/api/2/issue/22979",
+                                        self: "http://localhost:1234/rest/api/2/issue/22979",
                                         testVersionId: 430,
                                     },
                                     {
                                         id: "22946",
                                         key: "CYPLUG-10",
-                                        self: "https://example.org/rest/api/2/issue/22946",
+                                        self: "http://localhost:1234/rest/api/2/issue/22946",
                                         testVersionId: 425,
                                     },
                                 ],
@@ -269,7 +269,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 assert.strictEqual(post.mock.calls.length, 1);
                 assert.strictEqual(
                     post.mock.calls[0].arguments[0],
-                    "https://example.org/rest/raven/latest/import/execution/cucumber/multipart"
+                    "http://localhost:1234/rest/raven/latest/import/execution/cucumber/multipart"
                 );
             });
 
@@ -361,7 +361,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 assert.strictEqual(post.mock.calls.length, 1);
                 assert.strictEqual(
                     post.mock.calls[0].arguments[0],
-                    "https://example.org/rest/raven/latest/import/feature?projectKey=CYP"
+                    "http://localhost:1234/rest/raven/latest/import/feature?projectKey=CYP"
                 );
             });
 
@@ -693,7 +693,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 ]);
                 assert.deepStrictEqual(get.mock.calls[0].arguments, [
-                    "https://example.org/rest/raven/latest/api/testexec/CYP-321/test",
+                    "http://localhost:1234/rest/raven/latest/api/testexec/CYP-321/test",
                     {
                         headers: { ["Authorization"]: "Bearer token" },
                         params: {
@@ -704,7 +704,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 ]);
                 assert.deepStrictEqual(get.mock.calls[1].arguments, [
-                    "https://example.org/rest/raven/latest/api/testexec/CYP-321/test",
+                    "http://localhost:1234/rest/raven/latest/api/testexec/CYP-321/test",
                     {
                         headers: { ["Authorization"]: "Bearer token" },
                         params: {
@@ -780,7 +780,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     licenseType: "Demo License",
                 });
                 assert.deepStrictEqual(get.mock.calls[0].arguments, [
-                    "https://example.org/rest/raven/latest/api/xraylicense",
+                    "http://localhost:1234/rest/raven/latest/api/xraylicense",
                     {
                         headers: { ["Authorization"]: "Bearer token" },
                     },
