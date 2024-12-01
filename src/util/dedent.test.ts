@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
@@ -6,31 +6,33 @@ import { dedent } from "./dedent.js";
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     await it("strips leading whitespace", () => {
-        expect(dedent(`   Hello\nthere\nyo`)).to.eq("Hello\nthere\nyo");
+        assert.strictEqual(dedent(`   Hello\nthere\nyo`), "Hello\nthere\nyo");
     });
 
     await it("strips leading and trailing multiline whitespace", () => {
-        expect(
+        assert.strictEqual(
             dedent(`
                 Hello
                   there
                     yo
-            `)
-        ).to.eq("Hello\n  there\n    yo");
+            `),
+            "Hello\n  there\n    yo"
+        );
     });
 
     await it("adds indentation to newlines in between", () => {
-        expect(
+        assert.strictEqual(
             dedent(`
                 Hello
                   there
                     ${["example 1", "example 2"].join("\n")}
                   yo
-            `)
-        ).to.eq("Hello\n  there\n    example 1\n    example 2\n  yo");
+            `),
+            "Hello\n  there\n    example 1\n    example 2\n  yo"
+        );
     });
 
     await it("handles unindented strings", () => {
-        expect(dedent(`Hello`)).to.eq("Hello");
+        assert.strictEqual(dedent(`Hello`), "Hello");
     });
 });

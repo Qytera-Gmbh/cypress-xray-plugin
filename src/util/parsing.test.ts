@@ -9,36 +9,36 @@ await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(asBoolean.name, async () => {
         await describe(true.toString(), async () => {
             await it("y", () => {
-                expect(asBoolean("y")).to.be.true;
+                expect(asBoolean("y"), true);
             });
             await it("yes", () => {
-                expect(asBoolean("yes")).to.be.true;
+                expect(asBoolean("yes"), true);
             });
             await it("true", () => {
-                expect(asBoolean("true")).to.be.true;
+                expect(asBoolean("true"), true);
             });
             await it("1", () => {
-                expect(asBoolean("1")).to.be.true;
+                expect(asBoolean("1"), true);
             });
             await it("on", () => {
-                expect(asBoolean("on")).to.be.true;
+                expect(asBoolean("on"), true);
             });
         });
         await describe(false.toString(), async () => {
             await it("n", () => {
-                expect(asBoolean("n")).to.be.false;
+                expect(asBoolean("n"), false);
             });
             await it("no", () => {
-                expect(asBoolean("no")).to.be.false;
+                expect(asBoolean("no"), false);
             });
             await it("false", () => {
-                expect(asBoolean("false")).to.be.false;
+                expect(asBoolean("false"), false);
             });
             await it("0", () => {
-                expect(asBoolean("0")).to.be.false;
+                expect(asBoolean("0"), false);
             });
             await it("off", () => {
-                expect(asBoolean("off")).to.be.false;
+                expect(asBoolean("off"), false);
             });
         });
         await it("throws for unknown values", () => {

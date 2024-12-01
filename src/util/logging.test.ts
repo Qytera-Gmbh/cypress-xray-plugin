@@ -1,12 +1,11 @@
 import ansiColors from "ansi-colors";
 import type { AxiosResponse } from "axios";
 import { AxiosError, AxiosHeaders } from "axios";
-import { expect } from "chai";
+import assert from "node:assert";
 import fs from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { stub } from "sinon";
 import { resolveTestDirPath } from "../../test/util.js";
 import { LoggedError } from "./errors.js";
 import { CapturingLogger, Level, PluginLogger } from "./logging.js";
@@ -14,32 +13,32 @@ import { CapturingLogger, Level, PluginLogger } from "./logging.js";
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(PluginLogger.name, async () => {
         await describe("message", async () => {
-            await it("handles single line messages", () => {
-                const stdout = stub(console, "info");
+            await it("handles single line messages", (context) => {
+                const info = context.mock.method(console, "info", context.mock.fn());
                 const logger = new PluginLogger();
                 logger.message(Level.INFO, "hello");
-                expect(stdout).to.have.been.calledOnceWithExactly(
-                    `${ansiColors.white("│ Cypress Xray Plugin │ INFO    │")} ${ansiColors.gray(
-                        "hello"
-                    )}`
-                );
-            });
-            await it("handles multi line messages", () => {
-                const stdout = stub(console, "info");
-                const logger = new PluginLogger();
-                logger.message(Level.INFO, "hello\nbonjour");
-                expect(stdout).to.have.been.calledThrice;
-                expect(stdout.getCall(0).args).to.deep.eq([
+                assert.deepStrictEqual(info.mock.calls[0].arguments, [
                     `${ansiColors.white("│ Cypress Xray Plugin │ INFO    │")} ${ansiColors.gray(
                         "hello"
                     )}`,
                 ]);
-                expect(stdout.getCall(1).args).to.deep.eq([
+            });
+            await it("handles multi line messages", (context) => {
+                const info = context.mock.method(console, "info", context.mock.fn());
+                const logger = new PluginLogger();
+                logger.message(Level.INFO, "hello\nbonjour");
+                assert.deepStrictEqual(info.mock.callCount(), 3);
+                assert.deepStrictEqual(info.mock.calls[0].arguments, [
+                    `${ansiColors.white("│ Cypress Xray Plugin │ INFO    │")} ${ansiColors.gray(
+                        "hello"
+                    )}`,
+                ]);
+                assert.deepStrictEqual(info.mock.calls[1].arguments, [
                     `${ansiColors.white("│ Cypress Xray Plugin │ INFO    │")}   ${ansiColors.gray(
                         "bonjour"
                     )}`,
                 ]);
-                expect(stdout.getCall(2).args).to.deep.eq([
+                assert.deepStrictEqual(info.mock.calls[2].arguments, [
                     ansiColors.white("│ Cypress Xray Plugin │ INFO    │"),
                 ]);
             });
@@ -52,9 +51,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 });
                 const actualPath = logger.logToFile("[1, 2, 3]", "logToFileRelative.json");
                 const expectedPath = resolveTestDirPath("logs", "logToFileRelative.json");
-                expect(actualPath).to.eq(expectedPath);
+                assert.strictEqual(actualPath, expectedPath);
                 const parsedFile = fs.readFileSync(expectedPath, "utf8");
-                expect(parsedFile).to.deep.eq("[1, 2, 3]");
+                assert.deepStrictEqual(parsedFile, "[1, 2, 3]");
             });
 
             await it("writes to absolute directories", () => {
@@ -63,14 +62,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 });
                 const actualPath = logger.logToFile("[4, 5, 6]", "logToFileAbsolute.json");
                 const expectedPath = resolveTestDirPath("logs", "logToFileAbsolute.json");
-                expect(actualPath).to.eq(expectedPath);
+                assert.strictEqual(actualPath, expectedPath);
                 const parsedFile = fs.readFileSync(expectedPath, "utf8");
-                expect(parsedFile).to.deep.eq("[4, 5, 6]");
+                assert.deepStrictEqual(parsedFile, "[4, 5, 6]");
             });
 
-            await it("writes to non-existent directories", () => {
+            await it("writes to non-existent directories", (context) => {
+                const error = context.mock.method(console, "error", context.mock.fn());
                 const timestamp = Date.now();
-                const stderr = stub(console, "error");
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs", timestamp.toString()),
                 });
@@ -87,20 +86,20 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     timestamp.toString(),
                     "logErrorToFileNonExistent.json"
                 );
-                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
-                expect(parsedError).to.have.property("error");
-                expect(parsedError).to.have.property("stacktrace");
-                expect(stderr).to.have.been.calledOnceWith(
+                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as object;
+                assert.strictEqual("error" in parsedError, true);
+                assert.strictEqual("stacktrace" in parsedError, true);
+                assert.deepStrictEqual(error.mock.calls[0].arguments, [
                     `${ansiColors.white("│ Cypress Xray Plugin │ ERROR   │")} ${ansiColors.red(
                         `Complete error logs have been written to: ${expectedPath}`
-                    )}`
-                );
+                    )}`,
+                ]);
             });
         });
 
         await describe("logErrorToFile", async () => {
-            await it("writes to relative directories", () => {
-                const stderr = stub(console, "error");
+            await it("writes to relative directories", (context) => {
+                const error = context.mock.method(console, "error", context.mock.fn());
                 const logger = new PluginLogger({
                     logDirectory: relative(".", resolveTestDirPath("logs")),
                 });
@@ -113,18 +112,18 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     "logErrorToFileRelative"
                 );
                 const expectedPath = resolveTestDirPath("logs", "logErrorToFileRelative.json");
-                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
-                expect(parsedError).to.have.property("error");
-                expect(parsedError).to.have.property("stacktrace");
-                expect(stderr).to.have.been.calledOnceWith(
+                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as object;
+                assert.strictEqual("error" in parsedError, true);
+                assert.strictEqual("stacktrace" in parsedError, true);
+                assert.deepStrictEqual(error.mock.calls[0].arguments, [
                     `${ansiColors.white("│ Cypress Xray Plugin │ ERROR   │")} ${ansiColors.red(
                         `Complete error logs have been written to: ${expectedPath}`
-                    )}`
-                );
+                    )}`,
+                ]);
             });
 
-            await it("writes to absolute directories", () => {
-                const stderr = stub(console, "error");
+            await it("writes to absolute directories", (context) => {
+                const error = context.mock.method(console, "error", context.mock.fn());
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs"),
                 });
@@ -137,19 +136,20 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     "logErrorToFileAbsolute"
                 );
                 const expectedPath = resolveTestDirPath("logs", "logErrorToFileAbsolute.json");
-                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
-                expect(parsedError).to.have.property("error");
-                expect(parsedError).to.have.property("stacktrace");
-                expect(stderr).to.have.been.calledOnceWith(
+                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as object;
+                assert.strictEqual("error" in parsedError, true);
+                assert.strictEqual("stacktrace" in parsedError, true);
+                assert.deepStrictEqual(error.mock.calls[0].arguments, [
                     `${ansiColors.white("│ Cypress Xray Plugin │ ERROR   │")} ${ansiColors.red(
                         `Complete error logs have been written to: ${expectedPath}`
-                    )}`
-                );
+                    )}`,
+                ]);
             });
 
-            await it("writes to non-existent directories", () => {
+            await it("writes to non-existent directories", (context) => {
                 const timestamp = Date.now();
-                const stderr = stub(console, "error");
+
+                const error = context.mock.method(console, "error", context.mock.fn());
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs", timestamp.toString()),
                 });
@@ -166,19 +166,20 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     timestamp.toString(),
                     "logErrorToFileNonExistent.json"
                 );
-                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
-                expect(parsedError).to.have.property("error");
-                expect(parsedError).to.have.property("stacktrace");
-                expect(stderr).to.have.been.calledOnceWith(
+                const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as object;
+                assert.strictEqual("error" in parsedError, true);
+                assert.strictEqual("stacktrace" in parsedError, true);
+                assert.deepStrictEqual(error.mock.calls[0].arguments, [
                     `${ansiColors.white("│ Cypress Xray Plugin │ ERROR   │")} ${ansiColors.red(
                         `Complete error logs have been written to: ${expectedPath}`
-                    )}`
-                );
+                    )}`,
+                ]);
             });
 
-            await it("writes axios errors", () => {
+            await it("writes axios errors", (context) => {
                 const timestamp = Date.now();
-                const stderr = stub(console, "error");
+
+                const error = context.mock.method(console, "error", context.mock.fn());
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs", timestamp.toString()),
                 });
@@ -209,27 +210,28 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     timestamp.toString(),
                     "logErrorToFileAxios.json"
                 );
-                expect(stderr).to.have.been.calledOnceWith(
+                assert.deepStrictEqual(error.mock.calls[0].arguments, [
                     `${ansiColors.white("│ Cypress Xray Plugin │ ERROR   │")} ${ansiColors.red(
                         `Complete error logs have been written to: ${expectedPath}`
-                    )}`
-                );
+                    )}`,
+                ]);
                 const parsedData = JSON.parse(fs.readFileSync(expectedPath, "utf-8")) as {
                     error: AxiosError;
                     response: AxiosResponse;
                 };
-                expect(parsedData.error.message).to.eq("Request failed with status code 400");
-                expect(parsedData.error.name).to.eq("AxiosError");
-                expect(parsedData.error.code).to.eq("400");
-                expect(parsedData.error.status).to.eq(400);
-                expect(parsedData.response).to.deep.eq({
+                assert.strictEqual(parsedData.error.message, "Request failed with status code 400");
+                assert.strictEqual(parsedData.error.name, "AxiosError");
+                assert.strictEqual(parsedData.error.code, "400");
+                assert.strictEqual(parsedData.error.status, 400);
+                assert.deepStrictEqual(parsedData.response, {
                     error: "Must provide a project key",
                 });
             });
 
-            await it("writes generic errors", () => {
+            await it("writes generic errors", (context) => {
                 const timestamp = Date.now();
-                const stderr = stub(console, "error");
+
+                const error = context.mock.method(console, "error", context.mock.fn());
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs", timestamp.toString()),
                 });
@@ -240,17 +242,17 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     "logErrorToFileGeneric.log"
                 );
                 const parsedError = JSON.parse(fs.readFileSync(expectedPath, "utf8")) as unknown;
-                expect(parsedError).to.deep.eq({ good: "morning" });
-                expect(stderr).to.have.been.calledOnceWith(
+                assert.deepStrictEqual(parsedError, { good: "morning" });
+                assert.deepStrictEqual(error.mock.calls[0].arguments, [
                     `${ansiColors.white("│ Cypress Xray Plugin │ ERROR   │")} ${ansiColors.red(
                         `Complete error logs have been written to: ${expectedPath}`
-                    )}`
-                );
+                    )}`,
+                ]);
             });
 
-            await it("does not write already logged errors", () => {
+            await it("does not write already logged errors", (context) => {
+                const error = context.mock.method(console, "error", context.mock.fn());
                 const timestamp = Date.now();
-                const stderr = stub(console, "error");
                 const logger = new PluginLogger({
                     logDirectory: resolveTestDirPath("logs", timestamp.toString()),
                 });
@@ -260,8 +262,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     timestamp.toString(),
                     "logErrorToFileLogged"
                 );
-                expect(stderr).to.not.have.been.called;
-                expect(fs.existsSync(expectedPath)).to.be.false;
+                assert.strictEqual(error.mock.callCount(), 0);
+                assert.strictEqual(fs.existsSync(expectedPath), false);
             });
         });
     });
@@ -272,7 +274,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 const logger = new CapturingLogger();
                 logger.message(Level.INFO, "hello");
                 logger.message(Level.ERROR, "alarm");
-                expect(logger.getMessages()).to.deep.eq([
+                assert.deepStrictEqual(logger.getMessages(), [
                     [Level.INFO, "hello"],
                     [Level.ERROR, "alarm"],
                 ]);
@@ -282,11 +284,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         await describe("logToFile", async () => {
             await it("stores calls", () => {
                 const logger = new CapturingLogger();
-                expect([
-                    logger.logToFile("[1, 2, 3]", "logToFile1.json"),
-                    logger.logToFile("[5, 6, 7]", "logToFile2.json"),
-                ]).to.deep.eq(["logToFile1.json", "logToFile2.json"]);
-                expect(logger.getFileLogMessages()).to.deep.eq([
+                assert.deepStrictEqual(
+                    [
+                        logger.logToFile("[1, 2, 3]", "logToFile1.json"),
+                        logger.logToFile("[5, 6, 7]", "logToFile2.json"),
+                    ],
+                    ["logToFile1.json", "logToFile2.json"]
+                );
+                assert.deepStrictEqual(logger.getFileLogMessages(), [
                     ["[1, 2, 3]", "logToFile1.json"],
                     ["[5, 6, 7]", "logToFile2.json"],
                 ]);
@@ -298,7 +303,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 const logger = new CapturingLogger();
                 logger.logErrorToFile(new Error("I failed"), "logToFile1.json");
                 logger.logErrorToFile(new Error("I failed, too"), "logToFile2.json");
-                expect(logger.getFileLogErrorMessages()).to.deep.eq([
+                assert.deepStrictEqual(logger.getFileLogErrorMessages(), [
                     [new Error("I failed"), "logToFile1.json"],
                     [new Error("I failed, too"), "logToFile2.json"],
                 ]);
@@ -310,7 +315,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 const unconfiguredLogger = new CapturingLogger();
                 const configuredLogger = new CapturingLogger();
                 configuredLogger.configure();
-                expect(unconfiguredLogger).to.deep.eq(configuredLogger);
+                assert.deepStrictEqual(unconfiguredLogger, configuredLogger);
             });
         });
     });

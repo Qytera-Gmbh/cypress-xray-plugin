@@ -103,7 +103,7 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                                 import { Given } from "@badeball/cypress-cucumber-preprocessor";
 
                                 Given("a step", () => {
-                                    expect(true).to.be.true;
+                                    expect(true, true);
                                 });
                             `),
                             filename: "steps.js",
