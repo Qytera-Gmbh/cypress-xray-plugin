@@ -1,21 +1,18 @@
 import type { Background, GherkinDocument, Scenario } from "@cucumber/messages";
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedLogger } from "../../../../test/mocks.js";
 import { dedent } from "../../../util/dedent.js";
+import { LOG } from "../../../util/logging.js";
 import { ConstantCommand } from "../../util/commands/constant-command.js";
 import { ExtractFeatureFileIssuesCommand } from "./extract-feature-file-issues-command.js";
 import { parseFeatureFile } from "./parsing/gherkin.js";
 
-chai.use(chaiAsPromised);
-
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(ExtractFeatureFileIssuesCommand.name, async () => {
-        await it("extracts cucumber issue data", async () => {
-            const logger = getMockedLogger();
+        await it("extracts cucumber issue data", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixCorrect.feature"
             );
@@ -26,10 +23,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     prefixes: { precondition: "Precondition:", test: "TestName:" },
                     projectKey: "CYP",
                 },
-                logger,
-                new ConstantCommand(logger, document)
+                LOG,
+                new ConstantCommand(LOG, document)
             );
-            expect(await extractIssueKeysCommand.compute()).to.deep.eq({
+            assert.deepStrictEqual(await extractIssueKeysCommand.compute(), {
                 preconditions: [{ key: "CYP-222", summary: "" }],
                 tests: [
                     {
@@ -46,8 +43,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             });
         });
 
-        await it("skips empty feature files", async () => {
-            const logger = getMockedLogger();
+        await it("skips empty feature files", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const document: GherkinDocument = {
                 comments: [],
             };
@@ -58,17 +55,17 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     prefixes: {},
                     projectKey: "CYP",
                 },
-                logger,
-                new ConstantCommand(logger, document)
+                LOG,
+                new ConstantCommand(LOG, document)
             );
-            expect(await extractIssueKeysCommand.compute()).to.deep.eq({
+            assert.deepStrictEqual(await extractIssueKeysCommand.compute(), {
                 preconditions: [],
                 tests: [],
             });
         });
 
-        await it("handles rules", async () => {
-            const logger = getMockedLogger();
+        await it("handles rules", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const document: GherkinDocument = {
                 comments: [{ location: { line: 5 }, text: "@CYP-456" }],
                 feature: {
@@ -136,17 +133,17 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     prefixes: {},
                     projectKey: "CYP",
                 },
-                logger,
-                new ConstantCommand(logger, document)
+                LOG,
+                new ConstantCommand(LOG, document)
             );
-            expect(await extractIssueKeysCommand.compute()).to.deep.eq({
+            assert.deepStrictEqual(await extractIssueKeysCommand.compute(), {
                 preconditions: [{ key: "CYP-456", summary: "A background" }],
                 tests: [{ key: "CYP-123", summary: "A scenario", tags: ["CYP-123"] }],
             });
         });
 
-        await it("throws for missing scenario tags", async () => {
-            const logger = getMockedLogger();
+        await it("throws for missing scenario tags", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMissingScenario.feature"
             );
@@ -157,11 +154,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     prefixes: { precondition: "Precondition:" },
                     projectKey: "CYP",
                 },
-                logger,
-                new ConstantCommand(logger, document)
+                LOG,
+                new ConstantCommand(LOG, document)
             );
-            await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                dedent(`
+            await assert.rejects(extractIssueKeysCommand.compute(), {
+                message: dedent(`
                     ./test/resources/features/taggedPrefixMissingScenario.feature
 
                       Scenario: A scenario
@@ -198,12 +195,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                         - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                `)
-            );
+                `),
+            });
         });
 
-        await it("throws for missing scenario tags (no scenario name)", async () => {
-            const logger = getMockedLogger();
+        await it("throws for missing scenario tags (no scenario name)", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMissingScenario.feature"
             );
@@ -217,11 +214,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     prefixes: { precondition: "Precondition:" },
                     projectKey: "CYP",
                 },
-                logger,
-                new ConstantCommand(logger, document)
+                LOG,
+                new ConstantCommand(LOG, document)
             );
-            await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                dedent(`
+            await assert.rejects(extractIssueKeysCommand.compute(), {
+                message: dedent(`
                     ./test/resources/features/taggedPrefixMissingScenario.feature
 
                       Scenario: <no name>
@@ -258,12 +255,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                         - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                `)
-            );
+                `),
+            });
         });
 
-        await it("throws for wrong scenario tags", async () => {
-            const logger = getMockedLogger();
+        await it("throws for wrong scenario tags", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongScenarioTags.feature"
             );
@@ -274,11 +271,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     prefixes: {},
                     projectKey: "CYP",
                 },
-                logger,
-                new ConstantCommand(logger, document)
+                LOG,
+                new ConstantCommand(LOG, document)
             );
-            await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                dedent(`
+            await assert.rejects(extractIssueKeysCommand.compute(), {
+                message: dedent(`
                     ./test/resources/features/taggedWrongScenarioTags.feature
 
                       Scenario: A scenario
@@ -312,12 +309,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                         - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-                `)
-            );
+                `),
+            });
         });
 
-        await it("throws for wrong scenario tags (no scenario name, no steps)", async () => {
-            const logger = getMockedLogger();
+        await it("throws for wrong scenario tags (no scenario name, no steps)", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongScenarioTags.feature"
             );
@@ -332,11 +329,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     prefixes: {},
                     projectKey: "CYP",
                 },
-                logger,
-                new ConstantCommand(logger, document)
+                LOG,
+                new ConstantCommand(LOG, document)
             );
-            await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                dedent(`
+            await assert.rejects(extractIssueKeysCommand.compute(), {
+                message: dedent(`
                     ./test/resources/features/taggedWrongScenarioTags.feature
 
                       Scenario: <no name>
@@ -370,12 +367,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                         - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                `)
-            );
+                `),
+            });
         });
 
-        await it("throws for missing background tags", async () => {
-            const logger = getMockedLogger();
+        await it("throws for missing background tags", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMissingBackground.feature"
             );
@@ -386,11 +383,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     prefixes: { test: "TestName:" },
                     projectKey: "CYP",
                 },
-                logger,
-                new ConstantCommand(logger, document)
+                LOG,
+                new ConstantCommand(LOG, document)
             );
-            await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                dedent(`
+            await assert.rejects(extractIssueKeysCommand.compute(), {
+                message: dedent(`
                     ./test/resources/features/taggedPrefixMissingBackground.feature
 
                       Background: A background
@@ -427,12 +424,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                         - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                `)
-            );
+                `),
+            });
         });
 
-        await it("throws for missing background tags (no background steps and names)", async () => {
-            const logger = getMockedLogger();
+        await it("throws for missing background tags (no background steps and names)", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMissingBackground.feature"
             );
@@ -447,11 +444,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     prefixes: { test: "TestName:" },
                     projectKey: "CYP",
                 },
-                logger,
-                new ConstantCommand(logger, document)
+                LOG,
+                new ConstantCommand(LOG, document)
             );
-            await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                dedent(`
+            await assert.rejects(extractIssueKeysCommand.compute(), {
+                message: dedent(`
                     ./test/resources/features/taggedPrefixMissingBackground.feature
 
                       Background: <no name>
@@ -488,12 +485,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                         - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-                `)
-            );
+                `),
+            });
         });
 
-        await it("throws for wrong background tags (no background name)", async () => {
-            const logger = getMockedLogger();
+        await it("throws for wrong background tags (no background name)", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongBackgroundTags.feature"
             );
@@ -507,11 +504,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     prefixes: {},
                     projectKey: "CYP",
                 },
-                logger,
-                new ConstantCommand(logger, document)
+                LOG,
+                new ConstantCommand(LOG, document)
             );
-            await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                dedent(`
+            await assert.rejects(extractIssueKeysCommand.compute(), {
+                message: dedent(`
                     ./test/resources/features/taggedWrongBackgroundTags.feature
 
                       Background: <no name>
@@ -544,12 +541,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                         - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
-                `)
-            );
+                `),
+            });
         });
 
-        await it("throws for wrong background tags", async () => {
-            const logger = getMockedLogger();
+        await it("throws for wrong background tags", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const document = parseFeatureFile(
                 "./test/resources/features/taggedWrongBackgroundTags.feature"
             );
@@ -560,11 +557,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     prefixes: {},
                     projectKey: "CYP",
                 },
-                logger,
-                new ConstantCommand(logger, document)
+                LOG,
+                new ConstantCommand(LOG, document)
             );
-            await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                dedent(`
+            await assert.rejects(extractIssueKeysCommand.compute(), {
+                message: dedent(`
                     ./test/resources/features/taggedWrongBackgroundTags.feature
 
                       Background: A background
@@ -597,13 +594,13 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                         - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                         - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-                `)
-            );
+                `),
+            });
         });
 
         await describe("no prefix", async () => {
-            await it("throws for multiple scenario tags (no scenario name, no steps)", async () => {
-                const logger = getMockedLogger();
+            await it("throws for multiple scenario tags (no scenario name, no steps)", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedNoPrefixMultipleScenario.feature"
                 );
@@ -619,11 +616,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         prefixes: {},
                         projectKey: "CYP",
                     },
-                    logger,
-                    new ConstantCommand(logger, document)
+                    LOG,
+                    new ConstantCommand(LOG, document)
                 );
-                await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                    dedent(`
+                await assert.rejects(extractIssueKeysCommand.compute(), {
+                    message: dedent(`
                         ./test/resources/features/taggedNoPrefixMultipleScenario.feature
 
                           Scenario: <no name>
@@ -639,12 +636,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             For more information, visit:
                             - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                             - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
-                );
+                    `),
+                });
             });
 
-            await it("throws for multiple background tags", async () => {
-                const logger = getMockedLogger();
+            await it("throws for multiple background tags", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
                 );
@@ -656,11 +653,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         prefixes: {},
                         projectKey: "CYP",
                     },
-                    logger,
-                    new ConstantCommand(logger, document)
+                    LOG,
+                    new ConstantCommand(LOG, document)
                 );
-                await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                    dedent(`
+                await assert.rejects(extractIssueKeysCommand.compute(), {
+                    message: dedent(`
                         ./test/resources/features/taggedNoPrefixMultipleBackground.feature
 
                           Background: A background
@@ -679,12 +676,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             For more information, visit:
                             - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                             - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
-                );
+                    `),
+                });
             });
 
-            await it("throws for multiple background tags (no background name)", async () => {
-                const logger = getMockedLogger();
+            await it("throws for multiple background tags (no background name)", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
                 );
@@ -699,11 +696,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         prefixes: {},
                         projectKey: "CYP",
                     },
-                    logger,
-                    new ConstantCommand(logger, document)
+                    LOG,
+                    new ConstantCommand(LOG, document)
                 );
-                await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                    dedent(`
+                await assert.rejects(extractIssueKeysCommand.compute(), {
+                    message: dedent(`
                         ./test/resources/features/taggedNoPrefixMultipleBackground.feature
 
                           Background: <no name>
@@ -722,14 +719,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             For more information, visit:
                             - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
                             - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
-                );
+                    `),
+                });
             });
         });
 
         await describe("prefixed", async () => {
-            await it("throws for multiple scenario tags", async () => {
-                const logger = getMockedLogger();
+            await it("throws for multiple scenario tags", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedPrefixMultipleScenario.feature"
                 );
@@ -740,11 +737,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         prefixes: { precondition: "Precondition:", test: "TestName:" },
                         projectKey: "CYP",
                     },
-                    logger,
-                    new ConstantCommand(logger, document)
+                    LOG,
+                    new ConstantCommand(LOG, document)
                 );
-                await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                    dedent(`
+                await assert.rejects(extractIssueKeysCommand.compute(), {
+                    message: dedent(`
                         ./test/resources/features/taggedPrefixMultipleScenario.feature
 
                           Scenario: A scenario
@@ -760,12 +757,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             For more information, visit:
                             - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
                             - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
-                );
+                    `),
+                });
             });
 
-            await it("throws for multiple background tags", async () => {
-                const logger = getMockedLogger();
+            await it("throws for multiple background tags", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const document = parseFeatureFile(
                     "./test/resources/features/taggedPrefixMultipleBackground.feature"
                 );
@@ -777,11 +774,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         prefixes: { precondition: "Precondition:" },
                         projectKey: "CYP",
                     },
-                    logger,
-                    new ConstantCommand(logger, document)
+                    LOG,
+                    new ConstantCommand(LOG, document)
                 );
-                await expect(extractIssueKeysCommand.compute()).to.eventually.be.rejectedWith(
-                    dedent(`
+                await assert.rejects(extractIssueKeysCommand.compute(), {
+                    message: dedent(`
                         ./test/resources/features/taggedPrefixMultipleBackground.feature
 
                           Background: A background
@@ -800,8 +797,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             For more information, visit:
                             - https://docs.getxray.app/display/XRAYCLOUD/Importing+Cucumber+Tests+-+REST+v2
                             - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                    `)
-                );
+                    `),
+                });
             });
         });
     });
