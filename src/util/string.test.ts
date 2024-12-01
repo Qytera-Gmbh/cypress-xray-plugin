@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
@@ -8,16 +8,16 @@ import { unknownToString } from "./string.js";
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe(unknownToString.name, async () => {
         await it("string", () => {
-            expect(unknownToString("hi")).to.eq("hi");
+            assert.strictEqual(unknownToString("hi"), "hi");
         });
         await it("number", () => {
-            expect(unknownToString(423535.568)).to.eq("423535.568");
+            assert.strictEqual(unknownToString(423535.568), "423535.568");
         });
         await it("boolean", () => {
-            expect(unknownToString(false)).to.eq("false");
+            assert.strictEqual(unknownToString(false), "false");
         });
         await it("symbol", () => {
-            expect(unknownToString(Symbol("hello"))).to.eq("Symbol(hello)");
+            assert.strictEqual(unknownToString(Symbol("hello")), "Symbol(hello)");
         });
         await it("function", () => {
             const f: (arg1: number) => Promise<void> = async (arg1: number) => {
@@ -25,7 +25,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     resolve(arg1);
                 });
             };
-            expect(unknownToString(f)).to.eq(
+            assert.strictEqual(
+                unknownToString(f),
                 `async (arg1) => {
                 await new Promise((resolve) => {
                     resolve(arg1);
@@ -34,15 +35,17 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             );
         });
         await it("undefined", () => {
-            expect(unknownToString(undefined)).to.eq("undefined");
+            assert.strictEqual(unknownToString(undefined), "undefined");
         });
         await it("object", () => {
-            expect(unknownToString({ a: 5, b: [1, 2, 3], c: { d: "hi" } })).to.eq(
+            assert.strictEqual(
+                unknownToString({ a: 5, b: [1, 2, 3], c: { d: "hi" } }),
                 '{"a":5,"b":[1,2,3],"c":{"d":"hi"}}'
             );
         });
         await it("object (pretty)", () => {
-            expect(unknownToString({ a: 5, b: [1, 2, 3], c: { d: "hi" } }, true)).to.eq(
+            assert.strictEqual(
+                unknownToString({ a: 5, b: [1, 2, 3], c: { d: "hi" } }, true),
                 dedent(`
                     {
                       "a": 5,
