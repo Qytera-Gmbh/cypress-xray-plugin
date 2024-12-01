@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
@@ -21,16 +21,15 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     testExecutionIssue: {},
                 }
             );
-            expect(info.fields.project).to.deep.eq({
-                key: "CYP",
-            });
-            expect(info.fields.description).to.eq(
+            assert.deepStrictEqual(info.fields.project, { key: "CYP" });
+            assert.deepStrictEqual(
+                info.fields.description,
                 dedent(`
                     Cypress version: 13.2.0
                     Browser: Chromium (1.2.3)
                 `)
             );
-            expect(info.fields.issuetype).to.be.undefined;
+            assert.deepStrictEqual(info.fields.issuetype, undefined);
         });
 
         await it("uses provided summaries", () => {
@@ -47,7 +46,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     testExecutionIssue: { fields: { summary: "Hello" } },
                 }
             );
-            expect(info.fields.summary).to.eq("Hello");
+            assert.deepStrictEqual(info.fields.summary, "Hello");
         });
 
         await it("uses provided descriptions", () => {
@@ -64,7 +63,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     testExecutionIssue: { fields: { description: "Hello There" } },
                 }
             );
-            expect(info.fields.description).to.eq("Hello There");
+            assert.deepStrictEqual(info.fields.description, "Hello There");
         });
 
         await it("uses provided test execution issue types", () => {
@@ -88,7 +87,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 }
             );
-            expect(info.fields.issuetype).to.deep.eq({
+            assert.deepStrictEqual(info.fields.issuetype, {
                 name: "Test Execution (QA)",
             });
         });
@@ -110,7 +109,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 }
             );
-            expect(info.xrayFields).to.deep.eq({ environments: undefined, testPlanKey: "CYP-123" });
+            assert.deepStrictEqual(info.xrayFields, {
+                environments: undefined,
+                testPlanKey: "CYP-123",
+            });
         });
 
         await it("uses provided test environments", () => {
@@ -130,7 +132,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     testExecutionIssue: {},
                 }
             );
-            expect(info.xrayFields).to.deep.eq({
+            assert.deepStrictEqual(info.xrayFields, {
                 environments: ["DEV", "TEST"],
                 testPlanKey: undefined,
             });
@@ -156,7 +158,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 }
             );
-            expect(info).to.deep.eq({
+            assert.deepStrictEqual(info, {
                 fields: {
                     ["customfield_12345"]: [1, 2, 3, 4, 5],
                     description: dedent(`
@@ -201,7 +203,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 }
             );
-            expect(info.fields).to.deep.eq({
+            assert.deepStrictEqual(info.fields, {
                 description: "My description",
                 issuetype: { name: "Different Issue Type" },
                 project: { key: "ABC" },
@@ -225,17 +227,18 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     testExecutionIssue: {},
                 }
             );
-            expect(info.fields.project).to.deep.eq({
+            assert.deepStrictEqual(info.fields.project, {
                 key: "CYPLUG",
             });
-            expect(info.fields.description).to.eq(
+            assert.deepStrictEqual(
+                info.fields.description,
                 dedent(`
-                        Cypress version: 13.2.0
-                        Browser: Chromium (1.2.3)
-                    `)
+                    Cypress version: 13.2.0
+                    Browser: Chromium (1.2.3)
+                `)
             );
-            expect(info.fields.summary).to.be.undefined;
-            expect(info.fields.issuetype).to.be.undefined;
+            assert.deepStrictEqual(info.fields.summary, undefined);
+            assert.deepStrictEqual(info.fields.issuetype, undefined);
         });
 
         await it("uses provided summaries", () => {
@@ -252,7 +255,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     testExecutionIssue: { fields: { summary: "Hello" } },
                 }
             );
-            expect(info.fields.summary).to.eq("Hello");
+            assert.deepStrictEqual(info.fields.summary, "Hello");
         });
 
         await it("uses provided descriptions", () => {
@@ -269,7 +272,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     testExecutionIssue: { fields: { description: "Hello There" } },
                 }
             );
-            expect(info.fields.description).to.eq("Hello There");
+            assert.deepStrictEqual(info.fields.description, "Hello There");
         });
 
         await it("uses provided test execution issue types", () => {
@@ -292,7 +295,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 }
             );
-            expect(info.fields.issuetype).to.deep.eq({
+            assert.deepStrictEqual(info.fields.issuetype, {
                 name: "Test Execution (QA)",
             });
         });
@@ -315,7 +318,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 }
             );
-            expect(info.fields.customField_12345).to.deep.eq(["CYP-123"]);
+            assert.deepStrictEqual(info.fields.customField_12345, ["CYP-123"]);
         });
 
         await it("uses provided test environments", () => {
@@ -336,7 +339,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     testExecutionIssue: {},
                 }
             );
-            expect(info.fields.customField_12345).to.deep.eq(["DEV"]);
+            assert.deepStrictEqual(info.fields.customField_12345, ["DEV"]);
         });
 
         await it("uses provided custom data", () => {
@@ -359,7 +362,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 }
             );
-            expect(info).to.deep.eq({
+            assert.deepStrictEqual(info, {
                 fields: {
                     ["customfield_12345"]: [1, 2, 3, 4, 5],
                     description: dedent(`
@@ -404,7 +407,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     testPlan: { fieldId: "customfield_999", value: "CYP-456" },
                 }
             );
-            expect(info.fields).to.deep.eq({
+            assert.deepStrictEqual(info.fields, {
                 ["customfield_678"]: ["PROD"],
                 ["customfield_999"]: "CYP-111",
                 description: "My description",
