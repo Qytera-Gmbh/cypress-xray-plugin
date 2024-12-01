@@ -1,8 +1,11 @@
-import { expect } from "chai";
+import axios from "axios";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedXrayClient } from "../../../../test/mocks.js";
+import { PatCredentials } from "../../../client/authentication/credentials.js";
+import { AxiosRestClient } from "../../../client/https/https.js";
+import { ServerClient } from "../../../client/xray/xray-client-server.js";
 import type { Failable } from "../../../hooks/command.js";
 import { Command, ComputableState } from "../../../hooks/command.js";
 import { ImportExecutionCucumberCommand } from "../../../hooks/util/commands/xray/import-execution-cucumber-command.js";
@@ -44,7 +47,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             graph.connect(x, z);
             const logger = new CapturingLogger();
             new ChainingGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.ERROR,
                     dedent(`
@@ -89,7 +92,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             const logger = new CapturingLogger();
             new ChainingGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.ERROR,
                     dedent(`
@@ -150,7 +153,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             graph.connect(x, z);
             const logger = new CapturingLogger();
             new ChainingGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([]);
+            assert.deepStrictEqual(logger.getMessages(), []);
         });
 
         await it("logs correctly indented multiline chains", () => {
@@ -186,7 +189,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             graph.connect(d, f);
             const logger = new CapturingLogger();
             new ChainingGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.WARNING,
                     dedent(`
@@ -221,7 +224,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             new ChainingGraphLogger(logger, (vertex) => vertex === f || vertex === e).logGraph(
                 graph
             );
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.ERROR,
                     dedent(`
@@ -260,13 +263,23 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 new FailingCommand<CucumberMultipart>({ message: "generic failure" }, logger)
             );
             const b = graph.place(
-                new ImportExecutionCucumberCommand({ xrayClient: getMockedXrayClient() }, logger, a)
+                new ImportExecutionCucumberCommand(
+                    {
+                        xrayClient: new ServerClient(
+                            "http://localhost:1234",
+                            new PatCredentials("token"),
+                            new AxiosRestClient(axios)
+                        ),
+                    },
+                    logger,
+                    a
+                )
             );
             graph.connect(a, b);
             await Promise.allSettled([a.compute()]);
             b.setState(ComputableState.SKIPPED);
             new ChainingCommandGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.ERROR,
                     dedent(`
@@ -288,13 +301,23 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 )
             );
             const b = graph.place(
-                new ImportExecutionCypressCommand({ xrayClient: getMockedXrayClient() }, logger, a)
+                new ImportExecutionCypressCommand(
+                    {
+                        xrayClient: new ServerClient(
+                            "http://localhost:1234",
+                            new PatCredentials("token"),
+                            new AxiosRestClient(axios)
+                        ),
+                    },
+                    logger,
+                    a
+                )
             );
             graph.connect(a, b);
             await Promise.allSettled([a.compute()]);
             b.setState(ComputableState.SKIPPED);
             new ChainingCommandGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.ERROR,
                     dedent(`
@@ -306,10 +329,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             ]);
         });
 
-        await it("adds additional information to feature file import command failures", async () => {
+        await it("adds additional information to feature file import command failures", async (context) => {
             const logger = new CapturingLogger();
-            const xrayClient = getMockedXrayClient();
-            xrayClient.importFeature.rejects(new Error("the feature does not exist"));
+            const xrayClient = new ServerClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            context.mock.method(xrayClient, "importFeature", context.mock.fn());
             const graph = new SimpleDirectedGraph<Command>();
             const a = graph.place(
                 new FailingCommand<XrayTestExecutionResults>(
@@ -327,7 +354,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             await Promise.allSettled([a.compute()]);
             b.setState(ComputableState.SKIPPED);
             new ChainingCommandGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.ERROR,
                     dedent(`
