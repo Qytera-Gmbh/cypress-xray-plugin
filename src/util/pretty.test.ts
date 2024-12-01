@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
@@ -33,7 +33,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 },
             ];
-            expect(prettyPadObjects(array)).to.deep.eq([
+            assert.deepStrictEqual(prettyPadObjects(array), [
                 {
                     clauseNames: '["summary"]',
                     custom: "false",
@@ -55,7 +55,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             ]);
         });
         await it("pretty pad object values", () => {
-            expect(
+            assert.deepStrictEqual(
                 prettyPadValues({
                     a: [1, 2, false, true, "george"],
                     somethingLong: {
@@ -65,13 +65,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                     x: 12345,
                     y: "hello gooood Morning",
-                })
-            ).to.deep.eq({
-                a: '[1,2,false,true,"george"]',
-                somethingLong: '{"i":1,"j":2,"k":"snake"}',
-                x: "12345                    ",
-                y: '"hello gooood Morning"   ',
-            });
+                }),
+                {
+                    a: '[1,2,false,true,"george"]',
+                    somethingLong: '{"i":1,"j":2,"k":"snake"}',
+                    x: "12345                    ",
+                    y: '"hello gooood Morning"   ',
+                }
+            );
         });
     });
 });
