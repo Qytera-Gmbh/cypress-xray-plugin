@@ -2,7 +2,7 @@ import assert from "node:assert";
 import { relative, resolve } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import * as dependencies from "./dependencies.js";
+import dependencies from "./dependencies.js";
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     await it("throws if a package is not installed", async () => {
