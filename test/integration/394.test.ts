@@ -38,8 +38,8 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                         content: dedent(`
                             const { enqueueTask } = require("cypress-xray-plugin/tasks");
 
-                            await describe("evidence", () => {
-                                await it("${test.testIssueKey} adds evidence", () => {
+                            describe("evidence", () => {
+                                it("${test.testIssueKey} adds evidence", () => {
                                     enqueueTask("cypress-xray-plugin:add-evidence", {
                                         filename: "queued.json",
                                         data: Cypress.Buffer.from(JSON.stringify({ name: "Bob" })),
