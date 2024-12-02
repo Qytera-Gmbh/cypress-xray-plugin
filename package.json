@@ -40,7 +40,7 @@
         "test:integration": "npm-run-all --parallel --race start:test:server start:test:integration",
         "start:test:server": "node --import ./test/loader.js test/server.ts",
         "start:test:unit": "node --import ./test/loader.js --test src/**/*.test.ts",
-        "start:test:integration": "node --import ./test/loader.js --test-concurrency 1 --test test/integration/",
+        "start:test:integration": "node --import ./test/loader.js --test-concurrency 1 --test test/integration/**/*.test.ts",
         "build": "tsc --project tsconfig-build.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
         "eslint": "eslint src/**/*.ts test/**/*.ts index.ts"
     },
