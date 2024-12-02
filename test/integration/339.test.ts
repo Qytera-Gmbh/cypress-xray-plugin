@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import fs from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
@@ -53,7 +53,7 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                 env: test.env,
                 includeDefaultEnv: test.service,
             });
-            expect(fs.existsSync(project.logDirectory), false);
+            assert.strictEqual(fs.existsSync(project.logDirectory), false);
         });
     }
 });

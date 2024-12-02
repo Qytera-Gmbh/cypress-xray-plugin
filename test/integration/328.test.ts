@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
@@ -158,12 +158,15 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                 const testResults = await getIntegrationClient("xray", test.service).getTestResults(
                     searchResult[0].id
                 );
-                expect(testResults.map((result) => result.jira.key)).to.deep.eq([
-                    test.manualTests[0],
-                    test.manualTests[1],
-                    test.cucumberTests[0],
-                    test.cucumberTests[1],
-                ]);
+                assert.deepStrictEqual(
+                    testResults.map((result) => result.jira.key),
+                    [
+                        test.manualTests[0],
+                        test.manualTests[1],
+                        test.cucumberTests[0],
+                        test.cucumberTests[1],
+                    ]
+                );
             }
 
             if (test.service === "server") {
@@ -171,12 +174,15 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                     "xray",
                     test.service
                 ).getTestExecution(testExecutionIssueKey);
-                expect(testResults.map((result) => result.key)).to.deep.eq([
-                    test.manualTests[0],
-                    test.manualTests[1],
-                    test.cucumberTests[0],
-                    test.cucumberTests[1],
-                ]);
+                assert.deepStrictEqual(
+                    testResults.map((result) => result.key),
+                    [
+                        test.manualTests[0],
+                        test.manualTests[1],
+                        test.cucumberTests[0],
+                        test.cucumberTests[1],
+                    ]
+                );
             }
         });
     }

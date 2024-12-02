@@ -1,5 +1,5 @@
-import { expect } from "chai";
 import chalk from "chalk";
+import assert from "node:assert";
 import fs from "node:fs";
 import { join, relative } from "node:path";
 import { cwd } from "node:process";
@@ -74,12 +74,15 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                 const fileContent = JSON.parse(
                     fs.readFileSync(join(entry.parentPath, entry.name), "utf8")
                 ) as LoggedRequest;
-                expect(fileContent.body).to.contain(
-                    '"evidence":[{"contentType":"application/json","data":"eyJuYW1lIjoiQm9iIn0=","filename":"queued.json"},{"contentType":"application/json","data":"eyJuYW1lIjoiSmVmZiJ9","filename":"raw.json"}]'
+                assert.strictEqual(
+                    (fileContent.body as string).includes(
+                        '"evidence":[{"contentType":"application/json","data":"eyJuYW1lIjoiQm9iIn0=","filename":"queued.json"},{"contentType":"application/json","data":"eyJuYW1lIjoiSmVmZiJ9","filename":"raw.json"}]'
+                    ),
+                    true
                 );
                 return;
             }
-            expect.fail(
+            assert.fail(
                 `Expected to find a logged import execution request in log directory ${chalk.red(
                     project.logDirectory
                 )}, but did not find any`

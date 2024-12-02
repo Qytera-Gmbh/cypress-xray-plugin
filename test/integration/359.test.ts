@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
@@ -156,8 +156,8 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                 fields: ["labels", "summary"],
                 jql: `issue in (${testExecutionIssueKey})`,
             });
-            expect(searchResult[0].fields?.labels).to.deep.eq(test.expectedLabels);
-            expect(searchResult[0].fields?.summary).to.deep.eq(test.expectedSummary);
+            assert.deepStrictEqual(searchResult[0].fields?.labels, test.expectedLabels);
+            assert.deepStrictEqual(searchResult[0].fields.summary, test.expectedSummary);
         });
     }
 });
