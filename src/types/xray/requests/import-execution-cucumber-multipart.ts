@@ -1,4 +1,4 @@
-import type { MultipartInfo } from "./import-execution-multipart-info.js";
+import type { MultipartInfo } from "./import-execution-multipart-info";
 
 /*
  * There unfortunately is no official Cucumber JSON report scheme available anywhere, as stated

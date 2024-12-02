@@ -2,9 +2,9 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import { Queue } from "./queue.js";
+import { Queue } from "./queue";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     let queue = new Queue<number>();
 
     beforeEach(() => {

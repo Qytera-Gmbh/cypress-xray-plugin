@@ -4,20 +4,20 @@ import { readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it, mock } from "node:test";
-import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results.js";
-import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart.js";
+import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
+import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import type {
     MultipartInfo,
     MultipartInfoCloud,
-} from "../../types/xray/requests/import-execution-multipart-info.js";
-import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests.js";
-import { dedent } from "../../util/dedent.js";
-import { Level, LOG } from "../../util/logging.js";
-import { JwtCredentials } from "../authentication/credentials.js";
-import { AxiosRestClient } from "../https/https.js";
-import { XrayClientCloud } from "./xray-client-cloud.js";
+} from "../../types/xray/requests/import-execution-multipart-info";
+import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
+import { dedent } from "../../util/dedent";
+import { Level, LOG } from "../../util/logging";
+import { JwtCredentials } from "../authentication/credentials";
+import { AxiosRestClient } from "../https/https";
+import { XrayClientCloud } from "./xray-client-cloud";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(XrayClientCloud.name, async () => {
         let client: XrayClientCloud;
         let restClient: AxiosRestClient;

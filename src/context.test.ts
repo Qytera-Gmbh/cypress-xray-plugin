@@ -7,26 +7,26 @@ import {
     BasicAuthCredentials,
     JwtCredentials,
     PatCredentials,
-} from "./client/authentication/credentials.js";
-import { AxiosRestClient } from "./client/https/https.js";
-import { BaseJiraClient } from "./client/jira/jira-client.js";
-import { XrayClientCloud } from "./client/xray/xray-client-cloud.js";
-import { ServerClient } from "./client/xray/xray-client-server.js";
-import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context.js";
-import type { User } from "./types/jira/responses/user.js";
+} from "./client/authentication/credentials";
+import { AxiosRestClient } from "./client/https/https";
+import { BaseJiraClient } from "./client/jira/jira-client";
+import { XrayClientCloud } from "./client/xray/xray-client-cloud";
+import { ServerClient } from "./client/xray/xray-client-server";
+import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context";
+import type { User } from "./types/jira/responses/user";
 import type {
     InternalCucumberOptions,
     InternalHttpOptions,
     InternalJiraOptions,
     InternalPluginOptions,
     InternalXrayOptions,
-} from "./types/plugin.js";
-import { dedent } from "./util/dedent.js";
-import dependencies from "./util/dependencies.js";
-import { ExecutableGraph } from "./util/graph/executable-graph.js";
-import { CapturingLogger, Level, LOG } from "./util/logging.js";
+} from "./types/plugin";
+import { dedent } from "./util/dedent";
+import dependencies from "./util/dependencies";
+import { ExecutableGraph } from "./util/graph/executable-graph";
+import { CapturingLogger, Level, LOG } from "./util/logging";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe("the plugin context configuration", async () => {
         await describe("the option initialization", async () => {
             await describe("should have certain default values", async () => {

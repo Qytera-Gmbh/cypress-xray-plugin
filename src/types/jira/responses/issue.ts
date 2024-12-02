@@ -1,10 +1,10 @@
-import type { Changelog } from "./changelog.js";
-import type { EditMeta } from "./edit-meta.js";
-import type { IncludedFields } from "./included-fields.js";
-import type { JsonType } from "./json-type.js";
-import type { Opsbar } from "./opsbar.js";
-import type { Properties } from "./properties.js";
-import type { Transition } from "./transition.js";
+import type { Changelog } from "./changelog";
+import type { EditMeta } from "./edit-meta";
+import type { IncludedFields } from "./included-fields";
+import type { JsonType } from "./json-type";
+import type { Opsbar } from "./opsbar";
+import type { Properties } from "./properties";
+import type { Transition } from "./transition";
 
 export interface Issue {
     /**

@@ -2,13 +2,13 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import type { XrayClient } from "../../../../../client/xray/xray-client.js";
-import type { XrayTest } from "../../../../../types/xray/import-test-execution-results.js";
-import { LOG } from "../../../../../util/logging.js";
-import { ConstantCommand } from "../../../../util/commands/constant-command.js";
-import { AssertCypressConversionValidCommand } from "./assert-cypress-conversion-valid-command.js";
+import type { XrayClient } from "../../../../../client/xray/xray-client";
+import type { XrayTest } from "../../../../../types/xray/import-test-execution-results";
+import { LOG } from "../../../../../util/logging";
+import { ConstantCommand } from "../../../../util/commands/constant-command";
+import { AssertCypressConversionValidCommand } from "./assert-cypress-conversion-valid-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(AssertCypressConversionValidCommand.name, async () => {
         await it("correctly verifies xray json data", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());

@@ -1,11 +1,11 @@
-import type { JiraClient } from "../../../../client/jira/jira-client.js";
-import type { Issue } from "../../../../types/jira/responses/issue.js";
-import type { StringMap } from "../../../../types/util.js";
-import { extractArrayOfStrings } from "../../../../util/extraction.js";
-import type { Logger } from "../../../../util/logging.js";
-import type { Computable } from "../../../command.js";
-import { ConstantCommand } from "../constant-command.js";
-import { GetFieldValuesCommand } from "./get-field-values-command.js";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import type { Issue } from "../../../../types/jira/responses/issue";
+import type { StringMap } from "../../../../types/util";
+import { extractArrayOfStrings } from "../../../../util/extraction";
+import type { Logger } from "../../../../util/logging";
+import type { Computable } from "../../../command";
+import { ConstantCommand } from "../constant-command";
+import { GetFieldValuesCommand } from "./get-field-values-command";
 
 export class GetLabelValuesCommand extends GetFieldValuesCommand<string[]> {
     constructor(

@@ -1,4 +1,4 @@
-import type { TestResults } from "./xray.js";
+import type { TestResults } from "./xray";
 
 /**
  * @see https://xray.cloud.getxray.app/doc/graphql/gettests.doc.html

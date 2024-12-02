@@ -2,9 +2,9 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getXrayStatus } from "./status.js";
+import { getXrayStatus } from "./status";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(getXrayStatus.name, async () => {
         await it("uses passed as default status name for passed tests", () => {
             assert.strictEqual(getXrayStatus("passed"), "passed");

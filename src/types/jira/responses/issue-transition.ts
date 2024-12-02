@@ -1,5 +1,5 @@
-import type { FieldMeta } from "./field-meta.js";
-import type { StatusDetails } from "./status-details.js";
+import type { FieldMeta } from "./field-meta";
+import type { StatusDetails } from "./status-details";
 
 /**
  * Models the payload when transitioning an issue from one status to another.

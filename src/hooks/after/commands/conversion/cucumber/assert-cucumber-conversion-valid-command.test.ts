@@ -6,13 +6,13 @@ import { describe, it } from "node:test";
 import type {
     CucumberMultipart,
     CucumberMultipartFeature,
-} from "../../../../../types/xray/requests/import-execution-cucumber-multipart.js";
-import type { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info.js";
-import { LOG } from "../../../../../util/logging.js";
-import { ConstantCommand } from "../../../../util/commands/constant-command.js";
-import { AssertCucumberConversionValidCommand } from "./assert-cucumber-conversion-valid-command.js";
+} from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
+import { LOG } from "../../../../../util/logging";
+import { ConstantCommand } from "../../../../util/commands/constant-command";
+import { AssertCucumberConversionValidCommand } from "./assert-cucumber-conversion-valid-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(AssertCucumberConversionValidCommand.name, async () => {
         await it("correctly verifies cucumber multipart data", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());

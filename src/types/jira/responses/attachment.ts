@@ -1,5 +1,5 @@
-import type { DateTimeIso } from "../../util.js";
-import type { User } from "./user.js";
+import type { DateTimeIso } from "../../util";
+import type { User } from "./user";
 
 /**
  * An attachment response.

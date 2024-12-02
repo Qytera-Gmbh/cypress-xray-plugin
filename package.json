@@ -33,14 +33,13 @@
     "directories": {
         "lib": "src"
     },
-    "type": "module",
     "scripts": {
         "test": "npm-run-all --parallel --race start:test:server start:test:unit",
         "test:coverage": "npx shx mkdir -p coverage && c8 -r html npm run test",
         "test:integration": "npm-run-all --parallel --race start:test:server start:test:integration",
-        "start:test:server": "node --import ./test/loader.js test/server.ts",
-        "start:test:unit": "node --import ./test/loader.js --test src/**/*.test.ts",
-        "start:test:integration": "node --import ./test/loader.js --test test/integration/",
+        "start:test:server": "node --require ./test/loader.js test/server.ts",
+        "start:test:unit": "node --require ./test/loader.js --test src/**/*.test.ts",
+        "start:test:integration": "node --require ./test/loader.js --test test/integration/",
         "build": "tsc --project tsconfig-build.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
         "eslint": "eslint src/**/*.ts test/**/*.ts index.ts"
     },

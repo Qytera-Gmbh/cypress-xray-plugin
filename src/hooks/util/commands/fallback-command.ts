@@ -1,6 +1,6 @@
-import type { Logger } from "../../../util/logging.js";
-import type { Computable, ComputableState, Stateful } from "../../command.js";
-import { Command } from "../../command.js";
+import type { Logger } from "../../../util/logging";
+import type { Computable, ComputableState, Stateful } from "../../command";
+import { Command } from "../../command";
 
 interface Parameters<T> {
     fallbackOn: ComputableState[];

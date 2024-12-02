@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
-import { isSkippedError } from "../util/errors.js";
-import type { Logger } from "../util/logging.js";
-import { unknownToString } from "../util/string.js";
+import { isSkippedError } from "../util/errors";
+import type { Logger } from "../util/logging";
+import { unknownToString } from "../util/string";
 
 /**
  * Models an entity which can compute a result.

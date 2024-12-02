@@ -1,21 +1,21 @@
-import type { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details.js";
-import type { IssueUpdate } from "../../../../types/jira/responses/issue-update.js";
-import type { InternalXrayOptions } from "../../../../types/plugin.js";
+import type { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
+import type { IssueUpdate } from "../../../../types/jira/responses/issue-update";
+import type { InternalXrayOptions } from "../../../../types/plugin";
 import type {
     MultipartInfo,
     MultipartInfoCloud,
-} from "../../../../types/xray/requests/import-execution-multipart-info.js";
-import { getOrCall } from "../../../../util/functions.js";
-import type { Logger } from "../../../../util/logging.js";
-import type { Computable } from "../../../command.js";
-import { Command } from "../../../command.js";
+} from "../../../../types/xray/requests/import-execution-multipart-info";
+import { getOrCall } from "../../../../util/functions";
+import type { Logger } from "../../../../util/logging";
+import type { Computable } from "../../../command";
+import { Command } from "../../../command";
 import {
     type RunData,
     type TestExecutionIssueData,
     type TestExecutionIssueDataServer,
     buildMultipartInfoCloud,
     buildMultipartInfoServer,
-} from "./util/multipart-info.js";
+} from "./util/multipart-info";
 
 interface Parameters {
     jira: {

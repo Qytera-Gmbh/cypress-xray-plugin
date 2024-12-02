@@ -1,6 +1,6 @@
-import { dedent } from "./dedent.js";
-import { HELP } from "./help.js";
-import { unknownToString } from "./string.js";
+import { dedent } from "./dedent";
+import { HELP } from "./help";
+import { unknownToString } from "./string";
 
 /**
  * Returns an error message of any error.

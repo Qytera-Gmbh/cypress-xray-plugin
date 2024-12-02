@@ -2,13 +2,13 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getMockedCypress } from "../../test/mocks.js";
-import { SimpleEvidenceCollection } from "../context.js";
-import { dedent } from "../util/dedent.js";
-import { Level, LOG } from "../util/logging.js";
-import * as tasks from "./tasks.js";
+import { getMockedCypress } from "../../test/mocks";
+import { SimpleEvidenceCollection } from "../context";
+import { dedent } from "../util/dedent";
+import { Level, LOG } from "../util/logging";
+import * as tasks from "./tasks";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(tasks.enqueueTask.name, async () => {
         await it("uses the current test title by default", (context) => {
             const { cy, cypress } = getMockedCypress();

@@ -3,11 +3,11 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { SkippedError } from "../util/errors.js";
-import { LOG } from "../util/logging.js";
-import { Command, ComputableState } from "./command.js";
+import { SkippedError } from "../util/errors";
+import { LOG } from "../util/logging";
+import { Command, ComputableState } from "./command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(Command.name, async () => {
         await it("computes the result on compute call", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());

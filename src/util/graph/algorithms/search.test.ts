@@ -2,8 +2,8 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { SimpleDirectedGraph } from "../graph.js";
-import { bfs, dfs } from "./search.js";
+import { SimpleDirectedGraph } from "../graph";
+import { bfs, dfs } from "./search";
 
 class Vertex {
     private readonly vertexId: number;
@@ -17,7 +17,7 @@ class Vertex {
     }
 }
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     const graph = new SimpleDirectedGraph<Vertex>();
     const v0 = graph.place(new Vertex(0));
     const v1 = graph.place(new Vertex(1));

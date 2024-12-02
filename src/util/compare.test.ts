@@ -2,9 +2,9 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { contains } from "./compare.js";
+import { contains } from "./compare";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(contains.name, async () => {
         await describe("primitive types", async () => {
             await it("bigint", () => {

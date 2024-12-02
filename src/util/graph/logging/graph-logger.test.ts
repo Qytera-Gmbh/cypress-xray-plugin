@@ -3,24 +3,24 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { PatCredentials } from "../../../client/authentication/credentials.js";
-import { AxiosRestClient } from "../../../client/https/https.js";
-import { ServerClient } from "../../../client/xray/xray-client-server.js";
-import type { Failable } from "../../../hooks/command.js";
-import { Command, ComputableState } from "../../../hooks/command.js";
-import { ImportExecutionCucumberCommand } from "../../../hooks/util/commands/xray/import-execution-cucumber-command.js";
-import { ImportExecutionCypressCommand } from "../../../hooks/util/commands/xray/import-execution-cypress-command.js";
-import { ImportFeatureCommand } from "../../../hooks/util/commands/xray/import-feature-command.js";
-import type { XrayTestExecutionResults } from "../../../types/xray/import-test-execution-results.js";
-import type { CucumberMultipart } from "../../../types/xray/requests/import-execution-cucumber-multipart.js";
-import type { MultipartInfo } from "../../../types/xray/requests/import-execution-multipart-info.js";
-import { dedent } from "../../dedent.js";
-import { SkippedError } from "../../errors.js";
-import { CapturingLogger, Level } from "../../logging.js";
-import { SimpleDirectedGraph } from "../graph.js";
-import { ChainingCommandGraphLogger, ChainingGraphLogger } from "./graph-logger.js";
+import { PatCredentials } from "../../../client/authentication/credentials";
+import { AxiosRestClient } from "../../../client/https/https";
+import { ServerClient } from "../../../client/xray/xray-client-server";
+import type { Failable } from "../../../hooks/command";
+import { Command, ComputableState } from "../../../hooks/command";
+import { ImportExecutionCucumberCommand } from "../../../hooks/util/commands/xray/import-execution-cucumber-command";
+import { ImportExecutionCypressCommand } from "../../../hooks/util/commands/xray/import-execution-cypress-command";
+import { ImportFeatureCommand } from "../../../hooks/util/commands/xray/import-feature-command";
+import type { XrayTestExecutionResults } from "../../../types/xray/import-test-execution-results";
+import type { CucumberMultipart } from "../../../types/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../../types/xray/requests/import-execution-multipart-info";
+import { dedent } from "../../dedent";
+import { SkippedError } from "../../errors";
+import { CapturingLogger, Level } from "../../logging";
+import { SimpleDirectedGraph } from "../graph";
+import { ChainingCommandGraphLogger, ChainingGraphLogger } from "./graph-logger";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(ChainingGraphLogger.name, async () => {
         await it("logs correctly indented message chains", () => {
             const graph = new SimpleDirectedGraph<Failable>();

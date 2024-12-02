@@ -1,24 +1,24 @@
 import type { AxiosResponse } from "axios";
 import FormData from "form-data";
-import type { StringMap } from "../../types/util.js";
-import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results.js";
-import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart.js";
-import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info.js";
-import type { GetTestExecutionResponseCloud } from "../../types/xray/responses/graphql/get-test-execution.js";
-import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests.js";
-import type { Test } from "../../types/xray/responses/graphql/xray.js";
-import type { ImportExecutionResponseCloud } from "../../types/xray/responses/import-execution.js";
+import type { StringMap } from "../../types/util";
+import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
+import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
+import type { GetTestExecutionResponseCloud } from "../../types/xray/responses/graphql/get-test-execution";
+import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
+import type { Test } from "../../types/xray/responses/graphql/xray";
+import type { ImportExecutionResponseCloud } from "../../types/xray/responses/import-execution";
 import type {
     ImportFeatureResponse,
     ImportFeatureResponseCloud,
     IssueDetails,
-} from "../../types/xray/responses/import-feature.js";
-import { dedent } from "../../util/dedent.js";
-import { LOG, Level } from "../../util/logging.js";
-import type { JwtCredentials } from "../authentication/credentials.js";
-import type { AxiosRestClient } from "../https/https.js";
-import { loggedRequest } from "../util.js";
-import { AbstractXrayClient } from "./xray-client.js";
+} from "../../types/xray/responses/import-feature";
+import { dedent } from "../../util/dedent";
+import { LOG, Level } from "../../util/logging";
+import type { JwtCredentials } from "../authentication/credentials";
+import type { AxiosRestClient } from "../https/https";
+import { loggedRequest } from "../util";
+import { AbstractXrayClient } from "./xray-client";
 
 export interface HasTestTypes {
     /**

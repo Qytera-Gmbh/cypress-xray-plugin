@@ -1,4 +1,4 @@
-import type { ProjectDetails } from "./project-details.js";
+import type { ProjectDetails } from "./project-details";
 
 /**
  * Details of the next-gen projects an issue type is available in.

@@ -2,11 +2,11 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { dedent } from "../../../util/dedent.js";
-import { Level, LOG } from "../../../util/logging.js";
-import { ParseFeatureFileCommand } from "./parse-feature-file-command.js";
+import { dedent } from "../../../util/dedent";
+import { Level, LOG } from "../../../util/logging";
+import { ParseFeatureFileCommand } from "./parse-feature-file-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(ParseFeatureFileCommand.name, async () => {
         await it("displays errors for invalid feature files", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());

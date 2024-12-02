@@ -1,6 +1,6 @@
-import type { JiraClient } from "../../../../client/jira/jira-client.js";
-import type { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details.js";
-import { Command } from "../../../command.js";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import type { IssueTypeDetails } from "../../../../types/jira/responses/issue-type-details";
+import { Command } from "../../../command";
 
 interface Parameters {
     jiraClient: JiraClient;

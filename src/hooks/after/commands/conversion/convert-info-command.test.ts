@@ -2,11 +2,11 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { LOG } from "../../../../util/logging.js";
-import { ConstantCommand } from "../../../util/commands/constant-command.js";
-import { ConvertInfoCloudCommand, ConvertInfoServerCommand } from "./convert-info-command.js";
+import { LOG } from "../../../../util/logging";
+import { ConstantCommand } from "../../../util/commands/constant-command";
+import { ConvertInfoCloudCommand, ConvertInfoServerCommand } from "./convert-info-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(ConvertInfoServerCommand.name, async () => {
         await it("converts cucumber results into server cucumber info data", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());

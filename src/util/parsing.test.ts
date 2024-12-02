@@ -2,10 +2,10 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { dedent } from "./dedent.js";
-import { asArrayOfStrings, asBoolean, asFloat, asInt, asObject } from "./parsing.js";
+import { dedent } from "./dedent";
+import { asArrayOfStrings, asBoolean, asFloat, asInt, asObject } from "./parsing";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(asBoolean.name, async () => {
         await describe(true.toString(), async () => {
             await it("y", () => {

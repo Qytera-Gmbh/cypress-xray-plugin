@@ -1,1 +1,1 @@
-export { enqueueTask } from "./tasks.js";
+export { enqueueTask } from "./tasks";

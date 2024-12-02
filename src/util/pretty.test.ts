@@ -2,9 +2,9 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { prettyPadObjects, prettyPadValues } from "./pretty.js";
+import { prettyPadObjects, prettyPadValues } from "./pretty";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(prettyPadObjects.name, async () => {
         await it("pretty pad object arrays", () => {
             const array = [

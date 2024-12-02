@@ -2,10 +2,10 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { SimpleDirectedGraph } from "../graph.js";
-import { computeTopologicalOrder, traverse } from "./sort.js";
+import { SimpleDirectedGraph } from "../graph";
+import { computeTopologicalOrder, traverse } from "./sort";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(computeTopologicalOrder.name, async () => {
         await it("computes the order for directed graphs", () => {
             const graph = new SimpleDirectedGraph<number>();

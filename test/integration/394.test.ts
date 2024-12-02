@@ -4,15 +4,15 @@ import fs from "node:fs";
 import { join, relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import type { LoggedRequest } from "../../src/client/https/https.js";
-import { dedent } from "../../src/util/dedent.js";
-import { runCypress, setupCypressProject } from "../sh.js";
+import type { LoggedRequest } from "../../src/client/https/https";
+import { dedent } from "../../src/util/dedent";
+import { runCypress, setupCypressProject } from "../sh";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/394
 // ============================================================================================== //
 
-await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
+describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             env: {

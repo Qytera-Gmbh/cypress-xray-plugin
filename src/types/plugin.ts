@@ -1,10 +1,10 @@
 import type { IPreprocessorConfiguration } from "@badeball/cypress-cucumber-preprocessor";
 import type { AxiosRequestConfig } from "axios";
-import type { AxiosRestClient, RequestsOptions } from "../client/https/https.js";
-import type { JiraClient } from "../client/jira/jira-client.js";
-import type { XrayClient } from "../client/xray/xray-client.js";
-import type { CypressRunResultType } from "./cypress/cypress.js";
-import type { IssueUpdate } from "./jira/responses/issue-update.js";
+import type { AxiosRestClient, RequestsOptions } from "../client/https/https";
+import type { JiraClient } from "../client/jira/jira-client";
+import type { XrayClient } from "../client/xray/xray-client";
+import type { CypressRunResultType } from "./cypress/cypress";
+import type { IssueUpdate } from "./jira/responses/issue-update";
 
 /**
  * Models all options for configuring the behaviour of the plugin.

@@ -2,9 +2,9 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { extractArrayOfStrings, extractNestedString, extractString } from "./extraction.js";
+import { extractArrayOfStrings, extractNestedString, extractString } from "./extraction";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe("extractString", async () => {
         await it("extracts string properties", () => {
             const data = {

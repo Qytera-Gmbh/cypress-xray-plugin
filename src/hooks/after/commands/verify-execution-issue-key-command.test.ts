@@ -2,12 +2,12 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { dedent } from "../../../util/dedent.js";
-import { Level, LOG } from "../../../util/logging.js";
-import { ConstantCommand } from "../../util/commands/constant-command.js";
-import { VerifyExecutionIssueKeyCommand } from "./verify-execution-issue-key-command.js";
+import { dedent } from "../../../util/dedent";
+import { Level, LOG } from "../../../util/logging";
+import { ConstantCommand } from "../../util/commands/constant-command";
+import { VerifyExecutionIssueKeyCommand } from "./verify-execution-issue-key-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(VerifyExecutionIssueKeyCommand.name, async () => {
         await it("verifies without warning", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());

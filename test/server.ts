@@ -1,5 +1,5 @@
 import http from "http";
-import { LOCAL_SERVER } from "./server-config.js";
+import { LOCAL_SERVER } from "./server-config";
 
 const SERVER = http.createServer((req, res) => {
     res.statusCode = 200;

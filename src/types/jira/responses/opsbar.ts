@@ -1,4 +1,4 @@
-import type { LinkGroup } from "./link-group.js";
+import type { LinkGroup } from "./link-group";
 
 export interface Opsbar {
     /**

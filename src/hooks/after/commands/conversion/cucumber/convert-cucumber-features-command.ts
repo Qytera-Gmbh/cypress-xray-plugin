@@ -3,21 +3,21 @@ import type {
     InternalCucumberOptions,
     InternalJiraOptions,
     InternalXrayOptions,
-} from "../../../../../types/plugin.js";
+} from "../../../../../types/plugin";
 import type {
     CucumberMultipartElement,
     CucumberMultipartFeature,
     CucumberMultipartStep,
     CucumberMultipartTag,
-} from "../../../../../types/xray/requests/import-execution-cucumber-multipart.js";
-import { dedent } from "../../../../../util/dedent.js";
-import { errorMessage, missingTestKeyInCucumberScenarioError } from "../../../../../util/errors.js";
-import type { Logger } from "../../../../../util/logging.js";
-import { Level } from "../../../../../util/logging.js";
-import type { Computable } from "../../../../command.js";
-import { Command } from "../../../../command.js";
-import { getScenarioTagRegex } from "../../../../preprocessor/commands/parsing/scenario.js";
-import { getXrayStatus } from "../util/status.js";
+} from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
+import { dedent } from "../../../../../util/dedent";
+import { errorMessage, missingTestKeyInCucumberScenarioError } from "../../../../../util/errors";
+import type { Logger } from "../../../../../util/logging";
+import { Level } from "../../../../../util/logging";
+import type { Computable } from "../../../../command";
+import { Command } from "../../../../command";
+import { getScenarioTagRegex } from "../../../../preprocessor/commands/parsing/scenario";
+import { getXrayStatus } from "../util/status";
 
 interface Parameters {
     cucumber: Pick<InternalCucumberOptions, "prefixes">;

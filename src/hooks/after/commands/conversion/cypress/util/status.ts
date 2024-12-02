@@ -1,4 +1,4 @@
-import { CypressStatus } from "../../../../../../types/cypress/status.js";
+import { CypressStatus } from "../../../../../../types/cypress/status";
 
 /**
  * Converts the given status text string to a valid Cypress attempt status.

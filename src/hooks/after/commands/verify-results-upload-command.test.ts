@@ -2,13 +2,13 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { dedent } from "../../../util/dedent.js";
-import { SkippedError } from "../../../util/errors.js";
-import { Level, LOG } from "../../../util/logging.js";
-import { ConstantCommand } from "../../util/commands/constant-command.js";
-import { VerifyResultsUploadCommand } from "./verify-results-upload-command.js";
+import { dedent } from "../../../util/dedent";
+import { SkippedError } from "../../../util/errors";
+import { Level, LOG } from "../../../util/logging";
+import { ConstantCommand } from "../../util/commands/constant-command";
+import { VerifyResultsUploadCommand } from "./verify-results-upload-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(VerifyResultsUploadCommand.name, async () => {
         await it("prints a success message for successful cypress uploads", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());

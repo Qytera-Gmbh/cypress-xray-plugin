@@ -1,6 +1,6 @@
-import type { ChangeItem } from "./change-item.js";
-import type { HistoryMetadata } from "./history-metadata.js";
-import type { User } from "./user.js";
+import type { ChangeItem } from "./change-item";
+import type { HistoryMetadata } from "./history-metadata";
+import type { User } from "./user";
 
 export interface ChangeHistory {
     /**

@@ -1,4 +1,4 @@
-import type { SimpleListWrapper } from "./simple-list-wrapper.js";
+import type { SimpleListWrapper } from "./simple-list-wrapper";
 
 export interface User {
     /**

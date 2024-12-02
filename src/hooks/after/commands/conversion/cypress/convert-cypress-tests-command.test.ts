@@ -3,16 +3,16 @@ import { readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import globalContext, { SimpleEvidenceCollection } from "../../../../../context.js";
-import type { CypressRunResult as CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api.js";
-import type { CypressRunResultType } from "../../../../../types/cypress/cypress.js";
-import type { InternalCypressXrayPluginOptions } from "../../../../../types/plugin.js";
-import { dedent } from "../../../../../util/dedent.js";
-import { Level, LOG } from "../../../../../util/logging.js";
-import { ConstantCommand } from "../../../../util/commands/constant-command.js";
-import { ConvertCypressTestsCommand } from "./convert-cypress-tests-command.js";
+import globalContext, { SimpleEvidenceCollection } from "../../../../../context";
+import type { CypressRunResult as CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
+import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
+import type { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
+import { dedent } from "../../../../../util/dedent";
+import { Level, LOG } from "../../../../../util/logging";
+import { ConstantCommand } from "../../../../util/commands/constant-command";
+import { ConvertCypressTestsCommand } from "./convert-cypress-tests-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(ConvertCypressTestsCommand.name, async () => {
         let options: InternalCypressXrayPluginOptions;
         beforeEach(() => {

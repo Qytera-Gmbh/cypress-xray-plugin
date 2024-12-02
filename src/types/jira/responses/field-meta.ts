@@ -1,4 +1,4 @@
-import type { JsonType } from "./json-type.js";
+import type { JsonType } from "./json-type";
 
 export interface FieldMeta {
     /**

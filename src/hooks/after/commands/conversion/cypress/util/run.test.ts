@@ -2,11 +2,11 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import type { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api.js";
-import { CypressStatus } from "../../../../../../types/cypress/status.js";
-import { getTestRunData_V12, getTestRunData_V13 } from "./run.js";
+import type { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api";
+import { CypressStatus } from "../../../../../../types/cypress/status";
+import { getTestRunData_V12, getTestRunData_V13 } from "./run";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(getTestRunData_V12.name, async () => {
         const passedResult: RunResult_V12 = {
             error: null,

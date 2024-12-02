@@ -1,11 +1,11 @@
-import type { ImportFeatureResponse } from "../../../types/xray/responses/import-feature.js";
-import { dedent } from "../../../util/dedent.js";
-import { HELP } from "../../../util/help.js";
-import type { Logger } from "../../../util/logging.js";
-import { Level } from "../../../util/logging.js";
-import { computeOverlap } from "../../../util/set.js";
-import type { Computable } from "../../command.js";
-import { Command } from "../../command.js";
+import type { ImportFeatureResponse } from "../../../types/xray/responses/import-feature";
+import { dedent } from "../../../util/dedent";
+import { HELP } from "../../../util/help";
+import type { Logger } from "../../../util/logging";
+import { Level } from "../../../util/logging";
+import { computeOverlap } from "../../../util/set";
+import type { Computable } from "../../command";
+import { Command } from "../../command";
 
 interface Parameters {
     filePath: string;

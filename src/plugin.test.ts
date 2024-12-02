@@ -4,22 +4,22 @@ import fs from "node:fs";
 import { relative, resolve } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import { mockedCypressEventEmitter } from "../test/util.js";
-import { PatCredentials } from "./client/authentication/credentials.js";
-import { AxiosRestClient } from "./client/https/https.js";
-import { BaseJiraClient, type JiraClient } from "./client/jira/jira-client.js";
-import { ServerClient } from "./client/xray/xray-client-server.js";
-import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context.js";
-import afterRun from "./hooks/after/after-run.js";
-import filePreprocessor from "./hooks/preprocessor/file-preprocessor.js";
-import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin.js";
-import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress.js";
-import type { CypressXrayPluginOptions } from "./types/plugin.js";
-import { dedent } from "./util/dedent.js";
-import { ExecutableGraph } from "./util/graph/executable-graph.js";
-import { CapturingLogger, Level, LOG } from "./util/logging.js";
+import { mockedCypressEventEmitter } from "../test/util";
+import { PatCredentials } from "./client/authentication/credentials";
+import { AxiosRestClient } from "./client/https/https";
+import { BaseJiraClient, type JiraClient } from "./client/jira/jira-client";
+import { ServerClient } from "./client/xray/xray-client-server";
+import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context";
+import afterRun from "./hooks/after/after-run";
+import filePreprocessor from "./hooks/preprocessor/file-preprocessor";
+import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin";
+import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
+import type { CypressXrayPluginOptions } from "./types/plugin";
+import { dedent } from "./util/dedent";
+import { ExecutableGraph } from "./util/graph/executable-graph";
+import { CapturingLogger, Level, LOG } from "./util/logging";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     let jiraClient: JiraClient;
     let config: Cypress.PluginConfigOptions;
     let pluginContext: PluginContext;

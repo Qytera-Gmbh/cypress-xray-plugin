@@ -1,4 +1,4 @@
-import { expectToExist } from "../util.js";
+import { expectToExist } from "../util";
 
 export function getCreatedTestExecutionIssueKey(
     projectKey: string,

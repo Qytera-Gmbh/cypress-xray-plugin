@@ -3,13 +3,13 @@ import { readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import type { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart.js";
-import type { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info.js";
-import { LOG } from "../../../../../util/logging.js";
-import { ConstantCommand } from "../../../../util/commands/constant-command.js";
-import { CombineCucumberMultipartCommand } from "./combine-cucumber-multipart-command.js";
+import type { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
+import { LOG } from "../../../../../util/logging";
+import { ConstantCommand } from "../../../../util/commands/constant-command";
+import { CombineCucumberMultipartCommand } from "./combine-cucumber-multipart-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(CombineCucumberMultipartCommand.name, async () => {
         await it("combines cucumber multipart data", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());

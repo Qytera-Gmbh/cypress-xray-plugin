@@ -1,4 +1,4 @@
-import type { StatusCategory } from "./status-category.js";
+import type { StatusCategory } from "./status-category";
 
 export interface StatusDetails {
     /**

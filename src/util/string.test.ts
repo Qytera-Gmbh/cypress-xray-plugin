@@ -2,10 +2,10 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { dedent } from "./dedent.js";
-import { unknownToString } from "./string.js";
+import { dedent } from "./dedent";
+import { unknownToString } from "./string";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(unknownToString.name, async () => {
         await it("string", () => {
             assert.strictEqual(unknownToString("hi"), "hi");

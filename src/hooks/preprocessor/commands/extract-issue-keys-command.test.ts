@@ -2,11 +2,11 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { LOG } from "../../../util/logging.js";
-import { ConstantCommand } from "../../util/commands/constant-command.js";
-import { ExtractIssueKeysCommand } from "./extract-issue-keys-command.js";
+import { LOG } from "../../../util/logging";
+import { ConstantCommand } from "../../util/commands/constant-command";
+import { ExtractIssueKeysCommand } from "./extract-issue-keys-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(ExtractIssueKeysCommand.name, async () => {
         await it("merges all issue keys into one array", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());

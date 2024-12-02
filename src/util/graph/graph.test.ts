@@ -2,9 +2,9 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import { SimpleDirectedEdge, SimpleDirectedGraph } from "./graph.js";
+import { SimpleDirectedEdge, SimpleDirectedGraph } from "./graph";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(SimpleDirectedGraph.name, async () => {
         let graph: SimpleDirectedGraph<number> = new SimpleDirectedGraph<number>();
 

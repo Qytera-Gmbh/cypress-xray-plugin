@@ -1,19 +1,19 @@
 import path from "path";
-import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context.js";
-import afterRun from "./hooks/after/after-run.js";
-import filePreprocessor from "./hooks/preprocessor/file-preprocessor.js";
-import { PluginTaskListener } from "./tasks/tasks.js";
-import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress.js";
+import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context";
+import afterRun from "./hooks/after/after-run";
+import filePreprocessor from "./hooks/preprocessor/file-preprocessor";
+import { PluginTaskListener } from "./tasks/tasks";
+import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
 import type {
     CypressXrayPluginOptions,
     InternalCypressXrayPluginOptions,
     InternalPluginOptions,
-} from "./types/plugin.js";
-import { dedent } from "./util/dedent.js";
-import { ExecutableGraph } from "./util/graph/executable-graph.js";
-import { ChainingCommandGraphLogger } from "./util/graph/logging/graph-logger.js";
-import { HELP } from "./util/help.js";
-import { CapturingLogger, LOG, Level } from "./util/logging.js";
+} from "./types/plugin";
+import { dedent } from "./util/dedent";
+import { ExecutableGraph } from "./util/graph/executable-graph";
+import { ChainingCommandGraphLogger } from "./util/graph/logging/graph-logger";
+import { HELP } from "./util/help";
+import { CapturingLogger, LOG, Level } from "./util/logging";
 
 let canShowInitializationWarning = true;
 

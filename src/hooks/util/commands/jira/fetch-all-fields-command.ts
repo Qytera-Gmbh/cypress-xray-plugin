@@ -1,6 +1,6 @@
-import type { JiraClient } from "../../../../client/jira/jira-client.js";
-import type { FieldDetail } from "../../../../types/jira/responses/field-detail.js";
-import { Command } from "../../../command.js";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import type { FieldDetail } from "../../../../types/jira/responses/field-detail";
+import { Command } from "../../../command";
 
 interface Parameters {
     jiraClient: JiraClient;

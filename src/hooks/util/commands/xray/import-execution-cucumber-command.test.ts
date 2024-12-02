@@ -4,17 +4,17 @@ import fs from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { PatCredentials } from "../../../../client/authentication/credentials.js";
-import { AxiosRestClient } from "../../../../client/https/https.js";
-import { ServerClient } from "../../../../client/xray/xray-client-server.js";
-import type { XrayClient } from "../../../../client/xray/xray-client.js";
-import type { CucumberMultipartFeature } from "../../../../types/xray/requests/import-execution-cucumber-multipart.js";
-import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info.js";
-import { LOG } from "../../../../util/logging.js";
-import { ConstantCommand } from "../constant-command.js";
-import { ImportExecutionCucumberCommand } from "./import-execution-cucumber-command.js";
+import { PatCredentials } from "../../../../client/authentication/credentials";
+import { AxiosRestClient } from "../../../../client/https/https";
+import type { XrayClient } from "../../../../client/xray/xray-client";
+import { ServerClient } from "../../../../client/xray/xray-client-server";
+import type { CucumberMultipartFeature } from "../../../../types/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
+import { LOG } from "../../../../util/logging";
+import { ConstantCommand } from "../constant-command";
+import { ImportExecutionCucumberCommand } from "./import-execution-cucumber-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(ImportExecutionCucumberCommand.name, async () => {
         await it("imports cucumber multipart", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());

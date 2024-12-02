@@ -3,13 +3,13 @@ import { readFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import type { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart.js";
-import { dedent } from "../../../../../util/dedent.js";
-import { Level, LOG } from "../../../../../util/logging.js";
-import { ConstantCommand } from "../../../../util/commands/constant-command.js";
-import { ConvertCucumberFeaturesCommand } from "./convert-cucumber-features-command.js";
+import type { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
+import { dedent } from "../../../../../util/dedent";
+import { Level, LOG } from "../../../../../util/logging";
+import { ConstantCommand } from "../../../../util/commands/constant-command";
+import { ConvertCucumberFeaturesCommand } from "./convert-cucumber-features-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(ConvertCucumberFeaturesCommand.name, async () => {
         await it("converts cucumber results into cucumber features data", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());

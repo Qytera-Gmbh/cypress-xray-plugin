@@ -1,5 +1,5 @@
-import type { StringMap } from "../types/util.js";
-import { unknownToString } from "./string.js";
+import type { StringMap } from "../types/util";
+import { unknownToString } from "./string";
 
 /**
  * Extracts a string property from an object.

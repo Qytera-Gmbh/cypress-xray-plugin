@@ -1,19 +1,19 @@
 import type { AxiosResponse } from "axios";
 import FormData from "form-data";
 import fs from "fs";
-import type { SearchRequest } from "../../types/jira/requests/search.js";
-import type { Attachment } from "../../types/jira/responses/attachment.js";
-import type { FieldDetail } from "../../types/jira/responses/field-detail.js";
-import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details.js";
-import type { IssueUpdate } from "../../types/jira/responses/issue-update.js";
-import type { Issue } from "../../types/jira/responses/issue.js";
-import type { SearchResults } from "../../types/jira/responses/search-results.js";
-import type { User } from "../../types/jira/responses/user.js";
-import type { StringMap } from "../../types/util.js";
-import { dedent } from "../../util/dedent.js";
-import { LOG, Level } from "../../util/logging.js";
-import { Client } from "../client.js";
-import { loggedRequest } from "../util.js";
+import type { SearchRequest } from "../../types/jira/requests/search";
+import type { Attachment } from "../../types/jira/responses/attachment";
+import type { FieldDetail } from "../../types/jira/responses/field-detail";
+import type { Issue } from "../../types/jira/responses/issue";
+import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
+import type { IssueUpdate } from "../../types/jira/responses/issue-update";
+import type { SearchResults } from "../../types/jira/responses/search-results";
+import type { User } from "../../types/jira/responses/user";
+import type { StringMap } from "../../types/util";
+import { dedent } from "../../util/dedent";
+import { LOG, Level } from "../../util/logging";
+import { Client } from "../client";
+import { loggedRequest } from "../util";
 
 /**
  * All methods a Jira client needs to implement.

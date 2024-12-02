@@ -1,6 +1,6 @@
-import type { CypressRunResultType } from "../../types/cypress/cypress.js";
-import { dedent } from "../../util/dedent.js";
-import { HELP } from "../../util/help.js";
+import type { CypressRunResultType } from "../../types/cypress/cypress";
+import { dedent } from "../../util/dedent";
+import { HELP } from "../../util/help";
 
 export function containsCypressTest(
     runResult: CypressRunResultType,

@@ -3,12 +3,12 @@ import fs from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import type { CypressRunResultType } from "../../../types/cypress/cypress.js";
-import { LOG } from "../../../util/logging.js";
-import { ConstantCommand } from "../../util/commands/constant-command.js";
-import { ExtractVideoFilesCommand } from "./extract-video-files-command.js";
+import type { CypressRunResultType } from "../../../types/cypress/cypress";
+import { LOG } from "../../../util/logging";
+import { ConstantCommand } from "../../util/commands/constant-command";
+import { ExtractVideoFilesCommand } from "./extract-video-files-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(ExtractVideoFilesCommand.name, async () => {
         await it("extracts video files", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());

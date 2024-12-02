@@ -3,11 +3,11 @@ import fs from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import type { CypressRunResultType } from "../../types/cypress/cypress.js";
-import { dedent } from "../../util/dedent.js";
-import { containsCucumberTest, containsCypressTest, getTestIssueKeys } from "./util.js";
+import type { CypressRunResultType } from "../../types/cypress/cypress";
+import { dedent } from "../../util/dedent";
+import { containsCucumberTest, containsCypressTest, getTestIssueKeys } from "./util";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(containsCypressTest.name, async () => {
         let result: CypressRunResultType;
 

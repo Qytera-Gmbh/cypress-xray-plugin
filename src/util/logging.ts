@@ -2,7 +2,7 @@ import ansiColors from "ansi-colors";
 import { isAxiosError } from "axios";
 import fs from "fs";
 import path from "path";
-import { isLoggedError } from "./errors.js";
+import { isLoggedError } from "./errors";
 
 export enum Level {
     DEBUG = "DEBUG",

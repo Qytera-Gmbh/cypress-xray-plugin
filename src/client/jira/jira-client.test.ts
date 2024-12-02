@@ -4,18 +4,18 @@ import { readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import { expectToExist } from "../../../test/util.js";
-import type { Attachment } from "../../types/jira/responses/attachment.js";
-import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details.js";
-import type { SearchResults } from "../../types/jira/responses/search-results.js";
-import type { User } from "../../types/jira/responses/user.js";
-import type { Logger } from "../../util/logging.js";
-import { Level, LOG } from "../../util/logging.js";
-import { BasicAuthCredentials } from "../authentication/credentials.js";
-import { AxiosRestClient } from "../https/https.js";
-import { BaseJiraClient } from "./jira-client.js";
+import { expectToExist } from "../../../test/util";
+import type { Attachment } from "../../types/jira/responses/attachment";
+import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
+import type { SearchResults } from "../../types/jira/responses/search-results";
+import type { User } from "../../types/jira/responses/user";
+import type { Logger } from "../../util/logging";
+import { Level, LOG } from "../../util/logging";
+import { BasicAuthCredentials } from "../authentication/credentials";
+import { AxiosRestClient } from "../https/https";
+import { BaseJiraClient } from "./jira-client";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(BaseJiraClient.name, async () => {
         let client: BaseJiraClient;
         let restClient: AxiosRestClient;

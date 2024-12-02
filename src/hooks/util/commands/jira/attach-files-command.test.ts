@@ -3,15 +3,15 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { PatCredentials } from "../../../../client/authentication/credentials.js";
-import { AxiosRestClient } from "../../../../client/https/https.js";
-import type { JiraClient } from "../../../../client/jira/jira-client.js";
-import { BaseJiraClient } from "../../../../client/jira/jira-client.js";
-import { Level, LOG } from "../../../../util/logging.js";
-import { ConstantCommand } from "../constant-command.js";
-import { AttachFilesCommand } from "./attach-files-command.js";
+import { PatCredentials } from "../../../../client/authentication/credentials";
+import { AxiosRestClient } from "../../../../client/https/https";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import { BaseJiraClient } from "../../../../client/jira/jira-client";
+import { Level, LOG } from "../../../../util/logging";
+import { ConstantCommand } from "../constant-command";
+import { AttachFilesCommand } from "./attach-files-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(AttachFilesCommand.name, async () => {
         await it("attaches files", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());

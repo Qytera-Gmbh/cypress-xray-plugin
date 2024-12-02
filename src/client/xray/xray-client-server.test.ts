@@ -4,17 +4,17 @@ import { readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results.js";
-import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart.js";
-import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info.js";
-import { dedent } from "../../util/dedent.js";
-import { Level, LOG } from "../../util/logging.js";
-import { PatCredentials } from "../authentication/credentials.js";
-import { AxiosRestClient } from "../https/https.js";
-import type { XrayClientServer } from "./xray-client-server.js";
-import { ServerClient } from "./xray-client-server.js";
+import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
+import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
+import { dedent } from "../../util/dedent";
+import { Level, LOG } from "../../util/logging";
+import { PatCredentials } from "../authentication/credentials";
+import { AxiosRestClient } from "../https/https";
+import type { XrayClientServer } from "./xray-client-server";
+import { ServerClient } from "./xray-client-server";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(ServerClient.name, async () => {
         let client: XrayClientServer;
         let restClient: AxiosRestClient;

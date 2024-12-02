@@ -2,18 +2,18 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { dedent } from "../../src/util/dedent.js";
-import { LOCAL_SERVER } from "../server-config.js";
-import { runCypress, setupCypressProject } from "../sh.js";
-import { expectToExist } from "../util.js";
-import { getIntegrationClient } from "./clients.js";
-import { getCreatedTestExecutionIssueKey } from "./util.js";
+import { dedent } from "../../src/util/dedent";
+import { LOCAL_SERVER } from "../server-config";
+import { runCypress, setupCypressProject } from "../sh";
+import { expectToExist } from "../util";
+import { getIntegrationClient } from "./clients";
+import { getCreatedTestExecutionIssueKey } from "./util";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/282
 // ============================================================================================== //
 
-await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async () => {
+describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             cucumberTestPrefix: "TestName:",

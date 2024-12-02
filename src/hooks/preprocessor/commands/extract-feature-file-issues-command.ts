@@ -1,17 +1,17 @@
 import type { Background, Comment, GherkinDocument, Scenario } from "@cucumber/messages";
-import type { FeatureFileIssueData } from "../../../types/cucumber/cucumber.js";
-import type { CucumberOptions } from "../../../types/plugin.js";
-import { dedent } from "../../../util/dedent.js";
-import { errorMessage, missingTestKeyInCucumberScenarioError } from "../../../util/errors.js";
-import { HELP } from "../../../util/help.js";
-import type { Logger } from "../../../util/logging.js";
-import type { Computable } from "../../command.js";
-import { Command } from "../../command.js";
+import type { FeatureFileIssueData } from "../../../types/cucumber/cucumber";
+import type { CucumberOptions } from "../../../types/plugin";
+import { dedent } from "../../../util/dedent";
+import { errorMessage, missingTestKeyInCucumberScenarioError } from "../../../util/errors";
+import { HELP } from "../../../util/help";
+import type { Logger } from "../../../util/logging";
+import type { Computable } from "../../command";
+import { Command } from "../../command";
 import {
     getCucumberPreconditionIssueComments,
     getCucumberPreconditionIssueTags,
-} from "./parsing/precondition.js";
-import { getCucumberScenarioIssueTags } from "./parsing/scenario.js";
+} from "./parsing/precondition";
+import { getCucumberScenarioIssueTags } from "./parsing/scenario";
 
 interface Parameters {
     displayCloudHelp: boolean;

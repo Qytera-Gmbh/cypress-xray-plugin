@@ -2,9 +2,9 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { encodeFile } from "./base64.js";
+import { encodeFile } from "./base64";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await it("should encode png files to base64", () => {
         const encodedString = encodeFile("./test/resources/turtle.png");
         assert.notStrictEqual(encodedString.length, 0);

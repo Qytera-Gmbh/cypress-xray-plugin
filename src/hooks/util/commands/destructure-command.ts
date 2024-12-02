@@ -1,6 +1,6 @@
-import type { Logger } from "../../../util/logging.js";
-import type { Computable } from "../../command.js";
-import { Command } from "../../command.js";
+import type { Logger } from "../../../util/logging";
+import type { Computable } from "../../command";
+import { Command } from "../../command";
 
 interface CommandParameters {
     accessor: number | string | symbol;

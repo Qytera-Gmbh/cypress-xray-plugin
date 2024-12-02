@@ -2,9 +2,9 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { computeOverlap } from "./set.js";
+import { computeOverlap } from "./set";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe("computeOverlap", async () => {
         await it("computes the overlap of arrays", () => {
             assert.deepStrictEqual(computeOverlap([1, 2, 3], [2, 5, 9, 1]), {

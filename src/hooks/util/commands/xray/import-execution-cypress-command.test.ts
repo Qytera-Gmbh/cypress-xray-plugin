@@ -3,17 +3,17 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { PatCredentials } from "../../../../client/authentication/credentials.js";
-import { AxiosRestClient } from "../../../../client/https/https.js";
-import { ServerClient } from "../../../../client/xray/xray-client-server.js";
-import type { XrayClient } from "../../../../client/xray/xray-client.js";
-import type { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results.js";
-import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info.js";
-import { LOG } from "../../../../util/logging.js";
-import { ConstantCommand } from "../constant-command.js";
-import { ImportExecutionCypressCommand } from "./import-execution-cypress-command.js";
+import { PatCredentials } from "../../../../client/authentication/credentials";
+import { AxiosRestClient } from "../../../../client/https/https";
+import type { XrayClient } from "../../../../client/xray/xray-client";
+import { ServerClient } from "../../../../client/xray/xray-client-server";
+import type { XrayTestExecutionResults } from "../../../../types/xray/import-test-execution-results";
+import type { MultipartInfo } from "../../../../types/xray/requests/import-execution-multipart-info";
+import { LOG } from "../../../../util/logging";
+import { ConstantCommand } from "../constant-command";
+import { ImportExecutionCypressCommand } from "./import-execution-cypress-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(ImportExecutionCypressCommand.name, async () => {
         await it("imports cypress xray json", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());

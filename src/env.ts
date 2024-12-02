@@ -1,5 +1,5 @@
-import type { CypressXrayPluginOptions } from "./types/plugin.js";
-import type { Remap } from "./types/util.js";
+import type { CypressXrayPluginOptions } from "./types/plugin";
+import type { Remap } from "./types/util";
 
 /**
  * An interface containing all authentication options which can be provided via environment

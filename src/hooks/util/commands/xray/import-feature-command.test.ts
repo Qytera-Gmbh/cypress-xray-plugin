@@ -3,15 +3,15 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { PatCredentials } from "../../../../client/authentication/credentials.js";
-import { AxiosRestClient } from "../../../../client/https/https.js";
-import { ServerClient } from "../../../../client/xray/xray-client-server.js";
-import type { XrayClient } from "../../../../client/xray/xray-client.js";
-import { dedent } from "../../../../util/dedent.js";
-import { Level, LOG } from "../../../../util/logging.js";
-import { ImportFeatureCommand } from "./import-feature-command.js";
+import { PatCredentials } from "../../../../client/authentication/credentials";
+import { AxiosRestClient } from "../../../../client/https/https";
+import type { XrayClient } from "../../../../client/xray/xray-client";
+import { ServerClient } from "../../../../client/xray/xray-client-server";
+import { dedent } from "../../../../util/dedent";
+import { Level, LOG } from "../../../../util/logging";
+import { ImportFeatureCommand } from "./import-feature-command";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(ImportFeatureCommand.name, async () => {
         await it("imports features", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());

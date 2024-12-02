@@ -6,8 +6,8 @@ import path from "path";
 import type {
     CypressFailedRunResultType,
     CypressRunResultType,
-} from "../src/types/cypress/cypress.js";
-import { unknownToString } from "../src/util/string.js";
+} from "../src/types/cypress/cypress";
+import { unknownToString } from "../src/util/string";
 
 export const TEST_TMP_DIR = path.join(os.tmpdir(), "cypress-xray-plugin");
 console.log(ansiColors.gray(`Temporary directory: ${TEST_TMP_DIR}`));

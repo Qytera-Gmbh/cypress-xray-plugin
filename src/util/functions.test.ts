@@ -2,9 +2,9 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import { getOrCall } from "./functions.js";
+import { getOrCall } from "./functions";
 
-await describe(relative(cwd(), import.meta.filename), async () => {
+describe(relative(cwd(), __filename), async () => {
     await describe(getOrCall.name, async () => {
         await it("returns unwrapped values", async () => {
             assert.strictEqual(await getOrCall("hello"), "hello");

@@ -1,26 +1,26 @@
 import path from "path";
 import { lt } from "semver";
-import type { EvidenceCollection } from "../../../../../context.js";
-import type { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api.js";
-import type { CypressRunResultType } from "../../../../../types/cypress/cypress.js";
-import type { InternalXrayOptions } from "../../../../../types/plugin.js";
+import type { EvidenceCollection } from "../../../../../context";
+import type { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
+import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
+import type { InternalXrayOptions } from "../../../../../types/plugin";
 import type {
     XrayEvidenceItem,
     XrayTest,
-} from "../../../../../types/xray/import-test-execution-results.js";
-import { encodeFile } from "../../../../../util/base64.js";
-import { dedent } from "../../../../../util/dedent.js";
-import { errorMessage } from "../../../../../util/errors.js";
-import { normalizedFilename } from "../../../../../util/files.js";
-import type { Logger } from "../../../../../util/logging.js";
-import { Level } from "../../../../../util/logging.js";
-import { truncateIsoTime } from "../../../../../util/time.js";
-import type { Computable } from "../../../../command.js";
-import { Command } from "../../../../command.js";
-import { getTestIssueKeys } from "../../../util.js";
-import type { TestRunData } from "./util/run.js";
-import { getTestRunData_V12, getTestRunData_V13 } from "./util/run.js";
-import { getXrayStatus } from "./util/status.js";
+} from "../../../../../types/xray/import-test-execution-results";
+import { encodeFile } from "../../../../../util/base64";
+import { dedent } from "../../../../../util/dedent";
+import { errorMessage } from "../../../../../util/errors";
+import { normalizedFilename } from "../../../../../util/files";
+import type { Logger } from "../../../../../util/logging";
+import { Level } from "../../../../../util/logging";
+import { truncateIsoTime } from "../../../../../util/time";
+import type { Computable } from "../../../../command";
+import { Command } from "../../../../command";
+import { getTestIssueKeys } from "../../../util";
+import type { TestRunData } from "./util/run";
+import { getTestRunData_V12, getTestRunData_V13 } from "./util/run";
+import { getXrayStatus } from "./util/status";
 
 interface Parameters {
     evidenceCollection: EvidenceCollection;
