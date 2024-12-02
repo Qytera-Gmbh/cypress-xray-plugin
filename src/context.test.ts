@@ -12,16 +12,7 @@ import { AxiosRestClient } from "./client/https/https.js";
 import { BaseJiraClient } from "./client/jira/jira-client.js";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud.js";
 import { ServerClient } from "./client/xray/xray-client-server.js";
-import {
-    initClients,
-    initCucumberOptions,
-    initHttpClients,
-    initJiraOptions,
-    initPluginOptions,
-    initXrayOptions,
-    PluginContext,
-    SimpleEvidenceCollection,
-} from "./context.js";
+import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context.js";
 import type { User } from "./types/jira/responses/user.js";
 import type {
     InternalCucumberOptions,
@@ -40,7 +31,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         await describe("the option initialization", async () => {
             await describe("should have certain default values", async () => {
                 await describe("jira", async () => {
-                    const jiraOptions: InternalJiraOptions = initJiraOptions(
+                    const jiraOptions: InternalJiraOptions = globalContext.initJiraOptions(
                         {},
                         {
                             projectKey: "PRJ",
@@ -67,7 +58,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 });
 
                 await describe("plugin", async () => {
-                    const pluginOptions: InternalPluginOptions = initPluginOptions({}, {});
+                    const pluginOptions: InternalPluginOptions = globalContext.initPluginOptions(
+                        {},
+                        {}
+                    );
                     await it("debug", () => {
                         assert.strictEqual(pluginOptions.debug, false);
                     });
@@ -83,7 +77,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 });
 
                 await describe("xray", async () => {
-                    const xrayOptions: InternalXrayOptions = initXrayOptions({}, {});
+                    const xrayOptions: InternalXrayOptions = globalContext.initXrayOptions({}, {});
                     await describe("status", async () => {
                         await it("failed", () => {
                             assert.strictEqual(xrayOptions.status.failed, undefined);
@@ -126,7 +120,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 await describe("cucumber", async () => {
                     let cucumberOptions: InternalCucumberOptions | undefined = undefined;
                     beforeEach(async () => {
-                        cucumberOptions = await initCucumberOptions(
+                        cucumberOptions = await globalContext.initCucumberOptions(
                             {
                                 env: {
                                     jsonEnabled: true,
@@ -160,7 +154,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             await describe("should prefer provided values over default ones", async () => {
                 await describe("jira", async () => {
                     await it("attachVideos", () => {
-                        const jiraOptions = initJiraOptions(
+                        const jiraOptions = globalContext.initJiraOptions(
                             {},
                             {
                                 attachVideos: true,
@@ -172,7 +166,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     });
                     await describe("fields", async () => {
                         await it("testEnvironments", () => {
-                            const jiraOptions = initJiraOptions(
+                            const jiraOptions = globalContext.initJiraOptions(
                                 {},
                                 {
                                     fields: {
@@ -188,7 +182,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             );
                         });
                         await it("testPlan", () => {
-                            const jiraOptions = initJiraOptions(
+                            const jiraOptions = globalContext.initJiraOptions(
                                 {},
                                 {
                                     fields: {
@@ -202,7 +196,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         });
                     });
                     await it("testExecutionIssue", () => {
-                        const jiraOptions = initJiraOptions(
+                        const jiraOptions = globalContext.initJiraOptions(
                             {},
                             {
                                 projectKey: "PRJ",
@@ -215,7 +209,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         });
                     });
                     await it("testPlanIssueKey", () => {
-                        const jiraOptions = initJiraOptions(
+                        const jiraOptions = globalContext.initJiraOptions(
                             {},
                             {
                                 projectKey: "PRJ",
@@ -226,7 +220,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         assert.strictEqual(jiraOptions.testPlanIssueKey, "PRJ-456");
                     });
                     await it("url", () => {
-                        const jiraOptions = initJiraOptions(
+                        const jiraOptions = globalContext.initJiraOptions(
                             {},
                             {
                                 projectKey: "PRJ",
@@ -239,7 +233,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
                 await describe("plugin", async () => {
                     await it("debug", () => {
-                        const pluginOptions = initPluginOptions(
+                        const pluginOptions = globalContext.initPluginOptions(
                             {},
                             {
                                 debug: true,
@@ -248,7 +242,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         assert.strictEqual(pluginOptions.debug, true);
                     });
                     await it("enabled", () => {
-                        const pluginOptions = initPluginOptions(
+                        const pluginOptions = globalContext.initPluginOptions(
                             {},
                             {
                                 enabled: false,
@@ -257,7 +251,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         assert.strictEqual(pluginOptions.enabled, false);
                     });
                     await it("logDirectory", () => {
-                        const pluginOptions = initPluginOptions(
+                        const pluginOptions = globalContext.initPluginOptions(
                             {},
                             {
                                 logDirectory: "./logs/",
@@ -266,7 +260,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         assert.strictEqual(pluginOptions.logDirectory, "./logs/");
                     });
                     await it("normalizeScreenshotNames", () => {
-                        const pluginOptions = initPluginOptions(
+                        const pluginOptions = globalContext.initPluginOptions(
                             {},
                             {
                                 normalizeScreenshotNames: true,
@@ -279,7 +273,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 await describe("xray", async () => {
                     await describe("status", async () => {
                         await it("failed", () => {
-                            const xrayOptions = initXrayOptions(
+                            const xrayOptions = globalContext.initXrayOptions(
                                 {},
                                 {
                                     status: {
@@ -290,7 +284,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             assert.strictEqual(xrayOptions.status.failed, "BAD");
                         });
                         await it("passed", () => {
-                            const xrayOptions = initXrayOptions(
+                            const xrayOptions = globalContext.initXrayOptions(
                                 {},
                                 {
                                     status: {
@@ -301,7 +295,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             assert.strictEqual(xrayOptions.status.passed, "GOOD");
                         });
                         await it("pending", () => {
-                            const xrayOptions = initXrayOptions(
+                            const xrayOptions = globalContext.initXrayOptions(
                                 {},
                                 {
                                     status: {
@@ -312,7 +306,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             assert.strictEqual(xrayOptions.status.pending, "PENDULUM");
                         });
                         await it("skipped", () => {
-                            const xrayOptions = initXrayOptions(
+                            const xrayOptions = globalContext.initXrayOptions(
                                 {},
                                 {
                                     status: {
@@ -324,7 +318,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         });
                         await describe("step", async () => {
                             await it("failed", () => {
-                                const xrayOptions = initXrayOptions(
+                                const xrayOptions = globalContext.initXrayOptions(
                                     {},
                                     {
                                         status: {
@@ -337,7 +331,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 assert.strictEqual(xrayOptions.status.step?.failed, "BAD");
                             });
                             await it("passed", () => {
-                                const xrayOptions = initXrayOptions(
+                                const xrayOptions = globalContext.initXrayOptions(
                                     {},
                                     {
                                         status: {
@@ -350,7 +344,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 assert.strictEqual(xrayOptions.status.step?.passed, "GOOD");
                             });
                             await it("pending", () => {
-                                const xrayOptions = initXrayOptions(
+                                const xrayOptions = globalContext.initXrayOptions(
                                     {},
                                     {
                                         status: {
@@ -363,7 +357,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 assert.strictEqual(xrayOptions.status.step?.pending, "PENDULUM");
                             });
                             await it("skipped", () => {
-                                const xrayOptions = initXrayOptions(
+                                const xrayOptions = globalContext.initXrayOptions(
                                     {},
                                     {
                                         status: {
@@ -382,7 +376,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     });
 
                     await it("testEnvironments", () => {
-                        const xrayOptions = initXrayOptions(
+                        const xrayOptions = globalContext.initXrayOptions(
                             {},
                             {
                                 testEnvironments: ["Test", "Prod"],
@@ -392,7 +386,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     });
 
                     await it("uploadResults", () => {
-                        const xrayOptions = initXrayOptions(
+                        const xrayOptions = globalContext.initXrayOptions(
                             {},
                             {
                                 uploadResults: false,
@@ -402,7 +396,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     });
 
                     await it("uploadScreenshots", () => {
-                        const xrayOptions = initXrayOptions(
+                        const xrayOptions = globalContext.initXrayOptions(
                             {},
                             {
                                 uploadScreenshots: false,
@@ -414,7 +408,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
                 await describe("cucumber", async () => {
                     await it("downloadFeatures", async () => {
-                        const cucumberOptions = await initCucumberOptions(
+                        const cucumberOptions = await globalContext.initCucumberOptions(
                             {
                                 env: { jsonEnabled: true },
                                 excludeSpecPattern: "",
@@ -432,7 +426,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     });
                     await describe("prefixes", async () => {
                         await it("precondition", async () => {
-                            const cucumberOptions = await initCucumberOptions(
+                            const cucumberOptions = await globalContext.initCucumberOptions(
                                 {
                                     env: { jsonEnabled: true },
                                     excludeSpecPattern: "",
@@ -452,7 +446,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             );
                         });
                         await it("test", async () => {
-                            const cucumberOptions = await initCucumberOptions(
+                            const cucumberOptions = await globalContext.initCucumberOptions(
                                 {
                                     env: { jsonEnabled: true },
                                     excludeSpecPattern: "",
@@ -470,7 +464,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         });
                     });
                     await it("uploadFeatures", async () => {
-                        const cucumberOptions = await initCucumberOptions(
+                        const cucumberOptions = await globalContext.initCucumberOptions(
                             {
                                 env: { jsonEnabled: true },
                                 excludeSpecPattern: "",
@@ -494,7 +488,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["JIRA_PROJECT_KEY"]: "ABC",
                         };
-                        const jiraOptions = initJiraOptions(env, {
+                        const jiraOptions = globalContext.initJiraOptions(env, {
                             projectKey: "CYP",
                             url: "http://localhost:1234",
                         });
@@ -505,7 +499,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["JIRA_ATTACH_VIDEOS"]: "true",
                         };
-                        const jiraOptions = initJiraOptions(env, {
+                        const jiraOptions = globalContext.initJiraOptions(env, {
                             attachVideos: false,
                             projectKey: "CYP",
                             url: "http://localhost:1234",
@@ -518,7 +512,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             const env = {
                                 ["JIRA_FIELDS_TEST_ENVIRONMENTS"]: "customfield_98765",
                             };
-                            const jiraOptions = initJiraOptions(env, {
+                            const jiraOptions = globalContext.initJiraOptions(env, {
                                 fields: {
                                     testEnvironments: "customfield_12345",
                                 },
@@ -535,7 +529,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             const env = {
                                 ["JIRA_FIELDS_TEST_PLAN"]: "customfield_98765",
                             };
-                            const jiraOptions = initJiraOptions(env, {
+                            const jiraOptions = globalContext.initJiraOptions(env, {
                                 fields: {
                                     testPlan: "customfield_12345",
                                 },
@@ -555,7 +549,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 },
                             },
                         };
-                        const jiraOptions = initJiraOptions(env, {
+                        const jiraOptions = globalContext.initJiraOptions(env, {
                             projectKey: "CYP",
                             testExecutionIssue: {
                                 fields: {
@@ -576,7 +570,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["JIRA_TEST_PLAN_ISSUE_KEY"]: "CYP-456",
                         };
-                        const jiraOptions = initJiraOptions(env, {
+                        const jiraOptions = globalContext.initJiraOptions(env, {
                             projectKey: "CYP",
                             testPlanIssueKey: "CYP-123",
                             url: "http://localhost:1234",
@@ -588,7 +582,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["JIRA_URL"]: "http://localhost:1234",
                         };
-                        const jiraOptions = initJiraOptions(env, {
+                        const jiraOptions = globalContext.initJiraOptions(env, {
                             projectKey: "CYP",
                             url: "https://some.domain.org",
                         });
@@ -600,7 +594,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["XRAY_STATUS_FAILED"]: "no",
                         };
-                        const xrayOptions = initXrayOptions(env, {
+                        const xrayOptions = globalContext.initXrayOptions(env, {
                             status: {
                                 failed: "ERROR",
                             },
@@ -612,7 +606,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["XRAY_STATUS_PASSED"]: "ok",
                         };
-                        const xrayOptions = initXrayOptions(env, {
+                        const xrayOptions = globalContext.initXrayOptions(env, {
                             status: {
                                 passed: "FLYBY",
                             },
@@ -624,7 +618,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["XRAY_STATUS_PENDING"]: "pendulum",
                         };
-                        const xrayOptions = initXrayOptions(env, {
+                        const xrayOptions = globalContext.initXrayOptions(env, {
                             status: {
                                 pending: "PENCIL",
                             },
@@ -636,7 +630,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["XRAY_STATUS_SKIPPED"]: "ski-ba-bop-ba-dop-bop",
                         };
-                        const xrayOptions = initXrayOptions(env, {
+                        const xrayOptions = globalContext.initXrayOptions(env, {
                             status: {
                                 skipped: "HOP",
                             },
@@ -648,7 +642,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["XRAY_STATUS_STEP_FAILED"]: "no",
                         };
-                        const xrayOptions = initXrayOptions(env, {
+                        const xrayOptions = globalContext.initXrayOptions(env, {
                             status: {
                                 step: {
                                     failed: "ERROR",
@@ -662,7 +656,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["XRAY_STATUS_STEP_PASSED"]: "ok",
                         };
-                        const xrayOptions = initXrayOptions(env, {
+                        const xrayOptions = globalContext.initXrayOptions(env, {
                             status: {
                                 step: { passed: "FLYBY" },
                             },
@@ -674,7 +668,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["XRAY_STATUS_STEP_PENDING"]: "pendulum",
                         };
-                        const xrayOptions = initXrayOptions(env, {
+                        const xrayOptions = globalContext.initXrayOptions(env, {
                             status: {
                                 step: { pending: "PENCIL" },
                             },
@@ -686,7 +680,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["XRAY_STATUS_STEP_SKIPPED"]: "ski-ba-bop-ba-dop-bop",
                         };
-                        const xrayOptions = initXrayOptions(env, {
+                        const xrayOptions = globalContext.initXrayOptions(env, {
                             status: {
                                 step: { skipped: "HOP" },
                             },
@@ -701,7 +695,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["XRAY_TEST_ENVIRONMENTS"]: [false, "bonjour", 5],
                         };
-                        const xrayOptions = initXrayOptions(env, {
+                        const xrayOptions = globalContext.initXrayOptions(env, {
                             testEnvironments: ["A", "B", "C"],
                         });
                         assert.deepStrictEqual(xrayOptions.testEnvironments, [
@@ -715,7 +709,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["XRAY_UPLOAD_RESULTS"]: "false",
                         };
-                        const xrayOptions = initXrayOptions(env, {
+                        const xrayOptions = globalContext.initXrayOptions(env, {
                             uploadResults: true,
                         });
                         assert.strictEqual(xrayOptions.uploadResults, false);
@@ -725,7 +719,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["XRAY_UPLOAD_SCREENSHOTS"]: "false",
                         };
-                        const xrayOptions = initXrayOptions(env, {
+                        const xrayOptions = globalContext.initXrayOptions(env, {
                             uploadScreenshots: true,
                         });
                         assert.strictEqual(xrayOptions.uploadScreenshots, false);
@@ -733,7 +727,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 });
                 await describe("cucumber", async () => {
                     await it("CUCUMBER_FEATURE_FILE_EXTENSION", async () => {
-                        const cucumberOptions = await initCucumberOptions(
+                        const cucumberOptions = await globalContext.initCucumberOptions(
                             {
                                 env: {
                                     ["CUCUMBER_FEATURE_FILE_EXTENSION"]: ".feature.file",
@@ -753,7 +747,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     });
 
                     await it("CUCUMBER_DOWNLOAD_FEATURES", async () => {
-                        const cucumberOptions = await initCucumberOptions(
+                        const cucumberOptions = await globalContext.initCucumberOptions(
                             {
                                 env: {
                                     ["CUCUMBER_DOWNLOAD_FEATURES"]: "true",
@@ -774,7 +768,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     });
 
                     await it("CUCUMBER_PREFIXES_PRECONDITION", async () => {
-                        const cucumberOptions = await initCucumberOptions(
+                        const cucumberOptions = await globalContext.initCucumberOptions(
                             {
                                 env: {
                                     ["CUCUMBER_PREFIXES_PRECONDITION"]: "BigPrecondition:",
@@ -798,7 +792,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     });
 
                     await it("CUCUMBER_PREFIXES_TEST", async () => {
-                        const cucumberOptions = await initCucumberOptions(
+                        const cucumberOptions = await globalContext.initCucumberOptions(
                             {
                                 env: {
                                     ["CUCUMBER_PREFIXES_TEST"]: "BigTest:",
@@ -819,7 +813,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     });
 
                     await it("CUCUMBER_UPLOAD_FEATURES", async () => {
-                        const cucumberOptions = await initCucumberOptions(
+                        const cucumberOptions = await globalContext.initCucumberOptions(
                             {
                                 env: {
                                     ["CUCUMBER_UPLOAD_FEATURES"]: "true",
@@ -844,7 +838,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["PLUGIN_DEBUG"]: "true",
                         };
-                        const pluginOptions = initPluginOptions(env, {
+                        const pluginOptions = globalContext.initPluginOptions(env, {
                             debug: false,
                         });
                         assert.strictEqual(pluginOptions.debug, true);
@@ -854,7 +848,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["PLUGIN_ENABLED"]: "false",
                         };
-                        const pluginOptions = initPluginOptions(env, {
+                        const pluginOptions = globalContext.initPluginOptions(env, {
                             enabled: true,
                         });
                         assert.strictEqual(pluginOptions.enabled, false);
@@ -864,7 +858,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["PLUGIN_LOG_DIRECTORY"]: "/home/logs/cypress-xray-plugin",
                         };
-                        const pluginOptions = initPluginOptions(env, {
+                        const pluginOptions = globalContext.initPluginOptions(env, {
                             logDirectory: "./logging/subdirectory",
                         });
                         assert.strictEqual(
@@ -877,7 +871,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const env = {
                             ["PLUGIN_NORMALIZE_SCREENSHOT_NAMES"]: "true",
                         };
-                        const pluginOptions = initPluginOptions(env, {
+                        const pluginOptions = globalContext.initPluginOptions(env, {
                             normalizeScreenshotNames: false,
                         });
                         assert.strictEqual(pluginOptions.normalizeScreenshotNames, true);
@@ -888,7 +882,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 await it("detects unset project keys", () => {
                     assert.throws(
                         () =>
-                            initJiraOptions(
+                            globalContext.initJiraOptions(
                                 {},
                                 {
                                     projectKey: undefined as unknown as string,
@@ -903,7 +897,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         throw new Error("Failed to import package");
                     });
                     await assert.rejects(
-                        initCucumberOptions(
+                        globalContext.initCucumberOptions(
                             {
                                 env: {},
                                 excludeSpecPattern: "",
@@ -931,7 +925,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 });
                 await it("detects if the cucumber preprocessor json report is not enabled", async () => {
                     await assert.rejects(
-                        initCucumberOptions(
+                        globalContext.initCucumberOptions(
                             {
                                 env: { jsonEnabled: false },
                                 excludeSpecPattern: "",
@@ -955,7 +949,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 });
                 await it("detects if the cucumber preprocessor json report path was not set", async () => {
                     await assert.rejects(
-                        initCucumberOptions(
+                        globalContext.initCucumberOptions(
                             {
                                 env: { jsonEnabled: true, jsonOutput: "" },
                                 excludeSpecPattern: "",
@@ -983,7 +977,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         await describe("the http clients instantiation", async () => {
             await it("creates a single client by default", (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const httpClients = initHttpClients(undefined, undefined);
+                const httpClients = globalContext.initHttpClients(undefined, undefined);
                 assert.strictEqual(httpClients.jira, httpClients.xray);
                 assert.deepStrictEqual(
                     httpClients.jira,
@@ -992,7 +986,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             });
             await it("sets debugging to true if enabled", (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const httpClients = initHttpClients({ debug: true }, undefined);
+                const httpClients = globalContext.initHttpClients({ debug: true }, undefined);
                 assert.strictEqual(httpClients.jira, httpClients.xray);
                 assert.deepStrictEqual(
                     httpClients.jira,
@@ -1001,7 +995,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             });
             await it("sets debugging to false if disabled", (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const httpClients = initHttpClients({ debug: false }, undefined);
+                const httpClients = globalContext.initHttpClients({ debug: false }, undefined);
                 assert.strictEqual(httpClients.jira, httpClients.xray);
                 assert.deepStrictEqual(
                     httpClients.jira,
@@ -1010,7 +1004,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             });
             await it("creates a single client if empty options are passed", (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-                const httpClients = initHttpClients(undefined, {});
+                const httpClients = globalContext.initHttpClients(undefined, {});
                 assert.strictEqual(httpClients.jira, httpClients.xray);
                 assert.deepStrictEqual(
                     httpClients.jira,
@@ -1029,7 +1023,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         port: 12345,
                     },
                 };
-                const httpClients = initHttpClients(undefined, httpOptions);
+                const httpClients = globalContext.initHttpClients(undefined, httpOptions);
                 assert.strictEqual(httpClients.jira, httpClients.xray);
                 assert.deepStrictEqual(
                     httpClients.jira,
@@ -1055,7 +1049,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         },
                     },
                 };
-                const httpClients = initHttpClients(undefined, httpOptions);
+                const httpClients = globalContext.initHttpClients(undefined, httpOptions);
                 assert.notStrictEqual(httpClients.jira, httpClients.xray);
                 assert.deepStrictEqual(
                     httpClients.jira,
@@ -1089,7 +1083,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         },
                     },
                 };
-                const httpClients = initHttpClients(undefined, httpOptions);
+                const httpClients = globalContext.initHttpClients(undefined, httpOptions);
                 assert.notStrictEqual(httpClients.jira, httpClients.xray);
                 assert.deepStrictEqual(
                     httpClients.jira,
@@ -1129,7 +1123,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         },
                     },
                 };
-                const httpClients = initHttpClients(undefined, httpOptions);
+                const httpClients = globalContext.initHttpClients(undefined, httpOptions);
                 assert.notStrictEqual(httpClients.jira, httpClients.xray);
                 assert.deepStrictEqual(
                     httpClients.jira,
@@ -1176,7 +1170,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         },
                     },
                 };
-                const httpClients = initHttpClients(undefined, httpOptions);
+                const httpClients = globalContext.initHttpClients(undefined, httpOptions);
                 assert.notStrictEqual(httpClients.jira, httpClients.xray);
                 assert.deepStrictEqual(
                     httpClients.jira,
@@ -1233,7 +1227,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         timeout: 10000,
                     },
                 };
-                const httpClients = initHttpClients(undefined, httpOptions);
+                const httpClients = globalContext.initHttpClients(undefined, httpOptions);
                 assert.deepStrictEqual(
                     httpClients.jira,
                     new AxiosRestClient(axios, {
@@ -1268,7 +1262,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         await describe("the clients instantiation", async () => {
             let jiraOptions: InternalJiraOptions;
             beforeEach(() => {
-                jiraOptions = initJiraOptions(
+                jiraOptions = globalContext.initJiraOptions(
                     {},
                     {
                         projectKey: "CYP",
@@ -1307,7 +1301,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
                     };
                 });
-                const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
+                const { jiraClient, xrayClient } = await globalContext.initClients(
+                    jiraOptions,
+                    env,
+                    httpClients
+                );
                 assert.strictEqual(jiraClient instanceof BaseJiraClient, true);
                 assert.strictEqual(xrayClient instanceof XrayClientCloud, true);
                 assert.strictEqual(
@@ -1349,7 +1347,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
                     };
                 });
-                await assert.rejects(initClients(jiraOptions, env, httpClients), {
+                await assert.rejects(globalContext.initClients(jiraOptions, env, httpClients), {
                     message: dedent(`
                         Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials.
 
@@ -1392,7 +1390,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
                     };
                 });
-                const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
+                const { jiraClient, xrayClient } = await globalContext.initClients(
+                    jiraOptions,
+                    env,
+                    httpClients
+                );
                 assert.strictEqual(jiraClient instanceof BaseJiraClient, true);
                 assert.strictEqual(xrayClient instanceof ServerClient, true);
                 assert.strictEqual(
@@ -1446,7 +1448,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
                     };
                 });
-                const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
+                const { jiraClient, xrayClient } = await globalContext.initClients(
+                    jiraOptions,
+                    env,
+                    httpClients
+                );
                 assert.strictEqual(jiraClient instanceof BaseJiraClient, true);
                 assert.strictEqual(xrayClient instanceof ServerClient, true);
                 assert.strictEqual(
@@ -1500,7 +1506,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         statusText: HttpStatusCode[HttpStatusCode.Ok],
                     };
                 });
-                const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
+                const { jiraClient, xrayClient } = await globalContext.initClients(
+                    jiraOptions,
+                    env,
+                    httpClients
+                );
                 assert.strictEqual(jiraClient instanceof BaseJiraClient, true);
                 assert.strictEqual(xrayClient instanceof XrayClientCloud, true);
                 assert.strictEqual(
@@ -1518,7 +1528,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     jira: new AxiosRestClient(axios),
                     xray: new AxiosRestClient(axios),
                 };
-                await assert.rejects(initClients(jiraOptions, {}, httpClients), {
+                await assert.rejects(globalContext.initClients(jiraOptions, {}, httpClients), {
                     message: dedent(`
                         Failed to configure Jira client: No viable authentication method was configured.
 
@@ -1543,7 +1553,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     };
                 });
                 await assert.rejects(
-                    initClients(
+                    globalContext.initClients(
                         jiraOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
@@ -1584,7 +1594,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     };
                 });
                 await assert.rejects(
-                    initClients(
+                    globalContext.initClients(
                         jiraOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
@@ -1635,7 +1645,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     };
                 });
                 await assert.rejects(
-                    initClients(
+                    globalContext.initClients(
                         jiraOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
@@ -1690,7 +1700,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     };
                 });
                 await assert.rejects(
-                    initClients(
+                    globalContext.initClients(
                         jiraOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
@@ -1750,7 +1760,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     );
                 });
                 await assert.rejects(
-                    initClients(
+                    globalContext.initClients(
                         jiraOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",

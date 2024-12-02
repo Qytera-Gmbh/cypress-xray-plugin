@@ -8,12 +8,7 @@ import { PatCredentials } from "../../client/authentication/credentials.js";
 import { AxiosRestClient } from "../../client/https/https.js";
 import { BaseJiraClient } from "../../client/jira/jira-client.js";
 import { ServerClient } from "../../client/xray/xray-client-server.js";
-import {
-    initCucumberOptions,
-    initJiraOptions,
-    initPluginOptions,
-    initXrayOptions,
-} from "../../context.js";
+import globalContext from "../../context.js";
 import type { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin.js";
 import { ExecutableGraph } from "../../util/graph/executable-graph.js";
 import { LOG } from "../../util/logging.js";
@@ -28,7 +23,7 @@ import { GetLabelsToResetCommand } from "./commands/get-labels-to-reset-command.
 import { GetSummariesToResetCommand } from "./commands/get-summaries-to-reset-command.js";
 import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command.js";
 import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command.js";
-import { addSynchronizationCommands } from "./file-preprocessor.js";
+import filePreprocessor from "./file-preprocessor.js";
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     let clients: ClientCombination;
@@ -36,7 +31,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
     beforeEach(async () => {
         options = {
-            cucumber: await initCucumberOptions(
+            cucumber: await globalContext.initCucumberOptions(
                 {
                     env: { jsonEnabled: true },
                     excludeSpecPattern: "",
@@ -55,15 +50,15 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 }
             ),
             http: {},
-            jira: initJiraOptions(
+            jira: globalContext.initJiraOptions(
                 {},
                 {
                     projectKey: "CYP",
                     url: "http://localhost:1234",
                 }
             ),
-            plugin: initPluginOptions({}, {}),
-            xray: initXrayOptions({}, {}),
+            plugin: globalContext.initPluginOptions({}, {}),
+            xray: globalContext.initXrayOptions({}, {}),
         };
         const restClient = new AxiosRestClient(axios);
         clients = {
@@ -81,7 +76,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         };
     });
 
-    await describe(addSynchronizationCommands.name, async () => {
+    await describe(filePreprocessor.addSynchronizationCommands.name, async () => {
         const file = {
             ...({} as Cypress.FileObject),
             filePath: "./path/to/file.feature",
@@ -92,7 +87,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         await it("adds all commands necessary for feature file upload", (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const graph = new ExecutableGraph<Command>();
-            addSynchronizationCommands(file, options, clients, graph, LOG);
+            filePreprocessor.addSynchronizationCommands(file, options, clients, graph, LOG);
             const commands = [...graph.getVertices()];
             assertIsInstanceOf(commands[0], ParseFeatureFileCommand);
             assert.deepStrictEqual(commands[0].getParameters(), {
@@ -138,7 +133,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         await it("correctly connects all commands", (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const graph = new ExecutableGraph<Command>();
-            addSynchronizationCommands(file, options, clients, graph, LOG);
+            filePreprocessor.addSynchronizationCommands(file, options, clients, graph, LOG);
             const [
                 parseFeatureFileCommand,
                 extractIssueDataCommand,
@@ -212,7 +207,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             const parseFeatureFileCommand = graph.place(
                 new ParseFeatureFileCommand({ filePath: "./path/to/file.feature" }, LOG)
             );
-            addSynchronizationCommands(file, options, clients, graph, LOG);
+            filePreprocessor.addSynchronizationCommands(file, options, clients, graph, LOG);
             const commands = [...graph.getVertices()];
             const extractIssueDataCommand = commands[1];
             assert.deepStrictEqual(
@@ -224,7 +219,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         await it("uses preconfigured jira field ids", (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const graph = new ExecutableGraph<Command>();
-            addSynchronizationCommands(file, options, clients, graph, LOG);
+            filePreprocessor.addSynchronizationCommands(file, options, clients, graph, LOG);
             const commands = [...graph.getVertices()];
             const extractIssueKeysCommand = commands[2];
             const getCurrentSummariesCommand = commands[3];

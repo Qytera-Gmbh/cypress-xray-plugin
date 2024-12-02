@@ -111,11 +111,11 @@ export class PluginContext implements EvidenceCollection {
 
 let context: PluginContext | undefined = undefined;
 
-export function getPluginContext(): PluginContext | undefined {
+function getGlobalContext(): PluginContext | undefined {
     return context;
 }
 
-export function setPluginContext(newContext?: PluginContext): void {
+function setGlobalContext(newContext?: PluginContext): void {
     context = newContext;
 }
 
@@ -128,7 +128,7 @@ export function setPluginContext(newContext?: PluginContext): void {
  * @param options - an options object containing Jira options
  * @returns the constructed internal Jira options
  */
-export function initJiraOptions(
+function initJiraOptions(
     env: Cypress.ObjectLike,
     options: CypressXrayPluginOptions["jira"]
 ): InternalJiraOptions {
@@ -165,7 +165,7 @@ export function initJiraOptions(
  * @param options - an options object containing plugin options
  * @returns the constructed internal plugin options
  */
-export function initPluginOptions(
+function initPluginOptions(
     env: Cypress.ObjectLike,
     options: CypressXrayPluginOptions["plugin"]
 ): InternalPluginOptions {
@@ -190,7 +190,7 @@ export function initPluginOptions(
  * @param options - an options object containing Xray options
  * @returns the constructed internal Xray options
  */
-export function initXrayOptions(
+function initXrayOptions(
     env: Cypress.ObjectLike,
     options: CypressXrayPluginOptions["xray"]
 ): InternalXrayOptions {
@@ -238,7 +238,7 @@ export function initXrayOptions(
  * @param options - an options object containing Cucumber options
  * @returns the constructed internal Cucumber options
  */
-export async function initCucumberOptions(
+async function initCucumberOptions(
     config: CucumberPreprocessorArgs[0],
     options: CypressXrayPluginOptions["cucumber"]
 ): Promise<InternalCucumberOptions | undefined> {
@@ -318,7 +318,7 @@ export async function initCucumberOptions(
     return undefined;
 }
 
-export function initHttpClients(
+function initHttpClients(
     pluginOptions?: Pick<InternalPluginOptions, "debug">,
     httpOptions?: InternalHttpOptions
 ): HttpClientCombination {
@@ -374,7 +374,7 @@ export function initHttpClients(
     };
 }
 
-export async function initClients(
+async function initClients(
     jiraOptions: InternalJiraOptions,
     env: Cypress.ObjectLike,
     httpClients: HttpClientCombination
@@ -603,3 +603,20 @@ async function getJiraClient(
         );
     }
 }
+
+/**
+ * Workaround until module mocking becomes a stable feature. The current approach allows replacing
+ * the functions with a mocked one.
+ *
+ * @see https://nodejs.org/docs/latest-v23.x/api/test.html#mockmodulespecifier-options
+ */
+export default {
+    getGlobalContext,
+    initClients,
+    initCucumberOptions,
+    initHttpClients,
+    initJiraOptions,
+    initPluginOptions,
+    initXrayOptions,
+    setGlobalContext,
+};

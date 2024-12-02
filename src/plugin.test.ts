@@ -9,15 +9,8 @@ import { PatCredentials } from "./client/authentication/credentials.js";
 import { AxiosRestClient } from "./client/https/https.js";
 import { BaseJiraClient, type JiraClient } from "./client/jira/jira-client.js";
 import { ServerClient } from "./client/xray/xray-client-server.js";
-import {
-    initJiraOptions,
-    initPluginOptions,
-    initXrayOptions,
-    PluginContext,
-    setPluginContext,
-    SimpleEvidenceCollection,
-} from "./context.js";
-import * as afterRunHook from "./hooks/after/after-run.js";
+import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context.js";
+import afterRun from "./hooks/after/after-run.js";
 import filePreprocessor from "./hooks/preprocessor/file-preprocessor.js";
 import { configureXrayPlugin, resetPlugin, syncFeatureFile } from "./plugin.js";
 import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress.js";
@@ -45,11 +38,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             new PatCredentials("token"),
             new AxiosRestClient(axios)
         );
-        const jiraOptions = initJiraOptions(
+        const jiraOptions = globalContext.initJiraOptions(
             {},
             {
                 projectKey: "CYP",
-                url: "https://example.org",
+                url: "http://localhost:1234",
             }
         );
         pluginContext = new PluginContext(
@@ -62,8 +55,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 cucumber: undefined,
                 http: {},
                 jira: jiraOptions,
-                plugin: initPluginOptions({}, {}),
-                xray: initXrayOptions({}, {}),
+                plugin: globalContext.initPluginOptions({}, {}),
+                xray: globalContext.initXrayOptions({}, {}),
             },
             config,
             new SimpleEvidenceCollection(),
@@ -80,7 +73,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             await configureXrayPlugin(mockedOn, config, {
                 jira: {
                     projectKey: "ABC",
-                    url: "https://example.org",
+                    url: "http://localhost:1234",
                 },
                 plugin: {
                     enabled: false,
@@ -91,7 +84,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 "Plugin disabled. Skipping further configuration.",
             ]);
             assert.strictEqual(mockedOn.mock.callCount(), 1);
-            assert.strictEqual(mockedOn.mock.calls[0].arguments, ["task"]);
+            assert.strictEqual(mockedOn.mock.calls[0].arguments[0], "task");
         });
 
         await it("registers tasks only if run in interactive mode", async (context) => {
@@ -101,7 +94,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             await configureXrayPlugin(mockedOn, config, {
                 jira: {
                     projectKey: "ABC",
-                    url: "https://example.org",
+                    url: "http://localhost:1234",
                 },
             });
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
@@ -109,7 +102,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 "Interactive mode detected, disabling plugin.",
             ]);
             assert.strictEqual(mockedOn.mock.callCount(), 1);
-            assert.strictEqual(mockedOn.mock.calls[0].arguments, ["task"]);
+            assert.strictEqual(mockedOn.mock.calls[0].arguments[0], "task");
         });
 
         await it("initializes the plugin context with the provided options", async (context) => {
@@ -118,10 +111,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 jsonEnabled: true,
                 jsonOutput: "somewhere",
             };
-            const setPluginContext = context.mock.method();
-            const stubbedContext = stub(context, "setPluginContext");
-            const stubbedClients = stub(context, "initClients");
-            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
+            const setGlobalContext = context.mock.method(globalContext, "setGlobalContext");
+            context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
             const options: CypressXrayPluginOptions = {
                 cucumber: {
                     downloadFeatures: false,
@@ -146,7 +137,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         key: "ABC-2",
                     },
                     testPlanIssueKey: "ABC-3",
-                    url: "https://example.org",
+                    url: "http://localhost:1234",
                 },
                 plugin: {
                     debug: false,
@@ -167,8 +158,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 },
             };
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
-            assert.strictEqual(stubbedContext.firstCall.args[0]?.getCypressOptions(), config);
-            assert.deepStrictEqual(stubbedContext.firstCall.args[0]?.getOptions().jira, {
+            assert.strictEqual(
+                setGlobalContext.mock.calls[0].arguments[0]?.getCypressOptions(),
+                config
+            );
+            assert.deepStrictEqual(setGlobalContext.mock.calls[0].arguments[0].getOptions().jira, {
                 attachVideos: true,
                 fields: {
                     testEnvironments: "field_123",
@@ -185,13 +179,16 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     key: "ABC-2",
                 },
                 testPlanIssueKey: "ABC-3",
-                url: "https://example.org",
+                url: "http://localhost:1234",
             });
-            assert.deepStrictEqual(stubbedContext.firstCall.args[0]?.getOptions().plugin, {
-                ...options.plugin,
-                logDirectory: resolve(config.projectRoot, "xyz"),
-            });
-            assert.deepStrictEqual(stubbedContext.firstCall.args[0]?.getOptions().xray, {
+            assert.deepStrictEqual(
+                setGlobalContext.mock.calls[0].arguments[0].getOptions().plugin,
+                {
+                    ...options.plugin,
+                    logDirectory: resolve(config.projectRoot, "xyz"),
+                }
+            );
+            assert.deepStrictEqual(setGlobalContext.mock.calls[0].arguments[0].getOptions().xray, {
                 status: {
                     failed: "FAILURE",
                     passed: "OK",
@@ -209,40 +206,42 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 uploadScreenshots: false,
             });
             assert.strictEqual(
-                stubbedContext.firstCall.args[0]?.getOptions().cucumber?.featureFileExtension,
+                setGlobalContext.mock.calls[0].arguments[0].getOptions().cucumber
+                    ?.featureFileExtension,
                 ".cucumber"
             );
             assert.strictEqual(
-                stubbedContext.firstCall.args[0]?.getOptions().cucumber?.downloadFeatures,
+                setGlobalContext.mock.calls[0].arguments[0].getOptions().cucumber?.downloadFeatures,
                 false
             );
             assert.strictEqual(
-                stubbedContext.firstCall.args[0]?.getOptions().cucumber?.uploadFeatures,
+                setGlobalContext.mock.calls[0].arguments[0].getOptions().cucumber?.uploadFeatures,
                 false
             );
             assert.deepStrictEqual(
-                stubbedContext.firstCall.args[0]?.getOptions().cucumber?.preprocessor?.json,
+                setGlobalContext.mock.calls[0].arguments[0].getOptions().cucumber?.preprocessor
+                    ?.json,
                 {
                     enabled: true,
                     output: "somewhere",
                 }
             );
             assert.deepStrictEqual(
-                stubbedContext.firstCall.args[0]?.getOptions().http,
+                setGlobalContext.mock.calls[0].arguments[0].getOptions().http,
                 options.http
             );
             assert.strictEqual(
-                stubbedContext.firstCall.args[0]?.getClients(),
+                setGlobalContext.mock.calls[0].arguments[0].getClients(),
                 pluginContext.getClients()
             );
         });
 
-        await it("initializes the clients with different http configurations", async () => {
+        await it("initializes the clients with different http configurations", async (context) => {
             const options: CypressXrayPluginOptions = {
                 http: {
                     jira: {
                         proxy: {
-                            host: "https://example.org",
+                            host: "http://localhost:1234",
                             port: 1234,
                         },
                     },
@@ -255,25 +254,26 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 },
                 jira: {
                     projectKey: "ABC",
-                    url: "https://example.org",
+                    url: "http://localhost:1234",
                 },
             };
-            const stubbedClients = stub(context, "initClients");
-            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
+            const initClients = context.mock.method(globalContext, "initClients", () =>
+                pluginContext.getClients()
+            );
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
-            assert.strictEqual(stubbedClients.mock.callCount(), 1);
-            assert.deepStrictEqual(stubbedClients.calls[0].arguments[2], {
-                jira: new AxiosRestClient({
+            assert.strictEqual(initClients.mock.callCount(), 1);
+            assert.deepStrictEqual(initClients.mock.calls[0].arguments[2], {
+                jira: new AxiosRestClient(axios, {
                     debug: false,
                     http: {
                         proxy: {
-                            host: "https://example.org",
+                            host: "http://localhost:1234",
                             port: 1234,
                         },
                     },
                     rateLimiting: undefined,
                 }),
-                xray: new AxiosRestClient({
+                xray: new AxiosRestClient(axios, {
                     debug: false,
                     http: {
                         proxy: {
@@ -288,72 +288,82 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
         await it("initializes the logging module", async (context) => {
             const configure = context.mock.method(LOG, "configure", context.mock.fn());
-            const stubbedClients = stub(context, "initClients");
-            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
+            context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
             const options: CypressXrayPluginOptions = {
                 jira: {
                     projectKey: "ABC",
-                    url: "https://example.org",
+                    url: "http://localhost:1234",
                 },
             };
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
-            assert.deepStrictEqual(configure.mock.calls[0].arguments, {
-                debug: pluginContext.getOptions().plugin.debug,
-                logDirectory: resolve(config.projectRoot, "logs"),
-            });
+            assert.deepStrictEqual(configure.mock.calls[0].arguments, [
+                {
+                    debug: pluginContext.getOptions().plugin.debug,
+                    logDirectory: resolve(config.projectRoot, "logs"),
+                },
+            ]);
         });
 
         await it("initializes the logging module with resolved relative paths", async (context) => {
             const configure = context.mock.method(LOG, "configure", context.mock.fn());
-            const stubbedClients = stub(context, "initClients");
-            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
+            context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
             const options: CypressXrayPluginOptions = {
                 jira: {
                     projectKey: "ABC",
-                    url: "https://example.org",
+                    url: "http://localhost:1234",
                 },
                 plugin: {
                     logDirectory: "log-directory",
                 },
             };
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
-            assert.deepStrictEqual(configure.mock.calls[0].arguments, {
-                debug: pluginContext.getOptions().plugin.debug,
-                logDirectory: resolve(config.projectRoot, "log-directory"),
-            });
+            assert.deepStrictEqual(configure.mock.calls[0].arguments, [
+                {
+                    debug: pluginContext.getOptions().plugin.debug,
+                    logDirectory: resolve(config.projectRoot, "log-directory"),
+                },
+            ]);
         });
 
         await it("initializes the logging module without changing absolute paths", async (context) => {
             const configure = context.mock.method(LOG, "configure", context.mock.fn());
-            const stubbedClients = stub(context, "initClients");
-            stubbedClients.onFirstCall().resolves(pluginContext.getClients());
+            context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
             const options: CypressXrayPluginOptions = {
                 jira: {
                     projectKey: "ABC",
-                    url: "https://example.org",
+                    url: "http://localhost:1234",
                 },
                 plugin: {
                     logDirectory: resolve("."),
                 },
             };
             await configureXrayPlugin(mockedCypressEventEmitter, config, options);
-            assert.deepStrictEqual(configure.mock.calls[0].arguments, {
-                debug: pluginContext.getOptions().plugin.debug,
-                logDirectory: resolve("."),
-            });
+            assert.deepStrictEqual(configure.mock.calls[0].arguments, [
+                {
+                    debug: pluginContext.getOptions().plugin.debug,
+                    logDirectory: resolve("."),
+                },
+            ]);
         });
 
-        await it("adds upload commands", async (context) => {
-            stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
+        await it.only("adds upload commands", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
+            const addUploadCommands = context.mock.method(
+                afterRun,
+                "addUploadCommands",
+                context.mock.fn()
+            );
             const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;
-            const stubbedHook = stub(afterRunHook, "addUploadCommands");
-            await configureXrayPlugin(
-                mockedCypressEventEmitter("after:run", afterRunResult),
-                config,
-                pluginContext.getOptions()
-            );
+            const mockedOn = context.mock.fn();
+            await configureXrayPlugin(mockedOn, config, pluginContext.getOptions());
+            await (
+                mockedOn.mock.calls[1].arguments[1] as (
+                    results: CypressFailedRunResultType | CypressRunResultType
+                ) => Promise<void>
+            )(afterRunResult);
             const expectedContext = new PluginContext(
                 pluginContext.getClients(),
                 {
@@ -368,28 +378,37 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 new ExecutableGraph(),
                 new CapturingLogger()
             );
-            assert.deepStrictEqual(stubbedHook.firstCall.args[0], afterRunResult);
+            assert.deepStrictEqual(addUploadCommands.mock.calls[0].arguments[0], afterRunResult);
             assert.deepStrictEqual(
-                stubbedHook.firstCall.args[1],
+                addUploadCommands.mock.calls[0].arguments[1],
                 pluginContext.getCypressOptions().projectRoot
             );
-            assert.deepStrictEqual(stubbedHook.firstCall.args[2], {
+            assert.deepStrictEqual(addUploadCommands.mock.calls[0].arguments[2], {
                 ...pluginContext.getOptions(),
                 plugin: {
                     ...pluginContext.getOptions().plugin,
                     logDirectory: resolve(config.projectRoot, "logs"),
                 },
             });
-            assert.deepStrictEqual(stubbedHook.firstCall.args[3], pluginContext.getClients());
-            assert.deepStrictEqual(stubbedHook.firstCall.args[4], expectedContext);
-            assert.deepStrictEqual(stubbedHook.firstCall.args[5], pluginContext.getGraph());
-            assert.strictEqual(stubbedHook.firstCall.args[6] instanceof CapturingLogger, true);
+            assert.deepStrictEqual(
+                addUploadCommands.mock.calls[0].arguments[3],
+                pluginContext.getClients()
+            );
+            assert.deepStrictEqual(addUploadCommands.mock.calls[0].arguments[4], expectedContext);
+            assert.deepStrictEqual(
+                addUploadCommands.mock.calls[0].arguments[5],
+                pluginContext.getGraph()
+            );
+            assert.strictEqual(
+                addUploadCommands.mock.calls[0].arguments[6] instanceof CapturingLogger,
+                true
+            );
         });
 
         await it("displays an error for failed runs", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
-            stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
-            stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
+            context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
+            context.mock.method(globalContext, "getGlobalContext", () => pluginContext);
             const failedResults: CypressFailedRunResultType = {
                 failures: 47,
                 message: "Pretty messed up",
@@ -413,7 +432,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         await it("does not display a warning if the plugin was configured but disabled", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             await configureXrayPlugin(mockedCypressEventEmitter, config, {
-                jira: { projectKey: "CYP", url: "https://example.org" },
+                jira: { projectKey: "CYP", url: "http://localhost:1234" },
                 plugin: { enabled: false },
             });
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
@@ -443,13 +462,13 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
         await it("should skip the results upload if disabled", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
-            stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
-            stub(context, "getPluginContext").onFirstCall().returns(pluginContext);
+            context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
+            context.mock.method(globalContext, "getGlobalContext", () => pluginContext);
             const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;
             pluginContext.getOptions().xray.uploadResults = false;
-            setPluginContext(pluginContext);
+            globalContext.setGlobalContext(pluginContext);
             await configureXrayPlugin(
                 mockedCypressEventEmitter("after:run", afterRunResult),
                 config,
@@ -463,8 +482,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
         await it("displays a warning if there are failed vertices", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
-            stub(context, "initClients").onFirstCall().resolves(pluginContext.getClients());
-            jiraClient.getIssueTypes.onFirstCall().resolves([{ name: "Test Execution" }]);
+            context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
+            context.mock.method(jiraClient, "getIssueTypes", () => [{ name: "Test Execution" }]);
             const afterRunResult: CypressRunResultType = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;
@@ -475,9 +494,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             );
             // Workaround: yields control back to the configuration function so that the finally
             // block may run.
-            await new Promise((resolve) => {
+            await new Promise((r) => {
                 setTimeout(() => {
-                    resolve("ok");
+                    r("ok");
                 }, 10);
             });
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
@@ -499,7 +518,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
                             You can target existing test issues by adding a corresponding issue key:
 
-                              await it("CYP-123 xray upload demo should look for paragraph elements", () => {
+                              it("CYP-123 xray upload demo should look for paragraph elements", () => {
                                 // ...
                               });
 
@@ -522,7 +541,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
                             You can target existing test issues by adding a corresponding issue key:
 
-                              await it("CYP-123 xray upload demo should look for the anchor element", () => {
+                              it("CYP-123 xray upload demo should look for the anchor element", () => {
                                 // ...
                               });
 
@@ -545,7 +564,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
                             You can target existing test issues by adding a corresponding issue key:
 
-                              await it("CYP-123 xray upload demo should fail", () => {
+                              it("CYP-123 xray upload demo should fail", () => {
                                 // ...
                               });
 
@@ -575,14 +594,15 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             new PatCredentials("token"),
             new AxiosRestClient(axios)
         );
-        stub(context, "initClients").onFirstCall().resolves({
-            jiraClient: jiraClient,
-            kind: "cloud",
-            xrayClient: xrayClient,
+        context.mock.method(globalContext, "initClients", () => {
+            return {
+                jiraClient: jiraClient,
+                kind: "cloud",
+                xrayClient: xrayClient,
+            };
         });
-        stub(context, "initCucumberOptions")
-            .onFirstCall()
-            .resolves({
+        context.mock.method(globalContext, "initCucumberOptions", () => {
+            return {
                 downloadFeatures: false,
                 featureFileExtension: ".feature",
                 prefixes: {
@@ -596,8 +616,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 },
                 uploadFeatures: true,
-            });
-        jiraClient.getFields.resolves([
+            };
+        });
+        context.mock.method(jiraClient, "getFields", () => [
             {
                 clauseNames: [],
                 custom: false,
@@ -619,12 +640,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 searchable: false,
             },
         ]);
-        jiraClient.getIssueTypes.resolves([{ name: "Test Execution" }]);
-        xrayClient.importExecutionMultipart.onFirstCall().resolves("CYP-123");
-        xrayClient.importExecutionCucumberMultipart.onFirstCall().resolves("CYP-123");
-        xrayClient.importFeature
-            .onFirstCall()
-            .resolves({ errors: [], updatedOrCreatedIssues: ["CYP-222", "CYP-333", "CYP-555"] });
+        context.mock.method(jiraClient, "getIssueTypes", () => [{ name: "Test Execution" }]);
+        context.mock.method(xrayClient, "importExecutionMultipart", () => "CYP-123");
+        context.mock.method(xrayClient, "importExecutionCucumberMultipart", () => "CYP-123");
+        context.mock.method(xrayClient, "importFeature", () => {
+            return { errors: [], updatedOrCreatedIssues: ["CYP-222", "CYP-333", "CYP-555"] };
+        });
         const afterRunResult = JSON.parse(
             fs.readFileSync("./test/resources/runResult_13_0_0_mixed.json", "utf-8")
         ) as CypressRunResultType;
@@ -636,7 +657,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             },
             jira: {
                 projectKey: "CYP",
-                url: "https://example.org",
+                url: "http://localhost:1234",
             },
             plugin: {
                 debug: true,
@@ -660,7 +681,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         ]);
         assert.deepStrictEqual(message.mock.calls[1].arguments, [
             Level.SUCCESS,
-            "Uploaded Cypress test results to issue: CYP-123 (https://example.org/browse/CYP-123)",
+            "Uploaded Cypress test results to issue: CYP-123 (http://localhost:1234/browse/CYP-123)",
         ]);
         assert.deepStrictEqual(message.mock.calls[2].arguments, [
             Level.WARNING,
@@ -720,7 +741,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         await it("does not display a warning if the plugin was configured but disabled", async (context) => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             await configureXrayPlugin(mockedCypressEventEmitter, config, {
-                jira: { projectKey: "CYP", url: "https://example.org" },
+                jira: { projectKey: "CYP", url: "http://localhost:1234" },
                 plugin: { enabled: false },
             });
             syncFeatureFile(file);
@@ -731,10 +752,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         });
 
         await it("does not do anything if disabled", (context) => {
-            file.filePath = "./test/resources/features/taggedCloucontextd.feature";
             const message = context.mock.method(LOG, "message", context.mock.fn());
+            file.filePath = "./test/resources/features/taggedCloud.feature";
             pluginContext.getOptions().plugin.enabled = false;
-            setPluginContext(pluginContext);
+            globalContext.setGlobalContext(pluginContext);
             syncFeatureFile(file);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.INFO,
@@ -757,7 +778,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 prefixes: {},
                 uploadFeatures: true,
             };
-            setPluginContext(pluginContext);
+            globalContext.setGlobalContext(pluginContext);
             syncFeatureFile(file);
             assert.deepStrictEqual(addSynchronizationCommands.mock.calls[0].arguments, [
                 file,
@@ -779,7 +800,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 prefixes: {},
                 uploadFeatures: true,
             };
-            setPluginContext(pluginContext);
+            globalContext.setGlobalContext(pluginContext);
             file.filePath = "/something.js";
             syncFeatureFile(file);
             assert.strictEqual(addSynchronizationCommands.mock.callCount(), 0);

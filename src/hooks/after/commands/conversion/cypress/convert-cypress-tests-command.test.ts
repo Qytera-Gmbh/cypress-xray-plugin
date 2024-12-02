@@ -3,12 +3,7 @@ import { readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import {
-    initJiraOptions,
-    initPluginOptions,
-    initXrayOptions,
-    SimpleEvidenceCollection,
-} from "../../../../../context.js";
+import globalContext, { SimpleEvidenceCollection } from "../../../../../context.js";
 import type { CypressRunResult as CypressRunResult_V12 } from "../../../../../types/cypress/12.0.0/api.js";
 import type { CypressRunResultType } from "../../../../../types/cypress/cypress.js";
 import type { InternalCypressXrayPluginOptions } from "../../../../../types/plugin.js";
@@ -23,15 +18,15 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         beforeEach(() => {
             options = {
                 http: {},
-                jira: initJiraOptions(
+                jira: globalContext.initJiraOptions(
                     {},
                     {
                         projectKey: "CYP",
                         url: "http://localhost:1234",
                     }
                 ),
-                plugin: initPluginOptions({}, {}),
-                xray: initXrayOptions(
+                plugin: globalContext.initPluginOptions({}, {}),
+                xray: globalContext.initXrayOptions(
                     {},
                     {
                         uploadResults: true,

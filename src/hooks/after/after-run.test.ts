@@ -9,13 +9,7 @@ import { PatCredentials } from "../../client/authentication/credentials.js";
 import { AxiosRestClient } from "../../client/https/https.js";
 import { BaseJiraClient } from "../../client/jira/jira-client.js";
 import { ServerClient } from "../../client/xray/xray-client-server.js";
-import {
-    initCucumberOptions,
-    initJiraOptions,
-    initPluginOptions,
-    initXrayOptions,
-    SimpleEvidenceCollection,
-} from "../../context.js";
+import globalContext, { SimpleEvidenceCollection } from "../../context.js";
 import type { CypressRunResultType } from "../../types/cypress/cypress.js";
 import type { ClientCombination } from "../../types/plugin.js";
 import {
@@ -44,7 +38,7 @@ import { TransitionIssueCommand } from "../util/commands/jira/transition-issue-c
 import { ImportExecutionCucumberCommand } from "../util/commands/xray/import-execution-cucumber-command.js";
 import { ImportExecutionCypressCommand } from "../util/commands/xray/import-execution-cypress-command.js";
 import { ImportFeatureCommand } from "../util/commands/xray/import-feature-command.js";
-import { addUploadCommands } from "./after-run.js";
+import afterRun from "./after-run.js";
 import {
     ConvertInfoCloudCommand,
     ConvertInfoServerCommand,
@@ -64,7 +58,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
     let options: InternalCypressXrayPluginOptions;
     beforeEach(async () => {
         options = {
-            cucumber: await initCucumberOptions(
+            cucumber: await globalContext.initCucumberOptions(
                 {
                     env: { jsonEnabled: true },
                     excludeSpecPattern: "",
@@ -83,15 +77,15 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 }
             ),
             http: {},
-            jira: initJiraOptions(
+            jira: globalContext.initJiraOptions(
                 {},
                 {
                     projectKey: "CYP",
                     url: "http://localhost:1234",
                 }
             ),
-            plugin: initPluginOptions({}, {}),
-            xray: initXrayOptions({}, {}),
+            plugin: globalContext.initPluginOptions({}, {}),
+            xray: globalContext.initXrayOptions({}, {}),
         };
         const restClient = new AxiosRestClient(axios);
         clients = {
@@ -109,7 +103,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         };
     });
 
-    await describe(addUploadCommands.name, async () => {
+    await describe(afterRun.addUploadCommands.name, async () => {
         await describe("cypress", async () => {
             let result: CypressRunResultType;
 
@@ -121,7 +115,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             await it("adds commands necessary for cypress results upload", async () => {
                 const graph = new ExecutableGraph<Command>();
-                await addUploadCommands(
+                await afterRun.addUploadCommands(
                     result,
                     ".",
                     options,
@@ -245,7 +239,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 options.jira.testExecutionIssue = {
                     key: "CYP-415",
                 };
-                await addUploadCommands(
+                await afterRun.addUploadCommands(
                     result,
                     ".",
                     options,
@@ -314,7 +308,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                     key: "CYP-415",
                 };
-                await addUploadCommands(
+                await afterRun.addUploadCommands(
                     result,
                     ".",
                     options,
@@ -350,7 +344,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         summary: "My summary",
                     },
                 };
-                await addUploadCommands(
+                await afterRun.addUploadCommands(
                     result,
                     ".",
                     options,
@@ -384,7 +378,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         ["customfield_12345"]: "bonjour",
                     },
                 };
-                await addUploadCommands(
+                await afterRun.addUploadCommands(
                     result,
                     ".",
                     options,
@@ -411,7 +405,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             await it("attaches videos", async () => {
                 const graph = new ExecutableGraph<Command>();
                 options.jira.attachVideos = true;
-                await addUploadCommands(
+                await afterRun.addUploadCommands(
                     result,
                     ".",
                     options,
@@ -457,7 +451,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 };
                 clients.kind = "server";
-                await addUploadCommands(
+                await afterRun.addUploadCommands(
                     result,
                     ".",
                     options,
@@ -496,7 +490,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 };
                 clients.kind = "cloud";
-                await addUploadCommands(
+                await afterRun.addUploadCommands(
                     result,
                     ".",
                     options,
@@ -549,7 +543,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     context.mock.timers.enable({ apis: ["Date"] });
                     context.mock.timers.tick(12345);
                     const graph = new ExecutableGraph<Command>();
-                    await addUploadCommands(
+                    await afterRun.addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -697,7 +691,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 await it("uses configured test plan data", async () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     const graph = new ExecutableGraph<Command>();
-                    await addUploadCommands(
+                    await afterRun.addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -737,7 +731,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     options.jira.fields.testPlan = "customfield_12345";
                     const graph = new ExecutableGraph<Command>();
-                    await addUploadCommands(
+                    await afterRun.addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -765,7 +759,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 await it("uses configured test environment data", async () => {
                     options.xray.testEnvironments = ["DEV"];
                     const graph = new ExecutableGraph<Command>();
-                    await addUploadCommands(
+                    await afterRun.addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -805,7 +799,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     options.xray.testEnvironments = ["DEV"];
                     options.jira.fields.testEnvironments = "customfield_67890";
                     const graph = new ExecutableGraph<Command>();
-                    await addUploadCommands(
+                    await afterRun.addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -834,7 +828,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     options.jira.testPlanIssueKey = "CYP-42";
                     options.xray.testEnvironments = ["DEV"];
                     const graph = new ExecutableGraph<Command>();
-                    await addUploadCommands(
+                    await afterRun.addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -875,7 +869,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     options.xray.testEnvironments = ["DEV"];
                     options.jira.fields.testEnvironments = "customfield_67890";
                     const graph = new ExecutableGraph<Command>();
-                    await addUploadCommands(
+                    await afterRun.addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -915,7 +909,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
                 await it("adds commands necessary for cucumber results upload", async () => {
                     const graph = new ExecutableGraph<Command>();
-                    await addUploadCommands(
+                    await afterRun.addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -983,7 +977,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         },
                         key: "CYP-42",
                     };
-                    await addUploadCommands(
+                    await afterRun.addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -1178,7 +1172,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 const preprocessorOptions = options.cucumber as InternalCucumberOptions;
                 preprocessorOptions.preprocessor = undefined;
                 await assert.rejects(
-                    addUploadCommands(
+                    afterRun.addUploadCommands(
                         cypressResult,
                         ".",
                         options,
@@ -1198,7 +1192,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 const message = context.mock.method(LOG, "message", context.mock.fn());
                 cypressResult.runs = [];
                 const graph = new ExecutableGraph<Command>();
-                await addUploadCommands(
+                await afterRun.addUploadCommands(
                     cypressResult,
                     ".",
                     options,
@@ -1257,7 +1251,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         LOG
                     )
                 );
-                await addUploadCommands(
+                await afterRun.addUploadCommands(
                     cypressResult,
                     ".",
                     options,
@@ -1320,7 +1314,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 context.mock.timers.enable({ apis: ["Date"] });
                 context.mock.timers.tick(12345);
                 const graph = new ExecutableGraph<Command>();
-                await addUploadCommands(
+                await afterRun.addUploadCommands(
                     cypressResult,
                     ".",
                     options,
