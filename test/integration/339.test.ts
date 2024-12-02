@@ -39,8 +39,8 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                 testFiles: [
                     {
                         content: dedent(`
-                            await describe("request", () => {
-                                await it("${test.testIssueKey} does something", () => {
+                            describe("request", () => {
+                                it("${test.testIssueKey} does something", () => {
                                     cy.request("${LOCAL_SERVER.url}");
                                 });
                             });

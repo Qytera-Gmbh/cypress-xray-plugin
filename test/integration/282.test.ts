@@ -113,9 +113,9 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                 testFiles: [
                     {
                         content: dedent(`
-                            await describe("${test.testIssueKey} template spec", () => {
-                                await it("passes", () => {
-                                    cy.visawait it("${LOCAL_SERVER.url}");
+                            describe("${test.testIssueKey} template spec", () => {
+                                it("passes", () => {
+                                    cy.visit("${LOCAL_SERVER.url}");
                                 });
                             });
                         `),
