@@ -29,6 +29,7 @@ async function importOptionalDependency<T>(packageName: string): Promise<T> {
 /**
  * Workaround until module mocking becomes a stable feature. The current approach allows replacing
  * the `_import` function with a mocked one.
+ *
  * @see https://nodejs.org/docs/latest-v23.x/api/test.html#mockmodulespecifier-options
  */
 const EXPORTS = {
