@@ -346,7 +346,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
             ]);
         });
 
-        await it.only("adds upload commands", async (context) => {
+        await it("adds upload commands", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
             const addUploadCommands = context.mock.method(
