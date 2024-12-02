@@ -37,14 +37,14 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
         await it(test.title, async () => {
             const project = setupCypressProject({
                 configFileContent: dedent(`
-                    const preprocessor = require("@badeball/cypress-cucumber-preprocessor");
-                    const createEsbuildPlugin = require("@badeball/cypress-cucumber-preprocessor/esbuild");
-                    const createBundler = require("@bahmutov/cypress-esbuild-preprocessor");
-                    const { defineConfig } = require("cypress");
-                    const fix = require("cypress-on-fix");
-                    const { configureXrayPlugin, syncFeatureFile } = require("cypress-xray-plugin");
+                    import preprocessor from "@badeball/cypress-cucumber-preprocessor";
+                    import createEsbuildPlugin from "@badeball/cypress-cucumber-preprocessor/esbuild";
+                    import createBundler from "@bahmutov/cypress-esbuild-preprocessor";
+                    import { defineConfig } from "cypress";
+                    import fix from "cypress-on-fix";
+                    import { configureXrayPlugin, syncFeatureFile } from "cypress-xray-plugin";
 
-                    module.exports = defineConfig({
+                    export default defineConfig({
                         video: false,
                         chromeWebSecurity: false,
                         e2e: {

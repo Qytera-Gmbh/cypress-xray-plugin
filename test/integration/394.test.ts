@@ -36,7 +36,7 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                 testFiles: [
                     {
                         content: dedent(`
-                            const { enqueueTask } = require("cypress-xray-plugin/tasks");
+                            import { enqueueTask } from "cypress-xray-plugin/tasks";
 
                             describe("evidence", () => {
                                 it("${test.testIssueKey} adds evidence", () => {

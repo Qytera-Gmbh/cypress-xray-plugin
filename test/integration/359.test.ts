@@ -90,13 +90,13 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
         await it(test.title, async () => {
             const project = setupCypressProject({
                 configFileContent: dedent(`
-                    const { defineConfig } = require("cypress");
-                    const fix = require("cypress-on-fix");
-                    const { configureXrayPlugin } = require("cypress-xray-plugin");
+                    import { defineConfig } from "cypress";
+                    import fix from "cypress-on-fix";
+                    import { configureXrayPlugin } from "cypress-xray-plugin";
 
                     const LABELS = [];
 
-                    module.exports = defineConfig({
+                    export default defineConfig({
                         video: false,
                         chromeWebSecurity: false,
                         e2e: {

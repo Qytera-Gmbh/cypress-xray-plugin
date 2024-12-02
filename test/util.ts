@@ -1,8 +1,8 @@
 import ansiColors from "ansi-colors";
-import fs from "fs";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { before } from "node:test";
-import os from "os";
-import path from "path";
 import type {
     CypressFailedRunResultType,
     CypressRunResultType,

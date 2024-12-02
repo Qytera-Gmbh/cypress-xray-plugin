@@ -1,4 +1,4 @@
-import http from "http";
+import http from "node:http";
 import { LOCAL_SERVER } from "./server-config.js";
 
 const SERVER = http.createServer((req, res) => {

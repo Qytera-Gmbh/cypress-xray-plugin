@@ -1,6 +1,6 @@
 import * as childProcess from "child_process";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { dedent } from "../src/util/dedent.js";
 import { TEST_TMP_DIR } from "./util.js";
 
@@ -9,11 +9,11 @@ const ENV_BACKUP = { ...process.env };
 import ansiColors from "ansi-colors";
 import "dotenv/config";
 
-const CYPRESS_EXECUTABLE = path.join(__dirname, "..", "node_modules", ".bin", "cypress");
+const CYPRESS_EXECUTABLE = path.join(import.meta.dirname, "..", "node_modules", ".bin", "cypress");
 
 const CONFIG_FILE = dedent(`
-    const { defineConfig } = require("cypress");
-    const { configureXrayPlugin } = require("cypress-xray-plugin");
+    import { defineConfig } from "cypress";
+    import { configureXrayPlugin } from "cypress-xray-plugin";
 
     async function setupNodeEvents(on, config) {
         await configureXrayPlugin(on, config, {
@@ -30,7 +30,7 @@ const CONFIG_FILE = dedent(`
         return config;
     }
 
-    module.exports = defineConfig({
+    export default defineConfig({
         e2e: {
             specPattern: "*.cy.js",
             setupNodeEvents
@@ -78,7 +78,7 @@ export function setupCypressProject(project: {
     fs.writeFileSync(path.join(supportDirectory, "e2e.js"), project.e2eFileContent ?? E2E_FILE);
 
     fs.mkdirSync(path.join(directory, "node_modules"), { recursive: true });
-    const sourceNodeModulesDirectory = path.join(__dirname, "..", "node_modules");
+    const sourceNodeModulesDirectory = path.join(import.meta.dirname, "..", "node_modules");
     for (const entry of fs.readdirSync(sourceNodeModulesDirectory, { withFileTypes: true })) {
         fs.symlinkSync(
             path.join(sourceNodeModulesDirectory, entry.name),
@@ -86,7 +86,7 @@ export function setupCypressProject(project: {
         );
     }
     fs.symlinkSync(
-        path.join(__dirname, "..", "dist"),
+        path.join(import.meta.dirname, "..", "dist"),
         path.join(directory, "node_modules", "cypress-xray-plugin")
     );
 
