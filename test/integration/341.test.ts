@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
@@ -170,12 +169,12 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                     (r) => r.jira.summary === "included cucumber test"
                 );
                 expectToExist(includedTest);
-                expect(includedTest.status?.name).to.eq(test.xrayPassedStatus);
+                assert.strictEqual(includedTest.status?.name, test.xrayPassedStatus);
                 const skippedTest = testResults.find(
                     (r) => r.jira.summary === "skipped cucumber test"
                 );
                 expectToExist(skippedTest);
-                expect(skippedTest.status?.name).to.eq(test.xraySkippedStatus);
+                assert.strictEqual(skippedTest.status?.name, test.xraySkippedStatus);
             }
 
             if (test.service === "server") {
@@ -185,10 +184,10 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                 ).getTestExecution(testExecutionIssueKey);
                 const includedTest = testResults.find((r) => r.key === test.testKeys.included);
                 expectToExist(includedTest);
-                expect(includedTest.status).to.eq(test.xrayPassedStatus);
+                assert.strictEqual(includedTest.status, test.xrayPassedStatus);
                 const skippedTest = testResults.find((r) => r.key === test.testKeys.skipped);
                 expectToExist(skippedTest);
-                expect(skippedTest.status).to.eq(test.xraySkippedStatus);
+                assert.strictEqual(skippedTest.status, test.xraySkippedStatus);
             }
         });
     }

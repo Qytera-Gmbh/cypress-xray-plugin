@@ -1,5 +1,5 @@
 import ansiColors from "ansi-colors";
-import { expect } from "chai";
+import assert from "node:assert";
 import fs from "node:fs";
 import { join, relative } from "node:path";
 import { cwd } from "node:process";
@@ -102,12 +102,15 @@ await describe(relative(cwd(), import.meta.filename), { timeout: 180000 }, async
                 const fileContent = JSON.parse(
                     fs.readFileSync(join(entry.parentPath, entry.name), "utf8")
                 ) as LoggedRequest;
-                expect(fileContent.body).to.contain(
-                    '"evidence":[{"contentType":"application/json","data":"ImxvY2FsaG9zdDo4MDgwIg=="'
+                assert.strictEqual(
+                    (fileContent.body as string).includes(
+                        '"evidence":[{"contentType":"application/json","data":"ImxvY2FsaG9zdDo4MDgwIg=="'
+                    ),
+                    true
                 );
                 return;
             }
-            expect.fail(
+            assert.fail(
                 `Expected to find a logged import execution request in log directory ${ansiColors.red(
                     project.logDirectory
                 )}, but did not find any`
