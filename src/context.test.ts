@@ -1726,6 +1726,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             await it("throws if the xray credentials are invalid", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
+                context.mock.method(LOG, "logErrorToFile", context.mock.fn());
                 const httpClients = {
                     jira: new AxiosRestClient(axios),
                     xray: new AxiosRestClient(axios),
