@@ -1,31 +1,27 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import axios, { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
+import assert from "node:assert";
+import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import { stub } from "sinon";
-import { getMockedLogger, getMockedRestClient } from "../test/mocks.js";
 import {
     BasicAuthCredentials,
     JwtCredentials,
     PatCredentials,
 } from "./client/authentication/credentials.js";
+import { AxiosRestClient } from "./client/https/https.js";
 import { BaseJiraClient } from "./client/jira/jira-client.js";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud.js";
 import { ServerClient } from "./client/xray/xray-client-server.js";
 import {
-    PluginContext,
-    SimpleEvidenceCollection,
     initClients,
     initCucumberOptions,
     initHttpClients,
     initJiraOptions,
     initPluginOptions,
     initXrayOptions,
+    PluginContext,
+    SimpleEvidenceCollection,
 } from "./context.js";
-
-import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
-import { relative } from "node:path";
-import { AxiosRestClient } from "./client/https/https.js";
 import type { User } from "./types/jira/responses/user.js";
 import type {
     InternalCucumberOptions,
@@ -35,11 +31,9 @@ import type {
     InternalXrayOptions,
 } from "./types/plugin.js";
 import { dedent } from "./util/dedent.js";
-import * as dependencies from "./util/dependencies.js";
+import dependencies from "./util/dependencies.js";
 import { ExecutableGraph } from "./util/graph/executable-graph.js";
-import { CapturingLogger, Level } from "./util/logging.js";
-
-chai.use(chaiAsPromised);
+import { CapturingLogger, Level, LOG } from "./util/logging.js";
 
 await describe(relative(cwd(), import.meta.filename), async () => {
     await describe("the plugin context configuration", async () => {
@@ -50,41 +44,41 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         {},
                         {
                             projectKey: "PRJ",
-                            url: "https://example.org",
+                            url: "http://localhost:1234",
                         }
                     );
                     await it("attachVideos", () => {
-                        expect(jiraOptions.attachVideos).to.eq(false);
+                        assert.strictEqual(jiraOptions.attachVideos, false);
                     });
                     await describe("fields", async () => {
                         await it("testEnvironments", () => {
-                            expect(jiraOptions.fields.testEnvironments).to.eq(undefined);
+                            assert.strictEqual(jiraOptions.fields.testEnvironments, undefined);
                         });
                         await it("testPlan", () => {
-                            expect(jiraOptions.fields.testPlan).to.eq(undefined);
+                            assert.strictEqual(jiraOptions.fields.testPlan, undefined);
                         });
                     });
                     await it("testExecutionIssue", () => {
-                        expect(jiraOptions.testExecutionIssue).to.eq(undefined);
+                        assert.strictEqual(jiraOptions.testExecutionIssue, undefined);
                     });
                     await it("testPlanIssueKey", () => {
-                        expect(jiraOptions.testPlanIssueKey).to.eq(undefined);
+                        assert.strictEqual(jiraOptions.testPlanIssueKey, undefined);
                     });
                 });
 
                 await describe("plugin", async () => {
                     const pluginOptions: InternalPluginOptions = initPluginOptions({}, {});
                     await it("debug", () => {
-                        expect(pluginOptions.debug).to.eq(false);
+                        assert.strictEqual(pluginOptions.debug, false);
                     });
                     await it("enabled", () => {
-                        expect(pluginOptions.enabled).to.eq(true);
+                        assert.strictEqual(pluginOptions.enabled, true);
                     });
                     await it("logDirectory", () => {
-                        expect(pluginOptions.logDirectory).to.eq("logs");
+                        assert.strictEqual(pluginOptions.logDirectory, "logs");
                     });
                     await it("normalizeScreenshotNames", () => {
-                        expect(pluginOptions.normalizeScreenshotNames).to.eq(false);
+                        assert.strictEqual(pluginOptions.normalizeScreenshotNames, false);
                     });
                 });
 
@@ -92,40 +86,40 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     const xrayOptions: InternalXrayOptions = initXrayOptions({}, {});
                     await describe("status", async () => {
                         await it("failed", () => {
-                            expect(xrayOptions.status.failed).to.eq(undefined);
+                            assert.strictEqual(xrayOptions.status.failed, undefined);
                         });
                         await it("passed", () => {
-                            expect(xrayOptions.status.passed).to.eq(undefined);
+                            assert.strictEqual(xrayOptions.status.passed, undefined);
                         });
                         await it("pending", () => {
-                            expect(xrayOptions.status.pending).to.eq(undefined);
+                            assert.strictEqual(xrayOptions.status.pending, undefined);
                         });
                         await it("skipped", () => {
-                            expect(xrayOptions.status.skipped).to.eq(undefined);
+                            assert.strictEqual(xrayOptions.status.skipped, undefined);
                         });
                         await describe("step", async () => {
                             await it("failed", () => {
-                                expect(xrayOptions.status.step?.failed).to.eq(undefined);
+                                assert.strictEqual(xrayOptions.status.step?.failed, undefined);
                             });
                             await it("passed", () => {
-                                expect(xrayOptions.status.step?.passed).to.eq(undefined);
+                                assert.strictEqual(xrayOptions.status.step?.passed, undefined);
                             });
                             await it("pending", () => {
-                                expect(xrayOptions.status.step?.pending).to.eq(undefined);
+                                assert.strictEqual(xrayOptions.status.step?.pending, undefined);
                             });
                             await it("skipped", () => {
-                                expect(xrayOptions.status.step?.skipped).to.eq(undefined);
+                                assert.strictEqual(xrayOptions.status.step?.skipped, undefined);
                             });
                         });
                     });
                     await it("testEnvironments", () => {
-                        expect(xrayOptions.testEnvironments).to.eq(undefined);
+                        assert.strictEqual(xrayOptions.testEnvironments, undefined);
                     });
                     await it("uploadResults", () => {
-                        expect(xrayOptions.uploadResults).to.eq(true);
+                        assert.strictEqual(xrayOptions.uploadResults, true);
                     });
                     await it("uploadScreenshots", () => {
-                        expect(xrayOptions.uploadScreenshots).to.eq(true);
+                        assert.strictEqual(xrayOptions.uploadScreenshots, true);
                     });
                 });
 
@@ -147,19 +141,19 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         );
                     });
                     await it("downloadFeatures", () => {
-                        expect(cucumberOptions?.downloadFeatures).to.eq(false);
+                        assert.strictEqual(cucumberOptions?.downloadFeatures, false);
                     });
 
                     await describe("prefixes", async () => {
                         await it("precondition", () => {
-                            expect(cucumberOptions?.prefixes.precondition).to.eq(undefined);
+                            assert.strictEqual(cucumberOptions?.prefixes.precondition, undefined);
                         });
                         await it("test", () => {
-                            expect(cucumberOptions?.prefixes.test).to.eq(undefined);
+                            assert.strictEqual(cucumberOptions?.prefixes.test, undefined);
                         });
                     });
                     await it("uploadFeatures", () => {
-                        expect(cucumberOptions?.uploadFeatures).to.eq(false);
+                        assert.strictEqual(cucumberOptions?.uploadFeatures, false);
                     });
                 });
             });
@@ -171,10 +165,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             {
                                 attachVideos: true,
                                 projectKey: "PRJ",
-                                url: "https://example.org",
+                                url: "http://localhost:1234",
                             }
                         );
-                        expect(jiraOptions.attachVideos).to.eq(true);
+                        assert.strictEqual(jiraOptions.attachVideos, true);
                     });
                     await describe("fields", async () => {
                         await it("testEnvironments", () => {
@@ -185,10 +179,13 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                         testEnvironments: "Testumgebungen",
                                     },
                                     projectKey: "PRJ",
-                                    url: "https://example.org",
+                                    url: "http://localhost:1234",
                                 }
                             );
-                            expect(jiraOptions.fields.testEnvironments).to.eq("Testumgebungen");
+                            assert.strictEqual(
+                                jiraOptions.fields.testEnvironments,
+                                "Testumgebungen"
+                            );
                         });
                         await it("testPlan", () => {
                             const jiraOptions = initJiraOptions(
@@ -198,10 +195,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                         testPlan: "Plan de Test",
                                     },
                                     projectKey: "PRJ",
-                                    url: "https://example.org",
+                                    url: "http://localhost:1234",
                                 }
                             );
-                            expect(jiraOptions.fields.testPlan).to.eq("Plan de Test");
+                            assert.strictEqual(jiraOptions.fields.testPlan, "Plan de Test");
                         });
                     });
                     await it("testExecutionIssue", () => {
@@ -210,10 +207,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             {
                                 projectKey: "PRJ",
                                 testExecutionIssue: { fields: { summary: "hello" } },
-                                url: "https://example.org",
+                                url: "http://localhost:1234",
                             }
                         );
-                        expect(jiraOptions.testExecutionIssue).to.deep.eq({
+                        assert.deepStrictEqual(jiraOptions.testExecutionIssue, {
                             fields: { summary: "hello" },
                         });
                     });
@@ -223,20 +220,20 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             {
                                 projectKey: "PRJ",
                                 testPlanIssueKey: "PRJ-456",
-                                url: "https://example.org",
+                                url: "http://localhost:1234",
                             }
                         );
-                        expect(jiraOptions.testPlanIssueKey).to.eq("PRJ-456");
+                        assert.strictEqual(jiraOptions.testPlanIssueKey, "PRJ-456");
                     });
                     await it("url", () => {
                         const jiraOptions = initJiraOptions(
                             {},
                             {
                                 projectKey: "PRJ",
-                                url: "https://example.org",
+                                url: "http://localhost:1234",
                             }
                         );
-                        expect(jiraOptions.url).to.eq("https://example.org");
+                        assert.strictEqual(jiraOptions.url, "http://localhost:1234");
                     });
                 });
 
@@ -248,7 +245,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 debug: true,
                             }
                         );
-                        expect(pluginOptions.debug).to.eq(true);
+                        assert.strictEqual(pluginOptions.debug, true);
                     });
                     await it("enabled", () => {
                         const pluginOptions = initPluginOptions(
@@ -257,7 +254,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 enabled: false,
                             }
                         );
-                        expect(pluginOptions.enabled).to.eq(false);
+                        assert.strictEqual(pluginOptions.enabled, false);
                     });
                     await it("logDirectory", () => {
                         const pluginOptions = initPluginOptions(
@@ -266,7 +263,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 logDirectory: "./logs/",
                             }
                         );
-                        expect(pluginOptions.logDirectory).to.eq("./logs/");
+                        assert.strictEqual(pluginOptions.logDirectory, "./logs/");
                     });
                     await it("normalizeScreenshotNames", () => {
                         const pluginOptions = initPluginOptions(
@@ -275,7 +272,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 normalizeScreenshotNames: true,
                             }
                         );
-                        expect(pluginOptions.normalizeScreenshotNames).to.eq(true);
+                        assert.strictEqual(pluginOptions.normalizeScreenshotNames, true);
                     });
                 });
 
@@ -290,7 +287,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                     },
                                 }
                             );
-                            expect(xrayOptions.status.failed).to.eq("BAD");
+                            assert.strictEqual(xrayOptions.status.failed, "BAD");
                         });
                         await it("passed", () => {
                             const xrayOptions = initXrayOptions(
@@ -301,7 +298,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                     },
                                 }
                             );
-                            expect(xrayOptions.status.passed).to.eq("GOOD");
+                            assert.strictEqual(xrayOptions.status.passed, "GOOD");
                         });
                         await it("pending", () => {
                             const xrayOptions = initXrayOptions(
@@ -312,7 +309,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                     },
                                 }
                             );
-                            expect(xrayOptions.status.pending).to.eq("PENDULUM");
+                            assert.strictEqual(xrayOptions.status.pending, "PENDULUM");
                         });
                         await it("skipped", () => {
                             const xrayOptions = initXrayOptions(
@@ -323,7 +320,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                     },
                                 }
                             );
-                            expect(xrayOptions.status.skipped).to.eq("SKIPPING STONE");
+                            assert.strictEqual(xrayOptions.status.skipped, "SKIPPING STONE");
                         });
                         await describe("step", async () => {
                             await it("failed", () => {
@@ -337,7 +334,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                         },
                                     }
                                 );
-                                expect(xrayOptions.status.step?.failed).to.eq("BAD");
+                                assert.strictEqual(xrayOptions.status.step?.failed, "BAD");
                             });
                             await it("passed", () => {
                                 const xrayOptions = initXrayOptions(
@@ -350,7 +347,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                         },
                                     }
                                 );
-                                expect(xrayOptions.status.step?.passed).to.eq("GOOD");
+                                assert.strictEqual(xrayOptions.status.step?.passed, "GOOD");
                             });
                             await it("pending", () => {
                                 const xrayOptions = initXrayOptions(
@@ -363,7 +360,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                         },
                                     }
                                 );
-                                expect(xrayOptions.status.step?.pending).to.eq("PENDULUM");
+                                assert.strictEqual(xrayOptions.status.step?.pending, "PENDULUM");
                             });
                             await it("skipped", () => {
                                 const xrayOptions = initXrayOptions(
@@ -376,7 +373,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                         },
                                     }
                                 );
-                                expect(xrayOptions.status.step?.skipped).to.eq("SKIPPING STONE");
+                                assert.strictEqual(
+                                    xrayOptions.status.step?.skipped,
+                                    "SKIPPING STONE"
+                                );
                             });
                         });
                     });
@@ -388,7 +388,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 testEnvironments: ["Test", "Prod"],
                             }
                         );
-                        expect(xrayOptions.testEnvironments).to.deep.eq(["Test", "Prod"]);
+                        assert.deepStrictEqual(xrayOptions.testEnvironments, ["Test", "Prod"]);
                     });
 
                     await it("uploadResults", () => {
@@ -398,7 +398,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 uploadResults: false,
                             }
                         );
-                        expect(xrayOptions.uploadResults).to.eq(false);
+                        assert.strictEqual(xrayOptions.uploadResults, false);
                     });
 
                     await it("uploadScreenshots", () => {
@@ -408,7 +408,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 uploadScreenshots: false,
                             }
                         );
-                        expect(xrayOptions.uploadScreenshots).to.eq(false);
+                        assert.strictEqual(xrayOptions.uploadScreenshots, false);
                     });
                 });
 
@@ -428,7 +428,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 featureFileExtension: ".feature",
                             }
                         );
-                        expect(cucumberOptions?.downloadFeatures).to.eq(true);
+                        assert.strictEqual(cucumberOptions?.downloadFeatures, true);
                     });
                     await describe("prefixes", async () => {
                         await it("precondition", async () => {
@@ -446,7 +446,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                     prefixes: { precondition: "PreconditionYeah_" },
                                 }
                             );
-                            expect(cucumberOptions?.prefixes.precondition).to.eq(
+                            assert.strictEqual(
+                                cucumberOptions?.prefixes.precondition,
                                 "PreconditionYeah_"
                             );
                         });
@@ -465,7 +466,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                     prefixes: { test: "TestSomething_" },
                                 }
                             );
-                            expect(cucumberOptions?.prefixes.test).to.eq("TestSomething_");
+                            assert.strictEqual(cucumberOptions?.prefixes.test, "TestSomething_");
                         });
                     });
                     await it("uploadFeatures", async () => {
@@ -483,7 +484,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 uploadFeatures: true,
                             }
                         );
-                        expect(cucumberOptions?.uploadFeatures).to.eq(true);
+                        assert.strictEqual(cucumberOptions?.uploadFeatures, true);
                     });
                 });
             });
@@ -495,9 +496,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         };
                         const jiraOptions = initJiraOptions(env, {
                             projectKey: "CYP",
-                            url: "https://example.org",
+                            url: "http://localhost:1234",
                         });
-                        expect(jiraOptions.projectKey).to.eq("ABC");
+                        assert.strictEqual(jiraOptions.projectKey, "ABC");
                     });
 
                     await it("JIRA_ATTACH_VIDEOS", () => {
@@ -507,9 +508,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const jiraOptions = initJiraOptions(env, {
                             attachVideos: false,
                             projectKey: "CYP",
-                            url: "https://example.org",
+                            url: "http://localhost:1234",
                         });
-                        expect(jiraOptions.attachVideos, true);
+                        assert.strictEqual(jiraOptions.attachVideos, true);
                     });
 
                     await describe("fields", async () => {
@@ -522,9 +523,12 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                     testEnvironments: "customfield_12345",
                                 },
                                 projectKey: "PRJ",
-                                url: "https://example.org",
+                                url: "http://localhost:1234",
                             });
-                            expect(jiraOptions.fields.testEnvironments).to.eq("customfield_98765");
+                            assert.strictEqual(
+                                jiraOptions.fields.testEnvironments,
+                                "customfield_98765"
+                            );
                         });
 
                         await it("JIRA_FIELDS_TEST_PLAN", () => {
@@ -536,9 +540,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                     testPlan: "customfield_12345",
                                 },
                                 projectKey: "PRJ",
-                                url: "https://example.org",
+                                url: "http://localhost:1234",
                             });
-                            expect(jiraOptions.fields.testPlan).to.eq("customfield_98765");
+                            assert.strictEqual(jiraOptions.fields.testPlan, "customfield_98765");
                         });
                     });
 
@@ -558,9 +562,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                     description: "hey",
                                 },
                             },
-                            url: "https://example.org",
+                            url: "http://localhost:1234",
                         });
-                        expect(jiraOptions.testExecutionIssue).to.deep.eq({
+                        assert.deepStrictEqual(jiraOptions.testExecutionIssue, {
                             fields: {
                                 ["customfield_12345"]: "Jeff",
                                 summary: "Hello bonjour",
@@ -575,20 +579,20 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const jiraOptions = initJiraOptions(env, {
                             projectKey: "CYP",
                             testPlanIssueKey: "CYP-123",
-                            url: "https://example.org",
+                            url: "http://localhost:1234",
                         });
-                        expect(jiraOptions.testPlanIssueKey).to.eq("CYP-456");
+                        assert.strictEqual(jiraOptions.testPlanIssueKey, "CYP-456");
                     });
 
                     await it("JIRA_URL", () => {
                         const env = {
-                            ["JIRA_URL"]: "https://example.org",
+                            ["JIRA_URL"]: "http://localhost:1234",
                         };
                         const jiraOptions = initJiraOptions(env, {
                             projectKey: "CYP",
                             url: "https://some.domain.org",
                         });
-                        expect(jiraOptions.url).to.eq("https://example.org");
+                        assert.strictEqual(jiraOptions.url, "http://localhost:1234");
                     });
                 });
                 await describe("xray", async () => {
@@ -601,7 +605,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 failed: "ERROR",
                             },
                         });
-                        expect(xrayOptions.status.failed).to.eq("no");
+                        assert.strictEqual(xrayOptions.status.failed, "no");
                     });
 
                     await it("XRAY_STATUS_PASSED", () => {
@@ -613,7 +617,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 passed: "FLYBY",
                             },
                         });
-                        expect(xrayOptions.status.passed).to.eq("ok");
+                        assert.strictEqual(xrayOptions.status.passed, "ok");
                     });
 
                     await it("XRAY_STATUS_PENDING", () => {
@@ -625,7 +629,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 pending: "PENCIL",
                             },
                         });
-                        expect(xrayOptions.status.pending).to.eq("pendulum");
+                        assert.strictEqual(xrayOptions.status.pending, "pendulum");
                     });
 
                     await it("XRAY_STATUS_SKIPPED", () => {
@@ -637,7 +641,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 skipped: "HOP",
                             },
                         });
-                        expect(xrayOptions.status.skipped).to.eq("ski-ba-bop-ba-dop-bop");
+                        assert.strictEqual(xrayOptions.status.skipped, "ski-ba-bop-ba-dop-bop");
                     });
 
                     await it("XRAY_STATUS_STEP_FAILED", () => {
@@ -651,7 +655,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 },
                             },
                         });
-                        expect(xrayOptions.status.step?.failed).to.eq("no");
+                        assert.strictEqual(xrayOptions.status.step?.failed, "no");
                     });
 
                     await it("XRAY_STATUS_STEP_PASSED", () => {
@@ -663,7 +667,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 step: { passed: "FLYBY" },
                             },
                         });
-                        expect(xrayOptions.status.step?.passed).to.eq("ok");
+                        assert.strictEqual(xrayOptions.status.step?.passed, "ok");
                     });
 
                     await it("XRAY_STATUS_STEP_PENDING", () => {
@@ -675,7 +679,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 step: { pending: "PENCIL" },
                             },
                         });
-                        expect(xrayOptions.status.step?.pending).to.eq("pendulum");
+                        assert.strictEqual(xrayOptions.status.step?.pending, "pendulum");
                     });
 
                     await it("XRAY_STATUS_STEP_SKIPPED", () => {
@@ -687,7 +691,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 step: { skipped: "HOP" },
                             },
                         });
-                        expect(xrayOptions.status.step?.skipped).to.eq("ski-ba-bop-ba-dop-bop");
+                        assert.strictEqual(
+                            xrayOptions.status.step?.skipped,
+                            "ski-ba-bop-ba-dop-bop"
+                        );
                     });
 
                     await it("XRAY_TEST_ENVIRONMENTS", () => {
@@ -697,7 +704,11 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const xrayOptions = initXrayOptions(env, {
                             testEnvironments: ["A", "B", "C"],
                         });
-                        expect(xrayOptions.testEnvironments).to.deep.eq(["false", "bonjour", "5"]);
+                        assert.deepStrictEqual(xrayOptions.testEnvironments, [
+                            "false",
+                            "bonjour",
+                            "5",
+                        ]);
                     });
 
                     await it("XRAY_UPLOAD_RESULTS", () => {
@@ -707,7 +718,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const xrayOptions = initXrayOptions(env, {
                             uploadResults: true,
                         });
-                        expect(xrayOptions.uploadResults, false);
+                        assert.strictEqual(xrayOptions.uploadResults, false);
                     });
 
                     await it("XRAY_UPLOAD_SCREENSHOTS", () => {
@@ -717,7 +728,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const xrayOptions = initXrayOptions(env, {
                             uploadScreenshots: true,
                         });
-                        expect(xrayOptions.uploadScreenshots, false);
+                        assert.strictEqual(xrayOptions.uploadScreenshots, false);
                     });
                 });
                 await describe("cucumber", async () => {
@@ -738,7 +749,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 featureFileExtension: ".feature",
                             }
                         );
-                        expect(cucumberOptions?.featureFileExtension).to.eq(".feature.file");
+                        assert.strictEqual(cucumberOptions?.featureFileExtension, ".feature.file");
                     });
 
                     await it("CUCUMBER_DOWNLOAD_FEATURES", async () => {
@@ -759,7 +770,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 featureFileExtension: ".feature",
                             }
                         );
-                        expect(cucumberOptions?.downloadFeatures, true);
+                        assert.strictEqual(cucumberOptions?.downloadFeatures, true);
                     });
 
                     await it("CUCUMBER_PREFIXES_PRECONDITION", async () => {
@@ -780,7 +791,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 prefixes: { precondition: "SmallPrecondition:" },
                             }
                         );
-                        expect(cucumberOptions?.prefixes.precondition).to.eq("BigPrecondition:");
+                        assert.strictEqual(
+                            cucumberOptions?.prefixes.precondition,
+                            "BigPrecondition:"
+                        );
                     });
 
                     await it("CUCUMBER_PREFIXES_TEST", async () => {
@@ -801,7 +815,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 prefixes: { test: "SmallTest:" },
                             }
                         );
-                        expect(cucumberOptions?.prefixes.test).to.eq("BigTest:");
+                        assert.strictEqual(cucumberOptions?.prefixes.test, "BigTest:");
                     });
 
                     await it("CUCUMBER_UPLOAD_FEATURES", async () => {
@@ -822,7 +836,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                                 uploadFeatures: false,
                             }
                         );
-                        expect(cucumberOptions?.uploadFeatures, true);
+                        assert.strictEqual(cucumberOptions?.uploadFeatures, true);
                     });
                 });
                 await describe("plugin", async () => {
@@ -833,7 +847,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const pluginOptions = initPluginOptions(env, {
                             debug: false,
                         });
-                        expect(pluginOptions.debug, true);
+                        assert.strictEqual(pluginOptions.debug, true);
                     });
 
                     await it("PLUGIN_ENABLED", () => {
@@ -843,7 +857,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const pluginOptions = initPluginOptions(env, {
                             enabled: true,
                         });
-                        expect(pluginOptions.enabled, false);
+                        assert.strictEqual(pluginOptions.enabled, false);
                     });
 
                     await it("PLUGIN_LOG_DIRECTORY", () => {
@@ -853,7 +867,10 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const pluginOptions = initPluginOptions(env, {
                             logDirectory: "./logging/subdirectory",
                         });
-                        expect(pluginOptions.logDirectory).to.eq("/home/logs/cypress-xray-plugin");
+                        assert.strictEqual(
+                            pluginOptions.logDirectory,
+                            "/home/logs/cypress-xray-plugin"
+                        );
                     });
 
                     await it("PLUGIN_NORMALIZE_SCREENSHOT_NAMES", () => {
@@ -863,25 +880,29 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         const pluginOptions = initPluginOptions(env, {
                             normalizeScreenshotNames: false,
                         });
-                        expect(pluginOptions.normalizeScreenshotNames, true);
+                        assert.strictEqual(pluginOptions.normalizeScreenshotNames, true);
                     });
                 });
             });
             await describe("detects invalid configurations", async () => {
                 await it("detects unset project keys", () => {
-                    expect(() =>
-                        initJiraOptions(
-                            {},
-                            {
-                                projectKey: undefined as unknown as string,
-                                url: "https://example.org",
-                            }
-                        )
-                    ).to.throw("Plugin misconfiguration: Jira project key was not set");
+                    assert.throws(
+                        () =>
+                            initJiraOptions(
+                                {},
+                                {
+                                    projectKey: undefined as unknown as string,
+                                    url: "http://localhost:1234",
+                                }
+                            ),
+                        { message: "Plugin misconfiguration: Jira project key was not set" }
+                    );
                 });
-                await it("throws if the cucumber preprocessor is not installed", async () => {
-                    stub(dependencies, "IMPORT").rejects(new Error("Failed to import package"));
-                    await expect(
+                await it("throws if the cucumber preprocessor is not installed", async (context) => {
+                    context.mock.method(dependencies, "_import", () => {
+                        throw new Error("Failed to import package");
+                    });
+                    await assert.rejects(
                         initCucumberOptions(
                             {
                                 env: {},
@@ -894,21 +915,22 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             {
                                 featureFileExtension: ".feature",
                             }
-                        )
-                    ).to.eventually.be.rejectedWith(
-                        dedent(`
-                            Plugin dependency misconfigured: @badeball/cypress-cucumber-preprocessor
+                        ),
+                        {
+                            message: dedent(`
+                                Plugin dependency misconfigured: @badeball/cypress-cucumber-preprocessor
 
-                            Failed to import package
+                                Failed to import package
 
-                            The plugin depends on the package and should automatically download it during installation, but might have failed to do so because of conflicting Node versions
+                                The plugin depends on the package and should automatically download it during installation, but might have failed to do so because of conflicting Node versions
 
-                            Make sure to install the package manually using: npm install @badeball/cypress-cucumber-preprocessor --save-dev
-                        `)
+                                Make sure to install the package manually using: npm install @badeball/cypress-cucumber-preprocessor --save-dev
+                            `),
+                        }
                     );
                 });
                 await it("detects if the cucumber preprocessor json report is not enabled", async () => {
-                    await expect(
+                    await assert.rejects(
                         initCucumberOptions(
                             {
                                 env: { jsonEnabled: false },
@@ -921,17 +943,18 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             {
                                 featureFileExtension: ".feature",
                             }
-                        )
-                    ).to.eventually.be.rejectedWith(
-                        dedent(`
-                            Plugin misconfiguration: Cucumber preprocessor JSON report disabled
+                        ),
+                        {
+                            message: dedent(`
+                                Plugin misconfiguration: Cucumber preprocessor JSON report disabled
 
-                            Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
-                        `)
+                                Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                            `),
+                        }
                     );
                 });
                 await it("detects if the cucumber preprocessor json report path was not set", async () => {
-                    await expect(
+                    await assert.rejects(
                         initCucumberOptions(
                             {
                                 env: { jsonEnabled: true, jsonOutput: "" },
@@ -944,60 +967,77 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             {
                                 featureFileExtension: ".feature",
                             }
-                        )
-                    ).to.eventually.be.rejectedWith(
-                        dedent(`
-                            Plugin misconfiguration: Cucumber preprocessor JSON report path was not set
+                        ),
+                        {
+                            message: dedent(`
+                                Plugin misconfiguration: Cucumber preprocessor JSON report path was not set
 
-                            Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
-                        `)
+                                Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                            `),
+                        }
                     );
                 });
             });
         });
 
         await describe("the http clients instantiation", async () => {
-            await it("creates a single client by default", () => {
+            await it("creates a single client by default", (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const httpClients = initHttpClients(undefined, undefined);
-                expect(httpClients.jira).to.eq(httpClients.xray);
-                expect(httpClients.jira).to.deep.eq(new AxiosRestClient({ debug: undefined }));
+                assert.strictEqual(httpClients.jira, httpClients.xray);
+                assert.deepStrictEqual(
+                    httpClients.jira,
+                    new AxiosRestClient(axios, { debug: undefined })
+                );
             });
-            await it("sets debugging to true if enabled", () => {
+            await it("sets debugging to true if enabled", (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const httpClients = initHttpClients({ debug: true }, undefined);
-                expect(httpClients.jira).to.eq(httpClients.xray);
-                expect(httpClients.jira).to.deep.eq(new AxiosRestClient({ debug: true }));
+                assert.strictEqual(httpClients.jira, httpClients.xray);
+                assert.deepStrictEqual(
+                    httpClients.jira,
+                    new AxiosRestClient(axios, { debug: true })
+                );
             });
-            await it("sets debugging to false if disabled", () => {
+            await it("sets debugging to false if disabled", (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const httpClients = initHttpClients({ debug: false }, undefined);
-                expect(httpClients.jira).to.eq(httpClients.xray);
-                expect(httpClients.jira).to.deep.eq(new AxiosRestClient({ debug: false }));
+                assert.strictEqual(httpClients.jira, httpClients.xray);
+                assert.deepStrictEqual(
+                    httpClients.jira,
+                    new AxiosRestClient(axios, { debug: false })
+                );
             });
-            await it("creates a single client if empty options are passed", () => {
+            await it("creates a single client if empty options are passed", (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const httpClients = initHttpClients(undefined, {});
-                expect(httpClients.jira).to.eq(httpClients.xray);
-                expect(httpClients.jira).to.deep.eq(
-                    new AxiosRestClient({
+                assert.strictEqual(httpClients.jira, httpClients.xray);
+                assert.deepStrictEqual(
+                    httpClients.jira,
+                    new AxiosRestClient(axios, {
                         debug: undefined,
                         http: {},
                         rateLimiting: undefined,
                     })
                 );
             });
-            await it("creates a single client using a single config", () => {
+            await it("creates a single client using a single config", (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const httpOptions: InternalHttpOptions = {
                     proxy: {
-                        host: "https://example.org",
+                        host: "http://localhost:1234",
                         port: 12345,
                     },
                 };
                 const httpClients = initHttpClients(undefined, httpOptions);
-                expect(httpClients.jira).to.eq(httpClients.xray);
-                expect(httpClients.jira).to.deep.eq(
-                    new AxiosRestClient({
+                assert.strictEqual(httpClients.jira, httpClients.xray);
+                assert.deepStrictEqual(
+                    httpClients.jira,
+                    new AxiosRestClient(axios, {
                         debug: undefined,
                         http: {
                             proxy: {
-                                host: "https://example.org",
+                                host: "http://localhost:1234",
                                 port: 12345,
                             },
                         },
@@ -1005,61 +1045,67 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     })
                 );
             });
-            await it("creates a different jira client if a jira config is passed", () => {
+            await it("creates a different jira client if a jira config is passed", (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const httpOptions: InternalHttpOptions = {
                     jira: {
                         proxy: {
-                            host: "https://example.org",
+                            host: "http://localhost:1234",
                             port: 12345,
                         },
                     },
                 };
                 const httpClients = initHttpClients(undefined, httpOptions);
-                expect(httpClients.jira).to.not.eq(httpClients.xray);
-                expect(httpClients.jira).to.deep.eq(
-                    new AxiosRestClient({
+                assert.notStrictEqual(httpClients.jira, httpClients.xray);
+                assert.deepStrictEqual(
+                    httpClients.jira,
+                    new AxiosRestClient(axios, {
                         debug: undefined,
                         http: {
                             proxy: {
-                                host: "https://example.org",
+                                host: "http://localhost:1234",
                                 port: 12345,
                             },
                         },
                         rateLimiting: undefined,
                     })
                 );
-                expect(httpClients.xray).to.deep.eq(
-                    new AxiosRestClient({
+                assert.deepStrictEqual(
+                    httpClients.xray,
+                    new AxiosRestClient(axios, {
                         debug: undefined,
                         http: {},
                         rateLimiting: undefined,
                     })
                 );
             });
-            await it("creates a different xray client if an xray config is passed", () => {
+            await it("creates a different xray client if an xray config is passed", (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const httpOptions: InternalHttpOptions = {
                     xray: {
                         proxy: {
-                            host: "https://example.org",
+                            host: "http://localhost:1234",
                             port: 12345,
                         },
                     },
                 };
                 const httpClients = initHttpClients(undefined, httpOptions);
-                expect(httpClients.jira).to.not.eq(httpClients.xray);
-                expect(httpClients.jira).to.deep.eq(
-                    new AxiosRestClient({
+                assert.notStrictEqual(httpClients.jira, httpClients.xray);
+                assert.deepStrictEqual(
+                    httpClients.jira,
+                    new AxiosRestClient(axios, {
                         debug: undefined,
                         http: {},
                         rateLimiting: undefined,
                     })
                 );
-                expect(httpClients.xray).to.deep.eq(
-                    new AxiosRestClient({
+                assert.deepStrictEqual(
+                    httpClients.xray,
+                    new AxiosRestClient(axios, {
                         debug: undefined,
                         http: {
                             proxy: {
-                                host: "https://example.org",
+                                host: "http://localhost:1234",
                                 port: 12345,
                             },
                         },
@@ -1067,7 +1113,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     })
                 );
             });
-            await it("creates different clients if individual configs are passed", () => {
+            await it("creates different clients if individual configs are passed", (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const httpOptions: InternalHttpOptions = {
                     jira: {
                         proxy: {
@@ -1077,15 +1124,16 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                     xray: {
                         proxy: {
-                            host: "https://example.org",
+                            host: "http://localhost:1234",
                             port: 12345,
                         },
                     },
                 };
                 const httpClients = initHttpClients(undefined, httpOptions);
-                expect(httpClients.jira).to.not.eq(httpClients.xray);
-                expect(httpClients.jira).to.deep.eq(
-                    new AxiosRestClient({
+                assert.notStrictEqual(httpClients.jira, httpClients.xray);
+                assert.deepStrictEqual(
+                    httpClients.jira,
+                    new AxiosRestClient(axios, {
                         debug: undefined,
                         http: {
                             proxy: {
@@ -1096,12 +1144,13 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         rateLimiting: undefined,
                     })
                 );
-                expect(httpClients.xray).to.deep.eq(
-                    new AxiosRestClient({
+                assert.deepStrictEqual(
+                    httpClients.xray,
+                    new AxiosRestClient(axios, {
                         debug: undefined,
                         http: {
                             proxy: {
-                                host: "https://example.org",
+                                host: "http://localhost:1234",
                                 port: 12345,
                             },
                         },
@@ -1109,7 +1158,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     })
                 );
             });
-            await it("passes common http options to both clients", () => {
+            await it("passes common http options to both clients", (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const httpOptions: InternalHttpOptions = {
                     jira: {
                         proxy: {
@@ -1121,15 +1171,16 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     timeout: 42,
                     xray: {
                         proxy: {
-                            host: "https://example.org",
+                            host: "http://localhost:1234",
                             port: 12345,
                         },
                     },
                 };
                 const httpClients = initHttpClients(undefined, httpOptions);
-                expect(httpClients.jira).to.not.eq(httpClients.xray);
-                expect(httpClients.jira).to.deep.eq(
-                    new AxiosRestClient({
+                assert.notStrictEqual(httpClients.jira, httpClients.xray);
+                assert.deepStrictEqual(
+                    httpClients.jira,
+                    new AxiosRestClient(axios, {
                         debug: undefined,
                         http: {
                             proxy: {
@@ -1141,12 +1192,13 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         rateLimiting: { requestsPerSecond: 5 },
                     })
                 );
-                expect(httpClients.xray).to.deep.eq(
-                    new AxiosRestClient({
+                assert.deepStrictEqual(
+                    httpClients.xray,
+                    new AxiosRestClient(axios, {
                         debug: undefined,
                         http: {
                             proxy: {
-                                host: "https://example.org",
+                                host: "http://localhost:1234",
                                 port: 12345,
                             },
                             timeout: 42,
@@ -1155,7 +1207,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     })
                 );
             });
-            await it("prefers individual http options to common ones", () => {
+            await it("prefers individual http options to common ones", (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const httpOptions: InternalHttpOptions = {
                     jira: {
                         proxy: {
@@ -1181,8 +1234,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     },
                 };
                 const httpClients = initHttpClients(undefined, httpOptions);
-                expect(httpClients.jira).to.deep.eq(
-                    new AxiosRestClient({
+                assert.deepStrictEqual(
+                    httpClients.jira,
+                    new AxiosRestClient(axios, {
                         debug: undefined,
                         http: {
                             proxy: {
@@ -1194,8 +1248,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         rateLimiting: { requestsPerSecond: 20 },
                     })
                 );
-                expect(httpClients.xray).to.deep.eq(
-                    new AxiosRestClient({
+                assert.deepStrictEqual(
+                    httpClients.xray,
+                    new AxiosRestClient(axios, {
                         debug: undefined,
                         http: {
                             proxy: {
@@ -1217,174 +1272,204 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     {},
                     {
                         projectKey: "CYP",
-                        url: "https://example.org",
+                        url: "http://localhost:1234",
                     }
                 );
             });
 
-            await it("should detect cloud credentials", async () => {
+            await it("detects cloud credentials", async (context) => {
                 const env = {
                     ["JIRA_API_TOKEN"]: "1337",
                     ["JIRA_USERNAME"]: "user@somewhere.xyz",
                     ["XRAY_CLIENT_ID"]: "abc",
                     ["XRAY_CLIENT_SECRET"]: "xyz",
                 };
-                const logger = getMockedLogger();
-                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                httpClients.jira.get.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: { active: true, displayName: "Jeff" } as User,
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+                const httpClients = {
+                    jira: new AxiosRestClient(axios),
+                    xray: new AxiosRestClient(axios),
+                };
+                const get = context.mock.method(httpClients.jira, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: { active: true, displayName: "Jeff" } as User,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
-                httpClients.xray.post.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                const post = context.mock.method(httpClients.xray, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
-                expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
-                expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
-                expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
-                    BasicAuthCredentials
+                assert.strictEqual(jiraClient instanceof BaseJiraClient, true);
+                assert.strictEqual(xrayClient instanceof XrayClientCloud, true);
+                assert.strictEqual(
+                    (jiraClient as BaseJiraClient).getCredentials() instanceof BasicAuthCredentials,
+                    true
                 );
-                expect((xrayClient as XrayClientCloud).getCredentials()).to.be.an.instanceof(
-                    JwtCredentials
+                assert.strictEqual(
+                    (xrayClient as XrayClientCloud).getCredentials() instanceof JwtCredentials,
+                    true
                 );
-                expect(httpClients.jira.get).to.have.been.calledOnce;
-                expect(httpClients.xray.post).to.have.been.calledOnce;
-                expect(logger.message).to.have.been.calledWithExactly(
+                assert.strictEqual(get.mock.callCount(), 1);
+                assert.strictEqual(post.mock.callCount(), 1);
+                assert.deepStrictEqual(message.mock.calls[0].arguments, [
                     Level.INFO,
-                    "Jira username and API token found. Setting up Jira cloud basic auth credentials."
-                );
-                expect(logger.message).to.have.been.calledWithExactly(
+                    "Jira username and API token found. Setting up Jira cloud basic auth credentials.",
+                ]);
+                assert.deepStrictEqual(message.mock.calls[4].arguments, [
                     Level.INFO,
-                    "Xray client ID and client secret found. Setting up Xray cloud JWT credentials."
-                );
+                    "Xray client ID and client secret found. Setting up Xray cloud JWT credentials.",
+                ]);
             });
 
-            await it("should throw for missing xray cloud credentials", async () => {
+            await it("should throw for missing xray cloud credentials", async (context) => {
                 const env = {
                     ["JIRA_API_TOKEN"]: "1337",
                     ["JIRA_USERNAME"]: "user@somewhere.xyz",
                 };
-                const logger = getMockedLogger();
-                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                httpClients.jira.get.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: { active: true, displayName: "Jeff" } as User,
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+                const httpClients = {
+                    jira: new AxiosRestClient(axios),
+                    xray: new AxiosRestClient(axios),
+                };
+                context.mock.method(httpClients.jira, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: { active: true, displayName: "Jeff" } as User,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
-                await expect(
-                    initClients(jiraOptions, env, httpClients)
-                ).to.eventually.be.rejectedWith(
-                    dedent(`
+                await assert.rejects(initClients(jiraOptions, env, httpClients), {
+                    message: dedent(`
                         Failed to configure Xray client: Jira cloud credentials detected, but the provided Xray credentials are not Xray cloud credentials.
 
                           You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
-                    `)
-                );
-                expect(logger.message).to.have.been.calledWithExactly(
+                    `),
+                });
+                assert.deepStrictEqual(message.mock.calls[0].arguments, [
                     Level.INFO,
-                    "Jira username and API token found. Setting up Jira cloud basic auth credentials."
-                );
+                    "Jira username and API token found. Setting up Jira cloud basic auth credentials.",
+                ]);
             });
 
-            await it("should detect PAT credentials", async () => {
+            await it("detects PAT credentials", async (context) => {
                 const env = {
                     ["JIRA_API_TOKEN"]: "1337",
                 };
-                const logger = getMockedLogger();
-                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                httpClients.jira.get.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: { active: true, displayName: "Jeff" } as User,
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+                const httpClients = {
+                    jira: new AxiosRestClient(axios),
+                    xray: new AxiosRestClient(axios),
+                };
+                const getJira = context.mock.method(httpClients.jira, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: { active: true, displayName: "Jeff" } as User,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
-                httpClients.xray.get.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        active: true,
-                        licenseType: "Demo License",
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                const getXray = context.mock.method(httpClients.xray, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            active: true,
+                            licenseType: "Demo License",
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
-                expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
-                expect(xrayClient).to.be.an.instanceof(ServerClient);
-                expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
-                    PatCredentials
+                assert.strictEqual(jiraClient instanceof BaseJiraClient, true);
+                assert.strictEqual(xrayClient instanceof ServerClient, true);
+                assert.strictEqual(
+                    (jiraClient as BaseJiraClient).getCredentials() instanceof PatCredentials,
+                    true
                 );
-                expect((xrayClient as ServerClient).getCredentials()).to.be.an.instanceof(
-                    PatCredentials
+                assert.strictEqual(
+                    (xrayClient as ServerClient).getCredentials() instanceof PatCredentials,
+                    true
                 );
-                expect(httpClients.jira.get).to.have.been.calledOnce;
-                expect(httpClients.xray.get).to.have.been.calledOnce;
-                expect(logger.message).to.have.been.calledWithExactly(
+                assert.strictEqual(getJira.mock.callCount(), 1);
+                assert.strictEqual(getXray.mock.callCount(), 1);
+                assert.deepStrictEqual(message.mock.calls[0].arguments, [
                     Level.INFO,
-                    "Jira PAT found. Setting up Jira server PAT credentials."
-                );
-                expect(logger.message).to.have.been.calledWithExactly(
+                    "Jira PAT found. Setting up Jira server PAT credentials.",
+                ]);
+                assert.deepStrictEqual(message.mock.calls[4].arguments, [
                     Level.INFO,
-                    "Jira PAT found. Setting up Xray server PAT credentials."
-                );
+                    "Jira PAT found. Setting up Xray server PAT credentials.",
+                ]);
             });
 
-            await it("should detect basic auth credentials", async () => {
+            await it("detects basic auth credentials", async (context) => {
                 const env = {
                     ["JIRA_PASSWORD"]: "1337",
                     ["JIRA_USERNAME"]: "user",
                 };
-                const logger = getMockedLogger();
-                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                httpClients.jira.get.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: { active: true, displayName: "Jeff" } as User,
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+                const httpClients = {
+                    jira: new AxiosRestClient(axios),
+                    xray: new AxiosRestClient(axios),
+                };
+                const getJira = context.mock.method(httpClients.jira, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: { active: true, displayName: "Jeff" } as User,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
-                httpClients.xray.get.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        active: true,
-                        licenseType: "Demo License",
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                const getXray = context.mock.method(httpClients.xray, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            active: true,
+                            licenseType: "Demo License",
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
-                expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
-                expect(xrayClient).to.be.an.instanceof(ServerClient);
-                expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
-                    BasicAuthCredentials
+                assert.strictEqual(jiraClient instanceof BaseJiraClient, true);
+                assert.strictEqual(xrayClient instanceof ServerClient, true);
+                assert.strictEqual(
+                    (jiraClient as BaseJiraClient).getCredentials() instanceof BasicAuthCredentials,
+                    true
                 );
-                expect((xrayClient as ServerClient).getCredentials()).to.be.an.instanceof(
-                    BasicAuthCredentials
+                assert.strictEqual(
+                    (xrayClient as ServerClient).getCredentials() instanceof BasicAuthCredentials,
+                    true
                 );
-                expect(httpClients.jira.get).to.have.been.calledOnce;
-                expect(httpClients.xray.get).to.have.been.calledOnce;
-                expect(logger.message).to.have.been.calledWithExactly(
+                assert.strictEqual(getJira.mock.callCount(), 1);
+                assert.strictEqual(getXray.mock.callCount(), 1);
+                assert.deepStrictEqual(message.mock.calls[0].arguments, [
                     Level.INFO,
-                    "Jira username and password found. Setting up Jira server basic auth credentials."
-                );
-                expect(logger.message).to.have.been.calledWithExactly(
+                    "Jira username and password found. Setting up Jira server basic auth credentials.",
+                ]);
+                assert.deepStrictEqual(message.mock.calls[4].arguments, [
                     Level.INFO,
-                    "Jira username and password found. Setting up Xray server basic auth credentials."
-                );
+                    "Jira username and password found. Setting up Xray server basic auth credentials.",
+                ]);
             });
 
-            await it("should choose cloud credentials over server credentials", async () => {
+            await it("should choose cloud credentials over server credentials", async (context) => {
                 const env = {
                     ["JIRA_API_TOKEN"]: "1337",
                     ["JIRA_PASSWORD"]: "xyz",
@@ -1392,67 +1477,82 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                     ["XRAY_CLIENT_ID"]: "abc",
                     ["XRAY_CLIENT_SECRET"]: "xyz",
                 };
-                getMockedLogger({ allowUnstubbedCalls: true });
-                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                httpClients.jira.get.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: { active: true, displayName: "Jeff" } as User,
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                context.mock.method(LOG, "message", context.mock.fn());
+                const httpClients = {
+                    jira: new AxiosRestClient(axios),
+                    xray: new AxiosRestClient(axios),
+                };
+                context.mock.method(httpClients.jira, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: { active: true, displayName: "Jeff" } as User,
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
-                httpClients.xray.post.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                context.mock.method(httpClients.xray, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
                 const { jiraClient, xrayClient } = await initClients(jiraOptions, env, httpClients);
-                expect(jiraClient).to.be.an.instanceof(BaseJiraClient);
-                expect(xrayClient).to.be.an.instanceof(XrayClientCloud);
-                expect((jiraClient as BaseJiraClient).getCredentials()).to.be.an.instanceof(
-                    BasicAuthCredentials
+                assert.strictEqual(jiraClient instanceof BaseJiraClient, true);
+                assert.strictEqual(xrayClient instanceof XrayClientCloud, true);
+                assert.strictEqual(
+                    (jiraClient as BaseJiraClient).getCredentials() instanceof BasicAuthCredentials,
+                    true
                 );
-                expect((xrayClient as XrayClientCloud).getCredentials()).to.be.an.instanceof(
-                    JwtCredentials
+                assert.strictEqual(
+                    (xrayClient as XrayClientCloud).getCredentials() instanceof JwtCredentials,
+                    true
                 );
             });
 
             await it("should throw an error for missing credentials", async () => {
-                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                await expect(
-                    initClients(jiraOptions, {}, httpClients)
-                ).to.eventually.be.rejectedWith(
-                    dedent(`
+                const httpClients = {
+                    jira: new AxiosRestClient(axios),
+                    xray: new AxiosRestClient(axios),
+                };
+                await assert.rejects(initClients(jiraOptions, {}, httpClients), {
+                    message: dedent(`
                         Failed to configure Jira client: No viable authentication method was configured.
 
                           You can find all configurations currently supported at: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/
-                    `)
-                );
+                    `),
+                });
             });
 
-            await it("throws if no user details are returned from jira", async () => {
-                getMockedLogger();
-                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                httpClients.jira.get.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: "<div>Welcome</div>",
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+            await it("throws if no user details are returned from jira", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                const httpClients = {
+                    jira: new AxiosRestClient(axios),
+                    xray: new AxiosRestClient(axios),
+                };
+                context.mock.method(httpClients.jira, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: "<div>Welcome</div>",
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
-                await expect(
+                await assert.rejects(
                     initClients(
                         jiraOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
                         },
                         httpClients
-                    )
-                ).to.eventually.be.rejectedWith(
-                    dedent(`
-                        Failed to establish communication with Jira: https://example.org
+                    ),
+                    {
+                        message: dedent(`
+                        Failed to establish communication with Jira: http://localhost:1234
 
                           Jira did not return a valid response: JSON containing a username was expected, but not received.
 
@@ -1461,33 +1561,39 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - Jira authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
 
                         For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
-                    `)
+                    `),
+                    }
                 );
             });
 
-            await it("throws if no usernames are returned from jira", async () => {
-                getMockedLogger();
-                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                httpClients.jira.get.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        active: true,
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+            await it("throws if no usernames are returned from jira", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                const httpClients = {
+                    jira: new AxiosRestClient(axios),
+                    xray: new AxiosRestClient(axios),
+                };
+                context.mock.method(httpClients.jira, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            active: true,
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
-                await expect(
+                await assert.rejects(
                     initClients(
                         jiraOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
                         },
                         httpClients
-                    )
-                ).to.eventually.be.rejectedWith(
-                    dedent(`
-                        Failed to establish communication with Jira: https://example.org
+                    ),
+                    {
+                        message: dedent(`
+                        Failed to establish communication with Jira: http://localhost:1234
 
                           Jira did not return a valid response: JSON containing a username was expected, but not received.
 
@@ -1496,41 +1602,49 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - Jira authentication: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/authentication/#jira
 
                         For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
-                    `)
+                    `),
+                    }
                 );
             });
 
-            await it("throws if no license data is returned from xray server", async () => {
-                getMockedLogger();
-                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                httpClients.jira.get.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        active: true,
-                        displayName: "Demo User",
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+            await it("throws if no license data is returned from xray server", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                const httpClients = {
+                    jira: new AxiosRestClient(axios),
+                    xray: new AxiosRestClient(axios),
+                };
+                context.mock.method(httpClients.jira, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            active: true,
+                            displayName: "Demo User",
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
-                httpClients.xray.get.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: "<div>Welcome</div>",
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                context.mock.method(httpClients.xray, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: "<div>Welcome</div>",
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
-                await expect(
+                await assert.rejects(
                     initClients(
                         jiraOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
                         },
                         httpClients
-                    )
-                ).to.eventually.be.rejectedWith(
-                    dedent(`
-                        Failed to establish communication with Xray: https://example.org
+                    ),
+                    {
+                        message: dedent(`
+                        Failed to establish communication with Xray: http://localhost:1234
 
                           Xray did not return a valid response: JSON containing basic Xray license information was expected, but not received.
 
@@ -1540,44 +1654,52 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - Xray itself: https://docs.getxray.app/display/XRAY/Installation
 
                         For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
-                    `)
+                    `),
+                    }
                 );
             });
 
-            await it("throws if an inactive license is returned from xray server", async () => {
-                getMockedLogger();
-                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                httpClients.jira.get.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        active: true,
-                        displayName: "Demo User",
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+            await it("throws if an inactive license is returned from xray server", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                const httpClients = {
+                    jira: new AxiosRestClient(axios),
+                    xray: new AxiosRestClient(axios),
+                };
+                context.mock.method(httpClients.jira, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            active: true,
+                            displayName: "Demo User",
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
-                httpClients.xray.get.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        active: false,
-                        licenseType: "Basic",
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+                context.mock.method(httpClients.xray, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            active: false,
+                            licenseType: "Basic",
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
-                await expect(
+                await assert.rejects(
                     initClients(
                         jiraOptions,
                         {
                             ["JIRA_API_TOKEN"]: "1337",
                         },
                         httpClients
-                    )
-                ).to.eventually.be.rejectedWith(
-                    dedent(`
-                        Failed to establish communication with Xray: https://example.org
+                    ),
+                    {
+                        message: dedent(`
+                        Failed to establish communication with Xray: http://localhost:1234
 
                           The Xray license is not active
 
@@ -1587,25 +1709,31 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - Xray itself: https://docs.getxray.app/display/XRAY/Installation
 
                         For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
-                    `)
+                    `),
+                    }
                 );
             });
 
-            await it("throws if the xray credentials are invalid", async () => {
-                getMockedLogger();
-                const httpClients = { jira: getMockedRestClient(), xray: getMockedRestClient() };
-                httpClients.jira.get.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: {
-                        active: true,
-                        displayName: "Demo User",
-                    },
-                    headers: {},
-                    status: HttpStatusCode.Ok,
-                    statusText: HttpStatusCode[HttpStatusCode.Ok],
+            await it("throws if the xray credentials are invalid", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                const httpClients = {
+                    jira: new AxiosRestClient(axios),
+                    xray: new AxiosRestClient(axios),
+                };
+                context.mock.method(httpClients.jira, "get", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: {
+                            active: true,
+                            displayName: "Demo User",
+                        },
+                        headers: {},
+                        status: HttpStatusCode.Ok,
+                        statusText: HttpStatusCode[HttpStatusCode.Ok],
+                    };
                 });
-                httpClients.xray.post.rejects(
-                    new AxiosError(
+                context.mock.method(httpClients.xray, "post", () => {
+                    throw new AxiosError(
                         "Request failed with status code 404",
                         HttpStatusCode.BadRequest.toString(),
                         undefined,
@@ -1619,9 +1747,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             status: HttpStatusCode.NotFound,
                             statusText: HttpStatusCode[HttpStatusCode.NotFound],
                         }
-                    )
-                );
-                await expect(
+                    );
+                });
+                await assert.rejects(
                     initClients(
                         jiraOptions,
                         {
@@ -1631,9 +1759,9 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                             ["XRAY_CLIENT_SECRET"]: "xyz",
                         },
                         httpClients
-                    )
-                ).to.eventually.be.rejectedWith(
-                    dedent(`
+                    ),
+                    {
+                        message: dedent(`
                         Failed to establish communication with Xray: https://xray.cloud.getxray.app/api/v2/authenticate
 
                           Failed to authenticate
@@ -1643,7 +1771,8 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         - Xray itself: https://docs.getxray.app/display/XRAYCLOUD/Installation
 
                         For more information, set the plugin to debug mode: https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/plugin/#debug
-                    `)
+                    `),
+                    }
                 );
             });
         });
@@ -1662,7 +1791,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 data: "WyJnb29kYnllIl0=",
                 filename: "goodbye.json",
             });
-            expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+            assert.deepStrictEqual(evidenceCollection.getEvidence("CYP-123"), [
                 {
                     contentType: "application/json",
                     data: "WyJoZWxsbyJd",
@@ -1688,14 +1817,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 data: "WyJnb29kYnllIl0=",
                 filename: "goodbye.json",
             });
-            expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+            assert.deepStrictEqual(evidenceCollection.getEvidence("CYP-123"), [
                 {
                     contentType: "application/json",
                     data: "WyJoZWxsbyJd",
                     filename: "hello.json",
                 },
             ]);
-            expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([
+            assert.deepStrictEqual(evidenceCollection.getEvidence("CYP-456"), [
                 {
                     contentType: "application/json",
                     data: "WyJnb29kYnllIl0=",
@@ -1711,7 +1840,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 data: "WyJoZWxsbyJd",
                 filename: "hello.json",
             });
-            expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([]);
+            assert.deepStrictEqual(evidenceCollection.getEvidence("CYP-456"), []);
         });
     });
 
@@ -1720,14 +1849,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
         beforeEach(() => {
             const jiraClient = new BaseJiraClient(
-                "https://example.org",
+                "http://localhost:1234",
                 new PatCredentials("token"),
-                getMockedRestClient()
+                new AxiosRestClient(axios)
             );
             const xrayClient = new ServerClient(
-                "https://example.org",
+                "http://localhost:1234",
                 new PatCredentials("token"),
-                getMockedRestClient()
+                new AxiosRestClient(axios)
             );
             context = new PluginContext(
                 {
@@ -1741,7 +1870,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                         attachVideos: false,
                         fields: {},
                         projectKey: "CYP",
-                        url: "https://example.org",
+                        url: "http://localhost:1234",
                     },
                     plugin: {
                         debug: false,
@@ -1773,7 +1902,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 data: "WyJnb29kYnllIl0=",
                 filename: "goodbye.json",
             });
-            expect(context.getEvidence("CYP-123")).to.deep.eq([
+            assert.deepStrictEqual(context.getEvidence("CYP-123"), [
                 {
                     contentType: "application/json",
                     data: "WyJoZWxsbyJd",
@@ -1799,14 +1928,14 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 data: "WyJnb29kYnllIl0=",
                 filename: "goodbye.json",
             });
-            expect(evidenceCollection.getEvidence("CYP-123")).to.deep.eq([
+            assert.deepStrictEqual(evidenceCollection.getEvidence("CYP-123"), [
                 {
                     contentType: "application/json",
                     data: "WyJoZWxsbyJd",
                     filename: "hello.json",
                 },
             ]);
-            expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([
+            assert.deepStrictEqual(evidenceCollection.getEvidence("CYP-456"), [
                 {
                     contentType: "application/json",
                     data: "WyJnb29kYnllIl0=",
@@ -1822,7 +1951,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
                 data: "WyJoZWxsbyJd",
                 filename: "hello.json",
             });
-            expect(evidenceCollection.getEvidence("CYP-456")).to.deep.eq([]);
+            assert.deepStrictEqual(evidenceCollection.getEvidence("CYP-456"), []);
         });
     });
 });

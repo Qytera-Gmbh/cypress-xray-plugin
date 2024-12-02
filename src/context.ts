@@ -27,7 +27,7 @@ import type {
 import type { XrayEvidenceItem } from "./types/xray/import-test-execution-results.js";
 import { dedent } from "./util/dedent.js";
 import type { CucumberPreprocessorArgs, CucumberPreprocessorExports } from "./util/dependencies.js";
-import { importOptionalDependency } from "./util/dependencies.js";
+import dependencies from "./util/dependencies.js";
 import { errorMessage } from "./util/errors.js";
 import type { ExecutableGraph } from "./util/graph/executable-graph.js";
 import { HELP } from "./util/help.js";
@@ -251,7 +251,7 @@ export async function initCucumberOptions(
     if (featureFileExtension) {
         let preprocessor: CucumberPreprocessorExports;
         try {
-            preprocessor = await importOptionalDependency<CucumberPreprocessorExports>(
+            preprocessor = await dependencies.importOptionalDependency<CucumberPreprocessorExports>(
                 "@badeball/cypress-cucumber-preprocessor"
             );
         } catch (error: unknown) {
@@ -279,19 +279,19 @@ export async function initCucumberOptions(
         if (!preprocessorConfiguration.json.enabled) {
             throw new Error(
                 dedent(`
-                        Plugin misconfiguration: Cucumber preprocessor JSON report disabled
+                    Plugin misconfiguration: Cucumber preprocessor JSON report disabled
 
-                        Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
-                    `)
+                    Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                `)
             );
         }
         if (!preprocessorConfiguration.json.output) {
             throw new Error(
                 dedent(`
-                        Plugin misconfiguration: Cucumber preprocessor JSON report path was not set
+                    Plugin misconfiguration: Cucumber preprocessor JSON report path was not set
 
-                        Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
-                    `)
+                    Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                `)
             );
         }
         return {
