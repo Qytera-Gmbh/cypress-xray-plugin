@@ -20,7 +20,6 @@ await describe(relative(cwd(), import.meta.filename), async () => {
         await describe(JwtCredentials.prototype.getAuthorizationHeader.name, async () => {
             await it("returns authorization headers", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-
                 context.mock.method(restClient, "post", () => {
                     return {
                         config: { headers: new AxiosHeaders() },
@@ -39,7 +38,6 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             await it("authorizes once only", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-
                 const post = context.mock.method(restClient, "post", () => {
                     return {
                         config: { headers: new AxiosHeaders() },
@@ -65,7 +63,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             await it("handles unparseable tokens", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
-
+                context.mock.method(LOG, "logErrorToFile", context.mock.fn());
                 context.mock.method(restClient, "post", () => {
                     return {
                         config: { headers: new AxiosHeaders() },
@@ -83,7 +81,7 @@ await describe(relative(cwd(), import.meta.filename), async () => {
 
             await it("handles bad responses", async (context) => {
                 const message = context.mock.method(LOG, "message", context.mock.fn());
-
+                context.mock.method(LOG, "logErrorToFile", context.mock.fn());
                 context.mock.method(restClient, "post", () => {
                     throw new AxiosError(
                         "Request failed with status code 404",
