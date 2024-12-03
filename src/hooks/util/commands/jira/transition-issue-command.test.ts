@@ -7,7 +7,7 @@ import { PatCredentials } from "../../../../client/authentication/credentials";
 import { AxiosRestClient } from "../../../../client/https/https";
 import type { JiraClient } from "../../../../client/jira/jira-client";
 import { BaseJiraClient } from "../../../../client/jira/jira-client";
-import { Level, LOG } from "../../../../util/logging";
+import { LOG, Level } from "../../../../util/logging";
 import { ConstantCommand } from "../constant-command";
 import { TransitionIssueCommand } from "./transition-issue-command";
 
