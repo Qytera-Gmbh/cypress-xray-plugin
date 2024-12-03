@@ -30,7 +30,7 @@ jobs:
         with:
           check_name: Unit Test Results
           files: |
-            test-results/unit.xml
+            unit.xml
           time_unit: milliseconds
       - uses: actions/upload-artifact@v4
         if: always()
@@ -68,5 +68,5 @@ jobs:
         with:
           check_name: Integration Test Results
           files: |
-            test-results/integration.xml
+            integration.xml
           time_unit: milliseconds

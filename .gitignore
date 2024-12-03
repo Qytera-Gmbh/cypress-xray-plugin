@@ -133,4 +133,5 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-test-output/
+unit.xml
+integration.xml
