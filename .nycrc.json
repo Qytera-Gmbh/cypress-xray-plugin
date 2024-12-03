@@ -1,5 +1,0 @@
-{
-    "check-coverage": true,
-    "exclude": ["**/*.test.ts", "test/", "dist/"],
-    "reporter": ["html", "text-summary"]
-}
