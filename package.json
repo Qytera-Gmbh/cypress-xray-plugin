@@ -38,8 +38,8 @@
         "test:coverage": "npx shx mkdir -p coverage && c8 -r html npm run test",
         "test:integration": "npm-run-all --parallel --race start:test:server start:test:integration",
         "start:test:server": "node --require ./test/loader.js test/server.ts",
-        "start:test:unit": "node --require ./test/loader.js --test src/**/*.test.ts",
-        "start:test:integration": "node --require ./test/loader.js --test-concurrency 1 --test test/integration/**/*.test.ts",
+        "start:test:unit": "node --require ./test/loader.js --test-reporter spec --test-reporter-destination stdout --test-reporter junit --test-reporter-destination test-output/unit.xml --test src/**/*.test.ts",
+        "start:test:integration": "node --require ./test/loader.js --test-reporter spec --test-reporter-destination stdout --test-reporter junit --test-reporter-destination test-output/integration.xml --test-concurrency 1 --test-only --test test/integration/**/*.test.ts",
         "build": "tsc --project tsconfig-build.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
         "eslint": "eslint src/**/*.ts test/**/*.ts index.ts"
     },

@@ -153,7 +153,7 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                 "cypress"
             );
 
-            // Jira server does not like searches immediately after issue creation.
+            // Jira server does not like searches immediately after issue creation (socket hang up).
             if (test.service === "server") {
                 await setTimeout(10000);
             }
