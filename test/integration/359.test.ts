@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
+import { setTimeout } from "node:timers/promises";
 import { dedent } from "../../src/util/dedent";
 import { LOCAL_SERVER } from "../server-config";
 import { runCypress, setupCypressProject } from "../sh";
@@ -151,6 +152,11 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                 output,
                 "cypress"
             );
+
+            // Jira server does not like searches immediately after issue creation.
+            if (test.service === "server") {
+                await setTimeout(10000);
+            }
 
             const searchResult = await getIntegrationClient("jira", test.service).search({
                 fields: ["labels", "summary"],
