@@ -7,7 +7,10 @@ import { getFiles } from "./util";
 
 const SRC_DIR = resolve("src");
 
-const TEST_STREAM = run({ files: getFiles(SRC_DIR, (name) => name.endsWith(".test.ts")) })
+const TEST_STREAM = run({
+    concurrency: true,
+    files: getFiles(SRC_DIR, (name) => name.endsWith(".test.ts")),
+})
     .once("test:fail", () => {
         process.exitCode = 1;
     })
