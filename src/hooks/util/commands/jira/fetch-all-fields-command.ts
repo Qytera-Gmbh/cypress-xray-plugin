@@ -1,5 +1,5 @@
-import { JiraClient } from "../../../../client/jira/jira-client";
-import { FieldDetail } from "../../../../types/jira/responses/field-detail";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import type { FieldDetail } from "../../../../types/jira/responses/field-detail";
 import { Command } from "../../../command";
 
 interface Parameters {

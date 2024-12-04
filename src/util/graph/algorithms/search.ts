@@ -1,6 +1,6 @@
 import { Queue } from "../../queue/queue";
 import { Stack } from "../../stack/stack";
-import { DirectedGraph } from "../graph";
+import type { DirectedGraph } from "../graph";
 
 /**
  * Models search parameters for when the destination vertex is known.

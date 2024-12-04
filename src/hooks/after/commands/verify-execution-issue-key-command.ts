@@ -1,8 +1,10 @@
-import { IssueTypeDetails } from "../../../types/jira/responses/issue-type-details";
+import type { IssueTypeDetails } from "../../../types/jira/responses/issue-type-details";
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
-import { Level, Logger } from "../../../util/logging";
-import { Command, Computable } from "../../command";
+import type { Logger } from "../../../util/logging";
+import { Level } from "../../../util/logging";
+import type { Computable } from "../../command";
+import { Command } from "../../command";
 
 interface Parameters {
     displayCloudHelp: boolean;

@@ -1,4 +1,4 @@
-import { StringMap } from "../types/util";
+import type { StringMap } from "../types/util";
 import { unknownToString } from "./string";
 
 /**

@@ -1,5 +1,5 @@
-import { CypressXrayPluginOptions } from "./types/plugin";
-import { Remap } from "./types/util";
+import type { CypressXrayPluginOptions } from "./types/plugin";
+import type { Remap } from "./types/util";
 
 /**
  * An interface containing all authentication options which can be provided via environment
@@ -50,20 +50,12 @@ export const ENV_NAMES: Remap<
     jira: {
         attachVideos: "JIRA_ATTACH_VIDEOS",
         fields: {
-            description: "JIRA_FIELDS_DESCRIPTION",
-            labels: "JIRA_FIELDS_LABELS",
-            summary: "JIRA_FIELDS_SUMMARY",
             testEnvironments: "JIRA_FIELDS_TEST_ENVIRONMENTS",
             testPlan: "JIRA_FIELDS_TEST_PLAN",
         },
         projectKey: "JIRA_PROJECT_KEY",
         testExecutionIssue: "JIRA_TEST_EXECUTION_ISSUE",
-        testExecutionIssueDescription: "JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION",
-        testExecutionIssueKey: "JIRA_TEST_EXECUTION_ISSUE_KEY",
-        testExecutionIssueSummary: "JIRA_TEST_EXECUTION_ISSUE_SUMMARY",
-        testExecutionIssueType: "JIRA_TEST_EXECUTION_ISSUE_TYPE",
         testPlanIssueKey: "JIRA_TEST_PLAN_ISSUE_KEY",
-        testPlanIssueType: "JIRA_TEST_PLAN_ISSUE_TYPE",
         url: "JIRA_URL",
     },
     plugin: {
@@ -86,7 +78,6 @@ export const ENV_NAMES: Remap<
             },
         },
         testEnvironments: "XRAY_TEST_ENVIRONMENTS",
-        uploadRequests: "XRAY_UPLOAD_REQUESTS",
         uploadResults: "XRAY_UPLOAD_RESULTS",
         uploadScreenshots: "XRAY_UPLOAD_SCREENSHOTS",
     },

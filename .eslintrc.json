@@ -12,7 +12,8 @@
     },
     "rules": {
         "no-shadow": "off",
-        "@typescript-eslint/no-deprecated": "off",
+        "@typescript-eslint/consistent-type-exports": "error",
+        "@typescript-eslint/consistent-type-imports": "error",
         "@typescript-eslint/parameter-properties": "error",
         "@typescript-eslint/non-nullable-type-assertion-style": "off",
         "@typescript-eslint/member-ordering": "error",
@@ -107,11 +108,20 @@
     },
     "overrides": [
         {
-            "files": ["*.spec.ts"],
+            "files": ["*.test.ts"],
             "rules": {
-                // Clashes with sinon/chai assertions like: expect(method).to.not.have.been.called
-                "@typescript-eslint/unbound-method": "off",
-                "@typescript-eslint/no-unused-expressions": "off"
+                "@typescript-eslint/no-floating-promises": [
+                    "warn",
+                    {
+                        "allowForKnownSafeCalls": [
+                            {
+                                "from": "package",
+                                "name": ["it", "describe"],
+                                "package": "node:test"
+                            }
+                        ]
+                    }
+                ]
             }
         }
     ]

@@ -1,6 +1,6 @@
-import { CypressRunResultType } from "../../../../../types/cypress/cypress";
-import { IssueUpdate } from "../../../../../types/jira/responses/issue-update";
-import {
+import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
+import type { IssueUpdate } from "../../../../../types/jira/responses/issue-update";
+import type {
     MultipartInfo,
     MultipartInfoCloud,
 } from "../../../../../types/xray/requests/import-execution-multipart-info";

@@ -1,4 +1,4 @@
-import { expectToExist } from "../util";
+import assert from "node:assert";
 
 export function getCreatedTestExecutionIssueKey(
     projectKey: string,
@@ -18,8 +18,7 @@ export function getCreatedTestExecutionIssueKey(
             break;
     }
     const createdIssueLine = output.find((line) => regex.test(line))?.match(regex);
-    expectToExist(createdIssueLine);
+    assert.ok(createdIssueLine);
     const testExecutionIssueKey = createdIssueLine[1];
-    expectToExist(testExecutionIssueKey);
     return testExecutionIssueKey;
 }

@@ -1,6 +1,7 @@
+import axios from "axios";
 import { BasicAuthCredentials, JwtCredentials } from "../../src/client/authentication/credentials";
-import { Client } from "../../src/client/client";
-import { AxiosRestClient } from "../../src/client/https/requests";
+import type { Client } from "../../src/client/client";
+import { AxiosRestClient } from "../../src/client/https/https";
 import { BaseJiraClient } from "../../src/client/jira/jira-client";
 import { XrayClientCloud } from "../../src/client/xray/xray-client-cloud";
 import { ServerClient } from "../../src/client/xray/xray-client-server";
@@ -8,7 +9,7 @@ import { unknownToString } from "../../src/util/string";
 
 import "dotenv/config";
 
-const HTTP_CLIENT = new AxiosRestClient();
+const HTTP_CLIENT = new AxiosRestClient(axios);
 
 const XRAY_CLIENT_CLOUD = new XrayClientCloud(
     new JwtCredentials(

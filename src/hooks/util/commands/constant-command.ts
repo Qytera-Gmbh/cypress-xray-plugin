@@ -1,4 +1,4 @@
-import { Logger } from "../../../util/logging";
+import type { Logger } from "../../../util/logging";
 import { Command } from "../../command";
 
 export class ConstantCommand<R> extends Command<R, null> {

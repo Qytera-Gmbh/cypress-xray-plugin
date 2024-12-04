@@ -1,13 +1,15 @@
-import { Command, ComputableState, Failable } from "../../../hooks/command";
+import type { Command, Failable } from "../../../hooks/command";
+import { ComputableState } from "../../../hooks/command";
 import { ImportExecutionCucumberCommand } from "../../../hooks/util/commands/xray/import-execution-cucumber-command";
 import { ImportExecutionCypressCommand } from "../../../hooks/util/commands/xray/import-execution-cypress-command";
 import { ImportFeatureCommand } from "../../../hooks/util/commands/xray/import-feature-command";
 import { dedent } from "../../dedent";
 import { isSkippedError } from "../../errors";
-import { Level, Logger } from "../../logging";
+import type { Logger } from "../../logging";
+import { Level } from "../../logging";
 import { Queue } from "../../queue/queue";
 import { traverse } from "../algorithms/sort";
-import { DirectedGraph } from "../graph";
+import type { DirectedGraph } from "../graph";
 
 interface IndentedLogMessage<V extends Failable> {
     indent: number;

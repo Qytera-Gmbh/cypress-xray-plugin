@@ -1,10 +1,10 @@
 import path from "path";
-import {
+import type {
     InternalCucumberOptions,
     InternalJiraOptions,
     InternalXrayOptions,
 } from "../../../../../types/plugin";
-import {
+import type {
     CucumberMultipartElement,
     CucumberMultipartFeature,
     CucumberMultipartStep,
@@ -12,8 +12,10 @@ import {
 } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
 import { dedent } from "../../../../../util/dedent";
 import { errorMessage, missingTestKeyInCucumberScenarioError } from "../../../../../util/errors";
-import { Level, Logger } from "../../../../../util/logging";
-import { Command, Computable } from "../../../../command";
+import type { Logger } from "../../../../../util/logging";
+import { Level } from "../../../../../util/logging";
+import type { Computable } from "../../../../command";
+import { Command } from "../../../../command";
 import { getScenarioTagRegex } from "../../../../preprocessor/commands/parsing/scenario";
 import { getXrayStatus } from "../util/status";
 

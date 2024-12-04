@@ -1,8 +1,10 @@
-import { StringMap } from "../../../types/util";
+import type { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
-import { Level, Logger } from "../../../util/logging";
+import type { Logger } from "../../../util/logging";
+import { Level } from "../../../util/logging";
 import { unknownToString } from "../../../util/string";
-import { Command, Computable } from "../../command";
+import type { Computable } from "../../command";
+import { Command } from "../../command";
 
 export class GetSummariesToResetCommand extends Command<StringMap<string>, null> {
     private readonly oldValues: Computable<StringMap<string>>;

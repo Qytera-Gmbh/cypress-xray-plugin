@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { ResolvedConfigOptions } from "./cypress";
+import type { ResolvedConfigOptions } from "./cypress";
 
 type HookName = "after" | "afterEach" | "before" | "beforeEach";
 interface TestError {

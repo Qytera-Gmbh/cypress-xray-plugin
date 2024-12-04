@@ -1,4 +1,4 @@
-import { HistoryMetadataParticipant } from "./history-metadata-participant";
+import type { HistoryMetadataParticipant } from "./history-metadata-participant";
 
 /**
  * History metadata associated with a changelog.

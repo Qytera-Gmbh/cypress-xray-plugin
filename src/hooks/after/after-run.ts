@@ -1,26 +1,28 @@
 import fs from "fs";
 import path from "path";
-import { XrayClient } from "../../client/xray/xray-client";
-import { EvidenceCollection } from "../../context";
-import { CypressRunResultType } from "../../types/cypress/cypress";
-import { IssueTransition } from "../../types/jira/responses/issue-transition";
-import { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
-import {
+import type { XrayClient } from "../../client/xray/xray-client";
+import type { EvidenceCollection } from "../../context";
+import type { CypressRunResultType } from "../../types/cypress/cypress";
+import type { IssueTransition } from "../../types/jira/responses/issue-transition";
+import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
+import type {
     ClientCombination,
     InternalCypressXrayPluginOptions,
     PluginIssueUpdate,
 } from "../../types/plugin";
-import { XrayTest } from "../../types/xray/import-test-execution-results";
-import {
+import type { XrayTest } from "../../types/xray/import-test-execution-results";
+import type {
     CucumberMultipart,
     CucumberMultipartFeature,
 } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
+import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import { getOrCall } from "../../util/functions";
-import { ExecutableGraph } from "../../util/graph/executable-graph";
-import { Level, Logger } from "../../util/logging";
-import { Command, ComputableState } from "../command";
-import { ConstantCommand } from "../util/commands/constant-command";
+import type { ExecutableGraph } from "../../util/graph/executable-graph";
+import type { Logger } from "../../util/logging";
+import { Level } from "../../util/logging";
+import type { Command } from "../command";
+import { ComputableState } from "../command";
+import type { ConstantCommand } from "../util/commands/constant-command";
 import { DestructureCommand } from "../util/commands/destructure-command";
 import { FallbackCommand } from "../util/commands/fallback-command";
 import { AttachFilesCommand } from "../util/commands/jira/attach-files-command";
@@ -46,7 +48,7 @@ import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issu
 import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-command";
 import { containsCucumberTest, containsCypressTest } from "./util";
 
-export async function addUploadCommands(
+async function addUploadCommands(
     results: CypressRunResultType,
     projectRoot: string,
     options: InternalCypressXrayPluginOptions,
@@ -85,8 +87,7 @@ export async function addUploadCommands(
     let importCucumberExecutionCommand;
     if (containsCypressTests) {
         importCypressExecutionCommand = getImportExecutionCypressCommand(graph, clients, builder, {
-            reusesExecutionIssue:
-                issueData?.key !== undefined || options.jira.testExecutionIssueKey !== undefined,
+            reusesExecutionIssue: issueData?.key !== undefined,
             testEnvironments: options.xray.testEnvironments,
             testPlanIssueKey: testPlanIssueKey,
         });
@@ -99,9 +100,7 @@ export async function addUploadCommands(
             {
                 cucumberReportPath: options.cucumber?.preprocessor?.json.output,
                 projectRoot: projectRoot,
-                reusesExecutionIssue:
-                    issueData?.key !== undefined ||
-                    options.jira.testExecutionIssueKey !== undefined,
+                reusesExecutionIssue: issueData?.key !== undefined,
                 testEnvironments: options.xray.testEnvironments,
                 testExecutionIssueKeyCommand: importCypressExecutionCommand,
                 testPlanIssueKey: testPlanIssueKey,
@@ -154,11 +153,7 @@ export async function addUploadCommands(
         builder.addAttachVideosCommand({ resolvedExecutionIssueKey: finalExecutionIssueKey });
     }
     // Workaround for: https://jira.atlassian.com/browse/JRASERVER-66881.
-    if (
-        issueData?.transition &&
-        !(issueData.key ?? options.jira.testExecutionIssueKey) &&
-        clients.kind === "server"
-    ) {
+    if (issueData?.transition && !issueData.key && clients.kind === "server") {
         builder.addTransitionIssueCommand({
             issueKey: finalExecutionIssueKey,
             transition: issueData.transition,
@@ -371,8 +366,7 @@ class AfterRunBuilder {
         const command = this.graph.place(
             new CombineCypressJsonCommand(
                 {
-                    testExecutionIssueKey:
-                        this.issueData?.key ?? this.options.jira.testExecutionIssueKey,
+                    testExecutionIssueKey: this.issueData?.key,
                 },
                 this.logger,
                 parameters.convertCypressTestsCommand,
@@ -525,8 +519,7 @@ class AfterRunBuilder {
         if (parameters.testExecutionIssueKeyCommand) {
             resolvedExecutionIssueKeyCommand = parameters.testExecutionIssueKeyCommand;
         } else {
-            const executionIssueKey =
-                this.issueData?.key ?? this.options.jira.testExecutionIssueKey;
+            const executionIssueKey = this.issueData?.key;
             if (executionIssueKey) {
                 resolvedExecutionIssueKeyCommand = getOrCreateConstantCommand(
                     this.graph,
@@ -604,10 +597,9 @@ class AfterRunBuilder {
                 {
                     displayCloudHelp: this.clients.kind === "cloud",
                     importType: parameters.importType,
-                    testExecutionIssueKey:
-                        this.issueData?.key ?? this.options.jira.testExecutionIssueKey,
+                    testExecutionIssueKey: this.issueData?.key,
                     testExecutionIssueType: this.issueData?.fields?.issuetype ?? {
-                        name: this.options.jira.testExecutionIssueType,
+                        name: "Test Execution",
                     },
                 },
                 this.logger,
@@ -732,13 +724,11 @@ class AfterRunBuilder {
             };
         }
         if (!summaryCommand) {
-            const summary =
-                this.issueData?.fields?.summary ?? this.options.jira.testExecutionIssueSummary;
+            const summary = this.issueData?.fields?.summary;
             if (summary) {
                 summaryCommand = getOrCreateConstantCommand(this.graph, this.logger, summary);
             } else {
-                const testExecutionIssueKey =
-                    this.issueData?.key ?? this.options.jira.testExecutionIssueKey;
+                const testExecutionIssueKey = this.issueData?.key;
                 if (testExecutionIssueKey) {
                     const issueKeysCommand = getOrCreateConstantCommand(this.graph, this.logger, [
                         testExecutionIssueKey,
@@ -785,7 +775,7 @@ class AfterRunBuilder {
                 this.graph,
                 this.logger,
                 this.issueData?.fields?.issuetype ?? {
-                    name: this.options.jira.testExecutionIssueType,
+                    name: "Test Execution",
                 }
             );
             this.constants.executionIssue = {
@@ -811,3 +801,11 @@ class AfterRunBuilder {
         return this.constants.results;
     }
 }
+
+/**
+ * Workaround until module mocking becomes a stable feature. The current approach allows replacing
+ * the function with a mocked one.
+ *
+ * @see https://nodejs.org/docs/latest-v23.x/api/test.html#mockmodulespecifier-options
+ */
+export default { addUploadCommands };

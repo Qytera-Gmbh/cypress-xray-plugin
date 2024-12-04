@@ -1,7 +1,9 @@
 import { dedent } from "../../../util/dedent";
 import { SkippedError } from "../../../util/errors";
-import { Level, Logger } from "../../../util/logging";
-import { Command, Computable } from "../../command";
+import type { Logger } from "../../../util/logging";
+import { Level } from "../../../util/logging";
+import type { Computable } from "../../command";
+import { Command } from "../../command";
 
 interface Parameters {
     url: string;

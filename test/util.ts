@@ -1,12 +1,16 @@
-import chalk from "chalk";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
-import { CypressFailedRunResultType, CypressRunResultType } from "../src/types/cypress/cypress";
+import ansiColors from "ansi-colors";
+import { existsSync, readdirSync, rmSync } from "node:fs";
+import { before } from "node:test";
+import os from "os";
+import path from "path";
+import type {
+    CypressFailedRunResultType,
+    CypressRunResultType,
+} from "../src/types/cypress/cypress";
 import { unknownToString } from "../src/util/string";
 
 export const TEST_TMP_DIR = path.join(os.tmpdir(), "cypress-xray-plugin");
-console.log(chalk.gray(`Temporary directory: ${TEST_TMP_DIR}`));
+console.log(ansiColors.gray(`Temporary directory: ${TEST_TMP_DIR}`));
 
 export function resolveTestDirPath(...subPaths: string[]): string {
     return path.resolve(TEST_TMP_DIR, ...subPaths);
@@ -14,23 +18,30 @@ export function resolveTestDirPath(...subPaths: string[]): string {
 
 // Clean up temporary directory before all tests.
 before(() => {
-    if (fs.existsSync(TEST_TMP_DIR)) {
-        fs.rmSync(TEST_TMP_DIR, { recursive: true });
+    if (existsSync(TEST_TMP_DIR)) {
+        rmSync(TEST_TMP_DIR, { recursive: true });
     }
 });
 
 /**
- * Use in place of `expect(value).to.exist`.
+ * Recursively returns all files in the given directory that match the provided filename filter.
  *
- * Work-around for Chai assertions not being recognized by TypeScript's control flow analysis.
- *
- * @param value - the value
- * @see https://stackoverflow.com/a/65099907
+ * @param dir - the entry directory
+ * @param filter - the filename filter
+ * @returns all matching files
  */
-export function expectToExist<T>(value: T): asserts value is NonNullable<T> {
-    if (value === null || value === undefined) {
-        throw new Error("Expected value to exist");
+export function findFiles(dir: string, filter: (filename: string) => boolean): string[] {
+    const files = readdirSync(dir, { withFileTypes: true });
+    let testFiles: string[] = [];
+    for (const file of files) {
+        const fullPath = path.join(dir, file.name);
+        if (file.isDirectory()) {
+            testFiles = testFiles.concat(findFiles(fullPath, filter));
+        } else if (file.isFile() && filter(file.name)) {
+            testFiles.push(fullPath);
+        }
     }
+    return testFiles;
 }
 
 /**

@@ -1,7 +1,8 @@
-import { XrayClient } from "../../../../client/xray/xray-client";
-import { CucumberMultipart } from "../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { Logger } from "../../../../util/logging";
-import { Command, Computable } from "../../../command";
+import type { XrayClient } from "../../../../client/xray/xray-client";
+import type { CucumberMultipart } from "../../../../types/xray/requests/import-execution-cucumber-multipart";
+import type { Logger } from "../../../../util/logging";
+import type { Computable } from "../../../command";
+import { Command } from "../../../command";
 
 interface Parameters {
     xrayClient: XrayClient;

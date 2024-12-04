@@ -1,10 +1,10 @@
-import { Changelog } from "./changelog";
-import { EditMeta } from "./edit-meta";
-import { IncludedFields } from "./included-fields";
-import { JsonType } from "./json-type";
-import { Opsbar } from "./opsbar";
-import { Properties } from "./properties";
-import { Transition } from "./transition";
+import type { Changelog } from "./changelog";
+import type { EditMeta } from "./edit-meta";
+import type { IncludedFields } from "./included-fields";
+import type { JsonType } from "./json-type";
+import type { Opsbar } from "./opsbar";
+import type { Properties } from "./properties";
+import type { Transition } from "./transition";
 
 export interface Issue {
     /**
