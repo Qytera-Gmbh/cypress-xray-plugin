@@ -4,7 +4,7 @@ import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { setTimeout } from "node:timers/promises";
 import { dedent } from "../../src/util/dedent";
-import { LOCAL_SERVER } from "../server-config";
+import { LOCAL_SERVER } from "../server";
 import { runCypress, setupCypressProject } from "../sh";
 import { getIntegrationClient } from "./clients";
 import { getCreatedTestExecutionIssueKey } from "./util";

@@ -3,13 +3,13 @@ import { resolve } from "node:path";
 import { run } from "node:test";
 import { junit, spec } from "node:test/reporters";
 import { startServer, stopServer } from "./server";
-import { getFiles } from "./util";
+import { findFiles } from "./util";
 
 const SRC_DIR = resolve("src");
 
 const TEST_STREAM = run({
     concurrency: true,
-    files: getFiles(SRC_DIR, (name) => name.endsWith(".test.ts")),
+    files: findFiles(SRC_DIR, (name) => name.endsWith(".test.ts")),
 })
     .once("test:fail", () => {
         process.exitCode = 1;

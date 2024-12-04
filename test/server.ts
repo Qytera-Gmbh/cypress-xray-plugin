@@ -1,5 +1,4 @@
 import http from "http";
-import { LOCAL_SERVER } from "./server-config";
 
 const SERVER = http.createServer((req, res) => {
     res.statusCode = 200;
@@ -18,3 +17,9 @@ export function startServer() {
 export function stopServer() {
     SERVER.close();
 }
+
+export const LOCAL_SERVER = {
+    hostname: "localhost",
+    port: 8080,
+    url: "localhost:8080",
+};

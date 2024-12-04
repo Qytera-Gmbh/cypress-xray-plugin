@@ -3,11 +3,11 @@ import { resolve } from "node:path";
 import { run } from "node:test";
 import { junit, spec } from "node:test/reporters";
 import { startServer, stopServer } from "./server";
-import { getFiles } from "./util";
+import { findFiles } from "./util";
 
 const INTEGRATION_DIR = resolve("test", "integration");
 
-const TEST_STREAM = run({ files: getFiles(INTEGRATION_DIR, (name) => name.endsWith(".test.ts")) })
+const TEST_STREAM = run({ files: findFiles(INTEGRATION_DIR, (name) => name.endsWith(".test.ts")) })
     .once("test:fail", () => {
         process.exitCode = 1;
     })

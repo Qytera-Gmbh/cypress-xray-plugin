@@ -5,7 +5,7 @@ import { createReadStream } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import { LOCAL_SERVER } from "../../../test/server-config";
+import { LOCAL_SERVER } from "../../../test/server";
 import type { Logger } from "../../util/logging";
 import { Level, LOG } from "../../util/logging";
 import { AxiosRestClient } from "./https";

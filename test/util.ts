@@ -30,32 +30,18 @@ before(() => {
  * @param filter - the filename filter
  * @returns all matching files
  */
-export function getFiles(dir: string, filter: (filename: string) => boolean): string[] {
+export function findFiles(dir: string, filter: (filename: string) => boolean): string[] {
     const files = readdirSync(dir, { withFileTypes: true });
     let testFiles: string[] = [];
     for (const file of files) {
         const fullPath = path.join(dir, file.name);
         if (file.isDirectory()) {
-            testFiles = testFiles.concat(getFiles(fullPath, filter));
+            testFiles = testFiles.concat(findFiles(fullPath, filter));
         } else if (file.isFile() && filter(file.name)) {
             testFiles.push(fullPath);
         }
     }
     return testFiles;
-}
-
-/**
- * Use in place of `expect(value).to.exist`.
- *
- * Work-around for Chai assertions not being recognized by TypeScript's control flow analysis.
- *
- * @param value - the value
- * @see https://stackoverflow.com/a/65099907
- */
-export function expectToExist<T>(value: T): asserts value is NonNullable<T> {
-    if (value === null || value === undefined) {
-        throw new Error("Expected value to exist");
-    }
 }
 
 /**

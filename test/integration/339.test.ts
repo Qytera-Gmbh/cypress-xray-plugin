@@ -4,7 +4,7 @@ import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { dedent } from "../../src/util/dedent";
-import { LOCAL_SERVER } from "../server-config";
+import { LOCAL_SERVER } from "../server";
 import { runCypress, setupCypressProject } from "../sh";
 
 // ============================================================================================== //

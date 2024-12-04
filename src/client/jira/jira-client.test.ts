@@ -4,7 +4,6 @@ import { readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import { expectToExist } from "../../../test/util";
 import type { Attachment } from "../../types/jira/responses/attachment";
 import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-details";
 import type { SearchResults } from "../../types/jira/responses/search-results";
@@ -49,7 +48,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
                 await client.addAttachment("CYP-123", "./test/resources/turtle.png");
                 const headers = post.mock.calls[0].arguments[2]?.headers;
-                expectToExist(headers);
+                assert.ok(headers);
                 assert.strictEqual(headers.Authorization, "Basic dXNlcjp0b2tlbg==");
                 assert.strictEqual(headers["X-Atlassian-Token"], "no-check");
                 assert.match(headers["content-type"] as string, /multipart\/form-data; .+/);

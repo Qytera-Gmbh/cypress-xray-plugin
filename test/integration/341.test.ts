@@ -4,7 +4,6 @@ import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { dedent } from "../../src/util/dedent";
 import { runCypress, setupCypressProject } from "../sh";
-import { expectToExist } from "../util";
 import { getIntegrationClient } from "./clients";
 import { getCreatedTestExecutionIssueKey } from "./util";
 
@@ -162,19 +161,19 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                     fields: ["id"],
                     jql: `issue in (${testExecutionIssueKey})`,
                 });
-                expectToExist(searchResult[0].id);
+                assert.ok(searchResult[0].id);
                 const testResults = await getIntegrationClient("xray", test.service).getTestResults(
                     searchResult[0].id
                 );
                 const includedTest = testResults.find(
                     (r) => r.jira.summary === "included cucumber test"
                 );
-                expectToExist(includedTest);
+                assert.ok(includedTest);
                 assert.strictEqual(includedTest.status?.name, test.xrayPassedStatus);
                 const skippedTest = testResults.find(
                     (r) => r.jira.summary === "skipped cucumber test"
                 );
-                expectToExist(skippedTest);
+                assert.ok(skippedTest);
                 assert.strictEqual(skippedTest.status?.name, test.xraySkippedStatus);
             }
 
@@ -184,10 +183,10 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                     test.service
                 ).getTestExecution(testExecutionIssueKey);
                 const includedTest = testResults.find((r) => r.key === test.testKeys.included);
-                expectToExist(includedTest);
+                assert.ok(includedTest);
                 assert.strictEqual(includedTest.status, test.xrayPassedStatus);
                 const skippedTest = testResults.find((r) => r.key === test.testKeys.skipped);
-                expectToExist(skippedTest);
+                assert.ok(skippedTest);
                 assert.strictEqual(skippedTest.status, test.xraySkippedStatus);
             }
         });

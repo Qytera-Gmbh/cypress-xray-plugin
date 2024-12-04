@@ -3,9 +3,8 @@ import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { dedent } from "../../src/util/dedent";
-import { LOCAL_SERVER } from "../server-config";
+import { LOCAL_SERVER } from "../server";
 import { runCypress, setupCypressProject } from "../sh";
-import { expectToExist } from "../util";
 import { getIntegrationClient } from "./clients";
 import { getCreatedTestExecutionIssueKey } from "./util";
 
@@ -152,7 +151,7 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                     fields: ["id"],
                     jql: `issue in (${testExecutionIssueKey})`,
                 });
-                expectToExist(searchResult[0].id);
+                assert.ok(searchResult[0].id);
                 const testResults = await getIntegrationClient("xray", test.service).getTestResults(
                     searchResult[0].id
                 );
