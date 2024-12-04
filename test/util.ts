@@ -1,5 +1,5 @@
 import ansiColors from "ansi-colors";
-import fs from "fs";
+import { existsSync, readdirSync, rmSync } from "node:fs";
 import { before } from "node:test";
 import os from "os";
 import path from "path";
@@ -18,10 +18,31 @@ export function resolveTestDirPath(...subPaths: string[]): string {
 
 // Clean up temporary directory before all tests.
 before(() => {
-    if (fs.existsSync(TEST_TMP_DIR)) {
-        fs.rmSync(TEST_TMP_DIR, { recursive: true });
+    if (existsSync(TEST_TMP_DIR)) {
+        rmSync(TEST_TMP_DIR, { recursive: true });
     }
 });
+
+/**
+ * Recursively returns all files in the given directory that match the provided filename filter.
+ *
+ * @param dir - the entry directory
+ * @param filter - the filename filter
+ * @returns all matching files
+ */
+export function getFiles(dir: string, filter: (filename: string) => boolean): string[] {
+    const files = readdirSync(dir, { withFileTypes: true });
+    let testFiles: string[] = [];
+    for (const file of files) {
+        const fullPath = path.join(dir, file.name);
+        if (file.isDirectory()) {
+            testFiles = testFiles.concat(getFiles(fullPath, filter));
+        } else if (file.isFile() && filter(file.name)) {
+            testFiles.push(fullPath);
+        }
+    }
+    return testFiles;
+}
 
 /**
  * Use in place of `expect(value).to.exist`.

@@ -34,12 +34,9 @@
         "lib": "src"
     },
     "scripts": {
-        "test": "npm-run-all --parallel --race start:test:server start:test:unit",
+        "test": "node --require ./test/loader.js ./test/run-unit-tests.ts",
         "test:coverage": "npx shx mkdir -p coverage && c8 -r html npm run test",
-        "test:integration": "npm-run-all --parallel --race start:test:server start:test:integration",
-        "start:test:server": "node --require ./test/loader.js test/server.ts",
-        "start:test:unit": "node --require ./test/loader.js --test-reporter spec --test-reporter-destination stdout --test-reporter junit --test-reporter-destination unit.xml --test src/**/*.test.ts",
-        "start:test:integration": "node --require ./test/loader.js --test-reporter spec --test-reporter-destination stdout --test-reporter junit --test-reporter-destination integration.xml --test-concurrency 1 --test-only --test test/integration/**/*.test.ts",
+        "test:integration": "node --require ./test/loader.js ./test/run-integration-tests.ts",
         "build": "tsc --project tsconfig-build.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",
         "eslint": "eslint src/**/*.ts test/**/*.ts index.ts"
     },
@@ -73,7 +70,6 @@
         "eslint": "^8.57.0",
         "eslint-plugin-perfectionist": "^3.8.0",
         "eslint-plugin-tsdoc": "^0.4.0",
-        "npm-run-all": "^4.1.5",
         "shx": "^0.3.4",
         "ts-node": "^10.9.2",
         "typescript": "^5.6.3"

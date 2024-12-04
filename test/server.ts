@@ -9,6 +9,12 @@ const SERVER = http.createServer((req, res) => {
     res.end("<html>Hello World</html>");
 });
 
-SERVER.listen(LOCAL_SERVER.port, () => {
-    console.log(`Local server running at http://localhost:${LOCAL_SERVER.port.toString()}/`);
-});
+export function startServer() {
+    SERVER.listen(LOCAL_SERVER.port, () => {
+        console.log(`Local server running at http://localhost:${LOCAL_SERVER.port.toString()}/`);
+    });
+}
+
+export function stopServer() {
+    SERVER.close();
+}
