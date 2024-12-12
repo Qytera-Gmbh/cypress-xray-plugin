@@ -165,6 +165,9 @@ describe(relative(cwd(), __filename), async () => {
             assert.deepStrictEqual(setGlobalContext.mock.calls[0].arguments[0].getOptions().jira, {
                 attachVideos: true,
                 fields: {
+                    description: undefined,
+                    labels: undefined,
+                    summary: undefined,
                     testEnvironments: "field_123",
                     testPlan: "there",
                 },
@@ -178,7 +181,12 @@ describe(relative(cwd(), __filename), async () => {
                     },
                     key: "ABC-2",
                 },
+                testExecutionIssueDescription: undefined,
+                testExecutionIssueKey: undefined,
+                testExecutionIssueSummary: undefined,
+                testExecutionIssueType: "Test Execution",
                 testPlanIssueKey: "ABC-3",
+                testPlanIssueType: "Test Plan",
                 url: "http://localhost:1234",
             });
             assert.deepStrictEqual(
@@ -202,6 +210,7 @@ describe(relative(cwd(), __filename), async () => {
                     },
                 },
                 testEnvironments: ["A", "B"],
+                uploadRequests: false,
                 uploadResults: false,
                 uploadScreenshots: false,
             });

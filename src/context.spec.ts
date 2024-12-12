@@ -1881,6 +1881,8 @@ describe(relative(cwd(), __filename), async () => {
                         attachVideos: false,
                         fields: {},
                         projectKey: "CYP",
+                        testExecutionIssueType: "Text Execution",
+                        testPlanIssueType: "Test Plan",
                         url: "http://localhost:1234",
                     },
                     plugin: {
@@ -1891,6 +1893,7 @@ describe(relative(cwd(), __filename), async () => {
                     },
                     xray: {
                         status: {},
+                        uploadRequests: false,
                         uploadResults: false,
                         uploadScreenshots: false,
                     },
