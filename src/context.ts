@@ -1,16 +1,18 @@
+import type { HttpCredentials } from "./client/authentication/credentials";
 import {
     BasicAuthCredentials,
-    HttpCredentials,
     JwtCredentials,
     PatCredentials,
 } from "./client/authentication/credentials";
 import { AxiosRestClient } from "./client/https/requests";
-import { BaseJiraClient, JiraClient } from "./client/jira/jira-client";
+import type { JiraClient } from "./client/jira/jira-client";
+import { BaseJiraClient } from "./client/jira/jira-client";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud";
-import { ServerClient, XrayClientServer } from "./client/xray/xray-client-server";
+import type { XrayClientServer } from "./client/xray/xray-client-server";
+import { ServerClient } from "./client/xray/xray-client-server";
 import { ENV_NAMES } from "./env";
-import { Command } from "./hooks/command";
-import {
+import type { Command } from "./hooks/command";
+import type {
     ClientCombination,
     CypressXrayPluginOptions,
     HttpClientCombination,
@@ -21,17 +23,15 @@ import {
     InternalPluginOptions,
     InternalXrayOptions,
 } from "./types/plugin";
-import { XrayEvidenceItem } from "./types/xray/import-test-execution-results";
+import type { XrayEvidenceItem } from "./types/xray/import-test-execution-results";
 import { dedent } from "./util/dedent";
-import {
-    CucumberPreprocessorArgs,
-    CucumberPreprocessorExports,
-    importOptionalDependency,
-} from "./util/dependencies";
+import type { CucumberPreprocessorArgs, CucumberPreprocessorExports } from "./util/dependencies";
+import { importOptionalDependency } from "./util/dependencies";
 import { errorMessage } from "./util/errors";
-import { ExecutableGraph } from "./util/graph/executable-graph";
+import type { ExecutableGraph } from "./util/graph/executable-graph";
 import { HELP } from "./util/help";
-import { LOG, Level, Logger } from "./util/logging";
+import type { Logger } from "./util/logging";
+import { LOG, Level } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asObject, asString, parse } from "./util/parsing";
 
 // REMOVE IN VERSION 8.0.0

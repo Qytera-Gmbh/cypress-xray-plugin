@@ -1,6 +1,7 @@
-import { XrayClient } from "../../../../client/xray/xray-client";
-import { Logger } from "../../../../util/logging";
-import { Command, Computable } from "../../../command";
+import type { XrayClient } from "../../../../client/xray/xray-client";
+import type { Logger } from "../../../../util/logging";
+import type { Computable } from "../../../command";
+import { Command } from "../../../command";
 
 interface CommandParameters {
     xrayClient: XrayClient;

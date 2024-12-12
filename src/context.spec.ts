@@ -1,5 +1,7 @@
+import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import path from "node:path";
 import { stub } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../test/mocks";
 import {
@@ -7,6 +9,7 @@ import {
     JwtCredentials,
     PatCredentials,
 } from "./client/authentication/credentials";
+import { AxiosRestClient } from "./client/https/requests";
 import { BaseJiraClient } from "./client/jira/jira-client";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud";
 import { ServerClient } from "./client/xray/xray-client-server";
@@ -20,12 +23,8 @@ import {
     initPluginOptions,
     initXrayOptions,
 } from "./context";
-
-import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
-import path from "node:path";
-import { AxiosRestClient } from "./client/https/requests";
-import { User } from "./types/jira/responses/user";
-import {
+import type { User } from "./types/jira/responses/user";
+import type {
     InternalCucumberOptions,
     InternalHttpOptions,
     InternalJiraOptions,

@@ -2,7 +2,10 @@ import chalk from "chalk";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { CypressFailedRunResultType, CypressRunResultType } from "../src/types/cypress/cypress";
+import type {
+    CypressFailedRunResultType,
+    CypressRunResultType,
+} from "../src/types/cypress/cypress";
 import { unknownToString } from "../src/util/string";
 
 export const TEST_TMP_DIR = path.join(os.tmpdir(), "cypress-xray-plugin");

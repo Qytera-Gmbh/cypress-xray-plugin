@@ -1,6 +1,6 @@
-import { ChangeItem } from "./change-item";
-import { HistoryMetadata } from "./history-metadata";
-import { User } from "./user";
+import type { ChangeItem } from "./change-item";
+import type { HistoryMetadata } from "./history-metadata";
+import type { User } from "./user";
 
 export interface ChangeHistory {
     /**

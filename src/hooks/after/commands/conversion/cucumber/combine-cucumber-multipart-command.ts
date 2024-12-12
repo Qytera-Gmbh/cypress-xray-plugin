@@ -1,10 +1,11 @@
-import {
+import type {
     CucumberMultipart,
     CucumberMultipartFeature,
 } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
-import { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
-import { Logger } from "../../../../../util/logging";
-import { Command, Computable } from "../../../../command";
+import type { MultipartInfo } from "../../../../../types/xray/requests/import-execution-multipart-info";
+import type { Logger } from "../../../../../util/logging";
+import type { Computable } from "../../../../command";
+import { Command } from "../../../../command";
 
 export class CombineCucumberMultipartCommand extends Command<CucumberMultipart, null> {
     private readonly cucumberMultipartInfo: Computable<MultipartInfo>;

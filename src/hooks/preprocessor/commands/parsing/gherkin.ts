@@ -1,5 +1,6 @@
 import { AstBuilder, GherkinClassicTokenMatcher, Parser } from "@cucumber/gherkin";
-import { GherkinDocument, IdGenerator } from "@cucumber/messages";
+import type { GherkinDocument } from "@cucumber/messages";
+import { IdGenerator } from "@cucumber/messages";
 import fs from "fs";
 
 /**

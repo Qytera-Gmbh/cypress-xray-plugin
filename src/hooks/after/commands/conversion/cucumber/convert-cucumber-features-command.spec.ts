@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { getMockedLogger } from "../../../../../../test/mocks";
 import { expectToExist } from "../../../../../../test/util";
-import { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
+import type { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
 import { dedent } from "../../../../../util/dedent";
 import { Level } from "../../../../../util/logging";
 import { ConstantCommand } from "../../../../util/commands/constant-command";

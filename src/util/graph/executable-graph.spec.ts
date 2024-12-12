@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import path from "node:path";
-import { Computable, ComputableState, Stateful } from "../../hooks/command";
+import type { Computable, Stateful } from "../../hooks/command";
+import { ComputableState } from "../../hooks/command";
 import { SkippedError } from "../errors";
 import { ExecutableGraph } from "./executable-graph";
 

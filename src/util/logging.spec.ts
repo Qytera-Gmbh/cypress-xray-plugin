@@ -1,4 +1,5 @@
-import { AxiosError, AxiosHeaders, AxiosResponse } from "axios";
+import type { AxiosResponse } from "axios";
+import { AxiosError, AxiosHeaders } from "axios";
 import { expect } from "chai";
 import chalk from "chalk";
 import fs from "node:fs";

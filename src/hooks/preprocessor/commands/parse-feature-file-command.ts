@@ -1,4 +1,4 @@
-import { GherkinDocument } from "@cucumber/messages";
+import type { GherkinDocument } from "@cucumber/messages";
 import { dedent } from "../../../util/dedent";
 import { errorMessage } from "../../../util/errors";
 import { Level } from "../../../util/logging";
