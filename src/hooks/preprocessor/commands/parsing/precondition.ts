@@ -1,4 +1,4 @@
-import { Background, Comment } from "@cucumber/messages";
+import type { Background, Comment } from "@cucumber/messages";
 
 /**
  * Extracts all comments which are relevant for linking a background to precondition issues.

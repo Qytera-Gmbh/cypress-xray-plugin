@@ -1,6 +1,7 @@
-import { CypressRunResultType } from "../../../types/cypress/cypress";
-import { Logger } from "../../../util/logging";
-import { Command, Computable } from "../../command";
+import type { CypressRunResultType } from "../../../types/cypress/cypress";
+import type { Logger } from "../../../util/logging";
+import type { Computable } from "../../command";
+import { Command } from "../../command";
 
 export class ExtractVideoFilesCommand extends Command<string[], null> {
     private readonly cypressRunResult: Computable<CypressRunResultType>;

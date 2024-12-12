@@ -1,25 +1,26 @@
-import { AxiosRequestConfig } from "axios";
+import type { AxiosRequestConfig } from "axios";
 import chai from "chai";
-import { SinonStub, SinonStubbedInstance, restore, stub } from "sinon";
+import type { SinonStub, SinonStubbedInstance } from "sinon";
+import { restore, stub } from "sinon";
 import sinonChai from "sinon-chai";
 import { JwtCredentials } from "../src/client/authentication/credentials";
 import { AxiosRestClient } from "../src/client/https/requests";
-import { JiraClient } from "../src/client/jira/jira-client";
-import { XrayClient } from "../src/client/xray/xray-client";
-import {
+import type { JiraClient } from "../src/client/jira/jira-client";
+import type { XrayClient } from "../src/client/xray/xray-client";
+import type {
     HasTestResults,
     HasTestTypes,
     XrayClientCloud,
 } from "../src/client/xray/xray-client-cloud";
-import { SearchRequest } from "../src/types/jira/requests/search";
-import { IssueUpdate } from "../src/types/jira/responses/issue-update";
-import { User } from "../src/types/jira/responses/user";
-import { XrayTestExecutionResults } from "../src/types/xray/import-test-execution-results";
-import { CucumberMultipartFeature } from "../src/types/xray/requests/import-execution-cucumber-multipart";
-import { MultipartInfo } from "../src/types/xray/requests/import-execution-multipart-info";
+import type { SearchRequest } from "../src/types/jira/requests/search";
+import type { IssueUpdate } from "../src/types/jira/responses/issue-update";
+import type { User } from "../src/types/jira/responses/user";
+import type { XrayTestExecutionResults } from "../src/types/xray/import-test-execution-results";
+import type { CucumberMultipartFeature } from "../src/types/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../src/types/xray/requests/import-execution-multipart-info";
 import { dedent } from "../src/util/dedent";
+import type { Logger } from "../src/util/logging";
 import * as logging from "../src/util/logging";
-import { Logger } from "../src/util/logging";
 
 chai.use(sinonChai);
 

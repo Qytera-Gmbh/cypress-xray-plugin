@@ -1,5 +1,5 @@
 import { Queue } from "../../queue/queue";
-import { DirectedGraph } from "../graph";
+import type { DirectedGraph } from "../graph";
 
 /**
  * Computes a topological order for all vertices contained in a directed graph.

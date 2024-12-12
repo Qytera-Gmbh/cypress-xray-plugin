@@ -12,19 +12,20 @@ import {
     initPluginOptions,
     initXrayOptions,
 } from "../../context";
-import { CypressRunResultType } from "../../types/cypress/cypress";
-import {
+import type { CypressRunResultType } from "../../types/cypress/cypress";
+import type {
     ClientCombination,
     InternalCucumberOptions,
     InternalCypressXrayPluginOptions,
 } from "../../types/plugin";
-import {
+import type {
     CucumberMultipart,
     CucumberMultipartFeature,
 } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
 import { Level } from "../../util/logging";
-import { Command, ComputableState } from "../command";
+import type { Command } from "../command";
+import { ComputableState } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";
 import { DestructureCommand } from "../util/commands/destructure-command";
 import { FallbackCommand } from "../util/commands/fallback-command";

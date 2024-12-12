@@ -1,22 +1,22 @@
-import { AxiosResponse } from "axios";
+import type { AxiosResponse } from "axios";
 import FormData from "form-data";
-import { StringMap } from "../../types/util";
-import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
-import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
-import { GetTestExecutionResponseCloud } from "../../types/xray/responses/graphql/get-test-execution";
-import { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
-import { Test } from "../../types/xray/responses/graphql/xray";
-import { ImportExecutionResponseCloud } from "../../types/xray/responses/import-execution";
-import {
+import type { StringMap } from "../../types/util";
+import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
+import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
+import type { GetTestExecutionResponseCloud } from "../../types/xray/responses/graphql/get-test-execution";
+import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
+import type { Test } from "../../types/xray/responses/graphql/xray";
+import type { ImportExecutionResponseCloud } from "../../types/xray/responses/import-execution";
+import type {
     ImportFeatureResponse,
     ImportFeatureResponseCloud,
     IssueDetails,
 } from "../../types/xray/responses/import-feature";
 import { dedent } from "../../util/dedent";
 import { LOG, Level } from "../../util/logging";
-import { JwtCredentials } from "../authentication/credentials";
-import { AxiosRestClient } from "../https/requests";
+import type { JwtCredentials } from "../authentication/credentials";
+import type { AxiosRestClient } from "../https/requests";
 import { loggedRequest } from "../util";
 import { AbstractXrayClient } from "./xray-client";
 

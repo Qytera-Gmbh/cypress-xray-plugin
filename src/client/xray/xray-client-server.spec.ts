@@ -2,16 +2,17 @@ import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
 import { expect } from "chai";
 import fs from "fs";
 import path from "node:path";
-import { SinonStubbedInstance } from "sinon";
+import type { SinonStubbedInstance } from "sinon";
 import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
-import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
-import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
+import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
+import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import { dedent } from "../../util/dedent";
 import { Level } from "../../util/logging";
 import { BasicAuthCredentials } from "../authentication/credentials";
-import { AxiosRestClient } from "../https/requests";
-import { ServerClient, XrayClientServer } from "./xray-client-server";
+import type { AxiosRestClient } from "../https/requests";
+import type { XrayClientServer } from "./xray-client-server";
+import { ServerClient } from "./xray-client-server";
 
 describe(path.relative(process.cwd(), __filename), () => {
     describe(ServerClient.name, () => {

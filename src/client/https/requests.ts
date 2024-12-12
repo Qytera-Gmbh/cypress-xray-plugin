@@ -1,11 +1,11 @@
-import axios, {
+import type {
     AxiosInstance,
     AxiosRequestConfig,
     AxiosRequestHeaders,
     AxiosResponse,
     InternalAxiosRequestConfig,
-    isAxiosError,
 } from "axios";
+import axios, { isAxiosError } from "axios";
 import FormData from "form-data";
 import { normalizedFilename } from "../../util/files";
 import { LOG, Level } from "../../util/logging";

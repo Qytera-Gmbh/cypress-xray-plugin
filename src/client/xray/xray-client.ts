@@ -1,10 +1,11 @@
-import { AxiosResponse, HttpStatusCode, isAxiosError } from "axios";
+import type { AxiosResponse } from "axios";
+import { HttpStatusCode, isAxiosError } from "axios";
 import FormData from "form-data";
 import fs from "node:fs";
-import { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
-import { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
-import { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
-import { ImportFeatureResponse } from "../../types/xray/responses/import-feature";
+import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
+import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
+import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
+import type { ImportFeatureResponse } from "../../types/xray/responses/import-feature";
 import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
 import { HELP } from "../../util/help";

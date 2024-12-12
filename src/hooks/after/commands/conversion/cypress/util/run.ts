@@ -1,10 +1,10 @@
-import {
+import type {
     RunResult as RunResult_V12,
     ScreenshotInformation as ScreenshotInformation_V12,
     TestResult as TestResult_V12,
 } from "../../../../../../types/cypress/12.0.0/api";
-import { CypressStatus } from "../../../../../../types/cypress/status";
-import { StringMap } from "../../../../../../types/util";
+import type { CypressStatus } from "../../../../../../types/cypress/status";
+import type { StringMap } from "../../../../../../types/util";
 import { getTestIssueKeys } from "../../../../util";
 import { toCypressStatus } from "./status";
 

@@ -1,5 +1,5 @@
-import { Issue } from "./issue";
-import { JsonType } from "./json-type";
+import type { Issue } from "./issue";
+import type { JsonType } from "./json-type";
 
 /**
  * An issue search response.
