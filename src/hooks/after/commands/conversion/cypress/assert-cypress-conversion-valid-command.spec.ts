@@ -1,18 +1,17 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import path from "path";
-import { getMockedLogger } from "../../../../../../test/mocks";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import type { XrayClient } from "../../../../../client/xray/xray-client";
 import type { XrayTest } from "../../../../../types/xray/import-test-execution-results";
+import { LOG } from "../../../../../util/logging";
 import { ConstantCommand } from "../../../../util/commands/constant-command";
 import { AssertCypressConversionValidCommand } from "./assert-cypress-conversion-valid-command";
 
-chai.use(chaiAsPromised);
-
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(AssertCypressConversionValidCommand.name, () => {
-        it("correctly verifies xray json data", async () => {
-            const logger = getMockedLogger();
+describe(relative(cwd(), __filename), async () => {
+    await describe(AssertCypressConversionValidCommand.name, async () => {
+        await it("correctly verifies xray json data", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const xrayJson: Parameters<XrayClient["importExecutionMultipart"]> = [
                 {
                     testExecutionKey: "CYP-123",
@@ -30,14 +29,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
             ];
             const command = new AssertCypressConversionValidCommand(
-                logger,
-                new ConstantCommand(logger, xrayJson)
+                LOG,
+                new ConstantCommand(LOG, xrayJson)
             );
-            await expect(command.compute()).to.eventually.not.be.rejected;
+            await assert.doesNotReject(command.compute());
         });
 
-        it("throws for missing xray test arrays", async () => {
-            const logger = getMockedLogger();
+        await it("throws for missing xray test arrays", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const xrayJson: Parameters<XrayClient["importExecutionMultipart"]> = [
                 { testExecutionKey: "CYP-123" },
                 {
@@ -52,16 +51,16 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
             ];
             const command = new AssertCypressConversionValidCommand(
-                logger,
-                new ConstantCommand(logger, xrayJson)
+                LOG,
+                new ConstantCommand(LOG, xrayJson)
             );
-            await expect(command.compute()).to.be.rejectedWith(
-                "Skipping Cypress results upload: No native Cypress tests were executed"
-            );
+            await assert.rejects(command.compute(), {
+                message: "Skipping Cypress results upload: No native Cypress tests were executed",
+            });
         });
 
-        it("throws for empty xray test arrays", async () => {
-            const logger = getMockedLogger();
+        await it("throws for empty xray test arrays", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const xrayJson: Parameters<XrayClient["importExecutionMultipart"]> = [
                 {
                     testExecutionKey: "CYP-123",
@@ -79,12 +78,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
             ];
             const command = new AssertCypressConversionValidCommand(
-                logger,
-                new ConstantCommand(logger, xrayJson)
+                LOG,
+                new ConstantCommand(LOG, xrayJson)
             );
-            await expect(command.compute()).to.be.rejectedWith(
-                "Skipping Cypress results upload: No native Cypress tests were executed"
-            );
+            await assert.rejects(command.compute(), {
+                message: "Skipping Cypress results upload: No native Cypress tests were executed",
+            });
         });
     });
 });

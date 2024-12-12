@@ -1,15 +1,17 @@
-import { expect } from "chai";
-import path from "path";
-import { getMockedJiraClient, getMockedLogger, getMockedXrayClient } from "../../../test/mocks";
+import axios from "axios";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { beforeEach, describe, it } from "node:test";
 import { assertIsInstanceOf } from "../../../test/util";
-import {
-    initCucumberOptions,
-    initJiraOptions,
-    initPluginOptions,
-    initXrayOptions,
-} from "../../context";
+import { PatCredentials } from "../../client/authentication/credentials";
+import { AxiosRestClient } from "../../client/https/https";
+import { BaseJiraClient } from "../../client/jira/jira-client";
+import { ServerClient } from "../../client/xray/xray-client-server";
+import globalContext from "../../context";
 import type { ClientCombination, InternalCypressXrayPluginOptions } from "../../types/plugin";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
+import { LOG } from "../../util/logging";
 import type { Command } from "../command";
 import { EditIssueFieldCommand } from "../util/commands/jira/edit-issue-field-command";
 import { GetLabelValuesCommand } from "../util/commands/jira/get-label-values-command";
@@ -21,15 +23,15 @@ import { GetLabelsToResetCommand } from "./commands/get-labels-to-reset-command"
 import { GetSummariesToResetCommand } from "./commands/get-summaries-to-reset-command";
 import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command";
 import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command";
-import { addSynchronizationCommands } from "./file-preprocessor";
+import filePreprocessor from "./file-preprocessor";
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(relative(cwd(), __filename), async () => {
     let clients: ClientCombination;
     let options: InternalCypressXrayPluginOptions;
 
     beforeEach(async () => {
         options = {
-            cucumber: await initCucumberOptions(
+            cucumber: await globalContext.initCucumberOptions(
                 {
                     env: { jsonEnabled: true },
                     excludeSpecPattern: "",
@@ -48,24 +50,33 @@ describe(path.relative(process.cwd(), __filename), () => {
                 }
             ),
             http: {},
-            jira: initJiraOptions(
+            jira: globalContext.initJiraOptions(
                 {},
                 {
                     projectKey: "CYP",
-                    url: "https://example.org",
+                    url: "http://localhost:1234",
                 }
             ),
-            plugin: initPluginOptions({}, {}),
-            xray: initXrayOptions({}, {}),
+            plugin: globalContext.initPluginOptions({}, {}),
+            xray: globalContext.initXrayOptions({}, {}),
         };
+        const restClient = new AxiosRestClient(axios);
         clients = {
-            jiraClient: getMockedJiraClient(),
+            jiraClient: new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                restClient
+            ),
             kind: "server",
-            xrayClient: getMockedXrayClient(),
+            xrayClient: new ServerClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                restClient
+            ),
         };
     });
 
-    describe(addSynchronizationCommands.name, () => {
+    await describe(filePreprocessor.addSynchronizationCommands.name, async () => {
         const file = {
             ...({} as Cypress.FileObject),
             filePath: "./path/to/file.feature",
@@ -73,15 +84,17 @@ describe(path.relative(process.cwd(), __filename), () => {
             shouldWatch: false,
         };
 
-        it("adds all commands necessary for feature file upload", () => {
-            const logger = getMockedLogger();
+        await it("adds all commands necessary for feature file upload", (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const graph = new ExecutableGraph<Command>();
-            addSynchronizationCommands(file, options, clients, graph, logger);
+            filePreprocessor.addSynchronizationCommands(file, options, clients, graph, LOG);
             const commands = [...graph.getVertices()];
             assertIsInstanceOf(commands[0], ParseFeatureFileCommand);
-            expect(commands[0].getParameters()).to.deep.eq({ filePath: "./path/to/file.feature" });
+            assert.deepStrictEqual(commands[0].getParameters(), {
+                filePath: "./path/to/file.feature",
+            });
             assertIsInstanceOf(commands[1], ExtractFeatureFileIssuesCommand);
-            expect(commands[1].getParameters()).to.deep.eq({
+            assert.deepStrictEqual(commands[1].getParameters(), {
                 displayCloudHelp: false,
                 filePath: "./path/to/file.feature",
                 prefixes: {
@@ -94,7 +107,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             assertIsInstanceOf(commands[3], GetSummaryValuesCommand);
             assertIsInstanceOf(commands[4], GetLabelValuesCommand);
             assertIsInstanceOf(commands[5], ImportFeatureCommand);
-            expect(commands[5].getParameters()).to.deep.eq({
+            assert.deepStrictEqual(commands[5].getParameters(), {
                 filePath: "./path/to/file.feature",
                 projectKey: "CYP",
                 xrayClient: clients.xrayClient,
@@ -105,22 +118,22 @@ describe(path.relative(process.cwd(), __filename), () => {
             assertIsInstanceOf(commands[9], GetSummariesToResetCommand);
             assertIsInstanceOf(commands[10], GetLabelsToResetCommand);
             assertIsInstanceOf(commands[11], EditIssueFieldCommand);
-            expect(commands[11].getParameters()).to.deep.eq({
+            assert.deepStrictEqual(commands[11].getParameters(), {
                 fieldId: "summary",
                 jiraClient: clients.jiraClient,
             });
             assertIsInstanceOf(commands[12], EditIssueFieldCommand);
-            expect(commands[12].getParameters()).to.deep.eq({
+            assert.deepStrictEqual(commands[12].getParameters(), {
                 fieldId: "labels",
                 jiraClient: clients.jiraClient,
             });
-            expect(graph.size("vertices")).to.eq(13);
+            assert.strictEqual(graph.size("vertices"), 13);
         });
 
-        it("correctly connects all commands", () => {
-            const logger = getMockedLogger();
+        await it("correctly connects all commands", (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const graph = new ExecutableGraph<Command>();
-            addSynchronizationCommands(file, options, clients, graph, logger);
+            filePreprocessor.addSynchronizationCommands(file, options, clients, graph, LOG);
             const [
                 parseFeatureFileCommand,
                 extractIssueDataCommand,
@@ -136,70 +149,77 @@ describe(path.relative(process.cwd(), __filename), () => {
                 editSummariesCommand,
                 editLabelsCommand,
             ] = [...graph.getVertices()];
-            expect([...graph.getPredecessors(parseFeatureFileCommand)]).to.deep.eq([]);
-            expect([...graph.getPredecessors(extractIssueDataCommand)]).to.deep.eq([
-                parseFeatureFileCommand,
-            ]);
-            expect([...graph.getPredecessors(extractIssueKeysCommand)]).to.deep.eq([
-                extractIssueDataCommand,
-            ]);
-            expect([...graph.getPredecessors(getCurrentSummariesCommand)]).to.deep.eq([
-                extractIssueKeysCommand,
-            ]);
-            expect([...graph.getPredecessors(getCurrentLabelsCommand)]).to.deep.eq([
-                extractIssueKeysCommand,
-            ]);
-            expect([...graph.getPredecessors(importFeatureCommand)]).to.deep.eq([
-                getCurrentSummariesCommand,
-                getCurrentLabelsCommand,
-            ]);
-            expect([...graph.getPredecessors(getUpdatedIssuesCommand)]).to.deep.eq([
-                extractIssueKeysCommand,
-                importFeatureCommand,
-            ]);
-            expect([...graph.getPredecessors(getNewSummariesCommand)]).to.deep.eq([
-                extractIssueKeysCommand,
-                getUpdatedIssuesCommand,
-            ]);
-            expect([...graph.getPredecessors(getNewLabelsCommand)]).to.deep.eq([
-                extractIssueKeysCommand,
-                getUpdatedIssuesCommand,
-            ]);
-            expect([...graph.getPredecessors(getSummariesToResetCommand)]).to.deep.eq([
-                getCurrentSummariesCommand,
-                getNewSummariesCommand,
-            ]);
-            expect([...graph.getPredecessors(getLabelsToResetCommand)]).to.deep.eq([
-                getCurrentLabelsCommand,
-                getNewLabelsCommand,
-            ]);
-            expect([...graph.getPredecessors(editSummariesCommand)]).to.deep.eq([
-                getSummariesToResetCommand,
-            ]);
-            expect([...graph.getPredecessors(editLabelsCommand)]).to.deep.eq([
-                getLabelsToResetCommand,
-            ]);
-            expect(graph.size("edges")).to.eq(18);
+            assert.deepStrictEqual([...graph.getPredecessors(parseFeatureFileCommand)], []);
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(extractIssueDataCommand)],
+                [parseFeatureFileCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(extractIssueKeysCommand)],
+                [extractIssueDataCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(getCurrentSummariesCommand)],
+                [extractIssueKeysCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(getCurrentLabelsCommand)],
+                [extractIssueKeysCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(importFeatureCommand)],
+                [getCurrentSummariesCommand, getCurrentLabelsCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(getUpdatedIssuesCommand)],
+                [extractIssueKeysCommand, importFeatureCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(getNewSummariesCommand)],
+                [extractIssueKeysCommand, getUpdatedIssuesCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(getNewLabelsCommand)],
+                [extractIssueKeysCommand, getUpdatedIssuesCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(getSummariesToResetCommand)],
+                [getCurrentSummariesCommand, getNewSummariesCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(getLabelsToResetCommand)],
+                [getCurrentLabelsCommand, getNewLabelsCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(editSummariesCommand)],
+                [getSummariesToResetCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(editLabelsCommand)],
+                [getLabelsToResetCommand]
+            );
+            assert.strictEqual(graph.size("edges"), 18);
         });
 
-        it("reuses existing commands", () => {
-            const logger = getMockedLogger();
+        await it("reuses existing commands", (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const graph = new ExecutableGraph<Command>();
             const parseFeatureFileCommand = graph.place(
-                new ParseFeatureFileCommand({ filePath: "./path/to/file.feature" }, logger)
+                new ParseFeatureFileCommand({ filePath: "./path/to/file.feature" }, LOG)
             );
-            addSynchronizationCommands(file, options, clients, graph, logger);
+            filePreprocessor.addSynchronizationCommands(file, options, clients, graph, LOG);
             const commands = [...graph.getVertices()];
             const extractIssueDataCommand = commands[1];
-            expect([...graph.getPredecessors(extractIssueDataCommand)]).to.deep.eq([
-                parseFeatureFileCommand,
-            ]);
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(extractIssueDataCommand)],
+                [parseFeatureFileCommand]
+            );
         });
 
-        it("uses preconfigured jira field ids", () => {
-            const logger = getMockedLogger();
+        await it("uses preconfigured jira field ids", (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const graph = new ExecutableGraph<Command>();
-            addSynchronizationCommands(file, options, clients, graph, logger);
+            filePreprocessor.addSynchronizationCommands(file, options, clients, graph, LOG);
             const commands = [...graph.getVertices()];
             const extractIssueKeysCommand = commands[2];
             const getCurrentSummariesCommand = commands[3];
@@ -208,22 +228,24 @@ describe(path.relative(process.cwd(), __filename), () => {
             const getNewSummariesCommand = commands[7];
             const getNewLabelsCommand = commands[8];
             assertIsInstanceOf(extractIssueKeysCommand, ExtractIssueKeysCommand);
-            expect([...graph.getPredecessors(getCurrentSummariesCommand)]).to.deep.eq([
-                extractIssueKeysCommand,
-            ]);
-            expect([...graph.getPredecessors(getCurrentLabelsCommand)]).to.deep.eq([
-                extractIssueKeysCommand,
-            ]);
-            expect([...graph.getPredecessors(getNewSummariesCommand)]).to.deep.eq([
-                extractIssueKeysCommand,
-                getUpdatedIssuesCommand,
-            ]);
-            expect([...graph.getPredecessors(getNewLabelsCommand)]).to.deep.eq([
-                extractIssueKeysCommand,
-                getUpdatedIssuesCommand,
-            ]);
-            expect(graph.size("vertices")).to.eq(13);
-            expect(graph.size("edges")).to.eq(18);
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(getCurrentSummariesCommand)],
+                [extractIssueKeysCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(getCurrentLabelsCommand)],
+                [extractIssueKeysCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(getNewSummariesCommand)],
+                [extractIssueKeysCommand, getUpdatedIssuesCommand]
+            );
+            assert.deepStrictEqual(
+                [...graph.getPredecessors(getNewLabelsCommand)],
+                [extractIssueKeysCommand, getUpdatedIssuesCommand]
+            );
+            assert.strictEqual(graph.size("vertices"), 13);
+            assert.strictEqual(graph.size("edges"), 18);
         });
     });
 });

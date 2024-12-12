@@ -1,84 +1,95 @@
-import { expect } from "chai";
-import path from "node:path";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { contains } from "./compare";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(contains.name, () => {
-        describe("primitive types", () => {
-            it("bigint", () => {
-                expect(contains(BigInt(200), BigInt(200))).to.be.true;
+describe(relative(cwd(), __filename), async () => {
+    await describe(contains.name, async () => {
+        await describe("primitive types", async () => {
+            await it("bigint", () => {
+                assert.strictEqual(contains(BigInt(200), BigInt(200)), true);
             });
-            it("bigint (negative)", () => {
-                expect(contains(BigInt(200), BigInt(500))).to.be.false;
+            await it("bigint (negative)", () => {
+                assert.strictEqual(contains(BigInt(200), BigInt(500)), false);
             });
-            it("boolean", () => {
-                expect(contains(true, true)).to.be.true;
+            await it("boolean", () => {
+                assert.strictEqual(contains(true, true), true);
             });
-            it("boolean (negative)", () => {
-                expect(contains(true, false)).to.be.false;
+            await it("boolean (negative)", () => {
+                assert.strictEqual(contains(true, false), false);
             });
-            it("function", () => {
-                expect(contains(console.log, console.log)).to.be.true;
+            await it("function", () => {
+                assert.strictEqual(contains(console.log, console.log), true);
             });
-            it("function (negative)", () => {
-                expect(contains(console.log, console.info)).to.be.false;
+            await it("function (negative)", () => {
+                assert.strictEqual(contains(console.log, console.info), false);
             });
-            it("number", () => {
-                expect(contains(42, 42)).to.be.true;
+            await it("number", () => {
+                assert.strictEqual(contains(42, 42), true);
             });
-            it("number (negative)", () => {
-                expect(contains(42, 1000)).to.be.false;
+            await it("number (negative)", () => {
+                assert.strictEqual(contains(42, 1000), false);
             });
-            it("string", () => {
-                expect(contains("hello", "hello")).to.be.true;
+            await it("string", () => {
+                assert.strictEqual(contains("hello", "hello"), true);
             });
-            it("string (negative)", () => {
-                expect(contains("hello", "bye")).to.be.false;
+            await it("string (negative)", () => {
+                assert.strictEqual(contains("hello", "bye"), false);
             });
-            it("symbol", () => {
-                expect(contains(Symbol.for("abc"), Symbol.for("abc"))).to.be.true;
+            await it("symbol", () => {
+                assert.strictEqual(contains(Symbol.for("abc"), Symbol.for("abc")), true);
             });
-            it("symbol (negative)", () => {
-                expect(contains(Symbol.for("abc"), Symbol.for("def"))).to.be.false;
+            await it("symbol (negative)", () => {
+                assert.strictEqual(contains(Symbol.for("abc"), Symbol.for("def")), false);
             });
-            it("undefined", () => {
-                expect(contains(undefined, undefined)).to.be.true;
+            await it("undefined", () => {
+                assert.strictEqual(contains(undefined, undefined), true);
             });
-            it("undefined (negative)", () => {
-                expect(contains(undefined, 42)).to.be.false;
-            });
-        });
-
-        describe("arrays", () => {
-            it("equal", () => {
-                expect(contains([1, 2, 3, "hello", false], [1, 2, 3, "hello", false])).to.be.true;
-            });
-            it("partially equal", () => {
-                expect(contains([1, 2, 3, "hello", false], [false, "hello", 3])).to.be.true;
-            });
-            it("not equal", () => {
-                expect(contains([1, 2, 3, "hello", false], [true, "bye", 17])).to.be.false;
-            });
-            it("not equal and no array", () => {
-                expect(contains(null, [1, 2, 3])).to.be.false;
+            await it("undefined (negative)", () => {
+                assert.strictEqual(contains(undefined, 42), false);
             });
         });
 
-        describe("objects", () => {
-            it("equal", () => {
-                expect(contains({ a: "b", c: 5, d: false }, { a: "b", c: 5, d: false })).to.be.true;
+        await describe("arrays", async () => {
+            await it("equal", () => {
+                assert.strictEqual(
+                    contains([1, 2, 3, "hello", false], [1, 2, 3, "hello", false]),
+                    true
+                );
             });
-            it("partially equal", () => {
-                expect(contains({ a: "b", c: 5, d: false }, { c: 5, d: false })).to.be.true;
+            await it("partially equal", () => {
+                assert.strictEqual(contains([1, 2, 3, "hello", false], [false, "hello", 3]), true);
             });
-            it("not equal", () => {
-                expect(contains({ a: "b", c: 5, d: false }, { [5]: "oh no", x: "y" })).to.be.false;
+            await it("not equal", () => {
+                assert.strictEqual(contains([1, 2, 3, "hello", false], [true, "bye", 17]), false);
+            });
+            await it("not equal and no array", () => {
+                assert.strictEqual(contains(null, [1, 2, 3]), false);
             });
         });
 
-        describe("complex", () => {
-            it("partially equal", () => {
-                expect(
+        await describe("objects", async () => {
+            await it("equal", () => {
+                assert.strictEqual(
+                    contains({ a: "b", c: 5, d: false }, { a: "b", c: 5, d: false }),
+                    true
+                );
+            });
+            await it("partially equal", () => {
+                assert.strictEqual(contains({ a: "b", c: 5, d: false }, { c: 5, d: false }), true);
+            });
+            await it("not equal", () => {
+                assert.strictEqual(
+                    contains({ a: "b", c: 5, d: false }, { [5]: "oh no", x: "y" }),
+                    false
+                );
+            });
+        });
+
+        await describe("complex", async () => {
+            await it("partially equal", () => {
+                assert.strictEqual(
                     contains(
                         {
                             a: "b",
@@ -93,8 +104,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                             c: 5,
                             d: [{ g: "hi", h: [1052] }, { x: [{ z: "bonjour" }] }],
                         }
-                    )
-                ).to.be.true;
+                    ),
+                    true
+                );
             });
         });
     });

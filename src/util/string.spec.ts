@@ -1,29 +1,32 @@
-import { expect } from "chai";
-import path from "path";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { dedent } from "./dedent";
 import { unknownToString } from "./string";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(unknownToString.name, () => {
-        it("string", () => {
-            expect(unknownToString("hi")).to.eq("hi");
+describe(relative(cwd(), __filename), async () => {
+    await describe(unknownToString.name, async () => {
+        await it("string", () => {
+            assert.strictEqual(unknownToString("hi"), "hi");
         });
-        it("number", () => {
-            expect(unknownToString(423535.568)).to.eq("423535.568");
+        await it("number", () => {
+            assert.strictEqual(unknownToString(423535.568), "423535.568");
         });
-        it("boolean", () => {
-            expect(unknownToString(false)).to.eq("false");
+        await it("boolean", () => {
+            assert.strictEqual(unknownToString(false), "false");
         });
-        it("symbol", () => {
-            expect(unknownToString(Symbol("hello"))).to.eq("Symbol(hello)");
+        await it("symbol", () => {
+            assert.strictEqual(unknownToString(Symbol("hello")), "Symbol(hello)");
         });
-        it("function", () => {
+        await it("function", () => {
             const f: (arg1: number) => Promise<void> = async (arg1: number) => {
                 await new Promise((resolve) => {
                     resolve(arg1);
                 });
             };
-            expect(unknownToString(f)).to.eq(
+            assert.strictEqual(
+                unknownToString(f),
                 `async (arg1) => {
                 await new Promise((resolve) => {
                     resolve(arg1);
@@ -31,16 +34,18 @@ describe(path.relative(process.cwd(), __filename), () => {
             }`
             );
         });
-        it("undefined", () => {
-            expect(unknownToString(undefined)).to.eq("undefined");
+        await it("undefined", () => {
+            assert.strictEqual(unknownToString(undefined), "undefined");
         });
-        it("object", () => {
-            expect(unknownToString({ a: 5, b: [1, 2, 3], c: { d: "hi" } })).to.eq(
+        await it("object", () => {
+            assert.strictEqual(
+                unknownToString({ a: 5, b: [1, 2, 3], c: { d: "hi" } }),
                 '{"a":5,"b":[1,2,3],"c":{"d":"hi"}}'
             );
         });
-        it("object (pretty)", () => {
-            expect(unknownToString({ a: 5, b: [1, 2, 3], c: { d: "hi" } }, true)).to.eq(
+        await it("object (pretty)", () => {
+            assert.strictEqual(
+                unknownToString({ a: 5, b: [1, 2, 3], c: { d: "hi" } }, true),
                 dedent(`
                     {
                       "a": 5,

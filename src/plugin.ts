@@ -1,20 +1,8 @@
 import path from "path";
-import {
-    PluginContext,
-    SimpleEvidenceCollection,
-    getPluginContext,
-    initClients,
-    initCucumberOptions,
-    initHttpClients,
-    initJiraOptions,
-    initPluginOptions,
-    initXrayOptions,
-    setPluginContext,
-} from "./context";
-import type { PluginTaskParameterType } from "./cypress/tasks";
-import { PluginTask, PluginTaskListener } from "./cypress/tasks";
-import { addUploadCommands } from "./hooks/after/after-run";
-import { addSynchronizationCommands } from "./hooks/preprocessor/file-preprocessor";
+import globalContext, { PluginContext, SimpleEvidenceCollection } from "./context";
+import afterRun from "./hooks/after/after-run";
+import filePreprocessor from "./hooks/preprocessor/file-preprocessor";
+import { PluginTaskListener } from "./tasks/tasks";
 import type { CypressFailedRunResultType, CypressRunResultType } from "./types/cypress/cypress";
 import type {
     CypressXrayPluginOptions,
@@ -33,7 +21,7 @@ let canShowInitializationWarning = true;
  * Resets the plugin including its context.
  */
 export function resetPlugin(): void {
-    setPluginContext(undefined);
+    globalContext.setGlobalContext(undefined);
     canShowInitializationWarning = true;
 }
 
@@ -59,7 +47,10 @@ export async function configureXrayPlugin(
 ): Promise<void> {
     canShowInitializationWarning = false;
     // Resolve these before all other options for correct enabledness.
-    const pluginOptions: InternalPluginOptions = initPluginOptions(config.env, options.plugin);
+    const pluginOptions: InternalPluginOptions = globalContext.initPluginOptions(
+        config.env,
+        options.plugin
+    );
     if (!pluginOptions.enabled) {
         LOG.message(Level.INFO, "Plugin disabled. Skipping further configuration.");
         // Tasks must always be registered in case users forget to comment out imported commands.
@@ -87,40 +78,30 @@ export async function configureXrayPlugin(
         logDirectory: pluginOptions.logDirectory,
     });
     const internalOptions: InternalCypressXrayPluginOptions = {
-        cucumber: await initCucumberOptions(config, options.cucumber),
+        cucumber: await globalContext.initCucumberOptions(config, options.cucumber),
         http: options.http,
-        jira: initJiraOptions(config.env, options.jira),
+        jira: globalContext.initJiraOptions(config.env, options.jira),
         plugin: pluginOptions,
-        xray: initXrayOptions(config.env, options.xray),
+        xray: globalContext.initXrayOptions(config.env, options.xray),
     };
-    const httpClients = initHttpClients(internalOptions.plugin, internalOptions.http);
+    const httpClients = globalContext.initHttpClients(internalOptions.plugin, internalOptions.http);
     const logger = new CapturingLogger();
     const context = new PluginContext(
-        await initClients(internalOptions.jira, config.env, httpClients),
+        await globalContext.initClients(internalOptions.jira, config.env, httpClients),
         internalOptions,
         config,
         new SimpleEvidenceCollection(),
         new ExecutableGraph(),
         logger
     );
-    setPluginContext(context);
+    globalContext.setGlobalContext(context);
     const listener = new PluginTaskListener(internalOptions.jira.projectKey, context, logger);
     on("task", {
-        [PluginTask.INCOMING_RESPONSE]: (
-            args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
+        ["cypress-xray-plugin:add-evidence"]: (
+            ...args: Parameters<PluginTaskListener["addEvidence"]>
         ) => {
-            if (internalOptions.xray.uploadRequests) {
-                return listener[PluginTask.INCOMING_RESPONSE](args);
-            }
-            return args.response;
-        },
-        [PluginTask.OUTGOING_REQUEST]: (
-            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
-        ) => {
-            if (internalOptions.xray.uploadRequests) {
-                return listener[PluginTask.OUTGOING_REQUEST](args);
-            }
-            return args.request;
+            listener.addEvidence(...args);
+            return null;
         },
     });
     on("after:run", async (results: CypressFailedRunResultType | CypressRunResultType) => {
@@ -136,7 +117,7 @@ export async function configureXrayPlugin(
                     `)
                 );
             } else {
-                await addUploadCommands(
+                await afterRun.addUploadCommands(
                     results,
                     context.getCypressOptions().projectRoot,
                     context.getOptions(),
@@ -194,7 +175,7 @@ export async function configureXrayPlugin(
  * @returns the unmodified file's path
  */
 export function syncFeatureFile(file: Cypress.FileObject): string {
-    const context = getPluginContext();
+    const context = globalContext.getGlobalContext();
     if (!context) {
         if (canShowInitializationWarning) {
             LOG.message(
@@ -227,7 +208,7 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
         file.filePath.endsWith(cucumberOptions.featureFileExtension) &&
         cucumberOptions.uploadFeatures
     ) {
-        addSynchronizationCommands(
+        filePreprocessor.addSynchronizationCommands(
             file,
             context.getOptions(),
             context.getClients(),
@@ -240,11 +221,6 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
 
 function registerDefaultTasks(on: Cypress.PluginEvents) {
     on("task", {
-        [PluginTask.INCOMING_RESPONSE]: (
-            args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
-        ) => args.response,
-        [PluginTask.OUTGOING_REQUEST]: (
-            args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
-        ) => args.request,
+        ["cypress-xray-plugin:add-evidence"]: () => null,
     });
 }

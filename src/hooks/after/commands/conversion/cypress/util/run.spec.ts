@@ -1,14 +1,13 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import path from "path";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import type { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api";
 import { CypressStatus } from "../../../../../../types/cypress/status";
 import { getTestRunData_V12, getTestRunData_V13 } from "./run";
 
-chai.use(chaiAsPromised);
-
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(getTestRunData_V12.name, () => {
+describe(relative(cwd(), __filename), async () => {
+    await describe(getTestRunData_V12.name, async () => {
         const passedResult: RunResult_V12 = {
             error: null,
             hooks: [],
@@ -177,10 +176,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             video: "~/repositories/xray/cypress/videos/example.cy.ts.mp4",
         };
 
-        it("returns test data for valid runs", async () => {
+        await it("returns test data for valid runs", async () => {
             const promises = getTestRunData_V12(passedResult);
             const resolvedTestData = await Promise.all(promises);
-            expect(resolvedTestData[0]).to.deep.eq({
+            assert.deepStrictEqual(resolvedTestData[0], {
                 duration: 244,
                 screenshots: [],
                 spec: {
@@ -192,10 +191,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
         });
 
-        it("includes screenshots in runs", async () => {
+        await it("includes screenshots in runs", async () => {
             const promises = getTestRunData_V12(failedResult);
             const resolvedTestData = await Promise.all(promises);
-            expect(resolvedTestData[0].screenshots).to.deep.eq([
+            assert.deepStrictEqual(resolvedTestData[0].screenshots, [
                 {
                     filepath: "./test/resources/turtle.png",
                 },
@@ -205,16 +204,16 @@ describe(path.relative(process.cwd(), __filename), () => {
             ]);
         });
 
-        it("rejects invalid runs", async () => {
+        await it("rejects invalid runs", async () => {
             const promises = getTestRunData_V12(invalidResult);
             const resolvedTestData = await Promise.allSettled(promises);
-            expect(resolvedTestData[0].status).to.eq("rejected");
-            const reason = (resolvedTestData[0] as PromiseRejectedResult).reason as Error;
-            expect(reason.message).to.eq("Unknown Cypress test status: broken");
+            assert.strictEqual(resolvedTestData[0].status, "rejected");
+            const reason = resolvedTestData[0].reason as Error;
+            assert.strictEqual(reason.message, "Unknown Cypress test status: broken");
         });
     });
 
-    describe(getTestRunData_V13.name, () => {
+    await describe(getTestRunData_V13.name, async () => {
         const passedResult: CypressCommandLine.RunResult = {
             error: null,
             reporter: "spec",
@@ -382,10 +381,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             video: null,
         };
 
-        it("returns test data for valid runs", async () => {
+        await it("returns test data for valid runs", async () => {
             const promises = getTestRunData_V13(passedResult, "CYP");
             const resolvedTestData = await Promise.all(promises);
-            expect(resolvedTestData).to.deep.eq([
+            assert.deepStrictEqual(resolvedTestData, [
                 {
                     duration: 638,
                     screenshots: [],
@@ -409,21 +408,21 @@ describe(path.relative(process.cwd(), __filename), () => {
             ]);
         });
 
-        it("includes relevant screenshots in runs", async () => {
+        await it("includes relevant screenshots in runs", async () => {
             const promises = getTestRunData_V13(failedResult, "CYP");
             const resolvedTestData = await Promise.all(promises);
-            expect(resolvedTestData[0].screenshots).to.deep.eq([
+            assert.deepStrictEqual(resolvedTestData[0].screenshots, [
                 { filepath: "./test/resources/small CYP-237.png" },
                 { filepath: "./test/resources/manual CYP-237 screenshot.png" },
             ]);
         });
 
-        it("rejects invalid runs", async () => {
+        await it("rejects invalid runs", async () => {
             const promises = getTestRunData_V13(invalidResult, "CYP");
             const resolvedTestData = await Promise.allSettled(promises);
-            expect(resolvedTestData[0].status).to.eq("rejected");
-            const reason = (resolvedTestData[0] as PromiseRejectedResult).reason as Error;
-            expect(reason.message).to.eq("Unknown Cypress test status: broken");
+            assert.strictEqual(resolvedTestData[0].status, "rejected");
+            const reason = resolvedTestData[0].reason as Error;
+            assert.strictEqual(reason.message, "Unknown Cypress test status: broken");
         });
     });
 });

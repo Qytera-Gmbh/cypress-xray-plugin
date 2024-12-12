@@ -7,7 +7,7 @@ import { findFiles } from "./util";
 
 const INTEGRATION_DIR = resolve("test", "integration");
 
-const TEST_STREAM = run({ files: findFiles(INTEGRATION_DIR, (name) => name.endsWith(".test.ts")) })
+const TEST_STREAM = run({ files: findFiles(INTEGRATION_DIR, (name) => name.endsWith(".spec.ts")) })
     .once("test:fail", () => {
         process.exitCode = 1;
     })

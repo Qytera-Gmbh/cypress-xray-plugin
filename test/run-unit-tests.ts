@@ -9,7 +9,7 @@ const SRC_DIR = resolve("src");
 
 const TEST_STREAM = run({
     concurrency: true,
-    files: findFiles(SRC_DIR, (name) => name.endsWith(".test.ts")),
+    files: findFiles(SRC_DIR, (name) => name.endsWith(".spec.ts")),
 })
     .once("test:fail", () => {
         process.exitCode = 1;

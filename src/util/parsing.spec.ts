@@ -1,73 +1,77 @@
-import { expect } from "chai";
-import path from "path";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { dedent } from "./dedent";
 import { asArrayOfStrings, asBoolean, asFloat, asInt, asObject } from "./parsing";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(asBoolean.name, () => {
-        describe(true.toString(), () => {
-            it("y", () => {
-                expect(asBoolean("y")).to.be.true;
+describe(relative(cwd(), __filename), async () => {
+    await describe(asBoolean.name, async () => {
+        await describe(true.toString(), async () => {
+            await it("y", () => {
+                assert.strictEqual(asBoolean("y"), true);
             });
-            it("yes", () => {
-                expect(asBoolean("yes")).to.be.true;
+            await it("yes", () => {
+                assert.strictEqual(asBoolean("yes"), true);
             });
-            it("true", () => {
-                expect(asBoolean("true")).to.be.true;
+            await it("true", () => {
+                assert.strictEqual(asBoolean("true"), true);
             });
-            it("1", () => {
-                expect(asBoolean("1")).to.be.true;
+            await it("1", () => {
+                assert.strictEqual(asBoolean("1"), true);
             });
-            it("on", () => {
-                expect(asBoolean("on")).to.be.true;
-            });
-        });
-        describe(false.toString(), () => {
-            it("n", () => {
-                expect(asBoolean("n")).to.be.false;
-            });
-            it("no", () => {
-                expect(asBoolean("no")).to.be.false;
-            });
-            it("false", () => {
-                expect(asBoolean("false")).to.be.false;
-            });
-            it("0", () => {
-                expect(asBoolean("0")).to.be.false;
-            });
-            it("off", () => {
-                expect(asBoolean("off")).to.be.false;
+            await it("on", () => {
+                assert.strictEqual(asBoolean("on"), true);
             });
         });
-        it("throws for unknown values", () => {
-            expect(() => asBoolean("hi")).to.throw("Failed to parse boolean value from string: hi");
+        await describe(false.toString(), async () => {
+            await it("n", () => {
+                assert.strictEqual(asBoolean("n"), false);
+            });
+            await it("no", () => {
+                assert.strictEqual(asBoolean("no"), false);
+            });
+            await it("false", () => {
+                assert.strictEqual(asBoolean("false"), false);
+            });
+            await it("0", () => {
+                assert.strictEqual(asBoolean("0"), false);
+            });
+            await it("off", () => {
+                assert.strictEqual(asBoolean("off"), false);
+            });
         });
-    });
-    describe(asFloat.name, () => {
-        it("10", () => {
-            expect(asFloat("10")).to.eq(10.0);
-        });
-        it("-1242.0535", () => {
-            expect(asFloat("-1242.0535")).to.eq(-1242.0535);
-        });
-        it("returns NaN for unknown values", () => {
-            expect(asFloat("hi")).to.be.NaN;
+        await it("throws for unknown values", () => {
+            assert.throws(() => asBoolean("hi"), {
+                message: "Failed to parse boolean value from string: hi",
+            });
         });
     });
-    describe(asInt.name, () => {
-        it("10", () => {
-            expect(asInt("10")).to.eq(10);
+    await describe(asFloat.name, async () => {
+        await it("10", () => {
+            assert.strictEqual(asFloat("10"), 10.0);
         });
-        it("-1242.0535", () => {
-            expect(asInt("-1242.0535")).to.eq(-1242);
+        await it("-1242.0535", () => {
+            assert.strictEqual(asFloat("-1242.0535"), -1242.0535);
         });
-        it("returns NaN for unknown values", () => {
-            expect(asInt("hi")).to.be.NaN;
+        await it("returns NaN for unknown values", () => {
+            assert.strictEqual(asFloat("hi"), NaN);
         });
     });
-    describe(asArrayOfStrings.name, () => {
-        it("parses arrays containing primitives", () => {
-            expect(asArrayOfStrings([false, 5, 6, "hello", Symbol("anubis")])).to.deep.eq([
+    await describe(asInt.name, async () => {
+        await it("10", () => {
+            assert.strictEqual(asInt("10"), 10);
+        });
+        await it("-1242.0535", () => {
+            assert.strictEqual(asInt("-1242.0535"), -1242);
+        });
+        await it("returns NaN for unknown values", () => {
+            assert.strictEqual(asInt("hi"), NaN);
+        });
+    });
+    await describe(asArrayOfStrings.name, async () => {
+        await it("parses arrays containing primitives", () => {
+            assert.deepStrictEqual(asArrayOfStrings([false, 5, 6, "hello", Symbol("anubis")]), [
                 "false",
                 "5",
                 "6",
@@ -76,63 +80,65 @@ describe(path.relative(process.cwd(), __filename), () => {
             ]);
         });
 
-        it("throws for non-array arguments", () => {
-            expect(() => asArrayOfStrings(5)).to.throw(
-                dedent(`
+        await it("throws for non-array arguments", () => {
+            assert.throws(() => asArrayOfStrings(5), {
+                message: dedent(`
                     Failed to parse as array of strings: 5
                     Expected an array of primitives, but got: 5
-                `)
-            );
+                `),
+            });
         });
 
-        it("throws for empty arguments", () => {
-            expect(() => asArrayOfStrings([])).to.throw(
-                dedent(`
+        await it("throws for empty arguments", () => {
+            assert.throws(() => asArrayOfStrings([]), {
+                message: dedent(`
                     Failed to parse as array of strings: []
                     Expected an array of primitives with at least one element
-                `)
-            );
+                `),
+            });
         });
 
-        it("throws for non-array elements", () => {
-            expect(() => asArrayOfStrings([1, 2, [3, "4"], 5])).to.throw(
-                dedent(`
+        await it("throws for non-array elements", () => {
+            assert.throws(() => asArrayOfStrings([1, 2, [3, "4"], 5]), {
+                message: dedent(`
                     Failed to parse as array of strings: [1,2,[3,"4"],5]
                     Expected a primitive element at index 2, but got: [3,"4"]
-                `)
-            );
+                `),
+            });
         });
     });
-    describe(asObject.name, () => {
-        it("parses objects", () => {
-            expect(asObject({ hello: 5, something: { nested: "hi" } })).to.deep.eq({
+    await describe(asObject.name, async () => {
+        await it("parses objects", () => {
+            assert.deepStrictEqual(asObject({ hello: 5, something: { nested: "hi" } }), {
                 hello: 5,
                 something: { nested: "hi" },
             });
         });
 
-        it("throws for array arguments", () => {
-            expect(() => asObject([5, false, 6, "hi"])).to.throw(
-                'Failed to parse as object: [5,false,6,"hi"]'
-            );
+        await it("throws for array arguments", () => {
+            assert.throws(() => asObject([5, false, 6, "hi"]), {
+                message: 'Failed to parse as object: [5,false,6,"hi"]',
+            });
         });
 
-        describe("throws for primitive arguments", () => {
+        await describe("throws for primitive arguments", async () => {
             for (const value of ["hi", false, 15, Symbol("good"), BigInt(12345)]) {
-                it(`type: ${typeof value}`, () => {
-                    expect(() => asObject(value)).to.throw(
-                        `Failed to parse as object: ${value.toString()}`
-                    );
+                await it(`type: ${typeof value}`, () => {
+                    assert.throws(() => asObject(value), {
+                        message: `Failed to parse as object: ${value.toString()}`,
+                    });
                 });
             }
         });
 
-        it("throws for null elements", () => {
-            expect(() => asObject(null)).to.throw("Failed to parse as object: null");
+        await it("throws for null elements", () => {
+            assert.throws(() => asObject(null), { message: "Failed to parse as object: null" });
         });
 
-        it("throws for undefined elements", () => {
-            expect(() => asObject(undefined)).to.throw("Failed to parse as object: undefined");
+        await it("throws for undefined elements", () => {
+            assert.throws(() => asObject(undefined), {
+                message: "Failed to parse as object: undefined",
+            });
         });
     });
 });

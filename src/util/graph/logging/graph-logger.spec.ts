@@ -1,6 +1,11 @@
-import { expect } from "chai";
-import path from "node:path";
-import { getMockedXrayClient } from "../../../../test/mocks";
+import axios from "axios";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
+import { PatCredentials } from "../../../client/authentication/credentials";
+import { AxiosRestClient } from "../../../client/https/https";
+import { ServerClient } from "../../../client/xray/xray-client-server";
 import type { Failable } from "../../../hooks/command";
 import { Command, ComputableState } from "../../../hooks/command";
 import { ImportExecutionCucumberCommand } from "../../../hooks/util/commands/xray/import-execution-cucumber-command";
@@ -15,9 +20,9 @@ import { CapturingLogger, Level } from "../../logging";
 import { SimpleDirectedGraph } from "../graph";
 import { ChainingCommandGraphLogger, ChainingGraphLogger } from "./graph-logger";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(ChainingGraphLogger.name, () => {
-        it("logs correctly indented message chains", () => {
+describe(relative(cwd(), __filename), async () => {
+    await describe(ChainingGraphLogger.name, async () => {
+        await it("logs correctly indented message chains", () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({ getFailure: () => new Error("A failed") });
             const b = graph.place({ getFailure: () => undefined });
@@ -42,7 +47,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             graph.connect(x, z);
             const logger = new CapturingLogger();
             new ChainingGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.ERROR,
                     dedent(`
@@ -64,7 +69,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             ]);
         });
 
-        it("logs correctly indented message chains in diamond form", () => {
+        await it("logs correctly indented message chains in diamond form", () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({ getFailure: () => new Error("A failed") });
             const b = graph.place({ getFailure: () => undefined });
@@ -87,7 +92,7 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             const logger = new CapturingLogger();
             new ChainingGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.ERROR,
                     dedent(`
@@ -123,7 +128,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             ]);
         });
 
-        it("does not log entirely successful forests", () => {
+        await it("does not log entirely successful forests", () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({ getFailure: () => undefined });
             const b = graph.place({ getFailure: () => undefined });
@@ -148,10 +153,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             graph.connect(x, z);
             const logger = new CapturingLogger();
             new ChainingGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([]);
+            assert.deepStrictEqual(logger.getMessages(), []);
         });
 
-        it("logs correctly indented multiline chains", () => {
+        await it("logs correctly indented multiline chains", () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({
                 getFailure: () =>
@@ -184,7 +189,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             graph.connect(d, f);
             const logger = new CapturingLogger();
             new ChainingGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.WARNING,
                     dedent(`
@@ -202,7 +207,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             ]);
         });
 
-        it("logs vertices with priority first", () => {
+        await it("logs vertices with priority first", () => {
             const graph = new SimpleDirectedGraph<Failable>();
             const a = graph.place({ getFailure: () => new Error("A failed") });
             const b = graph.place({ getFailure: () => new SkippedError("B skipped") });
@@ -219,7 +224,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             new ChainingGraphLogger(logger, (vertex) => vertex === f || vertex === e).logGraph(
                 graph
             );
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.ERROR,
                     dedent(`
@@ -244,27 +249,37 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
     });
 
-    describe(ChainingCommandGraphLogger.name, () => {
+    await describe(ChainingCommandGraphLogger.name, async () => {
         class FailingCommand<R> extends Command<R, { message: string }> {
             protected computeResult(): R {
                 throw new Error(`No computing today: ${this.parameters.message}`);
             }
         }
 
-        it("adds additional information to cucumber import command failures", async () => {
+        await it("adds additional information to cucumber import command failures", async () => {
             const logger = new CapturingLogger();
             const graph = new SimpleDirectedGraph<Command>();
             const a = graph.place(
                 new FailingCommand<CucumberMultipart>({ message: "generic failure" }, logger)
             );
             const b = graph.place(
-                new ImportExecutionCucumberCommand({ xrayClient: getMockedXrayClient() }, logger, a)
+                new ImportExecutionCucumberCommand(
+                    {
+                        xrayClient: new ServerClient(
+                            "http://localhost:1234",
+                            new PatCredentials("token"),
+                            new AxiosRestClient(axios)
+                        ),
+                    },
+                    logger,
+                    a
+                )
             );
             graph.connect(a, b);
             await Promise.allSettled([a.compute()]);
             b.setState(ComputableState.SKIPPED);
             new ChainingCommandGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.ERROR,
                     dedent(`
@@ -276,7 +291,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             ]);
         });
 
-        it("adds additional information to cypress import command failures", async () => {
+        await it("adds additional information to cypress import command failures", async () => {
             const logger = new CapturingLogger();
             const graph = new SimpleDirectedGraph<Command>();
             const a = graph.place(
@@ -286,13 +301,23 @@ describe(path.relative(process.cwd(), __filename), () => {
                 )
             );
             const b = graph.place(
-                new ImportExecutionCypressCommand({ xrayClient: getMockedXrayClient() }, logger, a)
+                new ImportExecutionCypressCommand(
+                    {
+                        xrayClient: new ServerClient(
+                            "http://localhost:1234",
+                            new PatCredentials("token"),
+                            new AxiosRestClient(axios)
+                        ),
+                    },
+                    logger,
+                    a
+                )
             );
             graph.connect(a, b);
             await Promise.allSettled([a.compute()]);
             b.setState(ComputableState.SKIPPED);
             new ChainingCommandGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.ERROR,
                     dedent(`
@@ -304,10 +329,14 @@ describe(path.relative(process.cwd(), __filename), () => {
             ]);
         });
 
-        it("adds additional information to feature file import command failures", async () => {
+        await it("adds additional information to feature file import command failures", async (context) => {
             const logger = new CapturingLogger();
-            const xrayClient = getMockedXrayClient();
-            xrayClient.importFeature.rejects(new Error("the feature does not exist"));
+            const xrayClient = new ServerClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            context.mock.method(xrayClient, "importFeature", context.mock.fn());
             const graph = new SimpleDirectedGraph<Command>();
             const a = graph.place(
                 new FailingCommand<XrayTestExecutionResults>(
@@ -325,7 +354,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             await Promise.allSettled([a.compute()]);
             b.setState(ComputableState.SKIPPED);
             new ChainingCommandGraphLogger(logger).logGraph(graph);
-            expect(logger.getMessages()).to.deep.eq([
+            assert.deepStrictEqual(logger.getMessages(), [
                 [
                     Level.ERROR,
                     dedent(`

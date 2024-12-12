@@ -1,11 +1,13 @@
-import { expect } from "chai";
-import path from "node:path";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { SimpleDirectedGraph } from "../graph";
 import { computeTopologicalOrder, traverse } from "./sort";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(computeTopologicalOrder.name, () => {
-        it("computes the order for directed graphs", () => {
+describe(relative(cwd(), __filename), async () => {
+    await describe(computeTopologicalOrder.name, async () => {
+        await it("computes the order for directed graphs", () => {
             const graph = new SimpleDirectedGraph<number>();
             graph.place(0);
             graph.place(1);
@@ -30,7 +32,8 @@ describe(path.relative(process.cwd(), __filename), () => {
             graph.connect(8, 7);
             graph.connect(6, 9);
             graph.connect(9, 7);
-            expect(computeTopologicalOrder(graph)).to.deep.eq(
+            assert.deepStrictEqual(
+                computeTopologicalOrder(graph),
                 new Map([
                     [0, 2],
                     [1, 0],
@@ -47,8 +50,8 @@ describe(path.relative(process.cwd(), __filename), () => {
         });
     });
 
-    describe(traverse.name, () => {
-        it("traverses forests top-down", () => {
+    await describe(traverse.name, async () => {
+        await it("traverses forests top-down", () => {
             const graph = new SimpleDirectedGraph<string>();
             graph.place("A");
             graph.place("B");
@@ -71,22 +74,13 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             graph.connect("X", "Y");
             graph.connect("X", "Z");
-            expect([...traverse(graph, "top-down")]).to.deep.eq([
-                "A",
-                "P",
-                "X",
-                "B",
-                "D",
-                "Q",
-                "Y",
-                "Z",
-                "C",
-                "E",
-                "F",
-            ]);
+            assert.deepStrictEqual(
+                [...traverse(graph, "top-down")],
+                ["A", "P", "X", "B", "D", "Q", "Y", "Z", "C", "E", "F"]
+            );
         });
 
-        it("traverses forests bottom-up", () => {
+        await it("traverses forests bottom-up", () => {
             const graph = new SimpleDirectedGraph<string>();
             graph.place("A");
             graph.place("B");
@@ -109,23 +103,10 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             graph.connect("X", "Y");
             graph.connect("X", "Z");
-            expect([...traverse(graph, "bottom-up")]).to.deep.eq([
-                "C",
-                "E",
-                "F",
-                "Q",
-                "Y",
-                "Z",
-                "B",
-                "D",
-                "D",
-                "P",
-                "X",
-                "X",
-                "A",
-                "A",
-                "A",
-            ]);
+            assert.deepStrictEqual(
+                [...traverse(graph, "bottom-up")],
+                ["C", "E", "F", "Q", "Y", "Z", "B", "D", "D", "P", "X", "X", "A", "A", "A"]
+            );
         });
     });
 });

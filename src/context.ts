@@ -1,10 +1,11 @@
+import axios from "axios";
 import type { HttpCredentials } from "./client/authentication/credentials";
 import {
     BasicAuthCredentials,
     JwtCredentials,
     PatCredentials,
 } from "./client/authentication/credentials";
-import { AxiosRestClient } from "./client/https/requests";
+import { AxiosRestClient } from "./client/https/https";
 import type { JiraClient } from "./client/jira/jira-client";
 import { BaseJiraClient } from "./client/jira/jira-client";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud";
@@ -26,16 +27,13 @@ import type {
 import type { XrayEvidenceItem } from "./types/xray/import-test-execution-results";
 import { dedent } from "./util/dedent";
 import type { CucumberPreprocessorArgs, CucumberPreprocessorExports } from "./util/dependencies";
-import { importOptionalDependency } from "./util/dependencies";
+import dependencies from "./util/dependencies";
 import { errorMessage } from "./util/errors";
 import type { ExecutableGraph } from "./util/graph/executable-graph";
 import { HELP } from "./util/help";
 import type { Logger } from "./util/logging";
 import { LOG, Level } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asObject, asString, parse } from "./util/parsing";
-
-// REMOVE IN VERSION 8.0.0
-/* eslint-disable @typescript-eslint/no-deprecated */
 
 export interface EvidenceCollection {
     addEvidence(issueKey: string, evidence: XrayEvidenceItem): void;
@@ -113,11 +111,11 @@ export class PluginContext implements EvidenceCollection {
 
 let context: PluginContext | undefined = undefined;
 
-export function getPluginContext(): PluginContext | undefined {
+function getGlobalContext(): PluginContext | undefined {
     return context;
 }
 
-export function setPluginContext(newContext?: PluginContext): void {
+function setGlobalContext(newContext?: PluginContext): void {
     context = newContext;
 }
 
@@ -130,7 +128,7 @@ export function setPluginContext(newContext?: PluginContext): void {
  * @param options - an options object containing Jira options
  * @returns the constructed internal Jira options
  */
-export function initJiraOptions(
+function initJiraOptions(
     env: Cypress.ObjectLike,
     options: CypressXrayPluginOptions["jira"]
 ): InternalJiraOptions {
@@ -143,11 +141,6 @@ export function initJiraOptions(
         attachVideos:
             parse(env, ENV_NAMES.jira.attachVideos, asBoolean) ?? options.attachVideos ?? false,
         fields: {
-            description:
-                parse(env, ENV_NAMES.jira.fields.description, asString) ??
-                options.fields?.description,
-            labels: parse(env, ENV_NAMES.jira.fields.labels, asString) ?? options.fields?.labels,
-            summary: parse(env, ENV_NAMES.jira.fields.summary, asString) ?? options.fields?.summary,
             testEnvironments:
                 parse(env, ENV_NAMES.jira.fields.testEnvironments, asString) ??
                 options.fields?.testEnvironments,
@@ -157,25 +150,8 @@ export function initJiraOptions(
         projectKey: projectKey,
         testExecutionIssue:
             parse(env, ENV_NAMES.jira.testExecutionIssue, asObject) ?? options.testExecutionIssue,
-        testExecutionIssueDescription:
-            parse(env, ENV_NAMES.jira.testExecutionIssueDescription, asString) ??
-            options.testExecutionIssueDescription,
-        testExecutionIssueKey:
-            parse(env, ENV_NAMES.jira.testExecutionIssueKey, asString) ??
-            options.testExecutionIssueKey,
-        testExecutionIssueSummary:
-            parse(env, ENV_NAMES.jira.testExecutionIssueSummary, asString) ??
-            options.testExecutionIssueSummary,
-        testExecutionIssueType:
-            parse(env, ENV_NAMES.jira.testExecutionIssueType, asString) ??
-            options.testExecutionIssueType ??
-            "Test Execution",
         testPlanIssueKey:
             parse(env, ENV_NAMES.jira.testPlanIssueKey, asString) ?? options.testPlanIssueKey,
-        testPlanIssueType:
-            parse(env, ENV_NAMES.jira.testPlanIssueType, asString) ??
-            options.testPlanIssueType ??
-            "Test Plan",
         url: parse(env, ENV_NAMES.jira.url, asString) ?? options.url,
     };
 }
@@ -189,7 +165,7 @@ export function initJiraOptions(
  * @param options - an options object containing plugin options
  * @returns the constructed internal plugin options
  */
-export function initPluginOptions(
+function initPluginOptions(
     env: Cypress.ObjectLike,
     options: CypressXrayPluginOptions["plugin"]
 ): InternalPluginOptions {
@@ -214,7 +190,7 @@ export function initPluginOptions(
  * @param options - an options object containing Xray options
  * @returns the constructed internal Xray options
  */
-export function initXrayOptions(
+function initXrayOptions(
     env: Cypress.ObjectLike,
     options: CypressXrayPluginOptions["xray"]
 ): InternalXrayOptions {
@@ -244,10 +220,6 @@ export function initXrayOptions(
         testEnvironments:
             parse(env, ENV_NAMES.xray.testEnvironments, asArrayOfStrings) ??
             options?.testEnvironments,
-        uploadRequests:
-            parse(env, ENV_NAMES.xray.uploadRequests, asBoolean) ??
-            options?.uploadRequests ??
-            false,
         uploadResults:
             parse(env, ENV_NAMES.xray.uploadResults, asBoolean) ?? options?.uploadResults ?? true,
         uploadScreenshots:
@@ -266,7 +238,7 @@ export function initXrayOptions(
  * @param options - an options object containing Cucumber options
  * @returns the constructed internal Cucumber options
  */
-export async function initCucumberOptions(
+async function initCucumberOptions(
     config: CucumberPreprocessorArgs[0],
     options: CypressXrayPluginOptions["cucumber"]
 ): Promise<InternalCucumberOptions | undefined> {
@@ -279,7 +251,7 @@ export async function initCucumberOptions(
     if (featureFileExtension) {
         let preprocessor: CucumberPreprocessorExports;
         try {
-            preprocessor = await importOptionalDependency<CucumberPreprocessorExports>(
+            preprocessor = await dependencies.importOptionalDependency<CucumberPreprocessorExports>(
                 "@badeball/cypress-cucumber-preprocessor"
             );
         } catch (error: unknown) {
@@ -307,19 +279,19 @@ export async function initCucumberOptions(
         if (!preprocessorConfiguration.json.enabled) {
             throw new Error(
                 dedent(`
-                        Plugin misconfiguration: Cucumber preprocessor JSON report disabled
+                    Plugin misconfiguration: Cucumber preprocessor JSON report disabled
 
-                        Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
-                    `)
+                    Make sure to enable the JSON report as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                `)
             );
         }
         if (!preprocessorConfiguration.json.output) {
             throw new Error(
                 dedent(`
-                        Plugin misconfiguration: Cucumber preprocessor JSON report path was not set
+                    Plugin misconfiguration: Cucumber preprocessor JSON report path was not set
 
-                        Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
-                    `)
+                    Make sure to configure the JSON report path as described in https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/json-report.md
+                `)
             );
         }
         return {
@@ -346,7 +318,7 @@ export async function initCucumberOptions(
     return undefined;
 }
 
-export function initHttpClients(
+function initHttpClients(
     pluginOptions?: Pick<InternalPluginOptions, "debug">,
     httpOptions?: InternalHttpOptions
 ): HttpClientCombination {
@@ -356,7 +328,7 @@ export function initHttpClients(
         const { jira, rateLimiting: rateLimitingCommon, xray, ...httpConfigCommon } = httpOptions;
         if (jira) {
             const { rateLimiting: rateLimitingJira, ...httpConfig } = jira;
-            jiraClient = new AxiosRestClient({
+            jiraClient = new AxiosRestClient(axios, {
                 debug: pluginOptions?.debug,
                 http: {
                     ...httpConfigCommon,
@@ -367,7 +339,7 @@ export function initHttpClients(
         }
         if (xray) {
             const { rateLimiting: rateLimitingXray, ...httpConfig } = xray;
-            xrayClient = new AxiosRestClient({
+            xrayClient = new AxiosRestClient(axios, {
                 debug: pluginOptions?.debug,
                 http: {
                     ...httpConfigCommon,
@@ -377,7 +349,7 @@ export function initHttpClients(
             });
         }
         if (!jiraClient || !xrayClient) {
-            const httpClient = new AxiosRestClient({
+            const httpClient = new AxiosRestClient(axios, {
                 debug: pluginOptions?.debug,
                 http: httpConfigCommon,
                 rateLimiting: rateLimitingCommon,
@@ -390,7 +362,7 @@ export function initHttpClients(
             }
         }
     } else {
-        const httpClient = new AxiosRestClient({
+        const httpClient = new AxiosRestClient(axios, {
             debug: pluginOptions?.debug,
         });
         jiraClient = httpClient;
@@ -402,7 +374,7 @@ export function initHttpClients(
     };
 }
 
-export async function initClients(
+async function initClients(
     jiraOptions: InternalJiraOptions,
     env: Cypress.ObjectLike,
     httpClients: HttpClientCombination
@@ -631,3 +603,20 @@ async function getJiraClient(
         );
     }
 }
+
+/**
+ * Workaround until module mocking becomes a stable feature. The current approach allows replacing
+ * the functions with a mocked one.
+ *
+ * @see https://nodejs.org/docs/latest-v23.x/api/test.html#mockmodulespecifier-options
+ */
+export default {
+    getGlobalContext,
+    initClients,
+    initCucumberOptions,
+    initHttpClients,
+    initJiraOptions,
+    initPluginOptions,
+    initXrayOptions,
+    setGlobalContext,
+};

@@ -109,7 +109,7 @@
     },
     "overrides": [
         {
-            "files": ["*.test.ts"],
+            "files": ["*.spec.ts"],
             "rules": {
                 "@typescript-eslint/no-floating-promises": [
                     "warn",

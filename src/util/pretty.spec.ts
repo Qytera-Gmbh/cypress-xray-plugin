@@ -1,10 +1,12 @@
-import { expect } from "chai";
-import path from "node:path";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { prettyPadObjects, prettyPadValues } from "./pretty";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(prettyPadObjects.name, () => {
-        it("pretty pad object arrays", () => {
+describe(relative(cwd(), __filename), async () => {
+    await describe(prettyPadObjects.name, async () => {
+        await it("pretty pad object arrays", () => {
             const array = [
                 {
                     clauseNames: ["summary"],
@@ -31,7 +33,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 },
             ];
-            expect(prettyPadObjects(array)).to.deep.eq([
+            assert.deepStrictEqual(prettyPadObjects(array), [
                 {
                     clauseNames: '["summary"]',
                     custom: "false",
@@ -52,8 +54,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                 },
             ]);
         });
-        it("pretty pad object values", () => {
-            expect(
+        await it("pretty pad object values", () => {
+            assert.deepStrictEqual(
                 prettyPadValues({
                     a: [1, 2, false, true, "george"],
                     somethingLong: {
@@ -63,13 +65,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                     x: 12345,
                     y: "hello gooood Morning",
-                })
-            ).to.deep.eq({
-                a: '[1,2,false,true,"george"]',
-                somethingLong: '{"i":1,"j":2,"k":"snake"}',
-                x: "12345                    ",
-                y: '"hello gooood Morning"   ',
-            });
+                }),
+                {
+                    a: '[1,2,false,true,"george"]',
+                    somethingLong: '{"i":1,"j":2,"k":"snake"}',
+                    x: "12345                    ",
+                    y: '"hello gooood Morning"   ',
+                }
+            );
         });
     });
 });

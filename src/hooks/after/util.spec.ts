@@ -1,12 +1,14 @@
-import { expect } from "chai";
-import fs from "fs";
-import path from "path";
+import assert from "node:assert";
+import fs from "node:fs";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { beforeEach, describe, it } from "node:test";
 import type { CypressRunResultType } from "../../types/cypress/cypress";
 import { dedent } from "../../util/dedent";
 import { containsCucumberTest, containsCypressTest, getTestIssueKeys } from "./util";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(containsCypressTest.name, () => {
+describe(relative(cwd(), __filename), async () => {
+    await describe(containsCypressTest.name, async () => {
         let result: CypressRunResultType;
 
         beforeEach(() => {
@@ -15,78 +17,77 @@ describe(path.relative(process.cwd(), __filename), () => {
             ) as CypressRunResultType;
         });
 
-        it("returns true for native runs", () => {
-            expect(containsCypressTest(result)).to.be.true;
+        await it("returns true for native runs", () => {
+            assert.strictEqual(containsCypressTest(result), true);
         });
 
-        it("returns true for mixed runs", () => {
+        await it("returns true for mixed runs", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
             ) as CypressRunResultType;
-            expect(containsCypressTest(result, ".feature")).to.be.true;
+            assert.strictEqual(containsCypressTest(result, ".feature"), true);
         });
 
-        it("returns false for cucumber runs", () => {
+        await it("returns false for cucumber runs", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
             ) as CypressRunResultType;
-            expect(containsCypressTest(result, ".feature")).to.be.false;
+            assert.strictEqual(containsCypressTest(result, ".feature"), false);
         });
 
-        it("regards cucumber runs as native if cucumber was not configured", () => {
+        await it("regards cucumber runs as native if cucumber was not configured", () => {
             result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
             ) as CypressRunResultType;
-            expect(containsCypressTest(result)).to.be.true;
+            assert.strictEqual(containsCypressTest(result), true);
         });
     });
 
-    describe(containsCucumberTest.name, () => {
-        it("returns true for Cucumber runs", () => {
+    await describe(containsCucumberTest.name, async () => {
+        await it("returns true for Cucumber runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
             ) as CypressRunResultType;
-            expect(containsCucumberTest(result, ".feature")).to.be.true;
+            assert.strictEqual(containsCucumberTest(result, ".feature"), true);
         });
 
-        it("returns true for mixed runs", () => {
+        await it("returns true for mixed runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumberMixed.json", "utf-8")
             ) as CypressRunResultType;
-            expect(containsCucumberTest(result, ".feature")).to.be.true;
+            assert.strictEqual(containsCucumberTest(result, ".feature"), true);
         });
 
-        it("returns false for native runs", () => {
+        await it("returns false for native runs", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResult.json", "utf-8")
             ) as CypressRunResultType;
-            expect(containsCucumberTest(result, ".feature")).to.be.false;
+            assert.strictEqual(containsCucumberTest(result, ".feature"), false);
         });
 
-        it("regards cucumber runs as native if cucumber was not configured", () => {
+        await it("regards cucumber runs as native if cucumber was not configured", () => {
             const result = JSON.parse(
                 fs.readFileSync("./test/resources/runResultCucumber.json", "utf-8")
             ) as CypressRunResultType;
-            expect(containsCucumberTest(result)).to.be.false;
+            assert.strictEqual(containsCucumberTest(result), false);
         });
     });
 
-    describe(getTestIssueKeys.name, () => {
-        it("extracts single test issue keys", () => {
-            expect(getTestIssueKeys("this is CYP-123 a test", "CYP")).to.deep.eq(["CYP-123"]);
+    await describe(getTestIssueKeys.name, async () => {
+        await it("extracts single test issue keys", () => {
+            assert.deepStrictEqual(getTestIssueKeys("this is CYP-123 a test", "CYP"), ["CYP-123"]);
         });
 
-        it("extracts multiple test issue keys", () => {
-            expect(getTestIssueKeys("CYP-123 this is a CYP-456 test CYP-789", "CYP")).to.deep.eq([
-                "CYP-123",
-                "CYP-456",
-                "CYP-789",
-            ]);
+        await it("extracts multiple test issue keys", () => {
+            assert.deepStrictEqual(
+                getTestIssueKeys("CYP-123 this is a CYP-456 test CYP-789", "CYP"),
+                ["CYP-123", "CYP-456", "CYP-789"]
+            );
         });
 
-        it("logs warnings for missing test issue keys", () => {
-            expect(() => getTestIssueKeys("this is a test", "CYP")).to.throw(
-                dedent(`
+        await it("logs warnings for missing test issue keys", () => {
+            assert.throws(() => getTestIssueKeys("this is a test", "CYP"), {
+                message: dedent(`
                     Test: this is a test
 
                       No test issue keys found in title.
@@ -99,8 +100,8 @@ describe(path.relative(process.cwd(), __filename), () => {
 
                       For more information, visit:
                       - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
-                `)
-            );
+                `),
+            });
         });
     });
 });

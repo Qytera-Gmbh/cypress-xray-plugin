@@ -1,39 +1,41 @@
 import type { Background } from "@cucumber/messages";
-import { expect } from "chai";
-import path from "path";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { parseFeatureFile } from "./gherkin";
 import {
     getCucumberPreconditionIssueComments,
     getCucumberPreconditionIssueTags,
 } from "./precondition";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(getCucumberPreconditionIssueComments.name, () => {
-        it("extracts relevant comments without prefix", () => {
+describe(relative(cwd(), __filename), async () => {
+    await describe(getCucumberPreconditionIssueComments.name, async () => {
+        await it("extracts relevant comments without prefix", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
             );
             // Cast because we know for certain it exists.
             const background = document.feature?.children[0].background as Background;
             const comments = getCucumberPreconditionIssueComments(background, document.comments);
-            expect(comments).to.deep.eq(["#@CYP-244", "# a random comment", "#@CYP-262"]);
+            assert.deepStrictEqual(comments, ["#@CYP-244", "# a random comment", "#@CYP-262"]);
         });
 
-        it("extracts relevant comments with prefix", () => {
+        await it("extracts relevant comments with prefix", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMultipleBackground.feature"
             );
             // Cast because we know for certain it exists.
             const background: Background = document.feature?.children[0].background as Background;
             const comments = getCucumberPreconditionIssueComments(background, document.comments);
-            expect(comments).to.deep.eq([
+            assert.deepStrictEqual(comments, [
                 "#@Precondition:CYP-244",
                 "# a random comment",
                 "#@Precondition:CYP-262",
             ]);
         });
 
-        it("handles empty backgrounds", () => {
+        await it("handles empty backgrounds", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
             );
@@ -41,12 +43,12 @@ describe(path.relative(process.cwd(), __filename), () => {
             const background = document.feature?.children[0].background as Background;
             background.steps = [];
             const comments = getCucumberPreconditionIssueComments(background, document.comments);
-            expect(comments).to.deep.eq([]);
+            assert.deepStrictEqual(comments, []);
         });
     });
 
-    describe(getCucumberPreconditionIssueTags.name, () => {
-        it("extracts background tags without prefix", () => {
+    await describe(getCucumberPreconditionIssueTags.name, async () => {
+        await it("extracts background tags without prefix", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedNoPrefixMultipleBackground.feature"
             );
@@ -54,10 +56,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             const background = document.feature?.children[0].background as Background;
             const comments = getCucumberPreconditionIssueComments(background, document.comments);
             const tags = getCucumberPreconditionIssueTags(background, "CYP", comments);
-            expect(tags).to.deep.eq(["CYP-244", "CYP-262"]);
+            assert.deepStrictEqual(tags, ["CYP-244", "CYP-262"]);
         });
 
-        it("extracts background tags with prefix", () => {
+        await it("extracts background tags with prefix", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMultipleBackground.feature"
             );
@@ -70,10 +72,10 @@ describe(path.relative(process.cwd(), __filename), () => {
                 comments,
                 "Precondition:"
             );
-            expect(tags).to.deep.eq(["CYP-244", "CYP-262"]);
+            assert.deepStrictEqual(tags, ["CYP-244", "CYP-262"]);
         });
 
-        it("handles empty backgrounds", () => {
+        await it("handles empty backgrounds", () => {
             const document = parseFeatureFile(
                 "./test/resources/features/taggedPrefixMultipleBackground.feature"
             );
@@ -81,7 +83,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             const background: Background = document.feature?.children[0].background as Background;
             background.steps = [];
             const tags = getCucumberPreconditionIssueTags(background, "CYP", [], "Precondition:");
-            expect(tags).to.deep.eq([]);
+            assert.deepStrictEqual(tags, []);
         });
     });
 });

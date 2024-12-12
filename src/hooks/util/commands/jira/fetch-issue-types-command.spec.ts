@@ -1,15 +1,18 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import path from "path";
-import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks";
+import axios from "axios";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
+import { PatCredentials } from "../../../../client/authentication/credentials";
+import { AxiosRestClient } from "../../../../client/https/https";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import { BaseJiraClient } from "../../../../client/jira/jira-client";
+import { LOG } from "../../../../util/logging";
 import { FetchIssueTypesCommand } from "./fetch-issue-types-command";
 
-chai.use(chaiAsPromised);
-
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(FetchIssueTypesCommand.name, () => {
-        it("fetches issue types", async () => {
-            const jiraClient = getMockedJiraClient();
+describe(relative(cwd(), __filename), async () => {
+    await describe(FetchIssueTypesCommand.name, async () => {
+        await it("fetches issue types", async (context) => {
             const types = [
                 {
                     avatarId: 10314,
@@ -42,12 +45,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                     untranslatedName: "Story",
                 },
             ];
-            jiraClient.getIssueTypes.onFirstCall().resolves(types);
-            const command = new FetchIssueTypesCommand(
-                { jiraClient: jiraClient },
-                getMockedLogger()
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
             );
-            expect(await command.compute()).to.deep.eq(types);
+            context.mock.method(
+                jiraClient,
+                "getIssueTypes",
+                context.mock.fn<JiraClient["getIssueTypes"]>(async () => {
+                    return await Promise.resolve(types);
+                })
+            );
+            const command = new FetchIssueTypesCommand({ jiraClient: jiraClient }, LOG);
+            assert.deepStrictEqual(await command.compute(), types);
         });
     });
 });

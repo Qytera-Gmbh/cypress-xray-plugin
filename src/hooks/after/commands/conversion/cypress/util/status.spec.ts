@@ -1,83 +1,91 @@
-import { expect } from "chai";
-import path from "node:path";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { CypressStatus } from "../../../../../../types/cypress/status";
 import { getXrayStatus, toCypressStatus } from "./status";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(toCypressStatus.name, () => {
-        it("parses passed statuses", () => {
-            expect(toCypressStatus("passed")).to.eq(CypressStatus.PASSED);
+describe(relative(cwd(), __filename), async () => {
+    await describe(toCypressStatus.name, async () => {
+        await it("parses passed statuses", () => {
+            assert.strictEqual(toCypressStatus("passed"), CypressStatus.PASSED);
         });
-        it("parses failed statuses", () => {
-            expect(toCypressStatus("failed")).to.eq(CypressStatus.FAILED);
+        await it("parses failed statuses", () => {
+            assert.strictEqual(toCypressStatus("failed"), CypressStatus.FAILED);
         });
-        it("parses pending statuses", () => {
-            expect(toCypressStatus("pending")).to.eq(CypressStatus.PENDING);
+        await it("parses pending statuses", () => {
+            assert.strictEqual(toCypressStatus("pending"), CypressStatus.PENDING);
         });
-        it("parses skipped statuses", () => {
-            expect(toCypressStatus("skipped")).to.eq(CypressStatus.SKIPPED);
+        await it("parses skipped statuses", () => {
+            assert.strictEqual(toCypressStatus("skipped"), CypressStatus.SKIPPED);
         });
-        it("throws for unknown statuses", () => {
-            expect(() => toCypressStatus("5")).to.throw("Unknown Cypress test status: 5");
+        await it("throws for unknown statuses", () => {
+            assert.throws(() => toCypressStatus("5"), {
+                message: "Unknown Cypress test status: 5",
+            });
         });
     });
 
-    describe(getXrayStatus.name, () => {
-        describe("server", () => {
-            it("uses PASS as default status name for passed tests", () => {
-                expect(getXrayStatus(CypressStatus.PASSED, false)).to.eq("PASS");
+    await describe(getXrayStatus.name, async () => {
+        await describe("server", async () => {
+            await it("uses PASS as default status name for passed tests", () => {
+                assert.strictEqual(getXrayStatus(CypressStatus.PASSED, false), "PASS");
             });
-            it("uses FAIL as default status name for failed tests", () => {
-                expect(getXrayStatus(CypressStatus.FAILED, false)).to.eq("FAIL");
+            await it("uses FAIL as default status name for failed tests", () => {
+                assert.strictEqual(getXrayStatus(CypressStatus.FAILED, false), "FAIL");
             });
-            it("uses TODO as default status name for pending tests", () => {
-                expect(getXrayStatus(CypressStatus.PENDING, false)).to.eq("TODO");
+            await it("uses TODO as default status name for pending tests", () => {
+                assert.strictEqual(getXrayStatus(CypressStatus.PENDING, false), "TODO");
             });
-            it("uses FAIL as default status name for skipped tests", () => {
-                expect(getXrayStatus(CypressStatus.SKIPPED, false)).to.eq("FAIL");
-            });
-        });
-        describe("cloud", () => {
-            it("uses PASSED as default status name for passed tests", () => {
-                expect(getXrayStatus(CypressStatus.PASSED, true)).to.eq("PASSED");
-            });
-            it("uses FAILED as default status name for failed tests", () => {
-                expect(getXrayStatus(CypressStatus.FAILED, true)).to.eq("FAILED");
-            });
-            it("uses TO DO as default status name for pending tests", () => {
-                expect(getXrayStatus(CypressStatus.PENDING, true)).to.eq("TO DO");
-            });
-            it("uses FAILED as default status name for skipped tests", () => {
-                expect(getXrayStatus(CypressStatus.SKIPPED, true)).to.eq("FAILED");
+            await it("uses FAIL as default status name for skipped tests", () => {
+                assert.strictEqual(getXrayStatus(CypressStatus.SKIPPED, false), "FAIL");
             });
         });
-        it("prefers custom passed statuses", () => {
-            expect(
+        await describe("cloud", async () => {
+            await it("uses PASSED as default status name for passed tests", () => {
+                assert.strictEqual(getXrayStatus(CypressStatus.PASSED, true), "PASSED");
+            });
+            await it("uses FAILED as default status name for failed tests", () => {
+                assert.strictEqual(getXrayStatus(CypressStatus.FAILED, true), "FAILED");
+            });
+            await it("uses TO DO as default status name for pending tests", () => {
+                assert.strictEqual(getXrayStatus(CypressStatus.PENDING, true), "TO DO");
+            });
+            await it("uses FAILED as default status name for skipped tests", () => {
+                assert.strictEqual(getXrayStatus(CypressStatus.SKIPPED, true), "FAILED");
+            });
+        });
+        await it("prefers custom passed statuses", () => {
+            assert.strictEqual(
                 getXrayStatus(CypressStatus.PASSED, true, {
                     passed: "OK",
-                })
-            ).to.eq("OK");
+                }),
+                "OK"
+            );
         });
-        it("prefers custom failed statuses", () => {
-            expect(
+        await it("prefers custom failed statuses", () => {
+            assert.strictEqual(
                 getXrayStatus(CypressStatus.FAILED, true, {
                     failed: "NO",
-                })
-            ).to.eq("NO");
+                }),
+                "NO"
+            );
         });
-        it("prefers custom pending statuses", () => {
-            expect(
+        await it("prefers custom pending statuses", () => {
+            assert.strictEqual(
                 getXrayStatus(CypressStatus.PENDING, true, {
                     pending: "WIP",
-                })
-            ).to.eq("WIP");
+                }),
+                "WIP"
+            );
         });
-        it("prefers custom skipped statuses", () => {
-            expect(
+        await it("prefers custom skipped statuses", () => {
+            assert.strictEqual(
                 getXrayStatus(CypressStatus.SKIPPED, true, {
                     skipped: "SKIP",
-                })
-            ).to.eq("SKIP");
+                }),
+                "SKIP"
+            );
         });
     });
 });

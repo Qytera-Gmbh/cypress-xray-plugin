@@ -14,7 +14,7 @@ import { GetSummariesToResetCommand } from "./commands/get-summaries-to-reset-co
 import { GetUpdatedIssuesCommand } from "./commands/get-updated-issues-command";
 import { ParseFeatureFileCommand } from "./commands/parse-feature-file-command";
 
-export function addSynchronizationCommands(
+function addSynchronizationCommands(
     file: Cypress.FileObject,
     options: InternalCypressXrayPluginOptions,
     clients: ClientCombination,
@@ -137,3 +137,11 @@ export function addSynchronizationCommands(
     );
     graph.connect(getLabelsToResetCommand, editLabelsCommand);
 }
+
+/**
+ * Workaround until module mocking becomes a stable feature. The current approach allows replacing
+ * the function with a mocked one.
+ *
+ * @see https://nodejs.org/docs/latest-v23.x/api/test.html#mockmodulespecifier-options
+ */
+export default { addSynchronizationCommands };

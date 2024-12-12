@@ -140,7 +140,7 @@
                 {
                     "height": 720,
                     "name": null,
-                    "path": "./cypress/screenshots/325.spec.cy.ts/CYP-665 Test results of grouped test steps -- should do A (failed).png",
+                    "path": "./cypress/screenshots/325.spec.cy.ts/CYP-237 Test results of grouped test steps -- should do A (failed).png",
                     "takenAt": "2024-06-17T17:32:13.486Z",
                     "width": 1280
                 }
@@ -173,7 +173,7 @@
                     "displayError": "AssertionError: expected true to be false\n    at Context.eval (http://localhost:56465/__cypress/tests?p=cypress\\325.spec.cy.ts:6:25)",
                     "duration": 327,
                     "state": "failed",
-                    "title": ["Test results of grouped test steps", "CYP-665 should do A"]
+                    "title": ["Test results of grouped test steps", "CYP-237 should do A"]
                 }
             ],
             "video": null

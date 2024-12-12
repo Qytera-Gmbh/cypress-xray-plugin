@@ -1,22 +1,25 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import path from "path";
-import * as dependencies from "./dependencies";
+import assert from "node:assert";
+import { relative, resolve } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
+import dependencies from "./dependencies";
 
-// Enable promise assertions.
-chai.use(chaiAsPromised);
-
-describe(path.relative(process.cwd(), __filename), () => {
-    it("throws if a package is not installed", async () => {
-        await expect(
-            dependencies.importOptionalDependency("nonexistent")
-        ).to.eventually.be.rejectedWith(/Cannot find module 'nonexistent'/);
+describe(relative(cwd(), __filename), async () => {
+    await it("throws if a package is not installed", async () => {
+        await assert.rejects(dependencies.importOptionalDependency("nonexistent"), {
+            message: `Cannot find package 'nonexistent' imported from ${resolve(
+                ".",
+                "src",
+                "util",
+                "dependencies.ts"
+            )}`,
+        });
     });
 
-    it("imports @badeball/cypress-cucumber-preprocessor", async () => {
-        const members = await dependencies.importOptionalDependency(
+    await it("imports @badeball/cypress-cucumber-preprocessor", async () => {
+        const members: Record<string, unknown> = await dependencies.importOptionalDependency(
             "@badeball/cypress-cucumber-preprocessor"
         );
-        expect(members).to.have.property("resolvePreprocessorConfiguration");
+        assert.ok(members.resolvePreprocessorConfiguration !== undefined);
     });
 });

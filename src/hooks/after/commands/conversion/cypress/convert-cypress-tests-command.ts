@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from "path";
 import { lt } from "semver";
 import type { EvidenceCollection } from "../../../../../context";
 import type { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";

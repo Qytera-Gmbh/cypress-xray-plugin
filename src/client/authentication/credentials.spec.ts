@@ -1,84 +1,89 @@
-import { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import path from "node:path";
-import { getMockedLogger, getMockedRestClient } from "../../../test/mocks";
-import { Level } from "../../util/logging";
+import axios, { AxiosError, AxiosHeaders, HttpStatusCode } from "axios";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { beforeEach, describe, it } from "node:test";
+import { Level, LOG } from "../../util/logging";
+import { AxiosRestClient } from "../https/https";
 import { JwtCredentials } from "./credentials";
 
-chai.use(chaiAsPromised);
-
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(JwtCredentials.name, () => {
-        let restClient = getMockedRestClient();
-        let credentials: JwtCredentials = new JwtCredentials(
-            "id",
-            "secret",
-            "https://example.org",
-            restClient
-        );
+describe(relative(cwd(), __filename), async () => {
+    await describe(JwtCredentials.name, async () => {
+        let restClient: AxiosRestClient;
+        let credentials: JwtCredentials;
 
         beforeEach(() => {
-            restClient = getMockedRestClient();
-            credentials = new JwtCredentials("id", "secret", "https://example.org", restClient);
+            restClient = new AxiosRestClient(axios);
+            credentials = new JwtCredentials("id", "secret", "http://localhost:1234", restClient);
         });
 
-        describe(credentials.getAuthorizationHeader.name, () => {
-            it("returns authorization headers", async () => {
-                getMockedLogger({ allowUnstubbedCalls: true });
-                restClient.post.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                    headers: {},
-                    status: HttpStatusCode.Found,
-                    statusText: HttpStatusCode[HttpStatusCode.Found],
+        await describe(JwtCredentials.prototype.getAuthorizationHeader.name, async () => {
+            await it("returns authorization headers", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                        headers: {},
+                        status: HttpStatusCode.Found,
+                        statusText: HttpStatusCode[HttpStatusCode.Found],
+                    };
                 });
-                await expect(credentials.getAuthorizationHeader()).to.eventually.deep.eq({
+
+                assert.deepEqual(await credentials.getAuthorizationHeader(), {
                     ["Authorization"]:
                         "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
                 });
             });
 
-            it("authorizes once only", async () => {
-                getMockedLogger({ allowUnstubbedCalls: true });
-                restClient.post.resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                    headers: {},
-                    status: HttpStatusCode.Found,
-                    statusText: HttpStatusCode[HttpStatusCode.Found],
+            await it("authorizes once only", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                const post = context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                        headers: {},
+                        status: HttpStatusCode.Found,
+                        statusText: HttpStatusCode[HttpStatusCode.Found],
+                    };
                 });
+
                 const header1 = credentials.getAuthorizationHeader();
                 const header2 = credentials.getAuthorizationHeader();
                 const expectedHeader = {
                     ["Authorization"]:
                         "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
                 };
-                await expect(Promise.all([header1, header2])).to.eventually.deep.eq([
+                assert.deepEqual(await Promise.all([header1, header2]), [
                     expectedHeader,
                     expectedHeader,
                 ]);
-                expect(restClient.post).to.have.been.calledOnce;
+                assert.strictEqual(post.mock.callCount(), 1);
             });
 
-            it("handles unparseable tokens", async () => {
-                getMockedLogger({ allowUnstubbedCalls: true });
-                restClient.post.onFirstCall().resolves({
-                    config: { headers: new AxiosHeaders() },
-                    data: "<div>Demo Page</div>",
-                    headers: {},
-                    status: HttpStatusCode.Found,
-                    statusText: HttpStatusCode[HttpStatusCode.Found],
+            await it("handles unparseable tokens", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                context.mock.method(LOG, "logErrorToFile", context.mock.fn());
+                context.mock.method(restClient, "post", () => {
+                    return {
+                        config: { headers: new AxiosHeaders() },
+                        data: "<div>Demo Page</div>",
+                        headers: {},
+                        status: HttpStatusCode.Found,
+                        statusText: HttpStatusCode[HttpStatusCode.Found],
+                    };
                 });
-                await expect(credentials.getAuthorizationHeader()).to.eventually.be.rejectedWith(
-                    "Failed to authenticate"
-                );
+
+                await assert.rejects(credentials.getAuthorizationHeader(), {
+                    message: "Failed to authenticate",
+                });
             });
 
-            it("handles bad responses", async () => {
-                const logger = getMockedLogger({ allowUnstubbedCalls: true });
-                restClient.post.onFirstCall().rejects(
-                    new AxiosError(
+            await it("handles bad responses", async (context) => {
+                const message = context.mock.method(LOG, "message", context.mock.fn());
+                context.mock.method(LOG, "logErrorToFile", context.mock.fn());
+                context.mock.method(restClient, "post", () => {
+                    throw new AxiosError(
                         "Request failed with status code 404",
                         HttpStatusCode.BadRequest.toString(),
                         undefined,
@@ -92,15 +97,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                             status: HttpStatusCode.NotFound,
                             statusText: HttpStatusCode[HttpStatusCode.NotFound],
                         }
-                    )
-                );
-                await expect(credentials.getAuthorizationHeader()).to.eventually.be.rejectedWith(
-                    "Failed to authenticate"
-                );
-                expect(logger.message).to.have.been.calledWithExactly(
+                    );
+                });
+                await assert.rejects(credentials.getAuthorizationHeader(), {
+                    message: "Failed to authenticate",
+                });
+                assert.deepEqual(message.mock.calls[1].arguments, [
                     Level.ERROR,
-                    "Failed to authenticate: Request failed with status code 404"
-                );
+                    "Failed to authenticate: Request failed with status code 404",
+                ]);
             });
         });
     });

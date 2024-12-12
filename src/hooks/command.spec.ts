@@ -1,23 +1,22 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import EventEmitter from "node:events";
-import path from "path";
-import { getMockedLogger } from "../../test/mocks";
+import EventEmitter from "events";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { SkippedError } from "../util/errors";
+import { LOG } from "../util/logging";
 import { Command, ComputableState } from "./command";
 
-chai.use(chaiAsPromised);
-
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(Command.name, () => {
-        it("computes the result on compute call", async () => {
-            const logger = getMockedLogger();
+describe(relative(cwd(), __filename), async () => {
+    await describe(Command.name, async () => {
+        await it("computes the result on compute call", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             class ArithmeticCommand extends Command<number, null> {
                 private readonly x: number;
                 private readonly operands: ArithmeticCommand[];
 
                 constructor(x: number, ...operands: ArithmeticCommand[]) {
-                    super(null, logger);
+                    super(null, LOG);
                     this.x = x;
                     this.operands = operands;
                 }
@@ -36,54 +35,52 @@ describe(path.relative(process.cwd(), __filename), () => {
             const sum = new ArithmeticCommand(10, a, b);
             const resultPromise = sum.compute();
             await Promise.all([sum.compute(), a.compute(), b.compute()]);
-            expect(await resultPromise).to.eq(100);
+            assert.strictEqual(await resultPromise, 100);
         });
 
-        it("returns the failure reason", async () => {
-            const logger = getMockedLogger();
+        await it("returns the failure reason", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const error = new Error("Failure 123");
             class FailingCommand extends Command<number, null> {
                 protected computeResult(): Promise<number> {
                     throw error;
                 }
             }
-            const command = new FailingCommand(null, logger);
-            await expect(command.compute()).to.eventually.be.rejectedWith("Failure 123");
-            expect(command.getFailure()).to.eq(error);
-            expect(command.getState()).to.eq(ComputableState.FAILED);
+            const command = new FailingCommand(null, LOG);
+            await assert.rejects(command.compute(), { message: "Failure 123" });
+            assert.strictEqual(command.getFailure(), error);
+            assert.strictEqual(command.getState(), ComputableState.FAILED);
         });
 
-        it("returns arbitrary failure reasons", async () => {
-            const logger = getMockedLogger();
+        await it("returns arbitrary failure reasons", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             class FailingCommand extends Command<number, null> {
                 protected computeResult(): Promise<number> {
                     throw "Oh no someone messed up" as unknown as Error;
                 }
             }
-            const command = new FailingCommand(null, logger);
-            await expect(command.compute()).to.eventually.be.rejectedWith(
-                "Oh no someone messed up"
-            );
-            expect(command.getFailure()).to.deep.eq(new Error("Oh no someone messed up"));
-            expect(command.getState()).to.eq(ComputableState.FAILED);
+            const command = new FailingCommand(null, LOG);
+            await assert.rejects(command.compute(), { message: "Oh no someone messed up" });
+            assert.deepStrictEqual(command.getFailure(), new Error("Oh no someone messed up"));
+            assert.strictEqual(command.getState(), ComputableState.FAILED);
         });
 
-        it("returns the skip reason", async () => {
-            const logger = getMockedLogger();
+        await it("returns the skip reason", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const error = new SkippedError("Skip 123");
             class SkippingCommand extends Command<number, null> {
                 protected computeResult(): Promise<number> {
                     throw error;
                 }
             }
-            const command = new SkippingCommand(null, logger);
-            await expect(command.compute()).to.eventually.be.rejectedWith("Skip 123");
-            expect(command.getFailure()).to.eq(error);
-            expect(command.getState()).to.eq(ComputableState.SKIPPED);
+            const command = new SkippingCommand(null, LOG);
+            await assert.rejects(command.compute(), { message: "Skip 123" });
+            assert.strictEqual(command.getFailure(), error);
+            assert.strictEqual(command.getState(), ComputableState.SKIPPED);
         });
 
-        it("updates its state", async () => {
-            const logger = getMockedLogger();
+        await it("updates its state", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const eventEmitter = new EventEmitter();
 
             class WaitingCommand extends Command<number, null> {
@@ -95,21 +92,21 @@ describe(path.relative(process.cwd(), __filename), () => {
                     });
                 }
             }
-            const command = new WaitingCommand(null, logger);
-            expect(command.getState()).to.eq(ComputableState.INITIAL);
+            const command = new WaitingCommand(null, LOG);
+            assert.strictEqual(command.getState(), ComputableState.INITIAL);
             const computePromise = command.compute();
-            expect(command.getState()).to.eq(ComputableState.PENDING);
+            assert.strictEqual(command.getState(), ComputableState.PENDING);
             // Await something to force the event loop to go back to the computeResult() method.
             await new Promise<void>((resolve) => {
                 resolve();
             });
             eventEmitter.emit("go");
-            expect(await computePromise).to.eq(42);
-            expect(command.getState()).to.eq(ComputableState.SUCCEEDED);
+            assert.strictEqual(await computePromise, 42);
+            assert.strictEqual(command.getState(), ComputableState.SUCCEEDED);
         });
 
-        it("computes its result only once", async () => {
-            const logger = getMockedLogger();
+        await it("computes its result only once", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             class ComputingCommand extends Command<number, null> {
                 private hasComputed = false;
 
@@ -125,13 +122,13 @@ describe(path.relative(process.cwd(), __filename), () => {
                     });
                 }
             }
-            const command = new ComputingCommand(null, logger);
-            expect(await command.compute()).to.eq(42);
-            expect(await command.compute()).to.eq(42);
+            const command = new ComputingCommand(null, LOG);
+            assert.strictEqual(await command.compute(), 42);
+            assert.strictEqual(await command.compute(), 42);
         });
 
-        it("returns the logger", () => {
-            const logger = getMockedLogger();
+        await it("returns the LOG", (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             class SomeCommand extends Command<string, null> {
                 protected computeResult(): Promise<string> {
                     return new Promise((resolve) => {
@@ -139,8 +136,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     });
                 }
             }
-            const command = new SomeCommand(null, logger);
-            expect(command.getLogger()).to.eq(logger);
+            const command = new SomeCommand(null, LOG);
+            assert.strictEqual(command.getLogger(), LOG);
         });
     });
 });

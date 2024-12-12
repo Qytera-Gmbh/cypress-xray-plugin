@@ -1,34 +1,38 @@
-import { expect } from "chai";
-import path from "node:path";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { dedent } from "./dedent";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    it("strips leading whitespace", () => {
-        expect(dedent(`   Hello\nthere\nyo`)).to.eq("Hello\nthere\nyo");
+describe(relative(cwd(), __filename), async () => {
+    await it("strips leading whitespace", () => {
+        assert.strictEqual(dedent(`   Hello\nthere\nyo`), "Hello\nthere\nyo");
     });
 
-    it("strips leading and trailing multiline whitespace", () => {
-        expect(
+    await it("strips leading and trailing multiline whitespace", () => {
+        assert.strictEqual(
             dedent(`
                 Hello
                   there
                     yo
-            `)
-        ).to.eq("Hello\n  there\n    yo");
+            `),
+            "Hello\n  there\n    yo"
+        );
     });
 
-    it("adds indentation to newlines in between", () => {
-        expect(
+    await it("adds indentation to newlines in between", () => {
+        assert.strictEqual(
             dedent(`
                 Hello
                   there
                     ${["example 1", "example 2"].join("\n")}
                   yo
-            `)
-        ).to.eq("Hello\n  there\n    example 1\n    example 2\n  yo");
+            `),
+            "Hello\n  there\n    example 1\n    example 2\n  yo"
+        );
     });
 
-    it("handles unindented strings", () => {
-        expect(dedent(`Hello`)).to.eq("Hello");
+    await it("handles unindented strings", () => {
+        assert.strictEqual(dedent(`Hello`), "Hello");
     });
 });

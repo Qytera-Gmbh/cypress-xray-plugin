@@ -1,25 +1,28 @@
-import { expect } from "chai";
-import path from "node:path";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { getOrCall } from "./functions";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(getOrCall.name, () => {
-        it("returns unwrapped values", async () => {
-            expect(await getOrCall("hello")).to.eq("hello");
+describe(relative(cwd(), __filename), async () => {
+    await describe(getOrCall.name, async () => {
+        await it("returns unwrapped values", async () => {
+            assert.strictEqual(await getOrCall("hello"), "hello");
         });
 
-        it("resolves sync callbacks", async () => {
-            expect(await getOrCall(() => 5)).to.eq(5);
+        await it("resolves sync callbacks", async () => {
+            assert.strictEqual(await getOrCall(() => 5), 5);
         });
 
-        it("resolves async callbacks", async () => {
-            expect(
+        await it("resolves async callbacks", async () => {
+            assert.strictEqual(
                 await getOrCall(async () => {
                     return new Promise((resolve) => {
                         resolve(5);
                     });
-                })
-            ).to.eq(5);
+                }),
+                5
+            );
         });
     });
 });

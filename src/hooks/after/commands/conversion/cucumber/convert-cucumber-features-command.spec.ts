@@ -1,20 +1,20 @@
-import { expect } from "chai";
-import fs from "fs";
-import path from "path";
-import { getMockedLogger } from "../../../../../../test/mocks";
-import { expectToExist } from "../../../../../../test/util";
+import assert from "node:assert";
+import { readFileSync } from "node:fs";
+import { relative, resolve } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import type { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
 import { dedent } from "../../../../../util/dedent";
-import { Level } from "../../../../../util/logging";
+import { Level, LOG } from "../../../../../util/logging";
 import { ConstantCommand } from "../../../../util/commands/constant-command";
 import { ConvertCucumberFeaturesCommand } from "./convert-cucumber-features-command";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(ConvertCucumberFeaturesCommand.name, () => {
-        it("converts cucumber results into cucumber features data", async () => {
-            const logger = getMockedLogger();
+describe(relative(cwd(), __filename), async () => {
+    await describe(ConvertCucumberFeaturesCommand.name, async () => {
+        await it("converts cucumber results into cucumber features data", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                     "utf-8"
                 )
@@ -28,17 +28,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectRoot: "./test/resources",
                     xray: { status: {}, uploadScreenshots: false },
                 },
-                logger,
-                { cucumberResults: new ConstantCommand(logger, cucumberReport.slice(0, 1)) }
+                LOG,
+                { cucumberResults: new ConstantCommand(LOG, cucumberReport.slice(0, 1)) }
             );
+
             const features = await command.compute();
-            expect(features).to.be.an("array").with.length(1);
+
+            assert.ok(Array.isArray(features));
+            assert.strictEqual(features.length, 1);
         });
 
-        it("returns parameters", () => {
-            const logger = getMockedLogger();
+        await it("returns parameters", (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartServer.json",
                     "utf-8"
                 )
@@ -52,10 +55,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     projectRoot: "./test/resources",
                     xray: { status: {}, uploadScreenshots: false },
                 },
-                logger,
-                { cucumberResults: new ConstantCommand(logger, cucumberReport.slice(0, 1)) }
+                LOG,
+                { cucumberResults: new ConstantCommand(LOG, cucumberReport.slice(0, 1)) }
             );
-            expect(command.getParameters()).to.deep.eq({
+
+            assert.deepStrictEqual(command.getParameters(), {
                 cucumber: {
                     prefixes: {
                         precondition: undefined,
@@ -70,10 +74,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
         });
 
-        it("converts cucumber results into cloud cucumber features data", async () => {
-            const logger = getMockedLogger();
+        await it("converts cucumber results into cloud cucumber features data", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                     "utf-8"
                 )
@@ -88,21 +92,24 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudTags: true,
                     xray: { status: {}, uploadScreenshots: false },
                 },
-                logger,
-                { cucumberResults: new ConstantCommand(logger, cucumberReport.slice(0, 1)) }
+                LOG,
+                { cucumberResults: new ConstantCommand(LOG, cucumberReport.slice(0, 1)) }
             );
+
             const features = await command.compute();
-            expect(features).to.be.an("array").with.length(1);
+
+            assert.ok(Array.isArray(features));
+            assert.strictEqual(features.length, 1);
         });
 
-        it("includes all tagged features and tests", async () => {
+        await it("includes all tagged features and tests", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            const logger = getMockedLogger();
             const command = new ConvertCucumberFeaturesCommand(
                 {
                     cucumber: { prefixes: { test: "TestName:" } },
@@ -113,23 +120,28 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudTags: true,
                     xray: { status: {}, uploadScreenshots: false },
                 },
-                logger,
-                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
+                LOG,
+                { cucumberResults: new ConstantCommand(LOG, cucumberReport) }
             );
+
             const features = await command.compute();
-            expect(features).to.be.an("array").with.length(2);
-            expect(features[0].elements).to.be.an("array").with.length(3);
-            expect(features[1].elements).to.be.an("array").with.length(1);
+
+            assert.ok(Array.isArray(features));
+            assert.strictEqual(features.length, 2);
+            assert.ok(Array.isArray(features[0].elements));
+            assert.strictEqual(features[0].elements.length, 3);
+            assert.ok(Array.isArray(features[1].elements));
+            assert.strictEqual(features[1].elements.length, 1);
         });
 
-        it("uses the configured test execution issue key", async () => {
+        await it("uses the configured test execution issue key", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            const logger = getMockedLogger();
             const command = new ConvertCucumberFeaturesCommand(
                 {
                     cucumber: { prefixes: { test: "TestName:" } },
@@ -140,26 +152,28 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudTags: true,
                     xray: { status: {}, uploadScreenshots: false },
                 },
-                logger,
+                LOG,
                 {
-                    cucumberResults: new ConstantCommand(logger, cucumberReport),
-                    testExecutionIssueKey: new ConstantCommand(logger, "CYP-456"),
+                    cucumberResults: new ConstantCommand(LOG, cucumberReport),
+                    testExecutionIssueKey: new ConstantCommand(LOG, "CYP-456"),
                 }
             );
+
             const features = await command.compute();
-            expect(features[0].tags).to.deep.eq([{ name: "@CYP-456" }]);
-            expect(features[1].tags).to.deep.eq([{ name: "@CYP-456" }]);
+
+            assert.deepStrictEqual(features[0].tags, [{ name: "@CYP-456" }]);
+            assert.deepStrictEqual(features[1].tags, [{ name: "@CYP-456" }]);
         });
 
-        it("uses the configured test execution issue key even without existing tags", async () => {
+        await it("uses the configured test execution issue key even without existing tags", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
             delete cucumberReport[0].tags;
-            const logger = getMockedLogger();
             const command = new ConvertCucumberFeaturesCommand(
                 {
                     cucumber: { prefixes: { test: "TestName:" } },
@@ -170,24 +184,26 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudTags: true,
                     xray: { status: {}, uploadScreenshots: false },
                 },
-                logger,
+                LOG,
                 {
-                    cucumberResults: new ConstantCommand(logger, cucumberReport),
-                    testExecutionIssueKey: new ConstantCommand(logger, "CYP-456"),
+                    cucumberResults: new ConstantCommand(LOG, cucumberReport),
+                    testExecutionIssueKey: new ConstantCommand(LOG, "CYP-456"),
                 }
             );
+
             const features = await command.compute();
-            expect(features[0].tags).to.deep.eq([{ name: "@CYP-456" }]);
+
+            assert.deepStrictEqual(features[0].tags, [{ name: "@CYP-456" }]);
         });
 
-        it("includes screenshots if enabled", async () => {
+        await it("includes screenshots if enabled", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            const logger = getMockedLogger();
             const command = new ConvertCucumberFeaturesCommand(
                 {
                     cucumber: { prefixes: { test: "TestName:" } },
@@ -198,18 +214,24 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudTags: true,
                     xray: { status: {}, uploadScreenshots: true },
                 },
-                logger,
-                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
+                LOG,
+                { cucumberResults: new ConstantCommand(LOG, cucumberReport) }
             );
             const features = await command.compute();
-            expectToExist(features[0].elements[2].steps[1].embeddings);
-            expect(features[0].elements[2].steps[1].embeddings).to.have.length(1);
-            expect(features[0].elements[2].steps[1].embeddings[0].data).to.be.a("string");
-            expect(features[0].elements[2].steps[1].embeddings[0].mime_type).to.eq("image/png");
+
+            assert.strictEqual(features[0].elements[2].steps[1].embeddings?.length, 1);
+            assert.deepStrictEqual(
+                typeof features[0].elements[2].steps[1].embeddings[0].data,
+                "string"
+            );
+            assert.deepStrictEqual(
+                features[0].elements[2].steps[1].embeddings[0].mime_type,
+                "image/png"
+            );
         });
 
-        it("respects custom statuses", async () => {
-            const logger = getMockedLogger();
+        await it("respects custom statuses", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const command = new ConvertCucumberFeaturesCommand(
                 {
                     cucumber: { prefixes: { test: "TestName:" } },
@@ -230,9 +252,9 @@ describe(path.relative(process.cwd(), __filename), () => {
                         uploadScreenshots: false,
                     },
                 },
-                logger,
+                LOG,
                 {
-                    cucumberResults: new ConstantCommand(logger, [
+                    cucumberResults: new ConstantCommand(LOG, [
                         {
                             description: "",
                             elements: [
@@ -329,23 +351,24 @@ describe(path.relative(process.cwd(), __filename), () => {
                 }
             );
             const features = await command.compute();
-            expect(features[0].elements[0].steps[0].result.status).to.eq("undefined");
-            expect(features[0].elements[0].steps[1].result.status).to.eq("WAS SKIPPED");
-            expect(features[0].elements[0].steps[2].result.status).to.eq("DID PASS");
-            expect(features[0].elements[0].steps[3].result.status).to.eq("unknown");
-            expect(features[0].elements[0].steps[4].result.status).to.eq("DID FAIL");
-            expect(features[0].elements[0].steps[5].result.status).to.eq("IS PENDING");
+
+            assert.strictEqual(features[0].elements[0].steps[0].result.status, "undefined");
+            assert.strictEqual(features[0].elements[0].steps[1].result.status, "WAS SKIPPED");
+            assert.strictEqual(features[0].elements[0].steps[2].result.status, "DID PASS");
+            assert.strictEqual(features[0].elements[0].steps[3].result.status, "unknown");
+            assert.strictEqual(features[0].elements[0].steps[4].result.status, "DID FAIL");
+            assert.strictEqual(features[0].elements[0].steps[5].result.status, "IS PENDING");
         });
 
-        it("skips background elements", async () => {
+        await it("skips background elements", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
             cucumberReport[0].elements[0].type = "background";
-            const logger = getMockedLogger();
             const command = new ConvertCucumberFeaturesCommand(
                 {
                     cucumber: { prefixes: { test: "TestName:" } },
@@ -356,21 +379,23 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudTags: true,
                     xray: { status: {}, uploadScreenshots: false },
                 },
-                logger,
-                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
+                LOG,
+                { cucumberResults: new ConstantCommand(LOG, cucumberReport) }
             );
+
             const features = await command.compute();
-            expect(features[0].elements).to.have.length(2);
+
+            assert.strictEqual(features[0].elements.length, 2);
         });
 
-        it("skips embeddings if screenshots are disabled", async () => {
+        await it("skips embeddings if screenshots are disabled", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                     "utf-8"
                 )
             ) as CucumberMultipartFeature[];
-            const logger = getMockedLogger();
             const command = new ConvertCucumberFeaturesCommand(
                 {
                     cucumber: { prefixes: { test: "TestName:" } },
@@ -381,22 +406,24 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudTags: true,
                     xray: { status: {}, uploadScreenshots: false },
                 },
-                logger,
-                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
+                LOG,
+                { cucumberResults: new ConstantCommand(LOG, cucumberReport) }
             );
+
             const features = await command.compute();
-            expect(features[0].elements[0].steps[0].embeddings).to.be.empty;
-            expect(features[0].elements[0].steps[1].embeddings).to.be.empty;
-            expect(features[0].elements[1].steps[0].embeddings).to.be.empty;
-            expect(features[0].elements[1].steps[1].embeddings).to.be.empty;
-            expect(features[0].elements[2].steps[0].embeddings).to.be.empty;
-            expect(features[0].elements[2].steps[1].embeddings).to.be.empty;
+
+            assert.deepStrictEqual(features[0].elements[0].steps[0].embeddings, []);
+            assert.deepStrictEqual(features[0].elements[0].steps[1].embeddings, []);
+            assert.deepStrictEqual(features[0].elements[1].steps[0].embeddings, []);
+            assert.deepStrictEqual(features[0].elements[1].steps[1].embeddings, []);
+            assert.deepStrictEqual(features[0].elements[2].steps[0].embeddings, []);
+            assert.deepStrictEqual(features[0].elements[2].steps[1].embeddings, []);
         });
 
-        it("skips untagged scenarios", async () => {
-            const logger = getMockedLogger();
+        await it("skips untagged scenarios", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartUntagged.json",
                     "utf-8"
                 )
@@ -411,14 +438,16 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudTags: false,
                     xray: { status: {}, uploadScreenshots: false },
                 },
-                logger,
-                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
+                LOG,
+                { cucumberResults: new ConstantCommand(LOG, cucumberReport) }
             );
+
             const features = await command.compute();
-            expect(logger.message).to.have.been.calledWithExactly(
+
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.WARNING,
                 dedent(`
-                    ${path.resolve(
+                    ${resolve(
                         ".",
                         "test",
                         "resources",
@@ -466,15 +495,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                             - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                             - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                             - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-                `)
-            );
-            expect(features).to.have.length(0);
+                `),
+            ]);
+            assert.deepStrictEqual(features, []);
         });
 
-        it("skips scenarios without recognised issue tags", async () => {
-            const logger = getMockedLogger();
+        await it("skips scenarios without recognised issue tags", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartCloud.json",
                     "utf-8"
                 )
@@ -489,14 +518,16 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudTags: false,
                     xray: { status: {}, uploadScreenshots: false },
                 },
-                logger,
-                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
+                LOG,
+                { cucumberResults: new ConstantCommand(LOG, cucumberReport) }
             );
+
             const features = await command.compute();
-            expect(logger.message).to.have.been.calledWithExactly(
+
+            assert.deepStrictEqual(message.mock.calls[3].arguments, [
                 Level.WARNING,
                 dedent(`
-                    ${path.resolve(".", "test", "resources", "cypress", "e2e", "spec.cy.feature")}
+                    ${resolve(".", "test", "resources", "cypress", "e2e", "spec.cy.feature")}
 
                       Scenario: TC - Development
 
@@ -532,15 +563,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                             - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/
                             - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/cucumber/#prefixes
                             - https://docs.getxray.app/display/XRAY/Importing+Cucumber+Tests+-+REST
-                `)
-            );
-            expect(features).to.have.length(0);
+                `),
+            ]);
+            assert.deepStrictEqual(features, []);
         });
 
-        it("includes scenarios with multiple tags", async () => {
-            const logger = getMockedLogger();
+        await it("includes scenarios with multiple tags", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const cucumberReport: CucumberMultipartFeature[] = JSON.parse(
-                fs.readFileSync(
+                readFileSync(
                     "./test/resources/fixtures/xray/requests/importExecutionCucumberMultipartMultipleTags.json",
                     "utf-8"
                 )
@@ -555,12 +586,14 @@ describe(path.relative(process.cwd(), __filename), () => {
                     useCloudTags: true,
                     xray: { status: {}, uploadScreenshots: false },
                 },
-                logger,
-                { cucumberResults: new ConstantCommand(logger, cucumberReport) }
+                LOG,
+                { cucumberResults: new ConstantCommand(LOG, cucumberReport) }
             );
+
             const features = await command.compute();
-            expect(features).to.have.length(1);
-            expect(features[0].elements[0].tags).to.deep.eq([
+
+            assert.strictEqual(features.length, 1);
+            assert.deepStrictEqual(features[0].elements[0].tags, [
                 {
                     line: 4,
                     name: "@TestName:CYP-123",

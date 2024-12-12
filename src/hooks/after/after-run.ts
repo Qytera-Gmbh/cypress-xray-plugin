@@ -48,7 +48,7 @@ import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issu
 import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-command";
 import { containsCucumberTest, containsCypressTest } from "./util";
 
-export async function addUploadCommands(
+async function addUploadCommands(
     results: CypressRunResultType,
     projectRoot: string,
     options: InternalCypressXrayPluginOptions,
@@ -72,17 +72,8 @@ export async function addUploadCommands(
         );
         return;
     }
-    // We need to cast here because:
-    // - jira.testExecutionIssue is typed to always use the installed Cypress results type
-    // - the plugin internally works with the intersection of result types of all Cypress versions
-    // But there's basically no way for the results to not be the installed Cypress results type, so
-    // it should not be a problem.
-    const issueData = await getOrCall(options.jira.testExecutionIssue, {
-        results: results as CypressCommandLine.CypressRunResult,
-    });
-    const testPlanIssueKey = await getOrCall(options.jira.testPlanIssueKey, {
-        results: results as CypressCommandLine.CypressRunResult,
-    });
+    const issueData = await getOrCall(options.jira.testExecutionIssue, { results });
+    const testPlanIssueKey = await getOrCall(options.jira.testPlanIssueKey, { results });
     const builder = new AfterRunBuilder({
         clients: clients,
         evidenceCollection: evidenceCollection,
@@ -96,8 +87,7 @@ export async function addUploadCommands(
     let importCucumberExecutionCommand;
     if (containsCypressTests) {
         importCypressExecutionCommand = getImportExecutionCypressCommand(graph, clients, builder, {
-            reusesExecutionIssue:
-                issueData?.key !== undefined || options.jira.testExecutionIssueKey !== undefined,
+            reusesExecutionIssue: issueData?.key !== undefined,
             testEnvironments: options.xray.testEnvironments,
             testPlanIssueKey: testPlanIssueKey,
         });
@@ -110,9 +100,7 @@ export async function addUploadCommands(
             {
                 cucumberReportPath: options.cucumber?.preprocessor?.json.output,
                 projectRoot: projectRoot,
-                reusesExecutionIssue:
-                    issueData?.key !== undefined ||
-                    options.jira.testExecutionIssueKey !== undefined,
+                reusesExecutionIssue: issueData?.key !== undefined,
                 testEnvironments: options.xray.testEnvironments,
                 testExecutionIssueKeyCommand: importCypressExecutionCommand,
                 testPlanIssueKey: testPlanIssueKey,
@@ -165,11 +153,7 @@ export async function addUploadCommands(
         builder.addAttachVideosCommand({ resolvedExecutionIssueKey: finalExecutionIssueKey });
     }
     // Workaround for: https://jira.atlassian.com/browse/JRASERVER-66881.
-    if (
-        issueData?.transition &&
-        !(issueData.key ?? options.jira.testExecutionIssueKey) &&
-        clients.kind === "server"
-    ) {
+    if (issueData?.transition && !issueData.key && clients.kind === "server") {
         builder.addTransitionIssueCommand({
             issueKey: finalExecutionIssueKey,
             transition: issueData.transition,
@@ -382,8 +366,7 @@ class AfterRunBuilder {
         const command = this.graph.place(
             new CombineCypressJsonCommand(
                 {
-                    testExecutionIssueKey:
-                        this.issueData?.key ?? this.options.jira.testExecutionIssueKey,
+                    testExecutionIssueKey: this.issueData?.key,
                 },
                 this.logger,
                 parameters.convertCypressTestsCommand,
@@ -536,8 +519,7 @@ class AfterRunBuilder {
         if (parameters.testExecutionIssueKeyCommand) {
             resolvedExecutionIssueKeyCommand = parameters.testExecutionIssueKeyCommand;
         } else {
-            const executionIssueKey =
-                this.issueData?.key ?? this.options.jira.testExecutionIssueKey;
+            const executionIssueKey = this.issueData?.key;
             if (executionIssueKey) {
                 resolvedExecutionIssueKeyCommand = getOrCreateConstantCommand(
                     this.graph,
@@ -615,10 +597,9 @@ class AfterRunBuilder {
                 {
                     displayCloudHelp: this.clients.kind === "cloud",
                     importType: parameters.importType,
-                    testExecutionIssueKey:
-                        this.issueData?.key ?? this.options.jira.testExecutionIssueKey,
+                    testExecutionIssueKey: this.issueData?.key,
                     testExecutionIssueType: this.issueData?.fields?.issuetype ?? {
-                        name: this.options.jira.testExecutionIssueType,
+                        name: "Test Execution",
                     },
                 },
                 this.logger,
@@ -743,13 +724,11 @@ class AfterRunBuilder {
             };
         }
         if (!summaryCommand) {
-            const summary =
-                this.issueData?.fields?.summary ?? this.options.jira.testExecutionIssueSummary;
+            const summary = this.issueData?.fields?.summary;
             if (summary) {
                 summaryCommand = getOrCreateConstantCommand(this.graph, this.logger, summary);
             } else {
-                const testExecutionIssueKey =
-                    this.issueData?.key ?? this.options.jira.testExecutionIssueKey;
+                const testExecutionIssueKey = this.issueData?.key;
                 if (testExecutionIssueKey) {
                     const issueKeysCommand = getOrCreateConstantCommand(this.graph, this.logger, [
                         testExecutionIssueKey,
@@ -796,7 +775,7 @@ class AfterRunBuilder {
                 this.graph,
                 this.logger,
                 this.issueData?.fields?.issuetype ?? {
-                    name: this.options.jira.testExecutionIssueType,
+                    name: "Test Execution",
                 }
             );
             this.constants.executionIssue = {
@@ -822,3 +801,11 @@ class AfterRunBuilder {
         return this.constants.results;
     }
 }
+
+/**
+ * Workaround until module mocking becomes a stable feature. The current approach allows replacing
+ * the function with a mocked one.
+ *
+ * @see https://nodejs.org/docs/latest-v23.x/api/test.html#mockmodulespecifier-options
+ */
+export default { addUploadCommands };

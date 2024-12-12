@@ -1,25 +1,27 @@
-import { expect } from "chai";
-import path from "node:path";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { LoggedError, errorMessage, isLoggedError } from "./errors";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(errorMessage.name, () => {
-        it("returns error messages", () => {
-            expect(errorMessage(new Error("Hi"))).to.eq("Hi");
+describe(relative(cwd(), __filename), async () => {
+    await describe(errorMessage.name, async () => {
+        await it("returns error messages", () => {
+            assert.strictEqual(errorMessage(new Error("Hi")), "Hi");
         });
 
-        it("returns other objects as strings", () => {
-            expect(errorMessage(15)).to.eq("15");
+        await it("returns other objects as strings", () => {
+            assert.strictEqual(errorMessage(15), "15");
         });
     });
 
-    describe(isLoggedError.name, () => {
-        it("returns true for LoggedError", () => {
-            expect(isLoggedError(new LoggedError())).to.be.true;
+    await describe(isLoggedError.name, async () => {
+        await it("returns true for LoggedError", () => {
+            assert.strictEqual(isLoggedError(new LoggedError()), true);
         });
 
-        it("returns false for Error", () => {
-            expect(isLoggedError(new Error())).to.be.false;
+        await it("returns false for Error", () => {
+            assert.strictEqual(isLoggedError(new Error()), false);
         });
     });
 });

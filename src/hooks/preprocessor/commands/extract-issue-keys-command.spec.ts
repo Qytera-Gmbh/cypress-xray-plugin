@@ -1,16 +1,18 @@
-import { expect } from "chai";
-import path from "path";
-import { getMockedLogger } from "../../../../test/mocks";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
+import { LOG } from "../../../util/logging";
 import { ConstantCommand } from "../../util/commands/constant-command";
 import { ExtractIssueKeysCommand } from "./extract-issue-keys-command";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(ExtractIssueKeysCommand.name, () => {
-        it("merges all issue keys into one array", async () => {
-            const logger = getMockedLogger();
+describe(relative(cwd(), __filename), async () => {
+    await describe(ExtractIssueKeysCommand.name, async () => {
+        await it("merges all issue keys into one array", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const extractIssueKeysCommand = new ExtractIssueKeysCommand(
-                logger,
-                new ConstantCommand(logger, {
+                LOG,
+                new ConstantCommand(LOG, {
                     preconditions: [{ key: "CYP-001", summary: "Background" }],
                     tests: [
                         { key: "CYP-123", summary: "Hello", tags: [] },
@@ -23,7 +25,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     ],
                 })
             );
-            expect(await extractIssueKeysCommand.compute()).to.deep.eq([
+            assert.deepStrictEqual(await extractIssueKeysCommand.compute(), [
                 "CYP-123",
                 "CYP-456",
                 "CYP-789",
