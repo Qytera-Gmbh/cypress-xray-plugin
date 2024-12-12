@@ -12,7 +12,6 @@
     },
     "rules": {
         "no-shadow": "off",
-        "@typescript-eslint/no-deprecated": "off",
         "@typescript-eslint/consistent-type-exports": "error",
         "@typescript-eslint/consistent-type-imports": "error",
         "@typescript-eslint/parameter-properties": "error",

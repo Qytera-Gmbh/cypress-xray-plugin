@@ -141,11 +141,6 @@ function initJiraOptions(
         attachVideos:
             parse(env, ENV_NAMES.jira.attachVideos, asBoolean) ?? options.attachVideos ?? false,
         fields: {
-            description:
-                parse(env, ENV_NAMES.jira.fields.description, asString) ??
-                options.fields?.description,
-            labels: parse(env, ENV_NAMES.jira.fields.labels, asString) ?? options.fields?.labels,
-            summary: parse(env, ENV_NAMES.jira.fields.summary, asString) ?? options.fields?.summary,
             testEnvironments:
                 parse(env, ENV_NAMES.jira.fields.testEnvironments, asString) ??
                 options.fields?.testEnvironments,
@@ -155,25 +150,8 @@ function initJiraOptions(
         projectKey: projectKey,
         testExecutionIssue:
             parse(env, ENV_NAMES.jira.testExecutionIssue, asObject) ?? options.testExecutionIssue,
-        testExecutionIssueDescription:
-            parse(env, ENV_NAMES.jira.testExecutionIssueDescription, asString) ??
-            options.testExecutionIssueDescription,
-        testExecutionIssueKey:
-            parse(env, ENV_NAMES.jira.testExecutionIssueKey, asString) ??
-            options.testExecutionIssueKey,
-        testExecutionIssueSummary:
-            parse(env, ENV_NAMES.jira.testExecutionIssueSummary, asString) ??
-            options.testExecutionIssueSummary,
-        testExecutionIssueType:
-            parse(env, ENV_NAMES.jira.testExecutionIssueType, asString) ??
-            options.testExecutionIssueType ??
-            "Test Execution",
         testPlanIssueKey:
             parse(env, ENV_NAMES.jira.testPlanIssueKey, asString) ?? options.testPlanIssueKey,
-        testPlanIssueType:
-            parse(env, ENV_NAMES.jira.testPlanIssueType, asString) ??
-            options.testPlanIssueType ??
-            "Test Plan",
         url: parse(env, ENV_NAMES.jira.url, asString) ?? options.url,
     };
 }
@@ -242,10 +220,6 @@ function initXrayOptions(
         testEnvironments:
             parse(env, ENV_NAMES.xray.testEnvironments, asArrayOfStrings) ??
             options?.testEnvironments,
-        uploadRequests:
-            parse(env, ENV_NAMES.xray.uploadRequests, asBoolean) ??
-            options?.uploadRequests ??
-            false,
         uploadResults:
             parse(env, ENV_NAMES.xray.uploadResults, asBoolean) ?? options?.uploadResults ?? true,
         uploadScreenshots:
