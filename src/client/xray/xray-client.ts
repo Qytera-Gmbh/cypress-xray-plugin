@@ -1,7 +1,6 @@
-import type { AxiosResponse } from "axios";
-import { HttpStatusCode, isAxiosError } from "axios";
+import { type AxiosResponse, HttpStatusCode, isAxiosError } from "axios";
 import FormData from "form-data";
-import fs from "node:fs";
+import fs from "fs";
 import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";

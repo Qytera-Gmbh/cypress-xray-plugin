@@ -1,16 +1,17 @@
-import { expect } from "chai";
-import fs from "fs";
-import path from "path";
-import process from "process";
+import assert from "node:assert";
+import fs from "node:fs";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { dedent } from "../../src/util/dedent";
-import { LOCAL_SERVER } from "../server-config";
+import { LOCAL_SERVER } from "../server";
 import { runCypress, setupCypressProject } from "../sh";
 
 // ============================================================================================== //
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/339
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             env: {
@@ -33,7 +34,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             title: "the cy.request task does not do anything if disabled (server)",
         },
     ] as const) {
-        it(test.title, () => {
+        await it(test.title, () => {
             const project = setupCypressProject({
                 testFiles: [
                     {
@@ -52,7 +53,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 env: test.env,
                 includeDefaultEnv: test.service,
             });
-            expect(fs.existsSync(project.logDirectory)).to.be.false;
+            assert.strictEqual(fs.existsSync(project.logDirectory), false);
         });
     }
 });

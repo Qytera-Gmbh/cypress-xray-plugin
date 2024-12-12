@@ -1,42 +1,43 @@
-import { expect } from "chai";
-import path from "path";
-import { getMockedLogger } from "../../../../test/mocks";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { dedent } from "../../../util/dedent";
-import { Level } from "../../../util/logging";
+import { Level, LOG } from "../../../util/logging";
 import { ConstantCommand } from "../../util/commands/constant-command";
 import { GetSummariesToResetCommand } from "./get-summaries-to-reset-command";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(GetSummariesToResetCommand.name, () => {
-        it("returns summaries of issues to reset", async () => {
-            const logger = getMockedLogger();
+describe(relative(cwd(), __filename), async () => {
+    await describe(GetSummariesToResetCommand.name, async () => {
+        await it("returns summaries of issues to reset", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const command = new GetSummariesToResetCommand(
-                logger,
-                new ConstantCommand(logger, {
+                LOG,
+                new ConstantCommand(LOG, {
                     ["CYP-123"]: "Old Summary",
                     ["CYP-456"]: "Old Summary Too",
                 }),
-                new ConstantCommand(logger, {
+                new ConstantCommand(LOG, {
                     ["CYP-123"]: "New Summary",
                     ["CYP-456"]: "Old Summary Too",
                 })
             );
-            expect(await command.compute()).to.deep.eq({
+            assert.deepStrictEqual(await command.compute(), {
                 ["CYP-123"]: "Old Summary",
             });
         });
 
-        it("warns about unknown old summaries", async () => {
-            const logger = getMockedLogger();
+        await it("warns about unknown old summaries", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
             const command = new GetSummariesToResetCommand(
-                logger,
-                new ConstantCommand(logger, {}),
-                new ConstantCommand(logger, {
+                LOG,
+                new ConstantCommand(LOG, {}),
+                new ConstantCommand(LOG, {
                     ["CYP-123"]: "New Summary",
                 })
             );
-            expect(await command.compute()).to.deep.eq({});
-            expect(logger.message).to.have.been.calledWithExactly(
+            assert.deepStrictEqual(await command.compute(), {});
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.WARNING,
                 dedent(`
                     CYP-123
@@ -44,8 +45,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                       The plugin tried to reset the issue's summary after importing the feature file, but could not because the previous summary could not be retrieved.
 
                       Make sure to manually restore it if needed.
-                `)
-            );
+                `),
+            ]);
         });
     });
 });

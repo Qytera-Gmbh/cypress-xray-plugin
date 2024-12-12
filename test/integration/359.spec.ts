@@ -1,8 +1,10 @@
-import { expect } from "chai";
-import path from "path";
-import process from "process";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
+import { setTimeout } from "node:timers/promises";
 import { dedent } from "../../src/util/dedent";
-import { LOCAL_SERVER } from "../server-config";
+import { LOCAL_SERVER } from "../server";
 import { runCypress, setupCypressProject } from "../sh";
 import { getIntegrationClient } from "./clients";
 import { getCreatedTestExecutionIssueKey } from "./util";
@@ -11,7 +13,7 @@ import { getCreatedTestExecutionIssueKey } from "./util";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/359
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             expectedLabels: [],
@@ -86,7 +88,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             xrayPassedStatus: "PASS",
         },
     ] as const) {
-        it(test.title, async () => {
+        await it(test.title, async () => {
             const project = setupCypressProject({
                 configFileContent: dedent(`
                     const { defineConfig } = require("cypress");
@@ -151,12 +153,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                 "cypress"
             );
 
+            // Jira server does not like searches immediately after issue creation (socket hang up).
+            if (test.service === "server") {
+                await setTimeout(10000);
+            }
+
             const searchResult = await getIntegrationClient("jira", test.service).search({
                 fields: ["labels", "summary"],
                 jql: `issue in (${testExecutionIssueKey})`,
             });
-            expect(searchResult[0].fields?.labels).to.deep.eq(test.expectedLabels);
-            expect(searchResult[0].fields?.summary).to.deep.eq(test.expectedSummary);
+            assert.deepStrictEqual(searchResult[0].fields?.labels, test.expectedLabels);
+            assert.deepStrictEqual(searchResult[0].fields.summary, test.expectedSummary);
         });
     }
 });

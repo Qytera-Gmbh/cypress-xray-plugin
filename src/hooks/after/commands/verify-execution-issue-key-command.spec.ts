@@ -1,15 +1,16 @@
-import { expect } from "chai";
-import path from "path";
-import { getMockedLogger } from "../../../../test/mocks";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { dedent } from "../../../util/dedent";
-import { Level } from "../../../util/logging";
+import { Level, LOG } from "../../../util/logging";
 import { ConstantCommand } from "../../util/commands/constant-command";
 import { VerifyExecutionIssueKeyCommand } from "./verify-execution-issue-key-command";
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(VerifyExecutionIssueKeyCommand.name, () => {
-        it("verifies without warning", async () => {
-            const logger = getMockedLogger();
+describe(relative(cwd(), __filename), async () => {
+    await describe(VerifyExecutionIssueKeyCommand.name, async () => {
+        await it("verifies without warning", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
             const command = new VerifyExecutionIssueKeyCommand(
                 {
                     displayCloudHelp: false,
@@ -17,15 +18,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     testExecutionIssueKey: "CYP-123",
                     testExecutionIssueType: { name: "Test Execution" },
                 },
-                logger,
-                new ConstantCommand(logger, "CYP-123")
+                LOG,
+                new ConstantCommand(LOG, "CYP-123")
             );
             await command.compute();
-            expect(logger.message).to.not.have.been.called;
+            assert.strictEqual(message.mock.callCount(), 0);
         });
 
-        it("prints a warning for cypress import failures", async () => {
-            const logger = getMockedLogger();
+        await it("prints a warning for cypress import failures", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
             const command = new VerifyExecutionIssueKeyCommand(
                 {
                     displayCloudHelp: true,
@@ -33,11 +34,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     testExecutionIssueKey: "CYP-123",
                     testExecutionIssueType: { name: "Test Execution" },
                 },
-                logger,
-                new ConstantCommand(logger, "CYP-456")
+                LOG,
+                new ConstantCommand(LOG, "CYP-456")
             );
             await command.compute();
-            expect(logger.message).to.have.been.calledWithExactly(
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.WARNING,
                 dedent(`
                     Cypress execution results were imported to test execution CYP-456, which is different from the configured one: CYP-123
@@ -49,12 +50,12 @@ describe(path.relative(process.cwd(), __filename), () => {
                     More information
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#issuetype
                     - https://docs.getxray.app/display/XRAYCLOUD/Project+Settings%3A+Issue+Types+Mapping
-                `)
-            );
+                `),
+            ]);
         });
 
-        it("prints a warning for cucumber import failures", async () => {
-            const logger = getMockedLogger();
+        await it("prints a warning for cucumber import failures", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
             const command = new VerifyExecutionIssueKeyCommand(
                 {
                     displayCloudHelp: false,
@@ -62,11 +63,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     testExecutionIssueKey: "CYP-123",
                     testExecutionIssueType: { name: "Test Execution" },
                 },
-                logger,
-                new ConstantCommand(logger, "CYP-456")
+                LOG,
+                new ConstantCommand(LOG, "CYP-456")
             );
             await command.compute();
-            expect(logger.message).to.have.been.calledWithExactly(
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.WARNING,
                 dedent(`
                     Cucumber execution results were imported to test execution CYP-456, which is different from the configured one: CYP-123
@@ -78,8 +79,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     More information
                     - https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/configuration/jira/#issuetype
                     - https://docs.getxray.app/display/XRAY/Configuring+a+Jira+project+to+be+used+as+an+Xray+Test+Project
-                `)
-            );
+                `),
+            ]);
         });
     });
 });

@@ -1,5 +1,7 @@
-import { expect } from "chai";
-import path from "node:path";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import type { Computable, Stateful } from "../../hooks/command";
 import { ComputableState } from "../../hooks/command";
 import { SkippedError } from "../errors";
@@ -30,9 +32,9 @@ class ComputableVertex implements Computable<unknown>, Stateful<ComputableState>
     }
 }
 
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(ExecutableGraph.name, () => {
-        it("executes vertices in post-order", async () => {
+describe(relative(cwd(), __filename), async () => {
+    await describe(ExecutableGraph.name, async () => {
+        await it("executes vertices in post-order", async () => {
             const messages: string[] = [];
             const logger = (message: string) => messages.push(message);
 
@@ -48,10 +50,10 @@ describe(path.relative(process.cwd(), __filename), () => {
 
             await g.execute();
 
-            expect(messages).to.deep.eq(["vertex 2", "vertex 4", "vertex 1", "vertex 3"]);
+            assert.deepStrictEqual(messages, ["vertex 2", "vertex 4", "vertex 1", "vertex 3"]);
         });
 
-        it("does not execute successors on partial failure", async () => {
+        await it("does not execute successors on partial failure", async () => {
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1") {
@@ -71,10 +73,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             g.connect(v4, v1);
 
             await g.execute();
-            expect(messages).to.deep.eq(["vertex 2", "vertex 4"]);
+            assert.deepStrictEqual(messages, ["vertex 2", "vertex 4"]);
         });
 
-        it("does not execute successors on full failure", async () => {
+        await it("does not execute successors on full failure", async () => {
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1" || message === "vertex 4") {
@@ -94,10 +96,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             g.connect(v4, v3);
 
             await g.execute();
-            expect(messages).to.deep.eq(["vertex 2"]);
+            assert.deepStrictEqual(messages, ["vertex 2"]);
         });
 
-        it("does not execute successors on skip", async () => {
+        await it("does not execute successors on skip", async () => {
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1") {
@@ -117,10 +119,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             g.connect(v4, v1);
 
             await g.execute();
-            expect(messages).to.deep.eq(["vertex 2", "vertex 4"]);
+            assert.deepStrictEqual(messages, ["vertex 2", "vertex 4"]);
         });
 
-        it("still executes successors on failure if marked as optional", async () => {
+        await it("still executes successors on failure if marked as optional", async () => {
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1") {
@@ -141,10 +143,10 @@ describe(path.relative(process.cwd(), __filename), () => {
             g.connect(v4, v3);
 
             await g.execute();
-            expect(messages).to.deep.eq(["vertex 2", "vertex 4", "vertex 3"]);
+            assert.deepStrictEqual(messages, ["vertex 2", "vertex 4", "vertex 3"]);
         });
 
-        it("still executes successors on skip if marked as optional", async () => {
+        await it("still executes successors on skip if marked as optional", async () => {
             const messages: string[] = [];
             const logger = (message: string) => {
                 if (message === "vertex 1") {
@@ -164,7 +166,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             g.connect(v4, v1);
 
             await g.execute();
-            expect(messages).to.deep.eq(["vertex 2", "vertex 4", "vertex 3"]);
+            assert.deepStrictEqual(messages, ["vertex 2", "vertex 4", "vertex 3"]);
         });
     });
 });

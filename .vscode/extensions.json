@@ -2,7 +2,6 @@
     "recommendations": [
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        "github.vscode-github-actions",
-        "hbenl.vscode-mocha-test-adapter"
+        "github.vscode-github-actions"
     ]
 }

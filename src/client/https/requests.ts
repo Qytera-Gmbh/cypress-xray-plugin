@@ -1,11 +1,11 @@
-import type {
-    AxiosInstance,
-    AxiosRequestConfig,
-    AxiosRequestHeaders,
-    AxiosResponse,
-    InternalAxiosRequestConfig,
+import {
+    type AxiosInstance,
+    type AxiosRequestConfig,
+    type AxiosRequestHeaders,
+    type AxiosResponse,
+    type InternalAxiosRequestConfig,
+    isAxiosError,
 } from "axios";
-import axios, { isAxiosError } from "axios";
 import FormData from "form-data";
 import { normalizedFilename } from "../../util/files";
 import { LOG, Level } from "../../util/logging";
@@ -95,14 +95,42 @@ export interface LoggedRequest {
 export class AxiosRestClient {
     private readonly options: RequestsOptions | undefined;
     private readonly createdLogFiles: Map<string, number>;
-    private axios: AxiosInstance | undefined;
+    private readonly axios: AxiosInstance;
     private lastRequestTime: number | undefined;
 
-    constructor(options?: RequestsOptions) {
+    constructor(axios: AxiosInstance, options?: RequestsOptions) {
+        this.axios = axios;
         this.options = options;
         this.createdLogFiles = new Map();
-        this.axios = undefined;
         this.lastRequestTime = undefined;
+        if (this.options?.debug) {
+            this.axios.interceptors.request.use((request: InternalAxiosRequestConfig<unknown>) => {
+                this.logRequest(request);
+                return request;
+            });
+            this.axios.interceptors.response.use((response: AxiosResponse<unknown>) => {
+                this.logResponse(response);
+                return response;
+            });
+        }
+        this.axios.interceptors.request.use(
+            (request: InternalAxiosRequestConfig<unknown>) => request,
+            (error: unknown) => {
+                this.logError("outbound", error);
+                return Promise.reject(
+                    error instanceof Error ? error : new Error(unknownToString(error))
+                );
+            }
+        );
+        this.axios.interceptors.response.use(
+            (response: AxiosResponse<unknown>) => response,
+            (error: unknown) => {
+                this.logError("inbound", error);
+                return Promise.reject(
+                    error instanceof Error ? error : new Error(unknownToString(error))
+                );
+            }
+        );
     }
 
     public async get<R>(
@@ -112,7 +140,7 @@ export class AxiosRestClient {
         await this.delayIfNeeded();
         const progressInterval = this.startResponseInterval(url);
         try {
-            return await this.getAxios().get(url, {
+            return await this.axios.get(url, {
                 ...this.options?.http,
                 ...config,
             });
@@ -129,7 +157,7 @@ export class AxiosRestClient {
         await this.delayIfNeeded();
         const progressInterval = this.startResponseInterval(url);
         try {
-            return await this.getAxios().post(url, data, {
+            return await this.axios.post(url, data, {
                 ...this.options?.http,
                 ...config,
             });
@@ -146,50 +174,13 @@ export class AxiosRestClient {
         await this.delayIfNeeded();
         const progressInterval = this.startResponseInterval(url);
         try {
-            return await this.getAxios().put(url, data, {
+            return await this.axios.put(url, data, {
                 ...this.options?.http,
                 ...config,
             });
         } finally {
             clearInterval(progressInterval);
         }
-    }
-
-    private getAxios(): AxiosInstance {
-        if (!this.axios) {
-            this.axios = axios.create();
-            if (this.options?.debug) {
-                this.axios.interceptors.request.use(
-                    (request: InternalAxiosRequestConfig<unknown>) => {
-                        this.logRequest(request);
-                        return request;
-                    }
-                );
-                this.axios.interceptors.response.use((response: AxiosResponse<unknown>) => {
-                    this.logResponse(response);
-                    return response;
-                });
-            }
-            this.axios.interceptors.request.use(
-                (request: InternalAxiosRequestConfig<unknown>) => request,
-                (error: unknown) => {
-                    this.logError("outbound", error);
-                    return Promise.reject(
-                        error instanceof Error ? error : new Error(unknownToString(error))
-                    );
-                }
-            );
-            this.axios.interceptors.response.use(
-                (response: AxiosResponse<unknown>) => response,
-                (error: unknown) => {
-                    this.logError("inbound", error);
-                    return Promise.reject(
-                        error instanceof Error ? error : new Error(unknownToString(error))
-                    );
-                }
-            );
-        }
-        return this.axios;
     }
 
     private logRequest(request: InternalAxiosRequestConfig<unknown>): void {

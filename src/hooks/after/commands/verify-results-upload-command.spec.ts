@@ -1,85 +1,81 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import path from "path";
-import { getMockedLogger } from "../../../../test/mocks";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { dedent } from "../../../util/dedent";
 import { SkippedError } from "../../../util/errors";
-import { Level } from "../../../util/logging";
+import { Level, LOG } from "../../../util/logging";
 import { ConstantCommand } from "../../util/commands/constant-command";
 import { VerifyResultsUploadCommand } from "./verify-results-upload-command";
 
-chai.use(chaiAsPromised);
-
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(VerifyResultsUploadCommand.name, () => {
-        it("prints a success message for successful cypress uploads", async () => {
-            const logger = getMockedLogger();
-            const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
-                cucumberExecutionIssueKey: new ConstantCommand(logger, undefined),
-                cypressExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
+describe(relative(cwd(), __filename), async () => {
+    await describe(VerifyResultsUploadCommand.name, async () => {
+        await it("prints a success message for successful cypress uploads", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const command = new VerifyResultsUploadCommand({ url: "http://localhost:1234" }, LOG, {
+                cucumberExecutionIssueKey: new ConstantCommand(LOG, undefined),
+                cypressExecutionIssueKey: new ConstantCommand(LOG, "CYP-123"),
             });
             await command.compute();
-            expect(logger.message).to.have.been.calledWithExactly(
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.SUCCESS,
-                "Uploaded Cypress test results to issue: CYP-123 (https://example.org/browse/CYP-123)"
+                "Uploaded Cypress test results to issue: CYP-123 (http://localhost:1234/browse/CYP-123)",
+            ]);
+        });
+
+        await it("prints a success message for successful cucumber uploads", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const command = new VerifyResultsUploadCommand({ url: "http://localhost:1234" }, LOG, {
+                cucumberExecutionIssueKey: new ConstantCommand(LOG, "CYP-123"),
+                cypressExecutionIssueKey: new ConstantCommand(LOG, undefined),
+            });
+            await command.compute();
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
+                Level.SUCCESS,
+                "Uploaded Cucumber test results to issue: CYP-123 (http://localhost:1234/browse/CYP-123)",
+            ]);
+        });
+
+        await it("prints a success message for successful uploads", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const command = new VerifyResultsUploadCommand({ url: "http://localhost:1234" }, LOG, {
+                cucumberExecutionIssueKey: new ConstantCommand(LOG, "CYP-123"),
+                cypressExecutionIssueKey: new ConstantCommand(LOG, "CYP-123"),
+            });
+            await command.compute();
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
+                Level.SUCCESS,
+                "Uploaded test results to issue: CYP-123 (http://localhost:1234/browse/CYP-123)",
+            ]);
+        });
+
+        await it("skips for mismatched execution issue keys", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const command = new VerifyResultsUploadCommand({ url: "http://localhost:1234" }, LOG, {
+                cucumberExecutionIssueKey: new ConstantCommand(LOG, "CYP-456"),
+                cypressExecutionIssueKey: new ConstantCommand(LOG, "CYP-123"),
+            });
+            await assert.rejects(
+                command.compute(),
+                SkippedError,
+                dedent(`
+                    Cucumber execution results were imported to a different test execution issue than the Cypress execution results:
+
+                      Cypress  test execution issue: CYP-123 http://localhost:1234/browse/CYP-123
+                      Cucumber test execution issue: CYP-456 http://localhost:1234/browse/CYP-456
+
+                    Make sure your Jira configuration does not prevent modifications of existing test executions.
+                `)
             );
         });
 
-        it("prints a success message for successful cucumber uploads", async () => {
-            const logger = getMockedLogger();
-            const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
-                cucumberExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
-                cypressExecutionIssueKey: new ConstantCommand(logger, undefined),
+        await it("skips when there are no results", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const command = new VerifyResultsUploadCommand({ url: "http://localhost:1234" }, LOG, {
+                cucumberExecutionIssueKey: new ConstantCommand(LOG, undefined),
+                cypressExecutionIssueKey: new ConstantCommand(LOG, undefined),
             });
-            await command.compute();
-            expect(logger.message).to.have.been.calledWithExactly(
-                Level.SUCCESS,
-                "Uploaded Cucumber test results to issue: CYP-123 (https://example.org/browse/CYP-123)"
-            );
-        });
-
-        it("prints a success message for successful uploads", async () => {
-            const logger = getMockedLogger();
-            const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
-                cucumberExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
-                cypressExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
-            });
-            await command.compute();
-            expect(logger.message).to.have.been.calledWithExactly(
-                Level.SUCCESS,
-                "Uploaded test results to issue: CYP-123 (https://example.org/browse/CYP-123)"
-            );
-        });
-
-        it("skips for mismatched execution issue keys", async () => {
-            const logger = getMockedLogger();
-            const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
-                cucumberExecutionIssueKey: new ConstantCommand(logger, "CYP-456"),
-                cypressExecutionIssueKey: new ConstantCommand(logger, "CYP-123"),
-            });
-            await expect(command.compute())
-                .to.eventually.be.an.instanceOf(SkippedError)
-                .and.to.eventually.be.rejectedWith(
-                    dedent(`
-                        Cucumber execution results were imported to a different test execution issue than the Cypress execution results:
-
-                          Cypress  test execution issue: CYP-123 https://example.org/browse/CYP-123
-                          Cucumber test execution issue: CYP-456 https://example.org/browse/CYP-456
-
-                        Make sure your Jira configuration does not prevent modifications of existing test executions.
-                    `)
-                );
-        });
-
-        it("skips when there are no results", async () => {
-            const logger = getMockedLogger();
-            const command = new VerifyResultsUploadCommand({ url: "https://example.org" }, logger, {
-                cucumberExecutionIssueKey: new ConstantCommand(logger, undefined),
-                cypressExecutionIssueKey: new ConstantCommand(logger, undefined),
-            });
-            await expect(command.compute())
-                .to.eventually.be.an.instanceOf(SkippedError)
-                .and.to.eventually.be.rejectedWith("No test results were uploaded");
+            await assert.rejects(command.compute(), SkippedError, "No test results were uploaded");
         });
     });
 });

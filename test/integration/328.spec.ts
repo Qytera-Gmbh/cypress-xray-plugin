@@ -1,10 +1,10 @@
-import { expect } from "chai";
-import path from "path";
-import process from "process";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { dedent } from "../../src/util/dedent";
-import { LOCAL_SERVER } from "../server-config";
+import { LOCAL_SERVER } from "../server";
 import { runCypress, setupCypressProject } from "../sh";
-import { expectToExist } from "../util";
 import { getIntegrationClient } from "./clients";
 import { getCreatedTestExecutionIssueKey } from "./util";
 
@@ -12,7 +12,7 @@ import { getCreatedTestExecutionIssueKey } from "./util";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/328
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             cucumberTestPrefix: "TestName:",
@@ -33,7 +33,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             xrayPassedStatus: "EXECUTING", // Must be a non-final status (I don't have permission)
         },
     ] as const) {
-        it(test.title, async () => {
+        await it(test.title, async () => {
             const project = setupCypressProject({
                 configFileContent: dedent(`
                     const preprocessor = require("@badeball/cypress-cucumber-preprocessor");
@@ -102,7 +102,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 import { Given } from "@badeball/cypress-cucumber-preprocessor";
 
                                 Given("a step", () => {
-                                    expect(true).to.be.true;
+                                    expect(true, true);
                                 });
                             `),
                             filename: "steps.js",
@@ -153,16 +153,19 @@ describe(path.relative(process.cwd(), __filename), () => {
                     fields: ["id"],
                     jql: `issue in (${testExecutionIssueKey})`,
                 });
-                expectToExist(searchResult[0].id);
+                assert.ok(searchResult[0].id);
                 const testResults = await getIntegrationClient("xray", test.service).getTestResults(
                     searchResult[0].id
                 );
-                expect(testResults.map((result) => result.jira.key)).to.deep.eq([
-                    test.manualTests[0],
-                    test.manualTests[1],
-                    test.cucumberTests[0],
-                    test.cucumberTests[1],
-                ]);
+                assert.deepStrictEqual(
+                    testResults.map((result) => result.jira.key),
+                    [
+                        test.manualTests[0],
+                        test.manualTests[1],
+                        test.cucumberTests[0],
+                        test.cucumberTests[1],
+                    ]
+                );
             }
 
             if (test.service === "server") {
@@ -170,12 +173,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     "xray",
                     test.service
                 ).getTestExecution(testExecutionIssueKey);
-                expect(testResults.map((result) => result.key)).to.deep.eq([
-                    test.manualTests[0],
-                    test.manualTests[1],
-                    test.cucumberTests[0],
-                    test.cucumberTests[1],
-                ]);
+                assert.deepStrictEqual(
+                    testResults.map((result) => result.key),
+                    [
+                        test.manualTests[0],
+                        test.manualTests[1],
+                        test.cucumberTests[0],
+                        test.cucumberTests[1],
+                    ]
+                );
             }
         });
     }

@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 22.x
           registry-url: https://registry.npmjs.org/
           cache: npm
       - run: npm install
@@ -30,8 +30,8 @@ jobs:
         with:
           check_name: Unit Test Results
           files: |
-            .mocha/**/*.json
-          time_unit: milliseconds
+            unit.xml
+          time_unit: seconds
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 22.x
           registry-url: https://registry.npmjs.org/
           cache: npm
       - run: npm install
@@ -68,5 +68,5 @@ jobs:
         with:
           check_name: Integration Test Results
           files: |
-            .mocha/**/*.json
-          time_unit: milliseconds
+            integration.xml
+          time_unit: seconds

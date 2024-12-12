@@ -20,22 +20,31 @@ export interface CucumberPreprocessorExports {
  * @param packageName - the dependency's package name
  * @returns the dependency
  */
-export async function importOptionalDependency<T>(packageName: string): Promise<T> {
-    const dependency: T = await IMPORT(packageName);
+async function importOptionalDependency<T>(packageName: string): Promise<T> {
+    const dependency: T = await EXPORTS._import(packageName);
     LOG.message(Level.DEBUG, `Successfully imported optional dependency: ${packageName}`);
     return dependency;
 }
 
 /**
- * Dynamically imports a package.
+ * Workaround until module mocking becomes a stable feature. The current approach allows replacing
+ * the `_import` function with a mocked one.
  *
- * *Note: This function is mainly used for stubbing purposes only, since `import` cannot be stubbed
- * as it's not a function. You should probably use safer alternatives like
- * {@link importOptionalDependency | `importOptionalDependency`}.*
- *
- * @param packageName - the name of the package to import
- * @returns the package
+ * @see https://nodejs.org/docs/latest-v23.x/api/test.html#mockmodulespecifier-options
  */
-export const IMPORT = async <T>(packageName: string): Promise<T> => {
-    return (await import(packageName)) as T;
+const EXPORTS = {
+    /**
+     * Dynamically imports a package.
+     *
+     * *Note: This function is mainly used for stubbing purposes only, since `import` cannot be stubbed
+     * as it's not a function. You should probably use safer alternatives like
+     * {@link importOptionalDependency | `importOptionalDependency`}.*
+     *
+     * @param packageName - the name of the package to import
+     * @returns the package
+     */
+    ["_import"]: async <T>(packageName: string) => (await import(packageName)) as T,
+    importOptionalDependency,
 };
+
+export default EXPORTS;

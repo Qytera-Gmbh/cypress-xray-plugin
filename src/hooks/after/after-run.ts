@@ -48,7 +48,7 @@ import { VerifyExecutionIssueKeyCommand } from "./commands/verify-execution-issu
 import { VerifyResultsUploadCommand } from "./commands/verify-results-upload-command";
 import { containsCucumberTest, containsCypressTest } from "./util";
 
-export async function addUploadCommands(
+async function addUploadCommands(
     results: CypressRunResultType,
     projectRoot: string,
     options: InternalCypressXrayPluginOptions,
@@ -822,3 +822,11 @@ class AfterRunBuilder {
         return this.constants.results;
     }
 }
+
+/**
+ * Workaround until module mocking becomes a stable feature. The current approach allows replacing
+ * the function with a mocked one.
+ *
+ * @see https://nodejs.org/docs/latest-v23.x/api/test.html#mockmodulespecifier-options
+ */
+export default { addUploadCommands };

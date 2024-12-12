@@ -1,21 +1,20 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import path from "path";
-import { getMockedLogger } from "../../../../../test/mocks";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { dedent } from "../../../../util/dedent";
+import { LOG } from "../../../../util/logging";
 import { ConstantCommand } from "../constant-command";
 import { ExtractFieldIdCommand, JiraField } from "./extract-field-id-command";
 
-chai.use(chaiAsPromised);
-
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(ExtractFieldIdCommand.name, () => {
-        it("extracts fields case-insensitively", async () => {
-            const logger = getMockedLogger();
+describe(relative(cwd(), __filename), async () => {
+    await describe(ExtractFieldIdCommand.name, async () => {
+        await it("extracts fields case-insensitively", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const command = new ExtractFieldIdCommand(
                 { field: JiraField.TEST_PLAN },
-                logger,
-                new ConstantCommand(logger, [
+                LOG,
+                new ConstantCommand(LOG, [
                     {
                         clauseNames: ["test plan"],
                         custom: false,
@@ -44,15 +43,15 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 ])
             );
-            expect(await command.compute()).to.eq("customfield_12345");
+            assert.strictEqual(await command.compute(), "customfield_12345");
         });
 
-        it("throws for missing fields", async () => {
-            const logger = getMockedLogger();
+        await it("throws for missing fields", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const command = new ExtractFieldIdCommand(
                 { field: JiraField.TEST_PLAN },
-                logger,
-                new ConstantCommand(logger, [
+                LOG,
+                new ConstantCommand(LOG, [
                     {
                         clauseNames: ["summary"],
                         custom: false,
@@ -68,8 +67,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 ])
             );
-            await expect(command.compute()).to.eventually.be.rejectedWith(
-                dedent(`
+            await assert.rejects(command.compute(), {
+                message: dedent(`
                     Failed to fetch Jira field ID for field with name: test plan
                     Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
@@ -83,20 +82,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                           testPlan: // corresponding field ID
                         }
                       }
-                `)
-            );
+                `),
+            });
         });
 
-        describe("throws for missing fields and displays a hint", () => {
-            it(JiraField.TEST_ENVIRONMENTS, async () => {
-                const logger = getMockedLogger();
+        await describe("throws for missing fields and displays a hint", async () => {
+            await it(JiraField.TEST_ENVIRONMENTS, async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const command = new ExtractFieldIdCommand(
                     { field: JiraField.TEST_ENVIRONMENTS },
-                    logger,
-                    new ConstantCommand(logger, [])
+                    LOG,
+                    new ConstantCommand(LOG, [])
                 );
-                await expect(command.compute()).to.eventually.be.rejectedWith(
-                    dedent(`
+                await assert.rejects(command.compute(), {
+                    message: dedent(`
                         Failed to fetch Jira field ID for field with name: test environments
                         Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
@@ -107,19 +106,19 @@ describe(path.relative(process.cwd(), __filename), () => {
                               testEnvironments: // corresponding field ID
                             }
                           }
-                    `)
-                );
+                    `),
+                });
             });
 
-            it(JiraField.TEST_PLAN, async () => {
-                const logger = getMockedLogger();
+            await it(JiraField.TEST_PLAN, async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
                 const command = new ExtractFieldIdCommand(
                     { field: JiraField.TEST_PLAN },
-                    logger,
-                    new ConstantCommand(logger, [])
+                    LOG,
+                    new ConstantCommand(LOG, [])
                 );
-                await expect(command.compute()).to.eventually.be.rejectedWith(
-                    dedent(`
+                await assert.rejects(command.compute(), {
+                    message: dedent(`
                         Failed to fetch Jira field ID for field with name: test plan
                         Make sure the field actually exists and that your Jira language settings did not modify the field's name
 
@@ -130,17 +129,17 @@ describe(path.relative(process.cwd(), __filename), () => {
                               testPlan: // corresponding field ID
                             }
                           }
-                    `)
-                );
+                    `),
+                });
             });
         });
 
-        it("throws for multiple fields", async () => {
-            const logger = getMockedLogger();
+        await it("throws for multiple fields", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
             const command = new ExtractFieldIdCommand(
                 { field: JiraField.TEST_PLAN },
-                logger,
-                new ConstantCommand(logger, [
+                LOG,
+                new ConstantCommand(LOG, [
                     {
                         clauseNames: ["Test Plan"],
                         custom: false,
@@ -169,8 +168,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                     },
                 ])
             );
-            await expect(command.compute()).to.eventually.be.rejectedWith(
-                dedent(`
+            await assert.rejects(command.compute(), {
+                message: dedent(`
                     Failed to fetch Jira field ID for field with name: test plan
                     There are multiple fields with this name
 
@@ -185,8 +184,8 @@ describe(path.relative(process.cwd(), __filename), () => {
                           testPlan: // "testPlan" or "customfield_12345"
                         }
                       }
-                `)
-            );
+                `),
+            });
         });
     });
 });

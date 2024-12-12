@@ -1,87 +1,150 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import path from "path";
-import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks";
+import axios from "axios";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
+import { PatCredentials } from "../../../../client/authentication/credentials";
+import { AxiosRestClient } from "../../../../client/https/requests";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import { BaseJiraClient } from "../../../../client/jira/jira-client";
 import { dedent } from "../../../../util/dedent";
-import { Level } from "../../../../util/logging";
+import { Level, LOG } from "../../../../util/logging";
 import { ConstantCommand } from "../constant-command";
 import { EditIssueFieldCommand } from "./edit-issue-field-command";
 
-chai.use(chaiAsPromised);
-
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(EditIssueFieldCommand.name, () => {
-        it("edits issues", async () => {
-            const logger = getMockedLogger();
-            const jiraClient = getMockedJiraClient();
-            jiraClient.editIssue
-                .withArgs("CYP-123", { fields: { ["customfield_12345"]: "hello" } })
-                .resolves("CYP-123");
-            jiraClient.editIssue
-                .withArgs("CYP-456", { fields: { ["customfield_12345"]: "there" } })
-                .resolves("CYP-456");
+describe(relative(cwd(), __filename), async () => {
+    await describe(EditIssueFieldCommand.name, async () => {
+        await it("edits issues", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            context.mock.method(
+                jiraClient,
+                "editIssue",
+                context.mock.fn<JiraClient["editIssue"]>((issueIdOrKey, issueUpdateData) => {
+                    if (
+                        issueIdOrKey === "CYP-123" &&
+                        issueUpdateData.fields &&
+                        issueUpdateData.fields.customfield_12345 === "hello"
+                    ) {
+                        return Promise.resolve("CYP-123");
+                    }
+                    if (
+                        issueIdOrKey === "CYP-456" &&
+                        issueUpdateData.fields &&
+                        issueUpdateData.fields.customfield_12345 === "there"
+                    ) {
+                        return Promise.resolve("CYP-456");
+                    }
+                    throw new Error("Mock called unexpectedly");
+                })
+            );
             const command = new EditIssueFieldCommand(
                 {
                     fieldId: "summary",
                     jiraClient: jiraClient,
                 },
-                logger,
-                new ConstantCommand(logger, "customfield_12345"),
-                new ConstantCommand(logger, {
+                LOG,
+                new ConstantCommand(LOG, "customfield_12345"),
+                new ConstantCommand(LOG, {
                     ["CYP-123"]: "hello",
                     ["CYP-456"]: "there",
                 })
             );
-            expect(await command.compute()).to.deep.eq(["CYP-123", "CYP-456"]);
-            expect(logger.message).to.not.have.been.called;
+            assert.deepStrictEqual(await command.compute(), ["CYP-123", "CYP-456"]);
+            assert.strictEqual(message.mock.callCount(), 0);
         });
 
-        it("logs errors for unsuccessful edits", async () => {
-            const logger = getMockedLogger();
-            const jiraClient = getMockedJiraClient();
-            jiraClient.editIssue
-                .withArgs("CYP-123", { fields: { ["customfield_12345"]: ["dev", "test"] } })
-                .resolves("CYP-123");
-            jiraClient.editIssue
-                .withArgs("CYP-456", { fields: { ["customfield_12345"]: ["test"] } })
-                .rejects(new Error("No editing allowed"));
+        await it("logs errors for unsuccessful edits", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            context.mock.method(
+                jiraClient,
+                "editIssue",
+                context.mock.fn<JiraClient["editIssue"]>((issueIdOrKey, issueUpdateData) => {
+                    if (
+                        issueIdOrKey === "CYP-123" &&
+                        issueUpdateData.fields &&
+                        (issueUpdateData.fields.customfield_12345 as string[])[0] === "dev" &&
+                        (issueUpdateData.fields.customfield_12345 as string[])[1] === "test"
+                    ) {
+                        return Promise.resolve("CYP-123");
+                    }
+                    if (
+                        issueIdOrKey === "CYP-123" &&
+                        issueUpdateData.fields &&
+                        (issueUpdateData.fields.customfield_12345 as string[])[0] === "test"
+                    ) {
+                        new Error("No editing allowed");
+                    }
+                    throw new Error("Mock called unexpectedly");
+                })
+            );
             const command = new EditIssueFieldCommand(
                 {
                     fieldId: "labels",
                     jiraClient: jiraClient,
                 },
-                logger,
-                new ConstantCommand(logger, "customfield_12345"),
-                new ConstantCommand(logger, {
+                LOG,
+                new ConstantCommand(LOG, "customfield_12345"),
+                new ConstantCommand(LOG, {
                     ["CYP-123"]: ["dev", "test"],
                     ["CYP-456"]: ["test"],
                 })
             );
-            expect(await command.compute()).to.deep.eq(["CYP-123"]);
-            expect(logger.message).to.have.been.calledWithExactly(
+            assert.deepStrictEqual(await command.compute(), ["CYP-123"]);
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.WARNING,
                 dedent(`
                     CYP-456
 
                       Failed to set labels field to value: ["test"]
-                `)
-            );
+                `),
+            ]);
         });
 
-        it("returns empty arrays", async () => {
-            const logger = getMockedLogger();
-            const jiraClient = getMockedJiraClient();
+        await it("returns empty arrays", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            context.mock.method(
+                jiraClient,
+                "addAttachment",
+                context.mock.fn<JiraClient["addAttachment"]>((issueIdOrKey, ...files) => {
+                    if (
+                        issueIdOrKey === "CYP-123" &&
+                        files[0] === "image.jpg" &&
+                        files[1] === "something.mp4"
+                    ) {
+                        return Promise.resolve([
+                            { filename: "image.jpg", size: 12345 },
+                            { filename: "something.mp4", size: 54321 },
+                        ]);
+                    }
+                    throw new Error("Mock called unexpectedly");
+                })
+            );
             const command = new EditIssueFieldCommand(
                 {
                     fieldId: "labels",
                     jiraClient: jiraClient,
                 },
-                logger,
-                new ConstantCommand(logger, "customfield_12345"),
-                new ConstantCommand(logger, {})
+                LOG,
+                new ConstantCommand(LOG, "customfield_12345"),
+                new ConstantCommand(LOG, {})
             );
-            expect(await command.compute()).to.deep.eq([]);
-            expect(logger.message).to.not.have.been.called;
+            assert.deepStrictEqual(await command.compute(), []);
+            assert.strictEqual(message.mock.callCount(), 0);
         });
     });
 });

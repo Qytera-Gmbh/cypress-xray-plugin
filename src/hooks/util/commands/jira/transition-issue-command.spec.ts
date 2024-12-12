@@ -1,34 +1,48 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import path from "path";
-import { getMockedJiraClient, getMockedLogger } from "../../../../../test/mocks";
-import { Level } from "../../../../util/logging";
+import axios from "axios";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
+import { PatCredentials } from "../../../../client/authentication/credentials";
+import { AxiosRestClient } from "../../../../client/https/requests";
+import type { JiraClient } from "../../../../client/jira/jira-client";
+import { BaseJiraClient } from "../../../../client/jira/jira-client";
+import { LOG, Level } from "../../../../util/logging";
 import { ConstantCommand } from "../constant-command";
 import { TransitionIssueCommand } from "./transition-issue-command";
 
-chai.use(chaiAsPromised);
-
-describe(path.relative(process.cwd(), __filename), () => {
-    describe(TransitionIssueCommand.name, () => {
-        it("transitions issues", async () => {
-            const logger = getMockedLogger();
-            const jiraClient = getMockedJiraClient();
-            jiraClient.transitionIssue.onFirstCall().resolves();
+describe(relative(cwd(), __filename), async () => {
+    await describe(TransitionIssueCommand.name, async () => {
+        await it("transitions issues", async (context) => {
+            const message = context.mock.method(LOG, "message", context.mock.fn());
+            const jiraClient = new BaseJiraClient(
+                "http://localhost:1234",
+                new PatCredentials("token"),
+                new AxiosRestClient(axios)
+            );
+            const transitionIssue = context.mock.method(
+                jiraClient,
+                "transitionIssue",
+                context.mock.fn<JiraClient["transitionIssue"]>()
+            );
             const command = new TransitionIssueCommand(
                 { jiraClient: jiraClient, transition: { id: "5" } },
-                logger,
-                new ConstantCommand(logger, "CYP-123")
+                LOG,
+                new ConstantCommand(LOG, "CYP-123")
             );
             await command.compute();
-            expect(logger.message).to.have.been.calledWithExactly(
+            assert.deepStrictEqual(message.mock.calls[0].arguments, [
                 Level.INFO,
-                "Transitioning test execution issue CYP-123"
-            );
-            expect(jiraClient.transitionIssue).to.have.been.calledOnceWithExactly("CYP-123", {
-                transition: {
-                    id: "5",
+                "Transitioning test execution issue CYP-123",
+            ]);
+            assert.deepStrictEqual(transitionIssue.mock.calls[0].arguments, [
+                "CYP-123",
+                {
+                    transition: {
+                        id: "5",
+                    },
                 },
-            });
+            ]);
         });
     });
 });
