@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import ansiColors from "ansi-colors";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -9,7 +9,7 @@ import type {
 import { unknownToString } from "../src/util/string";
 
 export const TEST_TMP_DIR = path.join(os.tmpdir(), "cypress-xray-plugin");
-console.log(chalk.gray(`Temporary directory: ${TEST_TMP_DIR}`));
+console.log(ansiColors.gray(`Temporary directory: ${TEST_TMP_DIR}`));
 
 export function resolveTestDirPath(...subPaths: string[]): string {
     return path.resolve(TEST_TMP_DIR, ...subPaths);

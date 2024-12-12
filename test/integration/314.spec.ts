@@ -1,5 +1,5 @@
+import ansiColors from "ansi-colors";
 import { expect } from "chai";
-import chalk from "chalk";
 import fs from "fs";
 import path from "path";
 import process from "process";
@@ -109,7 +109,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                 return;
             }
             expect.fail(
-                `Expected to find a logged import execution request in log directory ${chalk.red(
+                `Expected to find a logged import execution request in log directory ${ansiColors.red(
                     project.logDirectory
                 )}, but did not find any`
             );
