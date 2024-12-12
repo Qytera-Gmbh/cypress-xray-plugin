@@ -4,7 +4,7 @@ import fs from "node:fs";
 import { join, relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
-import type { LoggedRequest } from "../../src/client/https/https";
+import type { LoggedRequest } from "../../src/client/https/requests";
 import { dedent } from "../../src/util/dedent";
 import { LOCAL_SERVER } from "../server";
 import { runCypress, setupCypressProject } from "../sh";

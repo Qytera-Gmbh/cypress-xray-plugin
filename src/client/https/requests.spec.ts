@@ -8,7 +8,7 @@ import { beforeEach, describe, it } from "node:test";
 import { LOCAL_SERVER } from "../../../test/server";
 import type { Logger } from "../../util/logging";
 import { Level, LOG } from "../../util/logging";
-import { AxiosRestClient } from "./https";
+import { AxiosRestClient } from "./requests";
 
 describe(relative(cwd(), __filename), async () => {
     beforeEach(() => {

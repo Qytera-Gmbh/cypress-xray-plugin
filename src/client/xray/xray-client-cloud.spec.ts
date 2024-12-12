@@ -14,7 +14,7 @@ import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-te
 import { dedent } from "../../util/dedent";
 import { Level, LOG } from "../../util/logging";
 import { JwtCredentials } from "../authentication/credentials";
-import { AxiosRestClient } from "../https/https";
+import { AxiosRestClient } from "../https/requests";
 import { XrayClientCloud } from "./xray-client-cloud";
 
 describe(relative(cwd(), __filename), async () => {

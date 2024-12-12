@@ -4,7 +4,7 @@ import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
 import { Level, LOG } from "../../util/logging";
-import { AxiosRestClient } from "../https/https";
+import { AxiosRestClient } from "../https/requests";
 import { JwtCredentials } from "./credentials";
 
 describe(relative(cwd(), __filename), async () => {

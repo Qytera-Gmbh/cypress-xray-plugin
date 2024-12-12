@@ -4,7 +4,7 @@ import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { PatCredentials } from "../../../../client/authentication/credentials";
-import { AxiosRestClient } from "../../../../client/https/https";
+import { AxiosRestClient } from "../../../../client/https/requests";
 import type { JiraClient } from "../../../../client/jira/jira-client";
 import { BaseJiraClient } from "../../../../client/jira/jira-client";
 import { Level, LOG } from "../../../../util/logging";

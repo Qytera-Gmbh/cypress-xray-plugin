@@ -5,7 +5,7 @@ import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { PatCredentials } from "../../../../client/authentication/credentials";
-import { AxiosRestClient } from "../../../../client/https/https";
+import { AxiosRestClient } from "../../../../client/https/requests";
 import type { XrayClient } from "../../../../client/xray/xray-client";
 import { ServerClient } from "../../../../client/xray/xray-client-server";
 import type { CucumberMultipartFeature } from "../../../../types/xray/requests/import-execution-cucumber-multipart";

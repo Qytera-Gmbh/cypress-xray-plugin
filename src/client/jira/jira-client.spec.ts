@@ -11,7 +11,7 @@ import type { User } from "../../types/jira/responses/user";
 import type { Logger } from "../../util/logging";
 import { Level, LOG } from "../../util/logging";
 import { BasicAuthCredentials } from "../authentication/credentials";
-import { AxiosRestClient } from "../https/https";
+import { AxiosRestClient } from "../https/requests";
 import { BaseJiraClient } from "./jira-client";
 
 describe(relative(cwd(), __filename), async () => {

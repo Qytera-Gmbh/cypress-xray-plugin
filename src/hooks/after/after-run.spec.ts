@@ -6,7 +6,7 @@ import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
 import { assertIsInstanceOf } from "../../../test/util";
 import { PatCredentials } from "../../client/authentication/credentials";
-import { AxiosRestClient } from "../../client/https/https";
+import { AxiosRestClient } from "../../client/https/requests";
 import { BaseJiraClient } from "../../client/jira/jira-client";
 import { ServerClient } from "../../client/xray/xray-client-server";
 import globalContext, { SimpleEvidenceCollection } from "../../context";

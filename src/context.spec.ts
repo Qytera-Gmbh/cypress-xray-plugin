@@ -8,7 +8,7 @@ import {
     JwtCredentials,
     PatCredentials,
 } from "./client/authentication/credentials";
-import { AxiosRestClient } from "./client/https/https";
+import { AxiosRestClient } from "./client/https/requests";
 import { BaseJiraClient } from "./client/jira/jira-client";
 import { XrayClientCloud } from "./client/xray/xray-client-cloud";
 import { ServerClient } from "./client/xray/xray-client-server";
