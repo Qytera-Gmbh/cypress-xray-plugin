@@ -1,7 +1,7 @@
-import chalk from "chalk";
-import * as childProcess from "node:child_process";
-import fs from "node:fs";
-import path from "node:path";
+import ansiColors from "ansi-colors";
+import * as childProcess from "child_process";
+import fs from "fs";
+import path from "path";
 import { dedent } from "../src/util/dedent";
 import { TEST_TMP_DIR } from "./util";
 
@@ -180,11 +180,11 @@ export function runCypress(
         if (result.error) {
             throw new Error(
                 dedent(`
-                    Cypress command finished with unexpected non-zero status code ${chalk.red(
-                        result.status
+                    Cypress command finished with unexpected non-zero status code ${ansiColors.red(
+                        String(result.status)
                     )}:
 
-                        ${chalk.red(result.error.toString())}
+                        ${ansiColors.red(result.error.toString())}
 
                         stdout:
 
@@ -198,8 +198,8 @@ export function runCypress(
         }
         throw new Error(
             dedent(`
-                Cypress command finished with unexpected non-zero status code ${chalk.red(
-                    result.status
+                Cypress command finished with unexpected non-zero status code ${ansiColors.red(
+                    String(result.status)
                 )}
 
                     stdout:

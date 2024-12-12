@@ -1,5 +1,5 @@
+import ansiColors from "ansi-colors";
 import { isAxiosError } from "axios";
-import chalk from "chalk";
 import fs from "fs";
 import path from "path";
 import { isLoggedError } from "./errors";
@@ -54,11 +54,11 @@ export interface LoggingOptions {
 }
 
 /**
- * A Chalk-based logger.
+ * An ANSI-based logger.
  */
 export class PluginLogger implements Logger {
     private readonly prefixes: Record<Level, string>;
-    private readonly colorizers: Record<Level, chalk.Chalk>;
+    private readonly colorizers: Record<Level, ansiColors.StyleFunction>;
     private readonly logFunctions: Record<Level, (...data: unknown[]) => void>;
     private loggingOptions: LoggingOptions;
 
@@ -73,11 +73,11 @@ export class PluginLogger implements Logger {
             [Level.WARNING]: this.prefix(Level.WARNING, maxPrefixLength),
         };
         this.colorizers = {
-            [Level.DEBUG]: chalk.cyan,
-            [Level.ERROR]: chalk.red,
-            [Level.INFO]: chalk.gray,
-            [Level.SUCCESS]: chalk.green,
-            [Level.WARNING]: chalk.yellow,
+            [Level.DEBUG]: ansiColors.cyan,
+            [Level.ERROR]: ansiColors.red,
+            [Level.INFO]: ansiColors.gray,
+            [Level.SUCCESS]: ansiColors.green,
+            [Level.WARNING]: ansiColors.yellow,
         };
         this.logFunctions = {
             [Level.DEBUG]: console.debug,
@@ -149,7 +149,7 @@ export class PluginLogger implements Logger {
     }
 
     private prefix(type: string, maxPrefixLength: number): string {
-        return chalk.white(`│ Cypress Xray Plugin │ ${type.padEnd(maxPrefixLength, " ")} │`);
+        return ansiColors.white(`│ Cypress Xray Plugin │ ${type.padEnd(maxPrefixLength, " ")} │`);
     }
 }
 
