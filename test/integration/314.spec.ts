@@ -1,7 +1,7 @@
 import ansiColors from "ansi-colors";
 import assert from "node:assert";
 import fs from "node:fs";
-import path, { join } from "node:path";
+import { join, relative } from "node:path";
 import process from "node:process";
 import { describe, it } from "node:test";
 import type { LoggedRequest } from "../../src/client/https/requests";
@@ -13,7 +13,7 @@ import { runCypress, setupCypressProject } from "../sh";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/314
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(relative(process.cwd(), __filename), () => {
     for (const test of [
         {
             env: {
