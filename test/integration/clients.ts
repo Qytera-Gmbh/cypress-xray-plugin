@@ -1,3 +1,4 @@
+import axios from "axios";
 import { BasicAuthCredentials, JwtCredentials } from "../../src/client/authentication/credentials";
 import type { Client } from "../../src/client/client";
 import { AxiosRestClient } from "../../src/client/https/requests";
@@ -8,7 +9,7 @@ import { unknownToString } from "../../src/util/string";
 
 import "dotenv/config";
 
-const HTTP_CLIENT = new AxiosRestClient();
+const HTTP_CLIENT = new AxiosRestClient(axios);
 
 const XRAY_CLIENT_CLOUD = new XrayClientCloud(
     new JwtCredentials(
