@@ -3,7 +3,6 @@ import { AxiosRequestConfig } from "axios";
 import { AxiosRestClient, RequestsOptions } from "../client/https/requests";
 import { JiraClient } from "../client/jira/jira-client";
 import { XrayClient } from "../client/xray/xray-client";
-import { CypressRunResultType } from "./cypress/cypress";
 import { IssueUpdate } from "./jira/responses/issue-update";
 
 /**
@@ -210,7 +209,7 @@ export interface JiraOptions {
               /**
                * The Cypress run results.
                */
-              results: CypressRunResultType;
+              results: CypressCommandLine.CypressRunResult;
           }) => PluginIssueUpdate | Promise<PluginIssueUpdate>)
         | PluginIssueUpdate;
     /**
@@ -320,7 +319,7 @@ export interface JiraOptions {
               /**
                * The Cypress run results.
                */
-              results: CypressRunResultType;
+              results: CypressCommandLine.CypressRunResult;
           }) => Promise<string> | string)
         | string;
     /**

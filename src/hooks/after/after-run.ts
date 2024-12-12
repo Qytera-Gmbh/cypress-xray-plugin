@@ -70,8 +70,17 @@ export async function addUploadCommands(
         );
         return;
     }
-    const issueData = await getOrCall(options.jira.testExecutionIssue, { results });
-    const testPlanIssueKey = await getOrCall(options.jira.testPlanIssueKey, { results });
+    // We need to cast here because:
+    // - jira.testExecutionIssue is typed to always use the installed Cypress results type
+    // - the plugin internally works with the intersection of result types of all Cypress versions
+    // But there's basically no way for the results to not be the installed Cypress results type, so
+    // it should not be a problem.
+    const issueData = await getOrCall(options.jira.testExecutionIssue, {
+        results: results as CypressCommandLine.CypressRunResult,
+    });
+    const testPlanIssueKey = await getOrCall(options.jira.testPlanIssueKey, {
+        results: results as CypressCommandLine.CypressRunResult,
+    });
     const builder = new AfterRunBuilder({
         clients: clients,
         evidenceCollection: evidenceCollection,
