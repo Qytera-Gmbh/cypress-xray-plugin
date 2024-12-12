@@ -1,9 +1,9 @@
-import { expect } from "chai";
-import path from "path";
-import process from "process";
+import assert from "node:assert";
+import { relative } from "node:path";
+import { cwd } from "node:process";
+import { describe, it } from "node:test";
 import { dedent } from "../../src/util/dedent";
 import { runCypress, setupCypressProject } from "../sh";
-import { expectToExist } from "../util";
 import { getIntegrationClient } from "./clients";
 import { getCreatedTestExecutionIssueKey } from "./util";
 
@@ -11,7 +11,7 @@ import { getCreatedTestExecutionIssueKey } from "./util";
 // https://github.com/Qytera-Gmbh/cypress-xray-plugin/issues/341
 // ============================================================================================== //
 
-describe(path.relative(process.cwd(), __filename), () => {
+describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
             cucumberTestPrefix: "TestName:",
@@ -38,7 +38,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             xraySkippedStatus: "ABORTED",
         },
     ] as const) {
-        it(test.title, async () => {
+        await it(test.title, async () => {
             const project = setupCypressProject({
                 configFileContent: dedent(`
                     const preprocessor = require("@badeball/cypress-cucumber-preprocessor");
@@ -47,7 +47,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                     const { defineConfig } = require("cypress");
                     const fix = require("cypress-on-fix");
                     const { configureXrayPlugin, syncFeatureFile } = require("cypress-xray-plugin");
-                    const fs = require("node:fs");
+                    const fs = require("fs");
 
                     module.exports = defineConfig({
                         video: false,
@@ -110,7 +110,7 @@ describe(path.relative(process.cwd(), __filename), () => {
                                 import { Given } from "@badeball/cypress-cucumber-preprocessor";
 
                                 Given("a step", () => {
-                                    expect(true).to.be.true;
+                                    expect(true, true);
                                 });
                             `),
                             filename: "steps.js",
@@ -161,20 +161,20 @@ describe(path.relative(process.cwd(), __filename), () => {
                     fields: ["id"],
                     jql: `issue in (${testExecutionIssueKey})`,
                 });
-                expectToExist(searchResult[0].id);
+                assert.ok(searchResult[0].id);
                 const testResults = await getIntegrationClient("xray", test.service).getTestResults(
                     searchResult[0].id
                 );
                 const includedTest = testResults.find(
                     (r) => r.jira.summary === "included cucumber test"
                 );
-                expectToExist(includedTest);
-                expect(includedTest.status?.name).to.eq(test.xrayPassedStatus);
+                assert.ok(includedTest);
+                assert.strictEqual(includedTest.status?.name, test.xrayPassedStatus);
                 const skippedTest = testResults.find(
                     (r) => r.jira.summary === "skipped cucumber test"
                 );
-                expectToExist(skippedTest);
-                expect(skippedTest.status?.name).to.eq(test.xraySkippedStatus);
+                assert.ok(skippedTest);
+                assert.strictEqual(skippedTest.status?.name, test.xraySkippedStatus);
             }
 
             if (test.service === "server") {
@@ -183,11 +183,11 @@ describe(path.relative(process.cwd(), __filename), () => {
                     test.service
                 ).getTestExecution(testExecutionIssueKey);
                 const includedTest = testResults.find((r) => r.key === test.testKeys.included);
-                expectToExist(includedTest);
-                expect(includedTest.status).to.eq(test.xrayPassedStatus);
+                assert.ok(includedTest);
+                assert.strictEqual(includedTest.status, test.xrayPassedStatus);
                 const skippedTest = testResults.find((r) => r.key === test.testKeys.skipped);
-                expectToExist(skippedTest);
-                expect(skippedTest.status).to.eq(test.xraySkippedStatus);
+                assert.ok(skippedTest);
+                assert.strictEqual(skippedTest.status, test.xraySkippedStatus);
             }
         });
     }
