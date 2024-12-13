@@ -42,15 +42,6 @@ describe(relative(cwd(), __filename), async () => {
                         assert.strictEqual(jiraOptions.attachVideos, false);
                     });
                     await describe("fields", async () => {
-                        await it("description", () => {
-                            assert.strictEqual(jiraOptions.fields.description, undefined);
-                        });
-                        await it("labels", () => {
-                            assert.strictEqual(jiraOptions.fields.labels, undefined);
-                        });
-                        await it("summary", () => {
-                            assert.strictEqual(jiraOptions.fields.summary, undefined);
-                        });
                         await it("testEnvironments", () => {
                             assert.strictEqual(jiraOptions.fields.testEnvironments, undefined);
                         });
@@ -61,23 +52,8 @@ describe(relative(cwd(), __filename), async () => {
                     await it("testExecutionIssue", () => {
                         assert.strictEqual(jiraOptions.testExecutionIssue, undefined);
                     });
-                    await it("testExecutionIssueDescription", () => {
-                        assert.strictEqual(jiraOptions.testExecutionIssueDescription, undefined);
-                    });
-                    await it("testExecutionIssueKey", () => {
-                        assert.strictEqual(jiraOptions.testExecutionIssueKey, undefined);
-                    });
-                    await it("testExecutionIssueSummary", () => {
-                        assert.strictEqual(jiraOptions.testExecutionIssueSummary, undefined);
-                    });
-                    await it("testExecutionIssueType", () => {
-                        assert.strictEqual(jiraOptions.testExecutionIssueType, "Test Execution");
-                    });
                     await it("testPlanIssueKey", () => {
                         assert.strictEqual(jiraOptions.testPlanIssueKey, undefined);
-                    });
-                    await it("testPlanIssueType", () => {
-                        assert.strictEqual(jiraOptions.testPlanIssueType, "Test Plan");
                     });
                 });
 
@@ -189,45 +165,6 @@ describe(relative(cwd(), __filename), async () => {
                         assert.strictEqual(jiraOptions.attachVideos, true);
                     });
                     await describe("fields", async () => {
-                        await it("description", () => {
-                            const jiraOptions = globalContext.initJiraOptions(
-                                {},
-                                {
-                                    fields: {
-                                        description: "Beschreibung",
-                                    },
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
-                                }
-                            );
-                            assert.strictEqual(jiraOptions.fields.description, "Beschreibung");
-                        });
-                        await it("labels", () => {
-                            const jiraOptions = globalContext.initJiraOptions(
-                                {},
-                                {
-                                    fields: {
-                                        labels: "Stichworte",
-                                    },
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
-                                }
-                            );
-                            assert.strictEqual(jiraOptions.fields.labels, "Stichworte");
-                        });
-                        await it("summary", () => {
-                            const jiraOptions = globalContext.initJiraOptions(
-                                {},
-                                {
-                                    fields: {
-                                        summary: "Résumé",
-                                    },
-                                    projectKey: "PRJ",
-                                    url: "https://example.org",
-                                }
-                            );
-                            assert.strictEqual(jiraOptions.fields.summary, "Résumé");
-                        });
                         await it("testEnvironments", () => {
                             const jiraOptions = globalContext.initJiraOptions(
                                 {},
@@ -271,50 +208,6 @@ describe(relative(cwd(), __filename), async () => {
                             fields: { summary: "hello" },
                         });
                     });
-                    await it("testExecutionIssueDescription", () => {
-                        const jiraOptions = globalContext.initJiraOptions(
-                            {},
-                            {
-                                projectKey: "PRJ",
-                                testExecutionIssueDescription: "hello",
-                                url: "https://example.org",
-                            }
-                        );
-                        assert.strictEqual(jiraOptions.testExecutionIssueDescription, "hello");
-                    });
-                    await it("testExecutionIssueKey", () => {
-                        const jiraOptions = globalContext.initJiraOptions(
-                            {},
-                            {
-                                projectKey: "PRJ",
-                                testExecutionIssueKey: "PRJ-123",
-                                url: "https://example.org",
-                            }
-                        );
-                        assert.strictEqual(jiraOptions.testExecutionIssueKey, "PRJ-123");
-                    });
-                    await it("testExecutionIssueSummary", () => {
-                        const jiraOptions = globalContext.initJiraOptions(
-                            {},
-                            {
-                                projectKey: "PRJ",
-                                testExecutionIssueSummary: "Test - Login",
-                                url: "https://example.org",
-                            }
-                        );
-                        assert.strictEqual(jiraOptions.testExecutionIssueSummary, "Test - Login");
-                    });
-                    await it("testExecutionIssueType", () => {
-                        const jiraOptions = globalContext.initJiraOptions(
-                            {},
-                            {
-                                projectKey: "PRJ",
-                                testExecutionIssueType: "Execution Ticket",
-                                url: "https://example.org",
-                            }
-                        );
-                        assert.strictEqual(jiraOptions.testExecutionIssueType, "Execution Ticket");
-                    });
                     await it("testPlanIssueKey", () => {
                         const jiraOptions = globalContext.initJiraOptions(
                             {},
@@ -325,17 +218,6 @@ describe(relative(cwd(), __filename), async () => {
                             }
                         );
                         assert.strictEqual(jiraOptions.testPlanIssueKey, "PRJ-456");
-                    });
-                    await it("testPlanIssueType", () => {
-                        const jiraOptions = globalContext.initJiraOptions(
-                            {},
-                            {
-                                projectKey: "PRJ",
-                                testPlanIssueType: "Plan Ticket",
-                                url: "https://example.org",
-                            }
-                        );
-                        assert.strictEqual(jiraOptions.testPlanIssueType, "Plan Ticket");
                     });
                     await it("url", () => {
                         const jiraOptions = globalContext.initJiraOptions(
@@ -626,45 +508,6 @@ describe(relative(cwd(), __filename), async () => {
                     });
 
                     await describe("fields", async () => {
-                        await it("JIRA_FIELDS_DESCRIPTION", () => {
-                            const env = {
-                                ["JIRA_FIELDS_DESCRIPTION"]: "customfield_98765",
-                            };
-                            const jiraOptions = globalContext.initJiraOptions(env, {
-                                fields: {
-                                    description: "customfield_12345",
-                                },
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            });
-                            assert.strictEqual(jiraOptions.fields.description, "customfield_98765");
-                        });
-                        await it("JIRA_FIELDS_LABELS", () => {
-                            const env = {
-                                ["JIRA_FIELDS_LABELS"]: "customfield_98765",
-                            };
-                            const jiraOptions = globalContext.initJiraOptions(env, {
-                                fields: {
-                                    labels: "customfield_12345",
-                                },
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            });
-                            assert.strictEqual(jiraOptions.fields.labels, "customfield_98765");
-                        });
-                        await it("JIRA_FIELDS_SUMMARY", () => {
-                            const env = {
-                                ["JIRA_FIELDS_SUMMARY"]: "customfield_98765",
-                            };
-                            const jiraOptions = globalContext.initJiraOptions(env, {
-                                fields: {
-                                    summary: "customfield_12345",
-                                },
-                                projectKey: "PRJ",
-                                url: "https://example.org",
-                            });
-                            assert.strictEqual(jiraOptions.fields.summary, "customfield_98765");
-                        });
                         await it("JIRA_FIELDS_TEST_ENVIRONMENTS", () => {
                             const env = {
                                 ["JIRA_FIELDS_TEST_ENVIRONMENTS"]: "customfield_98765",
@@ -721,81 +564,6 @@ describe(relative(cwd(), __filename), async () => {
                                 summary: "Hello bonjour",
                             },
                         });
-                    });
-
-                    await it("JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION", () => {
-                        const env = {
-                            ["JIRA_TEST_EXECUTION_ISSUE_DESCRIPTION"]: "Good morning",
-                        };
-                        const jiraOptions = globalContext.initJiraOptions(env, {
-                            projectKey: "CYP",
-                            testExecutionIssueDescription: "Goodbye",
-                            url: "https://example.org",
-                        });
-                        assert.strictEqual(
-                            jiraOptions.testExecutionIssueDescription,
-                            "Good morning"
-                        );
-                    });
-
-                    await it("JIRA_TEST_EXECUTION_ISSUE_KEY", () => {
-                        const env = {
-                            ["JIRA_TEST_EXECUTION_ISSUE_KEY"]: "CYP-123",
-                        };
-                        const jiraOptions = globalContext.initJiraOptions(env, {
-                            projectKey: "CYP",
-                            testExecutionIssueKey: "CYP-789",
-                            url: "https://example.org",
-                        });
-                        assert.strictEqual(jiraOptions.testExecutionIssueKey, "CYP-123");
-                    });
-
-                    await it("JIRA_TEST_EXECUTION_ISSUE_SUMMARY", () => {
-                        const env = {
-                            ["JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Some test case",
-                        };
-                        const jiraOptions = globalContext.initJiraOptions(env, {
-                            projectKey: "CYP",
-                            testExecutionIssueSummary: "Summarini",
-                            url: "https://example.org",
-                        });
-                        assert.strictEqual(jiraOptions.testExecutionIssueSummary, "Some test case");
-                    });
-
-                    await it("JIRA_TEST_EXECUTION_ISSUE_TYPE", () => {
-                        const env = {
-                            ["JIRA_TEST_EXECUTION_ISSUE_TYPE"]: "Execution Issue",
-                        };
-                        const jiraOptions = globalContext.initJiraOptions(env, {
-                            projectKey: "CYP",
-                            testExecutionIssueType: "Execution",
-                            url: "https://example.org",
-                        });
-                        assert.strictEqual(jiraOptions.testExecutionIssueType, "Execution Issue");
-                    });
-
-                    await it("JIRA_TEST_PLAN_ISSUE_KEY", () => {
-                        const env = {
-                            ["JIRA_TEST_PLAN_ISSUE_KEY"]: "CYP-456",
-                        };
-                        const jiraOptions = globalContext.initJiraOptions(env, {
-                            projectKey: "CYP",
-                            testPlanIssueKey: "CYP-123",
-                            url: "https://example.org",
-                        });
-                        assert.strictEqual(jiraOptions.testPlanIssueKey, "CYP-456");
-                    });
-
-                    await it("JIRA_TEST_PLAN_ISSUE_TYPE", () => {
-                        const env = {
-                            ["JIRA_TEST_PLAN_ISSUE_TYPE"]: "Plan Issue",
-                        };
-                        const jiraOptions = globalContext.initJiraOptions(env, {
-                            projectKey: "CYP",
-                            testExecutionIssueType: "Plan",
-                            url: "https://example.org",
-                        });
-                        assert.strictEqual(jiraOptions.testPlanIssueType, "Plan Issue");
                     });
 
                     await it("JIRA_TEST_PLAN_ISSUE_KEY", () => {
@@ -2113,8 +1881,6 @@ describe(relative(cwd(), __filename), async () => {
                         attachVideos: false,
                         fields: {},
                         projectKey: "CYP",
-                        testExecutionIssueType: "Text Execution",
-                        testPlanIssueType: "Test Plan",
                         url: "http://localhost:1234",
                     },
                     plugin: {
@@ -2125,7 +1891,6 @@ describe(relative(cwd(), __filename), async () => {
                     },
                     xray: {
                         status: {},
-                        uploadRequests: false,
                         uploadResults: false,
                         uploadScreenshots: false,
                     },

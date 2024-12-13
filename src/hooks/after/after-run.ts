@@ -96,8 +96,7 @@ async function addUploadCommands(
     let importCucumberExecutionCommand;
     if (containsCypressTests) {
         importCypressExecutionCommand = getImportExecutionCypressCommand(graph, clients, builder, {
-            reusesExecutionIssue:
-                issueData?.key !== undefined || options.jira.testExecutionIssueKey !== undefined,
+            reusesExecutionIssue: issueData?.key !== undefined,
             testEnvironments: options.xray.testEnvironments,
             testPlanIssueKey: testPlanIssueKey,
         });
@@ -110,9 +109,7 @@ async function addUploadCommands(
             {
                 cucumberReportPath: options.cucumber?.preprocessor?.json.output,
                 projectRoot: projectRoot,
-                reusesExecutionIssue:
-                    issueData?.key !== undefined ||
-                    options.jira.testExecutionIssueKey !== undefined,
+                reusesExecutionIssue: issueData?.key !== undefined,
                 testEnvironments: options.xray.testEnvironments,
                 testExecutionIssueKeyCommand: importCypressExecutionCommand,
                 testPlanIssueKey: testPlanIssueKey,
@@ -165,11 +162,7 @@ async function addUploadCommands(
         builder.addAttachVideosCommand({ resolvedExecutionIssueKey: finalExecutionIssueKey });
     }
     // Workaround for: https://jira.atlassian.com/browse/JRASERVER-66881.
-    if (
-        issueData?.transition &&
-        !(issueData.key ?? options.jira.testExecutionIssueKey) &&
-        clients.kind === "server"
-    ) {
+    if (issueData?.transition && !issueData.key && clients.kind === "server") {
         builder.addTransitionIssueCommand({
             issueKey: finalExecutionIssueKey,
             transition: issueData.transition,
@@ -382,8 +375,7 @@ class AfterRunBuilder {
         const command = this.graph.place(
             new CombineCypressJsonCommand(
                 {
-                    testExecutionIssueKey:
-                        this.issueData?.key ?? this.options.jira.testExecutionIssueKey,
+                    testExecutionIssueKey: this.issueData?.key,
                 },
                 this.logger,
                 parameters.convertCypressTestsCommand,
@@ -536,8 +528,7 @@ class AfterRunBuilder {
         if (parameters.testExecutionIssueKeyCommand) {
             resolvedExecutionIssueKeyCommand = parameters.testExecutionIssueKeyCommand;
         } else {
-            const executionIssueKey =
-                this.issueData?.key ?? this.options.jira.testExecutionIssueKey;
+            const executionIssueKey = this.issueData?.key;
             if (executionIssueKey) {
                 resolvedExecutionIssueKeyCommand = getOrCreateConstantCommand(
                     this.graph,
@@ -615,10 +606,9 @@ class AfterRunBuilder {
                 {
                     displayCloudHelp: this.clients.kind === "cloud",
                     importType: parameters.importType,
-                    testExecutionIssueKey:
-                        this.issueData?.key ?? this.options.jira.testExecutionIssueKey,
+                    testExecutionIssueKey: this.issueData?.key,
                     testExecutionIssueType: this.issueData?.fields?.issuetype ?? {
-                        name: this.options.jira.testExecutionIssueType,
+                        name: "Test Execution",
                     },
                 },
                 this.logger,
@@ -743,13 +733,11 @@ class AfterRunBuilder {
             };
         }
         if (!summaryCommand) {
-            const summary =
-                this.issueData?.fields?.summary ?? this.options.jira.testExecutionIssueSummary;
+            const summary = this.issueData?.fields?.summary;
             if (summary) {
                 summaryCommand = getOrCreateConstantCommand(this.graph, this.logger, summary);
             } else {
-                const testExecutionIssueKey =
-                    this.issueData?.key ?? this.options.jira.testExecutionIssueKey;
+                const testExecutionIssueKey = this.issueData?.key;
                 if (testExecutionIssueKey) {
                     const issueKeysCommand = getOrCreateConstantCommand(this.graph, this.logger, [
                         testExecutionIssueKey,
@@ -796,7 +784,7 @@ class AfterRunBuilder {
                 this.graph,
                 this.logger,
                 this.issueData?.fields?.issuetype ?? {
-                    name: this.options.jira.testExecutionIssueType,
+                    name: "Test Execution",
                 }
             );
             this.constants.executionIssue = {

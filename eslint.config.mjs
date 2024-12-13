@@ -52,7 +52,6 @@ export default tseslint.config(
                     selector: "import",
                 },
             ],
-            "@typescript-eslint/no-deprecated": "off",
             "@typescript-eslint/no-shadow": "error",
             "@typescript-eslint/non-nullable-type-assertion-style": "off",
             "@typescript-eslint/parameter-properties": "error",

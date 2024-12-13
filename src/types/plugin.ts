@@ -65,27 +65,6 @@ export interface CypressXrayPluginOptions {
 
 export interface JiraFieldIds {
     /**
-     * The Jira issue description field ID.
-     *
-     * @deprecated Will be removed in version `8.0.0`. `description` is a system field and will
-     * always have ID `description`.
-     */
-    description?: string;
-    /**
-     * The Jira issue labels field ID.
-     *
-     * @deprecated Will be removed in version `8.0.0`. `labels` is a system field and will
-     * always have ID `labels`.
-     */
-    labels?: string;
-    /**
-     * The Jira issue summary field ID (i.e. the title of the issues).
-     *
-     * @deprecated Will be removed in version `8.0.0`. `summary` is a system field and will always
-     * have ID `summary`.
-     */
-    summary?: string;
-    /**
      * The Xray test environments field ID (i.e. the test environments associated with test
      * execution issues).
      *
@@ -213,103 +192,6 @@ export interface JiraOptions {
           }) => PluginIssueUpdate | Promise<PluginIssueUpdate>)
         | PluginIssueUpdate;
     /**
-     * The description of the test execution issue, which will be used both for new test execution
-     * issues as well as for updating existing issues (if provided through
-     * {@link JiraOptions.testExecutionIssue}).
-     *
-     * If omitted, test execution issues will have the following description:
-     * ```ts
-     * `Cypress version: ${cypressVersion} Browser: ${browserName} (${browserVersion})`
-     * ```
-     *
-     * @deprecated Will be removed in version `8.0.0`. Please use the following instead:
-     *
-     * @example
-     *
-     * ```ts
-     * configureXrayPlugin(on, config, {
-     *   // ...
-     *   testExecutionIssue: {
-     *     fields: {
-     *       description: "my description"
-     *     }
-     *   }
-     * });
-     * ```
-     */
-    testExecutionIssueDescription?: string;
-    /**
-     * An execution issue key to attach run results to. If omitted, Jira will always create a new
-     * test execution issue with each upload.
-     *
-     * @example "CYP-123"
-     *
-     * @deprecated Will be removed in version `8.0.0`. Please use the following instead:
-     *
-     * @example
-     *
-     * ```ts
-     * configureXrayPlugin(on, config, {
-     *   // ...
-     *   testExecutionIssue: {
-     *     key: "CYP-123"
-     *   }
-     * });
-     * ```
-     */
-    testExecutionIssueKey?: string;
-    /**
-     * The summary of the test execution issue, which will be used both for new test execution
-     * issues as well as for updating existing issues (if provided through
-     * {@link JiraOptions.testExecutionIssue}).
-     *
-     * If omitted, test execution issues will be named as follows:
-     * ```ts
-     * `Execution Results [${t}]`,
-     * ```
-     * where `t` is the timestamp when Cypress started testing.
-     *
-     * @deprecated Will be removed in version `8.0.0`. Please use the following instead:
-     *
-     * @example
-     *
-     * ```ts
-     * configureXrayPlugin(on, config, {
-     *   // ...
-     *   testExecutionIssue: {
-     *     fields {
-     *       summary: "my summary"
-     *     }
-     *   }
-     * });
-     * ```
-     */
-    testExecutionIssueSummary?: string;
-    /**
-     * The issue type name of test executions. By default, Xray calls them `Test Execution`, but
-     * it's possible that they have been renamed or translated in your Jira instance.
-     *
-     * @deprecated Will be removed in version `8.0.0`. Please use the following instead:
-     *
-     * @example
-     *
-     * ```ts
-     * configureXrayPlugin(on, config, {
-     *   // ...
-     *   testExecutionIssue: {
-     *     fields: {
-     *       issuetype: {
-     *         id: "12345",
-     *         name: "Test Execution"
-     *         // whatever is necessary to uniquely identify the issue type
-     *       }
-     *     }
-     *   }
-     * });
-     * ```
-     */
-    testExecutionIssueType?: string;
-    /**
      * A test plan issue key to attach the execution to.
      *
      * @example "CYP-567"
@@ -322,13 +204,6 @@ export interface JiraOptions {
               results: CypressCommandLine.CypressRunResult;
           }) => Promise<string> | string)
         | string;
-    /**
-     * The issue type name of test plans. By default, Xray calls them `Test Plan`, but it's possible
-     * that they have been renamed or translated in your Jira instance.
-     *
-     * @deprecated Unused, will be removed in version `8.0.0`.
-     */
-    testPlanIssueType?: string;
     /**
      * Use this parameter to specify the base URL of your Jira instance.
      *
@@ -343,17 +218,7 @@ export interface JiraOptions {
  * default/fallback values are used by the plugin.
  */
 export type InternalJiraOptions = JiraOptions &
-    Required<
-        Pick<
-            JiraOptions,
-            | "attachVideos"
-            | "fields"
-            | "projectKey"
-            | "testExecutionIssueType"
-            | "testPlanIssueType"
-            | "url"
-        >
-    >;
+    Required<Pick<JiraOptions, "attachVideos" | "fields" | "projectKey" | "url">>;
 
 /**
  * Xray settings that may be required depending on the project configuration.
@@ -442,16 +307,6 @@ export interface XrayOptions {
      */
     testEnvironments?: [string, ...string[]];
     /**
-     * Enables or disables the upload of manually executed requests using `cy.request`. If `true`,
-     * requests and responses will be attached to the corresponding test as evidence. If `false` or
-     * left `undefined`, neither requests nor responses are attached.
-     *
-     * *Note: For this option to work properly, you need to overwrite the `cy.request` command.*
-     *
-     * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadRequestData/
-     */
-    uploadRequests?: boolean;
-    /**
      * Turns execution results upload on or off. Useful when switching upload on or off from the
      * command line (via environment variables).
      */
@@ -467,9 +322,7 @@ export interface XrayOptions {
  * default/fallback values are used by the plugin.
  */
 export type InternalXrayOptions = XrayOptions &
-    Required<
-        Pick<XrayOptions, "status" | "uploadRequests" | "uploadResults" | "uploadScreenshots">
-    >;
+    Required<Pick<XrayOptions, "status" | "uploadResults" | "uploadScreenshots">>;
 
 /**
  * When Cucumber is enabled, these options are used to configure how the plugin works with
