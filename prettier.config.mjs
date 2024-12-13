@@ -12,6 +12,10 @@ export default {
                 tabWidth: 2,
             },
         },
+        {
+            files: "*.md",
+            options: { parser: "mdx" },
+        },
     ],
     printWidth: 100,
     semi: true,
