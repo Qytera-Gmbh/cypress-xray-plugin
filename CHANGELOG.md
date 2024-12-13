@@ -1,5 +1,21 @@
 # Changelog
 
+# `7.4.2`
+
+## Notable changes
+
+- Use results type of installed Cypress version ([#413](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/413))
+
+## Dependency updates
+
+- Replaced chalk with ansi-colors
+
+- Bumped cypress from 13.14.1 to 13.16.0
+
+- Bumped @cucumber/gherkin from 28.0.0 to 30.0.0
+
+- Bumped @badeball/cypress-cucumber-preprocessor from 21.0.0 to 21.0.2
+
 # `7.4.1`
 
 ## Notable changes
@@ -22,13 +38,13 @@
 
 ## Dependency updates
 
-- Bump @bahmutov/cypress-esbuild-preprocessor from 2.2.2 to 2.2.3
+- Bumped @bahmutov/cypress-esbuild-preprocessor from 2.2.2 to 2.2.3
 
-- Bump axios from 1.7.5 to 1.7.7
+- Bumped axios from 1.7.5 to 1.7.7
 
-- Bump @badeball/cypress-cucumber-preprocessor from 20.1.1 to 21.0.0
+- Bumped @badeball/cypress-cucumber-preprocessor from 20.1.1 to 21.0.0
 
-- Bump cypress from 13.13.2 to 13.14.1
+- Bumped cypress from 13.13.2 to 13.14.1
 
 # `7.3.0`
 
@@ -56,13 +72,13 @@
 
 ## Dependency updates
 
-- Bump @bahmutov/cypress-esbuild-preprocessor from 2.2.1 to 2.2.2
+- Bumped @bahmutov/cypress-esbuild-preprocessor from 2.2.1 to 2.2.2
 
-- Bump @badeball/cypress-cucumber-preprocessor from 20.1.0 to 20.1.1
+- Bumped @badeball/cypress-cucumber-preprocessor from 20.1.0 to 20.1.1
 
-- Bump semver from 7.6.2 to 7.6.3
+- Bumped semver from 7.6.2 to 7.6.3
 
-- Bump cypress from 13.10.0 to 13.13.2
+- Bumped cypress from 13.10.0 to 13.13.2
 
 # `7.1.0`
 
@@ -78,7 +94,7 @@
 
 ## Dependency updates
 
-- Bump @badeball/cypress-cucumber-preprocessor from 20.0.3 to 20.1.0
+- Bumped @badeball/cypress-cucumber-preprocessor from 20.0.3 to 20.1.0
 
 # `7.0.1`
 
@@ -90,9 +106,9 @@
 
 ## Dependency updates
 
-- Bump axios from 1.6.8 to 1.7.2
+- Bumped axios from 1.6.8 to 1.7.2
 
-- Bump semver from 7.6.0 to 7.6.2
+- Bumped semver from 7.6.0 to 7.6.2
 
 # `7.0.0`
 
@@ -102,164 +118,164 @@
 
 - Changed `configureXrayPlugin` function which now expects Cypress' `on` as first parameter:
 
-    <table>
-    <thead>
-    <tr>
-    <th>
-    <pre>6.0.0</pre>
-    </th>
-    <th>
-    <pre>7.0.0</pre>
-    </th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-    <td>
+<table>
+<thead>
+<tr>
+<th>
+<pre>6.0.0</pre>
+</th>
+<th>
+<pre>7.0.0</pre>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
 
-    ```ts
-    // cypress.config.js
-    import { configureXrayPlugin, addXrayResultUpload } from "cypress-xray-plugin";
+```ts
+// cypress.config.js
+import { configureXrayPlugin, addXrayResultUpload } from "cypress-xray-plugin";
 
-    async setupNodeEvents(on, config) {
-      await configureXrayPlugin(
-        config,
-        {
-          jira: {
-            url: "https://example.org",
-            projectKey: "ABC"
-          }
-        }
-      );
-      await addXrayResultUpload(on);
+async setupNodeEvents(on, config) {
+  await configureXrayPlugin(
+    config,
+    {
+      jira: {
+        url: "https://example.org",
+        projectKey: "ABC"
+      }
     }
-    ```
+  );
+  await addXrayResultUpload(on);
+}
+```
 
-    </td>
-    <td>
+</td>
+<td>
 
-    ```ts
-    // cypress.config.js
-    import { configureXrayPlugin } from "cypress-xray-plugin";
+```ts
+// cypress.config.js
+import { configureXrayPlugin } from "cypress-xray-plugin";
 
-    async setupNodeEvents(on, config) {
-      await configureXrayPlugin(
-        on,
-        config,
-        {
-          jira: {
-            url: "https://example.org",
-            projectKey: "ABC"
-          }
-        }
-      );
+async setupNodeEvents(on, config) {
+  await configureXrayPlugin(
+    on,
+    config,
+    {
+      jira: {
+        url: "https://example.org",
+        projectKey: "ABC"
+      }
     }
-    ```
+  );
+}
+```
 
-    </td>
-    </tr>
-    </tbody>
-    </table>
+</td>
+</tr>
+</tbody>
+</table>
 
 - Removed `openSSL` options:
 
-    <table>
-    <thead>
-    <tr>
-    <th>
-    <pre>6.0.0</pre>
-    </th>
-    <th>
-    <pre>7.0.0</pre>
-    </th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-    <td>
+<table>
+<thead>
+<tr>
+<th>
+<pre>6.0.0</pre>
+</th>
+<th>
+<pre>7.0.0</pre>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
 
-    ```ts
-    // cypress.config.js
-    import { configureXrayPlugin } from "cypress-xray-plugin";
-    import { constants } from "node:crypto";
+```ts
+// cypress.config.js
+import { configureXrayPlugin } from "cypress-xray-plugin";
+import { constants } from "node:crypto";
 
-    async setupNodeEvents(on, config) {
-      await configureXrayPlugin(
-        config,
-        {
-          openSSL: {
-            rootCAPath: "/home/somewhere/cert.pem",
-            secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT
-          }
-        }
-      );
+async setupNodeEvents(on, config) {
+  await configureXrayPlugin(
+    config,
+    {
+      openSSL: {
+        rootCAPath: "/home/somewhere/cert.pem",
+        secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT
+      }
     }
-    ```
+  );
+}
+```
 
-    </td>
-    <td>
+</td>
+<td>
 
-    ```ts
-    // cypress.config.js
-    import { configureXrayPlugin } from "cypress-xray-plugin";
-    import { constants } from "node:crypto";
-    import { Agent } from "node:https";
+```ts
+// cypress.config.js
+import { configureXrayPlugin } from "cypress-xray-plugin";
+import { constants } from "node:crypto";
+import { Agent } from "node:https";
 
-    async setupNodeEvents(on, config) {
-      await configureXrayPlugin(
-        on,
-        config,
-        {
-          http: {
-            httpAgent: new Agent({
-              ca: "/home/somewhere/cert.pem",
-              secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
-            }),
-          }
-        }
-      );
+async setupNodeEvents(on, config) {
+  await configureXrayPlugin(
+    on,
+    config,
+    {
+      http: {
+        httpAgent: new Agent({
+          ca: "/home/somewhere/cert.pem",
+          secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+        }),
+      }
     }
-    ```
+  );
+}
+```
 
-    </td>
-    </tr>
-    </tbody>
-    </table>
+</td>
+</tr>
+</tbody>
+</table>
 
 - Changed support file import:
 
-    <table>
-    <thead>
-    <tr>
-    <th>
-    <pre>6.0.0</pre>
-    </th>
-    <th>
-    <pre>7.0.0</pre>
-    </th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-    <td>
+<table>
+<thead>
+<tr>
+<th>
+<pre>6.0.0</pre>
+</th>
+<th>
+<pre>7.0.0</pre>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
 
-    ```ts
-    // cypress/support/e2e.js
-    import "cypress-xray-plugin/register";
-    ```
+```ts
+// cypress/support/e2e.js
+import "cypress-xray-plugin/register";
+```
 
-    </td>
-    <td>
+</td>
+<td>
 
-    ```ts
-    // cypress/support/e2e.js
-    import "cypress-xray-plugin/commands";
-    ```
+```ts
+// cypress/support/e2e.js
+import "cypress-xray-plugin/commands";
+```
 
-    </td>
-    </tr>
-    </tbody>
-    </table>
+</td>
+</tr>
+</tbody>
+</table>
 
 > [!NOTE]
 > Up to version 7, this import did nothing, the imported module was completely empty.
@@ -274,15 +290,15 @@
 
 ## Dependency updates
 
-- Bump @cucumber/gherkin from 27.0.0 to 28.0.0
+- Bumped @cucumber/gherkin from 27.0.0 to 28.0.0
 
-- Bump @cucumber/messages from 24.0.0 to 24.1.0
+- Bumped @cucumber/messages from 24.0.0 to 24.1.0
 
-- Bump axios from 1.6.2 to 1.6.8
+- Bumped axios from 1.6.2 to 1.6.8
 
-- Bump semver from 7.5.4 to 7.6.0
+- Bumped semver from 7.5.4 to 7.6.0
 
-- Bump @badeball/cypress-cucumber-preprocessor from 19.2.0 to 20.0.3
+- Bumped @badeball/cypress-cucumber-preprocessor from 19.2.0 to 20.0.3
 
 # `6.0.0`
 
@@ -304,74 +320,74 @@ This was found to be not the case in [#275](https://github.com/Qytera-Gmbh/cypre
 
 - Cucumber tag prefixes should now be manually configured, as demonstrated for the following feature file:
 
-    ```gherkin
-    Feature: A cool story
+```gherkin
+Feature: A cool story
 
-      Background:
-          #@MyPreconditionPrefix:CYP-222
-          Given A
-          When B
-          Then C
+  Background:
+      #@MyPreconditionPrefix:CYP-222
+      Given A
+      When B
+      Then C
 
-      @MyTestPrefix:CYP-333
-      Scenario: A cool scenario
-          Given X
-          When Y
-          Then Z
-    ```
+  @MyTestPrefix:CYP-333
+  Scenario: A cool scenario
+      Given X
+      When Y
+      Then Z
+```
 
-    <table>
-    <thead>
-    <tr>
-    <th>
-    <pre>5.2.2</pre>
-    </th>
-    <th>
-    <pre>6.0.0</pre>
-    </th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-    <td>
+<table>
+<thead>
+<tr>
+<th>
+<pre>5.2.2</pre>
+</th>
+<th>
+<pre>6.0.0</pre>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
 
-    ```ts
-    async setupNodeEvents(on, config) {
-      await configureXrayPlugin(
-        config,
-        {
-          cucumber: {
-            // No extra configuration necessary, the plugin
-            // automatically assumed tag prefixes
-          }
-        }
-      );
+```ts
+async setupNodeEvents(on, config) {
+  await configureXrayPlugin(
+    config,
+    {
+      cucumber: {
+        // No extra configuration necessary, the plugin
+        // automatically assumed tag prefixes
+      }
     }
-    ```
+  );
+}
+```
 
-    </td>
-    <td>
+</td>
+<td>
 
-    ```ts
-    async setupNodeEvents(on, config) {
-      await configureXrayPlugin(
-        config,
-        {
-          cucumber: {
-            prefixes: {
-              precondition: "MyPreconditionPrefix:",
-              test: "MyTestPrefix:"
-            }
-          }
+```ts
+async setupNodeEvents(on, config) {
+  await configureXrayPlugin(
+    config,
+    {
+      cucumber: {
+        prefixes: {
+          precondition: "MyPreconditionPrefix:",
+          test: "MyTestPrefix:"
         }
-      );
+      }
     }
-    ```
+  );
+}
+```
 
-    </td>
-    </tr>
-    </tbody>
-    </table>
+</td>
+</tr>
+</tbody>
+</table>
 
 ## Notable changes
 
@@ -389,21 +405,21 @@ This was found to be not the case in [#275](https://github.com/Qytera-Gmbh/cypre
 
 ## Dependency updates
 
-- Bump @cucumber/messages from 23.0.0 to 24.0.0
+- Bumped @cucumber/messages from 23.0.0 to 24.0.0
 
-- Bump @badeball/cypress-cucumber-preprocessor from 19.0.1 to 19.2.0
+- Bumped @badeball/cypress-cucumber-preprocessor from 19.0.1 to 19.2.0
 
-- Bump axios from 1.6.0 to 1.6.2
+- Bumped axios from 1.6.0 to 1.6.2
 
 # `5.2.1`
 
 ## Dependency updates
 
-- Bump @badeball/cypress-cucumber-preprocessor from 18.0.6 to 19.0.1
+- Bumped @badeball/cypress-cucumber-preprocessor from 18.0.6 to 19.0.1
 
-- Bump @cucumber/messages from 22.0.0 to 23.0.0
+- Bumped @cucumber/messages from 22.0.0 to 23.0.0
 
-- Bump axios from 1.5.1 to 1.6.0
+- Bumped axios from 1.5.1 to 1.6.0
 
 # `5.2.0`
 
@@ -423,7 +439,7 @@ This was found to be not the case in [#275](https://github.com/Qytera-Gmbh/cypre
 
 ## Dependency updates
 
-- Bump axios from 1.5.0 to 1.5.1
+- Bumped axios from 1.5.0 to 1.5.1
 
 # `5.1.0`
 
@@ -435,9 +451,9 @@ This was found to be not the case in [#275](https://github.com/Qytera-Gmbh/cypre
 
 ## Dependency updates
 
-- Bump @badeball/cypress-cucumber-preprocessor from 18.0.5 to 18.0.6
+- Bumped @badeball/cypress-cucumber-preprocessor from 18.0.5 to 18.0.6
 
-- Bump @cucumber/gherkin from 26.2.0 to 27.0.0
+- Bumped @cucumber/gherkin from 26.2.0 to 27.0.0
 
 # `5.0.0`
 
@@ -461,48 +477,48 @@ The changes included a removal of the test function code, which previously was u
 
 - The `xray.status` options have been refactored a little bit for maintainability reasons:
 
-    <table>
-    <thead>
-    <tr>
-    <th>
-    <pre>4.0.4</pre>
-    </th>
-    <th>
-    <pre>5.0.0</pre>
-    </th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-    <td>
+<table>
+<thead>
+<tr>
+<th>
+<pre>4.0.4</pre>
+</th>
+<th>
+<pre>5.0.0</pre>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
 
-    ```ts
-    xray: {
-      statusPassed: "OK",
-      statusFailed: "NO",
-      statusPending: "TBD",
-      statusSkipped: "OMIT",
-    }
-    ```
+```ts
+xray: {
+  statusPassed: "OK",
+  statusFailed: "NO",
+  statusPending: "TBD",
+  statusSkipped: "OMIT",
+}
+```
 
-    </td>
-    <td>
+</td>
+<td>
 
-    ```ts
-    xray: {
-      status: {
-        passed: "OK",
-        failed: "NO",
-        pending: "TBD",
-        skipped: "OMIT",
-      }
-    }
-    ```
+```ts
+xray: {
+  status: {
+    passed: "OK",
+    failed: "NO",
+    pending: "TBD",
+    skipped: "OMIT",
+  }
+}
+```
 
-    </td>
-    </tr>
-    </tbody>
-    </table>
+</td>
+</tr>
+</tbody>
+</table>
 
 > [!NOTE]
 > Their environment variables have _not_ changed.
@@ -511,7 +527,7 @@ The changes included a removal of the test function code, which previously was u
 
 ## Dependency updates
 
-- Bump @badeball/cypress-cucumber-preprocessor from 18.0.4 to 18.0.5
+- Bumped @badeball/cypress-cucumber-preprocessor from 18.0.4 to 18.0.5
 
 # `4.0.4`
 
@@ -521,7 +537,7 @@ The changes included a removal of the test function code, which previously was u
 
 ## Dependency updates
 
-- Bump axios from 1.4.0 to 1.5.0
+- Bumped axios from 1.4.0 to 1.5.0
 
 # `4.0.3`
 
@@ -539,7 +555,7 @@ The changes included a removal of the test function code, which previously was u
 
 ## Dependency updates
 
-- Bump @badeball/cypress-cucumber-preprocessor from 18.0.2 to 18.0.4
+- Bumped @badeball/cypress-cucumber-preprocessor from 18.0.2 to 18.0.4
 
 # `4.0.1`
 
@@ -549,9 +565,9 @@ The changes included a removal of the test function code, which previously was u
 
 ## Dependency updates
 
-- Bump @badeball/cypress-cucumber-preprocessor from 18.0.1 to 18.0.2
+- Bumped @badeball/cypress-cucumber-preprocessor from 18.0.1 to 18.0.2
 
-- Bump dedent from 1.2.0 to 1.5.0
+- Bumped dedent from 1.2.0 to 1.5.0
 
 # `4.0.0`
 
@@ -584,40 +600,40 @@ Some of the plugin's core functionality has been rewritten entirely to keep thin
 
 - The plugin's functions must now be imported without adding `/plugin` at the end:
 
-    <table>
-    <thead>
-    <tr>
-    <th>
-    <pre>3.3.3</pre>
-    </th>
-    <th>
-    <pre>4.0.0</pre>
-    </th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-    <td>
+<table>
+<thead>
+<tr>
+<th>
+<pre>3.3.3</pre>
+</th>
+<th>
+<pre>4.0.0</pre>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
 
-    ```ts
-    import {
-        addXrayResultUpload,
-        configureXrayPlugin,
-        syncFeatureFile,
-    } from "cypress-xray-plugin/plugin";
-    ```
+```ts
+import {
+    addXrayResultUpload,
+    configureXrayPlugin,
+    syncFeatureFile,
+} from "cypress-xray-plugin/plugin";
+```
 
-    </td>
-    <td>
+</td>
+<td>
 
-    ```ts
-    import { addXrayResultUpload, configureXrayPlugin, syncFeatureFile } from "cypress-xray-plugin";
-    ```
+```ts
+import { addXrayResultUpload, configureXrayPlugin, syncFeatureFile } from "cypress-xray-plugin";
+```
 
-    </td>
-    </tr>
-    </tbody>
-    </table>
+</td>
+</tr>
+</tbody>
+</table>
 
 - The configuration function now expects the Cypress configuration as first parameter:
 
@@ -670,7 +686,7 @@ Some of the plugin's core functionality has been rewritten entirely to keep thin
 
 ## Dependency updates
 
-- Bump semver and @cucumber/cucumber
+- Bumped semver and @cucumber/cucumber
 
 # `3.3.3` and before
 
