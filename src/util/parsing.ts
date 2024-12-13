@@ -79,8 +79,8 @@ export function asArrayOfStrings(value: unknown): [string, ...string[]] {
             dedent(`
                 Failed to parse as array of strings: ${JSON.stringify(value)}
                 Expected a primitive element at index ${index.toString()}, but got: ${JSON.stringify(
-                element
-            )}
+                    element
+                )}
             `)
         );
     });

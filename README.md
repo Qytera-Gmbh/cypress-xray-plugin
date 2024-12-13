@@ -15,17 +15,17 @@
 
 Features include:
 
--   upload test results to Xray
-    -   attach screenshots as test execution evidence
-    -   attach web requests as test execution evidence
-    -   attach videos to test execution issues
-    -   reuse existing test execution and test plan issues
--   CI/CD ready
-    -   no hardcoded credentials
-    -   every option customizable in CLI
--   Cucumber integration
-    -   synchronization/upload of step definitions to Xray
-    -   results upload as described above
+- upload test results to Xray
+    - attach screenshots as test execution evidence
+    - attach web requests as test execution evidence
+    - attach videos to test execution issues
+    - reuse existing test execution and test plan issues
+- CI/CD ready
+    - no hardcoded credentials
+    - every option customizable in CLI
+- Cucumber integration
+    - synchronization/upload of step definitions to Xray
+    - results upload as described above
 
 ## Quick Setup
 

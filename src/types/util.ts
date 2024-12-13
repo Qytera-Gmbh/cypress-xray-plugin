@@ -40,10 +40,10 @@ export type Remap<T extends object, V, E extends (number | string | symbol)[] = 
         ? K extends ArrayElementType<E> // shortcuts excluded properties
             ? V
             : Required<T>[K] extends unknown[] // shortcuts array types
-            ? V
-            : string extends keyof Required<T>[K] // shortcuts indexed types
-            ? V
-            : Remap<Required<T>[K], V, E>
+              ? V
+              : string extends keyof Required<T>[K] // shortcuts indexed types
+                ? V
+                : Remap<Required<T>[K], V, E>
         : V;
 };
 

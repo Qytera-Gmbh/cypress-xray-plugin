@@ -214,7 +214,7 @@ export class XrayClientCloud
                 // Cast valid because of overload.
                 const [cucumberJson, cucumberInfo] = args as [
                     CucumberMultipartFeature[],
-                    MultipartInfo
+                    MultipartInfo,
                 ];
                 const resultString = JSON.stringify(cucumberJson);
                 const infoString = JSON.stringify(cucumberInfo);
@@ -231,7 +231,7 @@ export class XrayClientCloud
                 // Cast valid because of overload.
                 const [executionResults, info] = args as [
                     XrayTestExecutionResults[],
-                    MultipartInfo
+                    MultipartInfo,
                 ];
                 const resultString = JSON.stringify(executionResults);
                 const infoString = JSON.stringify(info);
