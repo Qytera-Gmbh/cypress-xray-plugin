@@ -6,7 +6,8 @@
     },
     "editor.rulers": [100],
     "files.trimFinalNewlines": true,
-    "[typescript]": {
+    "[javascript]": {
+        "editor.maxTokenizationLineLength": 2500,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[json]": {
@@ -21,6 +22,9 @@
             "strings": true
         },
         "editor.suggest.insertMode": "replace",
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[yaml]": {
