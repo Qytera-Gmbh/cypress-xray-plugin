@@ -23,7 +23,7 @@ enum VertexState {
  * incoming edges and progressing towards leaf vertices without outgoing edges.
  */
 export class ExecutableGraph<
-    V extends Computable<unknown> & Stateful<ComputableState>
+    V extends Computable<unknown> & Stateful<ComputableState>,
 > extends SimpleDirectedGraph<V> {
     /**
      * Maps vertices to their execution states.

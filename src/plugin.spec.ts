@@ -680,7 +680,7 @@ describe(relative(cwd(), __filename), async () => {
         } as Cypress.FileObject);
         const [eventName, callback] = spy.mock.calls[1].arguments as [
             string,
-            (results: CypressFailedRunResultType | CypressRunResultType) => Promise<void> | void
+            (results: CypressFailedRunResultType | CypressRunResultType) => Promise<void> | void,
         ];
         assert.strictEqual(eventName, "after:run");
         await callback(afterRunResult);

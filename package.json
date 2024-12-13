@@ -70,6 +70,7 @@
         "eslint": "^9.16.0",
         "eslint-plugin-perfectionist": "^3.8.0",
         "eslint-plugin-tsdoc": "^0.4.0",
+        "prettier": "^3.4.2",
         "shx": "^0.3.4",
         "ts-node": "^10.9.2",
         "typescript": "^5.7.2",
