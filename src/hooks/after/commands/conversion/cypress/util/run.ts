@@ -211,10 +211,13 @@ export function getScreenshotsByIssueKey_V13(
                 for (const issueKey of testTitleKeys) {
                     if (screenshot.path.includes(issueKey)) {
                         const screenshots = map.get(issueKey);
-                        if (screenshots) {
-                            screenshots.push(screenshot.path);
-                        } else {
+                        if (!screenshots) {
                             map.set(issueKey, [screenshot.path]);
+                        }
+                        // Duplicates can occur if a test issue key is present in a describe block
+                        // and more than one test inside the block takes a screenshot.
+                        else if (!screenshots.includes(screenshot.path)) {
+                            screenshots.push(screenshot.path);
                         }
                     }
                 }
