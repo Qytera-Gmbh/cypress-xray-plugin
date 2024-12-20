@@ -16,13 +16,24 @@ export interface GetTestRunResponseServer {
     archived: false;
     assignee: string;
     color: string;
-    customFields: [];
-    defects: [];
     duration: number;
-    evidences: [];
+    evidences: {
+        author: string;
+        authorFullName: string;
+        created: string;
+        createdDate: number;
+        fileIcon: string;
+        fileIconAlt: string;
+        fileName: string;
+        filePath: string;
+        fileSize: string;
+        ["fileURL"]: string;
+        id: number;
+        mimeType: string;
+        numericalFileSize: number;
+    }[];
     finishedOn: string;
     finishedOnIso: string;
-    fixVersions: [];
     id: number;
     iterations: [
         {
