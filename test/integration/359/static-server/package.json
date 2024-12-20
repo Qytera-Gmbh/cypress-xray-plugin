@@ -1,0 +1,17 @@
+{
+    "name": "integration-test",
+    "version": "1.0.0",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "private": "true",
+    "devDependencies": {
+        "cypress": "file:../../../../node_modules/cypress",
+        "cypress-on-fix": "file:../../../../node_modules/cypress-on-fix",
+        "cypress-xray-plugin": "file:../../../../dist"
+    }
+}
