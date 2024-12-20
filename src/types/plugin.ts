@@ -385,6 +385,69 @@ export interface XrayOptions {
          */
         pending?: string;
         /**
+         * A function that returns a single status for a given combination of other statuses. It
+         * will be used to determine the final status of retried and data-driven tests.
+         *
+         * By default, the reduction works as follows in order of mention:
+         *
+         * - a test is considered _passed_ if:
+         *   - all iterations pass
+         *   - at least one iteration passes and all others are pending
+         * - a test is considered _pending_ if:
+         *   - all iterations are pending
+         * - a test is considered _skipped_ if:
+         *   - at least one iteration is skipped
+         * - the test is considered _failed_ in all other scenarios
+         *
+         * @example
+         *
+         * The following example defines a custom _FLAKY_ status:
+         *
+         * ```ts
+         * ({ failed, passed, pending, skipped }) => {
+         *   if (passed > 0 && failed === 0 && skipped === 0) {
+         *     return "PASSED";
+         *   }
+         *   if (passed > 0 && (failed > 0 || skipped > 0)) {
+         *     return "FLAKY";
+         *   }
+         *   if (pending > 0) {
+         *     return "TODO";
+         *   }
+         *   return "FAILED";
+         * }
+         * ```
+         *
+         * @param args - the reduction arguments
+         * @returns the reduced status
+         */
+        reduce?: (args: {
+            /**
+             * The number of iterations that have been reported as _failed_ by Cypress.
+             *
+             * @see https://docs.cypress.io/app/core-concepts/writing-and-organizing-tests#Failed
+             */
+            failed: number;
+            /**
+             * The number of iterations that have been reported as _passed_ by Cypress.
+             *
+             * @see https://docs.cypress.io/app/core-concepts/writing-and-organizing-tests#Passed
+             */
+            passed: number;
+            /**
+             * The number of iterations that have been reported as _pending_ by Cypress.
+             *
+             * @see https://docs.cypress.io/app/core-concepts/writing-and-organizing-tests#Pending
+             */
+            pending: number;
+            /**
+             * The number of iterations that have been reported as _skipped_ by Cypress.
+             *
+             * @see https://docs.cypress.io/app/core-concepts/writing-and-organizing-tests#Skipped
+             */
+            skipped: number;
+        }) => string;
+        /**
          * The Xray status name of a test marked as skipped by Cypress. Should be used when custom
          * status names have been set up in Xray.
          *

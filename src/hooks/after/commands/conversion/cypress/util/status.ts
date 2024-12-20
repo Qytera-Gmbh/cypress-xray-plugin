@@ -38,7 +38,7 @@ export function toCypressStatus(statusText: string): CypressStatus {
  * @returns the Xray status
  */
 export function getXrayStatus(
-    status: CypressStatus | CypressStatus[],
+    status: CypressStatus,
     useCloudStatus: boolean,
     statusOptions?: {
         failed?: string;
@@ -47,33 +47,14 @@ export function getXrayStatus(
         skipped?: string;
     }
 ): string {
-    const lookupStatus = (cypressStatus: CypressStatus) => {
-        switch (cypressStatus) {
-            case CypressStatus.PASSED:
-                return statusOptions?.passed ?? (useCloudStatus ? "PASSED" : "PASS");
-            case CypressStatus.FAILED:
-                return statusOptions?.failed ?? (useCloudStatus ? "FAILED" : "FAIL");
-            case CypressStatus.PENDING:
-                return statusOptions?.pending ?? (useCloudStatus ? "TO DO" : "TODO");
-            case CypressStatus.SKIPPED:
-                return statusOptions?.skipped ?? (useCloudStatus ? "FAILED" : "FAIL");
-        }
-    };
-    if (typeof status === "string") {
-        return lookupStatus(status);
+    switch (status) {
+        case CypressStatus.PASSED:
+            return statusOptions?.passed ?? (useCloudStatus ? "PASSED" : "PASS");
+        case CypressStatus.FAILED:
+            return statusOptions?.failed ?? (useCloudStatus ? "FAILED" : "FAIL");
+        case CypressStatus.PENDING:
+            return statusOptions?.pending ?? (useCloudStatus ? "TO DO" : "TODO");
+        case CypressStatus.SKIPPED:
+            return statusOptions?.skipped ?? (useCloudStatus ? "FAILED" : "FAIL");
     }
-    const passed = status.filter((s) => s === CypressStatus.PASSED).length;
-    const failed = status.filter((s) => s === CypressStatus.FAILED).length;
-    const pending = status.filter((s) => s === CypressStatus.PENDING).length;
-    const skipped = status.filter((s) => s === CypressStatus.SKIPPED).length;
-    if (passed > 0 && failed === 0 && skipped === 0) {
-        return lookupStatus(CypressStatus.PASSED);
-    }
-    if (passed === 0 && failed === 0 && skipped === 0 && pending > 0) {
-        return lookupStatus(CypressStatus.PENDING);
-    }
-    if (skipped > 0) {
-        return lookupStatus(CypressStatus.SKIPPED);
-    }
-    return lookupStatus(CypressStatus.FAILED);
 }
