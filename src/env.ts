@@ -1,32 +1,7 @@
-import type { CypressXrayPluginOptions } from "./types/plugin";
-import type { Remap } from "./types/util";
-
-/**
- * An interface containing all authentication options which can be provided via environment
- * variables.
- */
-interface Authentication {
-    authentication: {
-        jira: {
-            apiToken: string;
-            password: string;
-            username: string;
-        };
-        xray: {
-            clientId: string;
-            clientSecret: string;
-        };
-    };
-}
-
 /**
  * Contains a mapping of all available options to their respective environment variable names.
  */
-export const ENV_NAMES: Remap<
-    Omit<CypressXrayPluginOptions, "http"> & Authentication,
-    string,
-    ["testExecutionIssue"]
-> = {
+export const ENV_NAMES = {
     authentication: {
         jira: {
             apiToken: "JIRA_API_TOKEN",
