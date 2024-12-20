@@ -62,21 +62,17 @@ export function getXrayStatus(
     if (typeof status === "string") {
         return lookupStatus(status);
     }
-    const hasPassed = status.some((cypressStatus) => cypressStatus === CypressStatus.PASSED);
-    const hasFailed = status.some((cypressStatus) => cypressStatus === CypressStatus.FAILED);
-    const hasPending = status.some((cypressStatus) => cypressStatus === CypressStatus.PENDING);
-    const hasSkipped = status.some((cypressStatus) => cypressStatus === CypressStatus.SKIPPED);
-    if (hasPassed && !hasFailed && !hasPending && !hasSkipped) {
+    const passed = status.filter((s) => s === CypressStatus.PASSED).length;
+    const failed = status.filter((s) => s === CypressStatus.FAILED).length;
+    const pending = status.filter((s) => s === CypressStatus.PENDING).length;
+    const skipped = status.filter((s) => s === CypressStatus.SKIPPED).length;
+    if (passed > 0 && failed === 0 && skipped === 0) {
         return lookupStatus(CypressStatus.PASSED);
     }
-    if (hasPending && !hasFailed && !hasSkipped) {
+    if (passed === 0 && failed === 0 && skipped === 0 && pending > 0) {
         return lookupStatus(CypressStatus.PENDING);
     }
-    if (hasFailed && hasPassed) {
-        // TODO: return FLAKY
-        return lookupStatus(CypressStatus.PASSED);
-    }
-    if (hasSkipped && !hasFailed) {
+    if (skipped > 0) {
         return lookupStatus(CypressStatus.SKIPPED);
     }
     return lookupStatus(CypressStatus.FAILED);
