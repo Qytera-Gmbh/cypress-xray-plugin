@@ -4,6 +4,7 @@ import type { XrayTestExecutionResults } from "../../types/xray/import-test-exec
 import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import type { GetTestExecutionResponseServer } from "../../types/xray/responses/graphql/get-test-execution";
+import type { GetTestRunResponseServer } from "../../types/xray/responses/graphql/get-test-runs";
 import type { ImportExecutionResponseServer } from "../../types/xray/responses/import-execution";
 import type {
     ImportFeatureResponse,
@@ -44,6 +45,14 @@ export interface XrayClientServer extends XrayClient {
             page?: number;
         }
     ): Promise<GetTestExecutionResponseServer>;
+    /**
+     * Returns JSON that represents the test run.
+     *
+     * @param id - id of the test run
+     * @returns the test run results
+     * @see https://docs.getxray.app/display/XRAY/Test+Runs+-+REST
+     */
+    getTestRun(id: number): Promise<GetTestRunResponseServer>;
     /**
      * Returns information about the Xray license, including its status and type.
      *
@@ -98,6 +107,21 @@ export class ServerClient
             currentPage++;
         } while (pagedTests.length > 0);
         return allTests;
+    }
+
+    @loggedRequest({ purpose: "get test run" })
+    public async getTestRun(id: number): Promise<GetTestRunResponseServer> {
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Getting test run results...");
+        const response: AxiosResponse<GetTestRunResponseServer> = await this.httpClient.get(
+            `${this.apiBaseUrl}/api/testrun/${id.toString()}`,
+            {
+                headers: {
+                    ...authorizationHeader,
+                },
+            }
+        );
+        return response.data;
     }
 
     @loggedRequest({ purpose: "get Xray license" })

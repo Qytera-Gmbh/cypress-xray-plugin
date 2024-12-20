@@ -38,7 +38,7 @@ export function toCypressStatus(statusText: string): CypressStatus {
  * @returns the Xray status
  */
 export function getXrayStatus(
-    status: CypressStatus,
+    status: CypressStatus | CypressStatus[],
     useCloudStatus: boolean,
     statusOptions?: {
         failed?: string;
@@ -47,14 +47,37 @@ export function getXrayStatus(
         skipped?: string;
     }
 ): string {
-    switch (status) {
-        case CypressStatus.PASSED:
-            return statusOptions?.passed ?? (useCloudStatus ? "PASSED" : "PASS");
-        case CypressStatus.FAILED:
-            return statusOptions?.failed ?? (useCloudStatus ? "FAILED" : "FAIL");
-        case CypressStatus.PENDING:
-            return statusOptions?.pending ?? (useCloudStatus ? "TO DO" : "TODO");
-        case CypressStatus.SKIPPED:
-            return statusOptions?.skipped ?? (useCloudStatus ? "FAILED" : "FAIL");
+    const lookupStatus = (cypressStatus: CypressStatus) => {
+        switch (cypressStatus) {
+            case CypressStatus.PASSED:
+                return statusOptions?.passed ?? (useCloudStatus ? "PASSED" : "PASS");
+            case CypressStatus.FAILED:
+                return statusOptions?.failed ?? (useCloudStatus ? "FAILED" : "FAIL");
+            case CypressStatus.PENDING:
+                return statusOptions?.pending ?? (useCloudStatus ? "TO DO" : "TODO");
+            case CypressStatus.SKIPPED:
+                return statusOptions?.skipped ?? (useCloudStatus ? "FAILED" : "FAIL");
+        }
+    };
+    if (typeof status === "string") {
+        return lookupStatus(status);
     }
+    const hasPassed = status.some((cypressStatus) => cypressStatus === CypressStatus.PASSED);
+    const hasFailed = status.some((cypressStatus) => cypressStatus === CypressStatus.FAILED);
+    const hasPending = status.some((cypressStatus) => cypressStatus === CypressStatus.PENDING);
+    const hasSkipped = status.some((cypressStatus) => cypressStatus === CypressStatus.SKIPPED);
+    if (hasPassed && !hasFailed && !hasPending && !hasSkipped) {
+        return lookupStatus(CypressStatus.PASSED);
+    }
+    if (hasPending && !hasFailed && !hasSkipped) {
+        return lookupStatus(CypressStatus.PENDING);
+    }
+    if (hasFailed && hasPassed) {
+        // TODO: return FLAKY
+        return lookupStatus(CypressStatus.PASSED);
+    }
+    if (hasSkipped && !hasFailed) {
+        return lookupStatus(CypressStatus.SKIPPED);
+    }
+    return lookupStatus(CypressStatus.FAILED);
 }

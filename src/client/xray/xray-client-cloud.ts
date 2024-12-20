@@ -5,8 +5,9 @@ import type { XrayTestExecutionResults } from "../../types/xray/import-test-exec
 import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import type { GetTestExecutionResponseCloud } from "../../types/xray/responses/graphql/get-test-execution";
+import type { GetTestRunsResponseCloud } from "../../types/xray/responses/graphql/get-test-runs";
 import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
-import type { Test } from "../../types/xray/responses/graphql/xray";
+import type { Test, TestRun } from "../../types/xray/responses/graphql/xray";
 import type { ImportExecutionResponseCloud } from "../../types/xray/responses/import-execution";
 import type {
     ImportFeatureResponse,
@@ -43,9 +44,29 @@ export interface HasTestResults {
     getTestResults(issueId: string): Promise<Test<{ key: string; summary: string }>[]>;
 }
 
+export interface HasTestRunResults {
+    /**
+     * Returns a test execution by issue ID.
+     *
+     * @param options - the GraphQL options
+     * @returns the test run results
+     * @see https://us.xray.cloud.getxray.app/doc/graphql/gettestruns.doc.html
+     */
+    getTestRunResults(options: {
+        /**
+         * The issue ids of the test execution of the test runs.
+         */
+        testExecIssueIds: [string, ...string[]];
+        /**
+         * The issue ids of the test of the test runs.
+         */
+        testIssueIds: [string, ...string[]];
+    }): Promise<TestRun<{ key: string }>[]>;
+}
+
 export class XrayClientCloud
     extends AbstractXrayClient<ImportFeatureResponseCloud, ImportExecutionResponseCloud>
-    implements HasTestTypes, HasTestResults
+    implements HasTestTypes, HasTestResults, HasTestRunResults
 {
     /**
      * The URLs of Xray's Cloud API.
@@ -126,14 +147,78 @@ export class XrayClientCloud
         return tests;
     }
 
-    /**
-     * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
-     * `Generic`.
-     *
-     * @param projectKey - key of the project containing the test issues
-     * @param issueKeys - the keys of the test issues to retrieve test types for
-     * @returns a promise which will contain the mapping of issues to test types
-     */
+    @loggedRequest({ purpose: "get test run results" })
+    public async getTestRunResults(
+        options: Parameters<HasTestRunResults["getTestRunResults"]>[0]
+    ): Promise<TestRun<{ key: string }>[]> {
+        const authorizationHeader = await this.credentials.getAuthorizationHeader();
+        LOG.message(Level.DEBUG, "Retrieving test run results...");
+        const runResults: TestRun<{ key: string }>[] = [];
+        let total = 0;
+        let start = 0;
+        const query = dedent(`
+            query($testIssueIds: [String], $testExecIssueIds: [String], $start: Int!, $limit: Int!) {
+                getTestRuns( testIssueIds: $testIssueIds, testExecIssueIds: $testExecIssueIds, limit: $limit, start: $start) {
+                    total
+                    limit
+                    start
+                    results {
+                        status {
+                            name
+                        }
+                        test {
+                            jira(fields: ["key"])
+                        }
+                        evidence {
+                            filename
+                            downloadLink
+                        }
+                        iterations(limit: $limit) {
+                            results {
+                                parameters {
+                                    name
+                                    value
+                                }
+                                status {
+                                    name
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        `);
+        do {
+            const paginatedRequest = {
+                query: query,
+                variables: {
+                    limit: XrayClientCloud.GRAPHQL_LIMIT,
+                    start: start,
+                    testExecIssueIds: options.testExecIssueIds,
+                    testIssueIds: options.testIssueIds,
+                },
+            };
+            const response: AxiosResponse<GetTestRunsResponseCloud<{ key: string }>> =
+                await this.httpClient.post(XrayClientCloud.URL_GRAPHQL, paginatedRequest, {
+                    headers: {
+                        ...authorizationHeader,
+                    },
+                });
+            const data = response.data.data.getTestRuns;
+            total = data?.total ?? total;
+            if (data?.results) {
+                if (typeof data.start === "number") {
+                    start = data.start + data.results.length;
+                }
+                for (const test of data.results) {
+                    runResults.push(test);
+                }
+            }
+        } while (start && start < total);
+        LOG.message(Level.DEBUG, "Successfully retrieved test run results");
+        return runResults;
+    }
+
     @loggedRequest({ purpose: "get test types" })
     public async getTestTypes(
         projectKey: string,
