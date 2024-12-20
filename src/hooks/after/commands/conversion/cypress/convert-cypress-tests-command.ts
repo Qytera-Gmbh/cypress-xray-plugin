@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import { lt } from "semver";
 import type { EvidenceCollection } from "../../../../../context";
 import type { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
@@ -6,6 +6,7 @@ import type { CypressRunResultType } from "../../../../../types/cypress/cypress"
 import type { InternalXrayOptions } from "../../../../../types/plugin";
 import type {
     XrayEvidenceItem,
+    XrayIterationResult,
     XrayTest,
 } from "../../../../../types/xray/import-test-execution-results";
 import { encodeFile } from "../../../../../util/base64";
@@ -14,12 +15,17 @@ import { errorMessage } from "../../../../../util/errors";
 import { normalizedFilename } from "../../../../../util/files";
 import type { Logger } from "../../../../../util/logging";
 import { Level } from "../../../../../util/logging";
-import { truncateIsoTime } from "../../../../../util/time";
+import { earliestDate, latestDate, truncateIsoTime } from "../../../../../util/time";
 import type { Computable } from "../../../../command";
 import { Command } from "../../../../command";
 import { getTestIssueKeys } from "../../../util";
 import type { TestRunData } from "./util/run";
-import { getTestRunData_V12, getTestRunData_V13 } from "./util/run";
+import {
+    getScreenshotsByIssueKey_V12,
+    getScreenshotsByIssueKey_V13,
+    getTestRunData_V12,
+    getTestRunData_V13,
+} from "./util/run";
 import { getXrayStatus } from "./util/status";
 
 interface Parameters {
@@ -44,16 +50,17 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         const version = lt(results.cypressVersion, "13.0.0") ? "<13" : ">=13";
         const testRunData = await this.getTestRunData(results, version);
         const xrayTests: XrayTest[] = [];
+        const runsByKey = new Map<string, TestRunData[]>();
         testRunData.forEach((testData: TestRunData) => {
             try {
                 const issueKeys = getTestIssueKeys(testData.title, this.parameters.projectKey);
                 for (const issueKey of issueKeys) {
-                    const test: XrayTest = this.getTest(
-                        testData,
-                        issueKey,
-                        this.getXrayEvidence(issueKey, testData, version)
-                    );
-                    xrayTests.push(test);
+                    const runs = runsByKey.get(issueKey);
+                    if (runs) {
+                        runs.push(testData);
+                    } else {
+                        runsByKey.set(issueKey, [testData]);
+                    }
                 }
             } catch (error: unknown) {
                 this.logger.message(
@@ -70,6 +77,10 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 );
             }
         });
+        for (const [issueKey, testRuns] of runsByKey.entries()) {
+            const test: XrayTest = this.getTest(testRuns, issueKey, this.getXrayEvidence(issueKey));
+            xrayTests.push(test);
+        }
         if (xrayTests.length === 0) {
             throw new Error(
                 "Failed to convert Cypress tests into Xray tests: No Cypress tests to upload"
@@ -82,7 +93,6 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         runResults: CypressRunResultType,
         version: "<13" | ">=13"
     ): Promise<TestRunData[]> {
-        const testRunData: TestRunData[] = [];
         const conversionPromises: [string, Promise<TestRunData>][] = [];
         const cypressRuns = runResults.runs.filter((run) => {
             return (
@@ -93,22 +103,28 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         if (cypressRuns.length === 0) {
             throw new Error("Failed to extract test run data: Only Cucumber tests were executed");
         }
-        if (version === "<13") {
-            for (const run of cypressRuns as RunResult_V12[]) {
-                getTestRunData_V12(run).forEach((promise, index) =>
-                    conversionPromises.push([run.tests[index].title.join(" "), promise])
-                );
+
+        const extractor = (run: CypressRunResultType["runs"][number]) => {
+            if (version === "<13") {
+                return getTestRunData_V12(run as RunResult_V12);
+            } else {
+                return getTestRunData_V13(run as CypressCommandLine.RunResult);
             }
-        } else {
-            for (const run of cypressRuns as CypressCommandLine.RunResult[]) {
-                getTestRunData_V13(run, this.parameters.projectKey).forEach((promise, index) =>
-                    conversionPromises.push([run.tests[index].title.join(" "), promise])
-                );
-            }
+        };
+        for (const run of cypressRuns) {
+            const testRuns = extractor(run);
+            testRuns.forEach((promise, index) =>
+                conversionPromises.push([run.tests[index].title.join(" "), promise])
+            );
         }
+        if (this.parameters.uploadScreenshots) {
+            this.addScreenshotEvidence(runResults, version);
+        }
+
         const convertedTests = await Promise.allSettled(
             conversionPromises.map((tuple) => tuple[1])
         );
+        const testRunData: TestRunData[] = [];
         convertedTests.forEach((promise, index) => {
             if (promise.status === "fulfilled") {
                 testRunData.push(promise.value);
@@ -125,7 +141,41 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 );
             }
         });
-        if (this.parameters.uploadScreenshots && version === ">=13") {
+        return testRunData;
+    }
+
+    private addScreenshotEvidence(runResults: CypressRunResultType, version: "<13" | ">=13") {
+        const extractor = (run: CypressRunResultType["runs"][number]) => {
+            if (version === "<13") {
+                return getScreenshotsByIssueKey_V12(
+                    run as RunResult_V12,
+                    this.parameters.projectKey
+                );
+            } else {
+                return getScreenshotsByIssueKey_V13(
+                    run as CypressCommandLine.RunResult,
+                    this.parameters.projectKey
+                );
+            }
+        };
+        const includedScreenshots: string[] = [];
+        for (const run of runResults.runs) {
+            const allScreenshots = extractor(run);
+            for (const [issueKey, screenshots] of allScreenshots.entries()) {
+                for (const screenshot of screenshots) {
+                    let filename = path.basename(screenshot);
+                    if (this.parameters.normalizeScreenshotNames) {
+                        filename = normalizedFilename(filename);
+                    }
+                    this.parameters.evidenceCollection.addEvidence(issueKey, {
+                        data: encodeFile(screenshot),
+                        filename: filename,
+                    });
+                    includedScreenshots.push(screenshot);
+                }
+            }
+        }
+        if (version === ">=13") {
             for (const run of runResults.runs as CypressCommandLine.RunResult[]) {
                 if (
                     this.parameters.featureFileExtension &&
@@ -134,7 +184,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                     continue;
                 }
                 for (const screenshot of run.screenshots) {
-                    if (!this.willBeUploaded(screenshot, testRunData)) {
+                    if (!includedScreenshots.includes(screenshot.path)) {
                         const screenshotName = path.parse(screenshot.path).name;
                         this.logger.message(
                             Level.WARNING,
@@ -152,18 +202,24 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 }
             }
         }
-        return testRunData;
     }
 
-    private getTest(test: TestRunData, issueKey: string, evidence: XrayEvidenceItem[]): XrayTest {
-        // TODO: Support multiple iterations.
+    private getTest(
+        tests: TestRunData[],
+        issueKey: string,
+        evidence: XrayEvidenceItem[]
+    ): XrayTest {
         const xrayTest: XrayTest = {
             finish: truncateIsoTime(
-                new Date(test.startedAt.getTime() + test.duration).toISOString()
+                latestDate(
+                    ...tests.map((test) => new Date(test.startedAt.getTime() + test.duration))
+                ).toISOString()
             ),
-            start: truncateIsoTime(test.startedAt.toISOString()),
+            start: truncateIsoTime(
+                earliestDate(...tests.map((test) => test.startedAt)).toISOString()
+            ),
             status: getXrayStatus(
-                test.status,
+                tests.map((test) => test.status),
                 this.parameters.useCloudStatusFallback === true,
                 this.parameters.xrayStatus
             ),
@@ -172,44 +228,28 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         if (evidence.length > 0) {
             xrayTest.evidence = evidence;
         }
+        if (tests.length > 1) {
+            const iterations: XrayIterationResult[] = [];
+            for (const iteration of tests) {
+                iterations.push({
+                    parameters: [{ name: "iteration", value: (iterations.length + 1).toString() }],
+                    status: getXrayStatus(
+                        iteration.status,
+                        this.parameters.useCloudStatusFallback === true,
+                        this.parameters.xrayStatus
+                    ),
+                });
+            }
+            xrayTest.iterations = iterations;
+        }
         return xrayTest;
     }
 
-    private getXrayEvidence(
-        issueKey: string,
-        testRunData: TestRunData,
-        version: "<13" | ">=13"
-    ): XrayEvidenceItem[] {
+    private getXrayEvidence(issueKey: string): XrayEvidenceItem[] {
         const evidence: XrayEvidenceItem[] = [];
-        if (this.parameters.uploadScreenshots) {
-            for (const screenshot of testRunData.screenshots) {
-                let filename = path.basename(screenshot.filepath);
-                if (version === ">=13" && !filename.includes(issueKey)) {
-                    continue;
-                }
-                if (this.parameters.normalizeScreenshotNames) {
-                    filename = normalizedFilename(filename);
-                }
-                evidence.push({
-                    data: encodeFile(screenshot.filepath),
-                    filename: filename,
-                });
-            }
-        }
         this.parameters.evidenceCollection
             .getEvidence(issueKey)
             .forEach((item) => evidence.push(item));
         return evidence;
-    }
-
-    private willBeUploaded(
-        screenshot: CypressCommandLine.ScreenshotInformation,
-        testRunData: TestRunData[]
-    ): boolean {
-        return testRunData.some((testRun: TestRunData) => {
-            return testRun.screenshots.some(({ filepath }) => {
-                return screenshot.path === filepath;
-            });
-        });
     }
 }

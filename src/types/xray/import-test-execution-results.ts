@@ -276,29 +276,10 @@ export interface XrayEvidenceItem {
     filename: string;
 }
 
-export interface XrayIterationResult {
-    /**
-     * An array of parameters along with their values.
-     */
-    parameters?: {
-        /**
-         * The parameter value.
-         */
-        value?: string;
-    }[];
-    /**
-     * The status for the iteration.
-     */
-    status: string;
-    /**
-     * An array of step results (for manual tests).
-     */
-    steps?: XrayManualTestStepResult[];
-}
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22iterations%22object-Data-driventestresults
  */
-export interface XrayIterationResultServer extends XrayIterationResult {
+export interface XrayIterationResult {
     /**
      * An array of parameters along with their values.
      */
@@ -312,6 +293,14 @@ export interface XrayIterationResultServer extends XrayIterationResult {
          */
         value?: string;
     }[];
+    /**
+     * The status for the iteration.
+     */
+    status: string;
+    /**
+     * An array of step results (for manual tests).
+     */
+    steps?: XrayManualTestStepResult[];
 }
 /**
  * @see https://docs.getxray.app/display/XRAYCLOUD/Using+Xray+JSON+format+to+import+execution+results#UsingXrayJSONformattoimportexecutionresults-%22iteration%22object-Data-driventestresults
@@ -329,19 +318,6 @@ export interface XrayIterationResultCloud extends XrayIterationResult {
      * The iteration name.
      */
     name?: string;
-    /**
-     * An array of parameters along with their values.
-     */
-    parameters?: {
-        /**
-         * The parameter name.
-         */
-        name: string;
-        /**
-         * The parameter value.
-         */
-        value?: string;
-    }[];
 }
 /**
  * @see https://docs.getxray.app/display/XRAY/Import+Execution+Results#ImportExecutionResults-%22customFields%22object-storetestruncustomfields

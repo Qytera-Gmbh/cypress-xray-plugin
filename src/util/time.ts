@@ -30,3 +30,23 @@ export function startInterval(onTick: (totalTime: number) => void): ReturnType<t
     };
     return setInterval(callback, LOG_RESPONSE_INTERVAL_MS);
 }
+
+/**
+ * Returns the earliest date of all specified dates.
+ *
+ * @param dates - the dates
+ * @returns the earliest date
+ */
+export function earliestDate(...dates: Date[]): Date {
+    return new Date(Math.min(...dates.map((date) => date.getTime())));
+}
+
+/**
+ * Returns the latest date of all specified dates.
+ *
+ * @param dates - the dates
+ * @returns the latest date
+ */
+export function latestDate(...dates: Date[]): Date {
+    return new Date(Math.max(...dates.map((date) => date.getTime())));
+}

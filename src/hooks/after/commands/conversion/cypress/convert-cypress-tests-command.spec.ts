@@ -555,13 +555,13 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     evidence: [
                         {
-                            data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
-                            filename: "small CYP-237.png",
-                        },
-                        {
                             contentType: "text/plain",
                             data: "Z29vZGJ5ZQ==",
                             filename: "goodbye.txt",
+                        },
+                        {
+                            data: "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAoSURBVBhXY/iPA4AkGBig0hAGlISz4AwUCTggWgJIwhlESGAB//8DAAF4fYMJdJTzAAAAAElFTkSuQmCC",
+                            filename: "small CYP-237.png",
                         },
                     ],
                     finish: "2023-09-09T10:59:29Z",

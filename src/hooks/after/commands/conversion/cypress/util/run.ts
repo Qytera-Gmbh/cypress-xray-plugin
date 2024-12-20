@@ -1,6 +1,5 @@
 import type {
     RunResult as RunResult_V12,
-    ScreenshotInformation as ScreenshotInformation_V12,
     TestResult as TestResult_V12,
 } from "../../../../../../types/cypress/12.0.0/api";
 import type { CypressStatus } from "../../../../../../types/cypress/status";
@@ -16,15 +15,6 @@ export interface TestRunData {
      * The duration of the test in milliseconds.
      */
     duration: number;
-    /**
-     * Screenshots linked to the test.
-     */
-    screenshots: {
-        /**
-         * The screenshot's file path.
-         */
-        filepath: string;
-    }[];
     /**
      * Information about the spec the test was run in.
      */
@@ -76,22 +66,18 @@ export interface TestRunData {
 export function getTestRunData_V12(runResult: RunResult_V12): Promise<TestRunData>[] {
     const testRuns: Promise<TestRunData>[] = [];
     runResult.tests.forEach((test: TestResult_V12) => {
+        const title = test.title.join(" ");
         test.attempts.forEach((attempt) => {
             testRuns.push(
                 new Promise((resolve) => {
                     resolve({
                         duration: attempt.duration,
-                        screenshots: attempt.screenshots.map(
-                            (screenshot: ScreenshotInformation_V12) => {
-                                return { filepath: screenshot.path };
-                            }
-                        ),
                         spec: {
                             filepath: runResult.spec.absolute,
                         },
                         startedAt: new Date(attempt.startedAt),
                         status: toCypressStatus(attempt.state),
-                        title: test.title.join(" "),
+                        title: title,
                     });
                 })
             );
@@ -102,7 +88,7 @@ export function getTestRunData_V12(runResult: RunResult_V12): Promise<TestRunDat
 
 /**
  * Converts a Cypress v13 (and above) run result into several {@link TestRunData | `ITestRunData`}
- * objects. The project key is required for mapping screenshots to test cases.
+ * objects.
  *
  * The function returns an array of promises because the conversion of the test results contained
  * within the run can fail for individual tests. This makes sure that a single failing conversion
@@ -122,38 +108,32 @@ export function getTestRunData_V12(runResult: RunResult_V12): Promise<TestRunDat
  * ```
  *
  * @param runResult - the run result
- * @param projectKey - the project key
+ * @param options - additional extraction options to consider
  * @returns an array of test data promises
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function getTestRunData_V13(
-    runResult: CypressCommandLine.RunResult,
-    projectKey: string
+    runResult: CypressCommandLine.RunResult
 ): Promise<TestRunData>[] {
     const testRuns: Promise<TestRunData>[] = [];
     const testStarts = startTimesByTest(runResult);
-    const testScreenshots = screenshotsByTest(runResult, projectKey);
     runResult.tests.forEach((test: CypressCommandLine.TestResult) => {
         const title = test.title.join(" ");
-        const screenshots = title in testScreenshots ? testScreenshots[title] : [];
-        testRuns.push(
-            new Promise((resolve) => {
-                resolve({
-                    duration: test.duration,
-                    screenshots: screenshots.map(
-                        (screenshot: CypressCommandLine.ScreenshotInformation) => {
-                            return { filepath: screenshot.path };
-                        }
-                    ),
-                    spec: {
-                        filepath: runResult.spec.absolute,
-                    },
-                    startedAt: testStarts[title],
-                    status: toCypressStatus(test.state),
-                    title: title,
-                });
-            })
-        );
+        test.attempts.forEach((attempt) => {
+            testRuns.push(
+                new Promise((resolve) => {
+                    resolve({
+                        duration: test.duration,
+                        spec: {
+                            filepath: runResult.spec.absolute,
+                        },
+                        startedAt: testStarts[title],
+                        status: toCypressStatus(attempt.state),
+                        title: title,
+                    });
+                })
+            );
+        });
     });
     return testRuns;
 }
@@ -174,40 +154,74 @@ function startTimesByTest(run: CypressCommandLine.RunResult): StringMap<Date> {
     return map;
 }
 
-function screenshotsByTest(
-    run: CypressCommandLine.RunResult,
+/**
+ * Extracts screenshots from test results and maps them to their tests' corresponding issue keys.
+ *
+ * @param runResult - the run result
+ * @param projectKey -  required for mapping screenshots to test cases
+ * @returns the mapping of test issues to screenshots
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function getScreenshotsByIssueKey_V12(
+    runResult: RunResult_V12,
     projectKey: string
-): StringMap<CypressCommandLine.ScreenshotInformation[]> {
-    const map: StringMap<CypressCommandLine.ScreenshotInformation[]> = {};
-    for (const screenshot of run.screenshots) {
-        for (const test of run.tests) {
-            const title = test.title.join(" ");
-            if (screenshotNameMatchesTestTitle(screenshot, projectKey, test.title)) {
-                if (title in map) {
-                    map[title].push(screenshot);
-                } else {
-                    map[title] = [screenshot];
+): Map<string, string[]> {
+    const map = new Map<string, string[]>();
+    for (const test of runResult.tests) {
+        const title = test.title.join(" ");
+        try {
+            const testTitleKeys = getTestIssueKeys(title, projectKey);
+            for (const issueKey of testTitleKeys) {
+                for (const attempt of test.attempts) {
+                    for (const screenshot of attempt.screenshots) {
+                        const screenshots = map.get(issueKey);
+                        if (!screenshots) {
+                            map.set(issueKey, [screenshot.path]);
+                        } else {
+                            screenshots.push(screenshot.path);
+                        }
+                    }
                 }
             }
+        } catch {
+            continue;
         }
     }
     return map;
 }
 
-function screenshotNameMatchesTestTitle(
-    screenshot: CypressCommandLine.ScreenshotInformation,
-    projectKey: string,
-    testTitle: string[]
-): boolean {
-    try {
-        const testTitleKeys = getTestIssueKeys(testTitle.join(" "), projectKey);
-        if (testTitleKeys.some((key) => screenshot.path.includes(key))) {
-            return true;
+/**
+ * Extracts screenshots from test results and maps them to the corresponding issue keys.
+ *
+ * @param runResult - the run result
+ * @param projectKey -  required for mapping screenshots to test cases
+ * @returns the mapping of test issues to screenshots
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function getScreenshotsByIssueKey_V13(
+    run: CypressCommandLine.RunResult,
+    projectKey: string
+): Map<string, string[]> {
+    const map = new Map<string, string[]>();
+    for (const test of run.tests) {
+        const title = test.title.join(" ");
+        try {
+            const testTitleKeys = getTestIssueKeys(title, projectKey);
+            for (const screenshot of run.screenshots) {
+                for (const issueKey of testTitleKeys) {
+                    if (screenshot.path.includes(issueKey)) {
+                        const screenshots = map.get(issueKey);
+                        if (screenshots) {
+                            screenshots.push(screenshot.path);
+                        } else {
+                            map.set(issueKey, [screenshot.path]);
+                        }
+                    }
+                }
+            }
+        } catch {
+            continue;
         }
-        // Errors are logged in getTestIssueKeys.
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error: unknown) {
-        // Do nothing.
     }
-    return false;
+    return map;
 }

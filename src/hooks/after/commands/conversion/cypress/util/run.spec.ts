@@ -4,7 +4,12 @@ import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import type { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api";
 import { CypressStatus } from "../../../../../../types/cypress/status";
-import { getTestRunData_V12, getTestRunData_V13 } from "./run";
+import {
+    getScreenshotsByIssueKey_V12,
+    getScreenshotsByIssueKey_V13,
+    getTestRunData_V12,
+    getTestRunData_V13,
+} from "./run";
 
 describe(relative(cwd(), __filename), async () => {
     await describe(getTestRunData_V12.name, async () => {
@@ -112,7 +117,7 @@ describe(relative(cwd(), __filename), async () => {
                     displayError:
                         "AssertionError: Timed out retrying after 4000ms: Expected to find element: `span`, but never found it.\n    at Context.eval (webpack:///./cypress/e2e/demo/example.cy.ts:15:23)",
                     state: "failed",
-                    title: ["xray upload demo", "should fail"],
+                    title: ["CYP-123 xray upload demo", "should fail"],
                 },
             ],
             video: "~/repositories/xray/cypress/videos/example.cy.ts.mp4",
@@ -177,11 +182,10 @@ describe(relative(cwd(), __filename), async () => {
         };
 
         await it("returns test data for valid runs", async () => {
-            const promises = getTestRunData_V12(passedResult);
-            const resolvedTestData = await Promise.all(promises);
+            const testRuns = getTestRunData_V12(passedResult);
+            const resolvedTestData = await Promise.all(testRuns);
             assert.deepStrictEqual(resolvedTestData[0], {
                 duration: 244,
-                screenshots: [],
                 spec: {
                     filepath: "~/repositories/xray/cypress/e2e/demo/example.cy.ts",
                 },
@@ -191,22 +195,19 @@ describe(relative(cwd(), __filename), async () => {
             });
         });
 
-        await it("includes screenshots in runs", async () => {
-            const promises = getTestRunData_V12(failedResult);
-            const resolvedTestData = await Promise.all(promises);
-            assert.deepStrictEqual(resolvedTestData[0].screenshots, [
-                {
-                    filepath: "./test/resources/turtle.png",
-                },
-                {
-                    filepath: "./test/resources/turtle.png",
-                },
-            ]);
+        await it("includes screenshots in runs", () => {
+            const screenshotMap = getScreenshotsByIssueKey_V12(failedResult, "CYP");
+            assert.deepStrictEqual(
+                screenshotMap,
+                new Map([
+                    ["CYP-123", ["./test/resources/turtle.png", "./test/resources/turtle.png"]],
+                ])
+            );
         });
 
         await it("rejects invalid runs", async () => {
-            const promises = getTestRunData_V12(invalidResult);
-            const resolvedTestData = await Promise.allSettled(promises);
+            const testRuns = getTestRunData_V12(invalidResult);
+            const resolvedTestData = await Promise.allSettled(testRuns);
             assert.strictEqual(resolvedTestData[0].status, "rejected");
             const reason = resolvedTestData[0].reason as Error;
             assert.strictEqual(reason.message, "Unknown Cypress test status: broken");
@@ -382,12 +383,11 @@ describe(relative(cwd(), __filename), async () => {
         };
 
         await it("returns test data for valid runs", async () => {
-            const promises = getTestRunData_V13(passedResult, "CYP");
-            const resolvedTestData = await Promise.all(promises);
+            const testRuns = getTestRunData_V13(passedResult);
+            const resolvedTestData = await Promise.all(testRuns);
             assert.deepStrictEqual(resolvedTestData, [
                 {
                     duration: 638,
-                    screenshots: [],
                     spec: {
                         filepath: "~/Repositories/cypress/85/cypress/e2e/cyp/cypress.spec.cy.ts",
                     },
@@ -397,7 +397,6 @@ describe(relative(cwd(), __filename), async () => {
                 },
                 {
                     duration: 123,
-                    screenshots: [],
                     spec: {
                         filepath: "~/Repositories/cypress/85/cypress/e2e/cyp/cypress.spec.cy.ts",
                     },
@@ -408,18 +407,25 @@ describe(relative(cwd(), __filename), async () => {
             ]);
         });
 
-        await it("includes relevant screenshots in runs", async () => {
-            const promises = getTestRunData_V13(failedResult, "CYP");
-            const resolvedTestData = await Promise.all(promises);
-            assert.deepStrictEqual(resolvedTestData[0].screenshots, [
-                { filepath: "./test/resources/small CYP-237.png" },
-                { filepath: "./test/resources/manual CYP-237 screenshot.png" },
-            ]);
+        await it("includes relevant screenshots in runs", () => {
+            const screenshotMap = getScreenshotsByIssueKey_V13(failedResult, "CYP");
+            assert.deepStrictEqual(
+                screenshotMap,
+                new Map([
+                    [
+                        "CYP-237",
+                        [
+                            "./test/resources/small CYP-237.png",
+                            "./test/resources/manual CYP-237 screenshot.png",
+                        ],
+                    ],
+                ])
+            );
         });
 
         await it("rejects invalid runs", async () => {
-            const promises = getTestRunData_V13(invalidResult, "CYP");
-            const resolvedTestData = await Promise.allSettled(promises);
+            const testRuns = getTestRunData_V13(invalidResult);
+            const resolvedTestData = await Promise.allSettled(testRuns);
             assert.strictEqual(resolvedTestData[0].status, "rejected");
             const reason = resolvedTestData[0].reason as Error;
             assert.strictEqual(reason.message, "Unknown Cypress test status: broken");

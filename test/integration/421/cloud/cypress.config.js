@@ -17,16 +17,9 @@ module.exports = defineConfig({
                     },
                     url: "https://example.org",
                 },
-                plugin: {
-                    debug: false,
-                },
-                xray: {
-                    uploadResults: true,
-                },
             });
             return config;
         },
         specPattern: "**/*.cy.js",
     },
-    video: false,
 });
