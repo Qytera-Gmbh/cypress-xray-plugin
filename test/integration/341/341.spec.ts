@@ -39,9 +39,6 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
     ] as const) {
         await it(test.title, async () => {
             const output = runCypress(test.projectDirectory, {
-                env: {
-                    ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 341",
-                },
                 includeDefaultEnv: test.service,
             });
 

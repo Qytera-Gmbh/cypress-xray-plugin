@@ -18,6 +18,11 @@ module.exports = defineConfig({
             await configureXrayPlugin(fixedOn, config, {
                 jira: {
                     projectKey: "CYP",
+                    testExecutionIssue: {
+                        fields: {
+                            summary: "Integration test 328",
+                        },
+                    },
                 },
                 xray: {
                     uploadResults: true,

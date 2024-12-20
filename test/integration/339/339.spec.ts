@@ -12,22 +12,12 @@ import { runCypress } from "../../sh";
 describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
     for (const test of [
         {
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 339",
-                ["CYPRESS_PLUGIN_ENABLED"]: "false",
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
-            },
             logDirectory: join(__dirname, "server", "logs"),
             projectDirectory: join(__dirname, "cloud"),
             service: "cloud",
             title: "the cy.request task does not do anything if disabled (cloud)",
         },
         {
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 339",
-                ["CYPRESS_PLUGIN_ENABLED"]: "false",
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
-            },
             logDirectory: join(__dirname, "server", "logs"),
             projectDirectory: join(__dirname, "server"),
             service: "server",
@@ -36,7 +26,6 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
     ] as const) {
         await it(test.title, () => {
             runCypress(test.projectDirectory, {
-                env: test.env,
                 includeDefaultEnv: test.service,
             });
             assert.strictEqual(fs.existsSync(test.logDirectory), false);

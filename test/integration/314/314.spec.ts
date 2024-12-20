@@ -14,40 +14,24 @@ import { runCypress } from "../../sh";
 describe(relative(process.cwd(), __filename), () => {
     for (const test of [
         {
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
-            },
             logDirectory: join(__dirname, "automatic-cloud", "logs"),
             projectDirectory: join(__dirname, "automatic-cloud"),
             service: "cloud",
             title: "cy.request gets overwritten (cloud)",
         },
         {
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
-            },
             logDirectory: join(__dirname, "automatic-server", "logs"),
             projectDirectory: join(__dirname, "automatic-server"),
             service: "server",
             title: "cy.request gets overwritten (server)",
         },
         {
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
-            },
             logDirectory: join(__dirname, "manual-cloud", "logs"),
             projectDirectory: join(__dirname, "manual-cloud"),
             service: "cloud",
             title: "cy.request gets overwritten using manual task calls (cloud)",
         },
         {
-            env: {
-                ["CYPRESS_JIRA_TEST_EXECUTION_ISSUE_SUMMARY"]: "Integration test 314",
-                ["CYPRESS_XRAY_UPLOAD_REQUESTS"]: "true",
-            },
             logDirectory: join(__dirname, "manual-server", "logs"),
             projectDirectory: join(__dirname, "manual-server"),
             service: "server",
@@ -56,7 +40,6 @@ describe(relative(process.cwd(), __filename), () => {
     ] as const) {
         it(test.title, () => {
             runCypress(test.projectDirectory, {
-                env: test.env,
                 includeDefaultEnv: test.service,
             });
             for (const entry of fs.readdirSync(test.logDirectory, {

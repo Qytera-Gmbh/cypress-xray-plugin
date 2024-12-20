@@ -6,11 +6,18 @@ async function setupNodeEvents(on, config) {
         jira: {
             url: "https://example.org",
             projectKey: "CYP",
-            testExecutionIssueDescription: "20/12/2024, 13:02:32",
-            testExecutionIssueSummary: "Integration tests",
+            testExecutionIssue: {
+                fields: {
+                    summary: "Integration test 314",
+                    description: new Date().toLocaleString(),
+                },
+            },
         },
         plugin: {
             debug: true,
+        },
+        xray: {
+            uploadRequests: true,
         },
     });
     return config;
