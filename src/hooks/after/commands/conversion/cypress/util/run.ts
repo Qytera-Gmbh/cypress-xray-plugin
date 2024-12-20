@@ -165,8 +165,8 @@ function startTimesByTest(run: CypressCommandLine.RunResult): StringMap<Date> {
 export function getScreenshotsByIssueKey_V12(
     runResult: RunResult_V12,
     projectKey: string
-): Map<string, string[]> {
-    const map = new Map<string, string[]>();
+): Map<string, Set<string>> {
+    const map = new Map<string, Set<string>>();
     for (const test of runResult.tests) {
         const title = test.title.join(" ");
         try {
@@ -176,9 +176,9 @@ export function getScreenshotsByIssueKey_V12(
                     for (const screenshot of attempt.screenshots) {
                         const screenshots = map.get(issueKey);
                         if (!screenshots) {
-                            map.set(issueKey, [screenshot.path]);
+                            map.set(issueKey, new Set([screenshot.path]));
                         } else {
-                            screenshots.push(screenshot.path);
+                            screenshots.add(screenshot.path);
                         }
                     }
                 }
@@ -201,23 +201,20 @@ export function getScreenshotsByIssueKey_V12(
 export function getScreenshotsByIssueKey_V13(
     run: CypressCommandLine.RunResult,
     projectKey: string
-): Map<string, string[]> {
-    const map = new Map<string, string[]>();
+): Map<string, Set<string>> {
+    const map = new Map<string, Set<string>>();
     for (const test of run.tests) {
         const title = test.title.join(" ");
         try {
             const testTitleKeys = getTestIssueKeys(title, projectKey);
-            for (const screenshot of run.screenshots) {
-                for (const issueKey of testTitleKeys) {
+            for (const issueKey of testTitleKeys) {
+                for (const screenshot of run.screenshots) {
                     if (screenshot.path.includes(issueKey)) {
                         const screenshots = map.get(issueKey);
                         if (!screenshots) {
-                            map.set(issueKey, [screenshot.path]);
-                        }
-                        // Duplicates can occur if a test issue key is present in a describe block
-                        // and more than one test inside the block takes a screenshot.
-                        else if (!screenshots.includes(screenshot.path)) {
-                            screenshots.push(screenshot.path);
+                            map.set(issueKey, new Set([screenshot.path]));
+                        } else {
+                            screenshots.add(screenshot.path);
                         }
                     }
                 }

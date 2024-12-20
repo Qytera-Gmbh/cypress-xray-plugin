@@ -199,9 +199,7 @@ describe(relative(cwd(), __filename), async () => {
             const screenshotMap = getScreenshotsByIssueKey_V12(failedResult, "CYP");
             assert.deepStrictEqual(
                 screenshotMap,
-                new Map([
-                    ["CYP-123", ["./test/resources/turtle.png", "./test/resources/turtle.png"]],
-                ])
+                new Map([["CYP-123", new Set(["./test/resources/turtle.png"])]])
             );
         });
 
@@ -414,10 +412,10 @@ describe(relative(cwd(), __filename), async () => {
                 new Map([
                     [
                         "CYP-237",
-                        [
+                        new Set([
                             "./test/resources/small CYP-237.png",
                             "./test/resources/manual CYP-237 screenshot.png",
-                        ],
+                        ]),
                     ],
                 ])
             );
