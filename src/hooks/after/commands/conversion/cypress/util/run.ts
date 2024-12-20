@@ -76,24 +76,26 @@ export interface TestRunData {
 export function getTestRunData_V12(runResult: RunResult_V12): Promise<TestRunData>[] {
     const testRuns: Promise<TestRunData>[] = [];
     runResult.tests.forEach((test: TestResult_V12) => {
-        testRuns.push(
-            new Promise((resolve) => {
-                resolve({
-                    duration: test.attempts[test.attempts.length - 1].duration,
-                    screenshots: test.attempts[test.attempts.length - 1].screenshots.map(
-                        (screenshot: ScreenshotInformation_V12) => {
-                            return { filepath: screenshot.path };
-                        }
-                    ),
-                    spec: {
-                        filepath: runResult.spec.absolute,
-                    },
-                    startedAt: new Date(test.attempts[test.attempts.length - 1].startedAt),
-                    status: toCypressStatus(test.attempts[test.attempts.length - 1].state),
-                    title: test.title.join(" "),
-                });
-            })
-        );
+        test.attempts.forEach((attempt) => {
+            testRuns.push(
+                new Promise((resolve) => {
+                    resolve({
+                        duration: attempt.duration,
+                        screenshots: attempt.screenshots.map(
+                            (screenshot: ScreenshotInformation_V12) => {
+                                return { filepath: screenshot.path };
+                            }
+                        ),
+                        spec: {
+                            filepath: runResult.spec.absolute,
+                        },
+                        startedAt: new Date(attempt.startedAt),
+                        status: toCypressStatus(attempt.state),
+                        title: test.title.join(" "),
+                    });
+                })
+            );
+        });
     });
     return testRuns;
 }
@@ -198,7 +200,7 @@ function screenshotNameMatchesTestTitle(
     testTitle: string[]
 ): boolean {
     try {
-        const testTitleKeys = getTestIssueKeys(testTitle[testTitle.length - 1], projectKey);
+        const testTitleKeys = getTestIssueKeys(testTitle.join(" "), projectKey);
         if (testTitleKeys.some((key) => screenshot.path.includes(key))) {
             return true;
         }
