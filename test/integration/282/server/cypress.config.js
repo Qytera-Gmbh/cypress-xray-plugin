@@ -28,7 +28,7 @@ module.exports = defineConfig({
                     uploadResults: true,
                     testEnvironments: ["DEV"],
                     status: {
-                        // Must be a non-final status (I don't have permission)
+                        // Workaround because of configured status automations for which I don't have permission.
                         passed: "EXECUTING",
                     },
                 },

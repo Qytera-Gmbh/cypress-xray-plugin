@@ -54,9 +54,8 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                     testExecIssueIds: [searchResult[0].id],
                     testIssueIds: [searchResult[1].id],
                 });
-                console.log(JSON.stringify(testResults, null, 2));
                 assert.strictEqual(testResults.length, 1);
-                assert.deepStrictEqual(testResults[0].status, { name: "FAILED" });
+                assert.deepStrictEqual(testResults[0].status, { name: "PASSED" });
                 assert.deepStrictEqual(testResults[0].test, {
                     jira: {
                         key: test.linkedTest,
@@ -71,7 +70,32 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                     testResults[0].evidence[1].filename,
                     `${test.linkedTest}-test-evidence-2.png`
                 );
-                assert.strictEqual(testResults[0].iterations?.results?.length, 2);
+                assert.deepStrictEqual(testResults[0].iterations, {
+                    results: [
+                        {
+                            parameters: [
+                                {
+                                    name: "iteration",
+                                    value: "1",
+                                },
+                            ],
+                            status: {
+                                name: "FAILED",
+                            },
+                        },
+                        {
+                            parameters: [
+                                {
+                                    name: "iteration",
+                                    value: "2",
+                                },
+                            ],
+                            status: {
+                                name: "PASSED",
+                            },
+                        },
+                    ],
+                });
             }
 
             if (test.service === "server") {
@@ -84,8 +108,7 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                 const testRun = await getIntegrationClient("xray", test.service).getTestRun(
                     testExecution[0].id
                 );
-                console.log(JSON.stringify(testRun, null, 2));
-                assert.deepStrictEqual(testRun.status, { name: "FAIL" });
+                assert.deepStrictEqual(testRun.status, "CUSTOM_PASS2");
                 assert.deepStrictEqual(testRun.testKey, test.linkedTest);
                 assert.strictEqual(testRun.evidences.length, 2);
                 assert.strictEqual(
@@ -97,6 +120,22 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                     `${test.linkedTest}-test-evidence-2.png`
                 );
                 assert.strictEqual(testRun.iterations.length, 2);
+                // Workaround because of configured status automations for which I don't have permission.
+                assert.strictEqual(testRun.iterations[0].status, "TODO");
+                assert.deepStrictEqual(testRun.iterations[0].parameters, [
+                    {
+                        name: "iteration",
+                        value: "1",
+                    },
+                ]);
+                // Workaround because of configured status automations for which I don't have permission.
+                assert.deepStrictEqual(testRun.iterations[1].status, "TODO");
+                assert.deepStrictEqual(testRun.iterations[1].parameters, [
+                    {
+                        name: "iteration",
+                        value: "2",
+                    },
+                ]);
             }
         });
     }

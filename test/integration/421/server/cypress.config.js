@@ -17,6 +17,13 @@ module.exports = defineConfig({
                     },
                     url: "https://example.org",
                 },
+                xray: {
+                    status: {
+                        // Workaround because of configured status automations for which I don't have permission.
+                        failed: "EXECUTING",
+                        passed: "CUSTOM_PASS2",
+                    },
+                },
             });
             return config;
         },

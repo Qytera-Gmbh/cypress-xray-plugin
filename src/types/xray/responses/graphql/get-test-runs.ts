@@ -35,19 +35,17 @@ export interface GetTestRunResponseServer {
     finishedOn: string;
     finishedOnIso: string;
     id: number;
-    iterations: [
-        {
-            color: string;
-            id: number;
-            parameters: [
-                {
-                    name: string;
-                    value: string;
-                },
-            ];
-            status: string;
-        }[],
-    ];
+    iterations: {
+        color: string;
+        id: number;
+        parameters: [
+            {
+                name: string;
+                value: string;
+            },
+        ];
+        status: string;
+    }[];
     startedOn: string;
     startedOnIso: string;
     status: string;
