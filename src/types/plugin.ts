@@ -364,8 +364,13 @@ export interface XrayOptions {
      */
     status?: {
         /**
-         * A function that returns a single status for a given combination of other statuses. It is
-         * used to determine the final status of retried and data-driven tests.
+         * A function that returns a single Xray status for a given combination of Cypress statuses.
+         * It is used to determine the final status of retried and data-driven tests and is never
+         * called for tests that have only been run once.
+         *
+         * Please note that tests are grouped by the issue keys present in their `describe()` and
+         * `it()` titles as described
+         * [here](https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/targetingExistingIssues/#reuse-cypress-issues).
          *
          * By default, the aggregation works as follows in order of mention:
          *
@@ -380,7 +385,7 @@ export interface XrayOptions {
          *
          * @example
          *
-         * The following example defines a custom _FLAKY_ status:
+         * The following example defines custom `FLAKY` and `ABORTED` statuses for iterated tests:
          *
          * ```ts
          * ({ failed, passed, pending, skipped }) => {
@@ -391,14 +396,14 @@ export interface XrayOptions {
          *     return "FLAKY";
          *   }
          *   if (pending > 0) {
-         *     return "TODO";
+         *     return "ABORTED";
          *   }
          *   return "FAILED";
          * }
          * ```
          *
-         * @param args - the aggregation arguments
-         * @returns the aggregated status
+         * @param args - the status aggregation arguments
+         * @returns the aggregated Xray status
          */
         aggregate?: (args: {
             /**
