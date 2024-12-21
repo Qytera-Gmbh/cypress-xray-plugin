@@ -36,7 +36,7 @@
     },
     "scripts": {
         "test": "node --require ./test/loader.js ./test/run-unit-tests.ts",
-        "test:coverage": "npx shx mkdir -p coverage && c8 -r html npm run test",
+        "test:coverage": "npx shx mkdir -p coverage && c8 -x '**/*.spec.ts' -r html npm run test",
         "test:integration": "node --require ./test/loader.js ./test/run-integration-tests.ts",
         "test:server": "node --require ./test/loader.js ./test/run-server.ts",
         "build": "tsc --project tsconfig-build.json && shx cp package.json README.md LICENSE.md CHANGELOG.md dist/",

@@ -55,7 +55,7 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                     testIssueIds: [searchResult[1].id],
                 });
                 assert.strictEqual(testResults.length, 1);
-                assert.deepStrictEqual(testResults[0].status, { name: "PASSED" });
+                assert.deepStrictEqual(testResults[0].status, { name: "FAILED" });
                 assert.deepStrictEqual(testResults[0].test, {
                     jira: {
                         key: test.linkedTest,
@@ -108,7 +108,7 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                 const testRun = await getIntegrationClient("xray", test.service).getTestRun(
                     testExecution[0].id
                 );
-                assert.deepStrictEqual(testRun.status, "CUSTOM_PASS2");
+                assert.deepStrictEqual(testRun.status, "FAIL");
                 assert.deepStrictEqual(testRun.testKey, test.linkedTest);
                 assert.strictEqual(testRun.evidences.length, 2);
                 assert.strictEqual(
@@ -121,6 +121,7 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                 );
                 assert.strictEqual(testRun.iterations.length, 2);
                 // Workaround because of configured status automations for which I don't have permission.
+                // Would be "FAIL" normally.
                 assert.strictEqual(testRun.iterations[0].status, "TODO");
                 assert.deepStrictEqual(testRun.iterations[0].parameters, [
                     {
@@ -129,6 +130,7 @@ describe(relative(cwd(), __filename), { timeout: 180000 }, async () => {
                     },
                 ]);
                 // Workaround because of configured status automations for which I don't have permission.
+                // Would be "PASS" normally.
                 assert.deepStrictEqual(testRun.iterations[1].status, "TODO");
                 assert.deepStrictEqual(testRun.iterations[1].parameters, [
                     {

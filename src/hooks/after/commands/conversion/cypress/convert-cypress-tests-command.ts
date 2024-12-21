@@ -3,6 +3,7 @@ import { lt } from "semver";
 import type { EvidenceCollection } from "../../../../../context";
 import type { RunResult as RunResult_V12 } from "../../../../../types/cypress/12.0.0/api";
 import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
+import { CypressStatus } from "../../../../../types/cypress/status";
 import type { InternalXrayOptions } from "../../../../../types/plugin";
 import type {
     XrayEvidenceItem,
@@ -50,7 +51,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         const version = lt(results.cypressVersion, "13.0.0") ? "<13" : ">=13";
         const testRunData = await this.getTestRunData(results, version);
         const xrayTests: XrayTest[] = [];
-        const runsByKey = new Map<string, TestRunData[]>();
+        const runsByKey = new Map<string, [TestRunData, ...TestRunData[]]>();
         testRunData.forEach((testData: TestRunData) => {
             try {
                 const issueKeys = getTestIssueKeys(testData.title, this.parameters.projectKey);
@@ -77,7 +78,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 );
             }
         });
-        for (const [issueKey, testRuns] of runsByKey.entries()) {
+        for (const [issueKey, testRuns] of runsByKey) {
             const test: XrayTest = this.getTest(testRuns, issueKey, this.getXrayEvidence(issueKey));
             xrayTests.push(test);
         }
@@ -113,9 +114,11 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         };
         for (const run of cypressRuns) {
             const testRuns = extractor(run);
-            testRuns.forEach((promise, index) =>
-                conversionPromises.push([run.tests[index].title.join(" "), promise])
-            );
+            for (const [title, promises] of testRuns) {
+                for (const promise of promises) {
+                    conversionPromises.push([title, promise]);
+                }
+            }
         }
         if (this.parameters.uploadScreenshots) {
             this.addScreenshotEvidence(runResults, version);
@@ -161,7 +164,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         const includedScreenshots: string[] = [];
         for (const run of runResults.runs) {
             const allScreenshots = extractor(run);
-            for (const [issueKey, screenshots] of allScreenshots.entries()) {
+            for (const [issueKey, screenshots] of allScreenshots) {
                 for (const screenshot of screenshots) {
                     let filename = path.basename(screenshot);
                     if (this.parameters.normalizeScreenshotNames) {
@@ -205,32 +208,28 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
     }
 
     private getTest(
-        tests: TestRunData[],
+        runs: [TestRunData, ...TestRunData[]],
         issueKey: string,
         evidence: XrayEvidenceItem[]
     ): XrayTest {
         const xrayTest: XrayTest = {
             finish: truncateIsoTime(
                 latestDate(
-                    ...tests.map((test) => new Date(test.startedAt.getTime() + test.duration))
+                    ...runs.map((test) => new Date(test.startedAt.getTime() + test.duration))
                 ).toISOString()
             ),
             start: truncateIsoTime(
-                earliestDate(...tests.map((test) => test.startedAt)).toISOString()
+                earliestDate(...runs.map((test) => test.startedAt)).toISOString()
             ),
-            status: getXrayStatus(
-                tests.map((test) => test.status),
-                this.parameters.useCloudStatusFallback === true,
-                this.parameters.xrayStatus
-            ),
+            status: this.getXrayStatus(runs),
             testKey: issueKey,
         };
         if (evidence.length > 0) {
             xrayTest.evidence = evidence;
         }
-        if (tests.length > 1) {
+        if (runs.length > 1) {
             const iterations: XrayIterationResult[] = [];
-            for (const iteration of tests) {
+            for (const iteration of runs) {
                 iterations.push({
                     parameters: [{ name: "iteration", value: (iterations.length + 1).toString() }],
                     status: getXrayStatus(
@@ -243,6 +242,50 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
             xrayTest.iterations = iterations;
         }
         return xrayTest;
+    }
+
+    private getXrayStatus(tests: [TestRunData, ...TestRunData[]]): string {
+        const statuses = tests.map((test) => test.status);
+        if (statuses.length > 1) {
+            const passed = statuses.filter((s) => s === CypressStatus.PASSED).length;
+            const failed = statuses.filter((s) => s === CypressStatus.FAILED).length;
+            const pending = statuses.filter((s) => s === CypressStatus.PENDING).length;
+            const skipped = statuses.filter((s) => s === CypressStatus.SKIPPED).length;
+            if (this.parameters.xrayStatus.aggregate) {
+                return this.parameters.xrayStatus.aggregate({ failed, passed, pending, skipped });
+            }
+            if (passed > 0 && failed === 0 && skipped === 0) {
+                return getXrayStatus(
+                    CypressStatus.PASSED,
+                    this.parameters.useCloudStatusFallback === true,
+                    this.parameters.xrayStatus
+                );
+            }
+            if (passed === 0 && failed === 0 && skipped === 0 && pending > 0) {
+                return getXrayStatus(
+                    CypressStatus.PENDING,
+                    this.parameters.useCloudStatusFallback === true,
+                    this.parameters.xrayStatus
+                );
+            }
+            if (skipped > 0) {
+                return getXrayStatus(
+                    CypressStatus.SKIPPED,
+                    this.parameters.useCloudStatusFallback === true,
+                    this.parameters.xrayStatus
+                );
+            }
+            return getXrayStatus(
+                CypressStatus.FAILED,
+                this.parameters.useCloudStatusFallback === true,
+                this.parameters.xrayStatus
+            );
+        }
+        return getXrayStatus(
+            statuses[0],
+            this.parameters.useCloudStatusFallback === true,
+            this.parameters.xrayStatus
+        );
     }
 
     private getXrayEvidence(issueKey: string): XrayEvidenceItem[] {
