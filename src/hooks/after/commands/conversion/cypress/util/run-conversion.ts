@@ -5,16 +5,20 @@ import type {
 import type { CypressStatus } from "../../../../../../types/cypress/status";
 import type { StringMap } from "../../../../../../types/util";
 import { getTestIssueKeys } from "../../../../util";
-import { toCypressStatus } from "./status";
+import { toCypressStatus } from "./status-conversion";
 
 /**
  * Test data extracted from Cypress tests, ready to be converted into an Xray JSON test.
  */
-export interface TestRunData {
+export interface SuccessfulConversion {
     /**
      * The duration of the test in milliseconds.
      */
     duration: number;
+    /**
+     * Denotes a successful test run conversion.
+     */
+    kind: "success";
     /**
      * Information about the spec the test was run in.
      */
@@ -39,110 +43,98 @@ export interface TestRunData {
 }
 
 /**
- * Converts a Cypress v12 (or before) run result into several {@link TestRunData} objects.
- *
- * The function returns an array of promises because the conversion of the test results contained
- * within the run can fail for individual tests. This makes sure that a single failing conversion
- * does not affect or cancel the conversion of the other test results.
- *
- * To retrieve the results, you should use the following approach:
- *
- * ```ts
- *   const testData = await Promise.allSettled(getTestRunData_V12(runResult));
- *   testData.forEach((promise) => {
- *     if (promise.status === "fulfilled") {
- *       // use test data
- *     } else {
- *       // handle failed test conversion
- *     }
- *   });
- * ```
+ * Models a failed test run conversion.
+ */
+export interface FailedConversion {
+    /**
+     * The conversion failure.
+     */
+    error: unknown;
+    /**
+     * Denotes a failed test run conversion.
+     */
+    kind: "error";
+}
+
+/**
+ * Converts a Cypress v12 (or before) run result into several {@link SuccessfulConversion} objects.
  *
  * @param runResult - the run result
- * @returns a mapping of test titles to their test data promises
+ * @returns a mapping of test titles to their test data
  */
-
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function getTestRunData_V12(runResult: RunResult_V12): Map<string, Promise<TestRunData>[]> {
-    const map = new Map<string, Promise<TestRunData>[]>();
+export function convertTestRuns_V12(
+    runResult: RunResult_V12
+): Map<string, (FailedConversion | SuccessfulConversion)[]> {
+    const map = new Map<string, (FailedConversion | SuccessfulConversion)[]>();
     runResult.tests.forEach((test: TestResult_V12) => {
         const title = test.title.join(" ");
-        const promises = test.attempts.map(
-            (attempt) =>
-                new Promise<TestRunData>((resolve) => {
-                    resolve({
-                        duration: attempt.duration,
-                        spec: {
-                            filepath: runResult.spec.absolute,
-                        },
-                        startedAt: new Date(attempt.startedAt),
-                        status: toCypressStatus(attempt.state),
-                        title: title,
-                    });
-                })
-        );
+        const runs: (FailedConversion | SuccessfulConversion)[] = test.attempts.map((attempt) => {
+            try {
+                return {
+                    duration: attempt.duration,
+                    kind: "success",
+                    spec: {
+                        filepath: runResult.spec.absolute,
+                    },
+                    startedAt: new Date(attempt.startedAt),
+                    status: toCypressStatus(attempt.state),
+                    title: title,
+                };
+            } catch (error: unknown) {
+                return { error, kind: "error" };
+            }
+        });
         const testRuns = map.get(title);
         if (testRuns) {
-            testRuns.push(...promises);
+            testRuns.push(...runs);
         } else {
-            map.set(title, promises);
+            map.set(title, runs);
         }
     });
     return map;
 }
 
 /**
- * Converts a Cypress v13 (and above) run result into several {@link TestRunData | `ITestRunData`}
+ * Converts a Cypress v13 (and above) run result into several {@link SuccessfulConversion | `ITestRunData`}
  * objects.
- *
- * The function returns an array of promises because the conversion of the test results contained
- * within the run can fail for individual tests. This makes sure that a single failing conversion
- * does not affect or cancel the conversion of the other test results.
- *
- * To retrieve the results, you should use the following approach:
- *
- * ```ts
- *   const testData = await Promise.allSettled(getTestRunData_V13(runResult, projectKey));
- *   testData.forEach((promise) => {
- *     if (promise.status === "fulfilled") {
- *       // use test data
- *     } else {
- *       // handle failed test conversion
- *     }
- *   });
- * ```
  *
  * @param runResult - the run result
  * @param options - additional extraction options to consider
- * @returns a mapping of test titles to their test data promises
+ * @returns a mapping of test titles to their test data
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function getTestRunData_V13(
+export function convertTestRuns_V13(
     runResult: CypressCommandLine.RunResult
-): Map<string, Promise<TestRunData>[]> {
-    const map = new Map<string, Promise<TestRunData>[]>();
+): Map<string, (FailedConversion | SuccessfulConversion)[]> {
+    const map = new Map<string, (FailedConversion | SuccessfulConversion)[]>();
     const testStarts = startTimesByTest(runResult);
     runResult.tests.forEach((test: CypressCommandLine.TestResult) => {
         const title = test.title.join(" ");
-        const promises = test.attempts.map(
-            (attempt) =>
-                new Promise<TestRunData>((resolve) => {
-                    resolve({
-                        duration: test.duration,
-                        spec: {
-                            filepath: runResult.spec.absolute,
-                        },
-                        startedAt: testStarts[title],
-                        status: toCypressStatus(attempt.state),
-                        title: title,
-                    });
-                })
-        );
+        const runs: (FailedConversion | SuccessfulConversion)[] = test.attempts.map((attempt) => {
+            try {
+                return {
+                    duration: test.duration,
+                    kind: "success",
+                    spec: {
+                        filepath: runResult.spec.absolute,
+                    },
+                    startedAt: testStarts[title],
+                    status: toCypressStatus(attempt.state),
+                    title: title,
+                };
+            } catch (error: unknown) {
+                return {
+                    error,
+                    kind: "error",
+                };
+            }
+        });
         const testRuns = map.get(title);
         if (testRuns) {
-            testRuns.push(...promises);
+            testRuns.push(...runs);
         } else {
-            map.set(title, promises);
+            map.set(title, runs);
         }
     });
     return map;

@@ -3,7 +3,7 @@ import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { CypressStatus } from "../../../../../../types/cypress/status";
-import { getXrayStatus, toCypressStatus } from "./status";
+import { getXrayStatus, toCypressStatus } from "./status-conversion";
 
 describe(relative(cwd(), __filename), async () => {
     await describe(toCypressStatus.name, async () => {

@@ -20,14 +20,14 @@ import { earliestDate, latestDate, truncateIsoTime } from "../../../../../util/t
 import type { Computable } from "../../../../command";
 import { Command } from "../../../../command";
 import { getTestIssueKeys } from "../../../util";
-import type { TestRunData } from "./util/run";
+import type { FailedConversion, SuccessfulConversion } from "./util/run-conversion";
 import {
+    convertTestRuns_V12,
+    convertTestRuns_V13,
     getScreenshotsByIssueKey_V12,
     getScreenshotsByIssueKey_V13,
-    getTestRunData_V12,
-    getTestRunData_V13,
-} from "./util/run";
-import { getXrayStatus } from "./util/status";
+} from "./util/run-conversion";
+import { getXrayStatus } from "./util/status-conversion";
 
 interface Parameters {
     evidenceCollection: EvidenceCollection;
@@ -49,27 +49,26 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
     protected async computeResult(): Promise<[XrayTest, ...XrayTest[]]> {
         const results = await this.results.compute();
         const version = lt(results.cypressVersion, "13.0.0") ? "<13" : ">=13";
-        const testRunData = await this.getTestRunData(results, version);
-        const xrayTests: XrayTest[] = [];
-        const runsByKey = new Map<string, [TestRunData, ...TestRunData[]]>();
-        testRunData.forEach((testData: TestRunData) => {
+        const convertedTests = this.convertTestRuns(results, version);
+        const runsByKey = new Map<string, [SuccessfulConversion, ...SuccessfulConversion[]]>();
+        for (const convertedTest of convertedTests) {
             try {
-                const issueKeys = getTestIssueKeys(testData.title, this.parameters.projectKey);
+                const issueKeys = getTestIssueKeys(convertedTest.title, this.parameters.projectKey);
                 for (const issueKey of issueKeys) {
                     const runs = runsByKey.get(issueKey);
                     if (runs) {
-                        runs.push(testData);
+                        runs.push(convertedTest);
                     } else {
-                        runsByKey.set(issueKey, [testData]);
+                        runsByKey.set(issueKey, [convertedTest]);
                     }
                 }
             } catch (error: unknown) {
                 this.logger.message(
                     Level.WARNING,
                     dedent(`
-                        ${testData.spec.filepath}
+                        ${convertedTest.spec.filepath}
 
-                          Test: ${testData.title}
+                          Test: ${convertedTest.title}
 
                             Skipping result upload.
 
@@ -77,10 +76,10 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                     `)
                 );
             }
-        });
+        }
+        const xrayTests: XrayTest[] = [];
         for (const [issueKey, testRuns] of runsByKey) {
-            const test: XrayTest = this.getTest(testRuns, issueKey, this.getXrayEvidence(issueKey));
-            xrayTests.push(test);
+            xrayTests.push(this.getTest(testRuns, issueKey, this.getXrayEvidence(issueKey)));
         }
         if (xrayTests.length === 0) {
             throw new Error(
@@ -90,11 +89,11 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         return [xrayTests[0], ...xrayTests.slice(1)];
     }
 
-    private async getTestRunData(
+    private convertTestRuns(
         runResults: CypressRunResultType,
         version: "<13" | ">=13"
-    ): Promise<TestRunData[]> {
-        const conversionPromises: [string, Promise<TestRunData>][] = [];
+    ): SuccessfulConversion[] {
+        const conversions: [string, FailedConversion | SuccessfulConversion][] = [];
         const cypressRuns = runResults.runs.filter((run) => {
             return (
                 !this.parameters.featureFileExtension ||
@@ -107,16 +106,16 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
 
         const extractor = (run: CypressRunResultType["runs"][number]) => {
             if (version === "<13") {
-                return getTestRunData_V12(run as RunResult_V12);
+                return convertTestRuns_V12(run as RunResult_V12);
             } else {
-                return getTestRunData_V13(run as CypressCommandLine.RunResult);
+                return convertTestRuns_V13(run as CypressCommandLine.RunResult);
             }
         };
         for (const run of cypressRuns) {
             const testRuns = extractor(run);
-            for (const [title, promises] of testRuns) {
-                for (const promise of promises) {
-                    conversionPromises.push([title, promise]);
+            for (const [title, runs] of testRuns) {
+                for (const conversion of runs) {
+                    conversions.push([title, conversion]);
                 }
             }
         }
@@ -124,26 +123,23 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
             this.addScreenshotEvidence(runResults, version);
         }
 
-        const convertedTests = await Promise.allSettled(
-            conversionPromises.map((tuple) => tuple[1])
-        );
-        const testRunData: TestRunData[] = [];
-        convertedTests.forEach((promise, index) => {
-            if (promise.status === "fulfilled") {
-                testRunData.push(promise.value);
-            } else {
+        const testRunData: SuccessfulConversion[] = [];
+        for (const [title, conversion] of conversions) {
+            if (conversion.kind === "error") {
                 this.logger.message(
                     Level.WARNING,
                     dedent(`
-                        Test: ${conversionPromises[index][0]}
+                        Test: ${title}
 
                           Skipping result upload.
 
-                            Caused by: ${errorMessage(promise.reason)}
+                            Caused by: ${errorMessage(conversion.error)}
                     `)
                 );
+            } else {
+                testRunData.push(conversion);
             }
-        });
+        }
         return testRunData;
     }
 
@@ -208,7 +204,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
     }
 
     private getTest(
-        runs: [TestRunData, ...TestRunData[]],
+        runs: [SuccessfulConversion, ...SuccessfulConversion[]],
         issueKey: string,
         evidence: XrayEvidenceItem[]
     ): XrayTest {
@@ -244,7 +240,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         return xrayTest;
     }
 
-    private getXrayStatus(tests: [TestRunData, ...TestRunData[]]): string {
+    private getXrayStatus(tests: [SuccessfulConversion, ...SuccessfulConversion[]]): string {
         const statuses = tests.map((test) => test.status);
         if (statuses.length > 1) {
             const passed = statuses.filter((s) => s === CypressStatus.PASSED).length;

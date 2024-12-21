@@ -5,14 +5,14 @@ import { describe, it } from "node:test";
 import type { RunResult as RunResult_V12 } from "../../../../../../types/cypress/12.0.0/api";
 import { CypressStatus } from "../../../../../../types/cypress/status";
 import {
+    convertTestRuns_V12,
+    convertTestRuns_V13,
     getScreenshotsByIssueKey_V12,
     getScreenshotsByIssueKey_V13,
-    getTestRunData_V12,
-    getTestRunData_V13,
-} from "./run";
+} from "./run-conversion";
 
 describe(relative(cwd(), __filename), async () => {
-    await describe(getTestRunData_V12.name, async () => {
+    await describe(convertTestRuns_V12.name, async () => {
         const passedResult: RunResult_V12 = {
             error: null,
             hooks: [],
@@ -181,14 +181,14 @@ describe(relative(cwd(), __filename), async () => {
             video: "~/repositories/xray/cypress/videos/example.cy.ts.mp4",
         };
 
-        await it("returns test data for valid runs", async () => {
-            const map = getTestRunData_V12(passedResult);
+        await it("returns test data for valid runs", () => {
+            const map = convertTestRuns_V12(passedResult);
             assert.strictEqual(map.size, 1);
             const testRuns = map.get("xray upload demo should look for paragraph elements");
             assert.ok(testRuns);
-            const resolvedTestData = await Promise.all(testRuns);
-            assert.deepStrictEqual(resolvedTestData[0], {
+            assert.deepStrictEqual(testRuns[0], {
                 duration: 244,
+                kind: "success",
                 spec: {
                     filepath: "~/repositories/xray/cypress/e2e/demo/example.cy.ts",
                 },
@@ -206,19 +206,18 @@ describe(relative(cwd(), __filename), async () => {
             );
         });
 
-        await it("rejects invalid runs", async () => {
-            const map = getTestRunData_V12(invalidResult);
+        await it("rejects invalid runs", () => {
+            const map = convertTestRuns_V12(invalidResult);
             assert.strictEqual(map.size, 1);
             const testRuns = map.get("xray upload demo should fail");
             assert.ok(testRuns);
-            const resolvedTestData = await Promise.allSettled(testRuns);
-            assert.strictEqual(resolvedTestData[0].status, "rejected");
-            const reason = resolvedTestData[0].reason as Error;
+            assert.strictEqual(testRuns[0].kind, "error");
+            const reason = testRuns[0].error as Error;
             assert.strictEqual(reason.message, "Unknown Cypress test status: broken");
         });
     });
 
-    await describe(getTestRunData_V13.name, async () => {
+    await describe(convertTestRuns_V13.name, async () => {
         const passedResult: CypressCommandLine.RunResult = {
             error: null,
             reporter: "spec",
@@ -386,14 +385,15 @@ describe(relative(cwd(), __filename), async () => {
             video: null,
         };
 
-        await it("returns test data for valid runs", async () => {
-            const map = getTestRunData_V13(passedResult);
+        await it("returns test data for valid runs", () => {
+            const map = convertTestRuns_V13(passedResult);
             assert.strictEqual(map.size, 2);
             let testRuns = map.get("something CYP-237 happens");
             assert.ok(testRuns);
-            assert.deepStrictEqual(await Promise.all(testRuns), [
+            assert.deepStrictEqual(testRuns, [
                 {
                     duration: 638,
+                    kind: "success",
                     spec: {
                         filepath: "~/Repositories/cypress/85/cypress/e2e/cyp/cypress.spec.cy.ts",
                     },
@@ -404,9 +404,10 @@ describe(relative(cwd(), __filename), async () => {
             ]);
             testRuns = map.get("something something");
             assert.ok(testRuns);
-            assert.deepStrictEqual(await Promise.all(testRuns), [
+            assert.deepStrictEqual(testRuns, [
                 {
                     duration: 123,
+                    kind: "success",
                     spec: {
                         filepath: "~/Repositories/cypress/85/cypress/e2e/cyp/cypress.spec.cy.ts",
                     },
@@ -433,14 +434,13 @@ describe(relative(cwd(), __filename), async () => {
             );
         });
 
-        await it("rejects invalid runs", async () => {
-            const map = getTestRunData_V13(invalidResult);
+        await it("rejects invalid runs", () => {
+            const map = convertTestRuns_V13(invalidResult);
             assert.strictEqual(map.size, 1);
             const testRuns = map.get("something CYP-237 happens");
             assert.ok(testRuns);
-            const resolvedTestData = await Promise.allSettled(testRuns);
-            assert.strictEqual(resolvedTestData[0].status, "rejected");
-            const reason = resolvedTestData[0].reason as Error;
+            assert.strictEqual(testRuns[0].kind, "error");
+            const reason = testRuns[0].error as Error;
             assert.strictEqual(reason.message, "Unknown Cypress test status: broken");
         });
     });
