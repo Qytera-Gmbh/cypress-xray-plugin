@@ -345,18 +345,19 @@ describe(relative(cwd(), __filename), async () => {
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
                         uploadScreenshots: true,
+                        useCloudStatusFallback: true,
                         xrayStatus: options.xray.status,
                     },
                     LOG,
                     new ConstantCommand(LOG, result)
                 );
                 const tests = await command.compute();
-                assert.strictEqual(tests[0].status, "PASS");
+                assert.strictEqual(tests[0].status, "PASSED");
                 assert.ok(tests[0].iterations);
-                assert.strictEqual(tests[0].iterations[0].status, "PASS");
-                assert.strictEqual(tests[0].iterations[1].status, "PASS");
-                assert.strictEqual(tests[0].iterations[2].status, "PASS");
-                assert.strictEqual(tests[0].iterations[3].status, "PASS");
+                assert.strictEqual(tests[0].iterations[0].status, "PASSED");
+                assert.strictEqual(tests[0].iterations[1].status, "PASSED");
+                assert.strictEqual(tests[0].iterations[2].status, "PASSED");
+                assert.strictEqual(tests[0].iterations[3].status, "PASSED");
             });
 
             await it("uses default iterated pending statuses", async (context) => {
@@ -374,18 +375,19 @@ describe(relative(cwd(), __filename), async () => {
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
                         uploadScreenshots: true,
+                        useCloudStatusFallback: true,
                         xrayStatus: options.xray.status,
                     },
                     LOG,
                     new ConstantCommand(LOG, result)
                 );
                 const tests = await command.compute();
-                assert.strictEqual(tests[0].status, "TODO");
+                assert.strictEqual(tests[0].status, "TO DO");
                 assert.ok(tests[0].iterations);
-                assert.strictEqual(tests[0].iterations[0].status, "TODO");
-                assert.strictEqual(tests[0].iterations[1].status, "TODO");
-                assert.strictEqual(tests[0].iterations[2].status, "TODO");
-                assert.strictEqual(tests[0].iterations[3].status, "TODO");
+                assert.strictEqual(tests[0].iterations[0].status, "TO DO");
+                assert.strictEqual(tests[0].iterations[1].status, "TO DO");
+                assert.strictEqual(tests[0].iterations[2].status, "TO DO");
+                assert.strictEqual(tests[0].iterations[3].status, "TO DO");
             });
 
             await it("uses default iterated skipped statuses", async (context) => {
@@ -403,18 +405,19 @@ describe(relative(cwd(), __filename), async () => {
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
                         uploadScreenshots: true,
+                        useCloudStatusFallback: true,
                         xrayStatus: options.xray.status,
                     },
                     LOG,
                     new ConstantCommand(LOG, result)
                 );
                 const tests = await command.compute();
-                assert.strictEqual(tests[0].status, "FAIL");
+                assert.strictEqual(tests[0].status, "FAILED");
                 assert.ok(tests[0].iterations);
-                assert.strictEqual(tests[0].iterations[0].status, "TODO");
-                assert.strictEqual(tests[0].iterations[1].status, "TODO");
-                assert.strictEqual(tests[0].iterations[2].status, "TODO");
-                assert.strictEqual(tests[0].iterations[3].status, "FAIL");
+                assert.strictEqual(tests[0].iterations[0].status, "TO DO");
+                assert.strictEqual(tests[0].iterations[1].status, "TO DO");
+                assert.strictEqual(tests[0].iterations[2].status, "TO DO");
+                assert.strictEqual(tests[0].iterations[3].status, "FAILED");
             });
 
             await it("uses default iterated failed statuses", async (context) => {
@@ -428,21 +431,22 @@ describe(relative(cwd(), __filename), async () => {
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
                         uploadScreenshots: true,
+                        useCloudStatusFallback: true,
                         xrayStatus: options.xray.status,
                     },
                     LOG,
                     new ConstantCommand(LOG, result)
                 );
                 const tests = await command.compute();
-                assert.strictEqual(tests[0].status, "FAIL");
+                assert.strictEqual(tests[0].status, "FAILED");
                 assert.ok(tests[0].iterations);
-                assert.strictEqual(tests[0].iterations[0].status, "FAIL");
-                assert.strictEqual(tests[0].iterations[1].status, "FAIL");
-                assert.strictEqual(tests[0].iterations[2].status, "PASS");
-                assert.strictEqual(tests[0].iterations[3].status, "PASS");
+                assert.strictEqual(tests[0].iterations[0].status, "FAILED");
+                assert.strictEqual(tests[0].iterations[1].status, "FAILED");
+                assert.strictEqual(tests[0].iterations[2].status, "PASSED");
+                assert.strictEqual(tests[0].iterations[3].status, "PASSED");
             });
 
-            await it("uses custom iterated statuses", async (context) => {
+            await it("uses custom reduced statuses", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
                 const result: CypressRunResultType = JSON.parse(
                     readFileSync("./test/resources/iteratedResult_13_16_0.json", "utf-8")
@@ -453,6 +457,7 @@ describe(relative(cwd(), __filename), async () => {
                         normalizeScreenshotNames: false,
                         projectKey: "CYP",
                         uploadScreenshots: true,
+                        useCloudStatusFallback: true,
                         xrayStatus: {
                             reduce: ({ failed, passed, pending, skipped }) => {
                                 if (passed > 0 && failed === 0 && skipped === 0) {
@@ -473,6 +478,11 @@ describe(relative(cwd(), __filename), async () => {
                 );
                 const tests = await command.compute();
                 assert.strictEqual(tests[0].status, "FLAKY");
+                assert.ok(tests[0].iterations);
+                assert.strictEqual(tests[0].iterations[0].status, "FAILED");
+                assert.strictEqual(tests[0].iterations[1].status, "FAILED");
+                assert.strictEqual(tests[0].iterations[2].status, "PASSED");
+                assert.strictEqual(tests[0].iterations[3].status, "PASSED");
             });
         });
 
@@ -933,7 +943,7 @@ describe(relative(cwd(), __filename), async () => {
             assert.strictEqual(tests[0].iterations[3].status, "PASS");
         });
 
-        await it("uses custom iterated statuses", async (context) => {
+        await it("uses custom reduced statuses", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/iteratedResult.json", "utf-8")
@@ -964,6 +974,11 @@ describe(relative(cwd(), __filename), async () => {
             );
             const tests = await command.compute();
             assert.strictEqual(tests[0].status, "FLAKY");
+            assert.ok(tests[0].iterations);
+            assert.strictEqual(tests[0].iterations[0].status, "FAIL");
+            assert.strictEqual(tests[0].iterations[1].status, "FAIL");
+            assert.strictEqual(tests[0].iterations[2].status, "PASS");
+            assert.strictEqual(tests[0].iterations[3].status, "PASS");
         });
 
         await it("does not modify test information", async (context) => {

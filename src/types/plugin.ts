@@ -385,8 +385,8 @@ export interface XrayOptions {
          */
         pending?: string;
         /**
-         * A function that returns a single status for a given combination of other statuses. It
-         * will be used to determine the final status of retried and data-driven tests.
+         * A function that returns a single status for a given combination of other statuses. It is
+         * used to determine the final status of retried and data-driven tests.
          *
          * By default, the reduction works as follows in order of mention:
          *
