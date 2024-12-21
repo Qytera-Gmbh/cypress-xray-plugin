@@ -1,5 +1,13 @@
 # Changelog
 
+# `7.5.0`
+
+## Notable changes
+
+- Added Xray iteration support for data-driven/retried tests ([#423](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/423))
+
+- Added `xray.status.aggregate` option ([#424](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/424))
+
 # `7.4.2`
 
 ## Notable changes
