@@ -42,7 +42,7 @@ export function getCucumberPreconditionIssueTags(
     return preconditionKeys;
 }
 
-export function getBackgroundTagRegex(projectKey: string, preconditionPrefix?: string): RegExp {
+function getBackgroundTagRegex(projectKey: string, preconditionPrefix?: string): RegExp {
     if (preconditionPrefix) {
         // @Precondition:CYP-111
         return new RegExp(`@${preconditionPrefix}(${projectKey}-\\d+)`);

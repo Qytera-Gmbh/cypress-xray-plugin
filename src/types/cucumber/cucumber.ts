@@ -3,13 +3,13 @@ export interface FeatureFileIssueData {
     tests: FeatureFileIssueDataTest[];
 }
 
-export interface FeatureFileIssueDataTest {
+interface FeatureFileIssueDataTest {
     key: string;
     summary: string;
     tags: string[];
 }
 
-export interface FeatureFileIssueDataPrecondition {
+interface FeatureFileIssueDataPrecondition {
     key: string;
     summary: string;
 }

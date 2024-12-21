@@ -48,7 +48,7 @@ export interface Logger {
     message(level: Level, ...text: string[]): void;
 }
 
-export interface LoggingOptions {
+interface LoggingOptions {
     debug?: boolean;
     logDirectory: string;
 }
