@@ -1,7 +1,7 @@
 /**
  * Models the overlap of two iterables (called _left_ and _right_).
  */
-export interface Overlap<T> {
+interface Overlap<T> {
     /**
      * Elements which are present in both iterables.
      */

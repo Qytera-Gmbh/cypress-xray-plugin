@@ -5,7 +5,7 @@ import type { DirectedGraph } from "../graph";
 /**
  * Models search parameters for when the destination vertex is known.
  */
-export interface KnownDestinationParameters<V> {
+interface KnownDestinationParameters<V> {
     /**
      * The destination vertex.
      */
@@ -20,7 +20,7 @@ export interface KnownDestinationParameters<V> {
 /**
  * Models search parameters for when the destination vertex is unknown.
  */
-export interface UnknownDestinationParameters<V> {
+interface UnknownDestinationParameters<V> {
     /**
      * A filter describing the destination vertex.
      *

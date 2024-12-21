@@ -21,7 +21,7 @@ import type { AxiosRestClient } from "../https/requests";
 import { loggedRequest } from "../util";
 import { AbstractXrayClient } from "./xray-client";
 
-export interface HasTestTypes {
+interface HasTestTypes {
     /**
      * Returns Xray test types for the provided test issues, such as `Manual`, `Cucumber` or
      * `Generic`.
@@ -33,7 +33,7 @@ export interface HasTestTypes {
     getTestTypes(projectKey: string, ...issueKeys: string[]): Promise<StringMap<string>>;
 }
 
-export interface HasTestResults {
+interface HasTestResults {
     /**
      * Returns a test execution by issue ID.
      *
@@ -44,7 +44,7 @@ export interface HasTestResults {
     getTestResults(issueId: string): Promise<Test<{ key: string; summary: string }>[]>;
 }
 
-export interface HasTestRunResults {
+interface HasTestRunResults {
     /**
      * Returns a test execution by issue ID.
      *

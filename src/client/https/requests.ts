@@ -12,12 +12,6 @@ import { LOG, Level } from "../../util/logging";
 import { unknownToString } from "../../util/string";
 import { startInterval } from "../../util/time";
 
-export interface RequestConfigPost<D = unknown> {
-    config?: AxiosRequestConfig<D>;
-    data?: D;
-    url: string;
-}
-
 /**
  * Options which affect the way the requests module works.
  */

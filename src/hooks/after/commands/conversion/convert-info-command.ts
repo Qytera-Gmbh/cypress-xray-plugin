@@ -25,14 +25,7 @@ interface Parameters {
     xray: Pick<InternalXrayOptions, "testEnvironments" | "uploadScreenshots">;
 }
 
-export type ComputedIssueUpdate = IssueUpdate & {
-    computedFields: {
-        issuetype: Computable<IssueTypeDetails>;
-        summary: Computable<string>;
-    };
-};
-
-export abstract class ConvertInfoCommand<InfoType extends MultipartInfo> extends Command<
+abstract class ConvertInfoCommand<InfoType extends MultipartInfo> extends Command<
     InfoType,
     Parameters
 > {
