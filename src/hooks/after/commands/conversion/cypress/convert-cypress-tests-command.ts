@@ -78,7 +78,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 );
             }
         });
-        for (const [issueKey, testRuns] of runsByKey.entries()) {
+        for (const [issueKey, testRuns] of runsByKey) {
             const test: XrayTest = this.getTest(testRuns, issueKey, this.getXrayEvidence(issueKey));
             xrayTests.push(test);
         }
@@ -114,9 +114,11 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         };
         for (const run of cypressRuns) {
             const testRuns = extractor(run);
-            testRuns.forEach((promise, index) =>
-                conversionPromises.push([run.tests[index].title.join(" "), promise])
-            );
+            for (const [title, promises] of testRuns) {
+                for (const promise of promises) {
+                    conversionPromises.push([title, promise]);
+                }
+            }
         }
         if (this.parameters.uploadScreenshots) {
             this.addScreenshotEvidence(runResults, version);
@@ -162,7 +164,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         const includedScreenshots: string[] = [];
         for (const run of runResults.runs) {
             const allScreenshots = extractor(run);
-            for (const [issueKey, screenshots] of allScreenshots.entries()) {
+            for (const [issueKey, screenshots] of allScreenshots) {
                 for (const screenshot of screenshots) {
                     let filename = path.basename(screenshot);
                     if (this.parameters.normalizeScreenshotNames) {

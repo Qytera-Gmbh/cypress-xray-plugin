@@ -329,6 +329,151 @@ describe(relative(cwd(), __filename), async () => {
                     `),
                 ]);
             });
+
+            await it("uses default iterated passing statuses", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                const result: CypressRunResultType = JSON.parse(
+                    readFileSync("./test/resources/iteratedResult_13_16_0.json", "utf-8")
+                ) as CypressRunResultType;
+                result.runs[0].tests[0].attempts[0].state = "passed";
+                result.runs[0].tests[0].attempts[1].state = "passed";
+                result.runs[0].tests[0].attempts[2].state = "passed";
+                result.runs[0].tests[1].attempts[0].state = "passed";
+                const command = new ConvertCypressTestsCommand(
+                    {
+                        evidenceCollection: new SimpleEvidenceCollection(),
+                        normalizeScreenshotNames: false,
+                        projectKey: "CYP",
+                        uploadScreenshots: true,
+                        xrayStatus: options.xray.status,
+                    },
+                    LOG,
+                    new ConstantCommand(LOG, result)
+                );
+                const tests = await command.compute();
+                assert.strictEqual(tests[0].status, "PASS");
+                assert.ok(tests[0].iterations);
+                assert.strictEqual(tests[0].iterations[0].status, "PASS");
+                assert.strictEqual(tests[0].iterations[1].status, "PASS");
+                assert.strictEqual(tests[0].iterations[2].status, "PASS");
+                assert.strictEqual(tests[0].iterations[3].status, "PASS");
+            });
+
+            await it("uses default iterated pending statuses", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                const result: CypressRunResultType = JSON.parse(
+                    readFileSync("./test/resources/iteratedResult_13_16_0.json", "utf-8")
+                ) as CypressRunResultType;
+                result.runs[0].tests[0].attempts[0].state = "pending";
+                result.runs[0].tests[0].attempts[1].state = "pending";
+                result.runs[0].tests[0].attempts[2].state = "pending";
+                result.runs[0].tests[1].attempts[0].state = "pending";
+                const command = new ConvertCypressTestsCommand(
+                    {
+                        evidenceCollection: new SimpleEvidenceCollection(),
+                        normalizeScreenshotNames: false,
+                        projectKey: "CYP",
+                        uploadScreenshots: true,
+                        xrayStatus: options.xray.status,
+                    },
+                    LOG,
+                    new ConstantCommand(LOG, result)
+                );
+                const tests = await command.compute();
+                assert.strictEqual(tests[0].status, "TODO");
+                assert.ok(tests[0].iterations);
+                assert.strictEqual(tests[0].iterations[0].status, "TODO");
+                assert.strictEqual(tests[0].iterations[1].status, "TODO");
+                assert.strictEqual(tests[0].iterations[2].status, "TODO");
+                assert.strictEqual(tests[0].iterations[3].status, "TODO");
+            });
+
+            await it("uses default iterated skipped statuses", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                const result: CypressRunResultType = JSON.parse(
+                    readFileSync("./test/resources/iteratedResult_13_16_0.json", "utf-8")
+                ) as CypressRunResultType;
+                result.runs[0].tests[0].attempts[0].state = "pending";
+                result.runs[0].tests[0].attempts[1].state = "pending";
+                result.runs[0].tests[0].attempts[2].state = "pending";
+                result.runs[0].tests[1].attempts[0].state = "skipped";
+                const command = new ConvertCypressTestsCommand(
+                    {
+                        evidenceCollection: new SimpleEvidenceCollection(),
+                        normalizeScreenshotNames: false,
+                        projectKey: "CYP",
+                        uploadScreenshots: true,
+                        xrayStatus: options.xray.status,
+                    },
+                    LOG,
+                    new ConstantCommand(LOG, result)
+                );
+                const tests = await command.compute();
+                assert.strictEqual(tests[0].status, "FAIL");
+                assert.ok(tests[0].iterations);
+                assert.strictEqual(tests[0].iterations[0].status, "TODO");
+                assert.strictEqual(tests[0].iterations[1].status, "TODO");
+                assert.strictEqual(tests[0].iterations[2].status, "TODO");
+                assert.strictEqual(tests[0].iterations[3].status, "FAIL");
+            });
+
+            await it("uses default iterated failed statuses", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                const result: CypressRunResultType = JSON.parse(
+                    readFileSync("./test/resources/iteratedResult_13_16_0.json", "utf-8")
+                ) as CypressRunResultType;
+                const command = new ConvertCypressTestsCommand(
+                    {
+                        evidenceCollection: new SimpleEvidenceCollection(),
+                        normalizeScreenshotNames: false,
+                        projectKey: "CYP",
+                        uploadScreenshots: true,
+                        xrayStatus: options.xray.status,
+                    },
+                    LOG,
+                    new ConstantCommand(LOG, result)
+                );
+                const tests = await command.compute();
+                assert.strictEqual(tests[0].status, "FAIL");
+                assert.ok(tests[0].iterations);
+                assert.strictEqual(tests[0].iterations[0].status, "FAIL");
+                assert.strictEqual(tests[0].iterations[1].status, "FAIL");
+                assert.strictEqual(tests[0].iterations[2].status, "PASS");
+                assert.strictEqual(tests[0].iterations[3].status, "PASS");
+            });
+
+            await it("uses custom iterated statuses", async (context) => {
+                context.mock.method(LOG, "message", context.mock.fn());
+                const result: CypressRunResultType = JSON.parse(
+                    readFileSync("./test/resources/iteratedResult_13_16_0.json", "utf-8")
+                ) as CypressRunResultType;
+                const command = new ConvertCypressTestsCommand(
+                    {
+                        evidenceCollection: new SimpleEvidenceCollection(),
+                        normalizeScreenshotNames: false,
+                        projectKey: "CYP",
+                        uploadScreenshots: true,
+                        xrayStatus: {
+                            reduce: ({ failed, passed, pending, skipped }) => {
+                                if (passed > 0 && failed === 0 && skipped === 0) {
+                                    return "PASSED";
+                                }
+                                if (passed > 0 && (failed > 0 || skipped > 0)) {
+                                    return "FLAKY";
+                                }
+                                if (pending > 0) {
+                                    return "TODO";
+                                }
+                                return "FAILED";
+                            },
+                        },
+                    },
+                    LOG,
+                    new ConstantCommand(LOG, result)
+                );
+                const tests = await command.compute();
+                assert.strictEqual(tests[0].status, "FLAKY");
+            });
         });
 
         await it("skips tests when encountering unknown statuses", async (context) => {
@@ -674,6 +819,151 @@ describe(relative(cwd(), __filename), async () => {
             );
             const tests = await command.compute();
             assert.strictEqual(tests[1].status, "omit");
+        });
+
+        await it("uses default iterated passing statuses", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const result: CypressRunResultType = JSON.parse(
+                readFileSync("./test/resources/iteratedResult.json", "utf-8")
+            ) as CypressRunResultType;
+            result.runs[0].tests[0].attempts[0].state = "passed";
+            result.runs[0].tests[0].attempts[1].state = "passed";
+            result.runs[0].tests[0].attempts[2].state = "passed";
+            result.runs[0].tests[1].attempts[0].state = "passed";
+            const command = new ConvertCypressTestsCommand(
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    normalizeScreenshotNames: false,
+                    projectKey: "CYP",
+                    uploadScreenshots: true,
+                    xrayStatus: options.xray.status,
+                },
+                LOG,
+                new ConstantCommand(LOG, result)
+            );
+            const tests = await command.compute();
+            assert.strictEqual(tests[0].status, "PASS");
+            assert.ok(tests[0].iterations);
+            assert.strictEqual(tests[0].iterations[0].status, "PASS");
+            assert.strictEqual(tests[0].iterations[1].status, "PASS");
+            assert.strictEqual(tests[0].iterations[2].status, "PASS");
+            assert.strictEqual(tests[0].iterations[3].status, "PASS");
+        });
+
+        await it("uses default iterated pending statuses", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const result: CypressRunResultType = JSON.parse(
+                readFileSync("./test/resources/iteratedResult.json", "utf-8")
+            ) as CypressRunResultType;
+            result.runs[0].tests[0].attempts[0].state = "pending";
+            result.runs[0].tests[0].attempts[1].state = "pending";
+            result.runs[0].tests[0].attempts[2].state = "pending";
+            result.runs[0].tests[1].attempts[0].state = "pending";
+            const command = new ConvertCypressTestsCommand(
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    normalizeScreenshotNames: false,
+                    projectKey: "CYP",
+                    uploadScreenshots: true,
+                    xrayStatus: options.xray.status,
+                },
+                LOG,
+                new ConstantCommand(LOG, result)
+            );
+            const tests = await command.compute();
+            assert.strictEqual(tests[0].status, "TODO");
+            assert.ok(tests[0].iterations);
+            assert.strictEqual(tests[0].iterations[0].status, "TODO");
+            assert.strictEqual(tests[0].iterations[1].status, "TODO");
+            assert.strictEqual(tests[0].iterations[2].status, "TODO");
+            assert.strictEqual(tests[0].iterations[3].status, "TODO");
+        });
+
+        await it("uses default iterated skipped statuses", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const result: CypressRunResultType = JSON.parse(
+                readFileSync("./test/resources/iteratedResult.json", "utf-8")
+            ) as CypressRunResultType;
+            result.runs[0].tests[0].attempts[0].state = "pending";
+            result.runs[0].tests[0].attempts[1].state = "pending";
+            result.runs[0].tests[0].attempts[2].state = "pending";
+            result.runs[0].tests[1].attempts[0].state = "skipped";
+            const command = new ConvertCypressTestsCommand(
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    normalizeScreenshotNames: false,
+                    projectKey: "CYP",
+                    uploadScreenshots: true,
+                    xrayStatus: options.xray.status,
+                },
+                LOG,
+                new ConstantCommand(LOG, result)
+            );
+            const tests = await command.compute();
+            assert.strictEqual(tests[0].status, "FAIL");
+            assert.ok(tests[0].iterations);
+            assert.strictEqual(tests[0].iterations[0].status, "TODO");
+            assert.strictEqual(tests[0].iterations[1].status, "TODO");
+            assert.strictEqual(tests[0].iterations[2].status, "TODO");
+            assert.strictEqual(tests[0].iterations[3].status, "FAIL");
+        });
+
+        await it("uses default iterated failed statuses", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const result: CypressRunResultType = JSON.parse(
+                readFileSync("./test/resources/iteratedResult.json", "utf-8")
+            ) as CypressRunResultType;
+            const command = new ConvertCypressTestsCommand(
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    normalizeScreenshotNames: false,
+                    projectKey: "CYP",
+                    uploadScreenshots: true,
+                    xrayStatus: options.xray.status,
+                },
+                LOG,
+                new ConstantCommand(LOG, result)
+            );
+            const tests = await command.compute();
+            assert.strictEqual(tests[0].status, "FAIL");
+            assert.ok(tests[0].iterations);
+            assert.strictEqual(tests[0].iterations[0].status, "FAIL");
+            assert.strictEqual(tests[0].iterations[1].status, "FAIL");
+            assert.strictEqual(tests[0].iterations[2].status, "PASS");
+            assert.strictEqual(tests[0].iterations[3].status, "PASS");
+        });
+
+        await it("uses custom iterated statuses", async (context) => {
+            context.mock.method(LOG, "message", context.mock.fn());
+            const result: CypressRunResultType = JSON.parse(
+                readFileSync("./test/resources/iteratedResult.json", "utf-8")
+            ) as CypressRunResultType;
+            const command = new ConvertCypressTestsCommand(
+                {
+                    evidenceCollection: new SimpleEvidenceCollection(),
+                    normalizeScreenshotNames: false,
+                    projectKey: "CYP",
+                    uploadScreenshots: true,
+                    xrayStatus: {
+                        reduce: ({ failed, passed, pending, skipped }) => {
+                            if (passed > 0 && failed === 0 && skipped === 0) {
+                                return "PASSED";
+                            }
+                            if (passed > 0 && (failed > 0 || skipped > 0)) {
+                                return "FLAKY";
+                            }
+                            if (pending > 0) {
+                                return "TODO";
+                            }
+                            return "FAILED";
+                        },
+                    },
+                },
+                LOG,
+                new ConstantCommand(LOG, result)
+            );
+            const tests = await command.compute();
+            assert.strictEqual(tests[0].status, "FLAKY");
         });
 
         await it("does not modify test information", async (context) => {

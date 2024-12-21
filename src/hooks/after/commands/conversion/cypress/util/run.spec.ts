@@ -182,7 +182,10 @@ describe(relative(cwd(), __filename), async () => {
         };
 
         await it("returns test data for valid runs", async () => {
-            const testRuns = getTestRunData_V12(passedResult);
+            const map = getTestRunData_V12(passedResult);
+            assert.strictEqual(map.size, 1);
+            const testRuns = map.get("xray upload demo should look for paragraph elements");
+            assert.ok(testRuns);
             const resolvedTestData = await Promise.all(testRuns);
             assert.deepStrictEqual(resolvedTestData[0], {
                 duration: 244,
@@ -204,7 +207,10 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await it("rejects invalid runs", async () => {
-            const testRuns = getTestRunData_V12(invalidResult);
+            const map = getTestRunData_V12(invalidResult);
+            assert.strictEqual(map.size, 1);
+            const testRuns = map.get("xray upload demo should fail");
+            assert.ok(testRuns);
             const resolvedTestData = await Promise.allSettled(testRuns);
             assert.strictEqual(resolvedTestData[0].status, "rejected");
             const reason = resolvedTestData[0].reason as Error;
@@ -381,9 +387,11 @@ describe(relative(cwd(), __filename), async () => {
         };
 
         await it("returns test data for valid runs", async () => {
-            const testRuns = getTestRunData_V13(passedResult);
-            const resolvedTestData = await Promise.all(testRuns);
-            assert.deepStrictEqual(resolvedTestData, [
+            const map = getTestRunData_V13(passedResult);
+            assert.strictEqual(map.size, 2);
+            let testRuns = map.get("something CYP-237 happens");
+            assert.ok(testRuns);
+            assert.deepStrictEqual(await Promise.all(testRuns), [
                 {
                     duration: 638,
                     spec: {
@@ -393,6 +401,10 @@ describe(relative(cwd(), __filename), async () => {
                     status: CypressStatus.PASSED,
                     title: "something CYP-237 happens",
                 },
+            ]);
+            testRuns = map.get("something something");
+            assert.ok(testRuns);
+            assert.deepStrictEqual(await Promise.all(testRuns), [
                 {
                     duration: 123,
                     spec: {
@@ -422,7 +434,10 @@ describe(relative(cwd(), __filename), async () => {
         });
 
         await it("rejects invalid runs", async () => {
-            const testRuns = getTestRunData_V13(invalidResult);
+            const map = getTestRunData_V13(invalidResult);
+            assert.strictEqual(map.size, 1);
+            const testRuns = map.get("something CYP-237 happens");
+            assert.ok(testRuns);
             const resolvedTestData = await Promise.allSettled(testRuns);
             assert.strictEqual(resolvedTestData[0].status, "rejected");
             const reason = resolvedTestData[0].reason as Error;

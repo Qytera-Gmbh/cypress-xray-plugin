@@ -1,0 +1,616 @@
+{
+    "status": "finished",
+    "startedTestsAt": "2024-12-20T23:16:53.026Z",
+    "endedTestsAt": "2024-12-20T23:16:54.147Z",
+    "totalDuration": 1121,
+    "totalSuites": 1,
+    "totalTests": 2,
+    "totalPassed": 2,
+    "totalPending": 0,
+    "totalFailed": 0,
+    "totalSkipped": 0,
+    "runs": [
+        {
+            "stats": {
+                "suites": 1,
+                "tests": 2,
+                "passes": 2,
+                "pending": 0,
+                "skipped": 0,
+                "failures": 0,
+                "duration": 1121,
+                "startedAt": "2024-12-20T23:16:53.026Z",
+                "endedAt": "2024-12-20T23:16:54.147Z"
+            },
+            "reporter": "spec",
+            "reporterStats": {
+                "suites": 1,
+                "tests": 2,
+                "passes": 2,
+                "pending": 0,
+                "failures": 0,
+                "start": "2024-12-20T23:16:53.029Z",
+                "end": "2024-12-20T23:16:54.152Z",
+                "duration": 1123
+            },
+            "hooks": [],
+            "tests": [
+                {
+                    "title": ["CYP-237 Test Suite Name", "Test Method Name 1"],
+                    "state": "passed",
+                    "body": "() => {\n    cy.visit(\"/\");\n    if (Cypress.currentRetry < 2) {\n      expect(true).to.eq(false);\n    } else {\n      expect(true).to.eq(true);\n    }\n  }",
+                    "displayError": null,
+                    "attempts": [
+                        {
+                            "state": "failed",
+                            "error": {
+                                "name": "AssertionError",
+                                "message": "expected true to equal false",
+                                "stack": "    at Context.eval (webpack://integration-test/./spec.cy.js:5:28)",
+                                "codeFrame": {
+                                    "line": 5,
+                                    "column": 29,
+                                    "originalFile": "spec.cy.js",
+                                    "relativeFile": "test/integration/iterations-using-describe/server/spec.cy.js",
+                                    "absoluteFile": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server/spec.cy.js",
+                                    "frame": "  3 |         cy.visit(\"/\");\n  4 |         if (Cypress.currentRetry < 2) {\n> 5 |             expect(true).to.eq(false);\n    |                             ^\n  6 |         } else {\n  7 |             expect(true).to.eq(true);\n  8 |         }",
+                                    "language": "js"
+                                }
+                            },
+                            "videoTimestamp": 4234,
+                            "duration": 326,
+                            "startedAt": "2024-12-20T23:16:53.034Z",
+                            "screenshots": [
+                                {
+                                    "name": null,
+                                    "takenAt": "2024-12-20T23:16:53.096Z",
+                                    "path": "./test/resources/small CYP-237.png",
+                                    "height": 720,
+                                    "width": 1280
+                                }
+                            ]
+                        },
+                        {
+                            "state": "failed",
+                            "error": {
+                                "name": "AssertionError",
+                                "message": "expected true to equal false",
+                                "stack": "    at Context.eval (webpack://integration-test/./spec.cy.js:5:28)",
+                                "codeFrame": {
+                                    "line": 5,
+                                    "column": 29,
+                                    "originalFile": "spec.cy.js",
+                                    "relativeFile": "test/integration/iterations-using-describe/server/spec.cy.js",
+                                    "absoluteFile": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server/spec.cy.js",
+                                    "frame": "  3 |         cy.visit(\"/\");\n  4 |         if (Cypress.currentRetry < 2) {\n> 5 |             expect(true).to.eq(false);\n    |                             ^\n  6 |         } else {\n  7 |             expect(true).to.eq(true);\n  8 |         }",
+                                    "language": "js"
+                                }
+                            },
+                            "videoTimestamp": 4592,
+                            "duration": 531,
+                            "startedAt": "2024-12-20T23:16:53.392Z",
+                            "screenshots": [
+                                {
+                                    "name": null,
+                                    "takenAt": "2024-12-20T23:16:53.435Z",
+                                    "path": "./test/resources/small CYP-237.png",
+                                    "height": 720,
+                                    "width": 1280
+                                }
+                            ]
+                        },
+                        {
+                            "state": "passed",
+                            "error": null,
+                            "videoTimestamp": 5139,
+                            "duration": 143,
+                            "startedAt": "2024-12-20T23:16:53.939Z",
+                            "screenshots": []
+                        }
+                    ]
+                },
+                {
+                    "title": ["CYP-237 Test Suite Name", "Test Method Name 2"],
+                    "state": "passed",
+                    "body": "() => {\n    cy.visit(\"/\");\n    expect(true).to.eq(true);\n  }",
+                    "displayError": null,
+                    "attempts": [
+                        {
+                            "state": "passed",
+                            "error": null,
+                            "videoTimestamp": 5286,
+                            "duration": 59,
+                            "startedAt": "2024-12-20T23:16:54.086Z",
+                            "screenshots": []
+                        }
+                    ]
+                }
+            ],
+            "error": null,
+            "video": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server/cypress/videos/spec.cy.js.mp4",
+            "spec": {
+                "fileExtension": ".js",
+                "baseName": "spec.cy.js",
+                "fileName": "spec",
+                "specFileExtension": ".cy.js",
+                "relativeToCommonRoot": "spec.cy.js",
+                "specType": "integration",
+                "name": "spec.cy.js",
+                "relative": "spec.cy.js",
+                "absolute": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server/spec.cy.js"
+            },
+            "shouldUploadVideo": true
+        }
+    ],
+    "browserPath": "",
+    "browserName": "electron",
+    "browserVersion": "106.0.5249.51",
+    "osName": "win32",
+    "osVersion": "10.0.19045",
+    "cypressVersion": "12.17.4",
+    "config": {
+        "configFile": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server/cypress.config.js",
+        "testingType": "e2e",
+        "chromeWebSecurity": false,
+        "baseUrl": "http://localhost:8080",
+        "setupNodeEvents": "[Function setupNodeEvents]",
+        "specPattern": "**/*.cy.js",
+        "retries": 2,
+        "projectRoot": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server",
+        "projectName": "server",
+        "repoRoot": "/home/user/cypress-xray-plugin",
+        "rawJson": {
+            "chromeWebSecurity": false,
+            "e2e": {
+                "baseUrl": "http://localhost:8080",
+                "setupNodeEvents": "[Function setupNodeEvents]",
+                "specPattern": "**/*.cy.js",
+                "retries": 2
+            },
+            "baseUrl": "http://localhost:8080",
+            "setupNodeEvents": "[Function setupNodeEvents]",
+            "specPattern": "**/*.cy.js",
+            "retries": 2,
+            "projectRoot": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server",
+            "projectName": "server",
+            "repoRoot": "/home/user/cypress-xray-plugin"
+        },
+        "morgan": false,
+        "isTextTerminal": true,
+        "socketId": "gz8yqk9l1d",
+        "report": true,
+        "animationDistanceThreshold": 5,
+        "arch": "x64",
+        "blockHosts": null,
+        "clientCertificates": [],
+        "defaultCommandTimeout": 4000,
+        "downloadsFolder": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server/cypress/downloads",
+        "execTimeout": 60000,
+        "experimentalCspAllowList": false,
+        "experimentalFetchPolyfill": false,
+        "experimentalInteractiveRunEvents": false,
+        "experimentalRunAllSpecs": false,
+        "experimentalMemoryManagement": false,
+        "experimentalModifyObstructiveThirdPartyCode": false,
+        "experimentalSkipDomainInjection": null,
+        "experimentalOriginDependencies": false,
+        "experimentalSourceRewriting": false,
+        "experimentalSingleTabRunMode": false,
+        "experimentalStudio": false,
+        "experimentalWebKitSupport": false,
+        "fileServerFolder": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server",
+        "fixturesFolder": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server/cypress/fixtures",
+        "excludeSpecPattern": "*.hot-update.js",
+        "includeShadowDom": false,
+        "keystrokeDelay": 0,
+        "modifyObstructiveCode": true,
+        "numTestsKeptInMemory": 0,
+        "platform": "win32",
+        "pageLoadTimeout": 60000,
+        "port": 56061,
+        "projectId": null,
+        "redirectionLimit": 20,
+        "reporter": "spec",
+        "reporterOptions": null,
+        "requestTimeout": 5000,
+        "resolvedNodePath": "/opt/Node/22.11.0/node",
+        "resolvedNodeVersion": "22.11.0",
+        "responseTimeout": 30000,
+        "screenshotOnRunFailure": true,
+        "screenshotsFolder": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server/cypress/screenshots",
+        "slowTestThreshold": 10000,
+        "scrollBehavior": "top",
+        "supportFile": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server/cypress/support/e2e.ts",
+        "supportFolder": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server/cypress/support",
+        "taskTimeout": 60000,
+        "testIsolation": true,
+        "trashAssetsBeforeRuns": true,
+        "userAgent": null,
+        "video": true,
+        "videoCompression": 32,
+        "videosFolder": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server/cypress/videos",
+        "videoUploadOnPasses": true,
+        "viewportHeight": 660,
+        "viewportWidth": 1000,
+        "waitForAnimations": true,
+        "watchForFileChanges": false,
+        "additionalIgnorePattern": [],
+        "autoOpen": false,
+        "browsers": [
+            {
+                "name": "chrome",
+                "family": "chromium",
+                "channel": "stable",
+                "displayName": "Chrome",
+                "version": "131.0.6778.205",
+                "path": "/opt/Google/Chrome/Application/chrome",
+                "minSupportedVersion": 64,
+                "majorVersion": "131"
+            },
+            {
+                "name": "firefox",
+                "family": "firefox",
+                "channel": "stable",
+                "displayName": "Firefox",
+                "version": "133.0.3",
+                "path": "/opt/Mozilla Firefox/firefox",
+                "minSupportedVersion": 86,
+                "majorVersion": "133",
+                "warning": "Your project has set the configuration option: `chromeWebSecurity` to `false`.\n\nThis option will not have an effect in Firefox. Tests that rely on web security being disabled will not run as expected."
+            },
+            {
+                "name": "edge",
+                "family": "chromium",
+                "channel": "stable",
+                "displayName": "Edge",
+                "version": "131.0.2903.112",
+                "path": "/opt/Microsoft/Edge/Application/msedge",
+                "minSupportedVersion": 79,
+                "majorVersion": "131"
+            },
+            {
+                "name": "electron",
+                "channel": "stable",
+                "family": "chromium",
+                "displayName": "Electron",
+                "version": "106.0.5249.51",
+                "path": "",
+                "majorVersion": 106
+            }
+        ],
+        "clientRoute": "/__/",
+        "cypressBinaryRoot": "/opt/cache/12.17.4/Cypress/resources/app",
+        "devServerPublicPathRoute": "/__cypress/src",
+        "hosts": null,
+        "isInteractive": true,
+        "namespace": "__cypress",
+        "reporterRoute": "/__cypress/reporter",
+        "socketIoCookie": "__socket",
+        "socketIoRoute": "/__socket",
+        "version": "12.17.4",
+        "cypressEnv": "production",
+        "resolved": {
+            "animationDistanceThreshold": {
+                "value": 5,
+                "from": "default"
+            },
+            "arch": {
+                "value": "x64",
+                "from": "default"
+            },
+            "baseUrl": {
+                "value": "http://localhost:8080",
+                "from": "config"
+            },
+            "blockHosts": {
+                "value": null,
+                "from": "default"
+            },
+            "chromeWebSecurity": {
+                "value": false,
+                "from": "config"
+            },
+            "clientCertificates": {
+                "value": [],
+                "from": "default"
+            },
+            "defaultCommandTimeout": {
+                "value": 4000,
+                "from": "default"
+            },
+            "downloadsFolder": {
+                "value": "cypress/downloads",
+                "from": "default"
+            },
+            "execTimeout": {
+                "value": 60000,
+                "from": "default"
+            },
+            "experimentalCspAllowList": {
+                "value": false,
+                "from": "default"
+            },
+            "experimentalFetchPolyfill": {
+                "value": false,
+                "from": "default"
+            },
+            "experimentalInteractiveRunEvents": {
+                "value": false,
+                "from": "default"
+            },
+            "experimentalRunAllSpecs": {
+                "value": false,
+                "from": "default"
+            },
+            "experimentalMemoryManagement": {
+                "value": false,
+                "from": "default"
+            },
+            "experimentalModifyObstructiveThirdPartyCode": {
+                "value": false,
+                "from": "default"
+            },
+            "experimentalSkipDomainInjection": {
+                "value": null,
+                "from": "default"
+            },
+            "experimentalOriginDependencies": {
+                "value": false,
+                "from": "default"
+            },
+            "experimentalSourceRewriting": {
+                "value": false,
+                "from": "default"
+            },
+            "experimentalSingleTabRunMode": {
+                "value": false,
+                "from": "default"
+            },
+            "experimentalStudio": {
+                "value": false,
+                "from": "default"
+            },
+            "experimentalWebKitSupport": {
+                "value": false,
+                "from": "default"
+            },
+            "fileServerFolder": {
+                "value": "",
+                "from": "default"
+            },
+            "fixturesFolder": {
+                "value": "cypress/fixtures",
+                "from": "default"
+            },
+            "excludeSpecPattern": {
+                "value": "*.hot-update.js",
+                "from": "default"
+            },
+            "includeShadowDom": {
+                "value": false,
+                "from": "default"
+            },
+            "keystrokeDelay": {
+                "value": 0,
+                "from": "default"
+            },
+            "modifyObstructiveCode": {
+                "value": true,
+                "from": "default"
+            },
+            "nodeVersion": {
+                "from": "default"
+            },
+            "numTestsKeptInMemory": {
+                "value": 0,
+                "from": "config"
+            },
+            "platform": {
+                "value": "win32",
+                "from": "default"
+            },
+            "pageLoadTimeout": {
+                "value": 60000,
+                "from": "default"
+            },
+            "port": {
+                "value": null,
+                "from": "default"
+            },
+            "projectId": {
+                "value": null,
+                "from": "default"
+            },
+            "redirectionLimit": {
+                "value": 20,
+                "from": "default"
+            },
+            "reporter": {
+                "value": "spec",
+                "from": "default"
+            },
+            "reporterOptions": {
+                "value": null,
+                "from": "default"
+            },
+            "requestTimeout": {
+                "value": 5000,
+                "from": "default"
+            },
+            "resolvedNodePath": {
+                "value": null,
+                "from": "default"
+            },
+            "resolvedNodeVersion": {
+                "value": null,
+                "from": "default"
+            },
+            "responseTimeout": {
+                "value": 30000,
+                "from": "default"
+            },
+            "retries": {
+                "value": 2,
+                "from": "config"
+            },
+            "screenshotOnRunFailure": {
+                "value": true,
+                "from": "default"
+            },
+            "screenshotsFolder": {
+                "value": "cypress/screenshots",
+                "from": "default"
+            },
+            "slowTestThreshold": {
+                "value": 10000,
+                "from": "default"
+            },
+            "scrollBehavior": {
+                "value": "top",
+                "from": "default"
+            },
+            "supportFile": {
+                "value": "cypress/support/e2e.{js,jsx,ts,tsx}",
+                "from": "default"
+            },
+            "supportFolder": {
+                "value": false,
+                "from": "default"
+            },
+            "taskTimeout": {
+                "value": 60000,
+                "from": "default"
+            },
+            "testIsolation": {
+                "value": true,
+                "from": "default"
+            },
+            "trashAssetsBeforeRuns": {
+                "value": true,
+                "from": "default"
+            },
+            "userAgent": {
+                "value": null,
+                "from": "default"
+            },
+            "video": {
+                "value": true,
+                "from": "default"
+            },
+            "videoCompression": {
+                "value": 32,
+                "from": "default"
+            },
+            "videosFolder": {
+                "value": "cypress/videos",
+                "from": "default"
+            },
+            "videoUploadOnPasses": {
+                "value": true,
+                "from": "default"
+            },
+            "viewportHeight": {
+                "value": 660,
+                "from": "default"
+            },
+            "viewportWidth": {
+                "value": 1000,
+                "from": "default"
+            },
+            "waitForAnimations": {
+                "value": true,
+                "from": "default"
+            },
+            "watchForFileChanges": {
+                "value": false,
+                "from": "config"
+            },
+            "specPattern": {
+                "value": "**/*.cy.js",
+                "from": "config"
+            },
+            "browsers": {
+                "value": [
+                    {
+                        "name": "chrome",
+                        "family": "chromium",
+                        "channel": "stable",
+                        "displayName": "Chrome",
+                        "version": "131.0.6778.205",
+                        "path": "/opt/Google/Chrome/Application/chrome",
+                        "minSupportedVersion": 64,
+                        "majorVersion": "131"
+                    },
+                    {
+                        "name": "firefox",
+                        "family": "firefox",
+                        "channel": "stable",
+                        "displayName": "Firefox",
+                        "version": "133.0.3",
+                        "path": "/opt/Mozilla Firefox/firefox",
+                        "minSupportedVersion": 86,
+                        "majorVersion": "133"
+                    },
+                    {
+                        "name": "edge",
+                        "family": "chromium",
+                        "channel": "stable",
+                        "displayName": "Edge",
+                        "version": "131.0.2903.112",
+                        "path": "/opt/Microsoft/Edge/Application/msedge",
+                        "minSupportedVersion": 79,
+                        "majorVersion": "131"
+                    },
+                    {
+                        "name": "electron",
+                        "channel": "stable",
+                        "family": "chromium",
+                        "displayName": "Electron",
+                        "version": "106.0.5249.51",
+                        "path": "",
+                        "majorVersion": 106,
+                        "isHeadless": true,
+                        "isHeaded": false
+                    }
+                ],
+                "from": "runtime"
+            },
+            "hosts": {
+                "value": null,
+                "from": "default"
+            },
+            "isInteractive": {
+                "value": true,
+                "from": "default"
+            },
+            "configFile": {
+                "value": "/home/user/cypress-xray-plugin/test/integration/iterations-using-describe/server/cypress.config.js",
+                "from": "plugin"
+            },
+            "testingType": {
+                "value": "e2e",
+                "from": "plugin"
+            }
+        },
+        "remote": {
+            "origin": "http://localhost:8080",
+            "strategy": "http",
+            "fileServer": null,
+            "domainName": "localhost",
+            "props": {
+                "port": "8080",
+                "protocol": "http:",
+                "subdomain": null,
+                "domain": "",
+                "tld": "localhost"
+            }
+        },
+        "browser": null,
+        "specs": [],
+        "proxyUrl": "http://localhost:56061",
+        "browserUrl": "http://localhost:8080/__/",
+        "reporterUrl": "http://localhost:8080/__cypress/reporter",
+        "proxyServer": "http://localhost:56061",
+        "state": {}
+    }
+}

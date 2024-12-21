@@ -59,17 +59,17 @@ export interface TestRunData {
  * ```
  *
  * @param runResult - the run result
- * @returns an array of test data promises
+ * @returns a mapping of test titles to their test data promises
  */
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function getTestRunData_V12(runResult: RunResult_V12): Promise<TestRunData>[] {
-    const testRuns: Promise<TestRunData>[] = [];
+export function getTestRunData_V12(runResult: RunResult_V12): Map<string, Promise<TestRunData>[]> {
+    const map = new Map<string, Promise<TestRunData>[]>();
     runResult.tests.forEach((test: TestResult_V12) => {
         const title = test.title.join(" ");
-        test.attempts.forEach((attempt) => {
-            testRuns.push(
-                new Promise((resolve) => {
+        const promises = test.attempts.map(
+            (attempt) =>
+                new Promise<TestRunData>((resolve) => {
                     resolve({
                         duration: attempt.duration,
                         spec: {
@@ -80,10 +80,15 @@ export function getTestRunData_V12(runResult: RunResult_V12): Promise<TestRunDat
                         title: title,
                     });
                 })
-            );
-        });
+        );
+        const testRuns = map.get(title);
+        if (testRuns) {
+            testRuns.push(...promises);
+        } else {
+            map.set(title, promises);
+        }
     });
-    return testRuns;
+    return map;
 }
 
 /**
@@ -109,19 +114,19 @@ export function getTestRunData_V12(runResult: RunResult_V12): Promise<TestRunDat
  *
  * @param runResult - the run result
  * @param options - additional extraction options to consider
- * @returns an array of test data promises
+ * @returns a mapping of test titles to their test data promises
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function getTestRunData_V13(
     runResult: CypressCommandLine.RunResult
-): Promise<TestRunData>[] {
-    const testRuns: Promise<TestRunData>[] = [];
+): Map<string, Promise<TestRunData>[]> {
+    const map = new Map<string, Promise<TestRunData>[]>();
     const testStarts = startTimesByTest(runResult);
     runResult.tests.forEach((test: CypressCommandLine.TestResult) => {
         const title = test.title.join(" ");
-        test.attempts.forEach((attempt) => {
-            testRuns.push(
-                new Promise((resolve) => {
+        const promises = test.attempts.map(
+            (attempt) =>
+                new Promise<TestRunData>((resolve) => {
                     resolve({
                         duration: test.duration,
                         spec: {
@@ -132,10 +137,15 @@ export function getTestRunData_V13(
                         title: title,
                     });
                 })
-            );
-        });
+        );
+        const testRuns = map.get(title);
+        if (testRuns) {
+            testRuns.push(...promises);
+        } else {
+            map.set(title, promises);
+        }
     });
-    return testRuns;
+    return map;
 }
 
 function startTimesByTest(run: CypressCommandLine.RunResult): StringMap<Date> {
