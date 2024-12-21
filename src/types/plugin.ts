@@ -364,31 +364,10 @@ export interface XrayOptions {
      */
     status?: {
         /**
-         * The Xray status name of a test marked as failed by Cypress. Should be used when custom
-         * status names have been set up in Xray.
-         *
-         * @example "FEHLGESCHLAGEN" // german
-         */
-        failed?: string;
-        /**
-         * The Xray status name of a test marked as passed by Cypress. Should be used when custom
-         * status names have been set up in Xray.
-         *
-         * @example "BESTANDEN" // german
-         */
-        passed?: string;
-        /**
-         * The Xray status name of a test marked as pending by Cypress. Should be used when custom
-         * status names have been set up in Xray.
-         *
-         * @example "EN_ATTENTE" // french
-         */
-        pending?: string;
-        /**
          * A function that returns a single status for a given combination of other statuses. It is
          * used to determine the final status of retried and data-driven tests.
          *
-         * By default, the reduction works as follows in order of mention:
+         * By default, the aggregation works as follows in order of mention:
          *
          * - a test is considered _passed_ if:
          *   - all iterations pass
@@ -418,10 +397,10 @@ export interface XrayOptions {
          * }
          * ```
          *
-         * @param args - the reduction arguments
-         * @returns the reduced status
+         * @param args - the aggregation arguments
+         * @returns the aggregated status
          */
-        reduce?: (args: {
+        aggregate?: (args: {
             /**
              * The number of iterations that have been reported as _failed_ by Cypress.
              *
@@ -447,6 +426,27 @@ export interface XrayOptions {
              */
             skipped: number;
         }) => string;
+        /**
+         * The Xray status name of a test marked as failed by Cypress. Should be used when custom
+         * status names have been set up in Xray.
+         *
+         * @example "FEHLGESCHLAGEN" // german
+         */
+        failed?: string;
+        /**
+         * The Xray status name of a test marked as passed by Cypress. Should be used when custom
+         * status names have been set up in Xray.
+         *
+         * @example "BESTANDEN" // german
+         */
+        passed?: string;
+        /**
+         * The Xray status name of a test marked as pending by Cypress. Should be used when custom
+         * status names have been set up in Xray.
+         *
+         * @example "EN_ATTENTE" // french
+         */
+        pending?: string;
         /**
          * The Xray status name of a test marked as skipped by Cypress. Should be used when custom
          * status names have been set up in Xray.

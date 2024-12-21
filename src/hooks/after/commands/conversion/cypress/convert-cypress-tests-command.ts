@@ -251,8 +251,8 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
             const failed = statuses.filter((s) => s === CypressStatus.FAILED).length;
             const pending = statuses.filter((s) => s === CypressStatus.PENDING).length;
             const skipped = statuses.filter((s) => s === CypressStatus.SKIPPED).length;
-            if (this.parameters.xrayStatus.reduce) {
-                return this.parameters.xrayStatus.reduce({ failed, passed, pending, skipped });
+            if (this.parameters.xrayStatus.aggregate) {
+                return this.parameters.xrayStatus.aggregate({ failed, passed, pending, skipped });
             }
             if (passed > 0 && failed === 0 && skipped === 0) {
                 return getXrayStatus(

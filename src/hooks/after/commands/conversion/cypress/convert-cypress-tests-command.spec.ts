@@ -446,7 +446,7 @@ describe(relative(cwd(), __filename), async () => {
                 assert.strictEqual(tests[0].iterations[3].status, "PASSED");
             });
 
-            await it("uses custom reduced statuses", async (context) => {
+            await it("uses custom aggregated statuses", async (context) => {
                 context.mock.method(LOG, "message", context.mock.fn());
                 const result: CypressRunResultType = JSON.parse(
                     readFileSync("./test/resources/iteratedResult_13_16_0.json", "utf-8")
@@ -459,7 +459,7 @@ describe(relative(cwd(), __filename), async () => {
                         uploadScreenshots: true,
                         useCloudStatusFallback: true,
                         xrayStatus: {
-                            reduce: ({ failed, passed, pending, skipped }) => {
+                            aggregate: ({ failed, passed, pending, skipped }) => {
                                 if (passed > 0 && failed === 0 && skipped === 0) {
                                     return "PASSED";
                                 }
@@ -943,7 +943,7 @@ describe(relative(cwd(), __filename), async () => {
             assert.strictEqual(tests[0].iterations[3].status, "PASS");
         });
 
-        await it("uses custom reduced statuses", async (context) => {
+        await it("uses custom aggregated statuses", async (context) => {
             context.mock.method(LOG, "message", context.mock.fn());
             const result: CypressRunResultType = JSON.parse(
                 readFileSync("./test/resources/iteratedResult.json", "utf-8")
@@ -955,7 +955,7 @@ describe(relative(cwd(), __filename), async () => {
                     projectKey: "CYP",
                     uploadScreenshots: true,
                     xrayStatus: {
-                        reduce: ({ failed, passed, pending, skipped }) => {
+                        aggregate: ({ failed, passed, pending, skipped }) => {
                             if (passed > 0 && failed === 0 && skipped === 0) {
                                 return "PASSED";
                             }
