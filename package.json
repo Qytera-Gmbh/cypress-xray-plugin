@@ -54,7 +54,7 @@
         "semver": "^7.6.3"
     },
     "peerDependencies": {
-        "cypress": ">=10.0.0 < 14"
+        "cypress": ">=10.0.0 < 15"
     },
     "optionalDependencies": {
         "@badeball/cypress-cucumber-preprocessor": "^21.0.2"
@@ -65,7 +65,7 @@
         "@types/node": "^22.7.4",
         "@types/semver": "^7.5.8",
         "c8": "^10.1.3",
-        "cypress": "^13.17.0",
+        "cypress": "^14.0.0",
         "cypress-on-fix": "^1.0.3",
         "dotenv": "^16.4.5",
         "eslint": "^9.16.0",
