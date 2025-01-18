@@ -1,5 +1,19 @@
 # Changelog
 
+# `8.0.0`
+
+## Notable changes
+
+- Added support for Cypress v14 ([#437](https://github.com/Qytera-Gmbh/cypress-xray-plugin/pull/437))
+
+## Dependency updates
+
+- Bumped @badeball/cypress-cucumber-preprocessor from 21.0.2 to 22.0.0
+
+- Bumped axios from 1.7.7 to 1.7.9
+
+- Bumped @cucumber/messages from 24.1.0 to 27.0.2
+
 # `7.5.0`
 
 ## Notable changes
@@ -17,8 +31,6 @@
 ## Dependency updates
 
 - Replaced chalk with ansi-colors
-
-- Bumped cypress from 13.14.1 to 13.16.0
 
 - Bumped @cucumber/gherkin from 28.0.0 to 30.0.0
 
@@ -52,8 +64,6 @@
 
 - Bumped @badeball/cypress-cucumber-preprocessor from 20.1.1 to 21.0.0
 
-- Bumped cypress from 13.13.2 to 13.14.1
-
 # `7.3.0`
 
 ## Notable changes
@@ -85,8 +95,6 @@
 - Bumped @badeball/cypress-cucumber-preprocessor from 20.1.0 to 20.1.1
 
 - Bumped semver from 7.6.2 to 7.6.3
-
-- Bumped cypress from 13.10.0 to 13.13.2
 
 # `7.1.0`
 
