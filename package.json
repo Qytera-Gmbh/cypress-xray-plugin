@@ -1,6 +1,6 @@
 {
     "name": "cypress-xray-plugin",
-    "version": "7.5.1",
+    "version": "8.0.0",
     "description": "A Cypress plugin for uploading test results to Xray (test management for Jira)",
     "types": "index.d.ts",
     "author": "csvtuda",
@@ -57,7 +57,7 @@
         "cypress": ">=10.0.0 < 15"
     },
     "optionalDependencies": {
-        "@badeball/cypress-cucumber-preprocessor": "^21.0.2"
+        "@badeball/cypress-cucumber-preprocessor": "^22.0.0"
     },
     "devDependencies": {
         "@bahmutov/cypress-esbuild-preprocessor": "^2.2.3",
