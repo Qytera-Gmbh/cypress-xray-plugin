@@ -19,7 +19,6 @@ import type { MultipartInfo } from "../../types/xray/requests/import-execution-m
 import { getOrCall } from "../../util/functions";
 import type { ExecutableGraph } from "../../util/graph/executable-graph";
 import type { Logger } from "../../util/logging";
-import { Level } from "../../util/logging";
 import type { Command } from "../command";
 import { ComputableState } from "../command";
 import type { ConstantCommand } from "../util/commands/constant-command";
@@ -67,7 +66,7 @@ async function addUploadCommands(
     );
     if (!containsCypressTests && !containsCucumberTests) {
         logger.message(
-            Level.WARNING,
+            "warning",
             "No test execution results to upload, skipping results upload preparations."
         );
         return;

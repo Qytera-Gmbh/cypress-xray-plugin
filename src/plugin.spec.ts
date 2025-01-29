@@ -17,7 +17,7 @@ import type { CypressFailedRunResultType, CypressRunResultType } from "./types/c
 import type { CypressXrayPluginOptions } from "./types/plugin";
 import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable-graph";
-import { CapturingLogger, Level, LOG } from "./util/logging";
+import { CapturingLogger, LOG } from "./util/logging";
 
 describe(relative(cwd(), __filename), async () => {
     let jiraClient: JiraClient;
@@ -80,7 +80,7 @@ describe(relative(cwd(), __filename), async () => {
                 },
             });
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 "Plugin disabled. Skipping further configuration.",
             ]);
             assert.strictEqual(mockedOn.mock.callCount(), 1);
@@ -98,7 +98,7 @@ describe(relative(cwd(), __filename), async () => {
                 },
             });
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 "Interactive mode detected, disabling plugin.",
             ]);
             assert.strictEqual(mockedOn.mock.callCount(), 1);
@@ -194,6 +194,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     ...options.plugin,
                     logDirectory: resolve(config.projectRoot, "xyz"),
+                    logger: undefined,
                 }
             );
             assert.deepStrictEqual(setGlobalContext.mock.calls[0].arguments[0].getOptions().xray, {
@@ -309,6 +310,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     debug: pluginContext.getOptions().plugin.debug,
                     logDirectory: resolve(config.projectRoot, "logs"),
+                    logger: undefined,
                 },
             ]);
         });
@@ -330,6 +332,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     debug: pluginContext.getOptions().plugin.debug,
                     logDirectory: resolve(config.projectRoot, "log-directory"),
+                    logger: undefined,
                 },
             ]);
         });
@@ -351,6 +354,32 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     debug: pluginContext.getOptions().plugin.debug,
                     logDirectory: resolve("."),
+                    logger: undefined,
+                },
+            ]);
+        });
+
+        await it("initializes the logging module with custom loggers", async (context) => {
+            const configure = context.mock.method(LOG, "configure", context.mock.fn());
+            context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
+            const logger = () => {
+                console.log("hello");
+            };
+            const options: CypressXrayPluginOptions = {
+                jira: {
+                    projectKey: "ABC",
+                    url: "http://localhost:1234",
+                },
+                plugin: {
+                    logger,
+                },
+            };
+            await configureXrayPlugin(mockedCypressEventEmitter, config, options);
+            assert.deepStrictEqual(configure.mock.calls[0].arguments, [
+                {
+                    debug: pluginContext.getOptions().plugin.debug,
+                    logDirectory: resolve(config.projectRoot, "logs"),
+                    logger: logger,
                 },
             ]);
         });
@@ -429,7 +458,7 @@ describe(relative(cwd(), __filename), async () => {
                 pluginContext.getOptions()
             );
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.ERROR,
+                "error",
                 dedent(`
                     Skipping results upload: Failed to run 47 tests.
 
@@ -445,7 +474,7 @@ describe(relative(cwd(), __filename), async () => {
                 plugin: { enabled: false },
             });
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 "Plugin disabled. Skipping further configuration.",
             ]);
         });
@@ -464,7 +493,7 @@ describe(relative(cwd(), __filename), async () => {
                 pluginContext.getOptions()
             );
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 "Plugin disabled. Skipping further configuration.",
             ]);
         });
@@ -484,7 +513,7 @@ describe(relative(cwd(), __filename), async () => {
                 pluginContext.getOptions()
             );
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 "Skipping results upload: Plugin is configured to not upload test results.",
             ]);
         });
@@ -509,11 +538,11 @@ describe(relative(cwd(), __filename), async () => {
                 }, 10);
             });
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 "Encountered problems during plugin execution!",
             ]);
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     ~/repositories/xray/cypress/e2e/demo/example.cy.ts
 
@@ -536,7 +565,7 @@ describe(relative(cwd(), __filename), async () => {
                 `),
             ]);
             assert.deepStrictEqual(message.mock.calls[2].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     ~/repositories/xray/cypress/e2e/demo/example.cy.ts
 
@@ -559,7 +588,7 @@ describe(relative(cwd(), __filename), async () => {
                 `),
             ]);
             assert.deepStrictEqual(message.mock.calls[3].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     ~/repositories/xray/cypress/e2e/demo/example.cy.ts
 
@@ -582,11 +611,11 @@ describe(relative(cwd(), __filename), async () => {
                 `),
             ]);
             assert.deepStrictEqual(message.mock.calls[4].arguments, [
-                Level.WARNING,
+                "warning",
                 "No test results were uploaded",
             ]);
             assert.deepStrictEqual(message.mock.calls[5].arguments, [
-                Level.ERROR,
+                "error",
                 dedent(`
                     Failed to upload Cypress execution results.
 
@@ -685,19 +714,19 @@ describe(relative(cwd(), __filename), async () => {
         assert.strictEqual(eventName, "after:run");
         await callback(afterRunResult);
         assert.deepStrictEqual(message.mock.calls[0].arguments, [
-            Level.INFO,
+            "info",
             "Parsing feature file: ./test/resources/features/invalid.feature",
         ]);
         assert.deepStrictEqual(message.mock.calls[1].arguments, [
-            Level.SUCCESS,
+            "notice",
             "Uploaded Cypress test results to issue: CYP-123 (http://localhost:1234/browse/CYP-123)",
         ]);
         assert.deepStrictEqual(message.mock.calls[2].arguments, [
-            Level.WARNING,
+            "warning",
             "Encountered problems during plugin execution!",
         ]);
         assert.deepStrictEqual(message.mock.calls[3].arguments, [
-            Level.ERROR,
+            "error",
             dedent(`
                 Failed to upload Cucumber execution results.
 
@@ -705,7 +734,7 @@ describe(relative(cwd(), __filename), async () => {
             `),
         ]);
         assert.deepStrictEqual(message.mock.calls[4].arguments, [
-            Level.ERROR,
+            "error",
             dedent(`
                 ./test/resources/features/invalid.feature
 
@@ -736,7 +765,7 @@ describe(relative(cwd(), __filename), async () => {
             const message = context.mock.method(LOG, "message", context.mock.fn());
             syncFeatureFile(file);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     ./test/resources/features/taggedCloud.feature
 
@@ -755,7 +784,7 @@ describe(relative(cwd(), __filename), async () => {
             });
             syncFeatureFile(file);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 "Plugin disabled. Skipping further configuration.",
             ]);
         });
@@ -767,7 +796,7 @@ describe(relative(cwd(), __filename), async () => {
             globalContext.setGlobalContext(pluginContext);
             syncFeatureFile(file);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 dedent(`
                     ./test/resources/features/taggedCloud.feature
 

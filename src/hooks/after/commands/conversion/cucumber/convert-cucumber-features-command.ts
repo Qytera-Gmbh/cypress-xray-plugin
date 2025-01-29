@@ -13,7 +13,6 @@ import type {
 import { dedent } from "../../../../../util/dedent";
 import { errorMessage, missingTestKeyInCucumberScenarioError } from "../../../../../util/errors";
 import type { Logger } from "../../../../../util/logging";
-import { Level } from "../../../../../util/logging";
 import type { Computable } from "../../../../command";
 import { Command } from "../../../../command";
 import { getScenarioTagRegex } from "../../../../preprocessor/commands/parsing/scenario";
@@ -83,7 +82,7 @@ export class ConvertCucumberFeaturesCommand extends Command<
                         1
                     )}: ${element.name.length > 0 ? element.name : "<no name>"}`;
                     this.logger.message(
-                        Level.WARNING,
+                        "warning",
                         dedent(`
                             ${filepath}
 

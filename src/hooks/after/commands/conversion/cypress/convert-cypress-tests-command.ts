@@ -15,7 +15,6 @@ import { dedent } from "../../../../../util/dedent";
 import { errorMessage } from "../../../../../util/errors";
 import { normalizedFilename } from "../../../../../util/files";
 import type { Logger } from "../../../../../util/logging";
-import { Level } from "../../../../../util/logging";
 import { earliestDate, latestDate, truncateIsoTime } from "../../../../../util/time";
 import type { Computable } from "../../../../command";
 import { Command } from "../../../../command";
@@ -64,7 +63,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                 }
             } catch (error: unknown) {
                 this.logger.message(
-                    Level.WARNING,
+                    "warning",
                     dedent(`
                         ${convertedTest.spec.filepath}
 
@@ -127,7 +126,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
         for (const [title, conversion] of conversions) {
             if (conversion.kind === "error") {
                 this.logger.message(
-                    Level.WARNING,
+                    "warning",
                     dedent(`
                         Test: ${title}
 
@@ -186,7 +185,7 @@ export class ConvertCypressTestsCommand extends Command<[XrayTest, ...XrayTest[]
                     if (!includedScreenshots.includes(screenshot.path)) {
                         const screenshotName = path.parse(screenshot.path).name;
                         this.logger.message(
-                            Level.WARNING,
+                            "warning",
                             dedent(`
                                 ${screenshot.path}
 

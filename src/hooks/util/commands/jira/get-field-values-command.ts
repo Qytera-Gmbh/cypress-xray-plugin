@@ -4,7 +4,6 @@ import type { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
 import { errorMessage } from "../../../../util/errors";
 import type { Logger } from "../../../../util/logging";
-import { Level } from "../../../../util/logging";
 import type { Computable } from "../../../command";
 import { Command } from "../../../command";
 
@@ -42,7 +41,7 @@ export abstract class GetFieldValuesCommand<FieldValue> extends Command<
         if (unknownIssues.length > 0) {
             unknownIssues.sort();
             this.logger.message(
-                Level.WARNING,
+                "warning",
                 dedent(`
                     Failed to find Jira issues:
 
@@ -66,7 +65,7 @@ export abstract class GetFieldValuesCommand<FieldValue> extends Command<
         if (issuesWithUnparseableField.length > 0) {
             issuesWithUnparseableField.sort();
             this.logger.message(
-                Level.WARNING,
+                "warning",
                 dedent(`
                     Failed to parse Jira field with ID ${fieldId} in issues:
 

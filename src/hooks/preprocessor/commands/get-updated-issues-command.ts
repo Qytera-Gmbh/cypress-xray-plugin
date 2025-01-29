@@ -2,7 +2,6 @@ import type { ImportFeatureResponse } from "../../../types/xray/responses/import
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
 import type { Logger } from "../../../util/logging";
-import { Level } from "../../../util/logging";
 import { computeOverlap } from "../../../util/set";
 import type { Computable } from "../../command";
 import { Command } from "../../command";
@@ -65,7 +64,7 @@ export class GetUpdatedIssuesCommand extends Command<string[], Parameters> {
                 mismatchLines = mismatchLinesJira.join("\n");
             }
             this.logger.message(
-                Level.WARNING,
+                "warning",
                 dedent(`
                     ${this.parameters.filePath}
 

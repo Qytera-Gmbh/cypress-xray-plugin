@@ -2,7 +2,6 @@ import type { JiraClient } from "../../../../client/jira/jira-client";
 import type { StringMap } from "../../../../types/util";
 import { dedent } from "../../../../util/dedent";
 import type { Logger } from "../../../../util/logging";
-import { Level } from "../../../../util/logging";
 import { unknownToString } from "../../../../util/string";
 import type { Computable } from "../../../command";
 import { Command } from "../../../command";
@@ -40,7 +39,7 @@ export class EditIssueFieldCommand<FieldValue> extends Command<string[], Paramet
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error: unknown) {
                 this.logger.message(
-                    Level.WARNING,
+                    "warning",
                     dedent(`
                         ${issueKey}
 

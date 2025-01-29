@@ -1,7 +1,6 @@
 import type { JiraClient } from "../../../../client/jira/jira-client";
 import type { Attachment } from "../../../../types/jira/responses/attachment";
 import type { Logger } from "../../../../util/logging";
-import { Level } from "../../../../util/logging";
 import type { Computable } from "../../../command";
 import { Command } from "../../../command";
 
@@ -30,7 +29,7 @@ export class AttachFilesCommand extends Command<Attachment[], Parameters> {
             return [];
         }
         this.logger.message(
-            Level.INFO,
+            "info",
             `Attaching files to test execution issue ${resolvedExecutionIssueKey}`
         );
         return await this.parameters.jiraClient.addAttachment(resolvedExecutionIssueKey, ...files);

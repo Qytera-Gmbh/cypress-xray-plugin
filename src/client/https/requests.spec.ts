@@ -7,7 +7,7 @@ import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
 import { LOCAL_SERVER } from "../../../test/server";
 import type { Logger } from "../../util/logging";
-import { Level, LOG } from "../../util/logging";
+import { LOG } from "../../util/logging";
 import { AxiosRestClient } from "./requests";
 
 describe(relative(cwd(), __filename), async () => {
@@ -50,11 +50,11 @@ describe(relative(cwd(), __filename), async () => {
             await assert.rejects(client.get("https://localhost:1234"));
             assert.strictEqual(message.mock.callCount(), 2);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.DEBUG,
+                "debug",
                 "Request:  request.json",
             ]);
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                Level.DEBUG,
+                "debug",
                 "Response: response.json",
             ]);
 
@@ -129,11 +129,11 @@ describe(relative(cwd(), __filename), async () => {
             await promise;
 
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 "Waiting for http://localhost:1234 to respond... (10 seconds)",
             ]);
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                Level.INFO,
+                "info",
                 "Waiting for http://localhost:1234 to respond... (20 seconds)",
             ]);
         });
@@ -180,11 +180,11 @@ describe(relative(cwd(), __filename), async () => {
             );
             assert.strictEqual(message.mock.callCount(), 2);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.DEBUG,
+                "debug",
                 "Request:  request.json",
             ]);
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                Level.DEBUG,
+                "debug",
                 "Response: response.json",
             ]);
 
@@ -263,11 +263,11 @@ describe(relative(cwd(), __filename), async () => {
             await promise;
 
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 "Waiting for http://localhost:1234 to respond... (10 seconds)",
             ]);
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                Level.INFO,
+                "info",
                 "Waiting for http://localhost:1234 to respond... (20 seconds)",
             ]);
         });
@@ -314,11 +314,11 @@ describe(relative(cwd(), __filename), async () => {
             );
             assert.strictEqual(message.mock.callCount(), 2);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.DEBUG,
+                "debug",
                 "Request:  request.json",
             ]);
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                Level.DEBUG,
+                "debug",
                 "Response: response.json",
             ]);
 
@@ -398,11 +398,11 @@ describe(relative(cwd(), __filename), async () => {
             await promise;
 
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 "Waiting for http://localhost:1234 to respond... (10 seconds)",
             ]);
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                Level.INFO,
+                "info",
                 "Waiting for http://localhost:1234 to respond... (20 seconds)",
             ]);
         });

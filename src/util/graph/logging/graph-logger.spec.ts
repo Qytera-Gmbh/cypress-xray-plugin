@@ -16,7 +16,7 @@ import type { CucumberMultipart } from "../../../types/xray/requests/import-exec
 import type { MultipartInfo } from "../../../types/xray/requests/import-execution-multipart-info";
 import { dedent } from "../../dedent";
 import { SkippedError } from "../../errors";
-import { CapturingLogger, Level } from "../../logging";
+import { CapturingLogger } from "../../logging";
 import { SimpleDirectedGraph } from "../graph";
 import { ChainingCommandGraphLogger, ChainingGraphLogger } from "./graph-logger";
 
@@ -49,7 +49,7 @@ describe(relative(cwd(), __filename), async () => {
             new ChainingGraphLogger(logger).logGraph(graph);
             assert.deepStrictEqual(logger.getMessages(), [
                 [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         F failed
 
@@ -59,7 +59,7 @@ describe(relative(cwd(), __filename), async () => {
                     `),
                 ],
                 [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         Z skipped
 
@@ -94,7 +94,7 @@ describe(relative(cwd(), __filename), async () => {
             new ChainingGraphLogger(logger).logGraph(graph);
             assert.deepStrictEqual(logger.getMessages(), [
                 [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         H skipped
 
@@ -110,7 +110,7 @@ describe(relative(cwd(), __filename), async () => {
                     `),
                 ],
                 [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         I skipped
 
@@ -191,7 +191,7 @@ describe(relative(cwd(), __filename), async () => {
             new ChainingGraphLogger(logger).logGraph(graph);
             assert.deepStrictEqual(logger.getMessages(), [
                 [
-                    Level.WARNING,
+                    "warning",
                     dedent(`
                         F skipped
 
@@ -226,19 +226,19 @@ describe(relative(cwd(), __filename), async () => {
             );
             assert.deepStrictEqual(logger.getMessages(), [
                 [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         E failed
                     `),
                 ],
                 [
-                    Level.WARNING,
+                    "warning",
                     dedent(`
                         F skipped
                     `),
                 ],
                 [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         B skipped
 
@@ -281,7 +281,7 @@ describe(relative(cwd(), __filename), async () => {
             new ChainingCommandGraphLogger(logger).logGraph(graph);
             assert.deepStrictEqual(logger.getMessages(), [
                 [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         Failed to upload Cucumber execution results.
 
@@ -319,7 +319,7 @@ describe(relative(cwd(), __filename), async () => {
             new ChainingCommandGraphLogger(logger).logGraph(graph);
             assert.deepStrictEqual(logger.getMessages(), [
                 [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         Failed to upload Cypress execution results.
 
@@ -356,7 +356,7 @@ describe(relative(cwd(), __filename), async () => {
             new ChainingCommandGraphLogger(logger).logGraph(graph);
             assert.deepStrictEqual(logger.getMessages(), [
                 [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         /path/to/file.feature
 

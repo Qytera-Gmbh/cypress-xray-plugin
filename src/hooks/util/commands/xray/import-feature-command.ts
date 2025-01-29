@@ -1,7 +1,6 @@
 import type { XrayClient } from "../../../../client/xray/xray-client";
 import type { ImportFeatureResponse } from "../../../../types/xray/responses/import-feature";
 import { dedent } from "../../../../util/dedent";
-import { Level } from "../../../../util/logging";
 import { Command } from "../../../command";
 
 interface Parameters {
@@ -14,10 +13,7 @@ interface Parameters {
 
 export class ImportFeatureCommand extends Command<ImportFeatureResponse, Parameters> {
     protected async computeResult(): Promise<ImportFeatureResponse> {
-        this.logger.message(
-            Level.INFO,
-            `Importing feature file to Xray: ${this.parameters.filePath}`
-        );
+        this.logger.message("info", `Importing feature file to Xray: ${this.parameters.filePath}`);
         const importResponse = await this.parameters.xrayClient.importFeature(
             this.parameters.filePath,
             {
@@ -28,7 +24,7 @@ export class ImportFeatureCommand extends Command<ImportFeatureResponse, Paramet
         );
         if (importResponse.errors.length > 0) {
             this.logger.message(
-                Level.WARNING,
+                "warning",
                 dedent(`
                     ${this.parameters.filePath}
 

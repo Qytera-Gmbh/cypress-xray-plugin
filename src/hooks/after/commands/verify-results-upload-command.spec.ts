@@ -4,7 +4,7 @@ import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { dedent } from "../../../util/dedent";
 import { SkippedError } from "../../../util/errors";
-import { Level, LOG } from "../../../util/logging";
+import { LOG } from "../../../util/logging";
 import { ConstantCommand } from "../../util/commands/constant-command";
 import { VerifyResultsUploadCommand } from "./verify-results-upload-command";
 
@@ -18,7 +18,7 @@ describe(relative(cwd(), __filename), async () => {
             });
             await command.compute();
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.SUCCESS,
+                "notice",
                 "Uploaded Cypress test results to issue: CYP-123 (http://localhost:1234/browse/CYP-123)",
             ]);
         });
@@ -31,7 +31,7 @@ describe(relative(cwd(), __filename), async () => {
             });
             await command.compute();
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.SUCCESS,
+                "notice",
                 "Uploaded Cucumber test results to issue: CYP-123 (http://localhost:1234/browse/CYP-123)",
             ]);
         });
@@ -44,7 +44,7 @@ describe(relative(cwd(), __filename), async () => {
             });
             await command.compute();
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.SUCCESS,
+                "notice",
                 "Uploaded test results to issue: CYP-123 (http://localhost:1234/browse/CYP-123)",
             ]);
         });

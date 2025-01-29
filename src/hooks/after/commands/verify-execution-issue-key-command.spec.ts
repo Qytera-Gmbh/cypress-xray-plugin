@@ -3,7 +3,7 @@ import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { dedent } from "../../../util/dedent";
-import { Level, LOG } from "../../../util/logging";
+import { LOG } from "../../../util/logging";
 import { ConstantCommand } from "../../util/commands/constant-command";
 import { VerifyExecutionIssueKeyCommand } from "./verify-execution-issue-key-command";
 
@@ -39,7 +39,7 @@ describe(relative(cwd(), __filename), async () => {
             );
             await command.compute();
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     Cypress execution results were imported to test execution CYP-456, which is different from the configured one: CYP-123
 
@@ -68,7 +68,7 @@ describe(relative(cwd(), __filename), async () => {
             );
             await command.compute();
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     Cucumber execution results were imported to test execution CYP-456, which is different from the configured one: CYP-123
 

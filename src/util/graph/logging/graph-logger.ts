@@ -6,14 +6,13 @@ import { ImportFeatureCommand } from "../../../hooks/util/commands/xray/import-f
 import { dedent } from "../../dedent";
 import { isSkippedError } from "../../errors";
 import type { Logger } from "../../logging";
-import { Level } from "../../logging";
 import { Queue } from "../../queue/queue";
 import { traverse } from "../algorithms/sort";
 import type { DirectedGraph } from "../graph";
 
 interface IndentedLogMessage<V extends Failable> {
     indent: number;
-    level: Level.ERROR | Level.WARNING;
+    level: "error" | "warning";
     text: string;
     vertex: V;
 }
@@ -62,7 +61,7 @@ export class ChainingGraphLogger<V extends Failable> {
         if (error) {
             return {
                 includePredecessors: false,
-                level: isSkippedError(error) ? Level.WARNING : Level.ERROR,
+                level: isSkippedError(error) ? "warning" : "error",
                 text: error.message,
             };
         }
@@ -132,8 +131,8 @@ export class ChainingGraphLogger<V extends Failable> {
         const level = chain
             .map((message) => message.level)
             .reduce((previous, current) => {
-                if (previous === Level.ERROR || current === Level.ERROR) {
-                    return Level.ERROR;
+                if (previous === "error" || current === "error") {
+                    return "error";
                 }
                 return previous;
             }, chain[0].level);
@@ -162,21 +161,21 @@ export class ChainingCommandGraphLogger extends ChainingGraphLogger<Command> {
             if (vertex instanceof ImportExecutionCypressCommand) {
                 return {
                     includePredecessors: true,
-                    level: Level.ERROR,
+                    level: "error",
                     text: "Failed to upload Cypress execution results.",
                 };
             }
             if (vertex instanceof ImportExecutionCucumberCommand) {
                 return {
                     includePredecessors: true,
-                    level: Level.ERROR,
+                    level: "error",
                     text: "Failed to upload Cucumber execution results.",
                 };
             }
             if (vertex instanceof ImportFeatureCommand) {
                 return {
                     includePredecessors: true,
-                    level: Level.ERROR,
+                    level: "error",
                     text: dedent(`
                         ${vertex.getParameters().filePath}
 

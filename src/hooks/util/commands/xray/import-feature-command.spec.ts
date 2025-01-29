@@ -8,7 +8,7 @@ import { AxiosRestClient } from "../../../../client/https/requests";
 import type { XrayClient } from "../../../../client/xray/xray-client";
 import { ServerClient } from "../../../../client/xray/xray-client-server";
 import { dedent } from "../../../../util/dedent";
-import { Level, LOG } from "../../../../util/logging";
+import { LOG } from "../../../../util/logging";
 import { ImportFeatureCommand } from "./import-feature-command";
 
 describe(relative(cwd(), __filename), async () => {
@@ -42,7 +42,7 @@ describe(relative(cwd(), __filename), async () => {
                 updatedOrCreatedIssues: ["CYP-123", "CYP-42"],
             });
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 "Importing feature file to Xray: /path/to/some/cucumber.feature",
             ]);
         });
@@ -73,7 +73,7 @@ describe(relative(cwd(), __filename), async () => {
             );
             await command.compute();
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     /path/to/some/cucumber.feature
 

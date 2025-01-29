@@ -32,7 +32,7 @@ import { errorMessage } from "./util/errors";
 import type { ExecutableGraph } from "./util/graph/executable-graph";
 import { HELP } from "./util/help";
 import type { Logger } from "./util/logging";
-import { LOG, Level } from "./util/logging";
+import { LOG } from "./util/logging";
 import { asArrayOfStrings, asBoolean, asObject, asString, parse } from "./util/parsing";
 
 export interface EvidenceCollection {
@@ -101,7 +101,7 @@ export class PluginContext implements EvidenceCollection {
 
     public addEvidence(issueKey: string, evidence: XrayEvidenceItem): void {
         this.evidenceCollection.addEvidence(issueKey, evidence);
-        LOG.message(Level.DEBUG, `Added evidence for test ${issueKey}: ${evidence.filename}`);
+        LOG.message("debug", `Added evidence for test ${issueKey}: ${evidence.filename}`);
     }
 
     public getEvidence(issueKey: string): XrayEvidenceItem[] {
@@ -196,6 +196,7 @@ function initPluginOptions(
         enabled: parse(env, ENV_NAMES.plugin.enabled, asBoolean) ?? options?.enabled ?? true,
         logDirectory:
             parse(env, ENV_NAMES.plugin.logDirectory, asString) ?? options?.logDirectory ?? "logs",
+        logger: options?.logger,
         normalizeScreenshotNames:
             parse(env, ENV_NAMES.plugin.normalizeScreenshotNames, asBoolean) ??
             options?.normalizeScreenshotNames ??
@@ -294,7 +295,7 @@ async function initCucumberOptions(
             );
         }
         LOG.message(
-            Level.DEBUG,
+            "debug",
             `Successfully resolved configuration of @badeball/cypress-cucumber-preprocessor package`
         );
         const preprocessorConfiguration = await preprocessor.resolvePreprocessorConfiguration(
@@ -410,7 +411,7 @@ async function initClients(
         ENV_NAMES.authentication.jira.apiToken in env
     ) {
         LOG.message(
-            Level.INFO,
+            "info",
             "Jira username and API token found. Setting up Jira cloud basic auth credentials."
         );
         const credentials = new BasicAuthCredentials(
@@ -423,7 +424,7 @@ async function initClients(
             ENV_NAMES.authentication.xray.clientSecret in env
         ) {
             LOG.message(
-                Level.INFO,
+                "info",
                 "Xray client ID and client secret found. Setting up Xray cloud JWT credentials."
             );
             const xrayCredentials = new JwtCredentials(
@@ -447,12 +448,12 @@ async function initClients(
             `)
         );
     } else if (ENV_NAMES.authentication.jira.apiToken in env) {
-        LOG.message(Level.INFO, "Jira PAT found. Setting up Jira server PAT credentials.");
+        LOG.message("info", "Jira PAT found. Setting up Jira server PAT credentials.");
         const credentials = new PatCredentials(
             env[ENV_NAMES.authentication.jira.apiToken] as string
         );
         const jiraClient = await getJiraClient(jiraOptions.url, credentials, httpClients.jira);
-        LOG.message(Level.INFO, "Jira PAT found. Setting up Xray server PAT credentials.");
+        LOG.message("info", "Jira PAT found. Setting up Xray server PAT credentials.");
         const xrayClient = await getXrayServerClient(
             jiraOptions.url,
             credentials,
@@ -468,7 +469,7 @@ async function initClients(
         ENV_NAMES.authentication.jira.password in env
     ) {
         LOG.message(
-            Level.INFO,
+            "info",
             "Jira username and password found. Setting up Jira server basic auth credentials."
         );
         const credentials = new BasicAuthCredentials(
@@ -477,7 +478,7 @@ async function initClients(
         );
         const jiraClient = await getJiraClient(jiraOptions.url, credentials, httpClients.jira);
         LOG.message(
-            Level.INFO,
+            "info",
             "Jira username and password found. Setting up Xray server basic auth credentials."
         );
         const xrayClient = await getXrayServerClient(
@@ -508,7 +509,7 @@ async function getXrayCloudClient(
     try {
         await credentials.getAuthorizationHeader();
         LOG.message(
-            Level.DEBUG,
+            "debug",
             dedent(`
                 Successfully established communication with: ${credentials.getAuthenticationUrl()}
 
@@ -546,7 +547,7 @@ async function getXrayServerClient(
         if (typeof license === "object" && "active" in license) {
             if (license.active) {
                 LOG.message(
-                    Level.DEBUG,
+                    "debug",
                     dedent(`
                         Successfully established communication with: ${url}
 
@@ -596,7 +597,7 @@ async function getJiraClient(
         const username = userDetails.displayName ?? userDetails.emailAddress ?? userDetails.name;
         if (username) {
             LOG.message(
-                Level.DEBUG,
+                "debug",
                 dedent(`
                     Successfully established communication with: ${url}
 

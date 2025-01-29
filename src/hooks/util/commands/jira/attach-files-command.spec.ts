@@ -7,7 +7,7 @@ import { PatCredentials } from "../../../../client/authentication/credentials";
 import { AxiosRestClient } from "../../../../client/https/requests";
 import type { JiraClient } from "../../../../client/jira/jira-client";
 import { BaseJiraClient } from "../../../../client/jira/jira-client";
-import { Level, LOG } from "../../../../util/logging";
+import { LOG } from "../../../../util/logging";
 import { ConstantCommand } from "../constant-command";
 import { AttachFilesCommand } from "./attach-files-command";
 
@@ -48,7 +48,7 @@ describe(relative(cwd(), __filename), async () => {
                 { filename: "something.mp4", size: 54321 },
             ]);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 "Attaching files to test execution issue CYP-123",
             ]);
         });

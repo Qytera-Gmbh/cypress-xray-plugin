@@ -7,7 +7,7 @@ import { PatCredentials } from "../../../../client/authentication/credentials";
 import { AxiosRestClient } from "../../../../client/https/requests";
 import type { JiraClient } from "../../../../client/jira/jira-client";
 import { BaseJiraClient } from "../../../../client/jira/jira-client";
-import { LOG, Level } from "../../../../util/logging";
+import { LOG } from "../../../../util/logging";
 import { ConstantCommand } from "../constant-command";
 import { TransitionIssueCommand } from "./transition-issue-command";
 
@@ -32,7 +32,7 @@ describe(relative(cwd(), __filename), async () => {
             );
             await command.compute();
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 "Transitioning test execution issue CYP-123",
             ]);
             assert.deepStrictEqual(transitionIssue.mock.calls[0].arguments, [

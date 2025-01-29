@@ -4,13 +4,11 @@ import fs from "fs";
 import path from "path";
 import { isLoggedError } from "./errors";
 
-export enum Level {
-    DEBUG = "DEBUG",
-    ERROR = "ERROR",
-    INFO = "INFO",
-    SUCCESS = "SUCCESS",
-    WARNING = "WARNING",
-}
+const LOG_LEVELS = ["debug", "error", "info", "notice", "warning"] as const;
+/**
+ * The different log levels the plugin supports and uses.
+ */
+export type Level = (typeof LOG_LEVELS)[number];
 
 /**
  * A generic logging interface.
@@ -43,6 +41,7 @@ export interface Logger {
     /**
      * Logs a log message.
      *
+     * @param level - the log level
      * @param text - the individual messages
      */
     message(level: Level, ...text: string[]): void;
@@ -51,6 +50,7 @@ export interface Logger {
 interface LoggingOptions {
     debug?: boolean;
     logDirectory: string;
+    logger?: (level: Level, ...text: string[]) => void;
 }
 
 /**
@@ -59,37 +59,42 @@ interface LoggingOptions {
 export class PluginLogger implements Logger {
     private readonly prefixes: Record<Level, string>;
     private readonly colorizers: Record<Level, ansiColors.StyleFunction>;
-    private readonly logFunctions: Record<Level, (...data: unknown[]) => void>;
+    private readonly logFunctions: Record<Level, (...data: string[]) => void>;
     private loggingOptions: LoggingOptions;
 
     constructor(options: LoggingOptions = { logDirectory: "." }) {
         this.loggingOptions = options;
-        const maxPrefixLength = Math.max(...Object.values(Level).map((s) => s.length));
+        const maxPrefixLength = Math.max(...LOG_LEVELS.map((s) => s.length));
         this.prefixes = {
-            [Level.DEBUG]: this.prefix(Level.DEBUG, maxPrefixLength),
-            [Level.ERROR]: this.prefix(Level.ERROR, maxPrefixLength),
-            [Level.INFO]: this.prefix(Level.INFO, maxPrefixLength),
-            [Level.SUCCESS]: this.prefix(Level.SUCCESS, maxPrefixLength),
-            [Level.WARNING]: this.prefix(Level.WARNING, maxPrefixLength),
+            ["debug"]: this.prefix("debug", maxPrefixLength),
+            ["error"]: this.prefix("error", maxPrefixLength),
+            ["info"]: this.prefix("info", maxPrefixLength),
+            ["notice"]: this.prefix("notice", maxPrefixLength),
+            ["warning"]: this.prefix("warning", maxPrefixLength),
         };
         this.colorizers = {
-            [Level.DEBUG]: ansiColors.cyan,
-            [Level.ERROR]: ansiColors.red,
-            [Level.INFO]: ansiColors.gray,
-            [Level.SUCCESS]: ansiColors.green,
-            [Level.WARNING]: ansiColors.yellow,
+            ["debug"]: ansiColors.cyan,
+            ["error"]: ansiColors.red,
+            ["info"]: ansiColors.gray,
+            ["notice"]: ansiColors.green,
+            ["warning"]: ansiColors.yellow,
         };
         this.logFunctions = {
-            [Level.DEBUG]: console.debug,
-            [Level.ERROR]: console.error,
-            [Level.INFO]: console.info,
-            [Level.SUCCESS]: console.log,
-            [Level.WARNING]: console.warn,
+            ["debug"]: console.debug,
+            ["error"]: console.error,
+            ["info"]: console.info,
+            ["notice"]: console.log,
+            ["warning"]: console.warn,
         };
     }
 
     public message(level: Level, ...text: string[]) {
-        if (level === Level.DEBUG && !this.loggingOptions.debug) {
+        // Prefer custom logger to the default plugin one.
+        if (this.loggingOptions.logger) {
+            this.loggingOptions.logger(level, ...text);
+            return;
+        }
+        if (level === "debug" && !this.loggingOptions.debug) {
             return;
         }
         const colorizer = this.colorizers[level];
@@ -141,15 +146,17 @@ export class PluginLogger implements Logger {
             errorData = error;
         }
         const filepath = this.logToFile(JSON.stringify(errorData, null, 2), errorFileName);
-        this.message(Level.ERROR, `Complete error logs have been written to: ${filepath}`);
+        this.message("error", `Complete error logs have been written to: ${filepath}`);
     }
 
     public configure(options: LoggingOptions): void {
         this.loggingOptions = options;
     }
 
-    private prefix(type: string, maxPrefixLength: number): string {
-        return ansiColors.white(`│ Cypress Xray Plugin │ ${type.padEnd(maxPrefixLength, " ")} │`);
+    private prefix(level: string, maxPrefixLength: number): string {
+        return ansiColors.white(
+            `│ Cypress Xray Plugin │ ${level.toUpperCase().padEnd(maxPrefixLength, " ")} │`
+        );
     }
 }
 

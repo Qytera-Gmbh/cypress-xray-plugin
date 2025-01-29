@@ -8,7 +8,7 @@ import type { CypressRunResult as CypressRunResult_V12 } from "../../../../../ty
 import type { CypressRunResultType } from "../../../../../types/cypress/cypress";
 import type { InternalCypressXrayPluginOptions } from "../../../../../types/plugin";
 import { dedent } from "../../../../../util/dedent";
-import { Level, LOG } from "../../../../../util/logging";
+import { LOG } from "../../../../../util/logging";
 import { ConstantCommand } from "../../../../util/commands/constant-command";
 import { ConvertCypressTestsCommand } from "./convert-cypress-tests-command";
 
@@ -317,7 +317,7 @@ describe(relative(cwd(), __filename), async () => {
                     },
                 ]);
                 assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                    Level.WARNING,
+                    "warning",
                     dedent(`
                         ${join(".", "test", "resources", "small.png")}
 
@@ -508,7 +508,7 @@ describe(relative(cwd(), __filename), async () => {
                     "Failed to convert Cypress tests into Xray tests: No Cypress tests to upload",
             });
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     Test: TodoMVC hides footer initially
 
@@ -518,7 +518,7 @@ describe(relative(cwd(), __filename), async () => {
                 `),
             ]);
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     Test: TodoMVC adds 2 todos
 

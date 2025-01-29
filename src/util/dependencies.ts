@@ -2,7 +2,7 @@ import type {
     IPreprocessorConfiguration,
     resolvePreprocessorConfiguration,
 } from "@badeball/cypress-cucumber-preprocessor";
-import { LOG, Level } from "./logging";
+import { LOG } from "./logging";
 
 export type CucumberPreprocessorArgs = Parameters<typeof resolvePreprocessorConfiguration>;
 
@@ -22,7 +22,7 @@ export interface CucumberPreprocessorExports {
  */
 async function importOptionalDependency<T>(packageName: string): Promise<T> {
     const dependency: T = await EXPORTS._import(packageName);
-    LOG.message(Level.DEBUG, `Successfully imported optional dependency: ${packageName}`);
+    LOG.message("debug", `Successfully imported optional dependency: ${packageName}`);
     return dependency;
 }
 

@@ -3,7 +3,7 @@ import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { dedent } from "../../../util/dedent";
-import { Level, LOG } from "../../../util/logging";
+import { LOG } from "../../../util/logging";
 import { ParseFeatureFileCommand } from "./parse-feature-file-command";
 
 describe(relative(cwd(), __filename), async () => {
@@ -24,7 +24,7 @@ describe(relative(cwd(), __filename), async () => {
                 `),
             });
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.INFO,
+                "info",
                 `Parsing feature file: ./test/resources/features/invalid.feature`,
             ]);
         });

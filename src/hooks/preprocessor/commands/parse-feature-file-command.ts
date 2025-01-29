@@ -1,7 +1,6 @@
 import type { GherkinDocument } from "@cucumber/messages";
 import { dedent } from "../../../util/dedent";
 import { errorMessage } from "../../../util/errors";
-import { Level } from "../../../util/logging";
 import { Command } from "../../command";
 import { parseFeatureFile } from "./parsing/gherkin";
 
@@ -12,7 +11,7 @@ interface Parameters {
 export class ParseFeatureFileCommand extends Command<GherkinDocument, Parameters> {
     protected computeResult(): GherkinDocument {
         try {
-            this.logger.message(Level.INFO, `Parsing feature file: ${this.parameters.filePath}`);
+            this.logger.message("info", `Parsing feature file: ${this.parameters.filePath}`);
             return parseFeatureFile(this.parameters.filePath);
         } catch (error: unknown) {
             throw new Error(

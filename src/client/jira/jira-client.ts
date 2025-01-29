@@ -11,7 +11,7 @@ import type { SearchResults } from "../../types/jira/responses/search-results";
 import type { User } from "../../types/jira/responses/user";
 import type { StringMap } from "../../types/util";
 import { dedent } from "../../util/dedent";
-import { LOG, Level } from "../../util/logging";
+import { LOG } from "../../util/logging";
 import { Client } from "../client";
 import { loggedRequest } from "../util";
 
@@ -108,7 +108,7 @@ export class BaseJiraClient extends Client implements JiraClient {
     public async addAttachment(issueIdOrKey: string, ...files: string[]): Promise<Attachment[]> {
         if (files.length === 0) {
             LOG.message(
-                Level.WARNING,
+                "warning",
                 `No files provided to attach to issue ${issueIdOrKey}. Skipping attaching.`
             );
             return [];
@@ -117,7 +117,7 @@ export class BaseJiraClient extends Client implements JiraClient {
         let filesIncluded = 0;
         files.forEach((file: string) => {
             if (!fs.existsSync(file)) {
-                LOG.message(Level.WARNING, "File does not exist:", file);
+                LOG.message("warning", "File does not exist:", file);
                 return;
             }
             filesIncluded++;
@@ -126,12 +126,12 @@ export class BaseJiraClient extends Client implements JiraClient {
         });
 
         if (filesIncluded === 0) {
-            LOG.message(Level.WARNING, "All files do not exist. Skipping attaching.");
+            LOG.message("warning", "All files do not exist. Skipping attaching.");
             return [];
         }
 
         const header = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Attaching files:", ...files);
+        LOG.message("debug", "Attaching files:", ...files);
         const response: AxiosResponse<Attachment[]> = await this.httpClient.post(
             `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/attachments`,
             form,
@@ -144,7 +144,7 @@ export class BaseJiraClient extends Client implements JiraClient {
             }
         );
         LOG.message(
-            Level.DEBUG,
+            "debug",
             dedent(`
                 Successfully attached the following files to issue ${issueIdOrKey}:
 
@@ -157,7 +157,7 @@ export class BaseJiraClient extends Client implements JiraClient {
     @loggedRequest({ purpose: "get issue types" })
     public async getIssueTypes(): Promise<IssueTypeDetails[]> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Getting issue types...");
+        LOG.message("debug", "Getting issue types...");
         const response: AxiosResponse<IssueTypeDetails[]> = await this.httpClient.get(
             `${this.apiBaseUrl}/rest/api/latest/issuetype`,
             {
@@ -167,11 +167,11 @@ export class BaseJiraClient extends Client implements JiraClient {
             }
         );
         LOG.message(
-            Level.DEBUG,
+            "debug",
             `Successfully retrieved data for ${response.data.length.toString()} issue types.`
         );
         LOG.message(
-            Level.DEBUG,
+            "debug",
             dedent(`
                 Received data for issue types:
 
@@ -196,7 +196,7 @@ export class BaseJiraClient extends Client implements JiraClient {
     @loggedRequest({ purpose: "get fields" })
     public async getFields(): Promise<FieldDetail[]> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Getting fields...");
+        LOG.message("debug", "Getting fields...");
         const response: AxiosResponse<FieldDetail[]> = await this.httpClient.get(
             `${this.apiBaseUrl}/rest/api/latest/field`,
             {
@@ -206,11 +206,11 @@ export class BaseJiraClient extends Client implements JiraClient {
             }
         );
         LOG.message(
-            Level.DEBUG,
+            "debug",
             `Successfully retrieved data for ${response.data.length.toString()} fields.`
         );
         LOG.message(
-            Level.DEBUG,
+            "debug",
             dedent(`
                 Received data for fields:
 
@@ -223,7 +223,7 @@ export class BaseJiraClient extends Client implements JiraClient {
     @loggedRequest({ purpose: "get user details" })
     public async getMyself(): Promise<User> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Getting user details...");
+        LOG.message("debug", "Getting user details...");
         const response: AxiosResponse<User> = await this.httpClient.get(
             `${this.apiBaseUrl}/rest/api/latest/myself`,
             {
@@ -232,14 +232,14 @@ export class BaseJiraClient extends Client implements JiraClient {
                 },
             }
         );
-        LOG.message(Level.DEBUG, "Successfully retrieved user details.");
+        LOG.message("debug", "Successfully retrieved user details.");
         return response.data;
     }
 
     @loggedRequest({ purpose: "search issues" })
     public async search(request: SearchRequest): Promise<Issue[]> {
         const header = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Searching issues...");
+        LOG.message("debug", "Searching issues...");
         let total = 0;
         let startAt = request.startAt ?? 0;
         const results: StringMap<Issue> = {};
@@ -270,14 +270,14 @@ export class BaseJiraClient extends Client implements JiraClient {
                 }
             }
         } while (startAt && startAt < total);
-        LOG.message(Level.DEBUG, `Found ${total.toString()} issues`);
+        LOG.message("debug", `Found ${total.toString()} issues`);
         return Object.values(results);
     }
 
     @loggedRequest({ purpose: "edit issue" })
     public async editIssue(issueIdOrKey: string, issueUpdateData: IssueUpdate): Promise<string> {
         const header = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Editing issue...");
+        LOG.message("debug", "Editing issue...");
         await this.httpClient.put(
             `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}`,
             issueUpdateData,
@@ -287,7 +287,7 @@ export class BaseJiraClient extends Client implements JiraClient {
                 },
             }
         );
-        LOG.message(Level.DEBUG, `Successfully edited issue: ${issueIdOrKey}`);
+        LOG.message("debug", `Successfully edited issue: ${issueIdOrKey}`);
         return issueIdOrKey;
     }
 
@@ -297,7 +297,7 @@ export class BaseJiraClient extends Client implements JiraClient {
         issueUpdateData: IssueUpdate
     ): Promise<void> {
         const header = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Transitioning issue...");
+        LOG.message("debug", "Transitioning issue...");
         await this.httpClient.post(
             `${this.apiBaseUrl}/rest/api/latest/issue/${issueIdOrKey}/transitions`,
             issueUpdateData,
@@ -307,6 +307,6 @@ export class BaseJiraClient extends Client implements JiraClient {
                 },
             }
         );
-        LOG.message(Level.DEBUG, `Successfully transitioned issue: ${issueIdOrKey}`);
+        LOG.message("debug", `Successfully transitioned issue: ${issueIdOrKey}`);
     }
 }
