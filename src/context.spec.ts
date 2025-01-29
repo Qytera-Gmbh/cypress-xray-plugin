@@ -24,6 +24,7 @@ import type {
 import { dedent } from "./util/dedent";
 import dependencies from "./util/dependencies";
 import { ExecutableGraph } from "./util/graph/executable-graph";
+import type { Level } from "./util/logging";
 import { CapturingLogger, LOG } from "./util/logging";
 
 describe(relative(cwd(), __filename), async () => {
@@ -376,6 +377,18 @@ describe(relative(cwd(), __filename), async () => {
                             }
                         );
                         assert.strictEqual(pluginOptions.logDirectory, "./logs/");
+                    });
+                    await it("logger", () => {
+                        const logger = (level: Level, ...text: string[]) => {
+                            console.log(level, ...text);
+                        };
+                        const pluginOptions = globalContext.initPluginOptions(
+                            {},
+                            {
+                                logger,
+                            }
+                        );
+                        assert.strictEqual(pluginOptions.logger, logger);
                     });
                     await it("normalizeScreenshotNames", () => {
                         const pluginOptions = globalContext.initPluginOptions(

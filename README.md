@@ -22,7 +22,6 @@ Features include:
     - reuse existing test execution and test plan issues
 - CI/CD ready
     - no hardcoded credentials
-    - every option customizable in CLI
 - Cucumber integration
     - synchronization/upload of step definitions to Xray
     - results upload as described above

@@ -196,6 +196,7 @@ function initPluginOptions(
         enabled: parse(env, ENV_NAMES.plugin.enabled, asBoolean) ?? options?.enabled ?? true,
         logDirectory:
             parse(env, ENV_NAMES.plugin.logDirectory, asString) ?? options?.logDirectory ?? "logs",
+        logger: options?.logger,
         normalizeScreenshotNames:
             parse(env, ENV_NAMES.plugin.normalizeScreenshotNames, asBoolean) ??
             options?.normalizeScreenshotNames ??

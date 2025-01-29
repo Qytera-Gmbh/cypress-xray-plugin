@@ -194,6 +194,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     ...options.plugin,
                     logDirectory: resolve(config.projectRoot, "xyz"),
+                    logger: undefined,
                 }
             );
             assert.deepStrictEqual(setGlobalContext.mock.calls[0].arguments[0].getOptions().xray, {
@@ -309,6 +310,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     debug: pluginContext.getOptions().plugin.debug,
                     logDirectory: resolve(config.projectRoot, "logs"),
+                    logger: undefined,
                 },
             ]);
         });
@@ -330,6 +332,7 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     debug: pluginContext.getOptions().plugin.debug,
                     logDirectory: resolve(config.projectRoot, "log-directory"),
+                    logger: undefined,
                 },
             ]);
         });
@@ -351,6 +354,32 @@ describe(relative(cwd(), __filename), async () => {
                 {
                     debug: pluginContext.getOptions().plugin.debug,
                     logDirectory: resolve("."),
+                    logger: undefined,
+                },
+            ]);
+        });
+
+        await it("initializes the logging module with custom loggers", async (context) => {
+            const configure = context.mock.method(LOG, "configure", context.mock.fn());
+            context.mock.method(globalContext, "initClients", () => pluginContext.getClients());
+            const logger = () => {
+                console.log("hello");
+            };
+            const options: CypressXrayPluginOptions = {
+                jira: {
+                    projectKey: "ABC",
+                    url: "http://localhost:1234",
+                },
+                plugin: {
+                    logger,
+                },
+            };
+            await configureXrayPlugin(mockedCypressEventEmitter, config, options);
+            assert.deepStrictEqual(configure.mock.calls[0].arguments, [
+                {
+                    debug: pluginContext.getOptions().plugin.debug,
+                    logDirectory: resolve(config.projectRoot, "logs"),
+                    logger: logger,
                 },
             ]);
         });

@@ -715,7 +715,7 @@ export interface PluginOptions {
      * specified, this logger will completely replace the default plugin logger.
      *
      * Messages passed to this function:
-     * - will not contain the prefix `| Cypress Xray Plugin |`
+     * - will not contain the prefix `│ Cypress Xray Plugin │`
      * - will not contain ANSI escape characters
      * - may contain line break characters
      *

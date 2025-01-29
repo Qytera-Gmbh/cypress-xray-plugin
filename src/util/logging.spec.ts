@@ -42,6 +42,17 @@ describe(relative(cwd(), __filename), async () => {
                     ansiColors.white("│ Cypress Xray Plugin │ INFO    │"),
                 ]);
             });
+            await it("prefers custom loggers", (context) => {
+                const info = context.mock.method(console, "info", context.mock.fn());
+                const logger = new PluginLogger({
+                    logDirectory: ".",
+                    logger: (level, ...text) => {
+                        console.info("bonjour", level, ...text);
+                    },
+                });
+                logger.message("info", "hello");
+                assert.deepStrictEqual(info.mock.calls[0].arguments, ["bonjour", "info", "hello"]);
+            });
         });
 
         await describe("logToFile", async () => {
