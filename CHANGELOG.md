@@ -1,5 +1,15 @@
 # Changelog
 
+# `8.1.0`
+
+## Notable changes
+
+- Added `plugin.logger` option
+
+## Dependency updates
+
+- Bumped undici from 5.28.4 to 5.28.5
+
 # `8.0.0`
 
 ## Notable changes
