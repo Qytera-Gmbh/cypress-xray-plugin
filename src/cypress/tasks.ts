@@ -4,7 +4,6 @@ import { encode } from "../util/base64";
 import { dedent } from "../util/dedent";
 import { errorMessage } from "../util/errors";
 import type { Logger } from "../util/logging";
-import { Level } from "../util/logging";
 
 /**
  * All tasks which are available within the plugin.
@@ -160,7 +159,7 @@ export class PluginTaskListener implements TaskListener {
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {
                 this.logger.message(
-                    Level.WARNING,
+                    "warning",
                     dedent(`
                         Test: ${args.test}
 
@@ -190,7 +189,7 @@ export class PluginTaskListener implements TaskListener {
         } catch (error: unknown) {
             if (!this.ignoredTests.has(args.test)) {
                 this.logger.message(
-                    Level.WARNING,
+                    "warning",
                     dedent(`
                         Test: ${args.test}
 

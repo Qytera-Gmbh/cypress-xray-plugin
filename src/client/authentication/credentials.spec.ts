@@ -3,7 +3,7 @@ import assert from "node:assert";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 import { beforeEach, describe, it } from "node:test";
-import { Level, LOG } from "../../util/logging";
+import { LOG } from "../../util/logging";
 import { AxiosRestClient } from "../https/requests";
 import { JwtCredentials } from "./credentials";
 
@@ -103,7 +103,7 @@ describe(relative(cwd(), __filename), async () => {
                     message: "Failed to authenticate",
                 });
                 assert.deepEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to authenticate: Request failed with status code 404",
                 ]);
             });

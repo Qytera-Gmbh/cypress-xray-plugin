@@ -1,7 +1,6 @@
 import type { StringMap } from "../../../types/util";
 import { dedent } from "../../../util/dedent";
 import type { Logger } from "../../../util/logging";
-import { Level } from "../../../util/logging";
 import { unknownToString } from "../../../util/string";
 import type { Computable } from "../../command";
 import { Command } from "../../command";
@@ -27,7 +26,7 @@ export class GetSummariesToResetCommand extends Command<StringMap<string>, null>
         for (const [issueKey, newSummary] of Object.entries(newValues)) {
             if (!(issueKey in oldValues)) {
                 this.logger.message(
-                    Level.WARNING,
+                    "warning",
                     dedent(`
                         ${issueKey}
 
@@ -41,7 +40,7 @@ export class GetSummariesToResetCommand extends Command<StringMap<string>, null>
             const oldSummary = oldValues[issueKey];
             if (oldSummary === newSummary) {
                 this.logger.message(
-                    Level.DEBUG,
+                    "debug",
                     dedent(`
                         ${issueKey}
 

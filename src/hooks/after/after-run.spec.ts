@@ -21,7 +21,7 @@ import type {
     CucumberMultipartFeature,
 } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import { ExecutableGraph } from "../../util/graph/executable-graph";
-import { Level, LOG } from "../../util/logging";
+import { LOG } from "../../util/logging";
 import type { Command } from "../command";
 import { ComputableState } from "../command";
 import { ConstantCommand } from "../util/commands/constant-command";
@@ -1201,7 +1201,7 @@ describe(relative(cwd(), __filename), async () => {
                 assert.strictEqual(graph.size("vertices"), 0);
                 assert.strictEqual(graph.size("edges"), 0);
                 assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                    Level.WARNING,
+                    "warning",
                     "No test execution results to upload, skipping results upload preparations.",
                 ]);
             });

@@ -14,7 +14,7 @@ import { dedent } from "./util/dedent";
 import { ExecutableGraph } from "./util/graph/executable-graph";
 import { ChainingCommandGraphLogger } from "./util/graph/logging/graph-logger";
 import { HELP } from "./util/help";
-import { CapturingLogger, LOG, Level } from "./util/logging";
+import { CapturingLogger, LOG } from "./util/logging";
 
 let canShowInitializationWarning = true;
 
@@ -53,7 +53,7 @@ export async function configureXrayPlugin(
         options.plugin
     );
     if (!pluginOptions.enabled) {
-        LOG.message(Level.INFO, "Plugin disabled. Skipping further configuration.");
+        LOG.message("info", "Plugin disabled. Skipping further configuration.");
         // Tasks must always be registered in case users forget to comment out imported commands.
         registerDefaultTasks(on);
         return;
@@ -62,7 +62,7 @@ export async function configureXrayPlugin(
     // See: https://github.com/cypress-io/cypress/issues/20789
     if (!config.isTextTerminal) {
         pluginOptions.enabled = false;
-        LOG.message(Level.INFO, "Interactive mode detected, disabling plugin.");
+        LOG.message("info", "Interactive mode detected, disabling plugin.");
         // Tasks must always be registered in case users forget to comment out imported commands.
         registerDefaultTasks(on);
         return;
@@ -120,7 +120,7 @@ export async function configureXrayPlugin(
             if ("status" in results && results.status === "failed") {
                 const failedResult = results;
                 LOG.message(
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         Skipping results upload: Failed to run ${failedResult.failures.toString()} tests.
 
@@ -140,7 +140,7 @@ export async function configureXrayPlugin(
             }
         } else {
             LOG.message(
-                Level.INFO,
+                "info",
                 "Skipping results upload: Plugin is configured to not upload test results."
             );
         }
@@ -150,19 +150,19 @@ export async function configureXrayPlugin(
             new ChainingCommandGraphLogger(logger).logGraph(context.getGraph());
             const messages = logger.getMessages();
             messages.forEach(([level, text]) => {
-                if ([Level.DEBUG, Level.INFO, Level.SUCCESS].includes(level)) {
+                if (["debug", "info", "notice"].includes(level)) {
                     LOG.message(level, text);
                 }
             });
-            if (messages.some(([level]) => level === Level.WARNING || level === Level.ERROR)) {
-                LOG.message(Level.WARNING, "Encountered problems during plugin execution!");
+            if (messages.some(([level]) => level === "warning" || level === "error")) {
+                LOG.message("warning", "Encountered problems during plugin execution!");
                 messages
-                    .filter(([level]) => level === Level.WARNING)
+                    .filter(([level]) => level === "warning")
                     .forEach(([level, text]) => {
                         LOG.message(level, text);
                     });
                 messages
-                    .filter(([level]) => level === Level.ERROR)
+                    .filter(([level]) => level === "error")
                     .forEach(([level, text]) => {
                         LOG.message(level, text);
                     });
@@ -190,7 +190,7 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
     if (!context) {
         if (canShowInitializationWarning) {
             LOG.message(
-                Level.WARNING,
+                "warning",
                 dedent(`
                     ${file.filePath}
 
@@ -204,7 +204,7 @@ export function syncFeatureFile(file: Cypress.FileObject): string {
     }
     if (!context.getOptions().plugin.enabled) {
         LOG.message(
-            Level.INFO,
+            "info",
             dedent(`
                 ${file.filePath}
 

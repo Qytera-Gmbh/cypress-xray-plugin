@@ -8,7 +8,7 @@ import {
 } from "axios";
 import FormData from "form-data";
 import { normalizedFilename } from "../../util/files";
-import { LOG, Level } from "../../util/logging";
+import { LOG } from "../../util/logging";
 import { unknownToString } from "../../util/string";
 import { startInterval } from "../../util/time";
 
@@ -216,7 +216,7 @@ export class AxiosRestClient {
                     ),
                     filename
                 );
-                LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
+                LOG.message("debug", `Request:  ${resolvedFilename}`);
             });
         } else {
             const resolvedFilename = LOG.logToFile(
@@ -232,7 +232,7 @@ export class AxiosRestClient {
                 ),
                 filename
             );
-            LOG.message(Level.DEBUG, `Request:  ${resolvedFilename}`);
+            LOG.message("debug", `Request:  ${resolvedFilename}`);
         }
     }
 
@@ -261,7 +261,7 @@ export class AxiosRestClient {
             ),
             filename
         );
-        LOG.message(Level.DEBUG, `Response: ${resolvedFilename}`);
+        LOG.message("debug", `Response: ${resolvedFilename}`);
     }
 
     private logError(direction: "inbound" | "outbound", error: unknown): void {
@@ -285,7 +285,7 @@ export class AxiosRestClient {
         )}.json`;
         const resolvedFilename = LOG.logToFile(JSON.stringify(data, null, 2), filename);
         LOG.message(
-            Level.DEBUG,
+            "debug",
             `${direction === "inbound" ? "Response" : "Request"}: ${resolvedFilename}`
         );
     }
@@ -293,7 +293,7 @@ export class AxiosRestClient {
     private startResponseInterval(url: string): ReturnType<typeof setInterval> {
         return startInterval((totalTime: number) => {
             LOG.message(
-                Level.INFO,
+                "info",
                 `Waiting for ${url} to respond... (${(totalTime / 1000).toString()} seconds)`
             );
         });

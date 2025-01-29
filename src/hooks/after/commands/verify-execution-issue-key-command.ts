@@ -2,7 +2,6 @@ import type { IssueTypeDetails } from "../../../types/jira/responses/issue-type-
 import { dedent } from "../../../util/dedent";
 import { HELP } from "../../../util/help";
 import type { Logger } from "../../../util/logging";
-import { Level } from "../../../util/logging";
 import type { Computable } from "../../command";
 import { Command } from "../../command";
 
@@ -32,7 +31,7 @@ export class VerifyExecutionIssueKeyCommand extends Command<string, Parameters> 
             resolvedExecutionIssueKey !== this.parameters.testExecutionIssueKey
         ) {
             this.logger.message(
-                Level.WARNING,
+                "warning",
                 dedent(`
                     ${
                         this.parameters.importType === "cypress" ? "Cypress" : "Cucumber"

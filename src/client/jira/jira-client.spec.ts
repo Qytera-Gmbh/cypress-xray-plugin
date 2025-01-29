@@ -9,7 +9,7 @@ import type { IssueTypeDetails } from "../../types/jira/responses/issue-type-det
 import type { SearchResults } from "../../types/jira/responses/search-results";
 import type { User } from "../../types/jira/responses/user";
 import type { Logger } from "../../util/logging";
-import { Level, LOG } from "../../util/logging";
+import { LOG } from "../../util/logging";
 import { BasicAuthCredentials } from "../authentication/credentials";
 import { AxiosRestClient } from "../https/requests";
 import { BaseJiraClient } from "./jira-client";
@@ -136,7 +136,7 @@ describe(relative(cwd(), __filename), async () => {
                 );
                 assert.strictEqual(response, mockedData);
                 assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                    Level.WARNING,
+                    "warning",
                     "File does not exist:",
                     "./test/resources/missingGreetings.txt",
                 ]);
@@ -180,7 +180,7 @@ describe(relative(cwd(), __filename), async () => {
                 );
                 assert.deepStrictEqual(response, []);
                 assert.deepStrictEqual(message.mock.calls[2].arguments, [
-                    Level.WARNING,
+                    "warning",
                     "All files do not exist. Skipping attaching.",
                 ]);
             });
@@ -189,7 +189,7 @@ describe(relative(cwd(), __filename), async () => {
                 const message = context.mock.method(LOG, "message", context.mock.fn());
                 assert.deepStrictEqual(await client.addAttachment("CYP-123"), []);
                 assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                    Level.WARNING,
+                    "warning",
                     "No files provided to attach to issue CYP-123. Skipping attaching.",
                 ]);
             });
@@ -224,7 +224,7 @@ describe(relative(cwd(), __filename), async () => {
                     { message: "Failed to attach files" }
                 );
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to attach files: Request failed with status code 413",
                 ]);
                 assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
@@ -305,7 +305,7 @@ describe(relative(cwd(), __filename), async () => {
                     message: "Failed to get issue types",
                 });
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to get issue types: Request failed with status code 409",
                 ]);
                 assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
@@ -362,7 +362,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
                 await assert.rejects(client.getFields(), { message: "Failed to get fields" });
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to get fields: Request failed with status code 409",
                 ]);
                 assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
@@ -428,7 +428,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
                 await assert.rejects(client.getMyself(), { message: "Failed to get user details" });
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to get user details: Request failed with status code 409",
                 ]);
                 assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
@@ -612,7 +612,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
                 await assert.rejects(client.search({}), { message: "Failed to search issues" });
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to search issues: Request failed with status code 401",
                 ]);
                 assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
@@ -683,7 +683,7 @@ describe(relative(cwd(), __filename), async () => {
                     { message: "Failed to edit issue" }
                 );
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to edit issue: Request failed with status code 400",
                 ]);
                 assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [
@@ -768,7 +768,7 @@ describe(relative(cwd(), __filename), async () => {
                     { message: "Failed to transition issue" }
                 );
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to transition issue: Request failed with status code 404",
                 ]);
                 assert.deepStrictEqual(logErrorToFile.mock.calls[0].arguments, [

@@ -1,5 +1,5 @@
 import { encode } from "../../util/base64";
-import { LOG, Level } from "../../util/logging";
+import { LOG } from "../../util/logging";
 import type { AxiosRestClient } from "../https/requests";
 import { loggedRequest } from "../util";
 
@@ -111,7 +111,7 @@ export class JwtCredentials implements HttpCredentials {
 
     @loggedRequest({ purpose: "authenticate" })
     private async fetchToken(): Promise<string> {
-        LOG.message(Level.INFO, `Authenticating to: ${this.authenticationUrl}...`);
+        LOG.message("info", `Authenticating to: ${this.authenticationUrl}...`);
         const response = await this.httpClient.post<string>(this.authenticationUrl, {
             ["client_id"]: this.clientId,
             ["client_secret"]: this.clientSecret,
@@ -119,7 +119,7 @@ export class JwtCredentials implements HttpCredentials {
         // A JWT token is expected: https://stackoverflow.com/a/74325712
         const jwtRegex = /^[A-Za-z0-9_-]{2,}(?:\.[A-Za-z0-9_-]{2,}){2}$/;
         if (jwtRegex.test(response.data)) {
-            LOG.message(Level.DEBUG, "Authentication successful");
+            LOG.message("debug", "Authentication successful");
             return response.data;
         } else {
             throw new Error("Expected to receive a JWT token, but did not");

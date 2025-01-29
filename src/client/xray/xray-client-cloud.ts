@@ -15,7 +15,7 @@ import type {
     IssueDetails,
 } from "../../types/xray/responses/import-feature";
 import { dedent } from "../../util/dedent";
-import { LOG, Level } from "../../util/logging";
+import { LOG } from "../../util/logging";
 import type { JwtCredentials } from "../authentication/credentials";
 import type { AxiosRestClient } from "../https/requests";
 import { loggedRequest } from "../util";
@@ -89,7 +89,7 @@ export class XrayClientCloud
     @loggedRequest({ purpose: "get test results" })
     public async getTestResults(issueId: string): ReturnType<HasTestResults["getTestResults"]> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Retrieving test results...");
+        LOG.message("debug", "Retrieving test results...");
         const tests: Test<{ key: string; summary: string }>[] = [];
         let total = 0;
         let start = 0;
@@ -141,7 +141,7 @@ export class XrayClientCloud
             }
         } while (start && start < total);
         LOG.message(
-            Level.DEBUG,
+            "debug",
             `Successfully retrieved test results for test execution issue: ${issueId}`
         );
         return tests;
@@ -152,7 +152,7 @@ export class XrayClientCloud
         options: Parameters<HasTestRunResults["getTestRunResults"]>[0]
     ): Promise<TestRun<{ key: string }>[]> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Retrieving test run results...");
+        LOG.message("debug", "Retrieving test run results...");
         const runResults: TestRun<{ key: string }>[] = [];
         let total = 0;
         let start = 0;
@@ -215,7 +215,7 @@ export class XrayClientCloud
                 }
             }
         } while (start && start < total);
-        LOG.message(Level.DEBUG, "Successfully retrieved test run results");
+        LOG.message("debug", "Successfully retrieved test run results");
         return runResults;
     }
 
@@ -225,7 +225,7 @@ export class XrayClientCloud
         ...issueKeys: string[]
     ): ReturnType<HasTestTypes["getTestTypes"]> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Retrieving test types...");
+        LOG.message("debug", "Retrieving test types...");
         const types: StringMap<string> = {};
         let total = 0;
         let start = 0;
@@ -274,7 +274,7 @@ export class XrayClientCloud
             }
         } while (start && start < total);
         LOG.message(
-            Level.DEBUG,
+            "debug",
             `Successfully retrieved test types for ${issueKeys.length.toString()} issues.`
         );
         return types;
@@ -362,7 +362,7 @@ export class XrayClientCloud
                 if (cloudResponse.errors.length > 0) {
                     response.errors.push(...cloudResponse.errors);
                     LOG.message(
-                        Level.DEBUG,
+                        "debug",
                         dedent(`
                             Encountered some errors during feature file import:
                             ${cloudResponse.errors.map((error: string) => `- ${error}`).join("\n")}
@@ -375,7 +375,7 @@ export class XrayClientCloud
                     );
                     response.updatedOrCreatedIssues.push(...testKeys);
                     LOG.message(
-                        Level.DEBUG,
+                        "debug",
                         dedent(`
                             Successfully updated or created test issues:
 
@@ -389,7 +389,7 @@ export class XrayClientCloud
                     );
                     response.updatedOrCreatedIssues.push(...preconditionKeys);
                     LOG.message(
-                        Level.DEBUG,
+                        "debug",
                         dedent(`
                             Successfully updated or created precondition issues:
 

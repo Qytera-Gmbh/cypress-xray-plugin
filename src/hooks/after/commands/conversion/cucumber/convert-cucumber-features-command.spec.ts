@@ -5,7 +5,7 @@ import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import type { CucumberMultipartFeature } from "../../../../../types/xray/requests/import-execution-cucumber-multipart";
 import { dedent } from "../../../../../util/dedent";
-import { Level, LOG } from "../../../../../util/logging";
+import { LOG } from "../../../../../util/logging";
 import { ConstantCommand } from "../../../../util/commands/constant-command";
 import { ConvertCucumberFeaturesCommand } from "./convert-cucumber-features-command";
 
@@ -445,7 +445,7 @@ describe(relative(cwd(), __filename), async () => {
             const features = await command.compute();
 
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     ${resolve(
                         ".",
@@ -525,7 +525,7 @@ describe(relative(cwd(), __filename), async () => {
             const features = await command.compute();
 
             assert.deepStrictEqual(message.mock.calls[3].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     ${resolve(".", "test", "resources", "cypress", "e2e", "spec.cy.feature")}
 

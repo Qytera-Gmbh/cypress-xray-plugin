@@ -8,7 +8,7 @@ import { AxiosRestClient } from "../../../../client/https/requests";
 import type { JiraClient } from "../../../../client/jira/jira-client";
 import { BaseJiraClient } from "../../../../client/jira/jira-client";
 import { dedent } from "../../../../util/dedent";
-import { Level, LOG } from "../../../../util/logging";
+import { LOG } from "../../../../util/logging";
 import { ConstantCommand } from "../constant-command";
 import { EditIssueFieldCommand } from "./edit-issue-field-command";
 
@@ -101,7 +101,7 @@ describe(relative(cwd(), __filename), async () => {
             );
             assert.deepStrictEqual(await command.compute(), ["CYP-123"]);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     CYP-456
 

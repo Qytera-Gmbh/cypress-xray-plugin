@@ -24,7 +24,7 @@ import type {
 import { dedent } from "./util/dedent";
 import dependencies from "./util/dependencies";
 import { ExecutableGraph } from "./util/graph/executable-graph";
-import { CapturingLogger, Level, LOG } from "./util/logging";
+import { CapturingLogger, LOG } from "./util/logging";
 
 describe(relative(cwd(), __filename), async () => {
     await describe("the plugin context configuration", async () => {
@@ -1551,11 +1551,11 @@ describe(relative(cwd(), __filename), async () => {
                 assert.strictEqual(get.mock.callCount(), 1);
                 assert.strictEqual(post.mock.callCount(), 1);
                 assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                    Level.INFO,
+                    "info",
                     "Jira username and API token found. Setting up Jira cloud basic auth credentials.",
                 ]);
                 assert.deepStrictEqual(message.mock.calls[4].arguments, [
-                    Level.INFO,
+                    "info",
                     "Xray client ID and client secret found. Setting up Xray cloud JWT credentials.",
                 ]);
             });
@@ -1587,7 +1587,7 @@ describe(relative(cwd(), __filename), async () => {
                     `),
                 });
                 assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                    Level.INFO,
+                    "info",
                     "Jira username and API token found. Setting up Jira cloud basic auth credentials.",
                 ]);
             });
@@ -1640,11 +1640,11 @@ describe(relative(cwd(), __filename), async () => {
                 assert.strictEqual(getJira.mock.callCount(), 1);
                 assert.strictEqual(getXray.mock.callCount(), 1);
                 assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                    Level.INFO,
+                    "info",
                     "Jira PAT found. Setting up Jira server PAT credentials.",
                 ]);
                 assert.deepStrictEqual(message.mock.calls[4].arguments, [
-                    Level.INFO,
+                    "info",
                     "Jira PAT found. Setting up Xray server PAT credentials.",
                 ]);
             });
@@ -1698,11 +1698,11 @@ describe(relative(cwd(), __filename), async () => {
                 assert.strictEqual(getJira.mock.callCount(), 1);
                 assert.strictEqual(getXray.mock.callCount(), 1);
                 assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                    Level.INFO,
+                    "info",
                     "Jira username and password found. Setting up Jira server basic auth credentials.",
                 ]);
                 assert.deepStrictEqual(message.mock.calls[4].arguments, [
-                    Level.INFO,
+                    "info",
                     "Jira username and password found. Setting up Xray server basic auth credentials.",
                 ]);
             });

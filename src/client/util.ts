@@ -1,5 +1,5 @@
 import { errorMessage, LoggedError } from "../util/errors";
-import { Level, LOG } from "../util/logging";
+import { LOG } from "../util/logging";
 
 /**
  * Decorates the method with an error handler which automatically logs errors and rethrows
@@ -33,7 +33,7 @@ export function loggedRequest(parameters: {
             try {
                 return await target.call(this, ...args);
             } catch (error: unknown) {
-                LOG.message(Level.ERROR, `Failed to ${parameters.purpose}: ${errorMessage(error)}`);
+                LOG.message("error", `Failed to ${parameters.purpose}: ${errorMessage(error)}`);
                 LOG.logErrorToFile(error, `${methodName}Error`);
                 throw new LoggedError(`Failed to ${parameters.purpose}`);
             }

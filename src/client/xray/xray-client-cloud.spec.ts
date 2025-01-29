@@ -12,7 +12,7 @@ import type {
 } from "../../types/xray/requests/import-execution-multipart-info";
 import type { GetTestsResponse } from "../../types/xray/responses/graphql/get-tests";
 import { dedent } from "../../util/dedent";
-import { Level, LOG } from "../../util/logging";
+import { LOG } from "../../util/logging";
 import { JwtCredentials } from "../authentication/credentials";
 import { AxiosRestClient } from "../https/requests";
 import { XrayClientCloud } from "./xray-client-cloud";
@@ -186,7 +186,7 @@ describe(relative(cwd(), __filename), async () => {
 
                 assert.strictEqual(message.mock.callCount(), 2);
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to import Cypress results: Request failed with status code 400",
                 ]);
                 assert.strictEqual(logErrorToFile.mock.callCount(), 1);
@@ -317,7 +317,7 @@ describe(relative(cwd(), __filename), async () => {
                 );
                 assert.strictEqual(message.mock.callCount(), 2);
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to import Cypress results: Request failed with status code 400",
                 ]);
                 assert.strictEqual(logErrorToFile.mock.callCount(), 1);
@@ -450,7 +450,7 @@ describe(relative(cwd(), __filename), async () => {
                 );
                 assert.strictEqual(message.mock.callCount(), 2);
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to import Cucumber results: Request failed with status code 400",
                 ]);
                 assert.strictEqual(logErrorToFile.mock.callCount(), 1);
@@ -597,7 +597,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
                 assert.strictEqual(message.mock.callCount(), 3);
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.DEBUG,
+                    "debug",
                     dedent(`
                         Encountered some errors during feature file import:
                         - Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!
@@ -647,7 +647,7 @@ describe(relative(cwd(), __filename), async () => {
 
                 assert.strictEqual(message.mock.callCount(), 2);
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.DEBUG,
+                    "debug",
                     dedent(`
                         Encountered some errors during feature file import:
                         - Error in file taggedPrefixCorrect.feature: Precondition with key CYP-222 was not found!
@@ -694,7 +694,7 @@ describe(relative(cwd(), __filename), async () => {
 
                 assert.strictEqual(message.mock.callCount(), 2);
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         Failed to import Cucumber features: Request failed with status code 400
 
@@ -734,7 +734,7 @@ describe(relative(cwd(), __filename), async () => {
 
                 assert.strictEqual(message.mock.callCount(), 2);
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to import Cucumber features: Connection timeout",
                 ]);
                 assert.strictEqual(logErrorToFile.mock.callCount(), 1);
@@ -995,7 +995,7 @@ describe(relative(cwd(), __filename), async () => {
 
                 assert.strictEqual(message.mock.callCount(), 2);
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to get test types: Request failed with status code 400",
                 ]);
                 assert.strictEqual(logErrorToFile.mock.callCount(), 1);
@@ -1394,7 +1394,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
                 assert.strictEqual(message.mock.callCount(), 2);
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to get test results: Request failed with status code 400",
                 ]);
                 assert.strictEqual(logErrorToFile.mock.callCount(), 1);

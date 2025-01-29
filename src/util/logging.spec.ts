@@ -8,7 +8,7 @@ import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { resolveTestDirPath } from "../../test/util";
 import { LoggedError } from "./errors";
-import { CapturingLogger, Level, PluginLogger } from "./logging";
+import { CapturingLogger, PluginLogger } from "./logging";
 
 describe(relative(cwd(), __filename), async () => {
     await describe(PluginLogger.name, async () => {
@@ -16,7 +16,7 @@ describe(relative(cwd(), __filename), async () => {
             await it("handles single line messages", (context) => {
                 const info = context.mock.method(console, "info", context.mock.fn());
                 const logger = new PluginLogger();
-                logger.message(Level.INFO, "hello");
+                logger.message("info", "hello");
                 assert.deepStrictEqual(info.mock.calls[0].arguments, [
                     `${ansiColors.white("│ Cypress Xray Plugin │ INFO    │")} ${ansiColors.gray(
                         "hello"
@@ -26,7 +26,7 @@ describe(relative(cwd(), __filename), async () => {
             await it("handles multi line messages", (context) => {
                 const info = context.mock.method(console, "info", context.mock.fn());
                 const logger = new PluginLogger();
-                logger.message(Level.INFO, "hello\nbonjour");
+                logger.message("info", "hello\nbonjour");
                 assert.deepStrictEqual(info.mock.callCount(), 3);
                 assert.deepStrictEqual(info.mock.calls[0].arguments, [
                     `${ansiColors.white("│ Cypress Xray Plugin │ INFO    │")} ${ansiColors.gray(
@@ -272,11 +272,11 @@ describe(relative(cwd(), __filename), async () => {
         await describe("message", async () => {
             await it("stores calls", () => {
                 const logger = new CapturingLogger();
-                logger.message(Level.INFO, "hello");
-                logger.message(Level.ERROR, "alarm");
+                logger.message("info", "hello");
+                logger.message("error", "alarm");
                 assert.deepStrictEqual(logger.getMessages(), [
-                    [Level.INFO, "hello"],
-                    [Level.ERROR, "alarm"],
+                    ["info", "hello"],
+                    ["error", "alarm"],
                 ]);
             });
         });

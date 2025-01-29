@@ -8,7 +8,7 @@ import type { ImportFeatureResponse } from "../../types/xray/responses/import-fe
 import { dedent } from "../../util/dedent";
 import { LoggedError, errorMessage } from "../../util/errors";
 import { HELP } from "../../util/help";
-import { LOG, Level } from "../../util/logging";
+import { LOG } from "../../util/logging";
 import { Client } from "../client";
 import { loggedRequest } from "../util";
 
@@ -87,7 +87,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
     @loggedRequest({ purpose: "import Cypress results" })
     public async importExecution(execution: XrayTestExecutionResults): Promise<string> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.INFO, "Importing Cypress execution...");
+        LOG.message("info", "Importing Cypress execution...");
         const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
             this.getUrlImportExecution(),
             execution,
@@ -98,7 +98,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
             }
         );
         const key = this.onResponse("import-execution", response.data);
-        LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
+        LOG.message("debug", `Successfully uploaded test execution results to ${key}.`);
         return key;
     }
 
@@ -108,7 +108,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
         info: MultipartInfo
     ): Promise<string> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.INFO, "Importing Cypress execution...");
+        LOG.message("info", "Importing Cypress execution...");
         const formData = this.onRequest("import-execution-multipart", executionResults, info);
         const response: AxiosResponse<ImportExecutionResponseType> = await this.httpClient.post(
             this.getUrlImportExecutionMultipart(),
@@ -121,7 +121,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
             }
         );
         const key = this.onResponse("import-execution-multipart", response.data);
-        LOG.message(Level.DEBUG, `Successfully uploaded test execution results to ${key}.`);
+        LOG.message("debug", `Successfully uploaded test execution results to ${key}.`);
         return key;
     }
 
@@ -131,7 +131,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
         cucumberInfo: MultipartInfo
     ): Promise<string> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.INFO, "Importing Cucumber execution...");
+        LOG.message("info", "Importing Cucumber execution...");
         const formData = this.onRequest(
             "import-execution-cucumber-multipart",
             cucumberJson,
@@ -148,10 +148,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
             }
         );
         const key = this.onResponse("import-execution-cucumber-multipart", response.data);
-        LOG.message(
-            Level.DEBUG,
-            `Successfully uploaded Cucumber test execution results to ${key}.`
-        );
+        LOG.message("debug", `Successfully uploaded Cucumber test execution results to ${key}.`);
         return key;
     }
 
@@ -165,7 +162,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
     ): Promise<ImportFeatureResponse> {
         try {
             const authorizationHeader = await this.credentials.getAuthorizationHeader();
-            LOG.message(Level.DEBUG, "Importing Cucumber features...");
+            LOG.message("debug", "Importing Cucumber features...");
             const formData = new FormData();
             formData.append("file", fs.createReadStream(file));
 
@@ -184,7 +181,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
             LOG.logErrorToFile(error, "importFeatureError");
             if (isAxiosError(error) && error.response?.status === HttpStatusCode.BadRequest) {
                 LOG.message(
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         Failed to import Cucumber features: ${errorMessage(error)}
 
@@ -195,10 +192,7 @@ export abstract class AbstractXrayClient<ImportFeatureResponseType, ImportExecut
                     `)
                 );
             } else {
-                LOG.message(
-                    Level.ERROR,
-                    `Failed to import Cucumber features: ${errorMessage(error)}`
-                );
+                LOG.message("error", `Failed to import Cucumber features: ${errorMessage(error)}`);
             }
             throw new LoggedError("Feature file import failed");
         }

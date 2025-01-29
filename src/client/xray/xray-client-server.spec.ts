@@ -8,7 +8,7 @@ import type { XrayTestExecutionResults } from "../../types/xray/import-test-exec
 import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
 import type { MultipartInfo } from "../../types/xray/requests/import-execution-multipart-info";
 import { dedent } from "../../util/dedent";
-import { Level, LOG } from "../../util/logging";
+import { LOG } from "../../util/logging";
 import { PatCredentials } from "../authentication/credentials";
 import { AxiosRestClient } from "../https/requests";
 import type { XrayClientServer } from "./xray-client-server";
@@ -461,7 +461,7 @@ describe(relative(cwd(), __filename), async () => {
 
                 assert.strictEqual(message.mock.callCount(), 4);
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.DEBUG,
+                    "debug",
                     "Encountered an error during feature file import: Test with key CYP-333 was not found!",
                 ]);
                 assert.deepStrictEqual(response, {
@@ -547,7 +547,7 @@ describe(relative(cwd(), __filename), async () => {
                 });
                 assert.strictEqual(message.mock.callCount(), 2);
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.DEBUG,
+                    "debug",
                     "Encountered an error during feature file import: Test with key CYP-333 was not found!\nTest with key CYP-555 was not found!\nPrecondition with key CYP-222 was not found!",
                 ]);
             });
@@ -586,7 +586,7 @@ describe(relative(cwd(), __filename), async () => {
                     { message: "Feature file import failed" }
                 );
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         Failed to import Cucumber features: Request failed with status code 400
 
@@ -623,7 +623,7 @@ describe(relative(cwd(), __filename), async () => {
                     { message: "Feature file import failed" }
                 );
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     "Failed to import Cucumber features: Connection timeout",
                 ]);
                 assert.strictEqual(logErrorToFile.mock.callCount(), 1);
@@ -745,7 +745,7 @@ describe(relative(cwd(), __filename), async () => {
                     message: "Failed to get test execution",
                 });
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         Failed to get test execution: Request failed with status code 400
                     `),
@@ -816,7 +816,7 @@ describe(relative(cwd(), __filename), async () => {
                     message: "Failed to get Xray license",
                 });
                 assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                    Level.ERROR,
+                    "error",
                     dedent(`
                         Failed to get Xray license: Request failed with status code 400
                     `),

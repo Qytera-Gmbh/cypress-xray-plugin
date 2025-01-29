@@ -13,7 +13,7 @@ import type {
 } from "../../types/xray/responses/import-feature";
 import type { XrayLicenseStatus } from "../../types/xray/responses/license";
 import { dedent } from "../../util/dedent";
-import { LOG, Level } from "../../util/logging";
+import { LOG } from "../../util/logging";
 import type { HttpCredentials } from "../authentication/credentials";
 import type { AxiosRestClient } from "../https/requests";
 import { loggedRequest } from "../util";
@@ -83,7 +83,7 @@ export class ServerClient
         query?: Parameters<XrayClientServer["getTestExecution"]>[1]
     ): Promise<GetTestExecutionResponseServer> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Getting test execution results...");
+        LOG.message("debug", "Getting test execution results...");
         let currentPage = query?.page ?? 1;
         let pagedTests: GetTestExecutionResponseServer = [];
         const allTests: GetTestExecutionResponseServer = [];
@@ -112,7 +112,7 @@ export class ServerClient
     @loggedRequest({ purpose: "get test run" })
     public async getTestRun(id: number): Promise<GetTestRunResponseServer> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Getting test run results...");
+        LOG.message("debug", "Getting test run results...");
         const response: AxiosResponse<GetTestRunResponseServer> = await this.httpClient.get(
             `${this.apiBaseUrl}/api/testrun/${id.toString()}`,
             {
@@ -127,7 +127,7 @@ export class ServerClient
     @loggedRequest({ purpose: "get Xray license" })
     public async getXrayLicense(): Promise<XrayLicenseStatus> {
         const authorizationHeader = await this.credentials.getAuthorizationHeader();
-        LOG.message(Level.DEBUG, "Getting Xray license status...");
+        LOG.message("debug", "Getting Xray license status...");
         const licenseResponse: AxiosResponse<XrayLicenseStatus> = await this.httpClient.get(
             `${this.apiBaseUrl}/api/xraylicense`,
             {
@@ -222,7 +222,7 @@ export class ServerClient
                     const issueKeys = serverResponse.map((test: IssueDetails) => test.key);
                     response.updatedOrCreatedIssues.push(...issueKeys);
                     LOG.message(
-                        Level.DEBUG,
+                        "debug",
                         dedent(`
                             Successfully updated or created issues:
 
@@ -235,7 +235,7 @@ export class ServerClient
                 if (serverResponse.message) {
                     response.errors.push(serverResponse.message);
                     LOG.message(
-                        Level.DEBUG,
+                        "debug",
                         `Encountered an error during feature file import: ${serverResponse.message}`
                     );
                 }
@@ -245,7 +245,7 @@ export class ServerClient
                     );
                     response.updatedOrCreatedIssues.push(...testKeys);
                     LOG.message(
-                        Level.DEBUG,
+                        "debug",
                         dedent(`
                             Successfully updated or created test issues:
 
@@ -262,7 +262,7 @@ export class ServerClient
                     );
                     response.updatedOrCreatedIssues.push(...preconditionKeys);
                     LOG.message(
-                        Level.DEBUG,
+                        "debug",
                         dedent(`
                             Successfully updated or created precondition issues:
 

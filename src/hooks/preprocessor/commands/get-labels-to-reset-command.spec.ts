@@ -3,7 +3,7 @@ import { relative } from "node:path";
 import { cwd } from "node:process";
 import { describe, it } from "node:test";
 import { dedent } from "../../../util/dedent";
-import { Level, LOG } from "../../../util/logging";
+import { LOG } from "../../../util/logging";
 import { ConstantCommand } from "../../util/commands/constant-command";
 import { GetLabelsToResetCommand } from "./get-labels-to-reset-command";
 
@@ -45,7 +45,7 @@ describe(relative(cwd(), __filename), async () => {
             );
             assert.deepStrictEqual(await command.compute(), {});
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     CYP-123
 
@@ -55,7 +55,7 @@ describe(relative(cwd(), __filename), async () => {
                 `),
             ]);
             assert.deepStrictEqual(message.mock.calls[1].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     CYP-456
 

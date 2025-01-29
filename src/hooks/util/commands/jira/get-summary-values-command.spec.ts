@@ -8,7 +8,7 @@ import { AxiosRestClient } from "../../../../client/https/requests";
 import type { JiraClient } from "../../../../client/jira/jira-client";
 import { BaseJiraClient } from "../../../../client/jira/jira-client";
 import { dedent } from "../../../../util/dedent";
-import { Level, LOG } from "../../../../util/logging";
+import { LOG } from "../../../../util/logging";
 import { ConstantCommand } from "../constant-command";
 import { GetSummaryValuesCommand } from "./get-summary-values-command";
 
@@ -84,7 +84,7 @@ describe(relative(cwd(), __filename), async () => {
                 ["CYP-123"]: "Hello",
             });
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     Failed to find Jira issues:
 
@@ -130,7 +130,7 @@ describe(relative(cwd(), __filename), async () => {
             );
             assert.deepStrictEqual(await command.compute(), {});
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     Failed to parse Jira field with ID summary in issues:
 

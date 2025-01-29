@@ -5,7 +5,7 @@ import { describe, it } from "node:test";
 import { getMockedCypress } from "../../test/mocks";
 import { SimpleEvidenceCollection } from "../context";
 import { dedent } from "../util/dedent";
-import { Level, LOG } from "../util/logging";
+import { LOG } from "../util/logging";
 import * as tasks from "./tasks";
 
 describe(path.relative(process.cwd(), __filename), () => {
@@ -226,7 +226,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
             assert.strictEqual(addEvidence.mock.callCount(), 0);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     Test: This is a test
 
@@ -276,7 +276,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
             assert.strictEqual(addEvidence.mock.callCount(), 0);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     Test: This is a test
 
@@ -499,7 +499,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
             assert.strictEqual(addEvidence.mock.callCount(), 0);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     Test: This is a test
 
@@ -564,7 +564,7 @@ describe(path.relative(process.cwd(), __filename), () => {
             });
             assert.strictEqual(addEvidence.mock.callCount(), 0);
             assert.deepStrictEqual(message.mock.calls[0].arguments, [
-                Level.WARNING,
+                "warning",
                 dedent(`
                     Test: This is a test
 
