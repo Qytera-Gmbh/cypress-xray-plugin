@@ -3,6 +3,7 @@ import type { AxiosRequestConfig } from "axios";
 import type { AxiosRestClient, RequestsOptions } from "../client/https/requests";
 import type { JiraClient } from "../client/jira/jira-client";
 import type { XrayClient } from "../client/xray/xray-client";
+import type { Level } from "../util/logging";
 import type { IssueUpdate } from "./jira/responses/issue-update";
 
 /**
@@ -709,6 +710,45 @@ export interface PluginOptions {
      * The directory which all error and debug log files will be written to.
      */
     logDirectory?: string;
+    /**
+     * A custom logger function that replaces the default ANSI-based logger for the plugin. If
+     * specified, this logger will completely replace the default plugin logger.
+     *
+     * Messages passed to this function:
+     * - will not contain the prefix `| Cypress Xray Plugin |`
+     * - will not contain ANSI escape characters
+     * - may contain line break characters
+     *
+     * @example
+     *
+     * ```ts
+     * (level: Level, ...text: string[]) => {
+     *   switch (level) {
+     *     case "debug":
+     *       if (process.env.DEBUG) {
+     *         console.debug(...text);
+     *       }
+     *       break;
+     *     case "error":
+     *       console.error("oh no", ...text);
+     *       break;
+     *     case "info":
+     *       console.info("fyi", ...text);
+     *       break;
+     *     case "notice":
+     *       console.log("please beware", ...text);
+     *       break;
+     *     case "warning":
+     *       console.warn("danger", ...text);
+     *       break;
+     *   }
+     * }
+     * ```
+     *
+     * @param level - the severity level of the log message
+     * @param text - one or more messages to be logged
+     */
+    logger?: (level: Level, ...text: string[]) => void;
     /**
      * Some Xray setups may have problems with uploaded evidence if the filenames contain non-ASCII
      * characters. With this option enabled, the plugin will only allow the characters `a-zA-Z0-9.`

@@ -41,6 +41,7 @@ export interface Logger {
     /**
      * Logs a log message.
      *
+     * @param level - the log level
      * @param text - the individual messages
      */
     message(level: Level, ...text: string[]): void;
@@ -49,6 +50,7 @@ export interface Logger {
 interface LoggingOptions {
     debug?: boolean;
     logDirectory: string;
+    logger?: (level: Level, ...text: string[]) => void;
 }
 
 /**
@@ -57,7 +59,7 @@ interface LoggingOptions {
 export class PluginLogger implements Logger {
     private readonly prefixes: Record<Level, string>;
     private readonly colorizers: Record<Level, ansiColors.StyleFunction>;
-    private readonly logFunctions: Record<Level, (...data: unknown[]) => void>;
+    private readonly logFunctions: Record<Level, (...data: string[]) => void>;
     private loggingOptions: LoggingOptions;
 
     constructor(options: LoggingOptions = { logDirectory: "." }) {
@@ -87,6 +89,11 @@ export class PluginLogger implements Logger {
     }
 
     public message(level: Level, ...text: string[]) {
+        // Prefer custom logger to the default plugin one.
+        if (this.loggingOptions.logger) {
+            this.loggingOptions.logger(level, ...text);
+            return;
+        }
         if (level === "debug" && !this.loggingOptions.debug) {
             return;
         }

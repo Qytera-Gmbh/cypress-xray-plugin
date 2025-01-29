@@ -77,6 +77,7 @@ export async function configureXrayPlugin(
     LOG.configure({
         debug: pluginOptions.debug,
         logDirectory: pluginOptions.logDirectory,
+        logger: pluginOptions.logger,
     });
     const internalOptions: InternalCypressXrayPluginOptions = {
         cucumber: await globalContext.initCucumberOptions(config, options.cucumber),
