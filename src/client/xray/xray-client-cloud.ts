@@ -1,5 +1,6 @@
 import type { AxiosResponse } from "axios";
 import FormData from "form-data";
+import { JsonStreamStringify } from "json-stream-stringify";
 import type { StringMap } from "../../types/util";
 import type { XrayTestExecutionResults } from "../../types/xray/import-test-execution-results";
 import type { CucumberMultipartFeature } from "../../types/xray/requests/import-execution-cucumber-multipart";
@@ -301,13 +302,11 @@ export class XrayClientCloud
                     CucumberMultipartFeature[],
                     MultipartInfo,
                 ];
-                const resultString = JSON.stringify(cucumberJson);
-                const infoString = JSON.stringify(cucumberInfo);
                 const formData = new FormData();
-                formData.append("results", resultString, {
+                formData.append("results", new JsonStreamStringify(cucumberJson), {
                     filename: "results.json",
                 });
-                formData.append("info", infoString, {
+                formData.append("info", new JsonStreamStringify(cucumberInfo), {
                     filename: "info.json",
                 });
                 return formData;
@@ -318,13 +317,11 @@ export class XrayClientCloud
                     XrayTestExecutionResults[],
                     MultipartInfo,
                 ];
-                const resultString = JSON.stringify(executionResults);
-                const infoString = JSON.stringify(info);
                 const formData = new FormData();
-                formData.append("results", resultString, {
+                formData.append("results", new JsonStreamStringify(executionResults), {
                     filename: "results.json",
                 });
-                formData.append("info", infoString, {
+                formData.append("info", new JsonStreamStringify(info), {
                     filename: "info.json",
                 });
                 return formData;
