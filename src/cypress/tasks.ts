@@ -5,25 +5,31 @@ import { dedent } from "../util/dedent";
 import { errorMessage } from "../util/errors";
 import type { Logger } from "../util/logging";
 
+type Task =
+    | "cypress-xray-plugin:task:iteration:definition"
+    | "cypress-xray-plugin:task:request"
+    | "cypress-xray-plugin:task:response";
+
 /**
  * All tasks which are available within the plugin.
  */
-export enum PluginTask {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const PluginTask = {
     /**
      * The task which handles incoming responses from requests dispatched through `cy.request`
      * within a test.
      */
-    INCOMING_RESPONSE = "cypress-xray-plugin:task:response",
+    ["INCOMING_RESPONSE"]: "cypress-xray-plugin:task:response",
     /**
      * The task that provides Xray iteration parameters for a test run. These can be used to
      * distinguish between iterations in the execution results view.
      */
-    ITERATION_DEFINITION = "cypress-xray-plugin:iteration:definition",
+    ["ITERATION_DEFINITION"]: "cypress-xray-plugin:task:iteration:definition",
     /**
      * The task which handles outgoing requests dispatched through `cy.request` within a test.
      */
-    OUTGOING_REQUEST = "cypress-xray-plugin:task:request",
-}
+    ["OUTGOING_REQUEST"]: "cypress-xray-plugin:task:request",
+} as const;
 
 /**
  * Enqueues the plugin task for processing a dispatched request. The plugin internally keeps track
@@ -37,7 +43,7 @@ export enum PluginTask {
  * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadRequestData/
  */
 export function enqueueTask(
-    task: PluginTask.OUTGOING_REQUEST,
+    task: "cypress-xray-plugin:task:request",
     filename: string,
     request: Partial<Cypress.RequestOptions>
 ): Cypress.Chainable<Partial<Cypress.RequestOptions>>;
@@ -53,7 +59,7 @@ export function enqueueTask(
  * @see https://qytera-gmbh.github.io/projects/cypress-xray-plugin/section/guides/uploadRequestData/
  */
 export function enqueueTask(
-    task: PluginTask.INCOMING_RESPONSE,
+    task: "cypress-xray-plugin:task:response",
     filename: string,
     response: Cypress.Response<unknown>
 ): Cypress.Chainable<Cypress.Response<unknown>>;
@@ -64,38 +70,39 @@ export function enqueueTask(
  * @param parameters - the iteration parameters
  */
 export function enqueueTask(
-    task: PluginTask.ITERATION_DEFINITION,
+    task: "cypress-xray-plugin:task:iteration:definition",
     parameters: Record<string, string>
 ): Cypress.Chainable<Record<string, string>>;
-export function enqueueTask<T>(task: PluginTask, ...args: unknown[]): Cypress.Chainable<T> {
+export function enqueueTask<T>(task: Task, ...args: unknown[]): Cypress.Chainable<T> {
     switch (task) {
-        case PluginTask.OUTGOING_REQUEST: {
+        case "cypress-xray-plugin:task:request": {
             // Cast valid because of overload.
             const [filename, request] = args as [string, Partial<Cypress.RequestOptions>];
-            const taskParameters: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST] = {
+            const taskParameters: PluginTaskParameterType["cypress-xray-plugin:task:request"] = {
                 filename: filename,
                 request: request,
                 test: Cypress.currentTest.titlePath.join(" "),
             };
             return cy.task(task, taskParameters);
         }
-        case PluginTask.INCOMING_RESPONSE: {
+        case "cypress-xray-plugin:task:response": {
             // Cast valid because of overload.
             const [filename, response] = args as [string, Cypress.Response<unknown>];
-            const taskParameters: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE] = {
+            const taskParameters: PluginTaskParameterType["cypress-xray-plugin:task:response"] = {
                 filename: filename,
                 response: response,
                 test: Cypress.currentTest.titlePath.join(" "),
             };
             return cy.task(task, taskParameters);
         }
-        case PluginTask.ITERATION_DEFINITION: {
+        case "cypress-xray-plugin:task:iteration:definition": {
             // Cast valid because of overload.
             const [parameters] = args as [Record<string, string>];
-            const taskParameters: PluginTaskParameterType[PluginTask.ITERATION_DEFINITION] = {
-                parameters: parameters,
-                test: Cypress.currentTest.titlePath.join(" "),
-            };
+            const taskParameters: PluginTaskParameterType["cypress-xray-plugin:task:iteration:definition"] =
+                {
+                    parameters: parameters,
+                    test: Cypress.currentTest.titlePath.join(" "),
+                };
             return cy.task(task, taskParameters);
         }
     }
@@ -106,26 +113,9 @@ export function enqueueTask<T>(task: PluginTask, ...args: unknown[]): Cypress.Ch
  */
 export interface PluginTaskParameterType {
     /**
-     * The parameters for an incoming response task.
-     */
-    [PluginTask.INCOMING_RESPONSE]: {
-        /**
-         * The filename of the file where the response data should be saved to.
-         */
-        filename: string;
-        /**
-         * The response data.
-         */
-        response: Cypress.Response<unknown>;
-        /**
-         * The test name where `cy.request` was called.
-         */
-        test: string;
-    };
-    /**
      * The task parameters for defining Xray iteration data.
      */
-    [PluginTask.ITERATION_DEFINITION]: {
+    ["cypress-xray-plugin:task:iteration:definition"]: {
         /**
          * The Xray iteration parameters of the current test.
          */
@@ -138,7 +128,7 @@ export interface PluginTaskParameterType {
     /**
      * The parameters for an outgoing request task.
      */
-    [PluginTask.OUTGOING_REQUEST]: {
+    ["cypress-xray-plugin:task:request"]: {
         /**
          * The filename of the file where the request data should be saved to.
          */
@@ -152,25 +142,42 @@ export interface PluginTaskParameterType {
          */
         test: string;
     };
+    /**
+     * The parameters for an incoming response task.
+     */
+    ["cypress-xray-plugin:task:response"]: {
+        /**
+         * The filename of the file where the response data should be saved to.
+         */
+        filename: string;
+        /**
+         * The response data.
+         */
+        response: Cypress.Response<unknown>;
+        /**
+         * The test name where `cy.request` was called.
+         */
+        test: string;
+    };
 }
 
 interface PluginTaskReturnType {
     /**
-     * The result of an incoming response task.
-     */
-    [PluginTask.INCOMING_RESPONSE]: Cypress.Response<unknown>;
-    /**
      * The result of an itereation parameter definition task task.
      */
-    [PluginTask.ITERATION_DEFINITION]: Partial<Cypress.RequestOptions>;
+    ["cypress-xray-plugin:task:iteration:definition"]: Partial<Cypress.RequestOptions>;
     /**
      * The result of an outgoing request task.
      */
-    [PluginTask.OUTGOING_REQUEST]: Partial<Cypress.RequestOptions>;
+    ["cypress-xray-plugin:task:request"]: Partial<Cypress.RequestOptions>;
+    /**
+     * The result of an incoming response task.
+     */
+    ["cypress-xray-plugin:task:response"]: Cypress.Response<unknown>;
 }
 
 type TaskListener = {
-    [K in PluginTask]: (args: PluginTaskParameterType[K]) => PluginTaskReturnType[K];
+    [K in Task]: (args: PluginTaskParameterType[K]) => PluginTaskReturnType[K];
 };
 
 export class PluginTaskListener implements TaskListener {
@@ -192,8 +199,8 @@ export class PluginTaskListener implements TaskListener {
         this.logger = logger;
     }
 
-    public [PluginTask.OUTGOING_REQUEST](
-        args: PluginTaskParameterType[PluginTask.OUTGOING_REQUEST]
+    public ["cypress-xray-plugin:task:request"](
+        args: PluginTaskParameterType["cypress-xray-plugin:task:request"]
     ) {
         try {
             const issueKeys = getTestIssueKeys(args.test, this.projectKey);
@@ -222,8 +229,8 @@ export class PluginTaskListener implements TaskListener {
         return args.request;
     }
 
-    public [PluginTask.INCOMING_RESPONSE](
-        args: PluginTaskParameterType[PluginTask.INCOMING_RESPONSE]
+    public ["cypress-xray-plugin:task:response"](
+        args: PluginTaskParameterType["cypress-xray-plugin:task:response"]
     ) {
         try {
             const issueKeys = getTestIssueKeys(args.test, this.projectKey);
@@ -252,8 +259,8 @@ export class PluginTaskListener implements TaskListener {
         return args.response;
     }
 
-    public [PluginTask.ITERATION_DEFINITION](
-        args: PluginTaskParameterType[PluginTask.ITERATION_DEFINITION]
+    public ["cypress-xray-plugin:task:iteration:definition"](
+        args: PluginTaskParameterType["cypress-xray-plugin:task:iteration:definition"]
     ) {
         try {
             const issueKeys = getTestIssueKeys(args.test, this.projectKey);
